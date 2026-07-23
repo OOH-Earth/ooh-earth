@@ -9,7 +9,8 @@ export default function SiteFooter({ onCommand }) {
             <div className="font-display text-3xl font-black uppercase tracking-tight text-silver md:text-5xl">
               OOH<span className="text-ozone">.</span>EARTH
             </div>
-            <p className="mt-4 max-w-sm font-mono text-[11px] leading-relaxed text-silver/50">
+            <p className="mt-1 font-mono text-[10px] uppercase tracking-[0.3em] text-dim">Out Of Hell™ · Adbusting Manual</p>
+            <p className="mt-4 max-w-sm font-display text-sm font-normal leading-[1.4] text-darkgray">
               Community-funded infrastructure for documenting the visual world and coordinating creative resistance. Corporate advertising has stolen our cities. We're mapping every crime.
             </p>
           </div>
@@ -36,7 +37,7 @@ export default function SiteFooter({ onCommand }) {
         </div>
 
         <div className="mt-12 flex flex-col items-start justify-between gap-4 border-t border-white/5 pt-6 md:flex-row md:items-center">
-          <span className="font-mono text-[10px] uppercase tracking-[0.25em] text-silver/40">© {new Date().getFullYear()} OOH Earth · Orbital Perspective</span>
+          <span className="font-mono text-[10px] uppercase tracking-[0.25em] text-dim">© {new Date().getFullYear()} OOH Earth · Brand guidelines V3.1 · Union made</span>
           <button onClick={onCommand} className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.25em] text-silver/50 transition-colors hover:text-ozone">
             <Crosshair className="h-3.5 w-3.5" /> Open Command Center
           </button>

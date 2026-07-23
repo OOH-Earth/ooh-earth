@@ -33,19 +33,19 @@ export default function ViewfinderCursor() {
 
   return (
     <div
-      className="pointer-events-none fixed z-[9999] mix-blend-difference transition-[width,height] duration-150"
+      className="pointer-events-none fixed z-[9999] transition-[width,height] duration-150"
       style={{ left: pos.x, top: pos.y, transform: "translate(-50%, -50%)" }}
       aria-hidden="true"
     >
       {active ? (
-        <div className="flex h-12 w-12 items-center justify-center rounded-full border border-white/80">
-          <span className="h-1.5 w-1.5 rounded-full bg-white" />
+        <div className="flex h-12 w-12 items-center justify-center rounded-full border border-ozone">
+          <span className="h-1.5 w-1.5 rounded-full bg-ozone" />
         </div>
       ) : (
         <div className="relative h-6 w-6">
-          <div className="absolute left-1/2 top-0 h-full w-px -translate-x-1/2 bg-white" />
-          <div className="absolute left-0 top-1/2 h-px w-full -translate-y-1/2 bg-white" />
-          <div className="absolute left-1/2 top-1/2 h-1 w-1 -translate-x-1/2 -translate-y-1/2 rounded-full bg-white" />
+          <div className="absolute left-1/2 top-0 h-full w-px -translate-x-1/2 bg-ozone" />
+          <div className="absolute left-0 top-1/2 h-px w-full -translate-y-1/2 bg-ozone" />
+          <div className="absolute left-1/2 top-1/2 h-1 w-1 -translate-x-1/2 -translate-y-1/2 rounded-full bg-ozone" />
         </div>
       )}
     </div>

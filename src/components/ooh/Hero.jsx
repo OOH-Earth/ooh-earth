@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { ArrowDown, Radio } from "lucide-react";
 
-const HERO_IMG = "https://media.base44.com/images/public/6a62213cff3ccbca88c04ff5/a1e41f064_generated_689b09f8.png";
+const HERO_IMG = "https://ooh.earth/wp-content/uploads/2026/05/1777896004-01-d21q.webp";
 const WORD = "OOH.EARTH";
 
 export default function Hero({ onCommand }) {
@@ -26,12 +26,12 @@ export default function Hero({ onCommand }) {
       >
         <img
           src={HERO_IMG}
-          alt="A single glowing digital billboard standing alone in a vast desert at blue hour"
-          className="h-full w-full object-cover opacity-65"
+          alt="A documented billboard on Ploenchit Road, Bangkok — logged in the OOH Earth field record"
+          className="h-full w-full object-cover opacity-55"
           data-cursor="view"
         />
-        <div className="absolute inset-0 bg-gradient-to-b from-void/30 via-void/10 to-void" />
-        <div className="absolute inset-0 bg-gradient-to-r from-void/60 via-transparent to-void/60" />
+        <div className="absolute inset-0 bg-gradient-to-b from-void/40 via-void/20 to-void" />
+        <div className="absolute inset-0 bg-gradient-to-r from-void/70 via-transparent to-void/70" />
       </div>
 
       {/* Corner registration marks */}
@@ -42,13 +42,13 @@ export default function Hero({ onCommand }) {
           "left-0 bottom-0 border-l border-b",
           "right-0 bottom-0 border-r border-b",
         ].map((c, i) => (
-          <span key={i} className={`absolute h-5 w-5 border-silver/30 ${c}`} />
+          <span key={i} className={`absolute h-5 w-5 border-ozone/50 ${c}`} />
         ))}
       </div>
 
       <div className="relative z-20 flex h-full flex-col justify-between p-6 md:p-10">
         <div className="flex items-start justify-between font-mono text-[10px] uppercase tracking-[0.3em] text-silver/50">
-          <span>LAT 13.7563°N · LON 100.5018°E</span>
+          <span>LAT 13.7563°N · LON 100.5018°E · BKK</span>
           <span className="flex items-center gap-1.5">
             <Radio className="h-3 w-3 animate-flicker text-ozone" />
             LIVE FEED
@@ -56,35 +56,37 @@ export default function Hero({ onCommand }) {
         </div>
 
         <div className="flex flex-1 flex-col items-center justify-center">
-          <h1 className="flex w-full items-center justify-between font-display text-[13vw] font-black uppercase leading-[0.85] tracking-[-0.02em] text-silver md:text-[11vw]">
+          <span className="mb-4 font-mono text-[10px] uppercase tracking-[0.4em] text-ozone">Out Of Hell™ · Adbusting Manual</span>
+          <h1 className="flex w-full items-center justify-between font-display text-[13vw] font-black uppercase leading-[0.85] tracking-[-0.03em] text-silver md:text-[11vw]">
             {WORD.split("").map((ch, i) => (
               <span key={i} className="inline-block">{ch === "." ? <span className="text-ozone">.</span> : ch}</span>
             ))}
           </h1>
-          <p className="mt-6 max-w-xl text-center font-mono text-xs uppercase tracking-[0.25em] text-silver/50 md:text-sm">
-            The World's Billboard Liberation Hotline
+          <p className="mt-6 max-w-xl text-center font-display text-sm font-medium leading-[1.4] text-silver/60 md:text-base">
+            The world's billboard liberation hotline. Mapping corporate advertising offenses and coordinating creative resistance — from the orbital perspective.
           </p>
         </div>
 
         <div className="flex items-end justify-between">
-          <div className="max-w-xs font-mono text-[11px] leading-relaxed text-silver/50">
-            Mapping corporate advertising offenses worldwide. Coordinating creative resistance from the orbital perspective.
+          <div className="max-w-xs font-mono text-[11px] leading-[1.4] text-silver/50">
+            Union made by advertising industry war veterans &amp; street artists. Community-funded infrastructure for documenting the visual world.
           </div>
-          <div className="flex flex-col items-center gap-2">
-            <a href="#atlas" className="flex flex-col items-center gap-2 font-mono text-[10px] uppercase tracking-[0.3em] text-silver/60 transition-colors hover:text-ozone">
-              <span>Descend</span>
-              <ArrowDown className="h-4 w-4 animate-bounce" />
-            </a>
-          </div>
+          <a href="#atlas" className="flex flex-col items-center gap-2 font-mono text-[10px] uppercase tracking-[0.3em] text-silver/60 transition-colors hover:text-ozone">
+            <span>Descend</span>
+            <ArrowDown className="h-4 w-4 animate-bounce" />
+          </a>
           <button
             onClick={onCommand}
             data-cursor="view"
-            className="hidden border border-flare/50 px-4 py-3 font-mono text-[10px] uppercase tracking-[0.25em] text-flare transition-colors hover:bg-flare hover:text-void sm:block"
+            className="hidden border border-flare/60 px-4 py-3 font-mono text-[10px] uppercase tracking-[0.25em] text-flare transition-colors hover:bg-flare hover:text-void sm:block"
           >
             Open Command
           </button>
         </div>
       </div>
+
+      {/* High-vis baseline strip */}
+      <div className="absolute inset-x-0 bottom-0 h-1 hi-vis-stripes opacity-80" />
     </section>
   );
 }

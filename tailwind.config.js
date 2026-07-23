@@ -13,10 +13,24 @@ module.exports = {
   		colors: {
   			background: 'hsl(var(--background))',
   			foreground: 'hsl(var(--foreground))',
-  			void: '#08080A',
-  			silver: '#E5E7EB',
-  			ozone: '#06B6D4',
-  			flare: '#F59E0B',
+  			void: '#000000',
+  			silver: '#F1F1F1',
+  			ozone: '#EDFF00',
+  			flare: '#FF5C00',
+  			brand: {
+  				yellow: '#EDFF00',
+  				pink: '#FF5470',
+  				blue: '#1F51FF',
+  				green: '#39FF14',
+  				orange: '#FFA500',
+  				neon: '#FF5C00',
+  				deeppink: '#FF007F',
+  				gray: '#B2B2B2',
+  				smoke: '#F1F1F1'
+  			},
+  			slate2: '#333333',
+  			dim: '#666666',
+  			darkgray: '#999999',
   			card: {
   				DEFAULT: 'hsl(var(--card))',
   				foreground: 'hsl(var(--card-foreground))'

@@ -2,6 +2,7 @@ import { useState } from "react";
 import Nav from "@/components/ooh/Nav";
 import Hero from "@/components/ooh/Hero";
 import CampaignAtlas from "@/components/ooh/CampaignAtlas";
+import Manifesto from "@/components/ooh/Manifesto";
 import ImpactLedger from "@/components/ooh/ImpactLedger";
 import SiteFooter from "@/components/ooh/SiteFooter";
 import CommandCenter from "@/components/ooh/CommandCenter";
@@ -21,6 +22,7 @@ export default function Home() {
       <main>
         <Hero onCommand={openCommand} />
         <CampaignAtlas />
+        <Manifesto />
         <ImpactLedger />
       </main>
 

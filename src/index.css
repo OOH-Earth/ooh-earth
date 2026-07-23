@@ -4,31 +4,31 @@
 
 @layer base {
   :root {
-    --background: 240 11% 3.5%;
-    --foreground: 220 14% 91%;
-    --card: 240 10% 5%;
-    --card-foreground: 220 14% 91%;
-    --popover: 240 10% 5%;
-    --popover-foreground: 220 14% 91%;
-    --primary: 220 14% 91%;
-    --primary-foreground: 240 11% 3.5%;
-    --secondary: 240 8% 9%;
-    --secondary-foreground: 220 14% 91%;
-    --muted: 240 8% 9%;
-    --muted-foreground: 220 9% 55%;
-    --accent: 189 95% 43%;
-    --accent-foreground: 240 11% 3.5%;
-    --destructive: 0 72% 51%;
+    --background: 0 0% 0%;
+    --foreground: 0 0% 94.5%;
+    --card: 0 0% 4%;
+    --card-foreground: 0 0% 94.5%;
+    --popover: 0 0% 4%;
+    --popover-foreground: 0 0% 94.5%;
+    --primary: 0 0% 94.5%;
+    --primary-foreground: 0 0% 0%;
+    --secondary: 0 0% 10%;
+    --secondary-foreground: 0 0% 94.5%;
+    --muted: 0 0% 10%;
+    --muted-foreground: 0 0% 60%;
+    --accent: 63 100% 50%;
+    --accent-foreground: 0 0% 0%;
+    --destructive: 0 100% 50%;
     --destructive-foreground: 0 0% 98%;
-    --border: 240 8% 14%;
-    --input: 240 8% 14%;
-    --ring: 189 95% 43%;
-    --flare: 38 92% 50%;
+    --border: 0 0% 20%;
+    --input: 0 0% 20%;
+    --ring: 63 100% 50%;
+    --flare: 22 100% 50%;
     --radius: 0px;
     --font-heading: "Inter Tight", ui-sans-serif, system-ui, sans-serif;
-    --font-body: "JetBrains Mono", ui-monospace, monospace;
+    --font-body: "Inter Tight", ui-sans-serif, system-ui, sans-serif;
     --font-display: "Inter Tight", ui-sans-serif, system-ui, sans-serif;
-    --font-mono: "JetBrains Mono", ui-monospace, monospace;
+    --font-mono: "Inter Tight", ui-sans-serif, system-ui, sans-serif;
   }
 }
 
@@ -41,17 +41,18 @@
   html {
     scroll-behavior: smooth;
     -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
   }
 
   body {
     @apply bg-background text-foreground font-body;
-    background-color: #08080A;
+    background-color: #000000;
     overflow-x: hidden;
   }
 
   ::selection {
-    background-color: rgba(6, 182, 212, 0.3);
-    color: #E5E7EB;
+    background-color: #EDFF00;
+    color: #000000;
   }
 
   a:focus-visible,
@@ -60,7 +61,7 @@
   textarea:focus-visible,
   select:focus-visible,
   [tabindex]:focus-visible {
-    outline: 2px solid hsl(189 95% 43%);
+    outline: 2px solid #EDFF00;
     outline-offset: 2px;
   }
 }
@@ -70,20 +71,29 @@
     font-family: "Inter Tight", ui-sans-serif, system-ui, sans-serif;
   }
   .font-mono-tech {
-    font-family: "JetBrains Mono", ui-monospace, monospace;
+    font-family: "Inter Tight", ui-sans-serif, system-ui, sans-serif;
   }
   .meridian-line {
-    border-color: rgba(229, 231, 235, 0.08);
+    border-color: rgba(241, 241, 241, 0.08);
   }
   .text-balance {
     text-wrap: balance;
   }
+  .hi-vis-stripes {
+    background-image: repeating-linear-gradient(
+      45deg,
+      #EDFF00 0,
+      #EDFF00 12px,
+      #000000 12px,
+      #000000 24px
+    );
+  }
 }
 
-/* Custom scrollbar for the atlas horizontal scroll */
+/* Atlas horizontal scrollbar */
 .atlas-track {
   scrollbar-width: thin;
-  scrollbar-color: rgba(6, 182, 212, 0.4) transparent;
+  scrollbar-color: rgba(237, 255, 0, 0.45) transparent;
 }
 .atlas-track::-webkit-scrollbar {
   height: 2px;
@@ -92,10 +102,10 @@
   background: transparent;
 }
 .atlas-track::-webkit-scrollbar-thumb {
-  background: rgba(6, 182, 212, 0.4);
+  background: rgba(237, 255, 0, 0.45);
 }
 
-/* Reduced motion: disable parallax + horizontal scroll, revert to vertical stack */
+/* Reduced motion */
 @media (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto;
@@ -111,13 +121,16 @@
 
 @keyframes flicker {
   0%, 100% { opacity: 1; }
-  50% { opacity: 0.85; }
+  50% { opacity: 0.7; }
 }
 .animate-flicker {
-  animation: flicker 4s ease-in-out infinite;
+  animation: flicker 3s ease-in-out infinite;
 }
 
-@keyframes scan {
-  0% { transform: translateY(-100%); }
-  100% { transform: translateY(100vh); }
+@keyframes marquee {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+.animate-marquee {
+  animation: marquee 30s linear infinite;
 }
