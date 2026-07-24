@@ -417,6 +417,10 @@
 .light .leaflet-tooltip-left::before { border-left-color: #f7f7f7 !important; }
 .light .leaflet-tooltip-right::before { border-right-color: #f7f7f7 !important; }
 
+/* MapLibre GL — capture touch so the globe rotates on mobile instead of scrolling the page */
+.maplibregl-canvas-container,
+.maplibregl-canvas { touch-action: none; }
+
 /* MapLibre GL popup — theme-aware chrome */
 .maplibregl-popup { --pp-bg: #0a0a0a; }
 .light .maplibregl-popup { --pp-bg: #f7f7f7; }

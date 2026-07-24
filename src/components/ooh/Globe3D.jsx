@@ -349,8 +349,8 @@ export default function Globe3D({ markers, selectedId, hoverId, onSelect, userLo
         <span className="absolute left-3 top-3 pl-6 font-mono text-[8px] uppercase tracking-[0.3em] text-ozone/40">// global surveillance grid · cluster intel</span>
       </div>
 
-      {/* live cluster + spot counters */}
-      <div className="pointer-events-none absolute left-3 top-16 z-[1000] flex flex-col gap-1 border border-slate2/70 bg-void/85 backdrop-blur-md">
+      {/* live cluster + spot counters — right on mobile, below telemetry on desktop */}
+      <div className="pointer-events-none absolute right-3 top-16 z-[1000] flex flex-col gap-1 border border-slate2/70 bg-void/85 backdrop-blur-md md:left-3 md:right-auto md:top-[188px]">
         <div className="flex items-center gap-2 border-b border-slate2/60 px-2.5 py-1.5">
           <span className="h-1.5 w-1.5 rounded-full bg-ozone animate-pulse" />
           <span className="font-mono text-[8px] uppercase tracking-[0.25em] text-dim">Field tally</span>
