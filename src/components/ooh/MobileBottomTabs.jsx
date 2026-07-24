@@ -41,12 +41,12 @@ export default function MobileBottomTabs() {
                     <Icon
                       className="h-6 w-6"
                       strokeWidth={on ? 2.4 : 1.7}
-                      style={{ color: primary ? "#000" : isActive ? "#EDFF00" : "#8c8c8c" }}
+                      style={{ color: primary ? "#000" : isActive ? "rgb(var(--c-ozone))" : "rgb(var(--c-dim))" }}
                     />
                   </div>
                   <span
                     className="mt-1 block text-center font-mono text-[8px] uppercase tracking-[0.12em]"
-                    style={{ color: primary ? "#EDFF00" : isActive ? "#EDFF00" : "#8c8c8c" }}
+                    style={{ color: isActive || primary ? "rgb(var(--c-ozone))" : "rgb(var(--c-dim))" }}
                   >
                     {label}
                   </span>
