@@ -11,6 +11,24 @@ const pinIcon = L.divIcon({
   popupAnchor: [0, -8],
 });
 
+const selIcon = L.divIcon({
+  className: "ooh-pin ooh-pin--sel",
+  html: `<span style="display:block;width:20px;height:20px;border-radius:50%;background:#FF5C00;border:2px solid #000;box-shadow:0 0 0 4px rgba(255,92,0,0.25),0 0 16px rgba(255,92,0,0.6)"></span>`,
+  iconSize: [20, 20],
+  iconAnchor: [10, 10],
+  popupAnchor: [0, -10],
+});
+
+const TYPE_LABEL = {
+  billboard: "Billboard",
+  digital: "Digital",
+  painted: "Painted",
+  projection: "Projection",
+  sticker: "Sticker",
+  mural: "Mural",
+  other: "Other",
+};
+
 function FitBounds({ markers }) {
   const map = useMap();
   useEffect(() => {
@@ -21,18 +39,25 @@ function FitBounds({ markers }) {
   return null;
 }
 
-export default function LocationMap({ markers }) {
-  const pins = useMemo(
-    () => markers.filter((m) => isFinite(m.lat) && isFinite(m.lng)),
-    [markers]
-  );
+function FlyTo({ selectedId, markers }) {
+  const map = useMap();
+  useEffect(() => {
+    if (!selectedId) return;
+    const m = markers.find((x) => x.id === selectedId);
+    if (m) map.flyTo([m.lat, m.lng], Math.max(map.getZoom(), 15), { duration: 0.6 });
+  }, [selectedId, markers, map]);
+  return null;
+}
+
+export default function LocationMap({ markers, selectedId, onSelect }) {
+  const pins = useMemo(() => markers.filter((m) => isFinite(m.lat) && isFinite(m.lng)), [markers]);
 
   return (
     <MapContainer
       center={[13.746, 100.55]}
       zoom={13}
       scrollWheelZoom
-      className="h-full w-full bg-void"
+      className="h-full w-full"
       style={{ background: "#000" }}
     >
       <TileLayer
@@ -42,29 +67,58 @@ export default function LocationMap({ markers }) {
         maxZoom={20}
       />
       <FitBounds markers={pins} />
+      <FlyTo selectedId={selectedId} markers={pins} />
       {pins.map((m, i) => (
-        <Marker key={m.id || i} position={[m.lat, m.lng]} icon={pinIcon}>
+        <Marker
+          key={m.id || i}
+          position={[m.lat, m.lng]}
+          icon={selectedId === m.id ? selIcon : pinIcon}
+          eventHandlers={{ click: () => onSelect?.(m.id) }}
+        >
           <Popup>
-            <div style={{ width: 200, fontFamily: "Inter Tight, sans-serif" }}>
+            <div style={{ width: 220, fontFamily: "Inter Tight, sans-serif" }}>
               {m.image && (
                 <img
                   src={m.image}
                   alt={m.title}
-                  style={{ width: "100%", height: 96, objectFit: "cover", display: "block", background: "#111" }}
+                  style={{ width: "100%", height: 110, objectFit: "cover", display: "block", background: "#111" }}
                 />
               )}
-              <div style={{ padding: "8px 2px 2px" }}>
-                <div style={{ fontWeight: 700, fontSize: 13, color: "#F1F1F1", lineHeight: 1.2 }}>{m.title}</div>
-                <div style={{ fontSize: 11, color: "#999", marginTop: 4, lineHeight: 1.35 }}>{m.address}</div>
-                <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 6, fontSize: 9, textTransform: "uppercase", letterSpacing: "0.2em", color: m.status === "verified" ? "#39FF14" : m.status === "pending" ? "#FF5C00" : "#999" }}>
-                  <span style={{ width: 6, height: 6, borderRadius: 999, background: "currentColor" }} />
-                  {m.status || "field report"}
+              <div style={{ padding: "10px 2px 2px" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 4 }}>
+                  <span style={{ fontSize: 9, textTransform: "uppercase", letterSpacing: "0.2em", fontWeight: 700, color: "#EDFF00" }}>
+                    {TYPE_LABEL[m.type] || m.type}
+                  </span>
+                  <span
+                    style={{ width: 5, height: 5, borderRadius: 999, background: m.status === "verified" ? "#39FF14" : "#FF5C00" }}
+                  />
+                  <span style={{ fontSize: 8, textTransform: "uppercase", letterSpacing: "0.2em", color: "#999" }}>{m.status}</span>
                 </div>
-                {m.link && (
-                  <a href={m.link} target="_blank" rel="noreferrer" style={{ display: "inline-block", marginTop: 8, fontSize: 10, textTransform: "uppercase", letterSpacing: "0.2em", color: "#EDFF00", textDecoration: "none" }}>
-                    View on OOH.EARTH ↗
+                <div style={{ fontWeight: 700, fontSize: 14, color: "#F1F1F1", lineHeight: 1.2 }}>{m.title}</div>
+                <div style={{ fontSize: 11, color: "#999", marginTop: 4, lineHeight: 1.35 }}>{m.address}</div>
+                <div style={{ fontSize: 9, color: "#666", marginTop: 4, fontFamily: "monospace" }}>
+                  {Number(m.lat).toFixed(4)}, {Number(m.lng).toFixed(4)}
+                </div>
+                <div style={{ display: "flex", gap: 10, marginTop: 8 }}>
+                  <a
+                    href={`https://www.google.com/maps/dir/?api=1&destination=${m.lat},${m.lng}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    style={{ fontSize: 9, textTransform: "uppercase", letterSpacing: "0.15em", color: "#FF5C00", textDecoration: "none" }}
+                  >
+                    Directions ↗
                   </a>
-                )}
+                  {m.link && (
+                    <a
+                      href={m.link}
+                      target="_blank"
+                      rel="noreferrer"
+                      style={{ fontSize: 9, textTransform: "uppercase", letterSpacing: "0.15em", color: "#EDFF00", textDecoration: "none" }}
+                    >
+                      OOH.EARTH ↗
+                    </a>
+                  )}
+                </div>
               </div>
             </div>
           </Popup>
