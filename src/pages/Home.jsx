@@ -41,10 +41,10 @@ export default function Home() {
       <ViewfinderCursor />
       <HorizonProgress />
       <Nav onCommand={openCommand} />
-      <MetroSlider />
 
       <main>
         <Hero onCommand={openCommand} />
+        <MetroSlider />
         <GlobeSection />
         <Reveal><Mandate /></Reveal>
         <SpotIdentifyTag />
