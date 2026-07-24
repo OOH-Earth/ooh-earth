@@ -1,0 +1,49 @@
+{
+  "name": "FundingLead",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string"
+    },
+    "email": {
+      "type": "string"
+    },
+    "amount": {
+      "type": "number",
+      "description": "Pledged amount in USD (optional)"
+    },
+    "channel": {
+      "type": "string",
+      "enum": [
+        "lead",
+        "crypto",
+        "stripe"
+      ],
+      "default": "lead"
+    },
+    "message": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "email"
+  ],
+  "rls": {
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "create": {},
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

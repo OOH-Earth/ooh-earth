@@ -1,0 +1,72 @@
+import { useState } from "react";
+import { base44 } from "@/api/base44Client";
+import { Loader2, CreditCard } from "lucide-react";
+
+const TIERS = [25, 50, 100, 250];
+
+export default function StripeDonate() {
+  const [amount, setAmount] = useState(50);
+  const [custom, setCustom] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  const donate = async () => {
+    const val = custom ? Number(custom) : amount;
+    if (!val || val < 1) {
+      setError("Enter a valid amount.");
+      return;
+    }
+    if (window.self !== window.top) {
+      alert("Checkout works only from a published app.");
+      return;
+    }
+    setLoading(true);
+    setError("");
+    try {
+      const res = await base44.functions.invoke("createDonationCheckout", { amount: val });
+      if (res.data?.url) window.location.href = res.data.url;
+      else setError(res.data?.error || "Checkout failed.");
+    } catch (e) {
+      setError(e?.message || "Checkout failed.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="border border-ozone/40 bg-card p-6">
+      <h3 className="font-display text-xl font-bold text-silver">Card / fiat</h3>
+      <p className="mt-1 font-mono text-[10px] uppercase tracking-[0.2em] text-dim">// Secure checkout via Stripe</p>
+      <div className="mt-4 grid grid-cols-4 gap-px border border-slate2/60 bg-slate2/40">
+        {TIERS.map((t) => (
+          <button
+            key={t}
+            onClick={() => { setAmount(t); setCustom(""); }}
+            className={`py-3 font-mono text-[11px] font-bold transition-colors ${amount === t && !custom ? "bg-ozone text-void" : "bg-card text-darkgray hover:text-silver"}`}
+          >
+            ${t}
+          </button>
+        ))}
+      </div>
+      <div className="mt-3 flex items-center gap-2">
+        <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-dim">$</span>
+        <input
+          value={custom}
+          onChange={(e) => setCustom(e.target.value)}
+          inputMode="decimal"
+          placeholder="Custom amount"
+          className="w-full border border-slate2 bg-void px-3 py-2.5 font-mono text-sm text-silver outline-none transition-colors placeholder:text-dim focus:border-ozone"
+        />
+      </div>
+      {error && <p className="mt-3 font-mono text-[10px] uppercase tracking-[0.2em] text-flare">{error}</p>}
+      <button
+        onClick={donate}
+        disabled={loading}
+        className="mt-4 flex w-full items-center justify-center gap-2 bg-ozone px-6 py-4 font-mono text-[11px] font-bold uppercase tracking-[0.3em] text-void transition-colors hover:bg-flare disabled:opacity-40"
+      >
+        {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <CreditCard className="h-4 w-4" />}
+        {loading ? "Processing…" : "Donate now"}
+      </button>
+    </div>
+  );
+}

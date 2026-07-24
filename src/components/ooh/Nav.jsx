@@ -18,6 +18,7 @@ export default function Nav({ onCommand }) {
           <a href="#atlas" className="transition-colors hover:text-ozone">Atlas</a>
           <Link to="/map" className="transition-colors hover:text-ozone">Maps</Link>
           <Link to="/report" className="transition-colors hover:text-ozone">Report</Link>
+          <Link to="/campaign" className="text-ozone transition-colors hover:text-flare">Fund</Link>
           <Link to="/about" className="transition-colors hover:text-ozone">About</Link>
           <Link to="/plans" className="transition-colors hover:text-ozone">Plans</Link>
           <Link to="/dashboard" className="transition-colors hover:text-ozone">Dashboard</Link>
