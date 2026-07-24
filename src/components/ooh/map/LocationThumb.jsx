@@ -7,6 +7,7 @@ import {
   Frame,
   BusFront,
   MapPin,
+  BadgeCheck,
 } from "lucide-react";
 
 // Category → icon + accent for placeholders
@@ -42,7 +43,7 @@ export function thumbHTML(m) {
   if (m.image) {
     return `<div style="position:relative;width:100%;height:110px">
       <img src="${String(m.image).replace(/-\d+x\d+(?=\.\w+$)/, "")}" alt="${(m.title || "").replace(/"/g, "")}" style="width:100%;height:110px;object-fit:cover;display:block;background:#111" />
-      <span style="position:absolute;left:4px;top:4px;font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:0.18em;padding:1px 4px;background:#EDFF00;color:#000;font-family:'Inter Tight',sans-serif">Confirmed</span>
+      <svg viewBox="0 0 24 24" width="14" height="14" style="position:absolute;left:4px;top:4px"><path d="M12 2l2.4 1.8 3 .2.9 2.9 2.2 2-1 2.8 1 2.8-2.2 2-.9 2.9-3 .2L12 22l-2.4-1.8-3-.2-.9-2.9-2.2-2 1-2.8-1-2.8 2.2-2 .9-2.9 3-.2z" fill="#EDFF00"/><path d="M9 12l2 2 4-4" fill="none" stroke="#000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
     </div>`;
   }
   const glyph = (GLYPH[m.type] || GLYPH.other).replace(/\{A\}/g, accent);
@@ -59,12 +60,7 @@ export default function LocationThumb({ m, className = "", imgClassName = "" }) 
     return (
       <div className={`relative shrink-0 overflow-hidden ${className}`}>
         <img src={m.image} alt={m.title} className={`h-full w-full object-cover ${imgClassName}`} />
-        <span
-          className="absolute left-1 top-1 font-mono text-[8px] font-bold uppercase tracking-[0.2em] px-1 py-0.5 bg-ozone text-void"
-          style={{ letterSpacing: "0.18em" }}
-        >
-          Confirmed
-        </span>
+        <BadgeCheck className="absolute left-1 top-1 h-4 w-4 text-ozone drop-shadow-[0_0_3px_rgba(0,0,0,0.8)]" />
       </div>
     );
   }
