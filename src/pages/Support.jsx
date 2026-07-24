@@ -6,6 +6,8 @@ import SiteFooter from "@/components/ooh/SiteFooter";
 import CommandCenter from "@/components/ooh/CommandCenter";
 import HorizonProgress from "@/components/ooh/HorizonProgress";
 import ViewfinderCursor from "@/components/ooh/ViewfinderCursor";
+import CryptoDonations from "@/components/ooh/campaign/CryptoDonations";
+import WalletButton from "@/components/ooh/WalletButton";
 
 export default function Support() {
   const [commandOpen, setCommandOpen] = useState(false);
@@ -53,6 +55,28 @@ export default function Support() {
               <p className="max-w-sm font-display text-sm leading-[1.4] text-darkgray">
                 To fund growth, platform development, and community outreach. One-time or monthly — every transmission counts.
               </p>
+            </div>
+          </div>
+        </section>
+
+        {/* On-chain treasury */}
+        <section className="border-t border-slate2/40 bg-card">
+          <div className="px-5 py-12 md:px-8">
+            <div className="mx-auto max-w-4xl">
+              <div className="flex flex-wrap items-center justify-between gap-4">
+                <div>
+                  <span className="font-mono text-[10px] uppercase tracking-[0.3em] text-ozone">// On-chain · direct to treasury</span>
+                  <h2 className="mt-2 font-display text-2xl font-bold tracking-[-0.02em] text-silver md:text-3xl">Pay in crypto</h2>
+                  <p className="mt-1 max-w-sm font-display text-sm leading-relaxed text-darkgray">No intermediaries. Direct transfers land in the OOH treasury.</p>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  <WalletButton chain="solana" />
+                  <WalletButton chain="evm" />
+                </div>
+              </div>
+              <div className="mt-6 max-w-md">
+                <CryptoDonations />
+              </div>
             </div>
           </div>
         </section>

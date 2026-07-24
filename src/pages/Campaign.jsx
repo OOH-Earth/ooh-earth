@@ -5,6 +5,7 @@ import CryptoDonations from "@/components/ooh/campaign/CryptoDonations";
 import StripeDonate from "@/components/ooh/campaign/StripeDonate";
 import LeadCapture from "@/components/ooh/campaign/LeadCapture";
 import WalletButton from "@/components/ooh/WalletButton";
+import DonationWatcher from "@/components/ooh/campaign/DonationWatcher";
 import { CAMPAIGN } from "@/components/ooh/fundConfig";
 import { Megaphone, CheckCircle2 } from "lucide-react";
 
@@ -36,7 +37,8 @@ export default function Campaign() {
 
           <div className="mt-6 flex flex-wrap items-center gap-3">
             <WalletButton chain="solana" />
-            <span className="font-mono text-[9px] uppercase tracking-[0.25em] text-dim">// mint wallet · Solana</span>
+            <WalletButton chain="evm" />
+            <span className="font-mono text-[9px] uppercase tracking-[0.25em] text-dim">// connect wallet · Solana · EVM</span>
           </div>
 
           <div className="mt-8 border border-slate2/60 bg-card p-5">
@@ -53,6 +55,10 @@ export default function Campaign() {
             <StripeDonate />
             <CryptoDonations />
             <LeadCapture />
+          </div>
+
+          <div className="mt-10">
+            <DonationWatcher />
           </div>
 
           <div className="mt-10 flex items-start gap-3 border-t border-slate2/40 pt-6">
