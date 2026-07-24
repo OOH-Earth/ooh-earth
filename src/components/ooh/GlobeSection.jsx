@@ -5,7 +5,7 @@ import seedMarkers from "@/components/ooh/mapSeed";
 
 export default function GlobeSection() {
   return (
-    <section className="relative h-[58vh] min-h-[360px] w-full overflow-hidden border-b border-slate2/60 bg-void">
+    <section className="relative h-[58dvh] min-h-[360px] w-full overflow-hidden border-b border-slate2/60 bg-void">
       <Globe3D markers={seedMarkers} />
       <div className="pointer-events-none absolute inset-x-0 top-0 z-[1001] flex items-center justify-between px-5 py-4">
         <span className="flex items-center gap-2">
@@ -14,7 +14,7 @@ export default function GlobeSection() {
         </span>
         <span className="font-mono text-[9px] uppercase tracking-[0.2em] text-dim/70">{seedMarkers.length} spots · live spin</span>
       </div>
-      <div className="pointer-events-none absolute inset-x-0 bottom-0 z-[1001] flex items-center justify-between bg-gradient-to-t from-void to-transparent px-5 py-4">
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 z-[1001] flex items-center justify-between bg-gradient-to-t from-void to-transparent px-5 pb-[calc(1rem+env(safe-area-inset-bottom))] pt-4">
         <span className="font-display text-lg font-bold tracking-[-0.02em] text-silver">Resistance, mapped globally</span>
         <Link
           to="/map"
