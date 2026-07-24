@@ -9,7 +9,7 @@ export default function Nav({ onCommand }) {
       <div className="flex items-center justify-between px-3 py-3 md:px-8 md:py-4">
         <Link to="/" className="group flex items-center gap-2.5" aria-label="OOH Earth — home">
           <BrandMark className="h-6 w-6" spinning />
-          <span className="font-display text-sm font-black uppercase tracking-[0.3em] text-silver transition-colors group-hover:text-ozone">OOH<span className="text-ozone text-glow-ozone">.</span>EARTH</span>
+          <span className="font-brand text-sm uppercase tracking-tight text-silver transition-colors group-hover:text-ozone">OOH<span className="text-ozone text-glow-ozone">.</span>EARTH</span>
           <span className="hidden font-mono text-[9px] uppercase tracking-[0.3em] text-dim sm:inline">/ Out Of Hell™</span>
         </Link>
 

@@ -57,7 +57,7 @@ export default function Hero({ onCommand }) {
 
         <div className="flex flex-1 flex-col items-center justify-center">
           <span className="mb-4 font-mono text-[10px] uppercase tracking-[0.4em] text-ozone">Out Of Hell™ · Disruption Agency</span>
-          <h1 className="flex w-full items-center justify-between font-display text-[13vw] font-black uppercase leading-[0.85] tracking-[-0.03em] text-silver md:text-[11vw]">
+          <h1 className="flex w-full items-center justify-between font-brand text-[13vw] uppercase leading-[0.85] tracking-[-0.03em] text-silver md:text-[11vw]">
             {WORD.split("").map((ch, i) => (
               <span key={i} className="inline-block">{ch === "." ? <span className="text-ozone">.</span> : ch}</span>
             ))}

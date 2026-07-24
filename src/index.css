@@ -1,3 +1,4 @@
+@import url('https://fonts.googleapis.com/css2?family=Lacquer&display=swap');
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -29,6 +30,7 @@
     --font-body: "Inter Tight", ui-sans-serif, system-ui, sans-serif;
     --font-display: "Inter Tight", ui-sans-serif, system-ui, sans-serif;
     --font-mono: "Inter Tight", ui-sans-serif, system-ui, sans-serif;
+    --font-brand: "Lacquer", ui-sans-serif, system-ui, sans-serif;
 
     /* OOH brand channel tokens — themeable (dark default · V3.1) */
     --c-void: 0 0 0;
