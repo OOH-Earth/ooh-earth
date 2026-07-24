@@ -88,18 +88,18 @@ export default function Walkthrough({ open, onClose, steps }) {
 
       <div
         style={{ position: "absolute", ...ttStyle, pointerEvents: "auto" }}
-        className="w-[300px] border border-slate2 bg-card p-5 shadow-2xl"
+        className="w-[300px] border border-ozone/50 bg-void p-5 shadow-[0_0_0_1px_rgba(237,255,0,0.15),0_8px_40px_rgba(0,0,0,0.8),0_0_24px_rgba(237,255,0,0.12)]"
       >
         <div className="flex items-start justify-between gap-3">
           <span className="font-mono text-[10px] uppercase tracking-[0.3em] text-ozone">
             // Step {i + 1} / {steps.length}
           </span>
-          <button onClick={onClose} aria-label="Skip tour" className="text-dim transition-colors hover:text-silver">
+          <button onClick={onClose} aria-label="Skip tour" className="text-silver/70 transition-colors hover:text-ozone">
             <X className="h-4 w-4" />
           </button>
         </div>
-        <h3 className="mt-3 font-display text-xl font-bold leading-tight tracking-[-0.01em] text-silver">{step.title}</h3>
-        <p className="mt-2 font-display text-[13px] leading-[1.45] text-darkgray">{step.body}</p>
+        <h3 className="mt-3 font-display text-xl font-bold leading-tight tracking-[-0.01em] text-silver text-glow-ozone">{step.title}</h3>
+        <p className="mt-2 font-display text-[13px] leading-[1.55] text-silver/85">{step.body}</p>
 
         {step.cta && (
           <div className="mt-5">
@@ -117,7 +117,7 @@ export default function Walkthrough({ open, onClose, steps }) {
           <button
             onClick={() => setI((p) => Math.max(p - 1, 0))}
             disabled={i === 0}
-            className="flex items-center gap-1 font-mono text-[10px] font-bold uppercase tracking-[0.2em] text-dim transition-colors hover:text-silver disabled:opacity-30"
+            className="flex items-center gap-1 font-mono text-[10px] font-bold uppercase tracking-[0.2em] text-silver/80 transition-colors hover:text-ozone disabled:opacity-30"
           >
             <ChevronLeft className="h-3.5 w-3.5" /> Back
           </button>
@@ -143,7 +143,7 @@ export default function Walkthrough({ open, onClose, steps }) {
             <button
               key={idx}
               onClick={() => setI(idx)}
-              className={`h-1.5 w-1.5 rounded-full transition-colors ${idx === i ? "bg-ozone" : "bg-slate2"}`}
+              className={`h-1.5 w-1.5 rounded-full transition-colors ${idx === i ? "bg-ozone" : "bg-dim"}`}
               aria-label={`Go to step ${idx + 1}`}
             />
           ))}

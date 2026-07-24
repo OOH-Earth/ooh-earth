@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { MapContainer, TileLayer, Marker, Popup, useMap, useMapEvents } from "react-leaflet";
+import { MapContainer, TileLayer, Marker, Popup, Tooltip, useMap, useMapEvents } from "react-leaflet";
 import { Link } from "react-router-dom";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
@@ -210,7 +210,28 @@ function ClusteredMarkers({ pins, selectedId, onSelect }) {
         position={[c.g.lat, c.g.lng]}
         icon={clusterIcon(c.g.items.length)}
         eventHandlers={{ click: () => map.flyTo([c.g.lat, c.g.lng], Math.min(20, zoom + 2), { duration: 0.6 }) }}
-      />
+      >
+        <Tooltip direction="top" offset={[0, -18]} opacity={0.96}>
+          {(() => {
+            const tally = {};
+            for (const it of c.g.items) tally[it.type] = (tally[it.type] || 0) + 1;
+            const rows = Object.entries(tally).sort((a, b) => b[1] - a[1]);
+            return (
+              <div style={{ fontFamily: "'Inter Tight', sans-serif", minWidth: 96 }}>
+                <div style={{ fontSize: 8, letterSpacing: "0.2em", textTransform: "uppercase", color: "#EDFF00", fontWeight: 700 }}>Cluster · {c.g.items.length} spots</div>
+                <div style={{ marginTop: 4, display: "grid", gap: 2 }}>
+                  {rows.map(([t, n]) => (
+                    <div key={t} style={{ display: "flex", justifyContent: "space-between", fontSize: 10, color: "#F1F1F1" }}>
+                      <span style={{ color: "#B2B2B2", textTransform: "capitalize" }}>{t}</span>
+                      <span style={{ fontFamily: "monospace", fontWeight: 700, color: "#EDFF00" }}>{n}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            );
+          })()}
+        </Tooltip>
+      </Marker>
     )
   );
 }

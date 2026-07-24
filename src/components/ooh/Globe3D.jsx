@@ -119,6 +119,7 @@ export default function Globe3D({ markers, selectedId, hoverId, onSelect, userLo
 
   const [ready, setReady] = useState(false);
   const [spinning, setSpinning] = useState(spin);
+  const [counts, setCounts] = useState({ spots: 0, clusters: 0, leads: 0, verified: 0 });
 
   const zoomIn = () => mapRef.current?.zoomIn();
   const zoomOut = () => mapRef.current?.zoomOut();
@@ -291,6 +292,30 @@ export default function Globe3D({ markers, selectedId, hoverId, onSelect, userLo
 
   useEffect(() => {
     const map = mapRef.current;
+    if (!readyRef.current || !map) return;
+    const recompute = () => {
+      try {
+        const cl = map.queryRenderedFeatures({ layers: ["ooh-clusters"] });
+        const pts = map.queryRenderedFeatures({ layers: ["ooh-markers"] });
+        const all = markers;
+        const leads = all.filter((m) => !m.image && m.status !== "verified").length;
+        const verified = all.filter((m) => m.status === "verified").length;
+        setCounts({ spots: all.length, clusters: cl.length, leads, verified });
+      } catch (e) {}
+    };
+    recompute();
+    map.on("moveend", recompute);
+    map.on("zoomend", recompute);
+    map.on("sourcedata", recompute);
+    return () => {
+      map.off("moveend", recompute);
+      map.off("zoomend", recompute);
+      map.off("sourcedata", recompute);
+    };
+  }, [ready, markers]);
+
+  useEffect(() => {
+    const map = mapRef.current;
     if (!userLoc || !readyRef.current || !map || userCenteredRef.current) return;
     userCenteredRef.current = true;
     const pt = { type: "Feature", geometry: { type: "Point", coordinates: [userLoc.lng, userLoc.lat] }, properties: {} };
@@ -322,6 +347,27 @@ export default function Globe3D({ markers, selectedId, hoverId, onSelect, userLo
         <div className="absolute bottom-3 left-3 h-4 w-4 border-b border-l border-ozone/40" />
         <div className="absolute bottom-3 right-3 h-4 w-4 border-b border-r border-ozone/40" />
         <span className="absolute left-3 top-3 pl-6 font-mono text-[8px] uppercase tracking-[0.3em] text-ozone/40">// global surveillance grid · cluster intel</span>
+      </div>
+
+      {/* live cluster + spot counters */}
+      <div className="pointer-events-none absolute left-3 top-16 z-[1000] flex flex-col gap-1 border border-slate2/70 bg-void/85 backdrop-blur-md">
+        <div className="flex items-center gap-2 border-b border-slate2/60 px-2.5 py-1.5">
+          <span className="h-1.5 w-1.5 rounded-full bg-ozone animate-pulse" />
+          <span className="font-mono text-[8px] uppercase tracking-[0.25em] text-dim">Field tally</span>
+        </div>
+        <div className="grid grid-cols-2 gap-px bg-slate2/40">
+          {[
+            { k: "Spots", v: counts.spots, c: "#EDFF00" },
+            { k: "Clusters", v: counts.clusters, c: "#FF5C00" },
+            { k: "Leads", v: counts.leads, c: "#FF5C00" },
+            { k: "Verified", v: counts.verified, c: "#39FF14" },
+          ].map((x) => (
+            <div key={x.k} className="bg-void px-2.5 py-1.5">
+              <div className="font-mono text-[7px] uppercase tracking-[0.2em] text-dim">{x.k}</div>
+              <div className="font-mono text-sm font-bold tabular" style={{ color: x.c }}>{x.v}</div>
+            </div>
+          ))}
+        </div>
       </div>
       {interactive && (
         <div className="pointer-events-none absolute bottom-12 left-3 flex flex-col gap-1.5">
