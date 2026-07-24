@@ -53,6 +53,7 @@ export default function Map() {
   const [query, setQuery] = useState("");
   const [selectedId, setSelectedId] = useState(null);
   const [view, setView] = useState("globe");
+  const [userLoc, setUserLoc] = useState(null);
   const [tourOpen, setTourOpen] = useState(false);
   const [finderOpen, setFinderOpen] = useState(false);
   const [captureOpen, setCaptureOpen] = useState(false);
@@ -89,6 +90,19 @@ export default function Map() {
       cancelled = true;
       if (unsub) unsub();
     };
+  }, []);
+
+  useEffect(() => {
+    if (!navigator.geolocation) return;
+    let cancelled = false;
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        if (!cancelled) setUserLoc({ lat: pos.coords.latitude, lng: pos.coords.longitude });
+      },
+      () => {},
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 }
+    );
+    return () => { cancelled = true; };
   }, []);
 
   const filtered = useMemo(() => {
@@ -191,9 +205,9 @@ export default function Map() {
               </button>
             </div>
             {view === "globe" ? (
-              <Globe3D markers={filtered} selectedId={selectedId} onSelect={setSelectedId} />
+              <Globe3D markers={filtered} selectedId={selectedId} onSelect={setSelectedId} userLoc={userLoc} />
             ) : (
-              <LocationMap markers={filtered} selectedId={selectedId} onSelect={setSelectedId} />
+              <LocationMap markers={filtered} selectedId={selectedId} onSelect={setSelectedId} userLoc={userLoc} />
             )}
             <div className="absolute right-3 top-3 z-[1000] flex gap-1.5">
               <button

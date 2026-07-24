@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
@@ -19,15 +19,36 @@ const selIcon = L.divIcon({
   popupAnchor: [0, -10],
 });
 
+const userIcon = L.divIcon({
+  className: "ooh-pin ooh-pin--user",
+  html: `<span style="display:block;width:16px;height:16px;border-radius:50%;background:#1F51FF;border:2px solid #fff;box-shadow:0 0 0 4px rgba(31,81,255,0.22),0 0 14px rgba(31,81,255,0.6)"></span>`,
+  iconSize: [16, 16],
+  iconAnchor: [8, 8],
+  popupAnchor: [0, -10],
+});
+
 import { thumbHTML, metaFor } from "@/components/ooh/map/LocationThumb";
 
 function FitBounds({ markers }) {
   const map = useMap();
+  const didFit = useRef(false);
   useEffect(() => {
-    if (!markers.length) return;
+    if (didFit.current || !markers.length) return;
+    didFit.current = true;
     const bounds = L.latLngBounds(markers.map((m) => [m.lat, m.lng]));
     map.fitBounds(bounds, { padding: [48, 48], maxZoom: 16 });
   }, [markers, map]);
+  return null;
+}
+
+function FlyToUser({ userLoc }) {
+  const map = useMap();
+  const done = useRef(false);
+  useEffect(() => {
+    if (!userLoc || done.current) return;
+    done.current = true;
+    map.flyTo([userLoc.lat, userLoc.lng], 14, { duration: 0.8 });
+  }, [userLoc, map]);
   return null;
 }
 
@@ -41,7 +62,7 @@ function FlyTo({ selectedId, markers }) {
   return null;
 }
 
-export default function LocationMap({ markers, selectedId, onSelect }) {
+export default function LocationMap({ markers, selectedId, onSelect, userLoc }) {
   const pins = useMemo(() => markers.filter((m) => isFinite(m.lat) && isFinite(m.lng)), [markers]);
 
   return (
@@ -60,6 +81,20 @@ export default function LocationMap({ markers, selectedId, onSelect }) {
       />
       <FitBounds markers={pins} />
       <FlyTo selectedId={selectedId} markers={pins} />
+      <FlyToUser userLoc={userLoc} />
+      {userLoc && (
+        <Marker position={[userLoc.lat, userLoc.lng]} icon={userIcon}>
+          <Popup>
+            <div style={{ fontFamily: "Inter Tight, sans-serif", padding: "4px 6px" }}>
+              <div style={{ fontSize: 9, textTransform: "uppercase", letterSpacing: "0.2em", fontWeight: 700, color: "#1F51FF" }}>Your position</div>
+              <div style={{ fontSize: 13, fontWeight: 700, marginTop: 2 }}>You are here</div>
+              <div style={{ fontSize: 9, color: "hsl(var(--muted-foreground))", marginTop: 4, fontFamily: "monospace" }}>
+                {userLoc.lat.toFixed(4)}, {userLoc.lng.toFixed(4)}
+              </div>
+            </div>
+          </Popup>
+        </Marker>
+      )}
       {pins.map((m, i) => (
         <Marker
           key={m.id || i}

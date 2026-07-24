@@ -55,13 +55,14 @@ function buildFC(markers, selectedId) {
   };
 }
 
-export default function Globe3D({ markers, selectedId, onSelect }) {
+export default function Globe3D({ markers, selectedId, onSelect, userLoc }) {
   const containerRef = useRef(null);
   const mapRef = useRef(null);
   const popupRef = useRef(null);
   const readyRef = useRef(false);
   const dataRef = useRef({ type: "FeatureCollection", features: [] });
   const onSelectRef = useRef(onSelect);
+  const userCenteredRef = useRef(false);
   onSelectRef.current = onSelect;
 
   const [ready, setReady] = useState(false);
@@ -167,6 +168,20 @@ export default function Globe3D({ markers, selectedId, onSelect }) {
       }
     }
   }, [markers, selectedId]);
+
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!userLoc || !readyRef.current || !map || userCenteredRef.current) return;
+    userCenteredRef.current = true;
+    const pt = { type: "Feature", geometry: { type: "Point", coordinates: [userLoc.lng, userLoc.lat] }, properties: {} };
+    if (!map.getSource("ooh-user")) {
+      map.addSource("ooh-user", { type: "geojson", data: pt });
+      map.addLayer({ id: "ooh-user", type: "circle", source: "ooh-user", paint: { "circle-radius": 8, "circle-color": "#1F51FF", "circle-stroke-color": "#ffffff", "circle-stroke-width": 2, "circle-blur": 0.2 } });
+    } else {
+      map.getSource("ooh-user").setData(pt);
+    }
+    map.flyTo({ center: [userLoc.lng, userLoc.lat], zoom: Math.max(map.getZoom(), 12), duration: 800 });
+  }, [userLoc, ready]);
 
   return (
     <div className="absolute inset-0">
