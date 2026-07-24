@@ -4,6 +4,7 @@ import HorizonProgress from "@/components/ooh/HorizonProgress";
 import CryptoDonations from "@/components/ooh/campaign/CryptoDonations";
 import StripeDonate from "@/components/ooh/campaign/StripeDonate";
 import LeadCapture from "@/components/ooh/campaign/LeadCapture";
+import WalletButton from "@/components/ooh/WalletButton";
 import { CAMPAIGN } from "@/components/ooh/fundConfig";
 import { Megaphone, CheckCircle2 } from "lucide-react";
 
@@ -32,6 +33,11 @@ export default function Campaign() {
               <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-ozone">Contribution received — gratitude logged in the public record.</span>
             </div>
           )}
+
+          <div className="mt-6 flex flex-wrap items-center gap-3">
+            <WalletButton chain="solana" />
+            <span className="font-mono text-[9px] uppercase tracking-[0.25em] text-dim">// mint wallet · Solana</span>
+          </div>
 
           <div className="mt-8 border border-slate2/60 bg-card p-5">
             <div className="flex items-end justify-between font-mono text-[10px] uppercase tracking-[0.25em]">

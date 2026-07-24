@@ -6,6 +6,7 @@ import ZoraCoinGrid from "@/components/ooh/zora/ZoraCoinGrid";
 import ZoraHolderConstellation from "@/components/ooh/zora/ZoraHolderConstellation";
 import LunarMarketOverlay from "@/components/ooh/zora/LunarMarketOverlay";
 import CommandCenter from "@/components/ooh/CommandCenter";
+import WalletButton from "@/components/ooh/WalletButton";
 
 export default function Zora() {
   const [commandOpen, setCommandOpen] = useState(false);
@@ -22,6 +23,10 @@ export default function Zora() {
         <p className="mt-4 max-w-xl font-display text-sm leading-[1.5] text-darkgray">
           Live market telemetry for the on-chain layer of OOH Earth — content coins, creator coins, and the lunar cycles that frame each action window. Real data, streamed from the chain.
         </p>
+        <div className="mt-6 flex items-center gap-3">
+          <WalletButton chain="evm" />
+          <span className="font-mono text-[9px] uppercase tracking-[0.25em] text-dim">// connect to mint content coins on Zora</span>
+        </div>
       </section>
 
       <section className="px-5 py-10 md:px-8 md:py-14">
