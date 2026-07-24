@@ -47,10 +47,20 @@ export default function FieldStatsHud() {
   }, []);
 
   return (
-    <div className="pointer-events-none absolute inset-x-0 bottom-0 z-[950] border-t border-ozone/25 bg-void backdrop-blur-md">
-      <div className="flex h-7 items-center overflow-hidden [text-shadow:0_1px_3px_rgba(0,0,0,0.95)]">
-        <div className="flex shrink-0 items-center gap-1.5 border-r border-slate2/60 px-3">
-          <span className="h-1.5 w-1.5 animate-blink rounded-full bg-ozone" />
+    <div className="pointer-events-none absolute inset-x-0 bottom-0 z-[950] border-t border-ozone/25 bg-void backdrop-blur-md shadow-[0_-8px_24px_rgba(0,0,0,0.7)]">
+      {/* 4:3 TV-report crawl frame */}
+      <div className="relative flex h-8 items-center overflow-hidden [text-shadow:0_1px_3px_rgba(0,0,0,0.95)]">
+        {/* scanlines */}
+        <div className="crt-scanlines pointer-events-none absolute inset-0 z-10 opacity-70" />
+        {/* vignette / tube curvature */}
+        <div className="pointer-events-none absolute inset-0 z-10 shadow-[inset_0_0_28px_8px_rgba(0,0,0,0.65)]" />
+        {/* edge fades so the feed disappears into the frame */}
+        <div className="pointer-events-none absolute inset-y-0 left-0 z-20 w-16 bg-gradient-to-r from-void to-transparent" />
+        <div className="pointer-events-none absolute inset-y-0 right-0 z-20 w-16 bg-gradient-to-l from-void to-transparent" />
+
+        <div className="relative z-0 flex shrink-0 items-center gap-1.5 border-r border-slate2/60 bg-void px-3">
+          <span className="h-1.5 w-1.5 animate-blink rounded-full bg-[#FF0033] shadow-[0_0_6px_rgba(255,0,51,0.8)]" />
+          <span className="font-mono text-[9px] font-bold uppercase tracking-[0.25em] text-[#FF0033]">LIVE</span>
           <span className="font-mono text-[9px] font-bold uppercase tracking-[0.25em] text-ozone">FIELD PULSE</span>
         </div>
         {items.length ? (
