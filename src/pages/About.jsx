@@ -8,14 +8,14 @@ import HorizonProgress from "@/components/ooh/HorizonProgress";
 import ViewfinderCursor from "@/components/ooh/ViewfinderCursor";
 
 const GALLERY = [
-  "https://oohearth.app/wp-content/uploads/2024/11/AdidasBillboard30-768x512.jpg",
-  "https://oohearth.app/wp-content/uploads/2024/12/signal-2024-02-05-222059_002-768x576.jpeg",
-  "https://oohearth.app/wp-content/uploads/2024/11/IMG_2919-768x576.jpg",
-  "https://oohearth.app/wp-content/uploads/2024/11/IMG_2899-3-768x576.jpg",
-  "https://oohearth.app/wp-content/uploads/2024/11/IMG_2939-768x1024.jpg",
-  "https://oohearth.app/wp-content/uploads/2024/11/IMG_1557-768x576.jpg",
-  "https://oohearth.app/wp-content/uploads/2024/11/IMG_1555-2-768x1024.jpg",
-  "https://oohearth.app/wp-content/uploads/2024/11/IMG_0709-768x576.jpg",
+  "https://ooh.earth/wp-content/uploads/2024/11/AdidasBillboard30-768x512.jpg",
+  "https://ooh.earth/wp-content/uploads/2024/12/signal-2024-02-05-222059_002-768x576.jpeg",
+  "https://ooh.earth/wp-content/uploads/2024/11/IMG_2919-768x576.jpg",
+  "https://ooh.earth/wp-content/uploads/2024/11/IMG_2899-3-768x576.jpg",
+  "https://ooh.earth/wp-content/uploads/2024/11/IMG_2939-768x1024.jpg",
+  "https://ooh.earth/wp-content/uploads/2024/11/IMG_1557-768x576.jpg",
+  "https://ooh.earth/wp-content/uploads/2024/11/IMG_1555-2-768x1024.jpg",
+  "https://ooh.earth/wp-content/uploads/2024/11/IMG_0709-768x576.jpg",
 ];
 
 export default function About() {
@@ -32,7 +32,7 @@ export default function About() {
         {/* Hero */}
         <section className="relative flex min-h-[78vh] items-end overflow-hidden">
           <img
-            src="https://oohearth.app/wp-content/uploads/2025/01/517shots_so.jpeg"
+            src="https://ooh.earth/wp-content/uploads/2025/01/517shots_so.jpeg"
             alt="OOH field intervention"
             className="absolute inset-0 h-full w-full object-cover opacity-50"
           />

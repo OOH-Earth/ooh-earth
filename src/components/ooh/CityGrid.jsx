@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 import { Radio, ArrowUpRight } from "lucide-react";
 
 const NORTH = [
-  { city: "London", country: "United Kingdom", logged: 14, level: 35, img: "https://oohearth.app/wp-content/uploads/2026/03/04_Lindsay-Grime_Were-Hiring_Shell-AGM-2024_credit-Brandalism_12x9-2.jpeg" },
+  { city: "London", country: "United Kingdom", logged: 14, level: 35, img: "https://ooh.earth/wp-content/uploads/2026/03/04_Lindsay-Grime_Were-Hiring_Shell-AGM-2024_credit-Brandalism_12x9-2.jpeg" },
   { city: "New York", country: "United States", logged: 0, level: 0 },
   { city: "Tokyo", country: "Japan", logged: 0, level: 0 },
   { city: "Berlin", country: "Germany", logged: 0, level: 0 },
@@ -17,7 +17,7 @@ const SOUTH = [
   { city: "Lagos", country: "Nigeria", logged: 0, level: 0 },
   { city: "Mumbai", country: "India", logged: 0, level: 0 },
   { city: "Jakarta", country: "Indonesia", logged: 0, level: 0 },
-  { city: "Bangkok", country: "Thailand", logged: 10, level: 40, img: "https://oohearth.app/wp-content/uploads/2026/05/1777896004-01-d21q.webp" },
+  { city: "Bangkok", country: "Thailand", logged: 10, level: 40, img: "https://ooh.earth/wp-content/uploads/2026/05/1777896004-01-d21q.webp" },
   { city: "Nairobi", country: "Kenya", logged: 0, level: 0 },
   { city: "Bogotá", country: "Colombia", logged: 0, level: 0 },
   { city: "Manila", country: "Philippines", logged: 0, level: 0 },
