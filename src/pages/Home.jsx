@@ -9,6 +9,8 @@ import AirCommons from "@/components/ooh/AirCommons";
 import CarbonCounter from "@/components/ooh/CarbonCounter";
 import OffenderRegistry from "@/components/ooh/OffenderRegistry";
 import NewsTicker from "@/components/ooh/NewsTicker";
+import OperativeNetwork from "@/components/ooh/OperativeNetwork";
+import KlimaWidget from "@/components/ooh/KlimaWidget";
 import Manifesto from "@/components/ooh/Manifesto";
 import OnChain from "@/components/ooh/OnChain";
 import ImpactLedger from "@/components/ooh/ImpactLedger";
@@ -37,8 +39,10 @@ export default function Home() {
         <AirCommons />
         <CarbonCounter />
         <OffenderRegistry />
+        <OperativeNetwork />
         <Manifesto />
         <OnChain />
+        <KlimaWidget />
         <ImpactLedger />
       </main>
 
