@@ -1,5 +1,6 @@
 import { Crosshair, Megaphone } from "lucide-react";
 import { Link } from "react-router-dom";
+import ThemeToggle from "@/components/ooh/ThemeToggle";
 
 export default function Nav({ onCommand }) {
   return (
@@ -26,6 +27,8 @@ export default function Nav({ onCommand }) {
         >
           <Megaphone className="h-3.5 w-3.5" /> Report
         </Link>
+
+        <ThemeToggle />
 
         <button
           onClick={onCommand}

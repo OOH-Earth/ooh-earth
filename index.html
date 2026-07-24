@@ -22,6 +22,14 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
     <title>OOH.EARTH — The Orbital Perspective</title>
+    <script>
+      (function () {
+        try {
+          var t = localStorage.getItem("ooh-theme") || "dark";
+          if (t === "light") document.documentElement.classList.add("light");
+        } catch (e) {}
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>

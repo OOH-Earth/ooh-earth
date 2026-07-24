@@ -13,10 +13,10 @@ module.exports = {
   		colors: {
   			background: 'hsl(var(--background))',
   			foreground: 'hsl(var(--foreground))',
-  			void: '#000000',
-  			silver: '#F1F1F1',
-  			ozone: '#EDFF00',
-  			flare: '#FF5C00',
+  			void: 'rgb(var(--c-void) / <alpha-value>)',
+  			silver: 'rgb(var(--c-silver) / <alpha-value>)',
+  			ozone: 'rgb(var(--c-ozone) / <alpha-value>)',
+  			flare: 'rgb(var(--c-flare) / <alpha-value>)',
   			brand: {
   				yellow: '#EDFF00',
   				pink: '#FF5470',
@@ -28,9 +28,9 @@ module.exports = {
   				gray: '#B2B2B2',
   				smoke: '#F1F1F1'
   			},
-  			slate2: '#333333',
-  			dim: '#666666',
-  			darkgray: '#999999',
+  			slate2: 'rgb(var(--c-slate2) / <alpha-value>)',
+  			dim: 'rgb(var(--c-dim) / <alpha-value>)',
+  			darkgray: 'rgb(var(--c-darkgray) / <alpha-value>)',
   			card: {
   				DEFAULT: 'hsl(var(--card))',
   				foreground: 'hsl(var(--card-foreground))'

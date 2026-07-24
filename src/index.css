@@ -29,6 +29,40 @@
     --font-body: "Inter Tight", ui-sans-serif, system-ui, sans-serif;
     --font-display: "Inter Tight", ui-sans-serif, system-ui, sans-serif;
     --font-mono: "Inter Tight", ui-sans-serif, system-ui, sans-serif;
+
+    /* OOH brand channel tokens — themeable (dark default · V3.1) */
+    --c-void: 0 0 0;
+    --c-silver: 241 241 241;
+    --c-slate2: 51 51 51;
+    --c-dim: 102 102 102;
+    --c-darkgray: 153 153 153;
+    --c-ozone: 237 255 0;
+    --c-flare: 255 92 0;
+  }
+
+  /* Light theme — "Solar Smoke" palette (Brand V3.2 evolution) */
+  .light {
+    --background: 0 0% 96%;
+    --foreground: 0 0% 5%;
+    --card: 0 0% 99%;
+    --card-foreground: 0 0% 5%;
+    --popover: 0 0% 99%;
+    --popover-foreground: 0 0% 5%;
+    --primary: 0 0% 5%;
+    --primary-foreground: 0 0% 98%;
+    --secondary: 0 0% 92%;
+    --secondary-foreground: 0 0% 5%;
+    --muted: 0 0% 92%;
+    --muted-foreground: 0 0% 40%;
+    --border: 0 0% 86%;
+    --input: 0 0% 86%;
+    --c-void: 244 244 244;
+    --c-silver: 10 10 10;
+    --c-slate2: 222 222 222;
+    --c-dim: 110 110 110;
+    --c-darkgray: 70 70 70;
+    --c-ozone: 176 134 11;
+    --c-flare: 255 92 0;
   }
 }
 
@@ -46,7 +80,7 @@
 
   body {
     @apply bg-background text-foreground font-body;
-    background-color: #000000;
+    background-color: hsl(var(--background));
     overflow-x: hidden;
   }
 
