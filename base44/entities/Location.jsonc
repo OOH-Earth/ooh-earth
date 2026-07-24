@@ -15,6 +15,7 @@
         "projection",
         "sticker",
         "mural",
+        "transit",
         "other"
       ],
       "default": "other"
