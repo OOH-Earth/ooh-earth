@@ -9,7 +9,7 @@ export const CAMPAIGN = {
   wallets: {
     btc: "",
     eth: "",
-    sol: "",
+    sol: "EusJyb6R7vZEnmCLoJXBXui6inozZguAFjkKJNGEaafx",
     usdc: "",
     polygon: "",
   },
