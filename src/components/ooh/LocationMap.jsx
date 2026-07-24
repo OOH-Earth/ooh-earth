@@ -19,15 +19,7 @@ const selIcon = L.divIcon({
   popupAnchor: [0, -10],
 });
 
-const TYPE_LABEL = {
-  billboard: "Billboard",
-  digital: "Digital",
-  painted: "Painted",
-  projection: "Projection",
-  sticker: "Sticker",
-  mural: "Mural",
-  other: "Other",
-};
+import { thumbHTML, metaFor } from "@/components/ooh/map/LocationThumb";
 
 function FitBounds({ markers }) {
   const map = useMap();
@@ -77,17 +69,11 @@ export default function LocationMap({ markers, selectedId, onSelect }) {
         >
           <Popup>
             <div style={{ width: 220, fontFamily: "Inter Tight, sans-serif" }}>
-              {m.image && (
-                <img
-                  src={m.image ? m.image.replace(/-\d+x\d+(?=\.\w+$)/, "") : ""}
-                  alt={m.title}
-                  style={{ width: "100%", height: 110, objectFit: "cover", display: "block", background: "#111" }}
-                />
-              )}
+              <div dangerouslySetInnerHTML={{ __html: thumbHTML(m) }} />
               <div style={{ padding: "10px 2px 2px" }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 4 }}>
                   <span style={{ fontSize: 9, textTransform: "uppercase", letterSpacing: "0.2em", fontWeight: 700, color: "#EDFF00" }}>
-                    {TYPE_LABEL[m.type] || m.type}
+                    {metaFor(m.type).label}
                   </span>
                   <span
                     style={{ width: 5, height: 5, borderRadius: 999, background: m.status === "verified" ? "#39FF14" : "#FF5C00" }}

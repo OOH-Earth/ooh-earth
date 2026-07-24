@@ -1,14 +1,5 @@
 import { MapPin } from "lucide-react";
-
-const TYPE_LABEL = {
-  billboard: "Billboard",
-  digital: "Digital",
-  painted: "Painted",
-  projection: "Projection",
-  sticker: "Sticker",
-  mural: "Mural",
-  other: "Other",
-};
+import LocationThumb, { metaFor } from "@/components/ooh/map/LocationThumb";
 
 export default function LocationCard({ m, selected, onSelect }) {
   return (
@@ -19,14 +10,10 @@ export default function LocationCard({ m, selected, onSelect }) {
       }`}
       style={selected ? { borderLeft: "2px solid #EDFF00" } : undefined}
     >
-      {m.image ? (
-        <img src={m.image} alt={m.title} className="h-14 w-20 shrink-0 object-cover" />
-      ) : (
-        <div className="h-14 w-20 shrink-0 bg-slate2/40" />
-      )}
+      <LocationThumb m={m} className="h-14 w-20 border border-slate2/40" />
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-1.5">
-          <span className="font-mono text-[9px] uppercase tracking-[0.2em] text-ozone">{TYPE_LABEL[m.type] || m.type}</span>
+          <span className="font-mono text-[9px] uppercase tracking-[0.2em] text-ozone">{metaFor(m.type).label}</span>
           <span
             className="h-1 w-1 rounded-full"
             style={{ backgroundColor: m.status === "verified" ? "#39FF14" : "#FF5C00" }}

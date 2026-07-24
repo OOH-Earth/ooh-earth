@@ -4,24 +4,16 @@ import { ZoomIn, ZoomOut, Compass, RotateCw } from "lucide-react";
 import "maplibre-gl/dist/maplibre-gl.css";
 import GlobeHud from "@/components/ooh/GlobeHud";
 
-const TYPE_LABEL = {
-  billboard: "Billboard",
-  digital: "Digital",
-  painted: "Painted",
-  projection: "Projection",
-  sticker: "Sticker",
-  mural: "Mural",
-  other: "Other",
-};
+import { thumbHTML, metaFor } from "@/components/ooh/map/LocationThumb";
 
 const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 
 function popupHTML(m) {
-  const type = TYPE_LABEL[m.type] || m.type || "Other";
+  const type = metaFor(m.type).label;
   const status = m.status || "pending";
   return `
     <div style="width:220px;font-family:'Inter Tight',sans-serif">
-      ${m.image ? `<img src="${esc(String(m.image).replace(/-\d+x\d+(?=\.\w+$)/, ""))}" alt="${esc(m.title)}" style="width:100%;height:110px;object-fit:cover;display:block;background:#111" />` : ""}
+      ${thumbHTML(m)}
       <div style="padding:10px 2px 2px">
         <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px">
           <span style="font-size:9px;text-transform:uppercase;letter-spacing:0.2em;font-weight:700;color:#EDFF00">${esc(type)}</span>

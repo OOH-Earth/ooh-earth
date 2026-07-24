@@ -4,6 +4,7 @@ import Nav from "@/components/ooh/Nav";
 import HorizonProgress from "@/components/ooh/HorizonProgress";
 import { Loader2, LogOut, Check, X, MapPin, ShieldCheck, ArrowUpRight, RefreshCw } from "lucide-react";
 import { Link } from "react-router-dom";
+import LocationThumb from "@/components/ooh/map/LocationThumb";
 
 const STATUS_BADGE = {
   pending: "border-ozone/50 text-ozone",
@@ -14,9 +15,7 @@ const STATUS_BADGE = {
 function Row({ r, onVerify, busy }) {
   return (
     <div className="flex items-center gap-3 border border-slate2/50 bg-card p-3">
-      <div className="h-14 w-14 shrink-0 overflow-hidden bg-void">
-        {r.image_url ? <img src={r.image_url} alt="" className="h-full w-full object-cover" /> : <div className="flex h-full w-full items-center justify-center"><MapPin className="h-4 w-4 text-dim" /></div>}
-      </div>
+      <LocationThumb m={{ image: r.image_url, type: r.type, title: r.title }} className="h-14 w-14 border border-slate2/50" />
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-2">
           <span className="truncate font-display text-sm font-bold text-silver">{r.title}</span>
