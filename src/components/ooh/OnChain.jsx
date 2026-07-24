@@ -20,7 +20,7 @@ export default function OnChain() {
             </h2>
           </div>
           <p className="max-w-sm font-display text-sm font-normal leading-[1.4] text-darkgray">
-            100% grassroots. Every transaction funds OOH.EARTH — a global platform for documenting corporate advertising offenses and coordinating creative resistance.
+            An SDG-aligned, community-owned treasury. Every transaction funds OOH.EARTH — open infrastructure for documenting corporate advertising offenses and coordinating creative resistance across the Global South.
           </p>
         </div>
 

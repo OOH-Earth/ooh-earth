@@ -2,11 +2,11 @@ import { useState } from "react";
 import { Send, Check } from "lucide-react";
 
 const SERVICES = [
-  { id: "mapping", label: "Field mapping", detail: "Documenting billboard offenses across global coordinates." },
-  { id: "production", label: "Creative production", detail: "Design and fabrication of public-space interventions." },
-  { id: "strategy", label: "Resistance strategy", detail: "Placement planning and creative direction at scale." },
-  { id: "placement", label: "Site placement", detail: "Securing and activating high-impact locations." },
-  { id: "documentation", label: "Documentation", detail: "Archiving the visual world for the public record." },
+  { id: "mapping", label: "Field cartography", detail: "Documenting billboard offenses across global coordinates — an open civic record of the visual commons." },
+  { id: "production", label: "Creative production", detail: "Design and fabrication of public-space interventions that reclaim attention from corporate enclosure." },
+  { id: "strategy", label: "Disruption strategy", detail: "Placement planning and creative direction at city and regional scale, mapped to UN SDG outcomes." },
+  { id: "placement", label: "Site activation", detail: "Securing and activating high-impact public locations with local chapters." },
+  { id: "documentation", label: "Public-record archiving", detail: "Archiving the visual world as evidence — greenwashing, extraction and disinformation on the record." },
 ];
 
 export default function ImpactLedger() {
@@ -29,7 +29,7 @@ export default function ImpactLedger() {
             Capabilities
           </h2>
           <p className="mt-4 max-w-md font-display text-sm font-normal leading-[1.4] text-darkgray">
-            A union of advertising industry veterans and street artists. Hover a discipline to route it into the inquiry manifest.
+            A union of advertising-industry veterans and street artists operating as a non-state disruption agency. Hover a discipline to route it into the inquiry manifest.
           </p>
 
           <ul className="mt-8 divide-y divide-slate2/40 border-y border-slate2/40">

@@ -11,7 +11,7 @@ export default function SiteFooter({ onCommand }) {
             </div>
             <p className="mt-1 font-mono text-[10px] uppercase tracking-[0.3em] text-dim">Out Of Hell™ · Adbusting Manual</p>
             <p className="mt-4 max-w-sm font-display text-sm font-normal leading-[1.4] text-darkgray">
-              Community-funded infrastructure for documenting the visual world and coordinating creative resistance. Corporate advertising has stolen our cities. We're mapping every crime.
+              A non-state disruption agency reclaiming the visual commons. Community-funded, union-made and aligned to the UN Sustainable Development Goals — documenting every corporate advertising offense on the public record.
             </p>
           </div>
 
@@ -21,7 +21,7 @@ export default function SiteFooter({ onCommand }) {
               <li><a href="https://www.instagram.com/oohstreetmaps/" target="_blank" rel="noreferrer" className="transition-colors hover:text-ozone">Instagram</a></li>
               <li><a href="https://twitch.tv/oohearth" target="_blank" rel="noreferrer" className="transition-colors hover:text-ozone">Twitch</a></li>
               <li><a href="https://zora.co/@oohearth" target="_blank" rel="noreferrer" className="transition-colors hover:text-ozone">Zora</a></li>
-              <li><a href="https://opensea.io/collection/oohex" target="_blank" rel="noreferrer" className="transition-colors hover:text-ozone">OOHEX</a></li>
+              <li><a href="https://pump.fun/BwVYGpW3wqe6UZWoLDj4UbxXc94n813MSJcDNePApump" target="_blank" rel="noreferrer" className="transition-colors hover:text-ozone">$OOHEX · pump.fun</a></li>
             </ul>
           </div>
 
@@ -37,7 +37,7 @@ export default function SiteFooter({ onCommand }) {
         </div>
 
         <div className="mt-12 flex flex-col items-start justify-between gap-4 border-t border-white/5 pt-6 md:flex-row md:items-center">
-          <span className="font-mono text-[10px] uppercase tracking-[0.25em] text-dim">© {new Date().getFullYear()} OOH Earth · Brand guidelines V3.1 · Union made</span>
+          <span className="font-mono text-[10px] uppercase tracking-[0.25em] text-dim">© {new Date().getFullYear()} OOH Earth · Aligned to UN SDGs · Brand V3.1 · Union made</span>
           <button onClick={onCommand} className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.25em] text-silver/50 transition-colors hover:text-ozone">
             <Crosshair className="h-3.5 w-3.5" /> Open Command Center
           </button>

@@ -11,6 +11,7 @@ const PLATES = [
     reach: "4.2M",
     duration: "30 DAYS",
     sentiment: "+78",
+    sdg: "11",
     img: "https://ooh.earth/wp-content/uploads/2026/05/1777896004-01-d21q.webp",
     href: "https://ooh.earth/location/1777896004/",
   },
@@ -23,6 +24,7 @@ const PLATES = [
     reach: "2.1M",
     duration: "14 DAYS",
     sentiment: "+91",
+    sdg: "11",
     img: "https://ooh.earth/wp-content/uploads/2026/05/1777667192-01-4t5x.webp",
     href: "https://ooh.earth/location/1777667192/",
   },
@@ -35,6 +37,7 @@ const PLATES = [
     reach: "8.9M",
     duration: "ONGOING",
     sentiment: "+64",
+    sdg: "9 · 17",
     img: "https://ooh.earth/wp-content/uploads/2026/05/1777649595-01-nw44.webp",
     href: "https://ooh.earth/location/1777649595/",
   },
@@ -47,6 +50,7 @@ const PLATES = [
     reach: "5.5M",
     duration: "21 DAYS",
     sentiment: "+72",
+    sdg: "11",
     img: "https://ooh.earth/wp-content/uploads/2026/05/1777635751-01-f5um.webp",
     href: "https://ooh.earth/location/1777635751/",
   },
@@ -59,6 +63,7 @@ const PLATES = [
     reach: "23M",
     duration: "LOGGED",
     sentiment: "+99",
+    sdg: "13 · 16",
     img: "https://ooh.earth/wp-content/uploads/2026/03/04_Lindsay-Grime_Were-Hiring_Shell-AGM-2024_credit-Brandalism_12x9-2.jpeg",
     href: "https://ooh.earth/location/1773075390/",
   },
@@ -89,7 +94,7 @@ export default function CampaignAtlas() {
             </h2>
           </div>
           <p className="max-w-sm font-display text-sm font-normal leading-[1.4] text-darkgray">
-            Not ads — interventions. Each plate is a creative resistance logged in the field, archived for the public record. Scroll laterally to traverse the meridian.
+            Not ads — interventions. Each plate is a creative resistance logged in the field and archived for the public record, mapped to its UN SDG outcome. Traverse the meridian to inspect.
           </p>
         </div>
       </div>
@@ -147,11 +152,12 @@ export default function CampaignAtlas() {
               </div>
             </div>
 
-            <div className="grid grid-cols-3 divide-x divide-slate2/40 border-t border-slate2/40">
+            <div className="grid grid-cols-4 divide-x divide-slate2/40 border-t border-slate2/40">
               {[
                 ["Category", p.cat],
                 ["Reach", p.reach],
                 ["Duration", p.duration],
+                ["SDG", p.sdg],
               ].map(([label, val]) => (
                 <div key={label} className="px-4 py-3">
                   <div className="font-mono text-[9px] uppercase tracking-[0.25em] text-dim">{label}</div>

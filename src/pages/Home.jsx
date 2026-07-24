@@ -1,6 +1,7 @@
 import { useState } from "react";
 import Nav from "@/components/ooh/Nav";
 import Hero from "@/components/ooh/Hero";
+import Mandate from "@/components/ooh/Mandate";
 import CampaignAtlas from "@/components/ooh/CampaignAtlas";
 import Manifesto from "@/components/ooh/Manifesto";
 import OnChain from "@/components/ooh/OnChain";
@@ -22,6 +23,7 @@ export default function Home() {
 
       <main>
         <Hero onCommand={openCommand} />
+        <Mandate />
         <CampaignAtlas />
         <Manifesto />
         <OnChain />

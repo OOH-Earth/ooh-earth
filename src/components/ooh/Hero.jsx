@@ -56,20 +56,20 @@ export default function Hero({ onCommand }) {
         </div>
 
         <div className="flex flex-1 flex-col items-center justify-center">
-          <span className="mb-4 font-mono text-[10px] uppercase tracking-[0.4em] text-ozone">Out Of Hell™ · Adbusting Manual</span>
+          <span className="mb-4 font-mono text-[10px] uppercase tracking-[0.4em] text-ozone">Out Of Hell™ · Disruption Agency</span>
           <h1 className="flex w-full items-center justify-between font-display text-[13vw] font-black uppercase leading-[0.85] tracking-[-0.03em] text-silver md:text-[11vw]">
             {WORD.split("").map((ch, i) => (
               <span key={i} className="inline-block">{ch === "." ? <span className="text-ozone">.</span> : ch}</span>
             ))}
           </h1>
           <p className="mt-6 max-w-xl text-center font-display text-sm font-medium leading-[1.4] text-silver/60 md:text-base">
-            The world's billboard liberation hotline. Mapping corporate advertising offenses and coordinating creative resistance — from the orbital perspective.
+            A non-state disruption agency reclaiming the visual commons. Mapping corporate advertising offenses and coordinating creative resistance — aligned to the UN Sustainable Development Goals, from the orbital perspective.
           </p>
         </div>
 
         <div className="flex items-end justify-between">
           <div className="max-w-xs font-mono text-[11px] leading-[1.4] text-silver/50">
-            Union made by advertising industry war veterans &amp; street artists. Community-funded infrastructure for documenting the visual world.
+            Union-made by advertising-industry veterans &amp; street artists. A non-state disruption agency accountable to the public record — community-funded, SDG-aligned.
           </div>
           <a href="#atlas" className="flex flex-col items-center gap-2 font-mono text-[10px] uppercase tracking-[0.3em] text-silver/60 transition-colors hover:text-ozone">
             <span>Descend</span>
