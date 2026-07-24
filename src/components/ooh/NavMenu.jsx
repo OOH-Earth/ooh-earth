@@ -1,7 +1,7 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Link } from "react-router-dom";
-import { X, ChevronRight } from "lucide-react";
+import { X, ChevronRight, ChevronDown } from "lucide-react";
 import { BUS_STOP_AREAS } from "@/components/ooh/busStops";
 
 const SITEMAP = [
@@ -54,10 +54,8 @@ const SITEMAP = [
   },
 ];
 
-const ROUTE_COUNT = SITEMAP.reduce(
-  (n, g) => n + (g.cats ? g.cats.reduce((c, a) => c + a.items.length, 0) : g.items.length),
-  0
-);
+const AREA_COUNT = BUS_STOP_AREAS.length;
+const STOP_COUNT = BUS_STOP_AREAS.reduce((n, a) => n + a.stops.length, 0);
 
 const list = {
   hidden: {},
@@ -71,62 +69,104 @@ const groupV = {
   exit: { opacity: 0, y: 8, transition: { duration: 0.15 } },
 };
 
-function SheetLinks({ onClose }) {
-  let n = 0;
+function BusStopsGroup({ variant, onClose }) {
+  const [open, setOpen] = useState(false);
+  const isSheet = variant === "sheet";
   return (
-    <motion.div variants={list} initial="hidden" animate="show" exit="exit" className="space-y-4">
-      {SITEMAP.map((g) => (
-        <motion.div key={g.group} variants={groupV}>
-          <div className="mb-1.5 flex items-center gap-2">
-            <span className="font-mono text-[9px] uppercase tracking-[0.3em] text-ozone">// {g.group}</span>
-            <span className="h-px flex-1 bg-slate2/40" />
-          </div>
-          {g.cats ? (
-            <div className="space-y-3">
-              {g.cats.map((c) => (
-                <div key={c.cat}>
+    <div>
+      <button
+        onClick={() => setOpen((v) => !v)}
+        aria-expanded={open}
+        className="group flex w-full items-center justify-between gap-2 px-1 transition-colors hover:bg-slate2/30"
+      >
+        <span className={`flex items-center gap-2 ${isSheet ? "" : "border-b border-slate2/40 pb-1"}`}>
+          <span className="font-mono text-[9px] uppercase tracking-[0.3em] text-ozone">// Bus Stops</span>
+          <span className="font-mono text-[8px] uppercase tracking-[0.2em] text-dim/50">{AREA_COUNT} areas · {STOP_COUNT}</span>
+        </span>
+        <ChevronDown className={`h-3.5 w-3.5 shrink-0 text-dim/50 transition-transform duration-200 ${open ? "rotate-180 text-ozone" : ""}`} />
+      </button>
+      <AnimatePresence initial={false}>
+        {open && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.2, ease: "easeOut" }}
+            className="overflow-hidden"
+          >
+            <div className={isSheet ? "space-y-3 pt-2" : "mb-2 space-y-2 pt-1"}>
+              {BUS_STOP_AREAS.map(({ area, stops }) => (
+                <div key={area}>
                   <div className="mb-1 flex items-center gap-1 font-mono text-[8px] uppercase tracking-[0.2em] text-dim/70">
                     <span className="text-dim/40">Field Ops</span>
                     <ChevronRight className="h-2.5 w-2.5 text-dim/30" />
                     <span className="text-dim/40">Bus Stops</span>
                     <ChevronRight className="h-2.5 w-2.5 text-dim/30" />
-                    <span className="text-ozone/80">{c.cat}</span>
-                    <span className="ml-1 text-dim/40">· {c.items.length}</span>
+                    <span className="text-ozone/80">{area}</span>
+                    <span className="ml-1 text-dim/40">· {stops.length}</span>
                   </div>
-                  <div className="grid grid-cols-2 gap-1">
-                    {c.items.map((l) => (
+                  <div className={isSheet ? "grid grid-cols-2 gap-1" : "grid grid-cols-1 gap-0"}>
+                    {stops.map((s) => (
                       <Link
-                        key={l.to}
-                        to={l.to}
+                        key={s.id}
+                        to={`/bus-stop/${s.id}`}
                         onClick={onClose}
-                        className="group truncate border border-slate2/40 px-2 py-1.5 font-display text-[11px] font-medium tracking-[-0.01em] text-silver/75 transition-colors hover:border-ozone/60 hover:bg-slate2/20 hover:text-ozone"
+                        className={
+                          isSheet
+                            ? "group truncate border border-slate2/40 px-2 py-1.5 font-display text-[11px] font-medium tracking-[-0.01em] text-silver/75 transition-colors hover:border-ozone/60 hover:bg-slate2/20 hover:text-ozone"
+                            : "group flex items-center justify-between truncate border-b border-slate2/15 px-1 py-1.5 transition-colors hover:bg-slate2/30"
+                        }
                       >
-                        {l.label}
+                        <span className="truncate font-display text-[12px] font-medium tracking-[-0.01em] text-silver/80 transition-colors group-hover:text-ozone">
+                          {s.name}
+                        </span>
+                        {!isSheet && <ChevronRight className="h-3 w-3 shrink-0 text-dim/30 transition-colors group-hover:text-ozone" />}
                       </Link>
                     ))}
                   </div>
                 </div>
               ))}
             </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
+
+function SheetLinks({ onClose }) {
+  let n = 0;
+  return (
+    <motion.div variants={list} initial="hidden" animate="show" exit="exit" className="space-y-4">
+      {SITEMAP.map((g) => (
+        <motion.div key={g.group} variants={groupV}>
+          {g.cats ? (
+            <BusStopsGroup variant="sheet" onClose={onClose} />
           ) : (
-            <div className="grid grid-cols-2 gap-1.5">
-              {g.items.map((l) => {
-                n += 1;
-                return (
-                  <Link
-                    key={l.to}
-                    to={l.to}
-                    onClick={onClose}
-                    className="group flex flex-col gap-1 border border-slate2/50 px-3 py-3 transition-colors hover:border-ozone/60 hover:bg-slate2/20"
-                  >
-                    <span className="font-mono text-[9px] tabular text-dim/50">{String(n).padStart(2, "0")}</span>
-                    <span className="font-display text-sm font-semibold tracking-[-0.02em] text-silver/85 transition-colors group-hover:text-ozone">
-                      {l.label}
-                    </span>
-                  </Link>
-                );
-              })}
-            </div>
+            <>
+              <div className="mb-1.5 flex items-center gap-2">
+                <span className="font-mono text-[9px] uppercase tracking-[0.3em] text-ozone">// {g.group}</span>
+                <span className="h-px flex-1 bg-slate2/40" />
+              </div>
+              <div className="grid grid-cols-2 gap-1.5">
+                {g.items.map((l) => {
+                  n += 1;
+                  return (
+                    <Link
+                      key={l.to}
+                      to={l.to}
+                      onClick={onClose}
+                      className="group flex flex-col gap-1 border border-slate2/50 px-3 py-3 transition-colors hover:border-ozone/60 hover:bg-slate2/20"
+                    >
+                      <span className="font-mono text-[9px] tabular text-dim/50">{String(n).padStart(2, "0")}</span>
+                      <span className="font-display text-sm font-semibold tracking-[-0.02em] text-silver/85 transition-colors group-hover:text-ozone">
+                        {l.label}
+                      </span>
+                    </Link>
+                  );
+                })}
+              </div>
+            </>
           )}
         </motion.div>
       ))}
@@ -140,59 +180,33 @@ function PopoverLinks({ onClose }) {
     <motion.div variants={list} initial="hidden" animate="show" exit="exit" className="grid grid-cols-2 gap-x-5 gap-y-4 px-2 py-2">
       {SITEMAP.map((g) => (
         <motion.div key={g.group} variants={groupV}>
-          <div className="mb-1 flex items-center gap-2 border-b border-slate2/40 pb-1">
-            <span className="font-mono text-[9px] uppercase tracking-[0.3em] text-ozone">// {g.group}</span>
-          </div>
           {g.cats ? (
-            <div className="mb-2 space-y-2">
-              {g.cats.map((c) => (
-                <div key={c.cat}>
-                  <div className="mb-0.5 flex items-center gap-1 font-mono text-[8px] uppercase tracking-[0.2em] text-dim/70">
-                    <span className="text-dim/40">Field Ops</span>
-                    <ChevronRight className="h-2.5 w-2.5 text-dim/30" />
-                    <span className="text-dim/40">Bus Stops</span>
-                    <ChevronRight className="h-2.5 w-2.5 text-dim/30" />
-                    <span className="text-ozone/80">{c.cat}</span>
-                    <span className="ml-1 text-dim/40">· {c.items.length}</span>
-                  </div>
-                  <div className="grid grid-cols-1 gap-0">
-                    {c.items.map((l) => (
-                      <Link
-                        key={l.to}
-                        to={l.to}
-                        onClick={onClose}
-                        className="group flex items-center justify-between truncate border-b border-slate2/15 px-1 py-1.5 transition-colors hover:bg-slate2/30"
-                      >
-                        <span className="truncate font-display text-[12px] font-medium tracking-[-0.01em] text-silver/80 transition-colors group-hover:text-ozone">
-                          {l.label}
-                        </span>
-                        <ChevronRight className="h-3 w-3 shrink-0 text-dim/30 transition-colors group-hover:text-ozone" />
-                      </Link>
-                    ))}
-                  </div>
-                </div>
-              ))}
-            </div>
+            <BusStopsGroup variant="popover" onClose={onClose} />
           ) : (
-            g.items.map((l) => {
-              n += 1;
-              return (
-                <Link
-                  key={l.to}
-                  to={l.to}
-                  onClick={onClose}
-                  className="group flex items-center justify-between border-b border-slate2/20 px-1 py-2 transition-colors hover:bg-slate2/30"
-                >
-                  <span className="flex items-baseline gap-2.5">
-                    <span className="font-mono text-[9px] tabular text-dim/50">{String(n).padStart(2, "0")}</span>
-                    <span className="font-display text-[13px] font-semibold tracking-[-0.02em] text-silver/85 transition-all duration-200 group-hover:translate-x-0.5 group-hover:text-ozone">
-                      {l.label}
+            <>
+              <div className="mb-1 flex items-center gap-2 border-b border-slate2/40 pb-1">
+                <span className="font-mono text-[9px] uppercase tracking-[0.3em] text-ozone">// {g.group}</span>
+              </div>
+              {g.items.map((l) => {
+                n += 1;
+                return (
+                  <Link
+                    key={l.to}
+                    to={l.to}
+                    onClick={onClose}
+                    className="group flex items-center justify-between border-b border-slate2/20 px-1 py-2 transition-colors hover:bg-slate2/30"
+                  >
+                    <span className="flex items-baseline gap-2.5">
+                      <span className="font-mono text-[9px] tabular text-dim/50">{String(n).padStart(2, "0")}</span>
+                      <span className="font-display text-[13px] font-semibold tracking-[-0.02em] text-silver/85 transition-all duration-200 group-hover:translate-x-0.5 group-hover:text-ozone">
+                        {l.label}
+                      </span>
                     </span>
-                  </span>
-                  <span className="h-1 w-1 rounded-full bg-dim/40 transition-colors group-hover:bg-ozone" />
-                </Link>
-              );
-            })
+                    <span className="h-1 w-1 rounded-full bg-dim/40 transition-colors group-hover:bg-ozone" />
+                  </Link>
+                );
+              })}
+            </>
           )}
         </motion.div>
       ))}
@@ -235,7 +249,7 @@ export default function NavMenu({ open, onClose }) {
               <span className="h-1 w-10 rounded-full bg-slate2" />
             </div>
             <div className="flex items-center justify-between px-5 py-3">
-              <span className="font-mono text-[9px] font-bold uppercase tracking-[0.3em] text-ozone">// Sitemap · {ROUTE_COUNT} routes</span>
+              <span className="font-mono text-[9px] font-bold uppercase tracking-[0.3em] text-ozone">// Sitemap</span>
               <button onClick={onClose} aria-label="Close menu" className="flex h-7 w-7 items-center justify-center text-dim transition-colors hover:text-flare">
                 <X className="h-4 w-4" />
               </button>
@@ -259,7 +273,7 @@ export default function NavMenu({ open, onClose }) {
             className="fixed right-3 top-[60px] z-[100] hidden max-h-[calc(100vh-76px)] w-[min(440px,calc(100vw-24px))] flex-col overflow-hidden border border-slate2 bg-void shadow-[0_24px_60px_rgba(0,0,0,0.6)] md:right-8 md:flex"
           >
             <div className="flex items-center justify-between border-b border-slate2/60 px-5 py-4">
-              <span className="font-mono text-[9px] font-bold uppercase tracking-[0.3em] text-ozone">// Sitemap · {ROUTE_COUNT} routes</span>
+              <span className="font-mono text-[9px] font-bold uppercase tracking-[0.3em] text-ozone">// Sitemap</span>
               <button onClick={onClose} aria-label="Close menu" className="flex h-7 w-7 items-center justify-center text-dim transition-colors hover:text-flare">
                 <X className="h-4 w-4" />
               </button>
