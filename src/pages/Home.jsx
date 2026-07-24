@@ -6,6 +6,9 @@ import CampaignAtlas from "@/components/ooh/CampaignAtlas";
 import CityGrid from "@/components/ooh/CityGrid";
 import MiniMapStack from "@/components/ooh/MiniMapStack";
 import AirCommons from "@/components/ooh/AirCommons";
+import CarbonCounter from "@/components/ooh/CarbonCounter";
+import OffenderRegistry from "@/components/ooh/OffenderRegistry";
+import NewsTicker from "@/components/ooh/NewsTicker";
 import Manifesto from "@/components/ooh/Manifesto";
 import OnChain from "@/components/ooh/OnChain";
 import ImpactLedger from "@/components/ooh/ImpactLedger";
@@ -26,11 +29,14 @@ export default function Home() {
 
       <main>
         <Hero onCommand={openCommand} />
+        <NewsTicker />
         <Mandate />
         <CampaignAtlas />
         <CityGrid />
         <MiniMapStack />
         <AirCommons />
+        <CarbonCounter />
+        <OffenderRegistry />
         <Manifesto />
         <OnChain />
         <ImpactLedger />
