@@ -18,6 +18,7 @@ import CarbonCounter from "@/components/ooh/CarbonCounter";
 import OffenderRegistry from "@/components/ooh/OffenderRegistry";
 import AdSpendDamage from "@/components/ooh/AdSpendDamage";
 import GlobeSection from "@/components/ooh/GlobeSection";
+import MetroKit from "@/components/ooh/MetroKit";
 import OperativeNetwork from "@/components/ooh/OperativeNetwork";
 import Leaderboard from "@/components/ooh/Leaderboard";
 import KlimaWidget from "@/components/ooh/KlimaWidget";
@@ -56,6 +57,7 @@ export default function Home() {
         <Hero onCommand={openCommand} />
         <MetroSlider />
         <GlobeSection />
+        <Reveal><MetroKit /></Reveal>
         <Reveal><Mandate /></Reveal>
         <SpotIdentifyTag />
         <Reveal><CampaignAtlas /></Reveal>
