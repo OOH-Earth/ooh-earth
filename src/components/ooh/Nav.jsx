@@ -6,6 +6,7 @@ import HapticsToggle from "@/components/ooh/cognitive/HapticsToggle";
 import SoundToggle from "@/components/ooh/SoundToggle";
 import ReadAloudToggle from "@/components/ooh/ReadAloudToggle";
 import ClimateClock from "@/components/ooh/ClimateClock";
+import TypeEnhancer from "@/components/ooh/TypeEnhancer";
 import SmartDashboard from "@/components/ooh/SmartDashboard";
 import NavMenu from "@/components/ooh/NavMenu";
 import OfflineSyncBadge from "@/components/ooh/OfflineSyncBadge";
@@ -18,7 +19,10 @@ export default function Nav({ onCommand }) {
   return (
     <header className="fixed inset-x-0 top-0 z-50 border-b border-white/5 bg-void/70 backdrop-blur-md" style={{ paddingTop: "env(safe-area-inset-top)" }}>
       <div className="flex items-center justify-between gap-2 px-3 py-3 md:px-8 md:py-4">
-        <ClimateClock onClick={() => setDashOpen(true)} />
+        <div className="flex items-center gap-2">
+          <ClimateClock onClick={() => setDashOpen(true)} />
+          <TypeEnhancer />
+        </div>
 
         <div className="flex items-center gap-1.5">
           <OfflineSyncBadge />
