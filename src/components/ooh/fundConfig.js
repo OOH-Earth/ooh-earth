@@ -10,7 +10,7 @@ export const CAMPAIGN = {
     btc: "bc1qafyzrynhgwd3c8wm536re7wk2q22qw5zmfqjzv",
     eth: "0xe286EB19b5a64DC41Ca76f58D8fd6d7F114C1c12",
     sol: "EusJyb6R7vZEnmCLoJXBXui6inozZguAFjkKJNGEaafx",
-    usdc: "",
-    polygon: "",
+    usdc: "0xe286EB19b5a64DC41Ca76f58D8fd6d7F114C1c12",
+    polygon: "0xe286EB19b5a64DC41Ca76f58D8fd6d7F114C1c12",
   },
 };

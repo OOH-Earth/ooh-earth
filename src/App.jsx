@@ -35,6 +35,10 @@ import LocationDetail from '@/pages/LocationDetail';
 import BusStops from '@/pages/BusStops';
 import BusStopDetail from '@/pages/BusStopDetail';
 import Careers from '@/pages/Careers';
+import Login from '@/pages/Login';
+import Register from '@/pages/Register';
+import ForgotPassword from '@/pages/ForgotPassword';
+import ResetPassword from '@/pages/ResetPassword';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -66,6 +70,10 @@ const AuthenticatedApp = () => {
     <motion.div key={location.pathname} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.18, ease: 'easeOut' }}>
     <Routes location={location}>
     {/* Add your page Route elements here */}
+    <Route path="/login" element={<Login />} />
+    <Route path="/register" element={<Register />} />
+    <Route path="/forgot-password" element={<ForgotPassword />} />
+    <Route path="/reset-password" element={<ResetPassword />} />
     <Route path="/" element={<Home />} />
     <Route path="/map" element={<Map />} />
     <Route path="/report" element={<Report />} />

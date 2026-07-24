@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Link } from "react-router-dom";
-import { X, ChevronRight, ChevronDown } from "lucide-react";
+import { X, ChevronRight, ChevronDown, Compass } from "lucide-react";
 import { BUS_STOP_AREAS } from "@/components/ooh/busStops";
 
 const SITEMAP = [
@@ -214,7 +214,7 @@ function PopoverLinks({ onClose }) {
   );
 }
 
-export default function NavMenu({ open, onClose }) {
+export default function NavMenu({ open, onClose, onTour }) {
   useEffect(() => {
     if (!open) return;
     const onKey = (e) => { if (e.key === "Escape") onClose(); };
@@ -250,9 +250,14 @@ export default function NavMenu({ open, onClose }) {
             </div>
             <div className="flex items-center justify-between px-5 py-3">
               <span className="font-mono text-[9px] font-bold uppercase tracking-[0.3em] text-ozone">// Sitemap</span>
-              <button onClick={onClose} aria-label="Close menu" className="flex h-7 w-7 items-center justify-center text-dim transition-colors hover:text-flare">
-                <X className="h-4 w-4" />
-              </button>
+              <div className="flex items-center gap-2">
+                <button onClick={() => { onTour?.(); onClose(); }} aria-label="Start tour" className="flex items-center gap-1.5 border border-slate2/60 px-2 py-1 font-mono text-[9px] font-bold uppercase tracking-[0.2em] text-darkgray transition-colors hover:border-ozone hover:text-ozone">
+                  <Compass className="h-3 w-3" /> Tour
+                </button>
+                <button onClick={onClose} aria-label="Close menu" className="flex h-7 w-7 items-center justify-center text-dim transition-colors hover:text-flare">
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
             </div>
             <div className="overflow-y-auto px-4 pb-5">
               <SheetLinks onClose={onClose} />

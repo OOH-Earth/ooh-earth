@@ -58,7 +58,7 @@ export default function Nav({ onCommand }) {
         </div>
       </div>
 
-      <NavMenu open={menuOpen} onClose={() => setMenuOpen(false)} />
+      <NavMenu open={menuOpen} onClose={() => setMenuOpen(false)} onTour={startTour} />
     </header>
   );
 }
