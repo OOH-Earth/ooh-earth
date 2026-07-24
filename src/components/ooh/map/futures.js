@@ -1,0 +1,18 @@
+// OOH Futures — placeholder Global South roadmap content.
+// Dashed "future" markers scattered among current locations to preview
+// expansion pillars across the global south. Not live spots yet.
+
+export const OOH_FUTURES = [
+  { id: "fut-lagos", city: "Lagos", country: "Nigeria", lat: 6.5244, lng: 3.3792, phase: "Q3 2026", pillar: "Mainland billboard liberation + adbust network" },
+  { id: "fut-nairobi", city: "Nairobi", country: "Kenya", lat: -1.286389, lng: 36.817223, phase: "Q4 2026", pillar: "Matatu transit ad index" },
+  { id: "fut-jakarta", city: "Jakarta", country: "Indonesia", lat: -6.2088, lng: 106.8456, phase: "Q4 2026", pillar: "Digital LED screen reclaim" },
+  { id: "fut-saopaulo", city: "São Paulo", country: "Brazil", lat: -23.5505, lng: -46.6333, phase: "Q1 2027", pillar: "Lei Cidade Limpa enforcement audit" },
+  { id: "fut-manila", city: "Manila", country: "Philippines", lat: 14.5995, lng: 120.9842, phase: "Q1 2027", pillar: "EDSA corridor billboard index" },
+  { id: "fut-dhaka", city: "Dhaka", country: "Bangladesh", lat: 23.8103, lng: 90.4125, phase: "Q2 2027", pillar: "Rickshaw art override program" },
+  { id: "fut-mumbai", city: "Mumbai", country: "India", lat: 19.076, lng: 72.8777, phase: "Q2 2027", pillar: "BEST bus panel inventory" },
+  { id: "fut-accra", city: "Accra", country: "Ghana", lat: 5.6037, lng: -0.187, phase: "Q3 2027", pillar: "Tro-tro route ad survey" },
+  { id: "fut-cairo", city: "Cairo", country: "Egypt", lat: 30.0444, lng: 31.2357, phase: "Q3 2027", pillar: "Tahrir night projection series" },
+  { id: "fut-bogota", city: "Bogotá", country: "Colombia", lat: 4.711, lng: -74.0721, phase: "Q4 2027", pillar: "TransMilenio BRT ad audit" },
+  { id: "fut-karachi", city: "Karachi", country: "Pakistan", lat: 24.8607, lng: 67.0011, phase: "Q4 2027", pillar: "Shahrah-e-Faisal billboard census" },
+  { id: "fut-kampala", city: "Kampala", country: "Uganda", lat: 0.3476, lng: 32.5825, phase: "Q1 2028", pillar: "Boda-boda ad sticker map" },
+];

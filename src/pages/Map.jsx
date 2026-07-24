@@ -14,6 +14,7 @@ import QuickCapture from "@/components/ooh/QuickCapture";
 import Globe3D from "@/components/ooh/Globe3D";
 import ClaimLeadDialog from "@/components/ooh/map/ClaimLeadDialog";
 import SpecsBar from "@/components/ooh/uikit/pinlab/SpecsBar";
+import { OOH_FUTURES } from "@/components/ooh/map/futures";
 
 const TOUR = [
   { title: "Welcome to OOH Map", body: "The live field map of corporate advertising spots — documented by operatives worldwide." },
@@ -26,6 +27,8 @@ const TOUR = [
   { target: "[data-tour=\"theme\"]", title: "Light / Dark", body: "Toggle the Solar Smoke light mode or the signature black canvas anytime." },
   { target: "[data-tour=\"hud-tel\"]", title: "Orbital telemetry", body: "Switch to Globe view — live coordinates, bearing, pitch and view-span stream as you fly." },
   { target: "[data-tour=\"hud-pm25\"]", title: "Air Commons intel", body: "Live PM2.5 from global-south monitoring stations, benchmarked against WHO limits." },
+  { target: "[data-tour=\"map\"]", title: "OOH Futures — Global South roadmap", body: "Dashed markers scattered among live spots are futures: placeholder expansion pillars across Lagos, Nairobi, Jakarta, São Paulo, Manila, Dhaka and beyond. Hover one to preview its phase." },
+  { target: "[data-tour=\"map\"]", title: "Roadmap phases", body: "Each future carries a target quarter — Q3 2026 through 2028. When a phase opens, operatives can claim a future to seed the local network and convert it into live locations." },
   { title: "Mission ready", body: "You're cleared for field operations. File your first report.", cta: true },
 ];
 
@@ -239,7 +242,7 @@ export default function Map() {
             {view === "globe" ? (
               <Globe3D markers={filtered} selectedId={selectedId} hoverId={hoverId} onSelect={setSelectedId} userLoc={userLoc} />
             ) : (
-              <LocationMap markers={filtered} selectedId={selectedId} hoverId={hoverId} onSelect={setSelectedId} userLoc={userLoc} />
+              <LocationMap markers={filtered} selectedId={selectedId} hoverId={hoverId} onSelect={setSelectedId} userLoc={userLoc} futures={OOH_FUTURES} />
             )}
             {view === "flat" && (
               <div className="pointer-events-none absolute inset-x-0 bottom-0 z-[900]">
