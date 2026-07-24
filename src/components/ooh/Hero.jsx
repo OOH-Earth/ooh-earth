@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { ArrowDown, Radio, ShieldAlert, Workflow, ArrowUpRight } from "lucide-react";
 
-const WORD = "oohearth.app";
+const WORD = "ooh earth app";
 
 const SLIDES = [
 { kind: "image", src: "https://oohearth.app/wp-content/uploads/2026/05/1777896004-01-d21q.webp", caption: "Billboard · 1039 Ploenchit, Bangkok" },
@@ -79,7 +79,7 @@ export default function Hero({ onCommand }) {
             <span className="font-mono text-[10px] uppercase tracking-[0.4em] text-ozone">OOH Street Art & Adbusting Maps</span>
             <h1 className="mt-3 font-brand text-[15vw] leading-[0.82] tracking-[-0.03em] text-silver md:text-[7.5vw]">
               {WORD.split("").map((ch, i) =>
-              <span key={i} className="inline-block">{ch === "." ? <span className="text-ozone hidden">.</span> : ch}</span>
+              <span key={i} className="inline-block">{ch}</span>
               )}
             </h1>
             <p className="mt-5 max-w-md font-display text-sm font-medium leading-[1.45] text-silver/70 md:text-[15px]">
