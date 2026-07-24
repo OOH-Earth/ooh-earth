@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Crosshair, Camera, Menu } from "lucide-react";
+import { Crosshair, Camera, Menu, Tv } from "lucide-react";
 import { Link } from "react-router-dom";
 import ThemeToggle from "@/components/ooh/ThemeToggle";
 import HapticsToggle from "@/components/ooh/cognitive/HapticsToggle";
@@ -23,6 +23,9 @@ export default function Nav({ onCommand }) {
         <div className="flex items-center gap-1.5">
           <OfflineSyncBadge />
           <span data-tour="theme" className="flex items-center gap-1.5"><ThemeToggle /><HapticsToggle /><SoundToggle /><ReadAloudToggle /></span>
+          <Link to="/channel" aria-label="OOH·TV channel" title="OOH·TV" className="hidden h-8 w-8 items-center justify-center border border-slate2 text-silver transition-colors hover:border-ozone hover:text-ozone md:flex">
+            <Tv className="h-3.5 w-3.5" />
+          </Link>
           <button
             onClick={() => setMenuOpen(true)}
             aria-label="Open menu"
