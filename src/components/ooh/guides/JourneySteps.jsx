@@ -81,8 +81,8 @@ export default function JourneySteps() {
       {STEPS.map((s) => (
         <li key={s.n} className="border border-slate2/60 bg-card p-4 transition-colors hover:border-ozone/40">
           <div className="flex items-baseline justify-between">
-            <span className="font-mono text-[9px] tabular text-dim/50">STEP {s.n}</span>
-            <Link to={s.to} className="font-mono text-[9px] uppercase tracking-[0.25em] text-ozone transition-colors hover:text-flare">
+            <span className="font-mono text-[9px] tabular text-dim/80">STEP {s.n}</span>
+            <Link to={s.to} className="font-mono text-[10px] uppercase tracking-[0.25em] text-ozone transition-colors hover:text-flare">
               {s.route} →
             </Link>
           </div>
@@ -90,7 +90,7 @@ export default function JourneySteps() {
           <p className="mt-1.5 font-body text-sm leading-[1.55] text-darkgray">{s.body}</p>
           <ul className="mt-3 flex flex-wrap gap-1.5">
             {s.actions.map((a) => (
-              <li key={a} className="border border-slate2/50 px-2 py-1 font-mono text-[9px] uppercase tracking-[0.15em] text-silver/70">{a}</li>
+              <li key={a} className="border border-slate2 px-2 py-1 font-mono text-[10px] uppercase tracking-[0.15em] text-silver/85">{a}</li>
             ))}
           </ul>
         </li>

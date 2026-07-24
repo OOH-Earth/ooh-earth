@@ -56,7 +56,7 @@ export default function StatusMatrix() {
               <div className="font-display text-sm font-semibold tracking-[-0.01em] text-silver">{s.area}</div>
               <div className="font-body text-[12px] leading-[1.45] text-darkgray">{s.note}</div>
             </div>
-            <span className="hidden font-mono text-[9px] tabular text-dim/50 md:block">{String(i + 1).padStart(2, "0")}</span>
+            <span className="hidden font-mono text-[9px] tabular text-dim/80 md:block">{String(i + 1).padStart(2, "0")}</span>
           </div>
         ))}
       </div>
