@@ -5,6 +5,7 @@ import CopyField from "@/components/ooh/uikit/CopyField";
 import BrandPalette from "@/components/ooh/uikit/BrandPalette";
 import TypeScale from "@/components/ooh/uikit/TypeScale";
 import ComponentShowcase from "@/components/ooh/uikit/ComponentShowcase";
+import PinLab from "@/components/ooh/uikit/pinlab/PinLab";
 import NomadPulse from "@/components/ooh/NomadPulse";
 import { Radio } from "lucide-react";
 
@@ -13,8 +14,9 @@ const NAV = [
   { id: "palette", label: "Signal palette", idx: "01" },
   { id: "type", label: "Comms type", idx: "02" },
   { id: "components", label: "Field modules", idx: "03" },
-  { id: "foundation", label: "System specs", idx: "04" },
-  { id: "modes", label: "Operational modes", idx: "05" },
+  { id: "pins", label: "Pin system", idx: "04" },
+  { id: "foundation", label: "System specs", idx: "05" },
+  { id: "modes", label: "Operational modes", idx: "06" },
 ];
 
 const STATS = [
@@ -170,7 +172,11 @@ export default function UiKit() {
               <ComponentShowcase />
             </Panel>
 
-            <Panel id="foundation" idx="04" title="System specs" status="locked">
+            <Panel id="pins" idx="04" title="Marker system · Pin lab" status="interactive">
+              <PinLab />
+            </Panel>
+
+            <Panel id="foundation" idx="05" title="System specs" status="locked">
               <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
                 {FOUNDATION.map((f) => (
                   <CopyField key={f.label} label={f.label} value={f.value} note={f.note} />
@@ -178,7 +184,7 @@ export default function UiKit() {
               </div>
             </Panel>
 
-            <Panel id="modes" idx="05" title="Operational modes" status="3 online">
+            <Panel id="modes" idx="06" title="Operational modes" status="3 online">
               <div className="space-y-2">
                 {THEMES.map((t) => (
                   <div key={t.mode} className="grid gap-2 border border-slate2/50 bg-void p-3 md:grid-cols-5">
@@ -195,7 +201,7 @@ export default function UiKit() {
               </div>
             </Panel>
 
-            <Panel id="mobility" idx="06" title="Mobility intel · nomads.com" status="live · Web7">
+            <Panel id="mobility" idx="07" title="Mobility intel · nomads.com" status="live · Web7">
               <p className="mb-3 max-w-2xl font-body text-sm leading-[1.6] text-darkgray">
                 Live external-data module — nomad-density counts pulled from nomads.com, rendered through the field design system. Demonstrates ambient, composable, sovereign-data card patterns.
               </p>
