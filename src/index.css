@@ -216,6 +216,26 @@
   background: rgba(237, 255, 0, 0.45);
 }
 
+/* Tactile micro-interaction — gentle press feedback (cognitive UI) */
+@media (prefers-reduced-motion: no-preference) {
+  button:active:not(:disabled),
+  a:active,
+  [role="button"]:active,
+  [data-tactile]:active,
+  summary:active {
+    transform: scale(0.985);
+    transition: transform 70ms ease-out;
+  }
+}
+
+/* Ambient sensory layer — air-quality-driven breathe */
+@keyframes ambient-breathe {
+  0%, 100% { opacity: 0.5; }
+  50% { opacity: 1; }
+}
+.ambient-glow[data-cat="warn"] { animation: ambient-breathe 6s ease-in-out infinite; }
+.ambient-glow[data-cat="hazard"] { animation: ambient-breathe 3.2s ease-in-out infinite; }
+
 /* Reduced motion */
 @media (prefers-reduced-motion: reduce) {
   html {

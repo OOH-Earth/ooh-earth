@@ -1,6 +1,7 @@
 import { Crosshair, Megaphone, ScanLine } from "lucide-react";
 import { Link } from "react-router-dom";
 import ThemeToggle from "@/components/ooh/ThemeToggle";
+import HapticsToggle from "@/components/ooh/cognitive/HapticsToggle";
 import BrandMark from "@/components/ooh/BrandMark";
 
 export default function Nav({ onCommand }) {
@@ -39,7 +40,7 @@ export default function Nav({ onCommand }) {
           <Megaphone className="h-3.5 w-3.5" /> <span className="hidden sm:inline">Report</span>
         </Link>
 
-        <span data-tour="theme"><ThemeToggle /></span>
+        <span data-tour="theme" className="flex items-center gap-1.5"><ThemeToggle /><HapticsToggle /></span>
 
         <button
           onClick={onCommand}
