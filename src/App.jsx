@@ -24,6 +24,7 @@ import TrashId from '@/pages/TrashId';
 import InHome from '@/pages/InHome';
 import Zora from '@/pages/Zora';
 import UiKit from '@/pages/UiKit';
+import Guides from '@/pages/Guides';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -65,6 +66,7 @@ const AuthenticatedApp = () => {
     <Route path="/inhome" element={<InHome />} />
     <Route path="/zora" element={<Zora />} />
     <Route path="/kit" element={<UiKit />} />
+    <Route path="/guides" element={<Guides />} />
     <Route element={<ProtectedRoute unauthenticatedElement={<Navigate to="/login" replace />} />}>
       <Route path="/dashboard" element={<Dashboard />} />
     </Route>
