@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { base44 } from "@/api/base44Client";
-import { Crosshair, Camera, MapPin, Loader2, Check, ArrowUpRight, AlertTriangle } from "lucide-react";
+import { Crosshair, Camera, MapPin, Loader2, Check, ArrowUpRight, AlertTriangle, CloudOff } from "lucide-react";
+import { submitCapture } from "@/lib/offlineQueue";
 import { Link } from "react-router-dom";
 
 const TYPES = [
@@ -79,7 +80,7 @@ export default function FieldReport() {
     const label = TYPES.find((t) => t.value === type)?.label || type;
     const finalTitle = title.trim() || `${label} · ${address.split(",")[0].trim() || "Field report"}`;
     try {
-      const rec = await base44.entities.Location.create({
+      const res = await submitCapture({
         title: finalTitle,
         type,
         address,
@@ -90,7 +91,8 @@ export default function FieldReport() {
         source_link: "",
         status: "pending",
       });
-      setDone(rec);
+      if (res.status === "synced") setDone(res.rec);
+      else setDone({ queued: true, lat: latN, lng: lngN });
     } catch (err) {
       setError(err?.message || "Transmission failed.");
     } finally {
@@ -100,11 +102,13 @@ export default function FieldReport() {
 
   if (done) {
     return (
-      <div className="border border-ozone/40 bg-card p-8">
-        <Check className="h-7 w-7 text-ozone" />
-        <h3 className="mt-4 font-display text-3xl font-bold tracking-[-0.02em] text-silver">Transmission received</h3>
+      <div className={`border bg-card p-8 ${done.queued ? "border-flare/40" : "border-ozone/40"}`}>
+        {done.queued ? <CloudOff className="h-7 w-7 text-flare" /> : <Check className="h-7 w-7 text-ozone" />}
+        <h3 className="mt-4 font-display text-3xl font-bold tracking-[-0.02em] text-silver">{done.queued ? "Queued offline" : "Transmission received"}</h3>
         <p className="mt-2 font-display text-sm leading-[1.4] text-darkgray">
-          Field report logged to the public record at {done.lat?.toFixed(4)}, {done.lng?.toFixed(4)}. Pending verification by an operative — it renders on the live map immediately.
+          {done.queued
+            ? `You're offline — the report is saved on this device and will transmit automatically when you reconnect. Position ${done.lat?.toFixed(4)}, ${done.lng?.toFixed(4)}.`
+            : `Field report logged to the public record at ${done.lat?.toFixed(4)}, ${done.lng?.toFixed(4)}. Pending verification by an operative — it renders on the live map immediately.`}
         </p>
         <div className="mt-6 flex flex-wrap gap-3">
           <Link to="/map" className="inline-flex items-center gap-2 bg-ozone px-5 py-3 font-mono text-[11px] font-bold uppercase tracking-[0.25em] text-void transition-colors hover:bg-flare">

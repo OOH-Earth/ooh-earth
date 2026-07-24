@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { base44 } from "@/api/base44Client";
-import { Camera, Crosshair, Loader2, Check, X, MapPin } from "lucide-react";
+import { Camera, Crosshair, Loader2, Check, X, MapPin, CloudOff } from "lucide-react";
+import { submitCapture } from "@/lib/offlineQueue";
 
 const TYPES = [
   { value: "billboard", label: "Billboard" },
@@ -81,11 +82,12 @@ export default function QuickCapture({ open, onClose }) {
     const label = TYPES.find((t) => t.value === type)?.label || type;
     const title = `${label} · ${address.split(",")[0].trim() || "Field capture"}`;
     try {
-      const rec = await base44.entities.Location.create({
+      const res = await submitCapture({
         title, type, address, lat: latN, lng: lngN, image_url,
         notes: "Anonymous field capture", source_link: "", status: "pending",
       });
-      setDone(rec);
+      if (res.status === "synced") setDone(res.rec);
+      else setDone({ queued: true, lat: latN, lng: lngN });
     } catch (err) { setError(err?.message || "Transmission failed."); }
     finally { setSubmitting(false); }
   };
@@ -99,9 +101,9 @@ export default function QuickCapture({ open, onClose }) {
 
         {done ? (
           <>
-            <Check className="h-7 w-7 text-ozone" />
-            <h3 className="mt-3 font-display text-2xl font-bold tracking-[-0.02em] text-silver">Captured</h3>
-            <p className="mt-2 font-display text-sm leading-[1.4] text-darkgray">Anonymous field report logged at {done.lat?.toFixed(4)}, {done.lng?.toFixed(4)}. It renders on the map pending verification.</p>
+            {done.queued ? <CloudOff className="h-7 w-7 text-flare" /> : <Check className="h-7 w-7 text-ozone" />}
+            <h3 className="mt-3 font-display text-2xl font-bold tracking-[-0.02em] text-silver">{done.queued ? "Queued offline" : "Captured"}</h3>
+            <p className="mt-2 font-display text-sm leading-[1.4] text-darkgray">{done.queued ? `Offline — saved on this device. It transmits automatically when you reconnect. Position ${done.lat?.toFixed(4)}, ${done.lng?.toFixed(4)}.` : `Anonymous field report logged at ${done.lat?.toFixed(4)}, ${done.lng?.toFixed(4)}. It renders on the map pending verification.`}</p>
             <div className="mt-5 flex gap-3">
               <button onClick={() => { reset(); onClose(); }} className="inline-flex items-center gap-2 bg-ozone px-5 py-3 font-mono text-[10px] font-bold uppercase tracking-[0.25em] text-void transition-colors hover:bg-flare">
                 <MapPin className="h-3.5 w-3.5" /> View on map
