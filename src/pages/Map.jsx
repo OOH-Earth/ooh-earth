@@ -6,10 +6,11 @@ import MapToolbar from "@/components/ooh/map/MapToolbar";
 import MapSidebar from "@/components/ooh/map/MapSidebar";
 import LocationCard from "@/components/ooh/map/LocationCard";
 import seedMarkers from "@/components/ooh/mapSeed";
-import { Loader2, FileDown, Megaphone, Map as MapIcon, Globe, ScanSearch } from "lucide-react";
+import { Loader2, FileDown, Megaphone, Map as MapIcon, Globe, ScanSearch, Camera } from "lucide-react";
 import { Link } from "react-router-dom";
 import Walkthrough from "@/components/ooh/Walkthrough";
 import UnitFinder from "@/components/ooh/UnitFinder";
+import QuickCapture from "@/components/ooh/QuickCapture";
 import Globe3D from "@/components/ooh/Globe3D";
 
 const TOUR = [
@@ -54,6 +55,7 @@ export default function Map() {
   const [view, setView] = useState("flat");
   const [tourOpen, setTourOpen] = useState(false);
   const [finderOpen, setFinderOpen] = useState(false);
+  const [captureOpen, setCaptureOpen] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -202,6 +204,13 @@ export default function Map() {
               >
                 <FileDown className="h-3.5 w-3.5" /> <span className="hidden sm:inline">GeoJSON</span>
               </button>
+              <button
+                onClick={() => setCaptureOpen(true)}
+                aria-label="Capture photo"
+                className="flex items-center gap-1.5 border border-ozone bg-ozone px-2.5 py-2 font-mono text-[10px] font-bold uppercase tracking-[0.25em] text-void transition-colors hover:bg-flare hover:border-flare"
+              >
+                <Camera className="h-3.5 w-3.5" /> <span className="hidden sm:inline">Capture</span>
+              </button>
               <Link
                 data-tour="report"
                 to="/report"
@@ -217,6 +226,7 @@ export default function Map() {
 
       <Walkthrough open={tourOpen} onClose={() => setTourOpen(false)} steps={TOUR} />
       <UnitFinder open={finderOpen} onClose={() => setFinderOpen(false)} />
+      <QuickCapture open={captureOpen} onClose={() => setCaptureOpen(false)} />
     </div>
   );
 }
