@@ -1,13 +1,14 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { UserPlus, Mail, Lock, Loader2 } from "lucide-react";
+import { UserPlus, Mail, Lock, Loader2, ArrowLeft } from "lucide-react";
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
 import AuthLayout from "@/components/AuthLayout";
 import GoogleIcon from "@/components/GoogleIcon";
+import PasswordStrength from "@/components/ooh/PasswordStrength";
 import { toast } from "@/components/ui/use-toast";
 
 export default function Register() {
@@ -18,6 +19,7 @@ export default function Register() {
   const [loading, setLoading] = useState(false);
   const [showOtp, setShowOtp] = useState(false);
   const [otpCode, setOtpCode] = useState("");
+  const [resendIn, setResendIn] = useState(0);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -54,9 +56,11 @@ export default function Register() {
   };
 
   const handleResend = async () => {
+    if (resendIn > 0) return;
     setError("");
     try {
       await base44.auth.resendOtp(email);
+      setResendIn(30);
       toast({
         title: "Code sent",
         description: "Check your email for the new code.",
@@ -65,6 +69,22 @@ export default function Register() {
       setError(err.message || "Failed to resend code");
     }
   };
+
+  const handleBack = () => {
+    setShowOtp(false);
+    setOtpCode("");
+    setError("");
+  };
+
+  useEffect(() => {
+    if (showOtp) setResendIn(30);
+  }, [showOtp]);
+
+  useEffect(() => {
+    if (resendIn <= 0) return;
+    const t = setTimeout(() => setResendIn((n) => n - 1), 1000);
+    return () => clearTimeout(t);
+  }, [resendIn]);
 
   const handleGoogle = () => {
     base44.auth.loginWithProvider("google", "/");
@@ -115,11 +135,23 @@ export default function Register() {
           )}
         </Button>
         <p className="text-center text-sm text-muted-foreground mt-4">
-          Didn't receive the code?{" "}
-          <button onClick={handleResend} className="text-primary font-medium hover:underline">
-            Resend
-          </button>
+          {resendIn > 0 ? (
+            <>Resend code in {resendIn}s</>
+          ) : (
+            <>
+              Didn't receive the code?{" "}
+              <button onClick={handleResend} className="text-primary font-medium hover:underline">
+                Resend
+              </button>
+            </>
+          )}
         </p>
+        <button
+          onClick={handleBack}
+          className="mt-3 flex w-full items-center justify-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-primary"
+        >
+          <ArrowLeft className="h-3.5 w-3.5" /> Use a different email
+        </button>
       </AuthLayout>
     );
   }
@@ -196,6 +228,7 @@ export default function Register() {
             />
           </div>
         </div>
+        <PasswordStrength value={password} />
         <div className="space-y-2">
           <Label htmlFor="confirm">Confirm Password</Label>
           <div className="relative">
