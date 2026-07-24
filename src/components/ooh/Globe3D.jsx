@@ -179,8 +179,10 @@ export default function Globe3D({ markers, selectedId, hoverId, onSelect, userLo
       map.addSource("ooh-markers", { type: "geojson", data: dataRef.current, cluster: true, clusterRadius: 52, clusterMaxZoom: 14 });
       PIN_TYPES.forEach((t) => {
         const col = BADGE_COLOR[t] || BADGE_COLOR.other;
-        map.addImage(`ooh-pin-${t}`, makePinIcon(col, false, false));
-        map.addImage(`ooh-pin-${t}-sel`, makePinIcon(col, true, false));
+        const a = makePinIcon(col, false, false);
+        map.addImage(`ooh-pin-${t}`, a.getContext("2d").getImageData(0, 0, a.width, a.height), { pixelRatio: 1 });
+        const b = makePinIcon(col, true, false);
+        map.addImage(`ooh-pin-${t}-sel`, b.getContext("2d").getImageData(0, 0, b.width, b.height), { pixelRatio: 1 });
       });
       // cluster discs — dark core, ozone ring, live count (military-grade)
       map.addLayer({
