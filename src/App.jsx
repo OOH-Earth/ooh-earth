@@ -22,6 +22,7 @@ import ArLens from '@/pages/ArLens';
 import TrueCost from '@/pages/TrueCost';
 import TrashId from '@/pages/TrashId';
 import InHome from '@/pages/InHome';
+import Zora from '@/pages/Zora';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -61,6 +62,7 @@ const AuthenticatedApp = () => {
     <Route path="/scan" element={<TrueCost />} />
     <Route path="/trash" element={<TrashId />} />
     <Route path="/inhome" element={<InHome />} />
+    <Route path="/zora" element={<Zora />} />
     <Route element={<ProtectedRoute unauthenticatedElement={<Navigate to="/login" replace />} />}>
       <Route path="/dashboard" element={<Dashboard />} />
     </Route>
