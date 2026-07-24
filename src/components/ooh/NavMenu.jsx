@@ -1,7 +1,12 @@
 import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Link } from "react-router-dom";
-import { X, ChevronRight, ChevronDown, Compass } from "lucide-react";
+import {
+  X, ChevronRight, ChevronDown, Compass, Search,
+  Home, Map as MapIcon, Megaphone, Scan, Tv, LayoutDashboard,
+  Trash2, Coins, CreditCard, LayoutGrid, Info, Briefcase,
+  BookOpen, Heart, Layers, LifeBuoy,
+} from "lucide-react";
 import { BUS_STOP_AREAS } from "@/components/ooh/busStops";
 
 const SITEMAP = [
@@ -54,12 +59,20 @@ const SITEMAP = [
   },
 ];
 
+const ICON = {
+  Home, Maps: MapIcon, Report: Megaphone, "AR Lens": Scan, "In-Home": Tv,
+  "OOH·TV": Tv, Dashboard: LayoutDashboard, TrueCost: Scan, "Trash ID": Trash2,
+  Zora: Coins, "Field ID": CreditCard, "Union Card": CreditCard, "UI Kit": LayoutGrid,
+  About: Info, Careers: Briefcase, Guides: BookOpen, Fund: Heart, Plans: Layers,
+  Support: LifeBuoy, "Bus Stops": MapIcon,
+};
+
 const AREA_COUNT = BUS_STOP_AREAS.length;
 const STOP_COUNT = BUS_STOP_AREAS.reduce((n, a) => n + a.stops.length, 0);
 
 const list = {
   hidden: {},
-  show: { transition: { staggerChildren: 0.04, delayChildren: 0.08 } },
+  show: { transition: { staggerChildren: 0.03, delayChildren: 0.05 } },
   exit: { transition: { staggerChildren: 0.02, staggerDirection: -1 } },
 };
 
@@ -134,42 +147,110 @@ function BusStopsGroup({ variant, onClose }) {
   );
 }
 
-function SheetLinks({ onClose }) {
+function MobileLauncher({ onClose, onTour }) {
+  const [q, setQ] = useState("");
+  const ql = q.trim().toLowerCase();
   let n = 0;
   return (
-    <motion.div variants={list} initial="hidden" animate="show" exit="exit" className="space-y-4">
-      {SITEMAP.map((g) => (
-        <motion.div key={g.group} variants={groupV}>
-          {g.cats ? (
-            <BusStopsGroup variant="sheet" onClose={onClose} />
-          ) : (
-            <>
-              <div className="mb-1.5 flex items-center gap-2">
-                <span className="font-mono text-[9px] uppercase tracking-[0.3em] text-ozone">// {g.group}</span>
-                <span className="h-px flex-1 bg-slate2/40" />
-              </div>
-              <div className="grid grid-cols-2 gap-1.5">
-                {g.items.map((l) => {
-                  n += 1;
-                  return (
-                    <Link
-                      key={l.to}
-                      to={l.to}
-                      onClick={onClose}
-                      className="group flex flex-col gap-1 border border-slate2/50 px-3 py-3 transition-colors hover:border-ozone/60 hover:bg-slate2/20"
-                    >
-                      <span className="font-mono text-[9px] tabular text-dim/50">{String(n).padStart(2, "0")}</span>
-                      <span className="font-display text-sm font-semibold tracking-[-0.02em] text-silver/85 transition-colors group-hover:text-ozone">
-                        {l.label}
-                      </span>
-                    </Link>
-                  );
-                })}
-              </div>
-            </>
+    <motion.div
+      key="mobile"
+      initial={{ opacity: 0, y: 8 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: 8 }}
+      transition={{ duration: 0.2, ease: "easeOut" }}
+      className="fixed inset-0 z-[100] flex flex-col bg-void md:hidden"
+    >
+      <div
+        className="flex items-center justify-between border-b border-slate2/60 px-4 py-3"
+        style={{ paddingTop: "calc(env(safe-area-inset-top) + 12px)" }}
+      >
+        <span className="font-mono text-[10px] font-bold uppercase tracking-[0.3em] text-ozone">// Sitemap</span>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => { onTour?.(); onClose(); }}
+            aria-label="Start tour"
+            className="flex items-center gap-1.5 border border-slate2/60 px-2.5 py-1.5 font-mono text-[9px] font-bold uppercase tracking-[0.2em] text-darkgray transition-colors hover:border-ozone hover:text-ozone"
+          >
+            <Compass className="h-3.5 w-3.5" /> Tour
+          </button>
+          <button
+            onClick={onClose}
+            aria-label="Close menu"
+            className="flex h-9 w-9 items-center justify-center border border-slate2/60 text-dim transition-colors hover:border-flare hover:text-flare"
+          >
+            <X className="h-4 w-4" />
+          </button>
+        </div>
+      </div>
+
+      <div className="border-b border-slate2/60 px-4 py-2.5">
+        <div className="flex items-center gap-2 border border-slate2 bg-card px-3 py-2.5">
+          <Search className="h-4 w-4 shrink-0 text-dim" />
+          <input
+            value={q}
+            onChange={(e) => setQ(e.target.value)}
+            placeholder="Search channels…"
+            className="w-full bg-transparent font-display text-sm text-silver placeholder:text-dim/60 focus:outline-none"
+          />
+          {q && (
+            <button onClick={() => setQ("")} aria-label="Clear" className="shrink-0 text-dim transition-colors hover:text-flare">
+              <X className="h-4 w-4" />
+            </button>
+          )}
+        </div>
+      </div>
+
+      <div className="min-h-0 flex-1 overflow-y-auto px-4 py-4 pb-10">
+        <motion.div variants={list} initial="hidden" animate="show" exit="exit" className="space-y-5">
+          {SITEMAP.map((g) => {
+            if (g.cats) {
+              if (ql) return null;
+              return (
+                <motion.div key={g.group} variants={groupV}>
+                  <BusStopsGroup variant="sheet" onClose={onClose} />
+                </motion.div>
+              );
+            }
+            const items = g.items.filter((l) => !ql || l.label.toLowerCase().includes(ql));
+            if (!items.length) return null;
+            return (
+              <motion.div key={g.group} variants={groupV}>
+                <div className="mb-2 flex items-center gap-2">
+                  <span className="font-mono text-[9px] uppercase tracking-[0.3em] text-ozone">// {g.group}</span>
+                  <span className="h-px flex-1 bg-slate2/40" />
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  {items.map((l) => {
+                    n += 1;
+                    const Icon = ICON[l.label] || LayoutGrid;
+                    return (
+                      <Link
+                        key={l.to}
+                        to={l.to}
+                        onClick={onClose}
+                        className="group flex flex-col gap-2 border border-slate2/50 bg-card p-3.5 transition-colors hover:border-ozone/60 hover:bg-slate2/20"
+                      >
+                        <div className="flex items-center justify-between">
+                          <Icon className="h-5 w-5 text-silver/70 transition-colors group-hover:text-ozone" />
+                          <span className="font-mono text-[8px] tabular text-dim/40">{String(n).padStart(2, "0")}</span>
+                        </div>
+                        <span className="font-display text-sm font-semibold tracking-[-0.02em] text-silver/85 transition-colors group-hover:text-ozone">
+                          {l.label}
+                        </span>
+                      </Link>
+                    );
+                  })}
+                </div>
+              </motion.div>
+            );
+          })}
+          {ql && (
+            <div className="py-10 text-center font-mono text-[10px] uppercase tracking-[0.25em] text-dim">
+              // No channels match "{q}"
+            </div>
           )}
         </motion.div>
-      ))}
+      </div>
     </motion.div>
   );
 }
@@ -236,36 +317,8 @@ export default function NavMenu({ open, onClose, onTour }) {
             className="fixed inset-0 z-[99] bg-black/60 backdrop-blur-sm"
           />
 
-          {/* Mobile · native bottom sheet */}
-          <motion.div
-            key="sheet"
-            initial={{ y: "100%" }}
-            animate={{ y: 0 }}
-            exit={{ y: "100%" }}
-            transition={{ type: "spring", stiffness: 300, damping: 30 }}
-            className="fixed inset-x-0 bottom-0 z-[100] flex max-h-[88vh] flex-col overflow-hidden rounded-t-2xl border-t border-slate2 bg-void md:hidden"
-          >
-            <div className="flex justify-center pt-2.5">
-              <span className="h-1 w-10 rounded-full bg-slate2" />
-            </div>
-            <div className="flex items-center justify-between px-5 py-3">
-              <span className="font-mono text-[9px] font-bold uppercase tracking-[0.3em] text-ozone">// Sitemap</span>
-              <div className="flex items-center gap-2">
-                <button onClick={() => { onTour?.(); onClose(); }} aria-label="Start tour" className="flex items-center gap-1.5 border border-slate2/60 px-2 py-1 font-mono text-[9px] font-bold uppercase tracking-[0.2em] text-darkgray transition-colors hover:border-ozone hover:text-ozone">
-                  <Compass className="h-3 w-3" /> Tour
-                </button>
-                <button onClick={onClose} aria-label="Close menu" className="flex h-7 w-7 items-center justify-center text-dim transition-colors hover:text-flare">
-                  <X className="h-4 w-4" />
-                </button>
-              </div>
-            </div>
-            <div className="min-h-0 flex-1 overflow-y-auto px-4 pb-5">
-              <SheetLinks onClose={onClose} />
-            </div>
-            <div className="border-t border-slate2/60 px-5 py-3">
-              <span className="font-mono text-[9px] uppercase tracking-[0.3em] text-dim/60">// resistance</span>
-            </div>
-          </motion.div>
+          {/* Mobile · full-screen smart launcher */}
+          <MobileLauncher onClose={onClose} onTour={onTour} />
 
           {/* Desktop · popover */}
           <motion.div
@@ -283,7 +336,7 @@ export default function NavMenu({ open, onClose, onTour }) {
                 <X className="h-4 w-4" />
               </button>
             </div>
-            <div className="flex-1 overflow-y-auto">
+            <div className="min-h-0 flex-1 overflow-y-auto">
               <PopoverLinks onClose={onClose} />
             </div>
             <div className="border-t border-slate2/60 px-5 py-3">
