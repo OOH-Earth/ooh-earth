@@ -31,6 +31,8 @@ import SiteFooter from "@/components/ooh/SiteFooter";
 import CommandCenter from "@/components/ooh/CommandCenter";
 import HorizonProgress from "@/components/ooh/HorizonProgress";
 import ViewfinderCursor from "@/components/ooh/ViewfinderCursor";
+import VoidTitleSequence from "@/components/ooh/VoidTitleSequence";
+import { Zap } from "lucide-react";
 import { useWalkthrough } from "@/lib/walkthroughContext";
 
 const HOME_TOUR = [
@@ -42,6 +44,7 @@ const HOME_TOUR = [
 
 export default function Home() {
   const [commandOpen, setCommandOpen] = useState(false);
+  const [voidOpen, setVoidOpen] = useState(false);
   const openCommand = () => setCommandOpen(true);
   const { registerSteps } = useWalkthrough();
   useEffect(() => { registerSteps(HOME_TOUR); }, [registerSteps]);
@@ -51,6 +54,17 @@ export default function Home() {
       <ViewfinderCursor />
       <HorizonProgress />
       <Nav onCommand={openCommand} />
+
+      <button
+        onClick={() => setVoidOpen(true)}
+        className="group fixed bottom-20 right-4 z-40 flex items-center gap-2 border border-ozone bg-void/80 px-3 py-2 font-mono text-[9px] font-bold uppercase tracking-[0.25em] text-ozone backdrop-blur-md transition-colors hover:bg-ozone hover:text-void md:bottom-6 md:right-6"
+        style={{ boxShadow: "0 0 24px rgba(237,255,0,0.25)" }}
+        aria-label="Enter the Void title sequence"
+      >
+        <Zap className="h-3.5 w-3.5 animate-pulse" />
+        <span className="hidden sm:inline">Enter the Void</span>
+        <span className="sm:hidden">Void</span>
+      </button>
 
       <main>
         <Hero onCommand={openCommand} />
@@ -84,6 +98,7 @@ export default function Home() {
       <SiteFooter onCommand={openCommand} />
 
       <CommandCenter open={commandOpen} onClose={() => setCommandOpen(false)} />
+      <VoidTitleSequence open={voidOpen} onClose={() => setVoidOpen(false)} />
     </div>
   );
 }
