@@ -10,6 +10,7 @@ import Mandate from "@/components/ooh/Mandate";
 import CampaignAtlas from "@/components/ooh/CampaignAtlas";
 import CityGrid from "@/components/ooh/CityGrid";
 import CityPulse from "@/components/ooh/CityPulse";
+import NomadPulse from "@/components/ooh/NomadPulse";
 import MiniMapStack from "@/components/ooh/MiniMapStack";
 import AirCommons from "@/components/ooh/AirCommons";
 import CarbonCounter from "@/components/ooh/CarbonCounter";
@@ -48,6 +49,7 @@ export default function Home() {
         <OffenseCategories />
         <Reveal><CityGrid /></Reveal>
         <Reveal><CityPulse /></Reveal>
+        <Reveal><NomadPulse /></Reveal>
         <Reveal><MiniMapStack /></Reveal>
         <Reveal><AirCommons /></Reveal>
         <Reveal><CarbonCounter /></Reveal>

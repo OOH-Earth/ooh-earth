@@ -5,6 +5,7 @@ import CopyField from "@/components/ooh/uikit/CopyField";
 import BrandPalette from "@/components/ooh/uikit/BrandPalette";
 import TypeScale from "@/components/ooh/uikit/TypeScale";
 import ComponentShowcase from "@/components/ooh/uikit/ComponentShowcase";
+import NomadPulse from "@/components/ooh/NomadPulse";
 import { Radio } from "lucide-react";
 
 const NAV = [
@@ -192,6 +193,13 @@ export default function UiKit() {
                   </div>
                 ))}
               </div>
+            </Panel>
+
+            <Panel id="mobility" idx="06" title="Mobility intel · nomads.com" status="live · Web7">
+              <p className="mb-3 max-w-2xl font-body text-sm leading-[1.6] text-darkgray">
+                Live external-data module — nomad-density counts pulled from nomads.com, rendered through the field design system. Demonstrates ambient, composable, sovereign-data card patterns.
+              </p>
+              <NomadPulse compact />
             </Panel>
           </div>
 
