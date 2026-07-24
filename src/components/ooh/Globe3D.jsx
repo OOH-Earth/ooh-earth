@@ -9,6 +9,55 @@ import { thumbHTML, metaFor } from "@/components/ooh/map/LocationThumb";
 
 const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 
+// Micro-badge colour per category (matches the flat-map MICRO palette).
+const BADGE_COLOR = {
+  billboard: "#EDFF00", digital: "#EDFF00", transit: "#39FF14",
+  painted: "#FF5C00", mural: "#FF5C00", sticker: "#EDFF00",
+  projection: "#FF5C00", other: "#B2B2B2",
+};
+
+// Canvas-drawn field pin for the globe symbol layer — yellow disc, black
+// ad-structure glyph, category micro-badge + status dot, pink radial glow.
+function makePinIcon(badgeColor, selected, verified) {
+  const S = 64;
+  const c = document.createElement("canvas");
+  c.width = c.height = S;
+  const ctx = c.getContext("2d");
+  const cx = S / 2, cy = S / 2;
+  // pink radial highlight
+  const g = ctx.createRadialGradient(cx, cy, 2, cx, cy, S / 2);
+  g.addColorStop(0, selected ? "rgba(255,72,118,0.55)" : "rgba(255,72,118,0.22)");
+  g.addColorStop(1, "rgba(255,72,118,0)");
+  ctx.fillStyle = g;
+  ctx.fillRect(0, 0, S, S);
+  // disc
+  ctx.beginPath(); ctx.arc(cx, cy, 20, 0, Math.PI * 2);
+  ctx.fillStyle = "#EDFF00"; ctx.fill();
+  ctx.lineWidth = 3; ctx.strokeStyle = "#000"; ctx.stroke();
+  if (selected) { ctx.lineWidth = 2; ctx.strokeStyle = "#FF5C00"; ctx.beginPath(); ctx.arc(cx, cy, 25, 0, Math.PI * 2); ctx.stroke(); }
+  // black ad-panel glyph
+  ctx.fillStyle = "#000";
+  ctx.fillRect(cx - 7, cy - 9, 14, 11);
+  ctx.fillStyle = "rgba(237,255,0,0.9)";
+  ctx.fillRect(cx - 5, cy - 7, 10, 3);
+  ctx.fillStyle = "#000";
+  ctx.fillRect(cx - 5, cy + 2, 3, 6);
+  ctx.fillRect(cx + 2, cy + 2, 3, 6);
+  // micro badge bottom-right
+  const bx = cx + 14, by = cy + 14;
+  ctx.beginPath(); ctx.arc(bx, by, 8.5, 0, Math.PI * 2);
+  ctx.fillStyle = badgeColor; ctx.fill();
+  ctx.lineWidth = 2; ctx.strokeStyle = "#000"; ctx.stroke();
+  ctx.beginPath(); ctx.arc(bx, by, 2.6, 0, Math.PI * 2); ctx.fillStyle = "#000"; ctx.fill();
+  // status dot top-left
+  ctx.beginPath(); ctx.arc(cx - 14, cy - 14, 4.5, 0, Math.PI * 2);
+  ctx.fillStyle = verified ? "#39FF14" : "#FF5C00"; ctx.fill();
+  ctx.lineWidth = 1.5; ctx.strokeStyle = "#000"; ctx.stroke();
+  return c;
+}
+
+const PIN_TYPES = ["billboard", "digital", "transit", "painted", "mural", "sticker", "projection", "other"];
+
 function popupHTML(m) {
   const type = metaFor(m.type).label;
   const status = m.status || "pending";
@@ -127,16 +176,20 @@ export default function Globe3D({ markers, selectedId, hoverId, onSelect, userLo
       applyGlobe();
       map.on("style.load", applyGlobe);
       map.addSource("ooh-markers", { type: "geojson", data: dataRef.current });
+      PIN_TYPES.forEach((t) => {
+        const col = BADGE_COLOR[t] || BADGE_COLOR.other;
+        map.addImage(`ooh-pin-${t}`, makePinIcon(col, false, false));
+        map.addImage(`ooh-pin-${t}-sel`, makePinIcon(col, true, false));
+      });
       map.addLayer({
         id: "ooh-markers",
-        type: "circle",
+        type: "symbol",
         source: "ooh-markers",
-        paint: {
-          "circle-radius": ["case", ["==", ["get", "selected"], true], 9, 6],
-          "circle-color": ["case", ["==", ["get", "selected"], true], "#FF5C00", "#EDFF00"],
-          "circle-stroke-color": "#000000",
-          "circle-stroke-width": 1.5,
-          "circle-blur": ["case", ["==", ["get", "selected"], true], 0.6, 0.2],
+        layout: {
+          "icon-image": ["case", ["==", ["get", "selected"], true], ["concat", "ooh-pin-", ["get", "type"], "-sel"], ["concat", "ooh-pin-", ["get", "type"]]],
+          "icon-size": ["case", ["==", ["get", "selected"], true], 0.95, 0.78],
+          "icon-allow-overlap": true,
+          "icon-ignore-placement": true,
         },
       });
 

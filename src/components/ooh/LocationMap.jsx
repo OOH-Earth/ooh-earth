@@ -7,22 +7,22 @@ import "leaflet/dist/leaflet.css";
 // Evolved V2 pin — high-vis yellow disc + black ad-structure glyph +
 // pink/red radial highlight. Shared HTML fragment keeps default + selected
 // states visually consistent.
-const GLYPH_SVG = `<svg viewBox="0 0 24 24" width="9" height="9" fill="none" aria-hidden="true"><rect x="5" y="3" width="14" height="11" rx="1" fill="#000"/><rect x="7" y="5" width="10" height="2.5" fill="#EDFF00" opacity="0.85"/><rect x="9" y="14" width="2" height="6" fill="#000"/><rect x="13" y="14" width="2" height="6" fill="#000"/></svg>`;
+const GLYPH_SVG = `<svg viewBox="0 0 24 24" width="11" height="11" fill="none" aria-hidden="true"><rect x="5" y="3" width="14" height="11" rx="1" fill="#000"/><rect x="7" y="5" width="10" height="2.5" fill="#EDFF00" opacity="0.85"/><rect x="9" y="14" width="2" height="6" fill="#000"/><rect x="13" y="14" width="2" height="6" fill="#000"/></svg>`;
 
 const pinIcon = L.divIcon({
   className: "ooh-pin",
-  html: `<div style="position:relative;width:18px;height:18px"><span style="position:absolute;inset:-6px;border-radius:50%;background:radial-gradient(circle,rgba(255,72,118,0.26),transparent 65%)"></span><span style="position:relative;display:flex;width:18px;height:18px;border-radius:50%;background:#EDFF00;border:1px solid #000;box-shadow:0 0 0 2px rgba(237,255,0,0.20),0 0 10px rgba(237,255,0,0.5);align-items:center;justify-content:center">${GLYPH_SVG}</span></div>`,
-  iconSize: [18, 18],
-  iconAnchor: [9, 9],
-  popupAnchor: [0, -10],
+  html: `<div style="position:relative;width:22px;height:22px"><span style="position:absolute;inset:-7px;border-radius:50%;background:radial-gradient(circle,rgba(255,72,118,0.26),transparent 65%)"></span><span style="position:relative;display:flex;width:22px;height:22px;border-radius:50%;background:#EDFF00;border:1.5px solid #000;box-shadow:0 0 0 2px rgba(237,255,0,0.20),0 0 12px rgba(237,255,0,0.5);align-items:center;justify-content:center">${GLYPH_SVG}</span></div>`,
+  iconSize: [22, 22],
+  iconAnchor: [11, 11],
+  popupAnchor: [0, -12],
 });
 
 const selIcon = L.divIcon({
   className: "ooh-pin ooh-pin--sel",
-  html: `<div style="position:relative;width:24px;height:24px"><span style="position:absolute;inset:-10px;border-radius:50%;background:radial-gradient(circle,rgba(255,72,118,0.45),transparent 65%)"></span><span style="position:absolute;inset:0;border-radius:50%;border:2px solid #FF5C00;animation:ooh-pinpulse 1.4s ease-out infinite"></span><span style="position:relative;display:flex;width:24px;height:24px;border-radius:50%;background:#EDFF00;border:2px solid #000;box-shadow:0 0 0 3px rgba(255,92,0,0.25),0 0 16px rgba(255,92,0,0.55);align-items:center;justify-content:center">${GLYPH_SVG}</span></div>`,
-  iconSize: [24, 24],
-  iconAnchor: [12, 12],
-  popupAnchor: [0, -12],
+  html: `<div style="position:relative;width:30px;height:30px"><span style="position:absolute;inset:-12px;border-radius:50%;background:radial-gradient(circle,rgba(255,72,118,0.45),transparent 65%)"></span><span style="position:absolute;inset:0;border-radius:50%;border:2px solid #FF5C00;animation:ooh-pinpulse 1.4s ease-out infinite"></span><span style="position:relative;display:flex;width:30px;height:30px;border-radius:50%;background:#EDFF00;border:2px solid #000;box-shadow:0 0 0 3px rgba(255,92,0,0.25),0 0 18px rgba(255,92,0,0.55);align-items:center;justify-content:center">${GLYPH_SVG}</span></div>`,
+  iconSize: [30, 30],
+  iconAnchor: [15, 15],
+  popupAnchor: [0, -16],
 });
 
 const userIcon = L.divIcon({
@@ -54,8 +54,8 @@ const MICRO = {
 function pinFor(m, selected) {
   const verified = m.status === "verified";
   const mc = MICRO[m.type] || MICRO.other;
-  const size = selected ? 52 : 44;
-  const badge = selected ? 20 : 16;
+  const size = selected ? 62 : 52;
+  const badge = selected ? 22 : 18;
   const glow = selected ? "rgba(255,72,118,0.45)" : "rgba(255,72,118,0.20)";
   const img = String(m.image).replace(/-\d+x\d+(?=\.\w+$)/, "");
   const html = `<div style="position:relative;width:${size}px;height:${size}px"><span style="position:absolute;inset:-${selected ? 12 : 8}px;border-radius:50%;background:radial-gradient(circle,${glow},transparent 65%)"></span><span style="position:relative;display:block;width:${size}px;height:${size}px;border-radius:50%;border:3px solid #fff;overflow:hidden;background:#000;box-shadow:0 2px 6px rgba(0,0,0,0.6)${selected ? ",0 0 0 2px " + mc.color : ""}"><img src="${img}" alt="" style="width:100%;height:100%;object-fit:cover;display:block"/></span><span style="position:absolute;right:-3px;bottom:-3px;width:${badge}px;height:${badge}px;border-radius:50%;background:${mc.color};border:2px solid #000;display:flex;align-items:center;justify-content:center;box-shadow:0 0 6px rgba(0,0,0,0.6)">${mc.svg}</span><span style="position:absolute;left:-2px;top:-2px;width:10px;height:10px;border-radius:50%;background:${verified ? "#39FF14" : "#FF5C00"};border:2px solid #000"></span></div>`;
