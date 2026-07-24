@@ -32,7 +32,10 @@ export default function ContextualNudge() {
     setHint(next);
     setShow(false);
     if (!next) return;
-    const t1 = setTimeout(() => setShow(true), 1400);
+    const t1 = setTimeout(() => {
+      setShow(true);
+      if (next.label) window.dispatchEvent(new CustomEvent("ooh-subvocal", { detail: next.label }));
+    }, 1400);
     const t2 = setTimeout(() => setShow(false), 14000);
     return () => { clearTimeout(t1); clearTimeout(t2); };
   }, [pathname]);

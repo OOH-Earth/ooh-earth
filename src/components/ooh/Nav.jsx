@@ -3,6 +3,7 @@ import { Crosshair, Camera, Menu } from "lucide-react";
 import { Link } from "react-router-dom";
 import ThemeToggle from "@/components/ooh/ThemeToggle";
 import HapticsToggle from "@/components/ooh/cognitive/HapticsToggle";
+import SoundToggle from "@/components/ooh/SoundToggle";
 import BrandMark from "@/components/ooh/BrandMark";
 import NavMenu from "@/components/ooh/NavMenu";
 import OfflineSyncBadge from "@/components/ooh/OfflineSyncBadge";
@@ -20,7 +21,7 @@ export default function Nav({ onCommand }) {
 
         <div className="flex items-center gap-1.5">
           <OfflineSyncBadge />
-          <span data-tour="theme" className="flex items-center gap-1.5"><ThemeToggle /><HapticsToggle /></span>
+          <span data-tour="theme" className="flex items-center gap-1.5"><ThemeToggle /><HapticsToggle /><SoundToggle /></span>
           <button
             onClick={() => setMenuOpen(true)}
             aria-label="Open menu"

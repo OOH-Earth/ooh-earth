@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import useHaptics from "@/hooks/useHaptics";
 import AmbientPulse from "@/components/ooh/cognitive/AmbientPulse";
 import ContextualNudge from "@/components/ooh/cognitive/ContextualNudge";
+import Subvocal from "@/components/ooh/cognitive/Subvocal";
 
 // Single global mount — haptics auto-init, ambient sensory + contextual intel.
 export default function CognitiveLayer() {
@@ -17,6 +18,7 @@ export default function CognitiveLayer() {
     <>
       <AmbientPulse />
       <ContextualNudge />
+      <Subvocal />
     </>
   );
 }
