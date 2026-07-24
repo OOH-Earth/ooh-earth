@@ -4,6 +4,7 @@ import Hero from "@/components/ooh/Hero";
 import Mandate from "@/components/ooh/Mandate";
 import CampaignAtlas from "@/components/ooh/CampaignAtlas";
 import CityGrid from "@/components/ooh/CityGrid";
+import MiniMapStack from "@/components/ooh/MiniMapStack";
 import AirCommons from "@/components/ooh/AirCommons";
 import Manifesto from "@/components/ooh/Manifesto";
 import OnChain from "@/components/ooh/OnChain";
@@ -28,6 +29,7 @@ export default function Home() {
         <Mandate />
         <CampaignAtlas />
         <CityGrid />
+        <MiniMapStack />
         <AirCommons />
         <Manifesto />
         <OnChain />
