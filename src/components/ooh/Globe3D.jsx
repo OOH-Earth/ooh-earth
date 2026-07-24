@@ -56,7 +56,7 @@ function buildFC(markers, selectedId) {
   };
 }
 
-export default function Globe3D({ markers, selectedId, onSelect, userLoc }) {
+export default function Globe3D({ markers, selectedId, hoverId, onSelect, userLoc }) {
   const containerRef = useRef(null);
   const mapRef = useRef(null);
   const popupRef = useRef(null);
@@ -169,6 +169,15 @@ export default function Globe3D({ markers, selectedId, onSelect, userLoc }) {
       }
     }
   }, [markers, selectedId]);
+
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!readyRef.current || !map || !hoverId || hoverId === selectedId) return;
+    const m = markers.find((x) => x.id === hoverId);
+    if (m && isFinite(m.lat) && isFinite(m.lng)) {
+      map.flyTo({ center: [m.lng, m.lat], zoom: Math.max(map.getZoom(), 13), duration: 900, essential: true });
+    }
+  }, [hoverId, selectedId, markers, ready]);
 
   useEffect(() => {
     const map = mapRef.current;

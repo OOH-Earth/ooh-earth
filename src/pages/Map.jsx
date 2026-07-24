@@ -53,6 +53,7 @@ export default function Map() {
   const [typeFilter, setTypeFilter] = useState("all");
   const [query, setQuery] = useState("");
   const [selectedId, setSelectedId] = useState(null);
+  const [hoverId, setHoverId] = useState(null);
   const [view, setView] = useState("globe");
   const [userLoc, setUserLoc] = useState(null);
   const [tourOpen, setTourOpen] = useState(false);
@@ -207,7 +208,7 @@ export default function Map() {
             <div className="min-h-0 flex-1 overflow-y-auto">
               {filtered.length ? (
                 filtered.map((m) => (
-                  <LocationCard key={m.id} m={m} selected={selectedId === m.id} onSelect={(x) => setSelectedId(x.id)} claim={claimsByLoc[m.id]} onClaim={setClaimTarget} />
+                  <LocationCard key={m.id} m={m} selected={selectedId === m.id} onSelect={(x) => setSelectedId(x.id)} onHover={(x) => setHoverId(x.id)} onHoverEnd={() => setHoverId(null)} claim={claimsByLoc[m.id]} onClaim={setClaimTarget} />
                 ))
               ) : (
                 <div className="p-6 text-center font-mono text-[10px] uppercase tracking-[0.25em] text-dim">// No matches</div>
@@ -233,9 +234,9 @@ export default function Map() {
               </button>
             </div>
             {view === "globe" ? (
-              <Globe3D markers={filtered} selectedId={selectedId} onSelect={setSelectedId} userLoc={userLoc} />
+              <Globe3D markers={filtered} selectedId={selectedId} hoverId={hoverId} onSelect={setSelectedId} userLoc={userLoc} />
             ) : (
-              <LocationMap markers={filtered} selectedId={selectedId} onSelect={setSelectedId} userLoc={userLoc} />
+              <LocationMap markers={filtered} selectedId={selectedId} hoverId={hoverId} onSelect={setSelectedId} userLoc={userLoc} />
             )}
             <div className="absolute right-3 top-3 z-[1000] flex gap-1.5">
               <button

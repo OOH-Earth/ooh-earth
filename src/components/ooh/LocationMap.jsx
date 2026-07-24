@@ -62,7 +62,17 @@ function FlyTo({ selectedId, markers }) {
   return null;
 }
 
-export default function LocationMap({ markers, selectedId, onSelect, userLoc }) {
+function FlyToHover({ hoverId, selectedId, markers }) {
+  const map = useMap();
+  useEffect(() => {
+    if (!hoverId || hoverId === selectedId) return;
+    const m = markers.find((x) => x.id === hoverId);
+    if (m) map.flyTo([m.lat, m.lng], Math.max(map.getZoom(), 14), { duration: 0.8 });
+  }, [hoverId, selectedId, markers, map]);
+  return null;
+}
+
+export default function LocationMap({ markers, selectedId, hoverId, onSelect, userLoc }) {
   const pins = useMemo(() => markers.filter((m) => isFinite(m.lat) && isFinite(m.lng)), [markers]);
 
   return (
@@ -81,6 +91,7 @@ export default function LocationMap({ markers, selectedId, onSelect, userLoc }) 
       />
       <FitBounds markers={pins} />
       <FlyTo selectedId={selectedId} markers={pins} />
+      <FlyToHover hoverId={hoverId} selectedId={selectedId} markers={pins} />
       <FlyToUser userLoc={userLoc} />
       {userLoc && (
         <Marker position={[userLoc.lat, userLoc.lng]} icon={userIcon}>
