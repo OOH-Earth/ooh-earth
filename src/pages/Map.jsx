@@ -6,9 +6,10 @@ import MapToolbar from "@/components/ooh/map/MapToolbar";
 import MapSidebar from "@/components/ooh/map/MapSidebar";
 import LocationCard from "@/components/ooh/map/LocationCard";
 import seedMarkers from "@/components/ooh/mapSeed";
-import { Loader2, FileDown, Megaphone } from "lucide-react";
+import { Loader2, FileDown, Megaphone, Map as MapIcon, Globe } from "lucide-react";
 import { Link } from "react-router-dom";
 import Walkthrough from "@/components/ooh/Walkthrough";
+import Globe3D from "@/components/ooh/Globe3D";
 
 const TOUR = [
   { title: "Welcome to OOH Map", body: "The live field map of corporate advertising offenses — documented by operatives worldwide." },
@@ -40,6 +41,7 @@ export default function Map() {
   const [typeFilter, setTypeFilter] = useState("all");
   const [query, setQuery] = useState("");
   const [selectedId, setSelectedId] = useState(null);
+  const [view, setView] = useState("flat");
   const [tourOpen, setTourOpen] = useState(false);
 
   useEffect(() => {
@@ -145,7 +147,25 @@ export default function Map() {
           </div>
 
           <div data-tour="map" className={`relative min-h-0 ${mapClass}`}>
-            <LocationMap markers={filtered} selectedId={selectedId} onSelect={setSelectedId} />
+            <div className="absolute left-4 top-4 z-[1000] flex border border-slate2 bg-void/80 backdrop-blur-md">
+              <button
+                onClick={() => setView("flat")}
+                className={`flex items-center gap-1.5 px-3 py-2 font-mono text-[10px] font-bold uppercase tracking-[0.25em] transition-colors ${view === "flat" ? "bg-ozone text-void" : "text-darkgray hover:text-ozone"}`}
+              >
+                <MapIcon className="h-3.5 w-3.5" /> Flat
+              </button>
+              <button
+                onClick={() => setView("globe")}
+                className={`flex items-center gap-1.5 px-3 py-2 font-mono text-[10px] font-bold uppercase tracking-[0.25em] transition-colors ${view === "globe" ? "bg-ozone text-void" : "text-darkgray hover:text-ozone"}`}
+              >
+                <Globe className="h-3.5 w-3.5" /> Globe
+              </button>
+            </div>
+            {view === "globe" ? (
+              <Globe3D markers={filtered} selectedId={selectedId} onSelect={setSelectedId} />
+            ) : (
+              <LocationMap markers={filtered} selectedId={selectedId} onSelect={setSelectedId} />
+            )}
             <div className="absolute right-4 top-4 z-[1000] flex gap-2">
               <button
                 onClick={exportGeoJSON}
