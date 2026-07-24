@@ -7,6 +7,7 @@ import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 import ScrollToTop from './components/ScrollToTop';
 import CrtOverlay from '@/components/ooh/CrtOverlay';
+import TvStatic from '@/components/ooh/TvStatic';
 import CognitiveLayer from '@/components/ooh/cognitive/CognitiveLayer';
 import ProtectedRoute from '@/components/ProtectedRoute';
 // Add page imports here
@@ -89,6 +90,7 @@ function App() {
           <ScrollToTop />
           <AuthenticatedApp />
           <CrtOverlay />
+          <TvStatic />
           <CognitiveLayer />
         </Router>
         <Toaster />
