@@ -12,7 +12,7 @@ export default function SpotIdentifyTag() {
           <span className="font-mono text-[10px] font-bold uppercase tracking-[0.3em] text-ozone">// resistance with infrastructure</span>
           <h2 className="mt-4 font-display text-4xl font-bold leading-[0.95] tracking-[-0.02em] text-silver md:text-6xl">
             Adbusting that keeps<br />
-            your city <span className="text-gradient-ozone">happier</span>
+            your city <span className="text-ozone">happier</span>
           </h2>
           <p className="mt-5 max-w-xl font-display text-base leading-relaxed text-darkgray">
             And actively builds commercial-free public access OOH communities — infrastructure that gives the streets back to the people who use them.
