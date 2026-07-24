@@ -1,4 +1,5 @@
 import { Coins, ScanLine, HeartHandshake, ArrowUpRight, Flame, Map, CreditCard, Share2, Landmark } from "lucide-react";
+import TreasuryBalances from "@/components/ooh/TreasuryBalances";
 
 const FUNDS = [
   { label: "Platform development & security", val: "Build the mapping infrastructure end to end." },
@@ -23,6 +24,8 @@ export default function OnChain() {
             An SDG-aligned, community-owned treasury. Every transaction funds OOH.EARTH — open infrastructure for documenting corporate advertising offenses and coordinating creative resistance across the Global South.
           </p>
         </div>
+
+        <div className="mt-8"><TreasuryBalances /></div>
 
         {/* $OUTOFHELL feature */}
         <div className="mt-10 grid gap-px border border-slate2/60 bg-slate2/40 lg:grid-cols-[1.4fr_1fr]">

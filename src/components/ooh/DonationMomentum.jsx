@@ -6,6 +6,7 @@ import { Rocket } from "lucide-react";
 
 export default function DonationMomentum() {
   const [raised, setRaised] = useState(CAMPAIGN.raisedUsd);
+  const [onChain, setOnChain] = useState(null);
 
   useEffect(() => {
     (async () => {
@@ -17,6 +18,22 @@ export default function DonationMomentum() {
         /* keep config default */
       }
     })();
+  }, []);
+
+  useEffect(() => {
+    let active = true;
+    const load = async () => {
+      try {
+        const res = await base44.functions.invoke("cryptoWatch", {});
+        const v = res.data?.polygon?.totalUsd;
+        if (active && v != null) setOnChain(v);
+      } catch {
+        /* on-chain read unavailable */
+      }
+    };
+    load();
+    const id = setInterval(load, 60000);
+    return () => { active = false; clearInterval(id); };
   }, []);
 
   const goal = CAMPAIGN.goalUsd;
@@ -47,6 +64,9 @@ export default function DonationMomentum() {
               <div className="h-full bg-ozone transition-all duration-700" style={{ width: `${pct}%`, boxShadow: "0 0 12px rgba(237,255,0,0.4)" }} />
             </div>
             <div className="mt-2 text-right font-display text-sm font-bold tabular text-flare">{pct.toFixed(0)}% funded</div>
+            {onChain != null && (
+              <div className="mt-1 text-right font-mono text-[9px] uppercase tracking-[0.2em] text-ozone/70">{fmt(onChain)} on-chain · live</div>
+            )}
           </div>
 
           <p className="mt-6 max-w-xl font-display text-sm font-normal leading-[1.5] text-darkgray">{CAMPAIGN.urgency}</p>

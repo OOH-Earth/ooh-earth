@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { Camera, Crosshair, Loader2, Check, X, MapPin, CloudOff } from "lucide-react";
 import { submitCapture } from "@/lib/offlineQueue";
+import CameraViewfinder from "@/components/ooh/CameraViewfinder";
 
 const TYPES = [
   { value: "billboard", label: "Billboard" },
@@ -62,8 +63,7 @@ export default function QuickCapture({ open, onClose }) {
     setDone(null); setImageUrl(""); setAddress(""); setLat(""); setLng(""); setType("billboard"); setError("");
   };
 
-  const onPhoto = async (e) => {
-    const file = e.target.files?.[0];
+  const uploadFile = async (file) => {
     if (!file) return;
     setUploading(true); setError("");
     try {
@@ -72,6 +72,10 @@ export default function QuickCapture({ open, onClose }) {
     } catch { setError("Photo upload failed."); }
     finally { setUploading(false); }
   };
+
+  const onPhoto = (e) => uploadFile(e.target.files?.[0]);
+
+  const onCapture = (file) => uploadFile(file);
 
   const submit = async () => {
     setError("");
@@ -119,19 +123,24 @@ export default function QuickCapture({ open, onClose }) {
             </div>
             <h3 className="mt-2 font-display text-xl font-bold tracking-[-0.02em] text-silver">Photograph the offense</h3>
 
-            <label className="mt-4 flex aspect-[4/3] cursor-pointer items-center justify-center border border-slate2 bg-card transition-colors hover:border-ozone">
-              {uploading ? (
-                <Loader2 className="h-5 w-5 animate-spin text-ozone" />
-              ) : image_url ? (
+            {image_url ? (
+              <div className="relative mt-4 aspect-[4/3] overflow-hidden border border-slate2 bg-card">
                 <img src={image_url} alt="capture" className="h-full w-full object-cover" />
-              ) : (
-                <div className="flex flex-col items-center gap-2">
-                  <Camera className="h-7 w-7 text-dim" />
-                  <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-darkgray">Tap to open camera</span>
+                <button onClick={() => setImageUrl("")} className="absolute right-2 top-2 flex items-center gap-1.5 border border-slate2 bg-void/80 px-2.5 py-1.5 font-mono text-[9px] uppercase tracking-[0.2em] text-silver backdrop-blur-sm transition-colors hover:border-flare hover:text-flare">
+                  <Camera className="h-3 w-3" /> Retake
+                </button>
+              </div>
+            ) : (
+              <>
+                <div className="mt-4">
+                  <CameraViewfinder onCapture={onCapture} uploading={uploading} />
                 </div>
-              )}
-              <input type="file" accept="image/*" capture="environment" onChange={onPhoto} className="hidden" />
-            </label>
+                <label className="mt-2 flex cursor-pointer items-center justify-center gap-2 border border-slate2/60 py-2 font-mono text-[9px] uppercase tracking-[0.2em] text-darkgray transition-colors hover:border-ozone hover:text-ozone">
+                  <Camera className="h-3 w-3" /> Or choose from gallery
+                  <input type="file" accept="image/*" onChange={onPhoto} className="hidden" />
+                </label>
+              </>
+            )}
 
             <div className="mt-4">
               <span className="mb-2 block font-mono text-[10px] uppercase tracking-[0.3em] text-dim">Type</span>
