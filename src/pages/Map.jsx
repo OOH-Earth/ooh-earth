@@ -12,6 +12,7 @@ import Walkthrough from "@/components/ooh/Walkthrough";
 import UnitFinder from "@/components/ooh/UnitFinder";
 import QuickCapture from "@/components/ooh/QuickCapture";
 import Globe3D from "@/components/ooh/Globe3D";
+import ClaimLeadDialog from "@/components/ooh/map/ClaimLeadDialog";
 
 const TOUR = [
   { title: "Welcome to OOH Map", body: "The live field map of corporate advertising offenses — documented by operatives worldwide." },
@@ -57,6 +58,8 @@ export default function Map() {
   const [tourOpen, setTourOpen] = useState(false);
   const [finderOpen, setFinderOpen] = useState(false);
   const [captureOpen, setCaptureOpen] = useState(false);
+  const [claims, setClaims] = useState([]);
+  const [claimTarget, setClaimTarget] = useState(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -104,6 +107,29 @@ export default function Map() {
     );
     return () => { cancelled = true; };
   }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+    const loadClaims = async () => {
+      try {
+        const recs = await base44.entities.LeadClaim.list("-created_date", 500);
+        if (!cancelled) setClaims(recs || []);
+      } catch { if (!cancelled) setClaims([]); }
+    };
+    loadClaims();
+    const unsub = base44.entities.LeadClaim.subscribe(() => loadClaims());
+    return () => { cancelled = true; if (unsub) unsub(); };
+  }, []);
+
+  const claimsByLoc = useMemo(() => {
+    const map = {};
+    claims.forEach((c) => {
+      if (c.status === "released") return;
+      const ex = map[c.location_id];
+      if (!ex || new Date(c.created_date) > new Date(ex.created_date)) map[c.location_id] = c;
+    });
+    return map;
+  }, [claims]);
 
   const filtered = useMemo(() => {
     const list = raw?.markers || [];
@@ -181,7 +207,7 @@ export default function Map() {
             <div className="min-h-0 flex-1 overflow-y-auto">
               {filtered.length ? (
                 filtered.map((m) => (
-                  <LocationCard key={m.id} m={m} selected={selectedId === m.id} onSelect={(x) => setSelectedId(x.id)} />
+                  <LocationCard key={m.id} m={m} selected={selectedId === m.id} onSelect={(x) => setSelectedId(x.id)} claim={claimsByLoc[m.id]} onClaim={setClaimTarget} />
                 ))
               ) : (
                 <div className="p-6 text-center font-mono text-[10px] uppercase tracking-[0.25em] text-dim">// No matches</div>
@@ -246,6 +272,7 @@ export default function Map() {
         </div>
       )}
 
+      <ClaimLeadDialog open={!!claimTarget} onClose={() => setClaimTarget(null)} location={claimTarget} />
       <Walkthrough open={tourOpen} onClose={() => setTourOpen(false)} steps={TOUR} />
       <UnitFinder open={finderOpen} onClose={() => setFinderOpen(false)} />
       <QuickCapture open={captureOpen} onClose={() => setCaptureOpen(false)} />

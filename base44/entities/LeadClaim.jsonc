@@ -1,0 +1,47 @@
+{
+  "name": "LeadClaim",
+  "type": "object",
+  "properties": {
+    "location_id": {
+      "type": "string",
+      "description": "Location record id being claimed"
+    },
+    "location_title": {
+      "type": "string"
+    },
+    "operative_handle": {
+      "type": "string",
+      "description": "Handle of the operative adopting the lead"
+    },
+    "note": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "accepted",
+        "released"
+      ],
+      "default": "pending"
+    }
+  },
+  "required": [
+    "location_id",
+    "operative_handle"
+  ],
+  "rls": {
+    "read": {},
+    "create": {},
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}
