@@ -27,11 +27,11 @@ export default function Mandate() {
           <div>
             <span className="font-mono text-[10px] uppercase tracking-[0.3em] text-ozone">// Section 01 — Strategic mandate</span>
             <h2 className="mt-3 font-display text-5xl font-bold leading-[1.05] tracking-[-0.02em] text-silver md:text-7xl">
-              An agency of<br />creative disruption
+              An app for<br />creative disruption
             </h2>
           </div>
           <p className="max-w-sm font-display text-sm font-normal leading-[1.4] text-darkgray">
-            OOH.earth operates as a non-state disruption agency convened to reclaim public space from corporate occupation — aligned to the UN Sustainable Development Goals and accountable to the communities it serves.
+            OOH operates as a community-funded app reclaiming public space from corporate occupation — aligned to the UN Sustainable Development Goals and accountable to the communities it serves.
           </p>
         </div>
 
@@ -80,7 +80,7 @@ export default function Mandate() {
             Non-state · Community-funded · Union-made · Open-source field protocol
           </div>
           <a href="#ledger" className="font-mono text-[10px] uppercase tracking-[0.25em] text-ozone transition-colors hover:text-flare">
-            Engage the agency →
+            Engage the app →
           </a>
         </div>
       </div>

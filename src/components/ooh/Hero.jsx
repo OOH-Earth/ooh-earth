@@ -59,14 +59,14 @@ export default function Hero({ onCommand }) {
         <div className="grid flex-1 grid-cols-1 items-center gap-6 md:grid-cols-12">
           {/* Left · wordmark + tagline */}
           <div className="md:col-span-7">
-            <span className="font-mono text-[10px] uppercase tracking-[0.4em] text-ozone">Out Of Hell™ · Disruption Agency</span>
+            <span className="font-mono text-[10px] uppercase tracking-[0.4em] text-ozone">OOH Street Art & Adbusting Maps</span>
             <h1 className="mt-3 font-brand text-[15vw] leading-[0.82] tracking-[-0.03em] text-silver md:text-[7.5vw]">
               {WORD.split("").map((ch, i) => (
                 <span key={i} className="inline-block">{ch === "." ? <span className="text-ozone">.</span> : ch}</span>
               ))}
             </h1>
             <p className="mt-5 max-w-md font-display text-sm font-medium leading-[1.45] text-silver/70 md:text-[15px]">
-              A non-state disruption agency reclaiming the visual commons. Mapping corporate advertising offenses and coordinating creative resistance — SDG-aligned, from the orbital perspective.
+              A community-funded app reclaiming the visual commons. Mapping corporate advertising offenses and street-art adbusting worldwide — SDG-aligned, from the orbital perspective.
             </p>
             <div className="mt-6 flex flex-wrap gap-2">
               <Link to="/map" className="group inline-flex items-center gap-2 bg-ozone px-5 py-3 font-mono text-[10px] font-bold uppercase tracking-[0.25em] text-void transition-colors hover:bg-flare">
