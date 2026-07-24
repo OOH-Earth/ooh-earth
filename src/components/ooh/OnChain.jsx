@@ -35,7 +35,7 @@ export default function OnChain() {
                 <span className="inline-flex items-center gap-1.5 bg-ozone px-2.5 py-1 font-mono text-[10px] font-bold uppercase tracking-[0.2em] text-void">
                   <Flame className="h-3 w-3" /> $OUTOFHELL
                 </span>
-                <span className="font-mono text-[10px] uppercase tracking-[0.25em] text-dim">OOHEX · OpenSea</span>
+                <span className="font-mono text-[10px] uppercase tracking-[0.25em] text-dim">pump.fun · Solana</span>
               </div>
               <h3 className="mt-5 font-display text-3xl font-bold leading-[1.1] tracking-[-0.02em] text-silver md:text-5xl">
                 They stole the streets. We're stealing them back.
@@ -54,15 +54,24 @@ export default function OnChain() {
               ))}
             </ul>
 
-            <div className="mt-8 flex flex-wrap gap-3">
+            <div className="mt-8 flex flex-wrap items-center gap-3">
               <a
-                href="https://opensea.io/collection/oohex"
+                href="https://pump.fun/BwVYGpW3wqe6UZWoLDj4UbxXc94n813MSJcDNePApump"
                 target="_blank"
                 rel="noreferrer"
                 data-cursor="view"
                 className="inline-flex items-center gap-2 bg-ozone px-5 py-3 font-mono text-[11px] font-bold uppercase tracking-[0.25em] text-void transition-colors hover:bg-flare"
               >
-                Acquire on OpenSea <ArrowUpRight className="h-3.5 w-3.5" />
+                Buy on pump.fun <ArrowUpRight className="h-3.5 w-3.5" />
+              </a>
+              <a
+                href="https://dexscreener.com/solana/BwVYGpW3wqe6UZWoLDj4UbxXc94n813MSJcDNePApump"
+                target="_blank"
+                rel="noreferrer"
+                data-cursor="view"
+                className="inline-flex items-center gap-2 border border-slate2 px-5 py-3 font-mono text-[11px] font-bold uppercase tracking-[0.25em] text-darkgray transition-colors hover:border-ozone hover:text-ozone"
+              >
+                Chart · DexScreener
               </a>
               <a
                 href="https://donorbox.org/ooh"
@@ -74,6 +83,15 @@ export default function OnChain() {
                 <HeartHandshake className="h-3.5 w-3.5" /> Fiat sponsor
               </a>
             </div>
+            <a
+              href="https://solscan.io/token/BwVYGpW3wqe6UZWoLDj4UbxXc94n813MSJcDNePApump"
+              target="_blank"
+              rel="noreferrer"
+              data-cursor="view"
+              className="mt-4 inline-block break-all font-mono text-[10px] uppercase tracking-[0.2em] text-dim transition-colors hover:text-ozone"
+            >
+              CONTRACT · BwVYGpW3wqe6UZWoLDj4UbxXc94n813MSJcDNePApump
+            </a>
           </div>
 
           {/* Side tiles */}

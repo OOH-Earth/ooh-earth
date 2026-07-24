@@ -45,7 +45,7 @@ const GROUPS = [
       { name: "Foundation [ BASE ]", desc: "The nonprofit core.", href: "https://oohearthfoundation.framer.wiki/" },
       { name: "OOH Earth [ START ]", desc: "Adbusting & street art maps.", href: "https://oohearth.framer.ai/" },
       { name: '"Anti-Social" Adbusting Network', desc: "The social resistance layer.", href: "https://streetsocial.framer.ai/" },
-      { name: "OOHEX Meme Coin · OpenSea", desc: "$OUTOFHELL funds the network.", href: "https://opensea.io/collection/oohex" },
+      { name: "$OUTOFHELL · pump.fun", desc: "Solana token funding the network.", href: "https://pump.fun/BwVYGpW3wqe6UZWoLDj4UbxXc94n813MSJcDNePApump", priority: true },
       { name: "UPC Scanner · #TrueCost", desc: "Demo: scan the real cost.", href: "https://upc.framer.ai/" },
     ],
   },
