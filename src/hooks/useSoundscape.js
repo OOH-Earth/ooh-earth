@@ -163,7 +163,7 @@ export default function useSoundscape() {
   }, []);
 
   const speak = useCallback((text) => {
-    if (tvFocus || !readEnabled() || reduced() || !text || !isSpeechSupported()) return;
+    if (tvFocus || !readReadAloud() || reduced() || !text || !isSpeechSupported()) return;
     try {
       const synth = window.speechSynthesis;
       synth.cancel();
