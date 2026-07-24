@@ -1,4 +1,5 @@
 import { Crosshair } from "lucide-react";
+import { Link } from "react-router-dom";
 
 export default function Nav({ onCommand }) {
   return (
@@ -14,7 +15,7 @@ export default function Nav({ onCommand }) {
           <a href="#atlas" className="transition-colors hover:text-ozone">Atlas</a>
           <a href="#air" className="transition-colors hover:text-ozone">Air</a>
           <a href="#ledger" className="transition-colors hover:text-ozone">Ledger</a>
-          <a href="https://ooh.earth/area/bangkok" target="_blank" rel="noreferrer" className="transition-colors hover:text-ozone">Maps</a>
+          <Link to="/map" className="transition-colors hover:text-ozone">Maps</Link>
           <a href="https://ooh.earth/about" target="_blank" rel="noreferrer" className="transition-colors hover:text-ozone">About</a>
         </nav>
 

@@ -1,0 +1,17 @@
+// Snapshot of the live ooh.earth/location/ directory (captured 2026-05).
+// Used as a fallback when the backend can't reach the live feed (the ooh.earth
+// directory sits behind SiteGround bot-protection that blocks server-side
+// fetches). The moment a JSON feed is published, the map goes live automatically.
+
+export default [
+  { id: "1777896004", type: "Billboard", title: "Billboard · 1039 ถนนเพลินจิต", address: "1039 ถนนเพลินจิต, 10330, Pathum Wan, Bangkok, Thailand", lat: 13.74305, lng: 100.54899, link: "https://ooh.earth/location/1777896004/", image: "https://ooh.earth/wp-content/uploads/2026/05/1777896004-01-d21q-150x150.webp" },
+  { id: "1777667192", type: "Painted", title: "Painted · 778 ถนนสุขุมวิท", address: "778 ถนนสุขุมวิท, 10110, Vadhana, Bangkok, Thailand", lat: 13.72565, lng: 100.57698, link: "https://ooh.earth/location/1777667192/", image: "https://ooh.earth/wp-content/uploads/2026/05/1777667192-01-4t5x-150x150.webp" },
+  { id: "1777649595", type: "Digital", title: "Digital · 28 ถนนชิดลม", address: "28 ถนนชิดลม, 10330, Pathum Wan, Bangkok, Thailand", lat: 13.74676, lng: 100.54441, link: "https://ooh.earth/location/1777649595/", image: "https://ooh.earth/wp-content/uploads/2026/05/1777649595-01-nw44-150x150.webp" },
+  { id: "1777649423", type: "Digital", title: "Digital · 25 ถนนชิดลม", address: "25 ถนนชิดลม, 10330, Pathum Wan, Bangkok, Thailand", lat: 13.74741, lng: 100.5444, link: "https://ooh.earth/location/1777649423/", image: "https://ooh.earth/wp-content/uploads/2026/05/1777649423-01-k76z-150x150.webp" },
+  { id: "1777648896", type: "Location", title: "Location · ถนนเพชรบุรี", address: "ถนนเพชรบุรี, 10400, Ratchathewi, Bangkok, Thailand", lat: 13.74959, lng: 100.54777, link: "https://ooh.earth/location/1777648896/", image: "https://ooh.earth/wp-content/uploads/2026/05/1777648896-01-8wux-150x150.webp" },
+  { id: "1777635751", type: "Digital", title: "Digital · 111 ถนนสุขุมวิท", address: "111 ถนนสุขุมวิท, 10110, Khlong Toei, Bangkok, Thailand", lat: 13.74145, lng: 100.55382, link: "https://ooh.earth/location/1777635751/", image: "https://ooh.earth/wp-content/uploads/2026/05/1777635751-01-f5um-150x150.webp" },
+  { id: "1777635450", type: "Digital", title: "Digital · 164 ถนนสุขุมวิท", address: "164 ถนนสุขุมวิท, 10110, Khlong Toei, Bangkok, Thailand", lat: 13.74041, lng: 100.55541, link: "https://ooh.earth/location/1777635450/", image: "https://ooh.earth/wp-content/uploads/2026/05/1777635450-01-8ppn-150x150.webp" },
+  { id: "1777635124", type: "Digital", title: "Digital · 189 ถนนสุขุมวิท", address: "189 ถนนสุขุมวิท, 10110, Khlong Toei, Bangkok, Thailand", lat: 13.73905, lng: 100.55741, link: "https://ooh.earth/location/1777635124/", image: "https://ooh.earth/wp-content/uploads/2026/05/1777635124-01-1q3i-150x150.webp" },
+  { id: "1777432401", type: "Digital", title: "Digital · 898 ถนนเพลินจิต", address: "898 ถนนเพลินจิต, 10330, Pathum Wan, Bangkok, Thailand", lat: 13.74374, lng: 100.54512, link: "https://ooh.earth/location/1777432401/", image: "https://ooh.earth/wp-content/uploads/2026/04/1777432401-01-coee-150x150.webp" },
+  { id: "1777432241", type: "Billboard", title: "Billboard · 900 ถนนเพลินจิต", address: "900 ถนนเพลินจิต, 10330, Pathum Wan, Bangkok, Thailand", lat: 13.74358, lng: 100.54547, link: "https://ooh.earth/location/1777432241/", image: "https://ooh.earth/wp-content/uploads/2026/04/1777432241-01-98e1-150x150.webp" },
+];
