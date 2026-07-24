@@ -243,7 +243,7 @@ export default function NavMenu({ open, onClose, onTour }) {
             animate={{ y: 0 }}
             exit={{ y: "100%" }}
             transition={{ type: "spring", stiffness: 300, damping: 30 }}
-            className="fixed inset-x-0 bottom-0 z-[100] flex max-h-[88vh] flex-col rounded-t-2xl border-t border-slate2 bg-void md:hidden"
+            className="fixed inset-x-0 bottom-0 z-[100] flex max-h-[88vh] flex-col overflow-hidden rounded-t-2xl border-t border-slate2 bg-void md:hidden"
           >
             <div className="flex justify-center pt-2.5">
               <span className="h-1 w-10 rounded-full bg-slate2" />
@@ -259,7 +259,7 @@ export default function NavMenu({ open, onClose, onTour }) {
                 </button>
               </div>
             </div>
-            <div className="overflow-y-auto px-4 pb-5">
+            <div className="min-h-0 flex-1 overflow-y-auto px-4 pb-5">
               <SheetLinks onClose={onClose} />
             </div>
             <div className="border-t border-slate2/60 px-5 py-3">
