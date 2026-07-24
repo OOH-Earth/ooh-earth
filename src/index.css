@@ -287,6 +287,21 @@
   animation: scan-sweep 7s linear infinite;
 }
 
+/* BrandMark — orbital gyroscope */
+@keyframes ooh-core-pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.16); }
+}
+.ooh-core {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: ooh-core-pulse 3.4s ease-in-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  animate, animateTransform { display: none; }
+  .ooh-core { animation: none; }
+}
+
 /* Leaflet popup — theme-aware chrome */
 .leaflet-popup-content-wrapper,
 .leaflet-popup-tip {
