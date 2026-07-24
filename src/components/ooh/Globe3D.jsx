@@ -57,7 +57,7 @@ function buildFC(markers, selectedId) {
   };
 }
 
-export default function Globe3D({ markers, selectedId, hoverId, onSelect, userLoc }) {
+export default function Globe3D({ markers, selectedId, hoverId, onSelect, userLoc, interactive = true, spin = false }) {
   const containerRef = useRef(null);
   const mapRef = useRef(null);
   const popupRef = useRef(null);
@@ -68,7 +68,7 @@ export default function Globe3D({ markers, selectedId, hoverId, onSelect, userLo
   onSelectRef.current = onSelect;
 
   const [ready, setReady] = useState(false);
-  const [spinning, setSpinning] = useState(false);
+  const [spinning, setSpinning] = useState(spin);
 
   const zoomIn = () => mapRef.current?.zoomIn();
   const zoomOut = () => mapRef.current?.zoomOut();
@@ -100,6 +100,7 @@ export default function Globe3D({ markers, selectedId, hoverId, onSelect, userLo
       maxPitch: 85,
       projection: "globe",
       attributionControl: { compact: true },
+      interactive,
     });
     mapRef.current = map;
     popupRef.current = new maplibregl.Popup({ closeButton: true, closeOnClick: true, maxWidth: "260px" });
@@ -197,9 +198,12 @@ export default function Globe3D({ markers, selectedId, hoverId, onSelect, userLo
   return (
     <div className="absolute inset-0">
       <div ref={containerRef} className="h-full w-full" style={{ background: "#000" }} />
-      <div className="pointer-events-none absolute bottom-12 left-3 font-mono text-[9px] uppercase tracking-[0.25em] text-dim">
-        // drag to rotate · scroll to zoom · click a marker
-      </div>
+      {interactive && (
+        <div className="pointer-events-none absolute bottom-12 left-3 font-mono text-[9px] uppercase tracking-[0.25em] text-dim">
+          // drag to rotate · scroll to zoom · click a marker
+        </div>
+      )}
+      {interactive && (
       <div className="absolute bottom-12 right-3 z-[1000] flex flex-col gap-1.5">
         <button onClick={zoomIn} aria-label="Zoom in" className="flex h-9 w-9 items-center justify-center border border-slate2 bg-void/80 font-mono text-darkgray backdrop-blur-md transition-colors hover:border-ozone hover:text-ozone">
           <ZoomIn className="h-4 w-4" />
@@ -214,6 +218,7 @@ export default function Globe3D({ markers, selectedId, hoverId, onSelect, userLo
           <RotateCw className="h-4 w-4" />
         </button>
       </div>
+      )}
       {ready && <GlobeHud map={mapRef.current} />}
       {ready && <FieldStatsHud />}
     </div>

@@ -161,6 +161,7 @@
     scroll-padding-top: 80px;
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
+    overscroll-behavior: none;
   }
 
   body {

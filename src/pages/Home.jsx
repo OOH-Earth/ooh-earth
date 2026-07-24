@@ -17,7 +17,7 @@ import AirCommons from "@/components/ooh/AirCommons";
 import CarbonCounter from "@/components/ooh/CarbonCounter";
 import OffenderRegistry from "@/components/ooh/OffenderRegistry";
 import AdSpendDamage from "@/components/ooh/AdSpendDamage";
-import NewsTicker from "@/components/ooh/NewsTicker";
+import GlobeSection from "@/components/ooh/GlobeSection";
 import OperativeNetwork from "@/components/ooh/OperativeNetwork";
 import Leaderboard from "@/components/ooh/Leaderboard";
 import KlimaWidget from "@/components/ooh/KlimaWidget";
@@ -44,8 +44,8 @@ export default function Home() {
       <MetroSlider />
 
       <main>
+        <GlobeSection />
         <Hero onCommand={openCommand} />
-        <NewsTicker />
         <Reveal><Mandate /></Reveal>
         <SpotIdentifyTag />
         <Reveal><CampaignAtlas /></Reveal>
