@@ -66,7 +66,7 @@ export default function Channel() {
   return (
     <div className="min-h-screen bg-void">
       <Nav />
-      <main className="mx-auto max-w-6xl px-5 pb-24 pt-24 md:pt-28">
+      <main className="page-top mx-auto max-w-6xl px-5 pb-24">
         {/* Masthead */}
         <div className="flex items-end justify-between border-b-2 border-silver pb-4">
           <div>

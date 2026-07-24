@@ -235,6 +235,15 @@
   .tabular {
     font-variant-numeric: tabular-nums;
   }
+  /* Page top padding that clears the fixed nav incl. notch / dynamic island */
+  .page-top {
+    padding-top: calc(6rem + env(safe-area-inset-top));
+  }
+  @media (min-width: 768px) {
+    .page-top {
+      padding-top: calc(7rem + env(safe-area-inset-top));
+    }
+  }
   .tracking-label {
     letter-spacing: 0.3em;
   }
