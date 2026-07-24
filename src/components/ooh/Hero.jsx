@@ -77,7 +77,7 @@ export default function Hero({ onCommand }) {
           {/* Left · wordmark + tagline */}
           <div className="md:col-span-7">
             <span className="font-mono text-[10px] uppercase tracking-[0.4em] text-ozone">OOH Street Art & Adbusting Maps</span>
-            <h1 className="mt-3 font-brand text-[15vw] leading-[0.82] tracking-[-0.03em] text-silver md:text-[7.5vw]">
+            <h1 className="mt-3 whitespace-nowrap font-brand text-[clamp(2.25rem,12vw,7.5vw)] leading-[0.82] tracking-[-0.03em] text-silver">
               {WORD.split("").map((ch, i) =>
               <span key={i} className="inline-block">{ch === "." ? <span className="text-ozone">.</span> : ch}</span>
               )}
