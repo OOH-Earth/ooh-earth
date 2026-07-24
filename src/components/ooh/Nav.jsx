@@ -31,12 +31,12 @@ export default function Nav({ onCommand }) {
           <button
             onClick={() => setDashOpen(true)}
             aria-label="Open dashboard"
-            className="flex flex-col items-start leading-none transition-colors hover:text-ozone"
-          >
+            className="flex flex-col items-start leading-none transition-colors hover:text-ozone">
+            
             <span className="font-mono text-[12px] font-bold tabular tracking-[0.12em] text-silver">{time}</span>
-            <span className="mt-0.5 flex items-center gap-1.5 font-mono text-[8px] uppercase tracking-[0.3em] text-dim">
-              <span className="h-1 w-1 rounded-full bg-ozone animate-pulse" />
-              dashboard
+            <span className="mt-0.5 flex items-center gap-1.5 text-[8px] uppercase tracking-[0.3em] text-dim [font-family:'Architects_Daughter',_system-ui]">DASHBOARD
+
+
             </span>
           </button>
         </div>
@@ -56,21 +56,21 @@ export default function Nav({ onCommand }) {
           <button
             onClick={() => setMenuOpen(true)}
             aria-label="Open menu"
-            className="flex items-center gap-2 border border-slate2 px-3 py-2 font-mono text-[10px] font-bold uppercase tracking-[0.25em] text-silver transition-colors hover:border-ozone hover:text-ozone"
-          >
+            className="flex items-center gap-2 border border-slate2 px-3 py-2 font-mono text-[10px] font-bold uppercase tracking-[0.25em] text-silver transition-colors hover:border-ozone hover:text-ozone">
+            
             <Menu className="h-4 w-4" /> <span className="hidden sm:inline">Menu</span>
           </button>
           <Link
             to="/report"
             aria-label="Capture & report"
-            className="flex items-center gap-2 border border-ozone/70 px-3 py-2 font-mono text-[10px] font-bold uppercase tracking-[0.25em] text-ozone transition-colors hover:bg-ozone hover:text-void md:hidden"
-          >
+            className="flex items-center gap-2 border border-ozone/70 px-3 py-2 font-mono text-[10px] font-bold uppercase tracking-[0.25em] text-ozone transition-colors hover:bg-ozone hover:text-void md:hidden">
+            
             <Camera className="h-3.5 w-3.5" />
           </Link>
           <button
             onClick={onCommand}
-            className="group flex items-center gap-2 border-2 border-ozone bg-ozone px-3 py-2 font-mono text-[10px] font-bold uppercase tracking-[0.25em] text-void transition-colors hover:bg-flare hover:border-flare"
-          >
+            className="group flex items-center gap-2 border-2 border-ozone bg-ozone px-3 py-2 font-mono text-[10px] font-bold uppercase tracking-[0.25em] text-void transition-colors hover:bg-flare hover:border-flare">
+            
             <Crosshair className="h-3.5 w-3.5" />
             <span className="hidden sm:inline">Command</span>
           </button>
@@ -79,6 +79,6 @@ export default function Nav({ onCommand }) {
 
       <SmartDashboard open={dashOpen} onClose={() => setDashOpen(false)} />
       <NavMenu open={menuOpen} onClose={() => setMenuOpen(false)} onTour={startTour} />
-    </header>
-  );
+    </header>);
+
 }
