@@ -94,9 +94,15 @@ export default function Map() {
   const filtered = useMemo(() => {
     const list = raw?.markers || [];
     const q = query.trim().toLowerCase();
-    return list.filter(
-      (m) => (typeFilter === "all" || m.type === typeFilter) && (!q || `${m.title} ${m.address}`.toLowerCase().includes(q))
-    );
+    return list
+      .filter(
+        (m) => (typeFilter === "all" || m.type === typeFilter) && (!q || `${m.title} ${m.address}`.toLowerCase().includes(q))
+      )
+      .sort((a, b) => {
+        const aPhoto = a.status === "verified" && !!a.image ? 2 : a.image ? 1 : 0;
+        const bPhoto = b.status === "verified" && !!b.image ? 2 : b.image ? 1 : 0;
+        return bPhoto - aPhoto;
+      });
   }, [raw, typeFilter, query]);
 
   const counts = useMemo(() => {
