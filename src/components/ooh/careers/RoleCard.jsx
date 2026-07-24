@@ -7,7 +7,7 @@ const TYPE_STYLES = {
 };
 
 export default function RoleCard({ role }) {
-  const mailto = `mailto:hello@ooh.earth?subject=Application · ${encodeURIComponent(role.title)}`;
+  const mailto = `mailto:hello@oohearth.app?subject=Application · ${encodeURIComponent(role.title)}`;
   return (
     <div className="group flex flex-col gap-3 border border-slate2/60 bg-card/40 p-5 transition-colors hover:border-ozone/60">
       <div className="flex items-start justify-between gap-3">

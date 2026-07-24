@@ -72,7 +72,7 @@ export default function Channel() {
           <div>
             <div className="flex items-center gap-2">
               <Tv className="h-4 w-4 text-ozone" />
-              <span className="font-mono text-[9px] uppercase tracking-[0.3em] text-ozone">ooh.earth / channel</span>
+              <span className="font-mono text-[9px] uppercase tracking-[0.3em] text-ozone">oohearth.app / channel</span>
             </div>
             <h1 className="mt-1 font-display text-5xl font-bold tracking-[-0.03em] text-silver md:text-7xl">
               OOH<span className="text-ozone">·</span>TV

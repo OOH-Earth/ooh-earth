@@ -7,13 +7,13 @@ Deno.serve(async (req) => {
     }
 
     const ALLOWED_ORIGINS = new Set([
-      "https://ooh.earth",
-      "https://www.ooh.earth",
+      "https://oohearth.app",
+      "https://www.oohearth.app",
       "http://localhost:5173",
       "http://localhost:3000",
     ]);
     const rawOrigin = req.headers.get("origin");
-    const origin = rawOrigin && ALLOWED_ORIGINS.has(rawOrigin) ? rawOrigin : "https://ooh.earth";
+    const origin = rawOrigin && ALLOWED_ORIGINS.has(rawOrigin) ? rawOrigin : "https://oohearth.app";
 
     const params = new URLSearchParams();
     params.set("mode", "payment");

@@ -1,4 +1,4 @@
-// Access-key glyphs matched to the ooh.earth/access-keys icon set.
+// Access-key glyphs matched to the oohearth.app/access-keys icon set.
 // Each is a schematic SVG so the key type is visually identifiable on
 // bus-stop detail pages and the key registry.
 

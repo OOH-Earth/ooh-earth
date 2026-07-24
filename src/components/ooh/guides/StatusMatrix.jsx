@@ -1,5 +1,5 @@
 const STATUS = [
-  { area: "Atlas / Maps", state: "LIVE", note: "Seeded static directory · live ooh.earth ingest blocked by bot protection" },
+  { area: "Atlas / Maps", state: "LIVE", note: "Seeded static directory · live oohearth.app ingest blocked by bot protection" },
   { area: "Report flow", state: "LIVE", note: "Offline-first capture queue with sync badge" },
   { area: "Lead claims", state: "LIVE", note: "Adopt-a-landmark flow operative" },
   { area: "In-Home digital busts", state: "LIVE", note: "Full CRUD + realtime subscription" },

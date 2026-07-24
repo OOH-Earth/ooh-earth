@@ -37,7 +37,7 @@ import { thumbHTML, metaFor } from "@/components/ooh/map/LocationThumb";
 import FutureLayer from "@/components/ooh/map/FutureLayer";
 
 // Micro-icon badges — small colored circles with a black category glyph,
-// overlaid on the photo pin (ooh.earth field style).
+// overlaid on the photo pin (oohearth.app field style).
 const MICRO = {
   billboard: { color: "#EDFF00", svg: `<svg viewBox="0 0 24 24" width="10" height="10" fill="none"><rect x="5" y="4" width="14" height="10" rx="1" fill="#000"/><rect x="9" y="14" width="2" height="5" fill="#000"/><rect x="13" y="14" width="2" height="5" fill="#000"/></svg>` },
   digital: { color: "#EDFF00", svg: `<svg viewBox="0 0 24 24" width="10" height="10" fill="none"><rect x="5" y="4" width="14" height="10" rx="1" fill="#000"/><rect x="7" y="6" width="10" height="2" fill="#EDFF00"/><rect x="7" y="9" width="6" height="1.5" fill="#EDFF00"/></svg>` },
@@ -51,7 +51,7 @@ const MICRO = {
 
 // Photo-circle pin — white-ringed location photo with a category micro-badge
 // (bottom-right) and a status dot (top-left), plus the pink radial highlight.
-// Matches the ooh.earth field-pin style.
+// Matches the oohearth.app field-pin style.
 function pinFor(m, selected) {
   const verified = m.status === "verified";
   const mc = MICRO[m.type] || MICRO.other;

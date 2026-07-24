@@ -15,12 +15,12 @@ export default function ImpactLedger() {
 
           <div className="mt-10 border-t border-slate2/40 pt-8">
             <a
-              href="mailto:hello@ooh.earth"
+              href="mailto:hello@oohearth.app"
               data-cursor="view"
               className="group inline-flex items-baseline gap-3 font-display text-3xl font-bold tracking-[-0.02em] text-silver transition-colors hover:text-ozone md:text-5xl"
             >
               <Mail className="h-7 w-7 translate-y-1 text-ozone md:h-9 md:w-9" />
-              hello@ooh.earth
+              hello@oohearth.app
               <ArrowUpRight className="h-6 w-6 translate-y-1 text-dim transition-all group-hover:translate-x-0.5 group-hover:-translate-y-0.5 group-hover:text-ozone md:h-8 md:w-8" />
             </a>
           </div>

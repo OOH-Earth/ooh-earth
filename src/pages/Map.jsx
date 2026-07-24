@@ -267,7 +267,7 @@ export default function Map() {
                 <FileDown className="h-3.5 w-3.5" /> <span className="hidden sm:inline">GeoJSON</span>
               </button>
               <a
-                href="https://ooh.earth/access-keys/"
+                href="https://oohearth.app/access-keys/"
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label="Access keys reference"

@@ -26,7 +26,7 @@ _Last updated: 2026-07-24_
 ### Data / security
 - [ ] RLS: Location & DigitalBust — create/read open for public field reports; update/delete admin-only. Confirm no open writes.
 - [ ] LeadClaim / FundingLead create open; admin-only mutations.
-- [ ] `SendEmail` only reaches registered app users — external addresses (e.g. hello@ooh.earth) rejected. Use invitations for non-registered recipients.
+- [ ] `SendEmail` only reaches registered app users — external addresses (e.g. hello@oohearth.app) rejected. Use invitations for non-registered recipients.
 
 ### Native / HTTPS-gated features
 - [ ] TrueCost + Trash ID camera scan — requires full HTTPS deployment; blocked in preview iframe. Test after publish.
@@ -52,4 +52,4 @@ _Last updated: 2026-07-24_
 
 ## Notes
 - Keep this file updated with each shipped change so the launch changelog is ready.
-- Dead-ends (do not retry): backend fetch of ooh.earth (bot-blocked), full-screen overlay menu, Enter-the-Void title sequence, predator-rune logo, private-key paste.
+- Dead-ends (do not retry): backend fetch of oohearth.app (bot-blocked), full-screen overlay menu, Enter-the-Void title sequence, predator-rune logo, private-key paste.

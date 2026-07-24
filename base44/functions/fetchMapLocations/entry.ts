@@ -1,10 +1,10 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
 
-// Preferred live source: a static JSON feed you publish on ooh.earth.
+// Preferred live source: a static JSON feed you publish on oohearth.app.
 // Static files aren't routed through the SG captcha, so this works from the
 // backend the moment the file exists. Expected shape:
 // [{ "title","address","lat","lng","link","image" }, ...]
-const FEED_URL = 'https://ooh.earth/wp-content/uploads/ooh-locations.json';
+const FEED_URL = 'https://oohearth.app/wp-content/uploads/ooh-locations.json';
 
 Deno.serve(async (req) => {
   try {
@@ -23,7 +23,7 @@ Deno.serve(async (req) => {
               lat: parseFloat(m.lat ?? m.latitude),
               lng: parseFloat(m.lng ?? m.longitude),
               image: m.image || m.thumbnail || null,
-              link: m.link || (m.id != null ? `https://ooh.earth/location/${m.id}/` : 'https://ooh.earth/location/'),
+              link: m.link || (m.id != null ? `https://oohearth.app/location/${m.id}/` : 'https://oohearth.app/location/'),
             }))
             .filter((m) => isFinite(m.lat) && isFinite(m.lng));
           if (markers.length) return Response.json({ count: markers.length, markers, live: true });
@@ -43,7 +43,7 @@ Deno.serve(async (req) => {
     const seen = new Set();
 
     for (let p = 1; p <= pages; p++) {
-      const url = p === 1 ? 'https://ooh.earth/location/' : `https://ooh.earth/location/page/${p}/`;
+      const url = p === 1 ? 'https://oohearth.app/location/' : `https://oohearth.app/location/page/${p}/`;
       let html;
       try {
         const res = await fetch(url, {
@@ -97,7 +97,7 @@ Deno.serve(async (req) => {
           lat,
           lng,
           image,
-          link: id ? `https://ooh.earth/location/${id}/` : 'https://ooh.earth/location/',
+          link: id ? `https://oohearth.app/location/${id}/` : 'https://oohearth.app/location/',
         });
         added++;
       }

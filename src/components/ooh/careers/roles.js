@@ -106,4 +106,4 @@ export const PROCESS = [
   { step: "04", title: "Onboard", body: "Credentials, comms, and your first operative mission." },
 ];
 
-export const APPLY_EMAIL = "hello@ooh.earth";
+export const APPLY_EMAIL = "hello@oohearth.app";

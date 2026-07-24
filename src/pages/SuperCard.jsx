@@ -5,14 +5,14 @@ import Reveal from "@/components/ooh/Reveal";
 import { Nfc, MapPin, Scale, IdCard, CloudOff, BarChart3, ArrowRight, ShieldCheck } from "lucide-react";
 
 const FEATURES = [
-  { icon: IdCard, title: "Identification", body: "Proves your standing as a registered OOH Earth field operative. Referenced to your operative record at ooh.earth." },
+  { icon: IdCard, title: "Identification", body: "Proves your standing as a registered OOH Earth field operative. Referenced to your operative record at oohearth.app." },
   { icon: Nfc, title: "NFC Site Tagging", body: "Tap your card at any documented billboard or site. The chip logs your visit, timestamps the documentation, and links to the artifact record." },
-  { icon: MapPin, title: "Map Integration", body: "Every card tap updates the live map at ooh.earth. Your documentation drives are tracked and your city's evidence base grows with every visit." },
+  { icon: MapPin, title: "Map Integration", body: "Every card tap updates the live map at oohearth.app. Your documentation drives are tracked and your city's evidence base grows with every visit." },
   { icon: Scale, title: "Legal Standing", body: "References UN SDG 11.7 and A/69/286 — internationally recognised frameworks for public space access and cultural rights. You're exercising documented rights." },
 ];
 
 const FIELD = [
-  { icon: CloudOff, title: "Works everywhere", body: "Weatherproof PVC with embedded NFC. Functions offline — syncs to ooh.earth when you're back in range. No app required for basic identification." },
+  { icon: CloudOff, title: "Works everywhere", body: "Weatherproof PVC with embedded NFC. Functions offline — syncs to oohearth.app when you're back in range. No app required for basic identification." },
   { icon: BarChart3, title: "Live operative dashboard", body: "Track your documentation history, city contributions, rarity collection and personal impact report — all linked to your card number." },
 ];
 

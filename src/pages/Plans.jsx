@@ -64,7 +64,7 @@ const FAQ = [
 export default function Plans() {
   const [commandOpen, setCommandOpen] = useState(false);
   const openCommand = () => setCommandOpen(true);
-  const JOIN_URL = "https://ooh.earth/login-registration/";
+  const JOIN_URL = "https://oohearth.app/login-registration/";
 
   return (
     <div className="relative bg-void">
@@ -103,7 +103,7 @@ export default function Plans() {
                 </ul>
               </div>
               <div className="overflow-hidden border border-slate2/60">
-                <img src="https://ooh.earth/wp-content/uploads/2026/04/V0y9dTu39TVeFcT18S6UcyVbHA-01-0eia-1024x768.webp" alt="OOH field documentation" className="h-full w-full object-cover" />
+                <img src="https://oohearth.app/wp-content/uploads/2026/04/V0y9dTu39TVeFcT18S6UcyVbHA-01-0eia-1024x768.webp" alt="OOH field documentation" className="h-full w-full object-cover" />
               </div>
             </div>
           </div>

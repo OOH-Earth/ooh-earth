@@ -12,8 +12,8 @@ const PLATES = [
     duration: "30 DAYS",
     sentiment: "+78",
     sdg: "11",
-    img: "https://ooh.earth/wp-content/uploads/2026/05/1777896004-01-d21q.webp",
-    href: "https://ooh.earth/location/1777896004/",
+    img: "https://oohearth.app/wp-content/uploads/2026/05/1777896004-01-d21q.webp",
+    href: "https://oohearth.app/location/1777896004/",
   },
   {
     no: "02",
@@ -25,8 +25,8 @@ const PLATES = [
     duration: "14 DAYS",
     sentiment: "+91",
     sdg: "11",
-    img: "https://ooh.earth/wp-content/uploads/2026/05/1777667192-01-4t5x.webp",
-    href: "https://ooh.earth/location/1777667192/",
+    img: "https://oohearth.app/wp-content/uploads/2026/05/1777667192-01-4t5x.webp",
+    href: "https://oohearth.app/location/1777667192/",
   },
   {
     no: "03",
@@ -38,8 +38,8 @@ const PLATES = [
     duration: "ONGOING",
     sentiment: "+64",
     sdg: "9 · 17",
-    img: "https://ooh.earth/wp-content/uploads/2026/05/1777649595-01-nw44.webp",
-    href: "https://ooh.earth/location/1777649595/",
+    img: "https://oohearth.app/wp-content/uploads/2026/05/1777649595-01-nw44.webp",
+    href: "https://oohearth.app/location/1777649595/",
   },
   {
     no: "04",
@@ -51,8 +51,8 @@ const PLATES = [
     duration: "21 DAYS",
     sentiment: "+72",
     sdg: "11",
-    img: "https://ooh.earth/wp-content/uploads/2026/05/1777635751-01-f5um.webp",
-    href: "https://ooh.earth/location/1777635751/",
+    img: "https://oohearth.app/wp-content/uploads/2026/05/1777635751-01-f5um.webp",
+    href: "https://oohearth.app/location/1777635751/",
   },
   {
     no: "05",
@@ -64,8 +64,8 @@ const PLATES = [
     duration: "LOGGED",
     sentiment: "+99",
     sdg: "13 · 16",
-    img: "https://ooh.earth/wp-content/uploads/2026/03/04_Lindsay-Grime_Were-Hiring_Shell-AGM-2024_credit-Brandalism_12x9-2.jpeg",
-    href: "https://ooh.earth/location/1773075390/",
+    img: "https://oohearth.app/wp-content/uploads/2026/03/04_Lindsay-Grime_Were-Hiring_Shell-AGM-2024_credit-Brandalism_12x9-2.jpeg",
+    href: "https://oohearth.app/location/1773075390/",
   },
 ];
 

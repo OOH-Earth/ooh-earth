@@ -1,4 +1,4 @@
-// Access-key reference — sourced from ooh.earth/access-keys.
+// Access-key reference — sourced from oohearth.app/access-keys.
 // Keyed housings apply principally to transit / bus-shelter units; billboard
 // structures use direct physical access (no standardized key).
 

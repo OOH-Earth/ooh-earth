@@ -21,7 +21,7 @@ A living log of open items, decisions, and things still to address. Strike items
 - **/card** NFC Union Card landing page.
 - **Map locations** sourced via server-side KML importer (`importKmlLocations`).
 - **London transit map** imported: 705 verified transit locations from Google My Maps (mid `1JE50Oz1sEg8Cugs9O-fBdxOkCvSZOosk`).
-- **Access keys** referenced on the Map via ooh.earth/access-keys/ (4-Way Utility, H60, JCD Superlock, etc.).
+- **Access keys** referenced on the Map via oohearth.app/access-keys/ (4-Way Utility, H60, JCD Superlock, etc.).
 - **Sky Intel** module — astro-activity alerts (conjunctions, meteor showers, planet oppositions, satellite passes) via web-search LLM, cached daily in localStorage; moon phase computed locally ("moon calculus"); each event tagged with a cryptid "bets" signal. Mounted on Home after OnChain.
 
 ---
@@ -76,6 +76,6 @@ A living log of open items, decisions, and things still to address. Strike items
 
 ## Known Issues / Limits
 
-- Internal `SendEmail` does **not** deliver to external addresses (e.g. `hello@ooh.earth`) — registered app users only.
-- SiteGround bot-protection blocks backend fetch of ooh.earth data — seeded static data instead.
+- Internal `SendEmail` does **not** deliver to external addresses (e.g. `hello@oohearth.app`) — registered app users only.
+- SiteGround bot-protection blocks backend fetch of oohearth.app data — seeded static data instead.
 - Private key / transaction hash paste is intentionally blocked (fund-safety).

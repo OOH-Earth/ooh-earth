@@ -34,7 +34,7 @@
     },
     "source_link": {
       "type": "string",
-      "description": "External detail URL (ooh.earth post, news, etc.)"
+      "description": "External detail URL (oohearth.app post, news, etc.)"
     },
     "notes": {
       "type": "string"
@@ -56,7 +56,7 @@
         "unknown"
       ],
       "default": "none",
-      "description": "Physical access key type that opens the unit housing (see ooh.earth/access-keys)"
+      "description": "Physical access key type that opens the unit housing (see oohearth.app/access-keys)"
     },
     "status": {
       "type": "string",

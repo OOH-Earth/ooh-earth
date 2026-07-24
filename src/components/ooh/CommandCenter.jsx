@@ -5,22 +5,22 @@ const GROUPS = [
   {
     label: "Get Started",
     links: [
-      { name: "Sign up for Early Access", desc: "Join the global mapping platform.", href: "http://ooh.earth/", priority: true },
-      { name: "About OOH Street Maps", desc: "The mission, the union, the method.", href: "https://ooh.earth/about" },
-      { name: "@advertisersanonymous", desc: "Operative profile & field log.", href: "https://ooh.earth/profile/advertisersanonymous" },
+      { name: "Sign up for Early Access", desc: "Join the global mapping platform.", href: "https://oohearth.app/", priority: true },
+      { name: "About OOH Street Maps", desc: "The mission, the union, the method.", href: "https://oohearth.app/about" },
+      { name: "@advertisersanonymous", desc: "Operative profile & field log.", href: "https://oohearth.app/profile/advertisersanonymous" },
     ],
   },
   {
     label: "Adbusting City Maps",
     links: [
-      { name: "Bangkok", desc: "🗺️📍 Active intervention map.", href: "https://ooh.earth/area/bangkok", priority: true },
-      { name: "London", desc: "🗺️📍 Active intervention map.", href: "https://ooh.earth/area/london", priority: true },
+      { name: "Bangkok", desc: "🗺️📍 Active intervention map.", href: "https://oohearth.app/area/bangkok", priority: true },
+      { name: "London", desc: "🗺️📍 Active intervention map.", href: "https://oohearth.app/area/london", priority: true },
     ],
   },
   {
     label: "Follow",
     links: [
-      { name: "Instagram @ooh.earth", desc: "Field photography & live updates.", href: "https://www.instagram.com/oohstreetmaps/" },
+      { name: "Instagram @oohearth.app", desc: "Field photography & live updates.", href: "https://www.instagram.com/oohstreetmaps/" },
       { name: "oohearth on Zora", desc: "On-chain creative resistance.", href: "https://zora.co/@oohearth" },
     ],
   },
