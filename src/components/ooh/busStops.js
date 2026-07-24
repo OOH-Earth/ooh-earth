@@ -147,3 +147,44 @@ export const BUS_STOPS = [
 export function getBusStop(id) {
   return BUS_STOPS.find((s) => s.id === id) || null;
 }
+
+// Area classifier — groups stops into London neighbourhoods for breadcrumb nav.
+const AREA_RULES = [
+  ["brixton", "Brixton"], ["stockwell", "Stockwell"], ["effra", "Brixton"],
+  ["kennington", "Kennington"], ["oval", "Kennington"], ["newington", "Kennington"],
+  ["penton", "Kennington"], ["windmill", "Kennington"], ["fitzalan", "Kennington"],
+  ["lambeth", "Lambeth"], ["tinworth", "Lambeth"], ["lambeth palace", "Lambeth"],
+  ["westminster", "Westminster"], ["vauxhall", "Westminster"], ["millbank", "Westminster"],
+  ["st george", "Westminster"], ["victoria", "Westminster"], ["wandsworth", "Westminster"],
+  ["embassy", "Westminster"],
+  ["camberwell", "Camberwell"], ["denmark hill", "Camberwell"], ["warner", "Camberwell"],
+  ["valmar", "Camberwell"], ["caldecot", "Camberwell"], ["medlar", "Camberwell"],
+  ["bowyer", "Camberwell"], ["wyndham", "Camberwell"], ["lilford", "Camberwell"],
+  ["shakespeare", "Camberwell"], ["vestry", "Camberwell"], ["st giles", "Camberwell"],
+  ["herne hill", "Herne Hill"], ["brockwell", "Herne Hill"], ["dalberg", "Herne Hill"],
+  ["peckham", "Peckham"], ["briant", "Peckham"], ["carlton", "Peckham"],
+  ["harris", "Peckham"], ["queens road", "Peckham"], ["clayton", "Peckham"],
+  ["commercial", "Peckham"], ["pomeroy", "Peckham"],
+  ["old kent", "Old Kent Road"], ["malt", "Old Kent Road"], ["trafalgar", "Old Kent Road"],
+  ["dunton", "Old Kent Road"], ["ilderton", "Old Kent Road"],
+  ["new cross", "New Cross"], ["besson", "New Cross"],
+  ["london bridge", "London Bridge"], ["hays", "London Bridge"], ["hop exchange", "London Bridge"],
+  ["borough", "Borough"], ["trinity", "Borough"], ["bartholomew", "Borough"],
+  ["blackhorse", "Borough"], ["crown court", "Borough"],
+  ["tower hill", "Tower Hill"], ["elephant", "Elephant & Castle"],
+  ["east street", "Elephant & Castle"], ["westmoreland", "Elephant & Castle"],
+  ["clapham", "Clapham"], ["british library", "Euston"],
+  ["south kensington", "South Kensington"], ["queenstown", "Battersea"], ["silverthorne", "Battersea"],
+];
+
+export const BUS_STOP_AREAS = (() => {
+  const map = new Map();
+  for (const s of BUS_STOPS) {
+    const name = s.name.toLowerCase();
+    let area = "Lambeth & Southwark";
+    for (const [kw, a] of AREA_RULES) { if (name.includes(kw)) { area = a; break; } }
+    if (!map.has(area)) map.set(area, []);
+    map.get(area).push(s);
+  }
+  return Array.from(map, ([area, stops]) => ({ area, stops }));
+})();

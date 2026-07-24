@@ -1,7 +1,8 @@
 import { useEffect } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Link } from "react-router-dom";
-import { X } from "lucide-react";
+import { X, ChevronRight } from "lucide-react";
+import { BUS_STOP_AREAS } from "@/components/ooh/busStops";
 
 const SITEMAP = [
   {
@@ -21,6 +22,13 @@ const SITEMAP = [
       { to: "/ar", label: "AR Lens" },
       { to: "/inhome", label: "In-Home" },
     ],
+  },
+  {
+    group: "Bus Stops",
+    cats: BUS_STOP_AREAS.map(({ area, stops }) => ({
+      cat: area,
+      items: stops.map((s) => ({ to: `/bus-stop/${s.id}`, label: s.name })),
+    })),
   },
   {
     group: "Field Tools",
@@ -45,7 +53,10 @@ const SITEMAP = [
   },
 ];
 
-const ROUTE_COUNT = SITEMAP.reduce((n, g) => n + g.items.length, 0);
+const ROUTE_COUNT = SITEMAP.reduce(
+  (n, g) => n + (g.cats ? g.cats.reduce((c, a) => c + a.items.length, 0) : g.items.length),
+  0
+);
 
 const list = {
   hidden: {},
@@ -69,24 +80,53 @@ function SheetLinks({ onClose }) {
             <span className="font-mono text-[9px] uppercase tracking-[0.3em] text-ozone">// {g.group}</span>
             <span className="h-px flex-1 bg-slate2/40" />
           </div>
-          <div className="grid grid-cols-2 gap-1.5">
-            {g.items.map((l) => {
-              n += 1;
-              return (
-                <Link
-                  key={l.to}
-                  to={l.to}
-                  onClick={onClose}
-                  className="group flex flex-col gap-1 border border-slate2/50 px-3 py-3 transition-colors hover:border-ozone/60 hover:bg-slate2/20"
-                >
-                  <span className="font-mono text-[9px] tabular text-dim/50">{String(n).padStart(2, "0")}</span>
-                  <span className="font-display text-sm font-semibold tracking-[-0.02em] text-silver/85 transition-colors group-hover:text-ozone">
-                    {l.label}
-                  </span>
-                </Link>
-              );
-            })}
-          </div>
+          {g.cats ? (
+            <div className="space-y-3">
+              {g.cats.map((c) => (
+                <div key={c.cat}>
+                  <div className="mb-1 flex items-center gap-1 font-mono text-[8px] uppercase tracking-[0.2em] text-dim/70">
+                    <span className="text-dim/40">Field Ops</span>
+                    <ChevronRight className="h-2.5 w-2.5 text-dim/30" />
+                    <span className="text-dim/40">Bus Stops</span>
+                    <ChevronRight className="h-2.5 w-2.5 text-dim/30" />
+                    <span className="text-ozone/80">{c.cat}</span>
+                    <span className="ml-1 text-dim/40">· {c.items.length}</span>
+                  </div>
+                  <div className="grid grid-cols-2 gap-1">
+                    {c.items.map((l) => (
+                      <Link
+                        key={l.to}
+                        to={l.to}
+                        onClick={onClose}
+                        className="group truncate border border-slate2/40 px-2 py-1.5 font-display text-[11px] font-medium tracking-[-0.01em] text-silver/75 transition-colors hover:border-ozone/60 hover:bg-slate2/20 hover:text-ozone"
+                      >
+                        {l.label}
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="grid grid-cols-2 gap-1.5">
+              {g.items.map((l) => {
+                n += 1;
+                return (
+                  <Link
+                    key={l.to}
+                    to={l.to}
+                    onClick={onClose}
+                    className="group flex flex-col gap-1 border border-slate2/50 px-3 py-3 transition-colors hover:border-ozone/60 hover:bg-slate2/20"
+                  >
+                    <span className="font-mono text-[9px] tabular text-dim/50">{String(n).padStart(2, "0")}</span>
+                    <span className="font-display text-sm font-semibold tracking-[-0.02em] text-silver/85 transition-colors group-hover:text-ozone">
+                      {l.label}
+                    </span>
+                  </Link>
+                );
+              })}
+            </div>
+          )}
         </motion.div>
       ))}
     </motion.div>
@@ -102,25 +142,57 @@ function PopoverLinks({ onClose }) {
           <div className="mb-1 flex items-center gap-2 border-b border-slate2/40 pb-1">
             <span className="font-mono text-[9px] uppercase tracking-[0.3em] text-ozone">// {g.group}</span>
           </div>
-          {g.items.map((l) => {
-            n += 1;
-            return (
-              <Link
-                key={l.to}
-                to={l.to}
-                onClick={onClose}
-                className="group flex items-center justify-between border-b border-slate2/20 px-1 py-2 transition-colors hover:bg-slate2/30"
-              >
-                <span className="flex items-baseline gap-2.5">
-                  <span className="font-mono text-[9px] tabular text-dim/50">{String(n).padStart(2, "0")}</span>
-                  <span className="font-display text-[13px] font-semibold tracking-[-0.02em] text-silver/85 transition-all duration-200 group-hover:translate-x-0.5 group-hover:text-ozone">
-                    {l.label}
+          {g.cats ? (
+            <div className="mb-2 space-y-2">
+              {g.cats.map((c) => (
+                <div key={c.cat}>
+                  <div className="mb-0.5 flex items-center gap-1 font-mono text-[8px] uppercase tracking-[0.2em] text-dim/70">
+                    <span className="text-dim/40">Field Ops</span>
+                    <ChevronRight className="h-2.5 w-2.5 text-dim/30" />
+                    <span className="text-dim/40">Bus Stops</span>
+                    <ChevronRight className="h-2.5 w-2.5 text-dim/30" />
+                    <span className="text-ozone/80">{c.cat}</span>
+                    <span className="ml-1 text-dim/40">· {c.items.length}</span>
+                  </div>
+                  <div className="grid grid-cols-1 gap-0">
+                    {c.items.map((l) => (
+                      <Link
+                        key={l.to}
+                        to={l.to}
+                        onClick={onClose}
+                        className="group flex items-center justify-between truncate border-b border-slate2/15 px-1 py-1.5 transition-colors hover:bg-slate2/30"
+                      >
+                        <span className="truncate font-display text-[12px] font-medium tracking-[-0.01em] text-silver/80 transition-colors group-hover:text-ozone">
+                          {l.label}
+                        </span>
+                        <ChevronRight className="h-3 w-3 shrink-0 text-dim/30 transition-colors group-hover:text-ozone" />
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            g.items.map((l) => {
+              n += 1;
+              return (
+                <Link
+                  key={l.to}
+                  to={l.to}
+                  onClick={onClose}
+                  className="group flex items-center justify-between border-b border-slate2/20 px-1 py-2 transition-colors hover:bg-slate2/30"
+                >
+                  <span className="flex items-baseline gap-2.5">
+                    <span className="font-mono text-[9px] tabular text-dim/50">{String(n).padStart(2, "0")}</span>
+                    <span className="font-display text-[13px] font-semibold tracking-[-0.02em] text-silver/85 transition-all duration-200 group-hover:translate-x-0.5 group-hover:text-ozone">
+                      {l.label}
+                    </span>
                   </span>
-                </span>
-                <span className="h-1 w-1 rounded-full bg-dim/40 transition-colors group-hover:bg-ozone" />
-              </Link>
-            );
-          })}
+                  <span className="h-1 w-1 rounded-full bg-dim/40 transition-colors group-hover:bg-ozone" />
+                </Link>
+              );
+            })
+          )}
         </motion.div>
       ))}
     </motion.div>
