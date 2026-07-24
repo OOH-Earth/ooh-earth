@@ -44,8 +44,8 @@ export default function Home() {
       <MetroSlider />
 
       <main>
-        <GlobeSection />
         <Hero onCommand={openCommand} />
+        <GlobeSection />
         <Reveal><Mandate /></Reveal>
         <SpotIdentifyTag />
         <Reveal><CampaignAtlas /></Reveal>
