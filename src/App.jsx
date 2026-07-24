@@ -10,6 +10,9 @@ import ScrollToTop from './components/ScrollToTop';
 import Home from '@/pages/Home';
 import Map from '@/pages/Map';
 import Report from '@/pages/Report';
+import About from '@/pages/About';
+import Support from '@/pages/Support';
+import Plans from '@/pages/Plans';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -41,6 +44,9 @@ const AuthenticatedApp = () => {
     <Route path="/" element={<Home />} />
     <Route path="/map" element={<Map />} />
     <Route path="/report" element={<Report />} />
+    <Route path="/about" element={<About />} />
+    <Route path="/support" element={<Support />} />
+    <Route path="/plans" element={<Plans />} />
     <Route path="*" element={<PageNotFound />} />
     </Routes>
   );

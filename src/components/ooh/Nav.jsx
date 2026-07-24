@@ -10,14 +10,14 @@ export default function Nav({ onCommand }) {
           <span className="hidden font-mono text-[9px] uppercase tracking-[0.3em] text-dim sm:inline">/ Out Of Hell™</span>
         </a>
 
-        <nav className="hidden items-center gap-8 font-mono text-[10px] uppercase tracking-[0.25em] text-silver/60 md:flex">
+        <nav className="hidden items-center gap-6 font-mono text-[10px] uppercase tracking-[0.25em] text-silver/60 md:flex">
           <a href="#mandate" className="transition-colors hover:text-ozone">Mandate</a>
           <a href="#atlas" className="transition-colors hover:text-ozone">Atlas</a>
-          <a href="#air" className="transition-colors hover:text-ozone">Air</a>
-          <a href="#ledger" className="transition-colors hover:text-ozone">Ledger</a>
           <Link to="/map" className="transition-colors hover:text-ozone">Maps</Link>
           <Link to="/report" className="transition-colors hover:text-ozone">Report</Link>
-          <a href="https://ooh.earth/about" target="_blank" rel="noreferrer" className="transition-colors hover:text-ozone">About</a>
+          <Link to="/about" className="transition-colors hover:text-ozone">About</Link>
+          <Link to="/plans" className="transition-colors hover:text-ozone">Plans</Link>
+          <Link to="/support" className="transition-colors hover:text-ozone">Support</Link>
         </nav>
 
         <Link
