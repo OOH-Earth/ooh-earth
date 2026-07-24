@@ -26,6 +26,7 @@ const SITEMAP = [
       { to: "/scan", label: "TrueCost" },
       { to: "/trash", label: "Trash ID" },
       { to: "/zora", label: "Zora" },
+      { to: "/field-id", label: "Field ID" },
       { to: "/kit", label: "UI Kit" },
     ],
   },
