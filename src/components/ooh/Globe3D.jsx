@@ -1,5 +1,6 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import maplibregl from "maplibre-gl";
+import { ZoomIn, ZoomOut, Compass, RotateCw } from "lucide-react";
 import "maplibre-gl/dist/maplibre-gl.css";
 
 const TYPE_LABEL = {
@@ -70,6 +71,28 @@ export default function Globe3D({ markers, selectedId, onSelect }) {
   const onSelectRef = useRef(onSelect);
   onSelectRef.current = onSelect;
 
+  const [ready, setReady] = useState(false);
+  const [spinning, setSpinning] = useState(false);
+
+  const zoomIn = () => mapRef.current?.zoomIn();
+  const zoomOut = () => mapRef.current?.zoomOut();
+  const resetNorth = () => mapRef.current?.resetNorth();
+
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!ready || !map || !spinning) return;
+    let raf;
+    let last = performance.now();
+    const tick = (t) => {
+      const dt = t - last;
+      last = t;
+      map.setBearing(map.getBearing() + dt * 0.01);
+      raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [ready, spinning]);
+
   useEffect(() => {
     if (!containerRef.current) return;
     const map = new maplibregl.Map({
@@ -112,6 +135,7 @@ export default function Globe3D({ markers, selectedId, onSelect }) {
       map.on("mouseleave", "ooh-markers", () => { map.getCanvas().style.cursor = ""; });
 
       readyRef.current = true;
+      setReady(true);
       map.getSource("ooh-markers").setData(dataRef.current);
     });
 
@@ -141,6 +165,20 @@ export default function Globe3D({ markers, selectedId, onSelect }) {
       <div ref={containerRef} className="h-full w-full" style={{ background: "#000" }} />
       <div className="pointer-events-none absolute bottom-3 left-3 font-mono text-[9px] uppercase tracking-[0.25em] text-dim">
         // drag to rotate · scroll to zoom · click a marker
+      </div>
+      <div className="absolute bottom-3 right-3 z-[1000] flex flex-col gap-1.5">
+        <button onClick={zoomIn} aria-label="Zoom in" className="flex h-9 w-9 items-center justify-center border border-slate2 bg-void/80 font-mono text-darkgray backdrop-blur-md transition-colors hover:border-ozone hover:text-ozone">
+          <ZoomIn className="h-4 w-4" />
+        </button>
+        <button onClick={zoomOut} aria-label="Zoom out" className="flex h-9 w-9 items-center justify-center border border-slate2 bg-void/80 font-mono text-darkgray backdrop-blur-md transition-colors hover:border-ozone hover:text-ozone">
+          <ZoomOut className="h-4 w-4" />
+        </button>
+        <button onClick={resetNorth} aria-label="Reset north" className="flex h-9 w-9 items-center justify-center border border-slate2 bg-void/80 font-mono text-darkgray backdrop-blur-md transition-colors hover:border-ozone hover:text-ozone">
+          <Compass className="h-4 w-4" />
+        </button>
+        <button onClick={() => setSpinning((s) => !s)} aria-label="Auto-spin" className={`flex h-9 w-9 items-center justify-center border bg-void/80 font-mono backdrop-blur-md transition-colors ${spinning ? "border-ozone text-ozone" : "border-slate2 text-darkgray hover:border-ozone hover:text-ozone"}`}>
+          <RotateCw className="h-4 w-4" />
+        </button>
       </div>
     </div>
   );
