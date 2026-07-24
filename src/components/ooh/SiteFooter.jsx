@@ -16,7 +16,7 @@ export default function SiteFooter({ onCommand }) {
             </Link>
             <p className="mt-1 pl-1 font-mono text-[10px] uppercase tracking-[0.3em] text-dim">OOH Street Art & Adbusting Maps</p>
             <p className="mt-4 max-w-sm font-display text-sm font-normal leading-[1.4] text-darkgray">
-              A community-funded app reclaiming the visual commons. Union-made and aligned to the UN Sustainable Development Goals — documenting every corporate advertising offense on the public record.
+              An open-source, community-funded app reclaiming the visual commons. Union-made and aligned to the UN Sustainable Development Goals — documenting every corporate advertising offense on the public record.
             </p>
           </div>
 
