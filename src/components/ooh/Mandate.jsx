@@ -3,7 +3,7 @@ import { Globe2, Scale, Network, Leaf, ShieldCheck } from "lucide-react";
 const DOCTRINE = [
   { icon: Globe2, n: "01", title: "Public-space sovereignty", body: "The visual commons belongs to the public, not the highest bidder. We reclaim the walls, hoardings and screens that frame daily life.", sdg: "SDG 11" },
   { icon: Scale, n: "02", title: "Truth in advertising", body: "Every billboard is evidence. We archive greenwashing, extraction and corporate disinformation for the public record.", sdg: "SDG 16 · 12" },
-  { icon: Leaf, n: "03", title: "Climate accountability", body: "We name the polluters behind the posters — fossil-fuel advertisers documented at source, from the Shell AGM to the skyline array.", sdg: "SDG 13" },
+  { icon: Leaf, n: "03", title: "Air & climate accountability", body: "We name the polluters behind the posters and track the PM2.5 they leave in our lungs — fossil-fuel advertisers documented at source, air quality logged as a basic field metric.", sdg: "SDG 3 · 13" },
   { icon: Network, n: "04", title: "Distributed resistance", body: "Open-source field protocol so any city can stand up a chapter. No headquarters, no gatekeepers — local autonomy, shared doctrine.", sdg: "SDG 10 · 17" },
 ];
 
@@ -11,6 +11,7 @@ const GOALS = [
   { n: "11", title: "Sustainable cities & communities", body: "Reclaiming the visual commons and protecting public space from commercial enclosure." },
   { n: "16", title: "Peace, justice & strong institutions", body: "Corporate accountability and a public-record archive of advertising offenses." },
   { n: "12", title: "Responsible consumption & production", body: "Exposing the true cost of products through the #TrueCost scanner." },
+  { n: "3", title: "Good health & well-being", body: "PM2.5 air pollution tracked as a basic field metric across every chapter." },
   { n: "13", title: "Climate action", body: "Naming fossil-fuel advertisers and documenting climate disinformation." },
   { n: "10", title: "Reduced inequalities", body: "Mobile-first access for the Global South; community-led regional chapters." },
   { n: "5", title: "Gender equality", body: "Countering the gendered imagery of the attention economy." },

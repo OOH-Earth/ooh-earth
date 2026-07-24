@@ -12,6 +12,7 @@ export default function Nav({ onCommand }) {
         <nav className="hidden items-center gap-8 font-mono text-[10px] uppercase tracking-[0.25em] text-silver/60 md:flex">
           <a href="#mandate" className="transition-colors hover:text-ozone">Mandate</a>
           <a href="#atlas" className="transition-colors hover:text-ozone">Atlas</a>
+          <a href="#air" className="transition-colors hover:text-ozone">Air</a>
           <a href="#ledger" className="transition-colors hover:text-ozone">Ledger</a>
           <a href="https://ooh.earth/area/bangkok" target="_blank" rel="noreferrer" className="transition-colors hover:text-ozone">Maps</a>
           <a href="https://ooh.earth/about" target="_blank" rel="noreferrer" className="transition-colors hover:text-ozone">About</a>

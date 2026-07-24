@@ -48,7 +48,7 @@ export default function Hero({ onCommand }) {
 
       <div className="relative z-20 flex h-full flex-col justify-between p-6 md:p-10">
         <div className="flex items-start justify-between font-mono text-[10px] uppercase tracking-[0.3em] text-silver/50">
-          <span>LAT 13.7563°N · LON 100.5018°E · BKK</span>
+          <span>LAT 13.7563°N · LON 100.5018°E · BKK · PM2.5 62µg/m³</span>
           <span className="flex items-center gap-1.5">
             <Radio className="h-3 w-3 animate-flicker text-ozone" />
             LIVE FEED

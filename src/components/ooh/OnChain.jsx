@@ -14,7 +14,7 @@ export default function OnChain() {
       <div className="px-5 py-16 md:px-8 md:py-24">
         <div className="flex flex-col gap-4 border-b border-slate2/40 pb-6 md:flex-row md:items-end md:justify-between">
           <div>
-            <span className="font-mono text-[10px] uppercase tracking-[0.3em] text-ozone">// Section 04 — On-chain infrastructure</span>
+            <span className="font-mono text-[10px] uppercase tracking-[0.3em] text-ozone">// Section 05 — On-chain infrastructure</span>
             <h2 className="mt-3 font-display text-5xl font-bold leading-[1.05] tracking-[-0.02em] text-silver md:text-7xl">
               The resistance<br />economy
             </h2>

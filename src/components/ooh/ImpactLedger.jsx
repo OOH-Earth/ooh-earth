@@ -24,7 +24,7 @@ export default function ImpactLedger() {
       <div className="grid lg:grid-cols-2">
         {/* Capabilities */}
         <div className="border-r border-slate2/40 p-6 md:p-10">
-          <span className="font-mono text-[10px] uppercase tracking-[0.3em] text-ozone">// Section 03 — Impact ledger</span>
+          <span className="font-mono text-[10px] uppercase tracking-[0.3em] text-ozone">// Section 04 — Impact ledger</span>
           <h2 className="mt-3 font-display text-5xl font-bold leading-[1.05] tracking-[-0.02em] text-silver md:text-6xl">
             Capabilities
           </h2>
