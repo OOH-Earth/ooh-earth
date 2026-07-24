@@ -1,4 +1,4 @@
-import { Crosshair, Megaphone } from "lucide-react";
+import { Crosshair, Megaphone, ScanLine } from "lucide-react";
 import { Link } from "react-router-dom";
 import ThemeToggle from "@/components/ooh/ThemeToggle";
 import BrandMark from "@/components/ooh/BrandMark";
@@ -18,6 +18,9 @@ export default function Nav({ onCommand }) {
           <a href="#atlas" className="transition-colors hover:text-ozone">Atlas</a>
           <Link to="/map" className="transition-colors hover:text-ozone">Maps</Link>
           <Link to="/report" className="transition-colors hover:text-ozone">Report</Link>
+          <Link to="/ar" className="flex items-center gap-1 text-ozone transition-colors hover:text-flare">
+            <ScanLine className="h-3 w-3" /> AR Lens
+          </Link>
           <Link to="/campaign" className="text-ozone transition-colors hover:text-flare">Fund</Link>
           <Link to="/about" className="transition-colors hover:text-ozone">About</Link>
           <Link to="/plans" className="transition-colors hover:text-ozone">Plans</Link>

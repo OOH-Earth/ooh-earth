@@ -17,6 +17,7 @@ import Support from '@/pages/Support';
 import Plans from '@/pages/Plans';
 import Dashboard from '@/pages/Dashboard';
 import Campaign from '@/pages/Campaign';
+import ArLens from '@/pages/ArLens';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -52,6 +53,7 @@ const AuthenticatedApp = () => {
     <Route path="/support" element={<Support />} />
     <Route path="/plans" element={<Plans />} />
     <Route path="/campaign" element={<Campaign />} />
+    <Route path="/ar" element={<ArLens />} />
     <Route element={<ProtectedRoute unauthenticatedElement={<Navigate to="/login" replace />} />}>
       <Route path="/dashboard" element={<Dashboard />} />
     </Route>
