@@ -6,7 +6,7 @@ export default function SiteFooter({ onCommand }) {
   return (
     <footer className="border-t border-white/5 bg-void">
       <div className="px-5 py-12 md:px-8">
-        <div className="grid gap-10 md:grid-cols-[2fr_1fr_1fr]">
+        <div className="grid gap-10 md:grid-cols-[2fr_1fr_1fr_1fr]">
           <div>
             <Link to="/" className="group inline-flex items-center gap-3" aria-label="OOH Earth — home">
               <BrandMark className="h-9 w-9 md:h-11 md:w-11" />
@@ -34,9 +34,19 @@ export default function SiteFooter({ onCommand }) {
             <div className="font-mono text-[10px] uppercase tracking-[0.3em] text-silver/40">Union</div>
             <ul className="mt-3 space-y-2 font-mono text-[11px] text-silver/60">
               <li><a href="https://advertisersanonymous.org/" target="_blank" rel="noreferrer" className="transition-colors hover:text-ozone">Advertisers Anonymous</a></li>
-              <li><a href="https://donorbox.org/ooh" target="_blank" rel="noreferrer" className="transition-colors hover:text-ozone">Sponsor / Fund</a></li>
+              <li><Link to="/support" className="transition-colors hover:text-ozone">Sponsor / Fund</Link></li>
               <li><a href="https://oohearthfoundation.framer.wiki/" target="_blank" rel="noreferrer" className="transition-colors hover:text-ozone">Foundation</a></li>
-              <li><a href="https://ooh.earth/about" target="_blank" rel="noreferrer" className="transition-colors hover:text-ozone">About</a></li>
+              <li><Link to="/about" className="transition-colors hover:text-ozone">About</Link></li>
+            </ul>
+          </div>
+
+          <div>
+            <div className="font-mono text-[10px] uppercase tracking-[0.3em] text-silver/40">Site</div>
+            <ul className="mt-3 space-y-2 font-mono text-[11px] text-silver/60">
+              <li><Link to="/map" className="transition-colors hover:text-ozone">Map</Link></li>
+              <li><Link to="/report" className="transition-colors hover:text-ozone">Report</Link></li>
+              <li><Link to="/plans" className="transition-colors hover:text-ozone">Plans</Link></li>
+              <li><Link to="/support" className="transition-colors hover:text-ozone">Support</Link></li>
             </ul>
           </div>
         </div>
