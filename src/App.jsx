@@ -1,12 +1,13 @@
 import { Toaster } from "@/components/ui/toaster"
 import { QueryClientProvider } from '@tanstack/react-query'
 import { queryClientInstance } from '@/lib/query-client'
-import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
 import PageNotFound from './lib/PageNotFound';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 import ScrollToTop from './components/ScrollToTop';
 import CrtOverlay from '@/components/ooh/CrtOverlay';
+import ProtectedRoute from '@/components/ProtectedRoute';
 // Add page imports here
 import Home from '@/pages/Home';
 import Map from '@/pages/Map';
@@ -14,6 +15,7 @@ import Report from '@/pages/Report';
 import About from '@/pages/About';
 import Support from '@/pages/Support';
 import Plans from '@/pages/Plans';
+import Dashboard from '@/pages/Dashboard';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -48,6 +50,9 @@ const AuthenticatedApp = () => {
     <Route path="/about" element={<About />} />
     <Route path="/support" element={<Support />} />
     <Route path="/plans" element={<Plans />} />
+    <Route element={<ProtectedRoute unauthenticatedElement={<Navigate to="/login" replace />} />}>
+      <Route path="/dashboard" element={<Dashboard />} />
+    </Route>
     <Route path="*" element={<PageNotFound />} />
     </Routes>
   );

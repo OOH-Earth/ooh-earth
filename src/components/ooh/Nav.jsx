@@ -20,6 +20,7 @@ export default function Nav({ onCommand }) {
           <Link to="/report" className="transition-colors hover:text-ozone">Report</Link>
           <Link to="/about" className="transition-colors hover:text-ozone">About</Link>
           <Link to="/plans" className="transition-colors hover:text-ozone">Plans</Link>
+          <Link to="/dashboard" className="transition-colors hover:text-ozone">Dashboard</Link>
           <Link to="/support" className="transition-colors hover:text-ozone">Support</Link>
         </nav>
 
