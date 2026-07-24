@@ -70,8 +70,22 @@
     "target_brand"
   ],
   "rls": {
-    "read": {},
-    "create": {},
+    "create": null,
+    "read": {
+      "$or": [
+        {
+          "data.status": "verified"
+        },
+        {
+          "created_by_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
     "update": {
       "user_condition": {
         "role": "admin"
