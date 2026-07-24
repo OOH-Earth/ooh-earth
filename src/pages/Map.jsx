@@ -8,6 +8,19 @@ import LocationCard from "@/components/ooh/map/LocationCard";
 import seedMarkers from "@/components/ooh/mapSeed";
 import { Loader2, FileDown, Megaphone } from "lucide-react";
 import { Link } from "react-router-dom";
+import Walkthrough from "@/components/ooh/Walkthrough";
+
+const TOUR = [
+  { title: "Welcome to OOH Map", body: "The live field map of corporate advertising offenses — documented by operatives worldwide." },
+  { target: "[data-tour=\"layout\"]", title: "Layout modes", body: "Switch between Split, Map-dominant, and List views to control how much of the map you see." },
+  { target: "[data-tour=\"filters\"]", title: "Filter by type", body: "Isolate billboards, digital screens, painted takeovers, and more." },
+  { target: "[data-tour=\"search\"]", title: "Search & reset", body: "Find a location by street or city, then reset filters in one tap." },
+  { target: "[data-tour=\"cards\"]", title: "The record", body: "Every card is a logged offense. Click one to fly the map to its pin." },
+  { target: "[data-tour=\"map\"]", title: "Field map", body: "Pan and zoom to explore. Popups show photo, status, and directions." },
+  { target: "[data-tour=\"report\"]", title: "Log an offense", body: "File a new field report — GPS + photo, no login. Reports appear here instantly." },
+  { target: "[data-tour=\"theme\"]", title: "Light / Dark", body: "Toggle the Solar Smoke light mode or the signature black canvas anytime." },
+  { title: "Mission ready", body: "You're cleared for field operations. File your first report.", cta: true },
+];
 
 const toMarker = (r) => ({
   id: r.id,
@@ -27,6 +40,7 @@ export default function Map() {
   const [typeFilter, setTypeFilter] = useState("all");
   const [query, setQuery] = useState("");
   const [selectedId, setSelectedId] = useState(null);
+  const [tourOpen, setTourOpen] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -113,9 +127,9 @@ export default function Map() {
         </div>
       ) : (
         <div className="flex min-h-0 flex-1 flex-col lg:flex-row">
-          {mode !== "map" && <MapSidebar query={query} setQuery={setQuery} onReset={() => { setQuery(""); setTypeFilter("all"); }} />}
+          {mode !== "map" && <MapSidebar query={query} setQuery={setQuery} onReset={() => { setQuery(""); setTypeFilter("all"); }} onBeginTour={() => setTourOpen(true)} />}
 
-          <div className={`min-h-0 flex-col border-r border-slate2/60 ${cardsClass}`}>
+          <div data-tour="cards" className={`min-h-0 flex-col border-r border-slate2/60 ${cardsClass}`}>
             <div className="flex items-center justify-between border-b border-slate2/60 px-4 py-2">
               <span className="font-mono text-[10px] uppercase tracking-[0.25em] text-dim">// {filtered.length} results</span>
             </div>
@@ -130,7 +144,7 @@ export default function Map() {
             </div>
           </div>
 
-          <div className={`relative min-h-0 ${mapClass}`}>
+          <div data-tour="map" className={`relative min-h-0 ${mapClass}`}>
             <LocationMap markers={filtered} selectedId={selectedId} onSelect={setSelectedId} />
             <div className="absolute right-4 top-4 z-[1000] flex gap-2">
               <button
@@ -140,6 +154,7 @@ export default function Map() {
                 <FileDown className="h-3.5 w-3.5" /> GeoJSON
               </button>
               <Link
+                data-tour="report"
                 to="/report"
                 className="flex items-center gap-1.5 border border-ozone bg-ozone px-3 py-2 font-mono text-[10px] font-bold uppercase tracking-[0.25em] text-void transition-colors hover:bg-flare hover:border-flare"
               >
@@ -149,6 +164,8 @@ export default function Map() {
           </div>
         </div>
       )}
+
+      <Walkthrough open={tourOpen} onClose={() => setTourOpen(false)} steps={TOUR} />
     </div>
   );
 }

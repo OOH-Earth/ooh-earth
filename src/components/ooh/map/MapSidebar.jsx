@@ -1,8 +1,8 @@
 import { Search, RotateCcw, LifeBuoy, Play } from "lucide-react";
 
-export default function MapSidebar({ query, setQuery, onReset }) {
+export default function MapSidebar({ query, setQuery, onReset, onBeginTour }) {
   return (
-    <aside className="hidden w-[300px] shrink-0 flex-col border-r border-slate2/60 bg-void lg:flex">
+    <aside data-tour="search" className="hidden w-[300px] shrink-0 flex-col border-r border-slate2/60 bg-void lg:flex">
       <div className="border-b border-slate2/60 p-5">
         <div className="font-mono text-[10px] uppercase tracking-[0.3em] text-ozone">// Search / Map</div>
         <p className="mt-1 font-display text-sm text-darkgray">Explore the map.</p>
@@ -36,7 +36,7 @@ export default function MapSidebar({ query, setQuery, onReset }) {
         <LifeBuoy className="h-5 w-5 text-ozone" />
         <h4 className="mt-3 font-display text-base font-bold text-silver">Need some help?</h4>
         <p className="mt-1 font-display text-[13px] leading-[1.4] text-darkgray">Our quick onboarding tour explains the field protocol.</p>
-        <button className="mt-4 inline-flex items-center gap-1.5 font-mono text-[10px] font-bold uppercase tracking-[0.2em] text-ozone">
+        <button onClick={onBeginTour} className="mt-4 inline-flex items-center gap-1.5 font-mono text-[10px] font-bold uppercase tracking-[0.2em] text-ozone transition-opacity hover:opacity-70">
           <Play className="h-3.5 w-3.5" /> Begin tour
         </button>
       </div>

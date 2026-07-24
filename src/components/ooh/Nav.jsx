@@ -28,7 +28,7 @@ export default function Nav({ onCommand }) {
           <Megaphone className="h-3.5 w-3.5" /> Report
         </Link>
 
-        <ThemeToggle />
+        <span data-tour="theme"><ThemeToggle /></span>
 
         <button
           onClick={onCommand}

@@ -27,7 +27,7 @@ export default function MapToolbar({ typeFilter, setTypeFilter, mode, setMode, c
           {live ? "live" : "snapshot"} · {count}
         </span>
         <span className="hidden h-4 w-px bg-slate2 lg:block" />
-        <div className="hidden flex-1 items-center gap-1.5 overflow-x-auto lg:flex">
+        <div data-tour="filters" className="hidden flex-1 items-center gap-1.5 overflow-x-auto lg:flex">
           {TYPES.map((t) => (
             <button
               key={t.value}
@@ -40,7 +40,7 @@ export default function MapToolbar({ typeFilter, setTypeFilter, mode, setMode, c
             </button>
           ))}
         </div>
-        <div className="ml-auto flex items-center border border-slate2/60">
+        <div data-tour="layout" className="ml-auto flex items-center border border-slate2/60">
           {MODES.map((m) => {
             const Icon = m.icon;
             return (
