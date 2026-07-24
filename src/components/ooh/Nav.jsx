@@ -7,21 +7,21 @@ import SoundToggle from "@/components/ooh/SoundToggle";
 import ReadAloudToggle from "@/components/ooh/ReadAloudToggle";
 import ClimateClock from "@/components/ooh/ClimateClock";
 import TypeEnhancer from "@/components/ooh/TypeEnhancer";
-import SmartDashboard from "@/components/ooh/SmartDashboard";
+import DashboardDropdown from "@/components/ooh/DashboardDropdown";
 import NavMenu from "@/components/ooh/NavMenu";
 import OfflineSyncBadge from "@/components/ooh/OfflineSyncBadge";
 import { useWalkthrough } from "@/lib/walkthroughContext";
 
 export default function Nav({ onCommand }) {
   const [menuOpen, setMenuOpen] = useState(false);
-  const [dashOpen, setDashOpen] = useState(false);
   const { startTour } = useWalkthrough();
   return (
     <header className="fixed inset-x-0 top-0 z-50 border-b border-white/5 bg-void/70 backdrop-blur-md" style={{ paddingTop: "env(safe-area-inset-top)" }}>
       <div className="flex items-center justify-between gap-2 px-3 py-3 md:px-8 md:py-4">
         <div className="flex items-center gap-2">
-          <ClimateClock onClick={() => setDashOpen(true)} />
+          <ClimateClock />
           <TypeEnhancer />
+          <DashboardDropdown />
         </div>
 
         <div className="flex items-center gap-1.5">
@@ -60,7 +60,6 @@ export default function Nav({ onCommand }) {
         </div>
       </div>
 
-      <SmartDashboard open={dashOpen} onClose={() => setDashOpen(false)} />
       <NavMenu open={menuOpen} onClose={() => setMenuOpen(false)} onTour={startTour} />
     </header>
   );

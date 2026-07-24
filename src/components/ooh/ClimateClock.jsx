@@ -19,7 +19,7 @@ function parts(ms) {
 
 const pad = (n) => String(n).padStart(2, "0");
 
-export default function ClimateClock({ onClick, className = "" }) {
+export default function ClimateClock({ className = "" }) {
   const [now, setNow] = useState(() => Date.now());
   useEffect(() => {
     const t = setInterval(() => setNow(Date.now()), 1000);
@@ -36,12 +36,7 @@ export default function ClimateClock({ onClick, className = "" }) {
   const lifeline = Math.max(0, Math.min(100, ((DEADLINE - now) / (DEADLINE - BUDGET_START)) * 100));
 
   return (
-    <button
-      type="button"
-      onClick={onClick}
-      aria-label="Climate clock — open dashboard"
-      className={`group flex flex-col items-start leading-none transition-opacity hover:opacity-90 ${className}`}
-    >
+    <div className={`flex flex-col items-start leading-none ${className}`} aria-label="Climate clock">
       <div className="flex items-baseline gap-2">
         <span className="font-mono text-[13px] font-bold tabular tracking-[0.1em] text-silver">{time}</span>
         <span className="font-mono text-[7px] uppercase tracking-[0.3em] text-dim">BKK</span>
@@ -58,6 +53,6 @@ export default function ClimateClock({ onClick, className = "" }) {
           style={{ width: `${lifeline}%` }}
         />
       </div>
-    </button>
+    </div>
   );
 }
