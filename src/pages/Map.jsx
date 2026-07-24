@@ -26,10 +26,17 @@ const TOUR = [
   { title: "Mission ready", body: "You're cleared for field operations. File your first report.", cta: true },
 ];
 
+const KNOWN_TYPES = ["billboard", "digital", "painted", "projection", "sticker", "mural", "transit", "other"];
+const normType = (t) => {
+  const s = String(t || "").toLowerCase().trim();
+  if (s === "location") return "other";
+  return KNOWN_TYPES.includes(s) ? s : "other";
+};
+
 const toMarker = (r) => ({
   id: r.id,
   title: r.title,
-  type: r.type,
+  type: normType(r.type),
   address: r.address || "",
   lat: r.lat,
   lng: r.lng,
@@ -90,6 +97,12 @@ export default function Map() {
     );
   }, [raw, typeFilter, query]);
 
+  const counts = useMemo(() => {
+    const c = {};
+    (raw?.markers || []).forEach((m) => { c[m.type] = (c[m.type] || 0) + 1; });
+    return c;
+  }, [raw]);
+
   const exportGeoJSON = () => {
     const fc = {
       type: "FeatureCollection",
@@ -122,6 +135,8 @@ export default function Map() {
         setMode={setMode}
         count={filtered.length}
         live={raw?.live}
+        counts={counts}
+        total={raw?.markers?.length || 0}
       />
 
       {!raw ? (

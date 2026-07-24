@@ -6,6 +6,7 @@ export const TYPES = [
   { value: "billboard", label: "Billboard" },
   { value: "digital", label: "Digital" },
   { value: "painted", label: "Painted" },
+  { value: "transit", label: "Transit" },
   { value: "projection", label: "Projection" },
   { value: "sticker", label: "Sticker" },
   { value: "mural", label: "Mural" },
@@ -18,7 +19,9 @@ const MODES = [
   { value: "list", label: "List", icon: List },
 ];
 
-export default function MapToolbar({ typeFilter, setTypeFilter, mode, setMode, count, live }) {
+export default function MapToolbar({ typeFilter, setTypeFilter, mode, setMode, count, live, counts = {}, total = 0 }) {
+  const chips = [{ value: "all", label: "All" }, ...TYPES.filter((t) => t.value !== "all" && (counts[t.value] || 0) > 0)];
+
   return (
     <div className="shrink-0 border-b border-slate2/60 bg-void/90 backdrop-blur-md">
       <CryptoTicker />
@@ -28,20 +31,6 @@ export default function MapToolbar({ typeFilter, setTypeFilter, mode, setMode, c
           <span className={`h-1.5 w-1.5 rounded-full ${live ? "bg-ozone animate-flicker" : "bg-dim"}`} />
           {live ? "live" : "snapshot"} · {count}
         </span>
-        <span className="hidden h-4 w-px bg-slate2 lg:block" />
-        <div data-tour="filters" className="hidden flex-1 items-center gap-1.5 overflow-x-auto lg:flex">
-          {TYPES.map((t) => (
-            <button
-              key={t.value}
-              onClick={() => setTypeFilter(t.value)}
-              className={`shrink-0 border px-2.5 py-1 font-mono text-[10px] font-bold uppercase tracking-[0.15em] transition-colors ${
-                typeFilter === t.value ? "border-ozone bg-ozone text-void" : "border-slate2/60 text-darkgray hover:border-ozone hover:text-ozone"
-              }`}
-            >
-              {t.label}
-            </button>
-          ))}
-        </div>
         <div data-tour="layout" className="ml-auto flex items-center border border-slate2/60">
           {MODES.map((m) => {
             const Icon = m.icon;
@@ -59,18 +48,23 @@ export default function MapToolbar({ typeFilter, setTypeFilter, mode, setMode, c
           })}
         </div>
       </div>
-      <div className="flex items-center gap-1.5 overflow-x-auto px-5 pb-2.5 lg:hidden">
-        {TYPES.map((t) => (
-          <button
-            key={t.value}
-            onClick={() => setTypeFilter(t.value)}
-            className={`shrink-0 border px-2.5 py-1 font-mono text-[10px] font-bold uppercase tracking-[0.15em] ${
-              typeFilter === t.value ? "border-ozone bg-ozone text-void" : "border-slate2/60 text-darkgray"
-            }`}
-          >
-            {t.label}
-          </button>
-        ))}
+      <div data-tour="filters" className="flex items-center gap-1.5 overflow-x-auto px-5 pb-2.5 md:px-8">
+        {chips.map((t) => {
+          const n = t.value === "all" ? total : counts[t.value] || 0;
+          const active = typeFilter === t.value;
+          return (
+            <button
+              key={t.value}
+              onClick={() => setTypeFilter(t.value)}
+              className={`flex shrink-0 items-center gap-1.5 border px-3 py-1.5 font-mono text-[10px] font-bold uppercase tracking-[0.15em] transition-colors ${
+                active ? "border-ozone bg-ozone text-void" : "border-slate2/60 text-darkgray hover:border-ozone hover:text-ozone"
+              }`}
+            >
+              {t.label}
+              <span className={`text-[9px] ${active ? "text-void/70" : "text-dim"}`}>{n}</span>
+            </button>
+          );
+        })}
       </div>
     </div>
   );
