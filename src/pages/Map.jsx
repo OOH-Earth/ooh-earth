@@ -113,7 +113,7 @@ export default function Map() {
   const mapClass = mode === "list" ? "hidden" : "flex-1";
 
   return (
-    <div className="flex h-screen flex-col overflow-hidden bg-void">
+    <div className="flex h-[100dvh] flex-col overflow-hidden bg-void">
       <Nav />
       <MapToolbar
         typeFilter={typeFilter}
@@ -151,18 +151,20 @@ export default function Map() {
           </div>
 
           <div data-tour="map" className={`relative min-h-0 ${mapClass}`}>
-            <div className="absolute bottom-4 left-1/2 z-[1000] flex -translate-x-1/2 border border-slate2 bg-void/80 backdrop-blur-md lg:bottom-auto lg:left-4 lg:top-4 lg:translate-x-0">
+            <div className="absolute left-3 top-3 z-[1000] flex border border-slate2 bg-void/80 backdrop-blur-md">
               <button
                 onClick={() => setView("flat")}
-                className={`flex items-center gap-1.5 px-3 py-2 font-mono text-[10px] font-bold uppercase tracking-[0.25em] transition-colors ${view === "flat" ? "bg-ozone text-void" : "text-darkgray hover:text-ozone"}`}
+                aria-label="Flat map"
+                className={`flex items-center gap-1.5 px-2.5 py-2 font-mono text-[10px] font-bold uppercase tracking-[0.25em] transition-colors ${view === "flat" ? "bg-ozone text-void" : "text-darkgray hover:text-ozone"}`}
               >
-                <MapIcon className="h-3.5 w-3.5" /> Flat
+                <MapIcon className="h-3.5 w-3.5" /> <span className="hidden sm:inline">Flat</span>
               </button>
               <button
                 onClick={() => setView("globe")}
-                className={`flex items-center gap-1.5 px-3 py-2 font-mono text-[10px] font-bold uppercase tracking-[0.25em] transition-colors ${view === "globe" ? "bg-ozone text-void" : "text-darkgray hover:text-ozone"}`}
+                aria-label="Globe view"
+                className={`flex items-center gap-1.5 px-2.5 py-2 font-mono text-[10px] font-bold uppercase tracking-[0.25em] transition-colors ${view === "globe" ? "bg-ozone text-void" : "text-darkgray hover:text-ozone"}`}
               >
-                <Globe className="h-3.5 w-3.5" /> Globe
+                <Globe className="h-3.5 w-3.5" /> <span className="hidden sm:inline">Globe</span>
               </button>
             </div>
             {view === "globe" ? (
@@ -170,25 +172,28 @@ export default function Map() {
             ) : (
               <LocationMap markers={filtered} selectedId={selectedId} onSelect={setSelectedId} />
             )}
-            <div className="absolute right-4 top-4 z-[1000] flex gap-2">
+            <div className="absolute right-3 top-3 z-[1000] flex gap-1.5">
               <button
                 onClick={() => setFinderOpen(true)}
-                className="flex items-center gap-1.5 border border-ozone/60 bg-void/80 px-3 py-2 font-mono text-[10px] font-bold uppercase tracking-[0.25em] text-ozone backdrop-blur-md transition-colors hover:bg-ozone hover:text-void"
+                aria-label="Find units"
+                className="flex items-center gap-1.5 border border-ozone/60 bg-void/80 px-2.5 py-2 font-mono text-[10px] font-bold uppercase tracking-[0.25em] text-ozone backdrop-blur-md transition-colors hover:bg-ozone hover:text-void"
               >
-                <ScanSearch className="h-3.5 w-3.5" /> Find
+                <ScanSearch className="h-3.5 w-3.5" /> <span className="hidden sm:inline">Find</span>
               </button>
               <button
                 onClick={exportGeoJSON}
-                className="flex items-center gap-1.5 border border-slate2 bg-void/80 px-3 py-2 font-mono text-[10px] font-bold uppercase tracking-[0.25em] text-darkgray backdrop-blur-md transition-colors hover:border-ozone hover:text-ozone"
+                aria-label="Export GeoJSON"
+                className="flex items-center gap-1.5 border border-slate2 bg-void/80 px-2.5 py-2 font-mono text-[10px] font-bold uppercase tracking-[0.25em] text-darkgray backdrop-blur-md transition-colors hover:border-ozone hover:text-ozone"
               >
-                <FileDown className="h-3.5 w-3.5" /> GeoJSON
+                <FileDown className="h-3.5 w-3.5" /> <span className="hidden sm:inline">GeoJSON</span>
               </button>
               <Link
                 data-tour="report"
                 to="/report"
-                className="flex items-center gap-1.5 border border-ozone bg-ozone px-3 py-2 font-mono text-[10px] font-bold uppercase tracking-[0.25em] text-void transition-colors hover:bg-flare hover:border-flare"
+                aria-label="Report"
+                className="flex items-center gap-1.5 border border-ozone bg-ozone px-2.5 py-2 font-mono text-[10px] font-bold uppercase tracking-[0.25em] text-void transition-colors hover:bg-flare hover:border-flare"
               >
-                <Megaphone className="h-3.5 w-3.5" /> Report
+                <Megaphone className="h-3.5 w-3.5" /> <span className="hidden sm:inline">Report</span>
               </Link>
             </div>
           </div>
