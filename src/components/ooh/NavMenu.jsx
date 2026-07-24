@@ -8,6 +8,7 @@ const SITEMAP = [
     group: "Command",
     items: [
       { to: "/", label: "Home" },
+      { to: "/channel", label: "OOH·TV" },
       { to: "/dashboard", label: "Dashboard" },
     ],
   },

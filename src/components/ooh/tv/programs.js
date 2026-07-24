@@ -1,0 +1,60 @@
+// Curated open-access field footage on subvertising, adbusting, brandalism,
+// billboard liberation & culture jamming. All videos hosted on YouTube.
+export const PROGRAMS = [
+  {
+    id: "zunPa9rGndg",
+    title: "Subvertisers for London",
+    channel: "Dog Section Press",
+    topic: "Subvertising",
+    runtime: "21:00",
+  },
+  {
+    id: "PLKqDw8DF6E",
+    title: "History & Tactics of the Adbusting Movement",
+    channel: "Michelle Tylicki",
+    topic: "Adbusting",
+    runtime: "Talk",
+  },
+  {
+    id: "lKRmVwqhEdE",
+    title: "Brandalism 2014 — 40 Artists, 10 Cities, 365 Takeovers",
+    channel: "Brandalism",
+    topic: "Brandalism",
+    runtime: "Doc",
+  },
+  {
+    id: "K4WnZAUOIxI",
+    title: "Brandalism 2015 — COP21 Paris",
+    channel: "Brandalism",
+    topic: "Climate",
+    runtime: "Doc",
+  },
+  {
+    id: "KjgrHX94bKo",
+    title: "Billboard Liberation Front",
+    channel: "Negativland · Sonic Outlaws",
+    topic: "Billboard Liberation",
+    runtime: "Short",
+  },
+  {
+    id: "FR76Iqh1a1A",
+    title: "Ad Busters — Culture Jamming (Sparked the Movement)",
+    channel: "Shakyegg",
+    topic: "Culture Jamming",
+    runtime: "Doc",
+  },
+  {
+    id: "d7HOLcrFMHE",
+    title: "Culture Jamming — by The Media Foundation",
+    channel: "Adbusters",
+    topic: "Culture Jamming",
+    runtime: "Short",
+  },
+  {
+    id: "WWaNV2gGhuU",
+    title: "Subvertising — Rocketboom",
+    channel: "Rocketboom",
+    topic: "Subvertising",
+    runtime: "Short",
+  },
+];
