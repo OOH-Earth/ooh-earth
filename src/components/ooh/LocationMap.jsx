@@ -92,11 +92,11 @@ export default function LocationMap({ markers, selectedId, onSelect }) {
                   <span
                     style={{ width: 5, height: 5, borderRadius: 999, background: m.status === "verified" ? "#39FF14" : "#FF5C00" }}
                   />
-                  <span style={{ fontSize: 8, textTransform: "uppercase", letterSpacing: "0.2em", color: "#999" }}>{m.status}</span>
+                  <span style={{ fontSize: 9, textTransform: "uppercase", letterSpacing: "0.2em", color: "hsl(var(--muted-foreground))" }}>{m.status}</span>
                 </div>
-                <div style={{ fontWeight: 700, fontSize: 14, color: "#F1F1F1", lineHeight: 1.2 }}>{m.title}</div>
-                <div style={{ fontSize: 11, color: "#999", marginTop: 4, lineHeight: 1.35 }}>{m.address}</div>
-                <div style={{ fontSize: 9, color: "#666", marginTop: 4, fontFamily: "monospace" }}>
+                <div style={{ fontWeight: 700, fontSize: 15, color: "hsl(var(--foreground))", lineHeight: 1.25 }}>{m.title}</div>
+                <div style={{ fontSize: 12, color: "hsl(var(--muted-foreground))", marginTop: 4, lineHeight: 1.4 }}>{m.address}</div>
+                <div style={{ fontSize: 9, color: "hsl(var(--muted-foreground))", marginTop: 4, fontFamily: "monospace", opacity: 0.8 }}>
                   {Number(m.lat).toFixed(4)}, {Number(m.lng).toFixed(4)}
                 </div>
                 <div style={{ display: "flex", gap: 10, marginTop: 8 }}>
