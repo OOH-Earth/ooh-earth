@@ -1,4 +1,4 @@
-import { Coins, ScanLine, HeartHandshake, ArrowUpRight, Flame } from "lucide-react";
+import { Coins, ScanLine, HeartHandshake, ArrowUpRight, Flame, Map, CreditCard, Share2, Landmark } from "lucide-react";
 
 const FUNDS = [
   { label: "Platform development & security", val: "Build the mapping infrastructure end to end." },
@@ -114,6 +114,44 @@ export default function OnChain() {
           </div>
         </div>
 
+        {/* Live subprojects */}
+        <div className="mt-12 border-t border-slate2/40 pt-10">
+          <div className="mb-6 flex items-center gap-3">
+            <span className="font-mono text-[10px] uppercase tracking-[0.3em] text-ozone">// The ecosystem · live subprojects</span>
+            <span className="h-px flex-1 bg-white/5" />
+          </div>
+          <div className="grid gap-px border border-slate2/60 bg-slate2/40 sm:grid-cols-2 lg:grid-cols-4">
+            <EcoTile
+              icon={<Map className="h-4 w-4" />}
+              eyebrow="OOH Earth · START"
+              title="Adbusting maps"
+              desc="The live street-art & adbusting map app. Document the visual world, claim the walls back."
+              href="https://oohearth.framer.ai/"
+            />
+            <EcoTile
+              icon={<CreditCard className="h-4 w-4" />}
+              eyebrow="Field Card"
+              title="OOH supercard"
+              desc="Operative ID, access tiers and location tagging for field documentation."
+              href="https://supercard.framer.ai/"
+            />
+            <EcoTile
+              icon={<Share2 className="h-4 w-4" />}
+              eyebrow="Anti-Social"
+              title="Adbusting network"
+              desc="The social resistance layer — connect, organize and broadcast without the algorithm."
+              href="https://streetsocial.framer.ai/"
+            />
+            <EcoTile
+              icon={<Landmark className="h-4 w-4" />}
+              eyebrow="Foundation · BASE"
+              title="The nonprofit core"
+              desc="Governance, treasury and mission docs for the OOH Earth foundation."
+              href="https://oohearthfoundation.framer.wiki/"
+            />
+          </div>
+        </div>
+
         <p className="mt-6 font-mono text-[10px] uppercase tracking-[0.25em] text-dim">
           Not financial advice. A spoof brand funding real resistance.
         </p>
@@ -140,6 +178,30 @@ function SideTile({ icon, eyebrow, title, desc, href, accent }) {
         <p className="mt-2 font-display text-[13px] font-normal leading-[1.4] text-darkgray">{desc}</p>
       </div>
       <div className="mt-6 flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-[0.25em] text-ozone">
+        Open <ArrowUpRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+      </div>
+    </a>
+  );
+}
+
+function EcoTile({ icon, eyebrow, title, desc, href }) {
+  return (
+    <a
+      href={href}
+      target="_blank"
+      rel="noreferrer"
+      data-cursor="view"
+      className="group relative flex flex-col justify-between bg-card p-5 transition-colors hover:bg-void md:p-6"
+    >
+      <div>
+        <div className="flex items-center gap-2 text-dim">
+          {icon}
+          <span className="font-mono text-[10px] uppercase tracking-[0.2em]">{eyebrow}</span>
+        </div>
+        <h4 className="mt-4 font-display text-xl font-bold leading-[1.15] tracking-[-0.02em] text-silver">{title}</h4>
+        <p className="mt-2 font-display text-[13px] font-normal leading-[1.4] text-darkgray">{desc}</p>
+      </div>
+      <div className="mt-5 flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-[0.25em] text-ozone">
         Open <ArrowUpRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
       </div>
     </a>
