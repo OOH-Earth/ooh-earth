@@ -21,7 +21,7 @@ function popupHTML(m) {
   const status = m.status || "pending";
   return `
     <div style="width:220px;font-family:'Inter Tight',sans-serif">
-      ${m.image ? `<img src="${esc(m.image)}" alt="${esc(m.title)}" style="width:100%;height:110px;object-fit:cover;display:block;background:#111" />` : ""}
+      ${m.image ? `<img src="${esc(String(m.image).replace(/-\d+x\d+(?=\.\w+$)/, ""))}" alt="${esc(m.title)}" style="width:100%;height:110px;object-fit:cover;display:block;background:#111" />` : ""}
       <div style="padding:10px 2px 2px">
         <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px">
           <span style="font-size:9px;text-transform:uppercase;letter-spacing:0.2em;font-weight:700;color:#EDFF00">${esc(type)}</span>

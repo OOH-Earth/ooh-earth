@@ -79,7 +79,7 @@ export default function LocationMap({ markers, selectedId, onSelect }) {
             <div style={{ width: 220, fontFamily: "Inter Tight, sans-serif" }}>
               {m.image && (
                 <img
-                  src={m.image}
+                  src={m.image ? m.image.replace(/-\d+x\d+(?=\.\w+$)/, "") : ""}
                   alt={m.title}
                   style={{ width: "100%", height: 110, objectFit: "cover", display: "block", background: "#111" }}
                 />
