@@ -58,7 +58,7 @@ export default function FieldStatsHud() {
         <div className="pointer-events-none absolute inset-y-0 left-0 z-20 w-16 bg-gradient-to-r from-void to-transparent" />
         <div className="pointer-events-none absolute inset-y-0 right-0 z-20 w-16 bg-gradient-to-l from-void to-transparent" />
 
-        <div className="relative z-0 flex shrink-0 items-center gap-1.5 border-r border-slate2/60 bg-void px-3">
+        <div className="relative z-30 flex shrink-0 items-center gap-1.5 border-r border-slate2/60 bg-void px-3">
           <span className="h-1.5 w-1.5 animate-blink rounded-full bg-[#FF0033] shadow-[0_0_6px_rgba(255,0,51,0.8)]" />
           <span className="font-mono text-[9px] font-bold uppercase tracking-[0.25em] text-[#FF0033]">LIVE</span>
           <span className="font-mono text-[9px] font-bold uppercase tracking-[0.25em] text-ozone">FIELD PULSE</span>
