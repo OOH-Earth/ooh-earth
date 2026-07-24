@@ -22,6 +22,7 @@ A living log of open items, decisions, and things still to address. Strike items
 - **Map locations** sourced via server-side KML importer (`importKmlLocations`).
 - **London transit map** imported: 705 verified transit locations from Google My Maps (mid `1JE50Oz1sEg8Cugs9O-fBdxOkCvSZOosk`).
 - **Access keys** referenced on the Map via ooh.earth/access-keys/ (4-Way Utility, H60, JCD Superlock, etc.).
+- **Sky Intel** module — astro-activity alerts (conjunctions, meteor showers, planet oppositions, satellite passes) via web-search LLM, cached daily in localStorage; moon phase computed locally ("moon calculus"); each event tagged with a cryptid "bets" signal. Mounted on Home after OnChain.
 
 ---
 
@@ -39,8 +40,16 @@ A living log of open items, decisions, and things still to address. Strike items
 - [ ] **Access-key filter** on the Map toolbar (now that the `access_key` field exists) — filter units by key type.
 - [ ] **Error / empty states** for external data modules — NomadPulse, crypto ticker, maps.
 - [ ] **FieldIdGenerator** — print / PDF export validation.
-- [ ] **Mobile QA** on UI components (cards, map toolbar, command center, field-id).
+- [ ] **Mobile QA** on UI components (cards, map toolbar, command center, field-id, SkyIntel).
 - [ ] **Refresh SuperCard network stats** — "50 Sites logged" is stale (now 755+ after London import). Re-run once all sources are loaded for final totals.
+
+---
+
+## Open — Sky Intel (follow-ups)
+
+- [ ] **Server-side cache / scheduled refresh** — Sky Intel currently calls InvokeLLM per client per day; a backend function with a daily cache + scheduled workflow would cut credit spend.
+- [ ] **Push notifications** — wire astro alerts to a scheduled workflow + email (registered users) if the cryptid "bets" signal should proactively notify operatives.
+- [ ] **Moon × market correlation** — currently flavour-only; true price×lunar correlation needs historical OHLC across lunar cycles (see LunarMarketOverlay caveat).
 
 ---
 

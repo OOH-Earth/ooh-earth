@@ -23,6 +23,7 @@ import KlimaWidget from "@/components/ooh/KlimaWidget";
 import DonationMomentum from "@/components/ooh/DonationMomentum";
 import Manifesto from "@/components/ooh/Manifesto";
 import OnChain from "@/components/ooh/OnChain";
+import SkyIntel from "@/components/ooh/SkyIntel";
 import ImpactLedger from "@/components/ooh/ImpactLedger";
 import LiveActivityFeed from "@/components/ooh/LiveActivityFeed";
 import SiteFooter from "@/components/ooh/SiteFooter";
@@ -61,6 +62,7 @@ export default function Home() {
         <Reveal><Leaderboard /></Reveal>
         <Reveal><Manifesto /></Reveal>
         <Reveal><OnChain /></Reveal>
+        <Reveal><SkyIntel /></Reveal>
         <Reveal><KlimaWidget /></Reveal>
         <Reveal><DonationMomentum /></Reveal>
         <Reveal><ImpactLedger /></Reveal>
