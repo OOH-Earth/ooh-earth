@@ -52,7 +52,7 @@ export default function Map() {
   const [typeFilter, setTypeFilter] = useState("all");
   const [query, setQuery] = useState("");
   const [selectedId, setSelectedId] = useState(null);
-  const [view, setView] = useState("flat");
+  const [view, setView] = useState("globe");
   const [tourOpen, setTourOpen] = useState(false);
   const [finderOpen, setFinderOpen] = useState(false);
   const [captureOpen, setCaptureOpen] = useState(false);

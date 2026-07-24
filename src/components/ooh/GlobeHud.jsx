@@ -25,6 +25,41 @@ function pmBand(v) {
 
 const fmt = (n, d = 2) => (Number(n) || 0).toFixed(d);
 
+const SYNODIC = 29.530588853;
+const NEW_MOON_JD = 2451550.1;
+
+function moonPhase(date) {
+  const jd = date.getTime() / 86400000 + 2440587.5;
+  let p = ((jd - NEW_MOON_JD) % SYNODIC) / SYNODIC;
+  return p < 0 ? p + 1 : p;
+}
+
+function phaseName(p) {
+  if (p < 0.03 || p > 0.97) return "New Moon";
+  if (p < 0.22) return "Waxing Crescent";
+  if (p < 0.28) return "First Quarter";
+  if (p < 0.47) return "Waxing Gibbous";
+  if (p < 0.53) return "Full Moon";
+  if (p < 0.72) return "Waning Gibbous";
+  if (p < 0.78) return "Last Quarter";
+  return "Waning Crescent";
+}
+
+function MoonGlyph({ phase, r = 11 }) {
+  const c = Math.cos(2 * Math.PI * phase);
+  const rx = Math.max(0.01, r * Math.abs(c));
+  const waxing = phase < 0.5;
+  const sweep1 = waxing ? 1 : 0;
+  const sweep2 = c >= 0 ? sweep1 : 1 - sweep1;
+  const d = `M 0,${-r} A ${r},${r} 0 1 ${sweep1} 0,${r} A ${rx},${r} 0 1 ${sweep2} 0,${-r} Z`;
+  return (
+    <svg viewBox="-14 -14 28 28" className="h-7 w-7 shrink-0">
+      <circle r={r} fill="#0a0a0a" stroke="rgba(241,241,241,0.18)" strokeWidth="0.5" />
+      <path d={d} fill="#EDFF00" style={{ filter: "drop-shadow(0 0 3px rgba(237,255,0,0.4))" }} />
+    </svg>
+  );
+}
+
 export default function GlobeHud({ map }) {
   const [pm, setPm] = useState(null);
   const [clock, setClock] = useState("");
@@ -32,6 +67,7 @@ export default function GlobeHud({ map }) {
   const [tel, setTel] = useState({ lng: 100.55, lat: 13.746, bearing: 0, pitch: 0, zoom: 1.6, span: 0 });
   const startRef = useRef(Date.now());
   const [showAir, setShowAir] = useState(true);
+  const [moon, setMoon] = useState({ phase: 0, name: "—", illum: 0 });
 
   // PM2.5 — Open-Meteo Air Quality (free, no key)
   useEffect(() => {
@@ -64,6 +100,8 @@ export default function GlobeHud({ map }) {
       setElapsed(
         `${String(Math.floor(s / 3600)).padStart(2, "0")}:${String(Math.floor(s / 60) % 60).padStart(2, "0")}:${String(s % 60).padStart(2, "0")}`
       );
+      const phase = moonPhase(d);
+      setMoon({ phase, name: phaseName(phase), illum: (1 - Math.cos(2 * Math.PI * phase)) / 2 });
     };
     tick();
     const t = setInterval(tick, 1000);
@@ -107,6 +145,13 @@ export default function GlobeHud({ map }) {
         </div>
         <div className="mt-1 text-dim">UTC {clock || "--:--:--"} · T+{elapsed}</div>
         <div className="mt-0.5 text-dim">SIG ▮▮▮▯ · DATALINK OPEN</div>
+        <div className="mt-2 flex items-center gap-2 border-t border-slate2/40 pt-2">
+          <MoonGlyph phase={moon.phase} />
+          <div>
+            <div className="text-ozone">{moon.name}</div>
+            <div className="text-dim">{(moon.illum * 100).toFixed(0)}% lit · stage {(moon.phase * 100).toFixed(0)}</div>
+          </div>
+        </div>
       </div>
 
       {/* TC: telemetry strip */}
