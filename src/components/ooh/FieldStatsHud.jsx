@@ -47,8 +47,8 @@ export default function FieldStatsHud() {
   }, []);
 
   return (
-    <div className="pointer-events-none absolute inset-x-0 bottom-0 z-[900] border-t border-slate2/60 bg-void/85 backdrop-blur-md">
-      <div className="flex h-7 items-center overflow-hidden">
+    <div className="pointer-events-none absolute inset-x-0 bottom-0 z-[900] border-t border-ozone/25 bg-void/95 backdrop-blur-md">
+      <div className="flex h-7 items-center overflow-hidden [text-shadow:0_1px_3px_rgba(0,0,0,0.95)]">
         <div className="flex shrink-0 items-center gap-1.5 border-r border-slate2/60 px-3">
           <span className="h-1.5 w-1.5 animate-blink rounded-full bg-ozone" />
           <span className="font-mono text-[9px] font-bold uppercase tracking-[0.25em] text-ozone">FIELD PULSE</span>
@@ -70,8 +70,8 @@ function Row({ items }) {
   return (
     <>
       {items.map((it, i) => (
-        <span key={i} className="flex shrink-0 items-center gap-1.5 px-4">
-          <it.icon className="h-3 w-3 text-ozone" />
+        <span key={i} className="flex shrink-0 items-center gap-1.5 px-4 [text-shadow:0_1px_3px_rgba(0,0,0,0.95)]">
+          <it.icon className="h-3 w-3 text-ozone drop-shadow-[0_0_3px_rgba(237,255,0,0.5)]" />
           <span className="font-mono text-[9px] font-bold uppercase tracking-[0.2em] text-darkgray">{it.label}</span>
           <span className={`font-mono text-[10px] tabular ${it.accent || "text-silver"}`}>{it.value}</span>
           {it.delta && (
