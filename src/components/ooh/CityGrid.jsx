@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 import { Radio, ArrowUpRight } from "lucide-react";
 
 const NORTH = [
-  { city: "London", country: "United Kingdom", logged: 14, level: 35 },
+  { city: "London", country: "United Kingdom", logged: 14, level: 35, img: "https://ooh.earth/wp-content/uploads/2026/03/04_Lindsay-Grime_Were-Hiring_Shell-AGM-2024_credit-Brandalism_12x9-2.jpeg" },
   { city: "New York", country: "United States", logged: 0, level: 0 },
   { city: "Tokyo", country: "Japan", logged: 0, level: 0 },
   { city: "Berlin", country: "Germany", logged: 0, level: 0 },
@@ -17,7 +17,7 @@ const SOUTH = [
   { city: "Lagos", country: "Nigeria", logged: 0, level: 0 },
   { city: "Mumbai", country: "India", logged: 0, level: 0 },
   { city: "Jakarta", country: "Indonesia", logged: 0, level: 0 },
-  { city: "Bangkok", country: "Thailand", logged: 0, level: 0 },
+  { city: "Bangkok", country: "Thailand", logged: 10, level: 40, img: "https://ooh.earth/wp-content/uploads/2026/05/1777896004-01-d21q.webp" },
   { city: "Nairobi", country: "Kenya", logged: 0, level: 0 },
   { city: "Bogotá", country: "Colombia", logged: 0, level: 0 },
   { city: "Manila", country: "Philippines", logged: 0, level: 0 },
@@ -31,16 +31,30 @@ function CityCard({ c, highlighted }) {
       to="/map"
       className="group relative flex h-44 flex-col justify-end overflow-hidden border border-slate2 p-4 transition-colors hover:border-ozone"
     >
-      <div
-        className={`absolute inset-0 ${
-          live
-            ? "bg-gradient-to-br from-ozone/15 via-void to-void"
-            : highlighted
-            ? "bg-gradient-to-br from-flare/10 via-void to-void"
-            : "bg-gradient-to-br from-slate2/40 to-void"
-        }`}
-      />
-      <div className="absolute inset-0 grid-bg opacity-60" />
+      {c.img ? (
+        <>
+          <img
+            src={c.img}
+            alt={`${c.city} field photography`}
+            loading="lazy"
+            className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-void via-void/55 to-void/10" />
+        </>
+      ) : (
+        <>
+          <div
+            className={`absolute inset-0 ${
+              live
+                ? "bg-gradient-to-br from-ozone/15 via-void to-void"
+                : highlighted
+                ? "bg-gradient-to-br from-flare/10 via-void to-void"
+                : "bg-gradient-to-br from-slate2/40 to-void"
+            }`}
+          />
+          <div className="absolute inset-0 grid-bg opacity-60" />
+        </>
+      )}
       <div className="relative">
         <div className="flex items-center justify-between">
           <span className="font-mono text-[9px] uppercase tracking-[0.3em] text-dim">{c.country}</span>
