@@ -5,8 +5,8 @@ export default function NfcFieldCard({ handle = "operative", memberId = "OOH-000
   return (
     <div className="relative w-[340px] select-none overflow-hidden border border-slate2 bg-void shadow-[0_24px_60px_rgba(0,0,0,0.6)]" style={{ height: "214px", transform: "perspective(900px) rotateY(-14deg) rotateX(4deg)" }}>
       <div className="hi-vis-stripes flex h-[26px] items-center justify-between px-3">
-        <span className="font-mono text-[9px] font-bold uppercase tracking-[0.25em] text-void">OOH Earth Union Card</span>
-        <span className="font-mono text-[9px] font-bold uppercase tracking-[0.25em] text-void">NFC</span>
+        <span className="bg-void px-1.5 font-mono text-[9px] font-bold uppercase tracking-[0.25em] text-ozone">OOH Earth Union Card</span>
+        <span className="bg-void px-1.5 font-mono text-[9px] font-bold uppercase tracking-[0.25em] text-ozone">NFC</span>
       </div>
 
       <div className="absolute right-3 top-[34px]"><BrandMark className="h-7 w-7" /></div>
