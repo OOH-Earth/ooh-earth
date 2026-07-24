@@ -14,8 +14,7 @@ export default function GlobeSection() {
         </span>
         <span className="font-mono text-[9px] uppercase tracking-[0.2em] text-dim/70">{seedMarkers.length} spots · live spin</span>
       </div>
-      <div className="pointer-events-none absolute inset-x-0 bottom-0 z-[1001] flex items-center justify-between bg-gradient-to-t from-void to-transparent px-5 pb-[calc(1rem+env(safe-area-inset-bottom))] pt-4">
-        <span className="font-display text-lg font-bold tracking-[-0.02em] text-silver">Resistance, mapped globally</span>
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 z-[1001] flex items-center justify-end bg-gradient-to-t from-void to-transparent px-5 pb-[calc(1rem+env(safe-area-inset-bottom))] pt-4">
         <Link
           to="/map"
           className="pointer-events-auto flex items-center gap-1.5 border border-ozone/60 px-3 py-1.5 font-mono text-[10px] font-bold uppercase tracking-[0.2em] text-ozone transition-colors hover:bg-ozone hover:text-void"

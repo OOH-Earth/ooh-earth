@@ -47,7 +47,7 @@ export default function FieldStatsHud() {
   }, []);
 
   return (
-    <div className="pointer-events-none absolute inset-x-0 bottom-0 z-[900] border-t border-ozone/25 bg-void/95 backdrop-blur-md">
+    <div className="pointer-events-none absolute inset-x-0 bottom-0 z-[950] border-t border-ozone/25 bg-void backdrop-blur-md">
       <div className="flex h-7 items-center overflow-hidden [text-shadow:0_1px_3px_rgba(0,0,0,0.95)]">
         <div className="flex shrink-0 items-center gap-1.5 border-r border-slate2/60 px-3">
           <span className="h-1.5 w-1.5 animate-blink rounded-full bg-ozone" />
