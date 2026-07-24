@@ -6,9 +6,10 @@ import MapToolbar from "@/components/ooh/map/MapToolbar";
 import MapSidebar from "@/components/ooh/map/MapSidebar";
 import LocationCard from "@/components/ooh/map/LocationCard";
 import seedMarkers from "@/components/ooh/mapSeed";
-import { Loader2, FileDown, Megaphone, Map as MapIcon, Globe } from "lucide-react";
+import { Loader2, FileDown, Megaphone, Map as MapIcon, Globe, ScanSearch } from "lucide-react";
 import { Link } from "react-router-dom";
 import Walkthrough from "@/components/ooh/Walkthrough";
+import UnitFinder from "@/components/ooh/UnitFinder";
 import Globe3D from "@/components/ooh/Globe3D";
 
 const TOUR = [
@@ -45,6 +46,7 @@ export default function Map() {
   const [selectedId, setSelectedId] = useState(null);
   const [view, setView] = useState("flat");
   const [tourOpen, setTourOpen] = useState(false);
+  const [finderOpen, setFinderOpen] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -170,6 +172,12 @@ export default function Map() {
             )}
             <div className="absolute right-4 top-4 z-[1000] flex gap-2">
               <button
+                onClick={() => setFinderOpen(true)}
+                className="flex items-center gap-1.5 border border-ozone/60 bg-void/80 px-3 py-2 font-mono text-[10px] font-bold uppercase tracking-[0.25em] text-ozone backdrop-blur-md transition-colors hover:bg-ozone hover:text-void"
+              >
+                <ScanSearch className="h-3.5 w-3.5" /> Find
+              </button>
+              <button
                 onClick={exportGeoJSON}
                 className="flex items-center gap-1.5 border border-slate2 bg-void/80 px-3 py-2 font-mono text-[10px] font-bold uppercase tracking-[0.25em] text-darkgray backdrop-blur-md transition-colors hover:border-ozone hover:text-ozone"
               >
@@ -188,6 +196,7 @@ export default function Map() {
       )}
 
       <Walkthrough open={tourOpen} onClose={() => setTourOpen(false)} steps={TOUR} />
+      <UnitFinder open={finderOpen} onClose={() => setFinderOpen(false)} />
     </div>
   );
 }
