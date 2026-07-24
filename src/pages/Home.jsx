@@ -12,6 +12,7 @@ import OffenderRegistry from "@/components/ooh/OffenderRegistry";
 import AdSpendDamage from "@/components/ooh/AdSpendDamage";
 import NewsTicker from "@/components/ooh/NewsTicker";
 import OperativeNetwork from "@/components/ooh/OperativeNetwork";
+import Leaderboard from "@/components/ooh/Leaderboard";
 import KlimaWidget from "@/components/ooh/KlimaWidget";
 import DonationMomentum from "@/components/ooh/DonationMomentum";
 import Manifesto from "@/components/ooh/Manifesto";
@@ -45,6 +46,7 @@ export default function Home() {
         <OffenderRegistry />
         <AdSpendDamage />
         <OperativeNetwork />
+        <Leaderboard />
         <Manifesto />
         <OnChain />
         <KlimaWidget />
