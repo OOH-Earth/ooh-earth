@@ -1,5 +1,6 @@
 import { useState } from "react";
 import Nav from "@/components/ooh/Nav";
+import MetroSlider from "@/components/ooh/MetroSlider";
 import Hero from "@/components/ooh/Hero";
 import Reveal from "@/components/ooh/Reveal";
 import SpotIdentifyTag from "@/components/ooh/SpotIdentifyTag";
@@ -40,6 +41,7 @@ export default function Home() {
       <ViewfinderCursor />
       <HorizonProgress />
       <Nav onCommand={openCommand} />
+      <MetroSlider />
 
       <main>
         <Hero onCommand={openCommand} />
