@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { HandHeart, ArrowUpRight, Target, Shield } from "lucide-react";
+import { HandHeart, ArrowUpRight, Target } from "lucide-react";
+import PaymentBadges from "@/components/ooh/campaign/PaymentBadges";
 import Nav from "@/components/ooh/Nav";
 import SiteFooter from "@/components/ooh/SiteFooter";
 import CommandCenter from "@/components/ooh/CommandCenter";
@@ -85,10 +86,7 @@ export default function Support() {
         <section className="border-t border-slate2/40 bg-void">
           <div className="px-5 py-16 md:px-8 md:py-24">
             <div className="mx-auto max-w-md">
-              <div className="mb-6 flex items-center gap-2">
-                <Shield className="h-4 w-4 text-ozone" />
-                <span className="font-mono text-[10px] uppercase tracking-[0.3em] text-dim">Secure · Apple Pay · Google Pay · PayPal · Card</span>
-              </div>
+              <PaymentBadges methods={["applepay", "googlepay", "paypal", "visa", "mastercard", "amex"]} securedBy="Donorbox" className="mb-6" />
               <div className="overflow-hidden border border-slate2/60">
                 <iframe
                   src="https://donorbox.org/embed/ooh-donations?language=en-us"

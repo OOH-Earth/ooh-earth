@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { Loader2, CreditCard } from "lucide-react";
+import PaymentBadges from "@/components/ooh/campaign/PaymentBadges";
 
 const TIERS = [25, 50, 100, 250];
 
@@ -67,6 +68,7 @@ export default function StripeDonate() {
         {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <CreditCard className="h-4 w-4" />}
         {loading ? "Processing…" : "Donate now"}
       </button>
+      <PaymentBadges securedBy="Stripe" className="mt-4" />
     </div>
   );
 }
