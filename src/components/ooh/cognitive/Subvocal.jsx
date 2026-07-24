@@ -18,23 +18,38 @@ export default function Subvocal() {
     return () => window.removeEventListener("ooh-subvocal", onVocal);
   }, [speak]);
 
-  // gentle hover-speak on every interactive element — whispers its label
+  // gentle hover-speak on interactive elements — never repeats while you stay
+  // on the same element, and won't re-whisper an identical label back-to-back
   useEffect(() => {
     let last = 0;
+    let lastEl = null;
+    let lastLabel = "";
     const onOver = (e) => {
       const el = e.target instanceof Element
         ? e.target.closest('button, a, [role="button"], [data-tactile]')
         : null;
-      if (!el) return;
+      if (!el || el === lastEl) return;
       const label = (el.getAttribute("aria-label") || el.textContent || "").trim();
       if (!label || label.length > 40) return;
       const now = performance.now();
-      if (now - last < 850) return;
+      if (label === lastLabel && now - last < 4000) return;
       last = now;
+      lastEl = el;
+      lastLabel = label;
       speak(label);
     };
+    const onOut = (e) => {
+      const el = e.target instanceof Element
+        ? e.target.closest('button, a, [role="button"], [data-tactile]')
+        : null;
+      if (el && el === lastEl) lastEl = null;
+    };
     document.addEventListener("mouseover", onOver, { passive: true });
-    return () => document.removeEventListener("mouseover", onOver);
+    document.addEventListener("mouseout", onOut, { passive: true });
+    return () => {
+      document.removeEventListener("mouseover", onOver);
+      document.removeEventListener("mouseout", onOut);
+    };
   }, [speak]);
 
   return null;

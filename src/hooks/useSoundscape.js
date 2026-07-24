@@ -8,6 +8,14 @@ let master = null;
 let started = false;
 const listeners = new Set();
 
+// read-aloud (screen-reader style) — independent of the ambient sound toggle
+const KEY2 = "ooh_readaloud_enabled";
+const readListeners = new Set();
+function readReadAloud() {
+  try { return localStorage.getItem(KEY2) === "1"; } catch { return false; }
+}
+function emitReadAloud(v) { readListeners.forEach((fn) => fn(v)); }
+
 function reduced() {
   return window.matchMedia?.("(prefers-reduced-motion: reduce)").matches ?? false;
 }
@@ -158,5 +166,36 @@ export default function useSoundscape() {
     return () => window.speechSynthesis.removeEventListener?.("voiceschanged", refresh);
   }, []);
 
-  return { enabled, toggle, blip, speak, supported: isSoundSupported() };
+  // read-aloud: forced speech (bypasses ambient toggle), female voice, a touch louder
+  const [readAloud, setReadAloud] = useState(readReadAloud);
+  useEffect(() => {
+    const fn = (v) => setReadAloud(v);
+    readListeners.add(fn);
+    return () => { readListeners.delete(fn); };
+  }, []);
+  const toggleReadAloud = useCallback(() => {
+    const next = !readReadAloud();
+    try { localStorage.setItem(KEY2, next ? "1" : "0"); } catch {}
+    emitReadAloud(next);
+    if (!next) { try { window.speechSynthesis?.cancel(); } catch {} }
+  }, []);
+  const speakForced = useCallback((text) => {
+    if (!text || !isSpeechSupported()) return;
+    try {
+      const synth = window.speechSynthesis;
+      synth.cancel();
+      const u = new SpeechSynthesisUtterance(text);
+      const v = ensureFemaleVoice();
+      if (v) u.voice = v;
+      u.volume = 0.5; u.rate = 0.98; u.pitch = 1.05;
+      synth.speak(u);
+    } catch {}
+  }, []);
+
+  return {
+    enabled, toggle, blip, speak,
+    speakForced, readAloud, toggleReadAloud,
+    supported: isSoundSupported(),
+    speechSupported: isSpeechSupported(),
+  };
 }
