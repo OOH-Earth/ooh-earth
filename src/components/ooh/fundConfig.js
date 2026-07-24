@@ -7,7 +7,7 @@ export const CAMPAIGN = {
   urgency:
     "Operating on fumes. Every contribution deploys a camera, a frame, a counter-narrative to the street. The advertising complex spends billions to colonize public space — we move first, with less.",
   wallets: {
-    btc: "",
+    btc: "bc1p50w72krrjkfvjfvg8wfvn5xp6q3x4zsfcquavth0yuuvg3mthzssp6zdy5",
     eth: "",
     sol: "EusJyb6R7vZEnmCLoJXBXui6inozZguAFjkKJNGEaafx",
     usdc: "",
