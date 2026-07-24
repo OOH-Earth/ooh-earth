@@ -1,6 +1,10 @@
 import { useState } from "react";
 import Nav from "@/components/ooh/Nav";
 import Hero from "@/components/ooh/Hero";
+import Reveal from "@/components/ooh/Reveal";
+import SpotIdentifyTag from "@/components/ooh/SpotIdentifyTag";
+import OffenseCategories from "@/components/ooh/OffenseCategories";
+import FieldWorkflow from "@/components/ooh/FieldWorkflow";
 import Mandate from "@/components/ooh/Mandate";
 import CampaignAtlas from "@/components/ooh/CampaignAtlas";
 import CityGrid from "@/components/ooh/CityGrid";
@@ -36,22 +40,25 @@ export default function Home() {
       <main>
         <Hero onCommand={openCommand} />
         <NewsTicker />
-        <Mandate />
-        <CampaignAtlas />
-        <CityGrid />
-        <CityPulse />
-        <MiniMapStack />
-        <AirCommons />
-        <CarbonCounter />
-        <OffenderRegistry />
-        <AdSpendDamage />
-        <OperativeNetwork />
-        <Leaderboard />
-        <Manifesto />
-        <OnChain />
-        <KlimaWidget />
-        <DonationMomentum />
-        <ImpactLedger />
+        <Reveal><Mandate /></Reveal>
+        <SpotIdentifyTag />
+        <Reveal><CampaignAtlas /></Reveal>
+        <OffenseCategories />
+        <Reveal><CityGrid /></Reveal>
+        <Reveal><CityPulse /></Reveal>
+        <Reveal><MiniMapStack /></Reveal>
+        <Reveal><AirCommons /></Reveal>
+        <Reveal><CarbonCounter /></Reveal>
+        <Reveal><OffenderRegistry /></Reveal>
+        <Reveal><AdSpendDamage /></Reveal>
+        <Reveal><OperativeNetwork /></Reveal>
+        <FieldWorkflow />
+        <Reveal><Leaderboard /></Reveal>
+        <Reveal><Manifesto /></Reveal>
+        <Reveal><OnChain /></Reveal>
+        <Reveal><KlimaWidget /></Reveal>
+        <Reveal><DonationMomentum /></Reveal>
+        <Reveal><ImpactLedger /></Reveal>
       </main>
 
       <SiteFooter onCommand={openCommand} />
