@@ -4,20 +4,25 @@ import { Link } from "react-router-dom";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 
+// Evolved V2 pin — high-vis yellow disc + black ad-structure glyph +
+// pink/red radial highlight. Shared HTML fragment keeps default + selected
+// states visually consistent.
+const GLYPH_SVG = `<svg viewBox="0 0 24 24" width="9" height="9" fill="none" aria-hidden="true"><rect x="5" y="3" width="14" height="11" rx="1" fill="#000"/><rect x="7" y="5" width="10" height="2.5" fill="#EDFF00" opacity="0.85"/><rect x="9" y="14" width="2" height="6" fill="#000"/><rect x="13" y="14" width="2" height="6" fill="#000"/></svg>`;
+
 const pinIcon = L.divIcon({
   className: "ooh-pin",
-  html: `<span style="display:block;width:14px;height:14px;border-radius:50%;background:#EDFF00;border:1px solid #000;box-shadow:0 0 0 3px rgba(237,255,0,0.22),0 0 12px rgba(237,255,0,0.55)"></span>`,
-  iconSize: [14, 14],
-  iconAnchor: [7, 7],
-  popupAnchor: [0, -8],
+  html: `<div style="position:relative;width:18px;height:18px"><span style="position:absolute;inset:-6px;border-radius:50%;background:radial-gradient(circle,rgba(255,72,118,0.26),transparent 65%)"></span><span style="position:relative;display:flex;width:18px;height:18px;border-radius:50%;background:#EDFF00;border:1px solid #000;box-shadow:0 0 0 2px rgba(237,255,0,0.20),0 0 10px rgba(237,255,0,0.5);align-items:center;justify-content:center">${GLYPH_SVG}</span></div>`,
+  iconSize: [18, 18],
+  iconAnchor: [9, 9],
+  popupAnchor: [0, -10],
 });
 
 const selIcon = L.divIcon({
   className: "ooh-pin ooh-pin--sel",
-  html: `<span style="display:block;width:20px;height:20px;border-radius:50%;background:#FF5C00;border:2px solid #000;box-shadow:0 0 0 4px rgba(255,92,0,0.25),0 0 16px rgba(255,92,0,0.6)"></span>`,
-  iconSize: [20, 20],
-  iconAnchor: [10, 10],
-  popupAnchor: [0, -10],
+  html: `<div style="position:relative;width:24px;height:24px"><span style="position:absolute;inset:-10px;border-radius:50%;background:radial-gradient(circle,rgba(255,72,118,0.45),transparent 65%)"></span><span style="position:absolute;inset:0;border-radius:50%;border:2px solid #FF5C00;animation:ooh-pinpulse 1.4s ease-out infinite"></span><span style="position:relative;display:flex;width:24px;height:24px;border-radius:50%;background:#EDFF00;border:2px solid #000;box-shadow:0 0 0 3px rgba(255,92,0,0.25),0 0 16px rgba(255,92,0,0.55);align-items:center;justify-content:center">${GLYPH_SVG}</span></div>`,
+  iconSize: [24, 24],
+  iconAnchor: [12, 12],
+  popupAnchor: [0, -12],
 });
 
 const userIcon = L.divIcon({

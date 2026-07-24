@@ -13,6 +13,7 @@ import UnitFinder from "@/components/ooh/UnitFinder";
 import QuickCapture from "@/components/ooh/QuickCapture";
 import Globe3D from "@/components/ooh/Globe3D";
 import ClaimLeadDialog from "@/components/ooh/map/ClaimLeadDialog";
+import SpecsBar from "@/components/ooh/uikit/pinlab/SpecsBar";
 
 const TOUR = [
   { title: "Welcome to OOH Map", body: "The live field map of corporate advertising spots — documented by operatives worldwide." },
@@ -239,6 +240,11 @@ export default function Map() {
               <Globe3D markers={filtered} selectedId={selectedId} hoverId={hoverId} onSelect={setSelectedId} userLoc={userLoc} />
             ) : (
               <LocationMap markers={filtered} selectedId={selectedId} hoverId={hoverId} onSelect={setSelectedId} userLoc={userLoc} />
+            )}
+            {view === "flat" && (
+              <div className="pointer-events-none absolute inset-x-0 bottom-0 z-[900]">
+                <SpecsBar counts={counts} total={raw?.markers?.length || 0} />
+              </div>
             )}
             <div className="absolute right-3 top-3 z-[1000] flex gap-1.5">
               <button
