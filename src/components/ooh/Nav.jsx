@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Crosshair, Megaphone, Menu } from "lucide-react";
+import { Crosshair, Camera, Menu } from "lucide-react";
 import { Link } from "react-router-dom";
 import ThemeToggle from "@/components/ooh/ThemeToggle";
 import HapticsToggle from "@/components/ooh/cognitive/HapticsToggle";
@@ -30,10 +30,10 @@ export default function Nav({ onCommand }) {
           </button>
           <Link
             to="/report"
-            aria-label="Report"
-            className="flex items-center gap-2 border border-slate2 px-3 py-2 font-mono text-[10px] font-bold uppercase tracking-[0.25em] text-silver transition-colors hover:border-ozone hover:text-ozone md:hidden"
+            aria-label="Capture & report"
+            className="flex items-center gap-2 border border-ozone/70 px-3 py-2 font-mono text-[10px] font-bold uppercase tracking-[0.25em] text-ozone transition-colors hover:bg-ozone hover:text-void md:hidden"
           >
-            <Megaphone className="h-3.5 w-3.5" />
+            <Camera className="h-3.5 w-3.5" />
           </Link>
           <button
             onClick={onCommand}
