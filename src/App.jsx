@@ -23,6 +23,7 @@ import TrueCost from '@/pages/TrueCost';
 import TrashId from '@/pages/TrashId';
 import InHome from '@/pages/InHome';
 import Zora from '@/pages/Zora';
+import UiKit from '@/pages/UiKit';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -63,6 +64,7 @@ const AuthenticatedApp = () => {
     <Route path="/trash" element={<TrashId />} />
     <Route path="/inhome" element={<InHome />} />
     <Route path="/zora" element={<Zora />} />
+    <Route path="/kit" element={<UiKit />} />
     <Route element={<ProtectedRoute unauthenticatedElement={<Navigate to="/login" replace />} />}>
       <Route path="/dashboard" element={<Dashboard />} />
     </Route>
