@@ -25,6 +25,24 @@ function readEnabled() {
 }
 function emit(v) { listeners.forEach((fn) => fn(v)); }
 
+// audio-focus: when the TV channel is playing, duck the ambient drone + mute
+// subvocal speech so the two signals never cross.
+let tvFocus = false;
+function applyTvFocus(v) {
+  tvFocus = v;
+  if (v) {
+    try { window.speechSynthesis?.cancel(); } catch {}
+    if (master && ctx) {
+      const t = ctx.currentTime;
+      master.gain.cancelScheduledValues(t);
+      master.gain.setValueAtTime(master.gain.value, t);
+      master.gain.linearRampToValueAtTime(0, t + 0.4);
+    }
+  } else if (readEnabled() && !reduced()) {
+    engineStart();
+  }
+}
+
 function ensureEngine() {
   if (ctx) return ctx;
   const AC = window.AudioContext || window.webkitAudioContext;
@@ -140,12 +158,12 @@ export default function useSoundscape() {
   const toggle = useCallback(() => set(!readEnabled()), [set]);
 
   const blip = useCallback((f, d, t, v) => {
-    if (!readEnabled() || reduced()) return;
+    if (!readEnabled() || reduced() || tvFocus) return;
     engineBlip(f, d, t, v);
   }, []);
 
   const speak = useCallback((text) => {
-    if (!readEnabled() || reduced() || !text || !isSpeechSupported()) return;
+    if (tvFocus || !readEnabled() || reduced() || !text || !isSpeechSupported()) return;
     try {
       const synth = window.speechSynthesis;
       synth.cancel();
@@ -180,7 +198,7 @@ export default function useSoundscape() {
     if (!next) { try { window.speechSynthesis?.cancel(); } catch {} }
   }, []);
   const speakForced = useCallback((text) => {
-    if (!text || !isSpeechSupported()) return;
+    if (tvFocus || !text || !isSpeechSupported()) return;
     try {
       const synth = window.speechSynthesis;
       synth.cancel();
@@ -192,9 +210,12 @@ export default function useSoundscape() {
     } catch {}
   }, []);
 
+  const setTvFocus = useCallback((v) => applyTvFocus(v), []);
+
   return {
     enabled, toggle, blip, speak,
     speakForced, readAloud, toggleReadAloud,
+    setTvFocus,
     supported: isSoundSupported(),
     speechSupported: isSpeechSupported(),
   };

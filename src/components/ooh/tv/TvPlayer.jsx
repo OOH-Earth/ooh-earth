@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import useSoundscape from "@/hooks/useSoundscape";
 import { PROGRAMS } from "./programs";
 
 // Lazy-load the YouTube IFrame Player API once.
@@ -19,6 +20,7 @@ export default function TvPlayer({ index, onEnded }) {
   const hostRef = useRef(null);
   const playerRef = useRef(null);
   const [ready, setReady] = useState(false);
+  const { setTvFocus } = useSoundscape();
 
   // create the player once on mount
   useEffect(() => {
@@ -31,13 +33,20 @@ export default function TvPlayer({ index, onEnded }) {
         events: {
           onReady: () => setReady(true),
           onStateChange: (e) => {
-            if (e.data === window.YT.PlayerState.ENDED) onEnded?.();
+            const YT = window.YT;
+            // grab audio focus while the video plays, release when it stops
+            if (e.data === YT.PlayerState.PLAYING) setTvFocus(true);
+            else if (e.data === YT.PlayerState.ENDED) { setTvFocus(false); onEnded?.(); }
+            else if (e.data === YT.PlayerState.PAUSED || e.data === YT.PlayerState.UNSTARTED || e.data === YT.PlayerState.CUED) {
+              setTvFocus(false);
+            }
           },
         },
       });
     });
     return () => {
       cancelled = true;
+      setTvFocus(false);
       try { playerRef.current?.destroy?.(); } catch {}
       playerRef.current = null;
     };
