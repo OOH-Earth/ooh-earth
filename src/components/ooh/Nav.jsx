@@ -1,15 +1,17 @@
 import { Crosshair, Megaphone } from "lucide-react";
 import { Link } from "react-router-dom";
 import ThemeToggle from "@/components/ooh/ThemeToggle";
+import BrandMark from "@/components/ooh/BrandMark";
 
 export default function Nav({ onCommand }) {
   return (
     <header className="fixed inset-x-0 top-0 z-50 border-b border-white/5 bg-void/70 backdrop-blur-md">
       <div className="flex items-center justify-between px-5 py-4 md:px-8">
-        <a href="#top" className="flex items-center gap-2">
-          <span className="font-display text-sm font-black uppercase tracking-[0.3em] text-silver">OOH<span className="text-ozone text-glow-ozone">.</span>EARTH</span>
+        <Link to="/" className="group flex items-center gap-2.5" aria-label="OOH Earth — home">
+          <BrandMark className="h-6 w-6" spinning />
+          <span className="font-display text-sm font-black uppercase tracking-[0.3em] text-silver transition-colors group-hover:text-ozone">OOH<span className="text-ozone text-glow-ozone">.</span>EARTH</span>
           <span className="hidden font-mono text-[9px] uppercase tracking-[0.3em] text-dim sm:inline">/ Out Of Hell™</span>
-        </a>
+        </Link>
 
         <nav className="hidden items-center gap-6 font-mono text-[10px] uppercase tracking-[0.25em] text-silver/60 md:flex">
           <a href="#mandate" className="transition-colors hover:text-ozone">Mandate</a>

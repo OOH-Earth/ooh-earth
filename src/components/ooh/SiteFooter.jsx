@@ -1,4 +1,6 @@
 import { Crosshair } from "lucide-react";
+import { Link } from "react-router-dom";
+import BrandMark from "@/components/ooh/BrandMark";
 
 export default function SiteFooter({ onCommand }) {
   return (
@@ -6,10 +8,13 @@ export default function SiteFooter({ onCommand }) {
       <div className="px-5 py-12 md:px-8">
         <div className="grid gap-10 md:grid-cols-[2fr_1fr_1fr]">
           <div>
-            <div className="font-display text-3xl font-black uppercase tracking-tight text-silver md:text-5xl">
-              OOH<span className="text-ozone">.</span>EARTH
-            </div>
-            <p className="mt-1 font-mono text-[10px] uppercase tracking-[0.3em] text-dim">Out Of Hell™ · Adbusting Manual</p>
+            <Link to="/" className="group inline-flex items-center gap-3" aria-label="OOH Earth — home">
+              <BrandMark className="h-9 w-9 md:h-11 md:w-11" />
+              <span className="font-display text-3xl font-black uppercase tracking-tight text-silver transition-colors group-hover:text-ozone md:text-5xl">
+                OOH<span className="text-ozone">.</span>EARTH
+              </span>
+            </Link>
+            <p className="mt-1 pl-1 font-mono text-[10px] uppercase tracking-[0.3em] text-dim">Out Of Hell™ · Adbusting Manual</p>
             <p className="mt-4 max-w-sm font-display text-sm font-normal leading-[1.4] text-darkgray">
               A non-state disruption agency reclaiming the visual commons. Community-funded, union-made and aligned to the UN Sustainable Development Goals — documenting every corporate advertising offense on the public record.
             </p>
