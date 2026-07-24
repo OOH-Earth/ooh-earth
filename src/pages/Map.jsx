@@ -6,6 +6,7 @@ import MapToolbar from "@/components/ooh/map/MapToolbar";
 import MapSidebar from "@/components/ooh/map/MapSidebar";
 import LocationCard from "@/components/ooh/map/LocationCard";
 import seedMarkers from "@/components/ooh/mapSeed";
+import { toMarker } from "@/components/ooh/map/markerUtils";
 import { Loader2, FileDown, Megaphone, Map as MapIcon, Globe, ScanSearch, Camera, Key } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useWalkthrough } from "@/lib/walkthroughContext";
@@ -32,25 +33,6 @@ const TOUR = [
   { target: "[data-tour=\"map\"]", title: "Roadmap phases", body: "Each future carries a target quarter — Q3 2026 through 2028. When a phase opens, operatives can claim a future to seed the local network and convert it into live locations." },
   { title: "Mission ready", body: "You're cleared for field operations. File your first report.", cta: true },
 ];
-
-const KNOWN_TYPES = ["billboard", "digital", "painted", "projection", "sticker", "mural", "transit", "other"];
-const normType = (t) => {
-  const s = String(t || "").toLowerCase().trim();
-  if (s === "location") return "other";
-  return KNOWN_TYPES.includes(s) ? s : "other";
-};
-
-const toMarker = (r) => ({
-  id: r.id,
-  title: r.title,
-  type: normType(r.type),
-  address: r.address || "",
-  lat: r.lat,
-  lng: r.lng,
-  image: r.image_url || null,
-  link: r.source_link || "",
-  status: r.status || "pending",
-});
 
 export default function Map() {
   const [raw, setRaw] = useState(null);
