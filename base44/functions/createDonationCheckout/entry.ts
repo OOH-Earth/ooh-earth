@@ -6,7 +6,14 @@ Deno.serve(async (req) => {
       return Response.json({ error: "Invalid amount (minimum $1)" }, { status: 400 });
     }
 
-    const origin = req.headers.get("origin") || "https://ooh.earth";
+    const ALLOWED_ORIGINS = new Set([
+      "https://ooh.earth",
+      "https://www.ooh.earth",
+      "http://localhost:5173",
+      "http://localhost:3000",
+    ]);
+    const rawOrigin = req.headers.get("origin");
+    const origin = rawOrigin && ALLOWED_ORIGINS.has(rawOrigin) ? rawOrigin : "https://ooh.earth";
 
     const params = new URLSearchParams();
     params.set("mode", "payment");
