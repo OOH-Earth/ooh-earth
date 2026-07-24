@@ -12,7 +12,7 @@ const STATUS_BADGE = {
   rejected: "border-flare/50 text-flare",
 };
 
-function Row({ r, onVerify, busy }) {
+function Row({ r, onVerify, busy, triage }) {
   return (
     <div className="flex items-center gap-3 border border-slate2/50 bg-card p-3">
       <LocationThumb m={{ image: r.image_url, type: r.type, title: r.title }} className="h-14 w-14 border border-slate2/50" />
@@ -20,6 +20,7 @@ function Row({ r, onVerify, busy }) {
         <div className="flex items-center gap-2">
           <span className="truncate font-display text-sm font-bold text-silver">{r.title}</span>
           <span className={`shrink-0 border px-1.5 py-0.5 font-mono text-[8px] uppercase tracking-[0.2em] ${STATUS_BADGE[r.status] || ""}`}>{r.status}</span>
+          {triage && <span className="shrink-0 border border-flare/60 px-1.5 py-0.5 font-mono text-[8px] uppercase tracking-[0.2em] text-flare">Triage</span>}
         </div>
         <p className="truncate font-mono text-[9px] uppercase tracking-[0.15em] text-dim">{r.address || `${r.lat?.toFixed(4)}, ${r.lng?.toFixed(4)}`}</p>
       </div>
@@ -87,6 +88,9 @@ export default function Dashboard() {
   }
 
   const isAdmin = user?.role === "admin";
+  const triageScore = (r) => (r.image_url ? 2 : 0) + (r.source_link ? 1 : 0);
+  const sortedPending = [...pending].sort((a, b) => triageScore(b) - triageScore(a));
+  const triageCount = sortedPending.filter((r) => triageScore(r) >= 2).length;
 
   return (
     <div className="relative min-h-screen bg-void">
@@ -119,10 +123,10 @@ export default function Dashboard() {
             <section className="mt-10">
               <div className="flex items-center justify-between">
                 <h2 className="font-display text-lg font-bold uppercase tracking-[-0.01em] text-silver">Verification queue</h2>
-                <span className="font-mono text-[10px] uppercase tracking-[0.25em] text-dim">// {pending.length} pending</span>
+                <span className="font-mono text-[10px] uppercase tracking-[0.25em] text-dim">// {pending.length} pending {triageCount > 0 && <span className="text-flare/80">· {triageCount} triage</span>}</span>
               </div>
               <div className="mt-4 space-y-2">
-                {pending.length ? pending.map((r) => <Row key={r.id} r={r} onVerify={verify} busy={busy[r.id]} />) : (
+                {sortedPending.length ? sortedPending.map((r) => <Row key={r.id} r={r} onVerify={verify} busy={busy[r.id]} triage={triageScore(r) >= 2} />) : (
                   <div className="border border-slate2/40 bg-card p-6 text-center font-mono text-[10px] uppercase tracking-[0.25em] text-dim">// Queue clear — no pending captures</div>
                 )}
               </div>
