@@ -37,8 +37,7 @@ export default function Nav({ onCommand }) {
           </Link>
           <button
             onClick={onCommand}
-            className="group flex items-center gap-2 border-2 border-ozone px-3 py-2 font-mono text-[10px] font-bold uppercase tracking-[0.25em] text-void transition-colors hover:bg-flare hover:text-void"
-            style={{ backgroundColor: "#EDFF00" }}
+            className="group flex items-center gap-2 border-2 border-ozone bg-ozone px-3 py-2 font-mono text-[10px] font-bold uppercase tracking-[0.25em] text-void transition-colors hover:bg-flare hover:border-flare"
           >
             <Crosshair className="h-3.5 w-3.5" />
             <span className="hidden sm:inline">Command</span>
