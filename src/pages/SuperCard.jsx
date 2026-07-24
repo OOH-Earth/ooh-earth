@@ -23,8 +23,8 @@ const KEY = [
 
 const STATS = [
   { v: "14", s: "Cities mapped" },
-  { v: "320+", s: "Operatives registered" },
-  { v: "1,800+", s: "Sites tagged" },
+  { v: "50", s: "Sites logged" },
+  { v: "32", s: "Digital busts" },
   { v: "100%", s: "Open-source" },
 ];
 
