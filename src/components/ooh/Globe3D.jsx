@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import maplibregl from "maplibre-gl";
 import { ZoomIn, ZoomOut, Compass, RotateCw } from "lucide-react";
 import "maplibre-gl/dist/maplibre-gl.css";
+import GlobeHud from "@/components/ooh/GlobeHud";
 
 const TYPE_LABEL = {
   billboard: "Billboard",
@@ -180,6 +181,7 @@ export default function Globe3D({ markers, selectedId, onSelect }) {
           <RotateCw className="h-4 w-4" />
         </button>
       </div>
+      {ready && <GlobeHud map={mapRef.current} />}
     </div>
   );
 }
