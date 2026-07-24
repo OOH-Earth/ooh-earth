@@ -5,6 +5,7 @@ import Reveal from "@/components/ooh/Reveal";
 import SpotIdentifyTag from "@/components/ooh/SpotIdentifyTag";
 import OffenseCategories from "@/components/ooh/OffenseCategories";
 import FieldWorkflow from "@/components/ooh/FieldWorkflow";
+import FieldIdGenerator from "@/components/ooh/FieldIdGenerator";
 import Mandate from "@/components/ooh/Mandate";
 import CampaignAtlas from "@/components/ooh/CampaignAtlas";
 import CityGrid from "@/components/ooh/CityGrid";
@@ -53,6 +54,7 @@ export default function Home() {
         <Reveal><AdSpendDamage /></Reveal>
         <Reveal><OperativeNetwork /></Reveal>
         <FieldWorkflow />
+        <Reveal><FieldIdGenerator /></Reveal>
         <Reveal><Leaderboard /></Reveal>
         <Reveal><Manifesto /></Reveal>
         <Reveal><OnChain /></Reveal>

@@ -339,3 +339,12 @@
 }
 .maplibregl-ctrl-attrib { background: rgba(0,0,0,0.5) !important; }
 .maplibregl-ctrl-attrib, .maplibregl-ctrl-attrib a { color: #888 !important; }
+
+/* Print scope — only the field ID card prints when triggered from the dashboard */
+@media print {
+  body.printing-field-id * { visibility: hidden !important; }
+  body.printing-field-id .print-scope,
+  body.printing-field-id .print-scope * { visibility: visible !important; }
+  body.printing-field-id .print-scope { position: absolute; left: 0; top: 0; width: 100%; }
+  body.printing-field-id .no-print { display: none !important; }
+}
