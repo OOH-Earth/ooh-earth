@@ -3,6 +3,7 @@ import Nav from "@/components/ooh/Nav";
 import Hero from "@/components/ooh/Hero";
 import CampaignAtlas from "@/components/ooh/CampaignAtlas";
 import Manifesto from "@/components/ooh/Manifesto";
+import OnChain from "@/components/ooh/OnChain";
 import ImpactLedger from "@/components/ooh/ImpactLedger";
 import SiteFooter from "@/components/ooh/SiteFooter";
 import CommandCenter from "@/components/ooh/CommandCenter";
@@ -23,6 +24,7 @@ export default function Home() {
         <Hero onCommand={openCommand} />
         <CampaignAtlas />
         <Manifesto />
+        <OnChain />
         <ImpactLedger />
       </main>
 
