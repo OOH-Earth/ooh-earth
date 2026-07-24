@@ -4,13 +4,16 @@ import Hero from "@/components/ooh/Hero";
 import Mandate from "@/components/ooh/Mandate";
 import CampaignAtlas from "@/components/ooh/CampaignAtlas";
 import CityGrid from "@/components/ooh/CityGrid";
+import CityPulse from "@/components/ooh/CityPulse";
 import MiniMapStack from "@/components/ooh/MiniMapStack";
 import AirCommons from "@/components/ooh/AirCommons";
 import CarbonCounter from "@/components/ooh/CarbonCounter";
 import OffenderRegistry from "@/components/ooh/OffenderRegistry";
+import AdSpendDamage from "@/components/ooh/AdSpendDamage";
 import NewsTicker from "@/components/ooh/NewsTicker";
 import OperativeNetwork from "@/components/ooh/OperativeNetwork";
 import KlimaWidget from "@/components/ooh/KlimaWidget";
+import DonationMomentum from "@/components/ooh/DonationMomentum";
 import Manifesto from "@/components/ooh/Manifesto";
 import OnChain from "@/components/ooh/OnChain";
 import ImpactLedger from "@/components/ooh/ImpactLedger";
@@ -35,14 +38,17 @@ export default function Home() {
         <Mandate />
         <CampaignAtlas />
         <CityGrid />
+        <CityPulse />
         <MiniMapStack />
         <AirCommons />
         <CarbonCounter />
         <OffenderRegistry />
+        <AdSpendDamage />
         <OperativeNetwork />
         <Manifesto />
         <OnChain />
         <KlimaWidget />
+        <DonationMomentum />
         <ImpactLedger />
       </main>
 
