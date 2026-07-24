@@ -36,14 +36,14 @@ export default function Subvocal() {
       const label = raw.replace(/^\d{1,3}[\s.\-)]?\s*/, "").trim() || raw;
       if (!label || label.length > 40) return;
       const now = performance.now();
-      if (label === lastLabel && now - last < 4000) return;
+      if (label === lastLabel && now - last < 9000) return;
       last = now;
       lastEl = el;
       lastLabel = label;
       // derive a deterministic pitch from the label so each element feels distinct
       const freq = 380 + (label.charCodeAt(0) % 26) * 22;
-      blip(freq, 0.07, "square", 0.05);
-      setTimeout(() => blip(freq * 1.5, 0.05, "square", 0.035), 70);
+      blip(freq, 0.05, "sine", 0.022);
+      setTimeout(() => blip(freq * 1.5, 0.04, "sine", 0.014), 70);
     };
     const onOut = (e) => {
       const el = e.target instanceof Element

@@ -53,7 +53,7 @@ function ensureEngine() {
   master.connect(ctx.destination);
 
   const droneGain = ctx.createGain();
-  droneGain.gain.value = 0.035;
+  droneGain.gain.value = 0.016;
   droneGain.connect(master);
   const filter = ctx.createBiquadFilter();
   filter.type = "lowpass";
@@ -83,7 +83,7 @@ function engineStart() {
   const t = c.currentTime;
   master.gain.cancelScheduledValues(t);
   master.gain.setValueAtTime(master.gain.value, t);
-  master.gain.linearRampToValueAtTime(0.8, t + 2.5);
+  master.gain.linearRampToValueAtTime(0.4, t + 2.5);
 }
 function engineStop() {
   if (!ctx || !master) return;
@@ -170,7 +170,7 @@ export default function useSoundscape() {
       const u = new SpeechSynthesisUtterance(text);
       const v = ensureFemaleVoice();
       if (v) u.voice = v;
-      u.volume = 0.28; u.rate = 0.86; u.pitch = 0.92;
+      u.volume = 0.16; u.rate = 0.84; u.pitch = 0.92;
       synth.speak(u);
     } catch {}
   }, []);

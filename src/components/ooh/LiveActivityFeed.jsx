@@ -40,8 +40,8 @@ export default function LiveActivityFeed() {
     const id = `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
     const item = { id, ts: stamp(), ...ev };
     // haptic-click algorithmic tick — makes each live popup feel tactile/alive
-    blip(1180, 0.035, "square", 0.045);
-    setTimeout(() => blip(820, 0.05, "triangle", 0.03), 55);
+    blip(1180, 0.028, "square", 0.022);
+    setTimeout(() => blip(820, 0.04, "triangle", 0.014), 55);
     setEvents((cur) => [item, ...cur].slice(0, 5));
     const t = setTimeout(() => {
       setEvents((cur) => cur.filter((e) => e.id !== id));
