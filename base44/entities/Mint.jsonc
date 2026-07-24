@@ -1,0 +1,70 @@
+{
+  "name": "Mint",
+  "type": "object",
+  "properties": {
+    "location_id": {
+      "type": "string",
+      "description": "Location record id being minted"
+    },
+    "location_title": {
+      "type": "string"
+    },
+    "operative_address": {
+      "type": "string",
+      "description": "Wallet address of the minting operative"
+    },
+    "chain": {
+      "type": "string",
+      "enum": [
+        "base",
+        "solana"
+      ],
+      "default": "base"
+    },
+    "name": {
+      "type": "string"
+    },
+    "symbol": {
+      "type": "string"
+    },
+    "metadata_uri": {
+      "type": "string",
+      "description": "URL to the prepared NFT metadata JSON (token URI)"
+    },
+    "token_address": {
+      "type": "string",
+      "description": "On-chain coin/NFT address once minted"
+    },
+    "tx_hash": {
+      "type": "string"
+    },
+    "image_url": {
+      "type": "string"
+    },
+    "sdg": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "prepared",
+        "minted",
+        "failed"
+      ],
+      "default": "prepared"
+    }
+  },
+  "required": [
+    "location_id"
+  ],
+  "rls": {
+    "read": {},
+    "create": {},
+    "update": {},
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

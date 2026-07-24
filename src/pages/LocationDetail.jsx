@@ -8,6 +8,7 @@ import seed from "@/components/ooh/mapSeed";
 import Nav from "@/components/ooh/Nav";
 import MobileHeader from "@/components/ooh/MobileHeader";
 import { Image } from "@/components/ui/image";
+import MintLocationPanel from "@/components/ooh/mint/MintLocationPanel";
 
 function normalizeSeed(rec) {
   return {
@@ -190,6 +191,9 @@ export default function LocationDetail() {
             </Link>
           </div>
         </div>
+
+        {/* On-chain mint */}
+        <MintLocationPanel loc={loc} />
 
         {/* Full key reference */}
         <div className="mt-12">
