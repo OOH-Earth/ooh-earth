@@ -15,13 +15,13 @@ import Globe3D from "@/components/ooh/Globe3D";
 import ClaimLeadDialog from "@/components/ooh/map/ClaimLeadDialog";
 
 const TOUR = [
-  { title: "Welcome to OOH Map", body: "The live field map of corporate advertising offenses — documented by operatives worldwide." },
+  { title: "Welcome to OOH Map", body: "The live field map of corporate advertising spots — documented by operatives worldwide." },
   { target: "[data-tour=\"layout\"]", title: "Layout modes", body: "Switch between Split, Map-dominant, and List views to control how much of the map you see." },
   { target: "[data-tour=\"filters\"]", title: "Filter by type", body: "Isolate billboards, digital screens, painted takeovers, and more." },
   { target: "[data-tour=\"search\"]", title: "Search & reset", body: "Find a location by street or city, then reset filters in one tap." },
-  { target: "[data-tour=\"cards\"]", title: "The record", body: "Every card is a logged offense. Click one to fly the map to its pin." },
+  { target: "[data-tour=\"cards\"]", title: "The record", body: "Every card is a logged spot. Click one to fly the map to its pin." },
   { target: "[data-tour=\"map\"]", title: "Field map", body: "Pan and zoom to explore. Popups show photo, status, and directions." },
-  { target: "[data-tour=\"report\"]", title: "Log an offense", body: "File a new field report — GPS + photo, no login. Reports appear here instantly." },
+  { target: "[data-tour=\"report\"]", title: "Log a spot", body: "File a new field report — GPS + photo, no login. Reports appear here instantly." },
   { target: "[data-tour=\"theme\"]", title: "Light / Dark", body: "Toggle the Solar Smoke light mode or the signature black canvas anytime." },
   { target: "[data-tour=\"hud-tel\"]", title: "Orbital telemetry", body: "Switch to Globe view — live coordinates, bearing, pitch and view-span stream as you fly." },
   { target: "[data-tour=\"hud-pm25\"]", title: "Air Commons intel", body: "Live PM2.5 from global-south monitoring stations, benchmarked against WHO limits." },

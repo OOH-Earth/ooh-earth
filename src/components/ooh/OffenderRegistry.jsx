@@ -55,7 +55,7 @@ export default function OffenderRegistry() {
       <div className="px-5 py-16 md:px-8 md:py-24">
         <div className="flex flex-col gap-4 border-b border-slate2/40 pb-6 md:flex-row md:items-end md:justify-between">
           <div>
-            <span className="font-mono text-[10px] uppercase tracking-[0.3em] text-ozone">// Section 03c — Offender registry</span>
+            <span className="font-mono text-[10px] uppercase tracking-[0.3em] text-ozone">// Section 03c — Brand registry</span>
             <h2 className="mt-3 font-display text-5xl font-bold leading-[1.05] tracking-[-0.02em] text-silver md:text-7xl">
               Named &amp;<br />counted
             </h2>
@@ -91,7 +91,7 @@ export default function OffenderRegistry() {
         )}
 
         <p className="mt-6 font-mono text-[10px] uppercase tracking-[0.25em] text-dim">
-          // {sourced ? "Brand extraction via field-atlas scan · ranked by documented frequency" : "Field records lacked brand tags · showing global watchlist of worst OOH offenders"}
+          // {sourced ? "Brand extraction via field-atlas scan · ranked by documented frequency" : "Field records lacked brand tags · showing global watchlist of top OOH brands"}
         </p>
       </div>
     </section>

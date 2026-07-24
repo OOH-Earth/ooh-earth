@@ -20,13 +20,13 @@ export default function OffenseCategories() {
         <Reveal>
           <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
             <div>
-              <span className="font-mono text-[10px] font-bold uppercase tracking-[0.3em] text-ozone">// 9 offense categories</span>
+              <span className="font-mono text-[10px] font-bold uppercase tracking-[0.3em] text-ozone">// 9 spot categories</span>
               <h2 className="mt-4 max-w-2xl font-display text-3xl font-bold leading-[1.02] tracking-[-0.02em] text-silver md:text-5xl">
                 Every ad tells a story the advertiser doesn't want you to read.
               </h2>
             </div>
             <p className="max-w-xs font-display text-sm leading-relaxed text-darkgray">
-              Nine categories of corporate advertising harm — from psychological manipulation to environmental destruction, surveillance to cultural erasure.
+              Nine ways corporate advertising shows up — from psychological manipulation to environmental cost, surveillance to cultural erasure.
             </p>
           </div>
         </Reveal>
