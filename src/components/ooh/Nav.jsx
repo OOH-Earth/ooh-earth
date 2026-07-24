@@ -1,11 +1,12 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Crosshair, Camera, Menu, Tv, Map as MapIcon, Compass } from "lucide-react";
 import { Link } from "react-router-dom";
 import ThemeToggle from "@/components/ooh/ThemeToggle";
 import HapticsToggle from "@/components/ooh/cognitive/HapticsToggle";
 import SoundToggle from "@/components/ooh/SoundToggle";
 import ReadAloudToggle from "@/components/ooh/ReadAloudToggle";
-import AnimatedLogo from "@/components/ooh/AnimatedLogo";
+import PredatorSymbol from "@/components/ooh/PredatorSymbol";
+import { base44 } from "@/api/base44Client";
 import NavMenu from "@/components/ooh/NavMenu";
 import OfflineSyncBadge from "@/components/ooh/OfflineSyncBadge";
 import { useWalkthrough } from "@/lib/walkthroughContext";
@@ -13,12 +14,30 @@ import { useWalkthrough } from "@/lib/walkthroughContext";
 export default function Nav({ onCommand }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const { startTour } = useWalkthrough();
+  const [now, setNow] = useState(() => new Date());
+  const [count, setCount] = useState(0);
+  useEffect(() => {
+    const t = setInterval(() => setNow(new Date()), 1000);
+    return () => clearInterval(t);
+  }, []);
+  useEffect(() => {
+    base44.entities.Location.list("-created_date", 500)
+      .then((r) => setCount((r || []).filter((x) => x.status !== "rejected").length))
+      .catch(() => {});
+  }, []);
+  const time = now.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit", second: "2-digit", timeZone: "Asia/Bangkok" });
   return (
     <header className="fixed inset-x-0 top-0 z-50 border-b border-white/5 bg-void/70 backdrop-blur-md" style={{ paddingTop: "env(safe-area-inset-top)" }}>
       <div className="flex items-center justify-between gap-2 px-3 py-3 md:px-8 md:py-4">
-        <Link to="/" className="group flex items-center gap-2.5" aria-label="OOH Earth — home">
-          <AnimatedLogo spinning />
-          <span className="hidden font-mono text-[9px] uppercase tracking-[0.3em] text-dim lg:inline">/ Out Of Hell™</span>
+        <Link to="/" className="group flex items-center gap-2.5" aria-label="Home">
+          <PredatorSymbol className="h-7 w-7 text-ozone" />
+          <span className="hidden flex-col leading-none md:flex">
+            <span className="font-mono text-[11px] font-bold tabular tracking-[0.15em] text-silver group-hover:text-ozone">{time}</span>
+            <span className="mt-0.5 flex items-center gap-1.5 font-mono text-[8px] uppercase tracking-[0.3em] text-dim">
+              <span className="h-1 w-1 rounded-full bg-ozone animate-pulse" />
+              field active · {count} logged
+            </span>
+          </span>
         </Link>
 
         <div className="flex items-center gap-1.5">

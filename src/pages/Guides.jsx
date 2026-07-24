@@ -74,7 +74,7 @@ export default function Guides() {
         </div>
 
         <footer className="mt-8 border-t border-slate2/40 pt-6">
-          <p className="font-mono text-[9px] uppercase tracking-[0.3em] text-dim">// Out Of Hell™ · open-source · union-made · field manual v1</p>
+          <p className="font-mono text-[9px] uppercase tracking-[0.3em] text-dim">// open-source · union-made · field manual v1</p>
         </footer>
       </main>
     </div>

@@ -38,7 +38,7 @@ export default function About() {
           />
           <div className="absolute inset-0 bg-gradient-to-t from-void via-void/60 to-transparent" />
           <div className="relative px-5 pb-16 md:px-8 md:pb-24">
-            <span className="font-mono text-[10px] uppercase tracking-[0.3em] text-ozone">// About · Out Of Hell™</span>
+            <span className="font-mono text-[10px] uppercase tracking-[0.3em] text-ozone">// About</span>
             <h1 className="mt-3 max-w-3xl font-display text-4xl font-bold leading-[1.04] tracking-[-0.02em] text-silver md:text-6xl">
               A call to reclaim our streets and our skies, our senses and our minds.
             </h1>
@@ -61,7 +61,7 @@ export default function About() {
                   But public space should belong to the public. It should reflect the diversity, creativity, and collective values of the people who live there — not the profit motives of corporations. Our streets deserve better than to be tools for corporate gain. And so do we.
                 </p>
                 <p className="font-bold text-silver">
-                  Out of Hell™ is a call to reclaim — our streets and our skies, our senses and our minds. We will not passively accept the corporate vision forced upon us. Together, we will rewrite the rules, creating cities that honor the people who inhabit them — not the corporations who seek to monetize them.
+                  OOH Earth is a call to reclaim — our streets and our skies, our senses and our minds. We will not passively accept the corporate vision forced upon us. Together, we will rewrite the rules, creating cities that honor the people who inhabit them — not the corporations who seek to monetize them.
                 </p>
                 <p>
                   It's time for a new vision of public space: one free from corporate interests, and full of the people's voices.
@@ -69,7 +69,7 @@ export default function About() {
                 <p className="font-bold text-ozone">Join us. Stand with us. Build with us.</p>
               </div>
               <div className="mt-8 border-t border-slate2/40 pt-6">
-                <p className="font-display text-base font-bold tracking-[-0.01em] text-silver">Out of Hell™</p>
+                <p className="font-display text-base font-bold tracking-[-0.01em] text-silver">OOH Earth</p>
                 <p className="font-mono text-[10px] uppercase tracking-[0.3em] text-dim">For Cities That Belong to People</p>
               </div>
             </div>
@@ -120,7 +120,7 @@ export default function About() {
                 Fund the<br />resistance
               </h2>
               <p className="mt-4 max-w-md font-display text-sm font-normal leading-[1.4] text-darkgray">
-                By funding Out of Hell™, you support a platform that fights corporate overreach, backs grassroots artists, and inspires real change in public spaces. Target: $10,000 for growth, platform development, and community outreach.
+                By funding OOH Earth, you support a platform that fights corporate overreach, backs grassroots artists, and inspires real change in public spaces. Target: $10,000 for growth, platform development, and community outreach.
               </p>
               <div className="mt-8 flex flex-wrap gap-3">
                 <a

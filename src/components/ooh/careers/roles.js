@@ -44,7 +44,7 @@ export const ROLES = [
     type: "Contract",
     location: "Remote",
     summary:
-      "Steward the Out Of Hell™ identity and design field-ready UI that reads in sunlight, at night and under stress.",
+      "Steward the platform identity and design field-ready UI that reads in sunlight, at night and under stress.",
     tags: ["Identity", "UX", "Field UI"],
   },
   {

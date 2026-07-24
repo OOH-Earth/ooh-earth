@@ -27,7 +27,7 @@ export default function Support() {
               Join the<br />movement
             </h1>
             <p className="mt-4 max-w-xl font-display text-sm font-normal leading-[1.4] text-darkgray md:text-base">
-              By funding Out of Hell™, you'll support a platform that fights corporate overreach, supports grassroots artists, and inspires real change in public spaces.
+              By funding OOH Earth, you'll support a platform that fights corporate overreach, supports grassroots artists, and inspires real change in public spaces.
             </p>
 
             <div className="mt-8 flex flex-wrap gap-3">

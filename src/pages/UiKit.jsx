@@ -210,7 +210,7 @@ export default function UiKit() {
           </div>
 
           <footer className="mt-8 border-t border-slate2/40 pt-6">
-            <p className="font-mono text-[9px] uppercase tracking-[0.3em] text-dim">// Out Of Hell™ · open-source · union-made · aligned to UN SDGs · Operations Tactical Inc.</p>
+            <p className="font-mono text-[9px] uppercase tracking-[0.3em] text-dim">// open-source · union-made · aligned to UN SDGs · Operations Tactical Inc.</p>
           </footer>
         </main>
       </div>

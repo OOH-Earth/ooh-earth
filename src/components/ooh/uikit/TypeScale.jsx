@@ -17,7 +17,7 @@ export default function TypeScale() {
         <div key={t.name} className="grid gap-3 border border-slate2/50 bg-card p-4 md:grid-cols-[1.4fr_1fr] md:items-center">
           <div className="overflow-hidden">
             <span className="block font-mono text-[9px] uppercase tracking-[0.3em] text-dim">{t.name}</span>
-            <span className={`mt-1 block truncate ${t.className}`}>Aa Bb · Out Of Hell</span>
+            <span className={`mt-1 block truncate ${t.className}`}>Aa Bb · OOH Earth</span>
           </div>
           <CopyField label="CSS" value={t.spec} />
         </div>

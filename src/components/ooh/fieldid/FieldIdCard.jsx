@@ -52,7 +52,7 @@ export default function FieldIdCard({ op }) {
   return (
     <div className="relative w-[340px] select-none overflow-hidden border border-slate2 bg-void" style={{ height: "214px" }}>
       <div className="hi-vis-stripes flex h-[26px] items-center justify-between px-3">
-        <span className="bg-void px-1.5 font-mono text-[9px] font-bold uppercase tracking-[0.25em] text-ozone">Out Of Hell™</span>
+        <span className="bg-void px-1.5 font-mono text-[9px] font-bold uppercase tracking-[0.25em] text-ozone">OOH·EARTH</span>
         <span className="bg-void px-1.5 font-mono text-[9px] font-bold uppercase tracking-[0.25em] text-ozone">Field Operative</span>
       </div>
 

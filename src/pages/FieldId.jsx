@@ -57,7 +57,7 @@ export default function FieldId() {
             <IdCard className="h-8 w-8 text-ozone" /> Operative credential
           </h1>
           <p className="mt-4 max-w-2xl font-body text-sm leading-[1.6] text-darkgray">
-            Generate a printable field-operative ID badge. Enter your details (or load from the roster), review the credential, and print or save as PDF — carry it in the field as proof of union with Out Of Hell™.
+            Generate a printable field-operative ID badge. Enter your details (or load from the roster), review the credential, and print or save as PDF — carry it in the field as proof of union with the resistance.
           </p>
         </header>
 

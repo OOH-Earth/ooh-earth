@@ -263,7 +263,7 @@ export default function NavMenu({ open, onClose, onTour }) {
               <SheetLinks onClose={onClose} />
             </div>
             <div className="border-t border-slate2/60 px-5 py-3">
-              <span className="font-mono text-[9px] uppercase tracking-[0.3em] text-dim/60">// Out Of Hell™ · ✺ resistance</span>
+              <span className="font-mono text-[9px] uppercase tracking-[0.3em] text-dim/60">// resistance</span>
             </div>
           </motion.div>
 
@@ -287,7 +287,7 @@ export default function NavMenu({ open, onClose, onTour }) {
               <PopoverLinks onClose={onClose} />
             </div>
             <div className="border-t border-slate2/60 px-5 py-3">
-              <span className="font-mono text-[9px] uppercase tracking-[0.3em] text-dim/60">// Out Of Hell™ · ✺ resistance</span>
+              <span className="font-mono text-[9px] uppercase tracking-[0.3em] text-dim/60">// resistance</span>
             </div>
           </motion.div>
         </>

@@ -27,7 +27,7 @@ const SCHEMA = {
 };
 
 const buildPrompt = (upc, product) =>
-  `You are a true-cost economist auditing a consumer product for the OOH.EARTH resistance platform ("Out Of Hell"). Estimate the full social and environmental TRUE COST — what the product actually costs society once externalities are priced in: carbon emissions, water depletion, labor exploitation, packaging waste, brand greenwashing, and supply-chain harm.
+  `You are a true-cost economist auditing a consumer product for the OOH.EARTH resistance platform ("OOH Earth"). Estimate the full social and environmental TRUE COST — what the product actually costs society once externalities are priced in: carbon emissions, water depletion, labor exploitation, packaging waste, brand greenwashing, and supply-chain harm.
 
 UPC/EAN: ${upc}
 Known product data: ${product ? JSON.stringify(product) : "none — identify the product from the barcode via web research"}

@@ -247,7 +247,7 @@ export default function ArLens() {
                     <span className="mt-1 px-3 text-center font-display text-[clamp(10px,2.5vw,26px)] font-black uppercase tracking-[-0.02em] text-flare text-glow-flare">
                       {co2t}t CO₂ / yr
                     </span>
-                    <span className="mt-2 font-mono text-[clamp(6px,1.4vw,14px)] uppercase tracking-[0.3em] text-silver/70">OUT OF HELL™</span>
+                    <span className="mt-2 font-mono text-[clamp(6px,1.4vw,14px)] uppercase tracking-[0.3em] text-silver/70">OOH·EARTH</span>
                   </div>
                 )}
 

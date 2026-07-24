@@ -57,7 +57,7 @@ const FAQ = [
   { q: "Are my activities on the platform private?", a: "Yes. We believe privacy is a basic human right. All new sign-ups are completely anonymous, and we ensure all user information is 100% secure. When you create an account, all of your activity remains completely private." },
   { q: "What is the difference between an Anon Spotter and a Spotter?", a: "Anon Spotter (Free) provides anonymous access to basic site tools — operate anonymously, add locations to the map, report advertising, and access member-only content. Spotter (Free) lets you create a public profile to join discussions and climb the leaderboards, connect your bank to receive donations, and bookmark collections." },
   { q: "How is my personal data handled?", a: "All your data is stored securely. Public profiles will never show any of your personal information by default, and users have full control over what others can see on their profile." },
-  { q: "What is the goal of the Out Of Hell™ platform?", a: "It is a radical platform designed for mapping, resisting, and replacing corporate outdoor advertising with public art, culture, and truth." },
+  { q: "What is the goal of the OOH Earth platform?", a: "It is a radical platform designed for mapping, resisting, and replacing corporate outdoor advertising with public art, culture, and truth." },
   { q: "How can I contribute to the movement?", a: "You can contribute by adding locations to the map, reporting advertising locations, and contributing to the community leaderboard. You can also support the movement through the Support Us portal." },
 ];
 
@@ -81,7 +81,7 @@ export default function Plans() {
               Fuel the movement.<br />Build the tools.<br />Take back the streets.
             </h1>
             <p className="mt-5 max-w-xl font-display text-sm font-normal leading-[1.4] text-darkgray md:text-base">
-              Out Of Hell™ is a radical platform for mapping, resisting, and replacing corporate outdoor advertising with public art, culture, and truth. Choose how you want to plug in and power it forward.
+              OOH Earth is a radical platform for mapping, resisting, and replacing corporate outdoor advertising with public art, culture, and truth. Choose how you want to plug in and power it forward.
             </p>
           </div>
         </section>

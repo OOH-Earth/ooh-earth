@@ -34,7 +34,7 @@ import ViewfinderCursor from "@/components/ooh/ViewfinderCursor";
 import { useWalkthrough } from "@/lib/walkthroughContext";
 
 const HOME_TOUR = [
-  { title: "OOH Earth · Out Of Hell™", body: "An open-source, community-funded atlas of public-space advertising — and the resistance reclaiming it. This tour walks you through the front line." },
+  { title: "OOH Earth", body: "An open-source, community-funded atlas of public-space advertising — and the resistance reclaiming it. This tour walks you through the front line." },
   { target: '[data-tour="globe"]', title: "Orbital Atlas", body: "The live globe of logged spots. Drag to rotate, click a marker to inspect. Scroll-zoom is off here to keep the page steady — use the + / − keys (click the globe first) or open the full field map for scroll zoom." },
   { target: '[data-tour="theme"]', title: "Field controls", body: "Toggle Solar Smoke light mode, haptics, sound and read-aloud. Everything stays calm and quiet by default — turn up what you need." },
   { title: "Join the resistance", body: "File a report, claim a lead, or fund the treasury. The Command Center (top-right) opens every channel and tool. Press the Tour button on any page to walk it.", cta: true },
