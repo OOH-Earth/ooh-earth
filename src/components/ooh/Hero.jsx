@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
-import { ArrowDown, Radio } from "lucide-react";
+import { Link } from "react-router-dom";
+import { ArrowDown, Radio, ShieldAlert, Workflow, ArrowUpRight } from "lucide-react";
 
 const HERO_IMG = "https://ooh.earth/wp-content/uploads/2026/05/1777896004-01-d21q.webp";
 const WORD = "ooh.earth";
@@ -55,33 +56,73 @@ export default function Hero({ onCommand }) {
           </span>
         </div>
 
-        <div className="flex flex-1 flex-col items-center justify-center">
-          <span className="mb-4 font-mono text-[10px] uppercase tracking-[0.4em] text-ozone">Out Of Hell™ · Disruption Agency</span>
-          <h1 className="flex w-full items-center justify-between font-brand text-[13vw] leading-[0.85] tracking-[-0.03em] text-silver md:text-[11vw]">
-            {WORD.split("").map((ch, i) => (
-              <span key={i} className="inline-block">{ch === "." ? <span className="text-ozone">.</span> : ch}</span>
-            ))}
-          </h1>
-          <p className="mt-6 max-w-xl text-center font-display text-sm font-medium leading-[1.4] text-silver/60 md:text-base">
-            A non-state disruption agency reclaiming the visual commons. Mapping corporate advertising offenses and coordinating creative resistance — aligned to the UN Sustainable Development Goals, from the orbital perspective.
-          </p>
+        <div className="grid flex-1 grid-cols-1 items-center gap-6 md:grid-cols-12">
+          {/* Left · wordmark + tagline */}
+          <div className="md:col-span-7">
+            <span className="font-mono text-[10px] uppercase tracking-[0.4em] text-ozone">Out Of Hell™ · Disruption Agency</span>
+            <h1 className="mt-3 font-brand text-[15vw] leading-[0.82] tracking-[-0.03em] text-silver md:text-[7.5vw]">
+              {WORD.split("").map((ch, i) => (
+                <span key={i} className="inline-block">{ch === "." ? <span className="text-ozone">.</span> : ch}</span>
+              ))}
+            </h1>
+            <p className="mt-5 max-w-md font-display text-sm font-medium leading-[1.45] text-silver/70 md:text-[15px]">
+              A non-state disruption agency reclaiming the visual commons. Mapping corporate advertising offenses and coordinating creative resistance — SDG-aligned, from the orbital perspective.
+            </p>
+            <div className="mt-6 flex flex-wrap gap-2">
+              <Link to="/map" className="group inline-flex items-center gap-2 bg-ozone px-5 py-3 font-mono text-[10px] font-bold uppercase tracking-[0.25em] text-void transition-colors hover:bg-flare">
+                Explore the map <ArrowUpRight className="h-3.5 w-3.5" />
+              </Link>
+              <Link to="/report" className="inline-flex items-center gap-2 border border-slate2/70 px-5 py-3 font-mono text-[10px] font-bold uppercase tracking-[0.25em] text-silver transition-colors hover:border-ozone/60 hover:text-ozone">
+                Report
+              </Link>
+            </div>
+          </div>
+
+          {/* Right · bento cards */}
+          <div className="grid grid-cols-2 gap-2.5 md:col-span-5">
+            <article className="group col-span-2 flex flex-col justify-between border border-slate2/60 bg-void/50 p-5 backdrop-blur-sm transition-colors hover:border-ozone/50">
+              <span className="font-mono text-[9px] uppercase tracking-[0.3em] text-ozone">// community-funded infrastructure</span>
+              <p className="mt-3 font-display text-xl font-bold leading-tight tracking-[-0.02em] text-silver md:text-2xl">
+                A radical way to reclaim public space.
+              </p>
+              <p className="mt-1.5 font-display text-[12px] leading-relaxed text-darkgray">Map the ads. Build the evidence. Reclaim the streets.</p>
+            </article>
+
+            <a href="#atlas" className="group flex flex-col justify-between border border-slate2/60 bg-void/50 p-4 backdrop-blur-sm transition-colors hover:border-ozone/50 hover:bg-card/60">
+              <ShieldAlert className="h-4 w-4 text-dim transition-colors group-hover:text-ozone" />
+              <div className="mt-6">
+                <span className="font-mono text-[9px] tabular text-ozone">09</span>
+                <p className="font-display text-sm font-semibold tracking-[-0.01em] text-silver">Offense categories</p>
+              </div>
+            </a>
+
+            <Link to="/map" className="group flex flex-col justify-between border border-slate2/60 bg-void/50 p-4 backdrop-blur-sm transition-colors hover:border-ozone/50 hover:bg-card/60">
+              <Workflow className="h-4 w-4 text-dim transition-colors group-hover:text-ozone" />
+              <div className="mt-6">
+                <span className="font-mono text-[9px] tabular text-ozone">08</span>
+                <p className="font-display text-sm font-semibold tracking-[-0.01em] text-silver">Field workflow</p>
+              </div>
+            </Link>
+
+            <article className="col-span-2 flex flex-wrap items-center justify-between gap-3 border border-slate2/60 bg-void/50 p-4 backdrop-blur-sm">
+              <span className="font-mono text-[10px] leading-[1.4] text-silver/60">Union-made by veterans &amp; street artists.</span>
+              <div className="flex gap-1.5">
+                <button onClick={onCommand} data-cursor="view" className="border border-flare/60 px-3 py-2 font-mono text-[9px] font-bold uppercase tracking-[0.2em] text-flare transition-colors hover:bg-flare hover:text-void">
+                  Command
+                </button>
+                <Link to="/campaign" className="border border-ozone/60 px-3 py-2 font-mono text-[9px] font-bold uppercase tracking-[0.2em] text-ozone transition-colors hover:bg-ozone hover:text-void">
+                  Fund
+                </Link>
+              </div>
+            </article>
+          </div>
         </div>
 
-        <div className="flex items-end justify-between">
-          <div className="max-w-xs font-mono text-[11px] leading-[1.4] text-silver/50">
-            Union-made by advertising-industry veterans &amp; street artists. A non-state disruption agency accountable to the public record — community-funded, SDG-aligned.
-          </div>
-          <a href="#atlas" className="flex flex-col items-center gap-2 font-mono text-[10px] uppercase tracking-[0.3em] text-silver/60 transition-colors hover:text-ozone">
+        <div className="flex justify-center pt-4">
+          <a href="#atlas" className="flex flex-col items-center gap-2 font-mono text-[10px] uppercase tracking-[0.3em] text-silver/50 transition-colors hover:text-ozone">
             <span>Descend</span>
             <ArrowDown className="h-4 w-4 animate-bounce" />
           </a>
-          <button
-            onClick={onCommand}
-            data-cursor="view"
-            className="hidden border border-flare/60 px-4 py-3 font-mono text-[10px] uppercase tracking-[0.25em] text-flare transition-colors hover:bg-flare hover:text-void sm:block"
-          >
-            Open Command
-          </button>
         </div>
       </div>
 
