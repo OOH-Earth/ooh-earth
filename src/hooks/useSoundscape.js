@@ -113,19 +113,19 @@ export function isSpeechSupported() {
   return typeof window !== "undefined" && "speechSynthesis" in window;
 }
 
-// pick a female-sounding system voice (cached; refreshed on voiceschanged)
-let femaleVoice = null;
-function ensureFemaleVoice() {
-  if (femaleVoice) return femaleVoice;
+// pick a deep, anonymous mechanical VO (male / low register) — Deus ex machina under the hood
+let deepVoice = null;
+function ensureDeepVoice() {
+  if (deepVoice) return deepVoice;
   const synth = window.speechSynthesis;
   if (!synth) return null;
   const voices = synth.getVoices() || [];
-  femaleVoice =
-    voices.find((v) => /female/i.test(v.name)) ||
-    voices.find((v) => /samantha|zira|karen|tessa|fiona|victoria|moira|serena|allison|ava|susan|kate|google uk english female|google us english/i.test(v.name)) ||
+  deepVoice =
+    voices.find((v) => /male/i.test(v.name)) ||
+    voices.find((v) => /daniel|alex|david|mark|fred|arthur|oliver|thomas|rishi|google uk english male|google us english|microsoft david|microsoft mark/i.test(v.name)) ||
     voices.find((v) => /en-/i.test(v.lang)) ||
     null;
-  return femaleVoice;
+  return deepVoice;
 }
 
 export default function useSoundscape() {
@@ -168,9 +168,9 @@ export default function useSoundscape() {
       const synth = window.speechSynthesis;
       synth.cancel();
       const u = new SpeechSynthesisUtterance(text);
-      const v = ensureFemaleVoice();
+      const v = ensureDeepVoice();
       if (v) u.voice = v;
-      u.volume = 0.16; u.rate = 0.84; u.pitch = 0.92;
+      u.volume = 0.16; u.rate = 0.8; u.pitch = 0.38;
       synth.speak(u);
     } catch {}
   }, []);
@@ -178,7 +178,7 @@ export default function useSoundscape() {
   // refresh female voice cache when the engine loads its voice list
   useEffect(() => {
     if (!isSpeechSupported()) return;
-    const refresh = () => { femaleVoice = null; ensureFemaleVoice(); };
+    const refresh = () => { deepVoice = null; ensureDeepVoice(); };
     window.speechSynthesis.addEventListener?.("voiceschanged", refresh);
     refresh();
     return () => window.speechSynthesis.removeEventListener?.("voiceschanged", refresh);
@@ -203,9 +203,9 @@ export default function useSoundscape() {
       const synth = window.speechSynthesis;
       synth.cancel();
       const u = new SpeechSynthesisUtterance(text);
-      const v = ensureFemaleVoice();
+      const v = ensureDeepVoice();
       if (v) u.voice = v;
-      u.volume = 0.55; u.rate = 0.9; u.pitch = 0.92;
+      u.volume = 0.55; u.rate = 0.82; u.pitch = 0.38;
       synth.speak(u);
     } catch {}
   }, []);
