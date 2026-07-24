@@ -1,0 +1,70 @@
+{
+  "name": "Location",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string",
+      "description": "Short label, e.g. 'Billboard \u00b7 1039 Pleonchit'"
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "billboard",
+        "painted",
+        "digital",
+        "projection",
+        "sticker",
+        "mural",
+        "other"
+      ],
+      "default": "other"
+    },
+    "address": {
+      "type": "string"
+    },
+    "lat": {
+      "type": "number"
+    },
+    "lng": {
+      "type": "number"
+    },
+    "image_url": {
+      "type": "string"
+    },
+    "source_link": {
+      "type": "string",
+      "description": "External detail URL (ooh.earth post, news, etc.)"
+    },
+    "notes": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "verified",
+        "rejected"
+      ],
+      "default": "pending"
+    }
+  },
+  "required": [
+    "title",
+    "lat",
+    "lng"
+  ],
+  "rls": {
+    "read": {},
+    "create": {},
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

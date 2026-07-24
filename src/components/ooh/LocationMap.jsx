@@ -56,14 +56,15 @@ export default function LocationMap({ markers }) {
               <div style={{ padding: "8px 2px 2px" }}>
                 <div style={{ fontWeight: 700, fontSize: 13, color: "#F1F1F1", lineHeight: 1.2 }}>{m.title}</div>
                 <div style={{ fontSize: 11, color: "#999", marginTop: 4, lineHeight: 1.35 }}>{m.address}</div>
-                <a
-                  href={m.link}
-                  target="_blank"
-                  rel="noreferrer"
-                  style={{ display: "inline-block", marginTop: 8, fontSize: 10, textTransform: "uppercase", letterSpacing: "0.2em", color: "#EDFF00", textDecoration: "none" }}
-                >
-                  View on OOH.EARTH ↗
-                </a>
+                <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 6, fontSize: 9, textTransform: "uppercase", letterSpacing: "0.2em", color: m.status === "verified" ? "#39FF14" : m.status === "pending" ? "#FF5C00" : "#999" }}>
+                  <span style={{ width: 6, height: 6, borderRadius: 999, background: "currentColor" }} />
+                  {m.status || "field report"}
+                </div>
+                {m.link && (
+                  <a href={m.link} target="_blank" rel="noreferrer" style={{ display: "inline-block", marginTop: 8, fontSize: 10, textTransform: "uppercase", letterSpacing: "0.2em", color: "#EDFF00", textDecoration: "none" }}>
+                    View on OOH.EARTH ↗
+                  </a>
+                )}
               </div>
             </div>
           </Popup>

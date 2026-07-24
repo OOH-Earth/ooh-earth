@@ -1,4 +1,4 @@
-import { Crosshair } from "lucide-react";
+import { Crosshair, Megaphone } from "lucide-react";
 import { Link } from "react-router-dom";
 
 export default function Nav({ onCommand }) {
@@ -16,8 +16,16 @@ export default function Nav({ onCommand }) {
           <a href="#air" className="transition-colors hover:text-ozone">Air</a>
           <a href="#ledger" className="transition-colors hover:text-ozone">Ledger</a>
           <Link to="/map" className="transition-colors hover:text-ozone">Maps</Link>
+          <Link to="/report" className="transition-colors hover:text-ozone">Report</Link>
           <a href="https://ooh.earth/about" target="_blank" rel="noreferrer" className="transition-colors hover:text-ozone">About</a>
         </nav>
+
+        <Link
+          to="/report"
+          className="flex items-center gap-2 border border-slate2 px-3 py-2 font-mono text-[10px] font-bold uppercase tracking-[0.25em] text-silver transition-colors hover:border-ozone hover:text-ozone md:hidden"
+        >
+          <Megaphone className="h-3.5 w-3.5" /> Report
+        </Link>
 
         <button
           onClick={onCommand}
