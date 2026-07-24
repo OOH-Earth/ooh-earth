@@ -47,7 +47,9 @@ export function thumbHTML(m) {
     </div>`;
   }
   const glyph = (GLYPH[m.type] || GLYPH.other).replace(/\{A\}/g, accent);
+  const leadPill = m.status !== "verified" ? `<span style="position:absolute;left:4px;top:4px;border:1px solid rgba(255,92,0,0.5);background:rgba(10,10,10,0.7);padding:1px 4px;font-size:7px;font-weight:700;text-transform:uppercase;letter-spacing:0.2em;color:#FF5C00;font-family:'Inter Tight',sans-serif">Lead</span>` : "";
   return `<div style="position:relative;width:100%;height:110px;background:#0a0a0a;background-image:linear-gradient(rgba(241,241,241,0.04) 1px,transparent 1px),linear-gradient(90deg,rgba(241,241,241,0.04) 1px,transparent 1px);background-size:14px 14px;display:flex;align-items:center;justify-content:center">
+    ${leadPill}
     <svg viewBox="0 0 32 32" width="40" height="40" fill="none">${glyph}</svg>
     <span style="position:absolute;bottom:4px;left:0;right:0;text-align:center;font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:0.2em;color:${accent};opacity:0.85;font-family:'Inter Tight',sans-serif">${meta.label}</span>
   </div>`;
@@ -69,6 +71,9 @@ export default function LocationThumb({ m, className = "", imgClassName = "" }) 
       className={`relative flex shrink-0 items-center justify-center grid-bg ${className}`}
       style={{ backgroundColor: "#0a0a0a" }}
     >
+      {m.status !== "verified" && (
+        <span className="absolute left-1 top-1 border border-flare/50 bg-void/70 px-1 py-0.5 font-mono text-[6px] font-bold uppercase tracking-[0.2em] text-flare">Lead</span>
+      )}
       <Icon className="h-6 w-6" style={{ color: accent }} strokeWidth={1.5} />
       <span
         className="absolute bottom-1 font-mono text-[7px] font-bold uppercase tracking-[0.2em]"

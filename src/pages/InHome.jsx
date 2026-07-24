@@ -128,11 +128,11 @@ export default function InHome() {
             <BustList busts={busts} selectedId={selectedId} onSelect={setSelectedId} />
           </div>
           <div data-tour="stage" className="relative min-h-0 flex-1">
-            {view === "scene" && <DigitalScene busts={busts} selectedId={selectedId} onSelect={setSelectedId} />}
+            {view === "scene" && <DigitalScene busts={busts} selectedId={selectedId} onSelect={setSelectedId} onPlace={() => setFormOpen(true)} />}
             {view === "constellation" && <SignalConstellation busts={busts} selectedId={selectedId} onSelect={setSelectedId} />}
             {view === "grid" && <ScreenGrid busts={busts} selectedId={selectedId} onSelect={setSelectedId} />}
             <div className="pointer-events-none absolute bottom-2 left-2 font-mono text-[9px] uppercase tracking-[0.25em] text-dim">
-              {view === "scene" ? "// drag to orbit · click a billboard" : view === "constellation" ? "// signal map of digital ad surfaces" : "// ad-slot grid · click a tile"}
+              {view === "scene" ? "// drag to orbit · click a billboard · click ground to deploy" : view === "constellation" ? "// signal map of digital ad surfaces" : "// ad-slot grid · click a tile"}
             </div>
           </div>
         </div>

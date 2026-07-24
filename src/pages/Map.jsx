@@ -143,6 +143,8 @@ export default function Map() {
     URL.revokeObjectURL(url);
   };
 
+  const leads = filtered.filter((m) => !m.image && m.status !== "verified").length;
+
   const cardsClass =
     mode === "map" ? "hidden" : mode === "list" ? "flex w-full lg:flex-1" : "hidden lg:flex lg:w-[340px]";
   const mapClass = mode === "list" ? "hidden" : "flex-1";
@@ -174,7 +176,7 @@ export default function Map() {
 
           <div data-tour="cards" className={`min-h-0 flex-col border-r border-slate2/60 ${cardsClass}`}>
             <div className="flex items-center justify-between border-b border-slate2/60 px-4 py-2">
-              <span className="font-mono text-[10px] uppercase tracking-[0.25em] text-dim">// {filtered.length} results</span>
+              <span className="font-mono text-[10px] uppercase tracking-[0.25em] text-dim">// {filtered.length} results {leads > 0 && <span className="text-flare/80">· {leads} leads</span>}</span>
             </div>
             <div className="min-h-0 flex-1 overflow-y-auto">
               {filtered.length ? (

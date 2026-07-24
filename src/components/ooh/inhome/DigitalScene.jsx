@@ -4,7 +4,7 @@ import { platformMeta } from "./digitalConfig";
 
 // 3D metaverse-style ad field: floating billboard planes on posts.
 // Operatives drag to orbit, click a billboard to select the bust.
-export default function DigitalScene({ busts = [], selectedId, onSelect }) {
+export default function DigitalScene({ busts = [], selectedId, onSelect, onPlace }) {
   const mountRef = useRef(null);
   const stateRef = useRef({});
 
@@ -39,6 +39,16 @@ export default function DigitalScene({ busts = [], selectedId, onSelect }) {
     grid.position.y = -3;
     scene.add(grid);
 
+    // invisible ground plane for click-to-place raycasting
+    const ground = new THREE.Mesh(
+      new THREE.PlaneGeometry(90, 90),
+      new THREE.MeshStandardMaterial({ color: 0x0a0a0a, transparent: true, opacity: 0.01 })
+    );
+    ground.rotation.x = -Math.PI / 2;
+    ground.position.y = -2.99;
+    scene.add(ground);
+    stateRef.current.ground = ground;
+
     const group = new THREE.Group();
     scene.add(group);
     stateRef.current.group = group;
@@ -46,22 +56,29 @@ export default function DigitalScene({ busts = [], selectedId, onSelect }) {
 
     const raycaster = new THREE.Raycaster();
     const pointer = new THREE.Vector2();
+    let dragged = false;
     const onClick = (e) => {
+      if (dragged) return;
       const rect = renderer.domElement.getBoundingClientRect();
       pointer.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
       pointer.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
       raycaster.setFromCamera(pointer, camera);
       const hit = raycaster.intersectObjects(stateRef.current.planes, false)[0];
-      if (hit && hit.object.userData.bustId) onSelect && onSelect(hit.object.userData.bustId);
+      if (hit && hit.object.userData.bustId) { onSelect && onSelect(hit.object.userData.bustId); return; }
+      const g = stateRef.current.ground && raycaster.intersectObject(stateRef.current.ground, false)[0];
+      if (g) onPlace && onPlace();
     };
     renderer.domElement.addEventListener("click", onClick);
 
     // drag to orbit
     let dragging = false, lastX = 0, lastY = 0;
     let yaw = 0, pitch = 0.25;
-    const down = (e) => { dragging = true; lastX = e.clientX; lastY = e.clientY; };
+    const down = () => { dragging = true; dragged = false; lastX = 0; lastY = 0; };
     const move = (e) => {
       if (!dragging) return;
+      if (lastX || lastY) {
+        if (Math.abs(e.clientX - lastX) + Math.abs(e.clientY - lastY) > 4) dragged = true;
+      }
       yaw += (e.clientX - lastX) * 0.005;
       pitch = Math.max(-0.4, Math.min(1.1, pitch + (e.clientY - lastY) * 0.005));
       lastX = e.clientX; lastY = e.clientY;
