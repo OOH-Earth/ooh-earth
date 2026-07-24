@@ -29,6 +29,7 @@ export default function BustList({ busts = [], selectedId, onSelect }) {
                     {verified && <BadgeCheck className="h-3 w-3 shrink-0 text-ozone" />}
                   </span>
                   <span className="block truncate font-mono text-[9px] uppercase tracking-[0.15em] text-dim">{b.platform_name} · {b.surface}</span>
+                  {b.operative && <span className="block truncate font-mono text-[8px] uppercase tracking-[0.15em] text-ozone/60">@{b.operative}</span>}
                   <span className="block truncate font-mono text-[8px] uppercase tracking-[0.15em] text-dim/70">{b.method} · {b.region || "—"}</span>
                 </span>
               </button>

@@ -36,6 +36,7 @@ const toBust = (r) => ({
   proof_url: r.proof_url || "",
   notes: r.notes || "",
   status: r.status || "pending",
+  operative: r.operative || "",
 });
 
 const seedBusts = () => SEED_BUSTS.map((b, i) => ({ ...b, id: `seed-${i}`, status: "pending" }));
