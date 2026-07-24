@@ -70,6 +70,14 @@ module.exports = {
   			display: ['var(--font-display)'],
   			mono: ['var(--font-mono)']
   		},
+  		letterSpacing: {
+  			label: '0.3em',
+  			tight2: '-0.02em'
+  		},
+  		boxShadow: {
+  			'ozone-glow': '0 0 24px rgba(237, 255, 0, 0.22)',
+  			'flare-glow': '0 0 24px rgba(255, 92, 0, 0.28)'
+  		},
   		keyframes: {
   			'accordion-down': {
   				from: { height: '0' },
@@ -78,11 +86,21 @@ module.exports = {
   			'accordion-up': {
   				from: { height: 'var(--radix-accordion-content-height)' },
   				to: { height: '0' }
+  			},
+  			'blink': {
+  				'0%, 49%': { opacity: '1' },
+  				'50%, 100%': { opacity: '0' }
+  			},
+  			'scan-sweep': {
+  				from: { transform: 'translateY(0)' },
+  				to: { transform: 'translateY(100vh)' }
   			}
   		},
   		animation: {
   			'accordion-down': 'accordion-down 0.2s ease-out',
-  			'accordion-up': 'accordion-up 0.2s ease-out'
+  			'accordion-up': 'accordion-up 0.2s ease-out',
+  			'blink': 'blink 1.1s steps(1) infinite',
+  			'scan': 'scan-sweep 7s linear infinite'
   		}
   	}
   },

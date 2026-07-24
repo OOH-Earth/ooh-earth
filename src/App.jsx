@@ -6,6 +6,7 @@ import PageNotFound from './lib/PageNotFound';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 import ScrollToTop from './components/ScrollToTop';
+import CrtOverlay from '@/components/ooh/CrtOverlay';
 // Add page imports here
 import Home from '@/pages/Home';
 import Map from '@/pages/Map';
@@ -61,6 +62,7 @@ function App() {
         <Router>
           <ScrollToTop />
           <AuthenticatedApp />
+          <CrtOverlay />
         </Router>
         <Toaster />
       </QueryClientProvider>

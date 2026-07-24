@@ -7,7 +7,7 @@ export default function Nav({ onCommand }) {
     <header className="fixed inset-x-0 top-0 z-50 border-b border-white/5 bg-void/70 backdrop-blur-md">
       <div className="flex items-center justify-between px-5 py-4 md:px-8">
         <a href="#top" className="flex items-center gap-2">
-          <span className="font-display text-sm font-black uppercase tracking-[0.3em] text-silver">OOH<span className="text-ozone">.</span>EARTH</span>
+          <span className="font-display text-sm font-black uppercase tracking-[0.3em] text-silver">OOH<span className="text-ozone text-glow-ozone">.</span>EARTH</span>
           <span className="hidden font-mono text-[9px] uppercase tracking-[0.3em] text-dim sm:inline">/ Out Of Hell™</span>
         </a>
 
