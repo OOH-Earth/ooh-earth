@@ -87,6 +87,21 @@ export function isSpeechSupported() {
   return typeof window !== "undefined" && "speechSynthesis" in window;
 }
 
+// pick a female-sounding system voice (cached; refreshed on voiceschanged)
+let femaleVoice = null;
+function ensureFemaleVoice() {
+  if (femaleVoice) return femaleVoice;
+  const synth = window.speechSynthesis;
+  if (!synth) return null;
+  const voices = synth.getVoices() || [];
+  femaleVoice =
+    voices.find((v) => /female/i.test(v.name)) ||
+    voices.find((v) => /samantha|zira|karen|tessa|fiona|victoria|moira|serena|allison|ava|susan|kate|google uk english female|google us english/i.test(v.name)) ||
+    voices.find((v) => /en-/i.test(v.lang)) ||
+    null;
+  return femaleVoice;
+}
+
 export default function useSoundscape() {
   const [enabled, setEnabled] = useState(readEnabled);
 
@@ -127,9 +142,20 @@ export default function useSoundscape() {
       const synth = window.speechSynthesis;
       synth.cancel();
       const u = new SpeechSynthesisUtterance(text);
-      u.volume = 0.4; u.rate = 0.9; u.pitch = 0.6;
+      const v = ensureFemaleVoice();
+      if (v) u.voice = v;
+      u.volume = 0.22; u.rate = 0.95; u.pitch = 1.05;
       synth.speak(u);
     } catch {}
+  }, []);
+
+  // refresh female voice cache when the engine loads its voice list
+  useEffect(() => {
+    if (!isSpeechSupported()) return;
+    const refresh = () => { femaleVoice = null; ensureFemaleVoice(); };
+    window.speechSynthesis.addEventListener?.("voiceschanged", refresh);
+    refresh();
+    return () => window.speechSynthesis.removeEventListener?.("voiceschanged", refresh);
   }, []);
 
   return { enabled, toggle, blip, speak, supported: isSoundSupported() };
