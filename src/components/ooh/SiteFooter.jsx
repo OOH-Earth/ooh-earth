@@ -10,8 +10,8 @@ export default function SiteFooter({ onCommand }) {
           <div>
             <Link to="/" className="group inline-flex items-center gap-3" aria-label="OOH Earth — home">
               <BrandMark className="h-9 w-9 md:h-11 md:w-11" />
-              <span className="font-brand text-3xl uppercase tracking-tight text-silver transition-colors group-hover:text-ozone md:text-5xl">
-                OOH<span className="text-ozone">.</span>EARTH
+              <span className="font-brand text-3xl tracking-tight text-silver transition-colors group-hover:text-ozone md:text-5xl">
+                ooh<span className="text-ozone">.</span>earth
               </span>
             </Link>
             <p className="mt-1 pl-1 font-mono text-[10px] uppercase tracking-[0.3em] text-dim">Out Of Hell™ · Adbusting Manual</p>
