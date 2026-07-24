@@ -224,7 +224,7 @@ export default function Map() {
             </PullToRefresh>
           </div>
 
-          <div data-tour="map" className={`relative min-h-0 ${mapClass}`}>
+          <div data-tour="map" className={`relative min-h-0 isolate ${mapClass}`}>
             <div className="absolute left-3 top-3 z-[1000] flex border border-slate2 bg-void/80 backdrop-blur-md">
               <button
                 onClick={() => setView("flat")}
