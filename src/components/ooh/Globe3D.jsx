@@ -3,6 +3,7 @@ import maplibregl from "maplibre-gl";
 import { ZoomIn, ZoomOut, Compass, RotateCw } from "lucide-react";
 import "maplibre-gl/dist/maplibre-gl.css";
 import GlobeHud from "@/components/ooh/GlobeHud";
+import FieldStatsHud from "@/components/ooh/FieldStatsHud";
 
 import { thumbHTML, metaFor } from "@/components/ooh/map/LocationThumb";
 
@@ -186,10 +187,10 @@ export default function Globe3D({ markers, selectedId, onSelect, userLoc }) {
   return (
     <div className="absolute inset-0">
       <div ref={containerRef} className="h-full w-full" style={{ background: "#000" }} />
-      <div className="pointer-events-none absolute bottom-3 left-3 font-mono text-[9px] uppercase tracking-[0.25em] text-dim">
+      <div className="pointer-events-none absolute bottom-12 left-3 font-mono text-[9px] uppercase tracking-[0.25em] text-dim">
         // drag to rotate · scroll to zoom · click a marker
       </div>
-      <div className="absolute bottom-3 right-3 z-[1000] flex flex-col gap-1.5">
+      <div className="absolute bottom-12 right-3 z-[1000] flex flex-col gap-1.5">
         <button onClick={zoomIn} aria-label="Zoom in" className="flex h-9 w-9 items-center justify-center border border-slate2 bg-void/80 font-mono text-darkgray backdrop-blur-md transition-colors hover:border-ozone hover:text-ozone">
           <ZoomIn className="h-4 w-4" />
         </button>
@@ -204,6 +205,7 @@ export default function Globe3D({ markers, selectedId, onSelect, userLoc }) {
         </button>
       </div>
       {ready && <GlobeHud map={mapRef.current} />}
+      {ready && <FieldStatsHud />}
     </div>
   );
 }
