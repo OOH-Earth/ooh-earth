@@ -8,7 +8,7 @@ import LocationCard from "@/components/ooh/map/LocationCard";
 import seedMarkers from "@/components/ooh/mapSeed";
 import { Loader2, FileDown, Megaphone, Map as MapIcon, Globe, ScanSearch, Camera, Key } from "lucide-react";
 import { Link } from "react-router-dom";
-import Walkthrough from "@/components/ooh/Walkthrough";
+import { useWalkthrough } from "@/lib/walkthroughContext";
 import UnitFinder from "@/components/ooh/UnitFinder";
 import QuickCapture from "@/components/ooh/QuickCapture";
 import Globe3D from "@/components/ooh/Globe3D";
@@ -56,8 +56,10 @@ export default function Map() {
   const [hoverId, setHoverId] = useState(null);
   const [view, setView] = useState("globe");
   const [userLoc, setUserLoc] = useState(null);
-  const [tourOpen, setTourOpen] = useState(false);
+  const { startTour, registerSteps } = useWalkthrough();
   const [finderOpen, setFinderOpen] = useState(false);
+
+  useEffect(() => { registerSteps(TOUR); }, [registerSteps]);
   const [captureOpen, setCaptureOpen] = useState(false);
   const [claims, setClaims] = useState([]);
   const [claimTarget, setClaimTarget] = useState(null);
@@ -199,7 +201,7 @@ export default function Map() {
         </div>
       ) : (
         <div className="flex min-h-0 flex-1 flex-col lg:flex-row">
-          {mode !== "map" && <MapSidebar query={query} setQuery={setQuery} onReset={() => { setQuery(""); setTypeFilter("all"); }} onBeginTour={() => setTourOpen(true)} />}
+          {mode !== "map" && <MapSidebar query={query} setQuery={setQuery} onReset={() => { setQuery(""); setTypeFilter("all"); }} onBeginTour={startTour} />}
 
           <div data-tour="cards" className={`min-h-0 flex-col border-r border-slate2/60 ${cardsClass}`}>
             <div className="flex items-center justify-between border-b border-slate2/60 px-4 py-2">
@@ -283,7 +285,6 @@ export default function Map() {
       )}
 
       <ClaimLeadDialog open={!!claimTarget} onClose={() => setClaimTarget(null)} location={claimTarget} />
-      <Walkthrough open={tourOpen} onClose={() => setTourOpen(false)} steps={TOUR} />
       <UnitFinder open={finderOpen} onClose={() => setFinderOpen(false)} />
       <QuickCapture open={captureOpen} onClose={() => setCaptureOpen(false)} />
     </div>

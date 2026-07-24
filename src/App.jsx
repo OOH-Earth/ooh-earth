@@ -11,6 +11,7 @@ import CrtOverlay from '@/components/ooh/CrtOverlay';
 import TvStatic from '@/components/ooh/TvStatic';
 import CognitiveLayer from '@/components/ooh/cognitive/CognitiveLayer';
 import ProtectedRoute from '@/components/ProtectedRoute';
+import { WalkthroughProvider } from '@/lib/walkthroughContext';
 // Add page imports here
 import Home from '@/pages/Home';
 import Map from '@/pages/Map';
@@ -103,11 +104,13 @@ function App() {
     <AuthProvider>
       <QueryClientProvider client={queryClientInstance}>
         <Router>
-          <ScrollToTop />
-          <AuthenticatedApp />
-          <CrtOverlay />
-          <TvStatic />
-          <CognitiveLayer />
+          <WalkthroughProvider>
+            <ScrollToTop />
+            <AuthenticatedApp />
+            <CrtOverlay />
+            <TvStatic />
+            <CognitiveLayer />
+          </WalkthroughProvider>
         </Router>
         <Toaster />
       </QueryClientProvider>

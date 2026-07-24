@@ -57,7 +57,7 @@ function buildFC(markers, selectedId) {
   };
 }
 
-export default function Globe3D({ markers, selectedId, hoverId, onSelect, userLoc, interactive = true, spin = false }) {
+export default function Globe3D({ markers, selectedId, hoverId, onSelect, userLoc, interactive = true, spin = false, scrollZoom = true }) {
   const containerRef = useRef(null);
   const mapRef = useRef(null);
   const popupRef = useRef(null);
@@ -104,6 +104,11 @@ export default function Globe3D({ markers, selectedId, hoverId, onSelect, userLo
     });
     mapRef.current = map;
     popupRef.current = new maplibregl.Popup({ closeButton: true, closeOnClick: true, maxWidth: "260px" });
+
+    if (!scrollZoom) {
+      map.scrollZoom.disable();
+      map.boxZoom.disable();
+    }
 
     const applyGlobe = () => {
       try { map.setProjection({ type: "globe" }); } catch (e) {}
@@ -199,8 +204,18 @@ export default function Globe3D({ markers, selectedId, hoverId, onSelect, userLo
     <div className="absolute inset-0">
       <div ref={containerRef} className="h-full w-full" style={{ background: "#000" }} />
       {interactive && (
-        <div className="pointer-events-none absolute bottom-12 left-3 font-mono text-[9px] uppercase tracking-[0.25em] text-dim">
-          // drag to rotate · scroll to zoom · click a marker
+        <div className="pointer-events-none absolute bottom-12 left-3 flex flex-col gap-1.5">
+          <div className="flex items-center gap-2 border border-slate2/70 bg-void/85 px-2.5 py-1.5 font-mono text-[9px] uppercase tracking-[0.2em] text-darkgray backdrop-blur-sm">
+            <span className="text-ozone/80">⊙</span>
+            <span>{scrollZoom ? "drag · scroll to zoom · click a marker" : "drag to rotate · click marker · + / − keys zoom"}</span>
+          </div>
+          {!scrollZoom && (
+            <div className="flex items-center gap-1.5 font-mono text-[8px] uppercase tracking-[0.2em] text-dim/60">
+              <span className="rounded-sm border border-slate2/60 px-1 py-0.5 text-silver/70">+</span>
+              <span className="rounded-sm border border-slate2/60 px-1 py-0.5 text-silver/70">−</span>
+              <span>click globe first, then zoom</span>
+            </div>
+          )}
         </div>
       )}
       {interactive && (

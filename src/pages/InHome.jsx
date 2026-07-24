@@ -7,7 +7,7 @@ import ScreenGrid from "@/components/ooh/inhome/ScreenGrid";
 import BustList from "@/components/ooh/inhome/BustList";
 import BustForm from "@/components/ooh/inhome/BustForm";
 import { SEED_BUSTS } from "@/components/ooh/inhome/digitalConfig";
-import Walkthrough from "@/components/ooh/Walkthrough";
+import { useWalkthrough } from "@/lib/walkthroughContext";
 import OperativeRoster from "@/components/ooh/inhome/OperativeRoster";
 import { Boxes, Network, Grid3x3, Plus, Loader2, Compass } from "lucide-react";
 
@@ -48,14 +48,16 @@ export default function InHome() {
   const [selectedId, setSelectedId] = useState(null);
   const [formOpen, setFormOpen] = useState(false);
   const [reloadKey, setReloadKey] = useState(0);
-  const [tourOpen, setTourOpen] = useState(false);
+  const { startTour, registerSteps } = useWalkthrough();
+
+  useEffect(() => { registerSteps(TOUR); }, [registerSteps]);
 
   useEffect(() => {
     if (!localStorage.getItem("ooh_inhome_tour_v1")) {
-      setTourOpen(true);
+      startTour();
       localStorage.setItem("ooh_inhome_tour_v1", "1");
     }
-  }, []);
+  }, [startTour]);
 
   useEffect(() => {
     let cancelled = false;
@@ -108,7 +110,7 @@ export default function InHome() {
           })}
         </div>
         <div className="flex items-center gap-1.5">
-          <button onClick={() => setTourOpen(true)} aria-label="Tour"
+          <button onClick={startTour} aria-label="Tour"
             className="flex items-center gap-1.5 border border-slate2/60 px-2.5 py-2 font-mono text-[10px] font-bold uppercase tracking-[0.2em] text-darkgray transition-colors hover:border-ozone hover:text-ozone">
             <Compass className="h-3.5 w-3.5" /> <span className="hidden sm:inline">Tour</span>
           </button>
@@ -144,7 +146,6 @@ export default function InHome() {
       </div>
 
       <BustForm open={formOpen} onClose={() => setFormOpen(false)} onCreated={() => setReloadKey((k) => k + 1)} />
-      <Walkthrough open={tourOpen} onClose={() => setTourOpen(false)} steps={TOUR} />
     </div>
   );
 }

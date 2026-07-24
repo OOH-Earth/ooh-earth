@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Crosshair, Camera, Menu, Tv, Map as MapIcon } from "lucide-react";
+import { Crosshair, Camera, Menu, Tv, Map as MapIcon, Compass } from "lucide-react";
 import { Link } from "react-router-dom";
 import ThemeToggle from "@/components/ooh/ThemeToggle";
 import HapticsToggle from "@/components/ooh/cognitive/HapticsToggle";
@@ -8,9 +8,11 @@ import ReadAloudToggle from "@/components/ooh/ReadAloudToggle";
 import BrandMark from "@/components/ooh/BrandMark";
 import NavMenu from "@/components/ooh/NavMenu";
 import OfflineSyncBadge from "@/components/ooh/OfflineSyncBadge";
+import { useWalkthrough } from "@/lib/walkthroughContext";
 
 export default function Nav({ onCommand }) {
   const [menuOpen, setMenuOpen] = useState(false);
+  const { startTour } = useWalkthrough();
   return (
     <header className="fixed inset-x-0 top-0 z-50 border-b border-white/5 bg-void/70 backdrop-blur-md">
       <div className="flex items-center justify-between gap-2 px-3 py-3 md:px-8 md:py-4">
@@ -26,6 +28,9 @@ export default function Nav({ onCommand }) {
           <Link to="/map" aria-label="Field map" title="Map" className="hidden h-8 w-8 items-center justify-center border border-slate2 text-silver transition-colors hover:border-ozone hover:text-ozone md:flex">
             <MapIcon className="h-3.5 w-3.5" />
           </Link>
+          <button onClick={startTour} aria-label="Start walkthrough" title="Tour" className="hidden h-8 w-8 items-center justify-center border border-slate2 text-silver transition-colors hover:border-ozone hover:text-ozone md:flex">
+            <Compass className="h-3.5 w-3.5" />
+          </button>
           <Link to="/channel" aria-label="OOH·TV channel" title="OOH·TV" className="hidden h-8 w-8 items-center justify-center border border-slate2 text-silver transition-colors hover:border-ozone hover:text-ozone md:flex">
             <Tv className="h-3.5 w-3.5" />
           </Link>
