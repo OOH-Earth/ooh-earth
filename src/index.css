@@ -63,8 +63,12 @@
     --c-slate2: 222 222 222;
     --c-dim: 110 110 110;
     --c-darkgray: 70 70 70;
-    --c-ozone: 176 134 11;
+    --c-ozone: 255 92 0;
     --c-flare: 255 92 0;
+    --accent: 22 100% 50%;
+    --accent-foreground: 0 0% 100%;
+    --ring: 22 100% 50%;
+    --flare: 22 100% 50%;
   }
 
   /* Matrix theme — cyberpunk green-on-black with magenta flare */
