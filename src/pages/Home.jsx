@@ -23,6 +23,7 @@ import DonationMomentum from "@/components/ooh/DonationMomentum";
 import Manifesto from "@/components/ooh/Manifesto";
 import OnChain from "@/components/ooh/OnChain";
 import ImpactLedger from "@/components/ooh/ImpactLedger";
+import LiveActivityFeed from "@/components/ooh/LiveActivityFeed";
 import SiteFooter from "@/components/ooh/SiteFooter";
 import CommandCenter from "@/components/ooh/CommandCenter";
 import HorizonProgress from "@/components/ooh/HorizonProgress";
@@ -63,6 +64,7 @@ export default function Home() {
         <Reveal><ImpactLedger /></Reveal>
       </main>
 
+      <LiveActivityFeed />
       <SiteFooter onCommand={openCommand} />
 
       <CommandCenter open={commandOpen} onClose={() => setCommandOpen(false)} />
