@@ -21,6 +21,7 @@ import About from '@/pages/About';
 import Support from '@/pages/Support';
 import Plans from '@/pages/Plans';
 import Dashboard from '@/pages/Dashboard';
+import FdePortal from '@/pages/FdePortal';
 import Campaign from '@/pages/Campaign';
 import ArLens from '@/pages/ArLens';
 import TrueCost from '@/pages/TrueCost';
@@ -98,6 +99,7 @@ const AuthenticatedApp = () => {
     <Route path="/careers" element={<Careers />} />
     <Route element={<ProtectedRoute unauthenticatedElement={<Navigate to="/login" replace />} />}>
       <Route path="/dashboard" element={<Dashboard />} />
+      <Route path="/fde" element={<FdePortal />} />
     </Route>
     <Route path="*" element={<PageNotFound />} />
     </Routes>
