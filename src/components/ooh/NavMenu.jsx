@@ -45,6 +45,7 @@ const SITEMAP = [
     group: "Intel & Support",
     items: [
       { to: "/about", label: "About" },
+      { to: "/careers", label: "Careers" },
       { to: "/guides", label: "Guides" },
       { to: "/campaign", label: "Fund" },
       { to: "/plans", label: "Plans" },

@@ -32,6 +32,7 @@ import Channel from '@/pages/Channel';
 import LocationDetail from '@/pages/LocationDetail';
 import BusStops from '@/pages/BusStops';
 import BusStopDetail from '@/pages/BusStopDetail';
+import Careers from '@/pages/Careers';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -80,6 +81,7 @@ const AuthenticatedApp = () => {
     <Route path="/location/:id" element={<LocationDetail />} />
     <Route path="/bus-stops" element={<BusStops />} />
     <Route path="/bus-stop/:id" element={<BusStopDetail />} />
+    <Route path="/careers" element={<Careers />} />
     <Route element={<ProtectedRoute unauthenticatedElement={<Navigate to="/login" replace />} />}>
       <Route path="/dashboard" element={<Dashboard />} />
     </Route>
