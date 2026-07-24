@@ -1,5 +1,7 @@
 // Curated open-access field footage on subvertising, adbusting, brandalism,
 // billboard liberation & culture jamming. All videos hosted on YouTube.
+const thumb = (id) => `https://i.ytimg.com/vi/${id}/hqdefault.jpg`;
+
 export const PROGRAMS = [
   {
     id: "zunPa9rGndg",
@@ -7,6 +9,7 @@ export const PROGRAMS = [
     channel: "Dog Section Press",
     topic: "Subvertising",
     runtime: "21:00",
+    deck: "A street-level documentary following the crews who replace city ads with art across the capital after dark.",
   },
   {
     id: "PLKqDw8DF6E",
@@ -14,6 +17,7 @@ export const PROGRAMS = [
     channel: "Michelle Tylicki",
     topic: "Adbusting",
     runtime: "Talk",
+    deck: "A primer on the half-century of tactical media resistance — from early detournement to the modern billboard raid.",
   },
   {
     id: "lKRmVwqhEdE",
@@ -21,6 +25,7 @@ export const PROGRAMS = [
     channel: "Brandalism",
     topic: "Brandalism",
     runtime: "Doc",
+    deck: "The largest coordinated subvertising action ever staged — a year of unsanctioned ad-space reclamation across Europe.",
   },
   {
     id: "K4WnZAUOIxI",
@@ -28,6 +33,7 @@ export const PROGRAMS = [
     channel: "Brandalism",
     topic: "Climate",
     runtime: "Doc",
+    deck: "600 bus-shelter takeovers detonated during the Paris climate summit to expose fossil-fuel greenwashing.",
   },
   {
     id: "KjgrHX94bKo",
@@ -35,13 +41,15 @@ export const PROGRAMS = [
     channel: "Negativland · Sonic Outlaws",
     topic: "Billboard Liberation",
     runtime: "Short",
+    deck: "The original San Francisco outfit that taught a generation how to improve advertising with a ladder and a pun.",
   },
   {
     id: "FR76Iqh1a1A",
-    title: "Ad Busters — Culture Jamming (Sparked the Movement)",
+    title: "Ad Busters — Culture Jamming",
     channel: "Shakyegg",
     topic: "Culture Jamming",
     runtime: "Doc",
+    deck: "The Vancouver manifesto that sparked the global culture-jamming movement and put a meme in every shopping mall.",
   },
   {
     id: "d7HOLcrFMHE",
@@ -49,6 +57,7 @@ export const PROGRAMS = [
     channel: "Adbusters",
     topic: "Culture Jamming",
     runtime: "Short",
+    deck: "A short from the foundation itself — on détournement, mental environment, and the right to a clean signscape.",
   },
   {
     id: "WWaNV2gGhuU",
@@ -56,5 +65,6 @@ export const PROGRAMS = [
     channel: "Rocketboom",
     topic: "Subvertising",
     runtime: "Short",
+    deck: "A bite-size field report from the early web-broadcast era on the craft and politics of ad replacement.",
   },
-];
+].map((p) => ({ ...p, thumb: thumb(p.id) }));
