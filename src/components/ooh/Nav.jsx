@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Crosshair, Camera, Menu, Tv, Map as MapIcon, Compass } from "lucide-react";
+import { Crosshair, Menu, Tv, Map as MapIcon, Compass } from "lucide-react";
 import { Link } from "react-router-dom";
 import ThemeToggle from "@/components/ooh/ThemeToggle";
 import HapticsToggle from "@/components/ooh/cognitive/HapticsToggle";
@@ -21,12 +21,13 @@ export default function Nav({ onCommand }) {
         <div className="flex items-center gap-2">
           <ClimateClock />
           <TypeEnhancer />
-          <DashboardDropdown />
+          <div className="hidden md:block"><DashboardDropdown /></div>
         </div>
 
-        <div className="flex items-center gap-1.5">
+        <div className="flex items-center gap-2">
           <OfflineSyncBadge />
-          <span data-tour="theme" className="flex items-center gap-1.5"><ThemeToggle /><HapticsToggle /><SoundToggle /><ReadAloudToggle /></span>
+          <ThemeToggle />
+          <span data-tour="theme" className="hidden md:flex items-center gap-1.5"><HapticsToggle /><SoundToggle /><ReadAloudToggle /></span>
           <Link to="/map" aria-label="Field map" title="Map" className="hidden h-8 w-8 items-center justify-center border border-slate2 text-silver transition-colors hover:border-ozone hover:text-ozone md:flex">
             <MapIcon className="h-3.5 w-3.5" />
           </Link>
@@ -39,22 +40,15 @@ export default function Nav({ onCommand }) {
           <button
             onClick={() => setMenuOpen(true)}
             aria-label="Open menu"
-            className="flex items-center gap-2 border border-slate2 px-3 py-2 font-mono text-[10px] font-bold uppercase tracking-[0.25em] text-silver transition-colors hover:border-ozone hover:text-ozone"
+            className="flex h-10 items-center gap-2 border border-slate2 px-3 font-mono text-[10px] font-bold uppercase tracking-[0.25em] text-silver transition-colors hover:border-ozone hover:text-ozone md:h-8"
           >
-            <Menu className="h-4 w-4" /> <span className="hidden sm:inline">Menu</span>
+            <Menu className="h-5 w-5 md:h-4 md:w-4" /> <span className="hidden sm:inline">Menu</span>
           </button>
-          <Link
-            to="/report"
-            aria-label="Capture & report"
-            className="flex items-center gap-2 border border-ozone/70 px-3 py-2 font-mono text-[10px] font-bold uppercase tracking-[0.25em] text-ozone transition-colors hover:bg-ozone hover:text-void md:hidden"
-          >
-            <Camera className="h-3.5 w-3.5" />
-          </Link>
           <button
             onClick={onCommand}
-            className="group flex items-center gap-2 border-2 border-ozone bg-ozone px-3 py-2 font-mono text-[10px] font-bold uppercase tracking-[0.25em] text-void transition-colors hover:bg-flare hover:border-flare"
+            className="group flex h-10 items-center gap-2 border-2 border-ozone bg-ozone px-3 font-mono text-[10px] font-bold uppercase tracking-[0.25em] text-void transition-colors hover:bg-flare hover:border-flare md:h-8"
           >
-            <Crosshair className="h-3.5 w-3.5" />
+            <Crosshair className="h-4 w-4 md:h-3.5 md:w-3.5" />
             <span className="hidden sm:inline">Command</span>
           </button>
         </div>
