@@ -8,6 +8,7 @@ import BustList from "@/components/ooh/inhome/BustList";
 import BustForm from "@/components/ooh/inhome/BustForm";
 import { SEED_BUSTS } from "@/components/ooh/inhome/digitalConfig";
 import Walkthrough from "@/components/ooh/Walkthrough";
+import OperativeRoster from "@/components/ooh/inhome/OperativeRoster";
 import { Boxes, Network, Grid3x3, Plus, Loader2, Compass } from "lucide-react";
 
 const VIEWS = [
@@ -137,6 +138,10 @@ export default function InHome() {
           </div>
         </div>
       )}
+
+      <div className="h-16 shrink-0 border-t border-slate2/60">
+        <OperativeRoster />
+      </div>
 
       <BustForm open={formOpen} onClose={() => setFormOpen(false)} onCreated={() => setReloadKey((k) => k + 1)} />
       <Walkthrough open={tourOpen} onClose={() => setTourOpen(false)} steps={TOUR} />

@@ -1,0 +1,82 @@
+{
+  "name": "Operative",
+  "type": "object",
+  "properties": {
+    "handle": {
+      "type": "string",
+      "description": "Unique operative handle, e.g. ghostsignal"
+    },
+    "kind": {
+      "type": "string",
+      "enum": [
+        "human",
+        "bot"
+      ],
+      "default": "human",
+      "description": "Distinguishes field operatives from bot agents"
+    },
+    "region": {
+      "type": "string",
+      "description": "Base region or city"
+    },
+    "bio": {
+      "type": "string"
+    },
+    "avatar_url": {
+      "type": "string"
+    },
+    "points": {
+      "type": "number",
+      "default": 0,
+      "description": "Field-credit points"
+    },
+    "tier": {
+      "type": "string",
+      "enum": [
+        "recruit",
+        "field",
+        "veteran",
+        "legend"
+      ],
+      "default": "recruit"
+    },
+    "verified": {
+      "type": "boolean",
+      "default": false
+    },
+    "badges": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Earned merit tags, e.g. founder, bust-master"
+    },
+    "links": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  },
+  "required": [
+    "handle"
+  ],
+  "rls": {
+    "read": {},
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}
