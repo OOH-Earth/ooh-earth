@@ -152,7 +152,7 @@ export default function useSoundscape() {
       const u = new SpeechSynthesisUtterance(text);
       const v = ensureFemaleVoice();
       if (v) u.voice = v;
-      u.volume = 0.22; u.rate = 0.95; u.pitch = 1.05;
+      u.volume = 0.28; u.rate = 0.86; u.pitch = 0.92;
       synth.speak(u);
     } catch {}
   }, []);
@@ -187,7 +187,7 @@ export default function useSoundscape() {
       const u = new SpeechSynthesisUtterance(text);
       const v = ensureFemaleVoice();
       if (v) u.voice = v;
-      u.volume = 0.5; u.rate = 0.98; u.pitch = 1.05;
+      u.volume = 0.55; u.rate = 0.9; u.pitch = 0.92;
       synth.speak(u);
     } catch {}
   }, []);
