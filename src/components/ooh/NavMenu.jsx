@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import {
-  X, ChevronRight, ChevronDown, Compass, Search,
+  X, ChevronRight, ChevronDown, Compass,
   Home, Map as MapIcon, Megaphone, Scan, Tv, LayoutDashboard,
   Trash2, Coins, CreditCard, LayoutGrid, Info, Briefcase,
   BookOpen, Heart, Layers, LifeBuoy,
@@ -148,8 +149,6 @@ function BusStopsGroup({ variant, onClose }) {
 }
 
 function MobileLauncher({ onClose, onTour }) {
-  const [q, setQ] = useState("");
-  const ql = q.trim().toLowerCase();
   let n = 0;
   return (
     <motion.div
@@ -183,36 +182,17 @@ function MobileLauncher({ onClose, onTour }) {
         </div>
       </div>
 
-      <div className="border-b border-slate2/60 px-4 py-2.5">
-        <div className="flex items-center gap-2 border border-slate2 bg-card px-3 py-2.5">
-          <Search className="h-4 w-4 shrink-0 text-dim" />
-          <input
-            value={q}
-            onChange={(e) => setQ(e.target.value)}
-            placeholder="Search channels…"
-            className="w-full bg-transparent font-display text-sm text-silver placeholder:text-dim/60 focus:outline-none"
-          />
-          {q && (
-            <button onClick={() => setQ("")} aria-label="Clear" className="shrink-0 text-dim transition-colors hover:text-flare">
-              <X className="h-4 w-4" />
-            </button>
-          )}
-        </div>
-      </div>
-
       <div className="min-h-0 flex-1 overflow-y-auto px-4 py-4 pb-10">
         <motion.div variants={list} initial="hidden" animate="show" exit="exit" className="space-y-5">
           {SITEMAP.map((g) => {
             if (g.cats) {
-              if (ql) return null;
               return (
                 <motion.div key={g.group} variants={groupV}>
                   <BusStopsGroup variant="sheet" onClose={onClose} />
                 </motion.div>
               );
             }
-            const items = g.items.filter((l) => !ql || l.label.toLowerCase().includes(ql));
-            if (!items.length) return null;
+            const items = g.items;
             return (
               <motion.div key={g.group} variants={groupV}>
                 <div className="mb-2 flex items-center gap-2">
@@ -244,11 +224,6 @@ function MobileLauncher({ onClose, onTour }) {
               </motion.div>
             );
           })}
-          {ql && (
-            <div className="py-10 text-center font-mono text-[10px] uppercase tracking-[0.25em] text-dim">
-              // No channels match "{q}"
-            </div>
-          )}
         </motion.div>
       </div>
     </motion.div>
@@ -303,7 +278,7 @@ export default function NavMenu({ open, onClose, onTour }) {
     return () => document.removeEventListener("keydown", onKey);
   }, [open, onClose]);
 
-  return (
+  return createPortal(
     <AnimatePresence>
       {open && (
         <>
@@ -345,6 +320,7 @@ export default function NavMenu({ open, onClose, onTour }) {
           </motion.div>
         </>
       )}
-    </AnimatePresence>
+    </AnimatePresence>,
+    document.body
   );
 }
