@@ -4,6 +4,7 @@ import { ZoomIn, ZoomOut, Compass, RotateCw } from "lucide-react";
 import "maplibre-gl/dist/maplibre-gl.css";
 import GlobeHud from "@/components/ooh/GlobeHud";
 import FieldStatsHud from "@/components/ooh/FieldStatsHud";
+import { motion } from "framer-motion";
 
 import { thumbHTML, metaFor } from "@/components/ooh/map/LocationThumb";
 
@@ -175,16 +176,44 @@ export default function Globe3D({ markers, selectedId, hoverId, onSelect, userLo
     map.on("load", () => {
       applyGlobe();
       map.on("style.load", applyGlobe);
-      map.addSource("ooh-markers", { type: "geojson", data: dataRef.current });
+      map.addSource("ooh-markers", { type: "geojson", data: dataRef.current, cluster: true, clusterRadius: 52, clusterMaxZoom: 14 });
       PIN_TYPES.forEach((t) => {
         const col = BADGE_COLOR[t] || BADGE_COLOR.other;
         map.addImage(`ooh-pin-${t}`, makePinIcon(col, false, false));
         map.addImage(`ooh-pin-${t}-sel`, makePinIcon(col, true, false));
       });
+      // cluster discs — dark core, ozone ring, live count (military-grade)
+      map.addLayer({
+        id: "ooh-clusters",
+        type: "circle",
+        source: "ooh-markers",
+        filter: ["has", "point_count"],
+        paint: {
+          "circle-radius": ["step", ["get", "point_count"], 16, 10, 20, 50, 25, 100, 30],
+          "circle-color": "#0a0a0a",
+          "circle-stroke-color": "#EDFF00",
+          "circle-stroke-width": 2,
+          "circle-blur": 0.08,
+        },
+      });
+      map.addLayer({
+        id: "ooh-cluster-count",
+        type: "symbol",
+        source: "ooh-markers",
+        filter: ["has", "point_count"],
+        layout: {
+          "text-field": ["get", "point_count_abbreviated"],
+          "text-size": 13,
+          "text-allow-overlap": true,
+        },
+        paint: { "text-color": "#EDFF00", "text-halo-color": "#000", "text-halo-width": 1.5 },
+      });
+      // individual field pins (unclustered only)
       map.addLayer({
         id: "ooh-markers",
         type: "symbol",
         source: "ooh-markers",
+        filter: ["!", ["has", "point_count"]],
         layout: {
           "icon-image": ["case", ["==", ["get", "selected"], true], ["concat", "ooh-pin-", ["get", "type"], "-sel"], ["concat", "ooh-pin-", ["get", "type"]]],
           "icon-size": ["case", ["==", ["get", "selected"], true], 0.95, 0.78],
@@ -203,6 +232,25 @@ export default function Globe3D({ markers, selectedId, hoverId, onSelect, userLo
       });
       map.on("mouseenter", "ooh-markers", () => { map.getCanvas().style.cursor = "pointer"; });
       map.on("mouseleave", "ooh-markers", () => { map.getCanvas().style.cursor = ""; });
+
+      // cluster click → expand to reveal contained pins
+      map.on("click", "ooh-clusters", (e) => {
+        const f = e.features && e.features[0];
+        if (!f) return;
+        const cid = f.properties.cluster_id;
+        const src = map.getSource("ooh-markers");
+        if (src && src.getClusterExpansionZoom) {
+          src.getClusterExpansionZoom(cid).then((z) => {
+            map.flyTo({ center: f.geometry.coordinates, zoom: Math.max(z, map.getZoom() + 1), duration: 700 });
+          }).catch(() => {
+            map.flyTo({ center: f.geometry.coordinates, zoom: map.getZoom() + 2, duration: 700 });
+          });
+        } else {
+          map.flyTo({ center: f.geometry.coordinates, zoom: map.getZoom() + 2, duration: 700 });
+        }
+      });
+      map.on("mouseenter", "ooh-clusters", () => { map.getCanvas().style.cursor = "pointer"; });
+      map.on("mouseleave", "ooh-clusters", () => { map.getCanvas().style.cursor = ""; });
 
       readyRef.current = true;
       setReady(true);
@@ -256,6 +304,23 @@ export default function Globe3D({ markers, selectedId, hoverId, onSelect, userLo
   return (
     <div className="absolute inset-0">
       <div ref={containerRef} className="h-full w-full" style={{ background: "#000" }} />
+
+      {/* military-grade surveillance grid overlay */}
+      <div className="pointer-events-none absolute inset-0 z-[1] overflow-hidden">
+        <div className="absolute left-1/2 top-1/2 h-56 w-56 -translate-x-1/2 -translate-y-1/2 rounded-full border border-ozone/10" />
+        <div className="absolute left-1/2 top-1/2 h-[28rem] w-[28rem] -translate-x-1/2 -translate-y-1/2 rounded-full border border-ozone/[0.06]" />
+        <motion.div
+          className="absolute left-1/2 top-1/2 h-[26rem] w-[26rem] -translate-x-1/2 -translate-y-1/2 rounded-full"
+          style={{ background: "conic-gradient(from 0deg, rgba(237,255,0,0.10), transparent 22%)" }}
+          animate={{ rotate: 360 }}
+          transition={{ duration: 8, repeat: Infinity, ease: "linear" }}
+        />
+        <div className="absolute left-3 top-3 h-4 w-4 border-l border-t border-ozone/40" />
+        <div className="absolute right-3 top-3 h-4 w-4 border-r border-t border-ozone/40" />
+        <div className="absolute bottom-3 left-3 h-4 w-4 border-b border-l border-ozone/40" />
+        <div className="absolute bottom-3 right-3 h-4 w-4 border-b border-r border-ozone/40" />
+        <span className="absolute left-3 top-3 pl-6 font-mono text-[8px] uppercase tracking-[0.3em] text-ozone/40">// global surveillance grid · cluster intel</span>
+      </div>
       {interactive && (
         <div className="pointer-events-none absolute bottom-12 left-3 flex flex-col gap-1.5">
           <div className="flex items-center gap-2 border border-slate2/70 bg-void/85 px-2.5 py-1.5 font-mono text-[9px] uppercase tracking-[0.2em] text-darkgray backdrop-blur-sm">
