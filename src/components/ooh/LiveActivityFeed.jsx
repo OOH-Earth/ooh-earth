@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { base44 } from "@/api/base44Client";
+import useSoundscape from "@/hooks/useSoundscape";
 import { MapPin, Hand, Monitor, Coins, UserPlus, BadgeCheck, Radio } from "lucide-react";
 
 const TYPES = {
@@ -33,10 +34,14 @@ const stamp = () => new Date().toLocaleTimeString("en-GB", { hour12: false });
 export default function LiveActivityFeed() {
   const [events, setEvents] = useState([]);
   const timers = useRef(new Map());
+  const { blip } = useSoundscape();
 
   const push = (ev) => {
     const id = `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
     const item = { id, ts: stamp(), ...ev };
+    // haptic-click algorithmic tick — makes each live popup feel tactile/alive
+    blip(1180, 0.035, "square", 0.045);
+    setTimeout(() => blip(820, 0.05, "triangle", 0.03), 55);
     setEvents((cur) => [item, ...cur].slice(0, 5));
     const t = setTimeout(() => {
       setEvents((cur) => cur.filter((e) => e.id !== id));
