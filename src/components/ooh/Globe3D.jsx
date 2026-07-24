@@ -14,7 +14,7 @@ function popupHTML(m) {
   return `
     <div style="width:220px;font-family:'Inter Tight',sans-serif">
       ${thumbHTML(m)}
-      <div style="padding:10px 2px 2px">
+      <div style="padding:10px 12px 12px">
         <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px">
           <span style="font-size:9px;text-transform:uppercase;letter-spacing:0.2em;font-weight:700;color:#EDFF00">${esc(type)}</span>
           <span style="width:5px;height:5px;border-radius:999px;background:${status === "verified" ? "#39FF14" : "#FF5C00"}"></span>

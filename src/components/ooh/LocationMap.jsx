@@ -70,7 +70,7 @@ export default function LocationMap({ markers, selectedId, onSelect }) {
           <Popup>
             <div style={{ width: 220, fontFamily: "Inter Tight, sans-serif" }}>
               <div dangerouslySetInnerHTML={{ __html: thumbHTML(m) }} />
-              <div style={{ padding: "10px 2px 2px" }}>
+              <div style={{ padding: "10px 12px 12px" }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 4 }}>
                   <span style={{ fontSize: 9, textTransform: "uppercase", letterSpacing: "0.2em", fontWeight: 700, color: "#EDFF00" }}>
                     {metaFor(m.type).label}

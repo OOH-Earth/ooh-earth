@@ -48,7 +48,7 @@ export default function MapToolbar({ typeFilter, setTypeFilter, mode, setMode, c
           })}
         </div>
       </div>
-      <div data-tour="filters" className="flex items-center gap-1.5 overflow-x-auto px-5 pb-2.5 md:px-8">
+      <div data-tour="filters" className="atlas-track flex items-center gap-1.5 overflow-x-auto px-5 pb-2.5 md:px-8">
         {chips.map((t) => {
           const n = t.value === "all" ? total : counts[t.value] || 0;
           const active = typeFilter === t.value;
