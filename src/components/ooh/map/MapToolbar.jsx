@@ -1,4 +1,5 @@
 import { Columns, Map as MapIcon, List } from "lucide-react";
+import CryptoTicker from "@/components/ooh/CryptoTicker";
 
 export const TYPES = [
   { value: "all", label: "All" },
@@ -20,6 +21,7 @@ const MODES = [
 export default function MapToolbar({ typeFilter, setTypeFilter, mode, setMode, count, live }) {
   return (
     <div className="shrink-0 border-b border-slate2/60 bg-void/90 backdrop-blur-md">
+      <CryptoTicker />
       <div className="flex items-center gap-3 px-5 py-2.5 md:px-8">
         <span className="font-display text-sm font-black uppercase tracking-[0.25em] text-silver">OOH MAP</span>
         <span className="flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-[0.25em] text-dim">
