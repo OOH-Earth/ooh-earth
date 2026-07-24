@@ -101,15 +101,30 @@ export default function Globe3D({ markers, selectedId, onSelect }) {
       style: "https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json",
       center: [100.55, 13.746],
       zoom: 1.6,
-      pitch: 0,
+      pitch: 25,
+      maxPitch: 85,
       projection: "globe",
       attributionControl: { compact: true },
     });
     mapRef.current = map;
     popupRef.current = new maplibregl.Popup({ closeButton: true, closeOnClick: true, maxWidth: "260px" });
 
-    map.on("load", () => {
+    const applyGlobe = () => {
       try { map.setProjection({ type: "globe" }); } catch (e) {}
+      try {
+        map.setFog({
+          range: [1, 10],
+          color: "#0a0a0a",
+          "high-color": "#1a1a1a",
+          "horizon-blend": 0.12,
+          "space-color": "#000000",
+          "star-intensity": 0.45,
+        });
+      } catch (e) {}
+    };
+    map.on("load", () => {
+      applyGlobe();
+      map.on("style.load", applyGlobe);
       map.addSource("ooh-markers", { type: "geojson", data: dataRef.current });
       map.addLayer({
         id: "ooh-markers",
