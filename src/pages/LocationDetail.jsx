@@ -116,7 +116,7 @@ export default function LocationDetail() {
           <div className="flex flex-col gap-4">
             {loc.image_url ? (
               <div className="relative aspect-[4/3] overflow-hidden border border-slate2">
-                <Image src={loc.image_url} alt={loc.title} className="h-full w-full" fittingType="fill" />
+                <Image src={loc.image_url} alt={loc.title} className="h-full w-full object-cover" fittingType="fill" />
               </div>
             ) : (
               <div className="flex aspect-[4/3] items-center justify-center border border-slate2 grid-bg">

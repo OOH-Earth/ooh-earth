@@ -6,7 +6,7 @@ import seedMarkers from "@/components/ooh/mapSeed";
 export default function GlobeSection() {
   return (
     <section className="relative h-[58vh] min-h-[360px] w-full overflow-hidden border-b border-slate2/60 bg-void">
-      <Globe3D markers={seedMarkers} interactive={false} spin />
+      <Globe3D markers={seedMarkers} />
       <div className="pointer-events-none absolute inset-x-0 top-0 z-[1001] flex items-center justify-between px-5 py-4">
         <span className="flex items-center gap-2">
           <Globe className="h-3.5 w-3.5 text-ozone" />
