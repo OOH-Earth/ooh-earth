@@ -1,4 +1,5 @@
 import { MapPin, Hand } from "lucide-react";
+import { Link } from "react-router-dom";
 import LocationThumb, { metaFor } from "@/components/ooh/map/LocationThumb";
 
 export default function LocationCard({ m, selected, onSelect, onHover, onHoverEnd, claim, onClaim }) {
@@ -46,7 +47,14 @@ export default function LocationCard({ m, selected, onSelect, onHover, onHoverEn
             <MapPin className="h-3 w-3 shrink-0" />
             {m.address || `${m.lat?.toFixed(3)}, ${m.lng?.toFixed(3)}`}
           </span>
-          <span className="hidden shrink-0 items-center uppercase tracking-[0.15em] text-ozone group-hover:inline-flex">fly →</span>
+          <Link
+            to={`/location/${m.id}`}
+            state={m}
+            onClick={(e) => e.stopPropagation()}
+            className="hidden shrink-0 items-center uppercase tracking-[0.15em] text-ozone group-hover:inline-flex hover:text-flare"
+          >
+            page →
+          </Link>
         </div>
         {claim && (
           <div className="mt-1 font-mono text-[8px] uppercase tracking-[0.15em] text-ozone/70">// claimed · {claim.status}</div>
