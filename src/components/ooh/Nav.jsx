@@ -17,6 +17,7 @@ export default function Nav({ onCommand }) {
           <a href="#mandate" className="transition-colors hover:text-ozone">Mandate</a>
           <a href="#atlas" className="transition-colors hover:text-ozone">Atlas</a>
           <Link to="/map" className="transition-colors hover:text-ozone">Maps</Link>
+          <Link to="/inhome" className="transition-colors hover:text-ozone">In-Home</Link>
           <Link to="/report" className="transition-colors hover:text-ozone">Report</Link>
           <Link to="/ar" className="flex items-center gap-1 text-ozone transition-colors hover:text-flare">
             <ScanLine className="h-3 w-3" /> AR Lens

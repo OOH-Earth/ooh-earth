@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { base44 } from "@/api/base44Client";
-import { Zap, MapPin, BadgeCheck, Users, Building2, DollarSign } from "lucide-react";
+import { Zap, MapPin, BadgeCheck, Users, Building2, DollarSign, Monitor } from "lucide-react";
 
 // Live streaming "Field Pulse" strip for the orbital HUD — connects atlas,
 // leaderboard points, operatives, funding and live crypto into one ticker.
@@ -16,6 +16,7 @@ export default function FieldStatsHud() {
         const s = res.data || {};
         if (s.points != null) out.push({ icon: Zap, label: "RESISTANCE", value: `${Number(s.points).toLocaleString()} PTS`, accent: "text-ozone" });
         if (s.reports != null) out.push({ icon: MapPin, label: "LOCATIONS", value: s.reports });
+        if (s.digital_busts != null) out.push({ icon: Monitor, label: "DIGITAL", value: s.digital_busts, accent: "text-ozone" });
         if (s.verified != null) out.push({ icon: BadgeCheck, label: "VERIFIED", value: s.verified, accent: "text-[#39FF14]" });
         if (s.operatives != null) out.push({ icon: Users, label: "OPERATIVES", value: s.operatives });
         if (s.cities != null) out.push({ icon: Building2, label: "CITIES", value: s.cities, accent: "text-flare" });

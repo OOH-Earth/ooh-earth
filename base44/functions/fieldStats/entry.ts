@@ -5,9 +5,10 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
-    const [locs, leads] = await Promise.all([
+    const [locs, leads, busts] = await Promise.all([
       base44.asServiceRole.entities.Location.list('-created_date', 500),
       base44.asServiceRole.entities.FundingLead.list('-created_date', 200),
+      base44.asServiceRole.entities.DigitalBust.list('-created_date', 200),
     ]);
 
     const active = (locs || []).filter((r) => r.status !== 'rejected');
@@ -25,6 +26,7 @@ Deno.serve(async (req) => {
       if (parts.length) cities.add(parts[parts.length - 1]);
     }
     const raised = (leads || []).reduce((s, l) => s + (Number(l.amount) || 0), 0);
+    const digitalBusts = (busts || []).filter((r) => r.status !== 'rejected').length;
 
     return Response.json({
       reports: active.length,
@@ -34,6 +36,7 @@ Deno.serve(async (req) => {
       points,
       raised,
       donors: (leads || []).length,
+      digital_busts: digitalBusts,
     });
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });

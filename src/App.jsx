@@ -20,6 +20,7 @@ import Campaign from '@/pages/Campaign';
 import ArLens from '@/pages/ArLens';
 import TrueCost from '@/pages/TrueCost';
 import TrashId from '@/pages/TrashId';
+import InHome from '@/pages/InHome';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -58,6 +59,7 @@ const AuthenticatedApp = () => {
     <Route path="/ar" element={<ArLens />} />
     <Route path="/scan" element={<TrueCost />} />
     <Route path="/trash" element={<TrashId />} />
+    <Route path="/inhome" element={<InHome />} />
     <Route element={<ProtectedRoute unauthenticatedElement={<Navigate to="/login" replace />} />}>
       <Route path="/dashboard" element={<Dashboard />} />
     </Route>

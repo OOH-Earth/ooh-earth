@@ -1,0 +1,82 @@
+{
+  "name": "DigitalBust",
+  "type": "object",
+  "properties": {
+    "platform": {
+      "type": "string",
+      "enum": [
+        "metaverse_game",
+        "ar_layer",
+        "browser",
+        "social_feed",
+        "streaming",
+        "other"
+      ],
+      "default": "other",
+      "description": "Digital surface class"
+    },
+    "platform_name": {
+      "type": "string",
+      "description": "App/game, e.g. Roblox, Decentraland, Chrome, Instagram, YouTube"
+    },
+    "surface": {
+      "type": "string",
+      "description": "e.g. in-game billboard, AR lens, banner ad, sponsored post, pre-roll"
+    },
+    "target_brand": {
+      "type": "string"
+    },
+    "method": {
+      "type": "string",
+      "enum": [
+        "overlay",
+        "replace",
+        "hijack",
+        "projection",
+        "counter"
+      ],
+      "default": "overlay"
+    },
+    "region": {
+      "type": "string",
+      "description": "Virtual context: URL, game region, app screen"
+    },
+    "proof_url": {
+      "type": "string"
+    },
+    "notes": {
+      "type": "string"
+    },
+    "reach": {
+      "type": "number",
+      "description": "Estimated impressions reached"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "verified",
+        "rejected"
+      ],
+      "default": "pending"
+    }
+  },
+  "required": [
+    "platform",
+    "target_brand"
+  ],
+  "rls": {
+    "read": {},
+    "create": {},
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}
