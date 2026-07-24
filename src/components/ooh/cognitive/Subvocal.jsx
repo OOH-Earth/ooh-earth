@@ -31,7 +31,9 @@ export default function Subvocal() {
         ? e.target.closest('button, a, [role="button"], [data-tactile]')
         : null;
       if (!el || el === lastEl) return;
-      const label = (el.getAttribute("aria-label") || el.textContent || "").trim();
+      const raw = (el.getAttribute("aria-label") || el.textContent || "").trim();
+      // strip a leading numeric index (e.g. "01 Home") so menu numbers aren't vocalised
+      const label = raw.replace(/^\d{1,3}[\s.\-)]?\s*/, "").trim() || raw;
       if (!label || label.length > 40) return;
       const now = performance.now();
       if (label === lastLabel && now - last < 4000) return;
