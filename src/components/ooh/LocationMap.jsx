@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef } from "react";
 import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
+import { Link } from "react-router-dom";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 
@@ -140,6 +141,12 @@ export default function LocationMap({ markers, selectedId, hoverId, onSelect, us
                   >
                     Directions ↗
                   </a>
+                  <Link
+                    to={`/location/${m.id}`}
+                    style={{ fontSize: 9, textTransform: "uppercase", letterSpacing: "0.15em", color: "#EDFF00", textDecoration: "none" }}
+                  >
+                    Page ↗
+                  </Link>
                   {m.link && (
                     <a
                       href={m.link}
