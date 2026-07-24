@@ -31,6 +31,7 @@ export default function GlobeHud({ map }) {
   const [elapsed, setElapsed] = useState("00:00:00");
   const [tel, setTel] = useState({ lng: 100.55, lat: 13.746, bearing: 0, pitch: 0, zoom: 1.6, span: 0 });
   const startRef = useRef(Date.now());
+  const [showAir, setShowAir] = useState(true);
 
   // PM2.5 — Open-Meteo Air Quality (free, no key)
   useEffect(() => {
@@ -120,39 +121,48 @@ export default function GlobeHud({ map }) {
       </div>
 
       {/* TR: PM2.5 air commons panel */}
-      <div data-tour="hud-pm25" className="pointer-events-auto absolute right-3 top-16 w-[230px]">
-        <div className="border border-slate2/70 bg-void/70 backdrop-blur-md">
-          <div className="flex items-center justify-between border-b border-slate2/60 px-3 py-1.5">
-            <span className="text-ozone">AIR COMMONS · PM2.5</span>
-            <span className="text-dim">{pm ? pm.length : 0} STN</span>
-          </div>
-          <div className="px-3 py-1.5">
-            <div className="flex justify-between text-[9px] text-dim">
-              <span>WHO 24H ≤ {WHO_PM25} µg/m³</span>
-              <span className="text-flare">{overWHO} OVER</span>
+      {showAir ? (
+        <div data-tour="hud-pm25" className="pointer-events-auto absolute right-3 top-16 w-[230px]">
+          <div className="border border-slate2/70 bg-void/70 backdrop-blur-md">
+            <div className="flex items-center justify-between border-b border-slate2/60 px-3 py-1.5">
+              <span className="text-ozone">AIR COMMONS · PM2.5</span>
+              <div className="flex items-center gap-2">
+                <span className="text-dim">{pm ? pm.length : 0} STN</span>
+                <button onClick={() => setShowAir(false)} aria-label="Hide Air Commons" className="text-dim transition-colors hover:text-flare">✕</button>
+              </div>
+            </div>
+            <div className="px-3 py-1.5">
+              <div className="flex justify-between text-[9px] text-dim">
+                <span>WHO 24H ≤ {WHO_PM25} µg/m³</span>
+                <span className="text-flare">{overWHO} OVER</span>
+              </div>
+            </div>
+            <div className="max-h-[210px] overflow-y-auto px-3 pb-2">
+              {pm === null ? (
+                <div className="py-2 text-dim">// acquiring air data…</div>
+              ) : (
+                pm.map((p, i) => {
+                  const b = pmBand(p.v);
+                  return (
+                    <div key={i} className="flex items-center gap-2 py-0.5">
+                      <span className="w-16 truncate text-[9px] text-silver/80">{p.name}</span>
+                      <span className={`w-9 text-right ${b.text}`}>{p.v != null ? p.v.toFixed(0) : "--"}</span>
+                      <span className="h-1 flex-1 bg-slate2/50">
+                        <span className={`block h-full ${b.bar}`} style={{ width: `${b.w * 100}%` }} />
+                      </span>
+                      <span className={`w-[56px] text-right text-[8px] ${b.text}`}>{b.label}</span>
+                    </div>
+                  );
+                })
+              )}
             </div>
           </div>
-          <div className="max-h-[210px] overflow-y-auto px-3 pb-2">
-            {pm === null ? (
-              <div className="py-2 text-dim">// acquiring air data…</div>
-            ) : (
-              pm.map((p, i) => {
-                const b = pmBand(p.v);
-                return (
-                  <div key={i} className="flex items-center gap-2 py-0.5">
-                    <span className="w-16 truncate text-[9px] text-silver/80">{p.name}</span>
-                    <span className={`w-9 text-right ${b.text}`}>{p.v != null ? p.v.toFixed(0) : "--"}</span>
-                    <span className="h-1 flex-1 bg-slate2/50">
-                      <span className={`block h-full ${b.bar}`} style={{ width: `${b.w * 100}%` }} />
-                    </span>
-                    <span className={`w-[56px] text-right text-[8px] ${b.text}`}>{b.label}</span>
-                  </div>
-                );
-              })
-            )}
-          </div>
         </div>
-      </div>
+      ) : (
+        <button onClick={() => setShowAir(true)} className="pointer-events-auto absolute right-3 top-16 border border-slate2/70 bg-void/70 px-2.5 py-1.5 text-ozone backdrop-blur-md transition-colors hover:border-ozone">
+          AIR
+        </button>
+      )}
     </div>
   );
 }
