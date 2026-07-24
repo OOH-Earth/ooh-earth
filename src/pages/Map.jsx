@@ -151,7 +151,7 @@ export default function Map() {
           </div>
 
           <div data-tour="map" className={`relative min-h-0 ${mapClass}`}>
-            <div className="absolute left-4 top-4 z-[1000] flex border border-slate2 bg-void/80 backdrop-blur-md">
+            <div className="absolute bottom-4 left-1/2 z-[1000] flex -translate-x-1/2 border border-slate2 bg-void/80 backdrop-blur-md lg:bottom-auto lg:left-4 lg:top-4 lg:translate-x-0">
               <button
                 onClick={() => setView("flat")}
                 className={`flex items-center gap-1.5 px-3 py-2 font-mono text-[10px] font-bold uppercase tracking-[0.25em] transition-colors ${view === "flat" ? "bg-ozone text-void" : "text-darkgray hover:text-ozone"}`}
