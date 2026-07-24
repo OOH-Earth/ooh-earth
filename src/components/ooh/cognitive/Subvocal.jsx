@@ -18,8 +18,10 @@ export default function Subvocal() {
     return () => window.removeEventListener("ooh-subvocal", onVocal);
   }, [speak]);
 
-  // gentle hover-speak on interactive elements — never repeats while you stay
-  // on the same element, and won't re-whisper an identical label back-to-back
+  // haptic-level digital "voice" on hover — a short tactile chirp whose pitch
+  // shifts with the element's label, instead of spoken words. Never repeats
+  // while you stay on the same element, and won't re-chirp an identical label
+  // back-to-back.
   useEffect(() => {
     let last = 0;
     let lastEl = null;
@@ -36,7 +38,10 @@ export default function Subvocal() {
       last = now;
       lastEl = el;
       lastLabel = label;
-      speak(label);
+      // derive a deterministic pitch from the label so each element feels distinct
+      const freq = 380 + (label.charCodeAt(0) % 26) * 22;
+      blip(freq, 0.07, "square", 0.05);
+      setTimeout(() => blip(freq * 1.5, 0.05, "square", 0.035), 70);
     };
     const onOut = (e) => {
       const el = e.target instanceof Element
@@ -50,7 +55,7 @@ export default function Subvocal() {
       document.removeEventListener("mouseover", onOver);
       document.removeEventListener("mouseout", onOut);
     };
-  }, [speak]);
+  }, [blip]);
 
   return null;
 }
