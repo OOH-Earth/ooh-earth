@@ -64,6 +64,48 @@
     --c-ozone: 176 134 11;
     --c-flare: 255 92 0;
   }
+
+  /* Matrix theme — cyberpunk green-on-black with magenta flare */
+  .matrix {
+    --background: 120 50% 3%;
+    --foreground: 130 100% 55%;
+    --card: 120 30% 5%;
+    --card-foreground: 130 100% 55%;
+    --popover: 120 30% 5%;
+    --popover-foreground: 130 100% 55%;
+    --primary: 130 100% 55%;
+    --primary-foreground: 0 0% 0%;
+    --secondary: 120 30% 9%;
+    --secondary-foreground: 130 100% 55%;
+    --muted: 120 30% 9%;
+    --muted-foreground: 120 50% 38%;
+    --accent: 130 100% 55%;
+    --accent-foreground: 0 0% 0%;
+    --destructive: 330 100% 55%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 120 60% 14%;
+    --input: 120 60% 14%;
+    --ring: 130 100% 55%;
+    --flare: 330 100% 55%;
+    --c-void: 0 0 0;
+    --c-silver: 0 255 85;
+    --c-slate2: 0 90 48;
+    --c-dim: 0 150 75;
+    --c-darkgray: 0 190 100;
+    --c-ozone: 0 255 85;
+    --c-flare: 255 0 200;
+  }
+  .matrix body {
+    background-color: hsl(120 50% 3%);
+    background-image:
+      linear-gradient(rgba(0, 255, 85, 0.05) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0, 255, 85, 0.05) 1px, transparent 1px);
+    background-size: 32px 32px;
+  }
+  .matrix ::selection {
+    background-color: #00ff55;
+    color: #000;
+  }
 }
 
 @layer base {
