@@ -5,12 +5,12 @@ import useSoundscape from "@/hooks/useSoundscape";
 import { MapPin, Hand, Monitor, Coins, UserPlus, BadgeCheck, Radio } from "lucide-react";
 
 const TYPES = {
-  report: { icon: MapPin, label: "Offense logged", color: "text-ozone", dot: "#EDFF00" },
+  report: { icon: MapPin, label: "Offense logged", color: "text-ozone", dot: "rgb(var(--c-ozone))" },
   claim: { icon: Hand, label: "Lead adopted", color: "text-flare", dot: "#FF5C00" },
   bust: { icon: Monitor, label: "Digital bust", color: "text-flare", dot: "#FF5C00" },
   donate: { icon: Coins, label: "Treasury inflow", color: "text-[#39FF14]", dot: "#39FF14" },
   operative: { icon: UserPlus, label: "Operative onboard", color: "text-[#1F51FF]", dot: "#1F51FF" },
-  verify: { icon: BadgeCheck, label: "Site verified", color: "text-ozone", dot: "#EDFF00" },
+  verify: { icon: BadgeCheck, label: "Site verified", color: "text-ozone", dot: "rgb(var(--c-ozone))" },
 };
 
 const CITIES = ["Bangkok", "São Paulo", "London", "Manila", "Jakarta", "Lagos", "Berlin", "Mexico City", "Mumbai", "Athens", "Seoul", "Cairo"];

@@ -16,7 +16,7 @@ export default function Nav({ onCommand }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const { startTour } = useWalkthrough();
   return (
-    <header className="fixed inset-x-0 top-0 z-50 border-b border-white/5 bg-void/70 backdrop-blur-md" style={{ paddingTop: "env(safe-area-inset-top)" }}>
+    <header className="fixed inset-x-0 top-0 z-50 border-b border-border bg-card/85 shadow-sm backdrop-blur-md" style={{ paddingTop: "env(safe-area-inset-top)" }}>
       <div className="flex items-center justify-between gap-2 px-3 py-3 md:px-8 md:py-4">
         <div className="flex items-center gap-2">
           <ClimateClock />
