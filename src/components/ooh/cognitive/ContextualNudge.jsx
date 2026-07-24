@@ -5,7 +5,6 @@ import { X, ArrowRight } from "lucide-react";
 // Route-aware next-action suggestions — progressive disclosure of the logical next step.
 const ROUTE_HINTS = {
   "/": [
-    { id: "home_atlas", label: "Survey the resistance atlas", to: "/map" },
     { id: "home_report", label: "Log a field bust", to: "/report" },
   ],
   "/map": [{ id: "map_report", label: "Document a new billboard", to: "/report" }],
