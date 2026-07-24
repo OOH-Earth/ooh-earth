@@ -218,12 +218,12 @@ function ClusteredMarkers({ pins, selectedId, onSelect }) {
             const rows = Object.entries(tally).sort((a, b) => b[1] - a[1]);
             return (
               <div style={{ fontFamily: "'Inter Tight', sans-serif", minWidth: 96 }}>
-                <div style={{ fontSize: 8, letterSpacing: "0.2em", textTransform: "uppercase", color: "#EDFF00", fontWeight: 700 }}>Cluster · {c.g.items.length} spots</div>
+                <div style={{ fontSize: 8, letterSpacing: "0.2em", textTransform: "uppercase", color: "rgb(var(--c-ozone))", fontWeight: 700 }}>Cluster · {c.g.items.length} spots</div>
                 <div style={{ marginTop: 4, display: "grid", gap: 2 }}>
                   {rows.map(([t, n]) => (
-                    <div key={t} style={{ display: "flex", justifyContent: "space-between", fontSize: 10, color: "#F1F1F1" }}>
-                      <span style={{ color: "#B2B2B2", textTransform: "capitalize" }}>{t}</span>
-                      <span style={{ fontFamily: "monospace", fontWeight: 700, color: "#EDFF00" }}>{n}</span>
+                    <div key={t} style={{ display: "flex", justifyContent: "space-between", fontSize: 10, color: "hsl(var(--foreground))" }}>
+                      <span style={{ color: "hsl(var(--muted-foreground))", textTransform: "capitalize" }}>{t}</span>
+                      <span style={{ fontFamily: "monospace", fontWeight: 700, color: "rgb(var(--c-ozone))" }}>{n}</span>
                     </div>
                   ))}
                 </div>

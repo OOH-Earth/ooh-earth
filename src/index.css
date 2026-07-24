@@ -369,6 +369,29 @@
 .leaflet-popup-close-button:hover { color: #EDFF00 !important; }
 .leaflet-container a.leaflet-popup-close-button { width: 20px; height: 20px; }
 
+/* Leaflet tooltip — theme-aware chrome (matches popup) */
+.leaflet-tooltip {
+  background: #0a0a0a;
+  color: hsl(var(--foreground));
+  border: 1px solid rgba(241, 241, 241, 0.08);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
+  font-family: 'Inter Tight', sans-serif;
+}
+.light .leaflet-tooltip {
+  background: #f7f7f7;
+  color: hsl(var(--foreground));
+  border-color: rgba(0, 0, 0, 0.08);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.18);
+}
+.leaflet-tooltip-top::before { border-top-color: #0a0a0a !important; }
+.leaflet-tooltip-bottom::before { border-bottom-color: #0a0a0a !important; }
+.leaflet-tooltip-left::before { border-left-color: #0a0a0a !important; }
+.leaflet-tooltip-right::before { border-right-color: #0a0a0a !important; }
+.light .leaflet-tooltip-top::before { border-top-color: #f7f7f7 !important; }
+.light .leaflet-tooltip-bottom::before { border-bottom-color: #f7f7f7 !important; }
+.light .leaflet-tooltip-left::before { border-left-color: #f7f7f7 !important; }
+.light .leaflet-tooltip-right::before { border-right-color: #f7f7f7 !important; }
+
 /* MapLibre GL popup — theme-aware chrome */
 .maplibregl-popup { --pp-bg: #0a0a0a; }
 .light .maplibregl-popup { --pp-bg: #f7f7f7; }
