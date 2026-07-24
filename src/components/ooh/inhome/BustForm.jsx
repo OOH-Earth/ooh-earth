@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Loader2 } from "lucide-react";
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
 import { PLATFORMS, METHODS } from "./digitalConfig";
 
 const empty = {
@@ -68,15 +69,16 @@ export default function BustForm({ open, onClose, onCreated }) {
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
               <Label className={field}>Platform</Label>
-              <select
-                value={form.platform}
-                onChange={(e) => set("platform", e.target.value)}
-                className="w-full border border-slate2 bg-void px-3 py-2 font-mono text-sm text-silver outline-none focus:border-ozone"
-              >
-                {PLATFORMS.map((p) => (
-                  <option key={p.id} value={p.id}>{p.label}</option>
-                ))}
-              </select>
+              <Select value={form.platform} onValueChange={(v) => set("platform", v)}>
+                <SelectTrigger className="w-full border border-slate2 bg-void px-3 py-2 font-mono text-sm text-silver outline-none focus:border-ozone">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {PLATFORMS.map((p) => (
+                    <SelectItem key={p.id} value={p.id}>{p.label}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
             <div className="space-y-1.5">
               <Label className={field}>App / game</Label>
@@ -90,15 +92,16 @@ export default function BustForm({ open, onClose, onCreated }) {
             </div>
             <div className="space-y-1.5">
               <Label className={field}>Method</Label>
-              <select
-                value={form.method}
-                onChange={(e) => set("method", e.target.value)}
-                className="w-full border border-slate2 bg-void px-3 py-2 font-mono text-sm text-silver outline-none focus:border-ozone"
-              >
-                {METHODS.map((m) => (
-                  <option key={m.id} value={m.id}>{m.label}</option>
-                ))}
-              </select>
+              <Select value={form.method} onValueChange={(v) => set("method", v)}>
+                <SelectTrigger className="w-full border border-slate2 bg-void px-3 py-2 font-mono text-sm text-silver outline-none focus:border-ozone">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {METHODS.map((m) => (
+                    <SelectItem key={m.id} value={m.id}>{m.label}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
           </div>
           <div className="space-y-1.5">

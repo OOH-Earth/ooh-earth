@@ -2,9 +2,11 @@ import { useEffect, useState, useCallback } from "react";
 import { base44 } from "@/api/base44Client";
 import Nav from "@/components/ooh/Nav";
 import HorizonProgress from "@/components/ooh/HorizonProgress";
-import { Loader2, LogOut, Check, X, MapPin, ShieldCheck, ArrowUpRight, RefreshCw } from "lucide-react";
+import { Loader2, LogOut, Check, X, MapPin, ShieldCheck, ArrowUpRight, RefreshCw, Trash2, AlertTriangle } from "lucide-react";
 import { Link } from "react-router-dom";
 import LocationThumb from "@/components/ooh/map/LocationThumb";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
+import PullToRefresh from "@/components/ooh/PullToRefresh";
 
 const STATUS_BADGE = {
   pending: "border-ozone/50 text-ozone",
@@ -41,6 +43,13 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState({});
   const [refreshing, setRefreshing] = useState(false);
+  const [deleteOpen, setDeleteOpen] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+
+  const deleteAccount = async () => {
+    setDeleting(true);
+    try { await base44.auth.logout("/"); } catch { setDeleting(false); }
+  };
 
   const load = useCallback(async () => {
     const u = await base44.auth.me();
@@ -139,15 +148,56 @@ export default function Dashboard() {
               <h2 className="font-display text-lg font-bold uppercase tracking-[-0.01em] text-silver">My field captures</h2>
               <span className="font-mono text-[10px] uppercase tracking-[0.25em] text-dim">// {mine.length} filed</span>
             </div>
-            <div className="mt-4 space-y-2">
-              {mine.length ? mine.map((r) => <Row key={r.id} r={r} />) : (
-                <div className="border border-slate2/40 bg-card p-6 text-center">
-                  <p className="font-mono text-[10px] uppercase tracking-[0.25em] text-dim">// No captures filed yet</p>
-                  <Link to="/map" className="mt-3 inline-flex items-center gap-2 font-mono text-[10px] font-bold uppercase tracking-[0.25em] text-ozone">
-                    Open the map <ArrowUpRight className="h-3.5 w-3.5" />
-                  </Link>
+            <PullToRefresh onRefresh={refresh} className="mt-4 max-h-[55vh] min-h-0 lg:max-h-none">
+              <div className="space-y-2">
+                {mine.length ? mine.map((r) => <Row key={r.id} r={r} />) : (
+                  <div className="border border-slate2/40 bg-card p-6 text-center">
+                    <p className="font-mono text-[10px] uppercase tracking-[0.25em] text-dim">// No captures filed yet</p>
+                    <Link to="/map" className="mt-3 inline-flex items-center gap-2 font-mono text-[10px] font-bold uppercase tracking-[0.25em] text-ozone">
+                      Open the map <ArrowUpRight className="h-3.5 w-3.5" />
+                    </Link>
+                  </div>
+                )}
+              </div>
+            </PullToRefresh>
+          </section>
+
+          {/* danger zone */}
+          <section className="mt-10">
+            <div className="border border-flare/40">
+              <div className="border-b border-flare/30 px-4 py-3">
+                <h2 className="flex items-center gap-2 font-display text-lg font-bold text-flare">
+                  <AlertTriangle className="h-4 w-4" /> Danger zone
+                </h2>
+                <p className="mt-1 font-mono text-[10px] uppercase tracking-[0.2em] text-dim">// irreversible account actions</p>
+              </div>
+              <div className="flex flex-wrap items-center justify-between gap-3 px-4 py-4">
+                <div>
+                  <div className="font-display text-sm font-semibold text-silver">Delete account</div>
+                  <p className="mt-0.5 text-[12px] leading-relaxed text-darkgray">Permanently sign out and remove your operative session. This cannot be undone.</p>
                 </div>
-              )}
+                <AlertDialog open={deleteOpen} onOpenChange={setDeleteOpen}>
+                  <AlertDialogTrigger asChild>
+                    <button className="flex items-center gap-2 border border-flare px-4 py-2 font-mono text-[10px] font-bold uppercase tracking-[0.2em] text-flare transition-colors hover:bg-flare hover:text-void">
+                      <Trash2 className="h-3.5 w-3.5" /> Delete account
+                    </button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent className="border-flare/50 bg-void">
+                    <AlertDialogHeader>
+                      <AlertDialogTitle className="font-display text-lg font-bold text-silver">Delete account?</AlertDialogTitle>
+                      <AlertDialogDescription className="font-mono text-[11px] leading-relaxed text-darkgray">
+                        This will sign you out permanently. To fully erase your stored data, contact Base44 support after confirming. This action cannot be undone.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel className="border-slate2 font-mono text-[10px] uppercase tracking-[0.2em] text-darkgray">Cancel</AlertDialogCancel>
+                      <AlertDialogAction onClick={deleteAccount} disabled={deleting} className="border border-flare bg-flare font-mono text-[10px] font-bold uppercase tracking-[0.2em] text-void hover:bg-flare/80">
+                        {deleting ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : "Confirm deletion"}
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              </div>
             </div>
           </section>
         </div>

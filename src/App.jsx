@@ -10,6 +10,7 @@ import ScrollToTop from './components/ScrollToTop';
 import CrtOverlay from '@/components/ooh/CrtOverlay';
 import TvStatic from '@/components/ooh/TvStatic';
 import CognitiveLayer from '@/components/ooh/cognitive/CognitiveLayer';
+import MobileBottomTabs from '@/components/ooh/MobileBottomTabs';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import { WalkthroughProvider } from '@/lib/walkthroughContext';
 // Add page imports here
@@ -118,6 +119,7 @@ function App() {
             <CrtOverlay />
             <TvStatic />
             <CognitiveLayer />
+            <MobileBottomTabs />
           </WalkthroughProvider>
         </Router>
         <Toaster />

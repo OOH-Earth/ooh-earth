@@ -170,6 +170,18 @@
     overflow-x: hidden;
     line-height: 1.6;
     letter-spacing: -0.005em;
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  /* Mobile-native feel — no text selection / callouts on interactive chrome */
+  button,
+  a,
+  nav,
+  [role="button"],
+  summary {
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-touch-callout: none;
   }
 
   p {
@@ -314,6 +326,10 @@
 }
 .animate-blink {
   animation: blink 1.1s steps(1) infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
 }
 
 /* Pin selection pulse — V2 map marker */

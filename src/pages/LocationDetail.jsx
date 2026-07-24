@@ -6,6 +6,7 @@ import { metaFor } from "@/components/ooh/map/LocationThumb";
 import { keyInfo, isKeyedType, ACCESS_KEYS } from "@/components/ooh/accessKeys";
 import seed from "@/components/ooh/mapSeed";
 import Nav from "@/components/ooh/Nav";
+import MobileHeader from "@/components/ooh/MobileHeader";
 import { Image } from "@/components/ui/image";
 
 function normalizeSeed(rec) {
@@ -86,8 +87,9 @@ export default function LocationDetail() {
   return (
     <div className="min-h-screen bg-void text-silver">
       <Nav />
+      <MobileHeader to="/map" label="Atlas" />
       <main className="mx-auto max-w-5xl px-5 pb-24 pt-24 md:pt-28">
-        <Link to="/map" className="mb-6 inline-flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.25em] text-dim transition-colors hover:text-ozone">
+        <Link to="/map" className="mb-6 hidden items-center gap-2 font-mono text-[10px] uppercase tracking-[0.25em] text-dim transition-colors hover:text-ozone lg:inline-flex">
           <ArrowLeft className="h-3.5 w-3.5" /> Atlas
         </Link>
 

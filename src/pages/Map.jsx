@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { base44 } from "@/api/base44Client";
 import Nav from "@/components/ooh/Nav";
 import LocationMap from "@/components/ooh/LocationMap";
@@ -12,6 +12,7 @@ import { useWalkthrough } from "@/lib/walkthroughContext";
 import UnitFinder from "@/components/ooh/UnitFinder";
 import QuickCapture from "@/components/ooh/QuickCapture";
 import Globe3D from "@/components/ooh/Globe3D";
+import PullToRefresh from "@/components/ooh/PullToRefresh";
 import ClaimLeadDialog from "@/components/ooh/map/ClaimLeadDialog";
 import SpecsBar from "@/components/ooh/uikit/pinlab/SpecsBar";
 import { OOH_FUTURES } from "@/components/ooh/map/futures";
@@ -68,20 +69,19 @@ export default function Map() {
   const [claims, setClaims] = useState([]);
   const [claimTarget, setClaimTarget] = useState(null);
 
+  const reloadLocations = useCallback(async () => {
+    try {
+      const recs = await base44.entities.Location.list("-created_date", 500);
+      const markers = (recs || []).filter((r) => r.status !== "rejected").map(toMarker);
+      setRaw(markers.length ? { markers, live: true } : { markers: seedMarkers, live: false });
+    } catch (e) {
+      setRaw({ markers: seedMarkers, live: false });
+    }
+  }, []);
+
   useEffect(() => {
     let cancelled = false;
-    (async () => {
-      try {
-        const recs = await base44.entities.Location.list("-created_date", 500);
-        if (!cancelled) {
-          const markers = (recs || []).filter((r) => r.status !== "rejected").map(toMarker);
-          if (markers.length) setRaw({ markers, live: true });
-          else setRaw({ markers: seedMarkers, live: false });
-        }
-      } catch (e) {
-        if (!cancelled) setRaw({ markers: seedMarkers, live: false });
-      }
-    })();
+    reloadLocations().then(() => {});
 
     const unsub = base44.entities.Location.subscribe((event) => {
       setRaw((cur) => {
@@ -211,15 +211,17 @@ export default function Map() {
             <div className="flex items-center justify-between border-b border-slate2/60 px-4 py-2">
               <span className="font-mono text-[10px] uppercase tracking-[0.25em] text-dim">// {filtered.length} results {leads > 0 && <span className="text-flare/80">· {leads} leads</span>}</span>
             </div>
-            <div className="min-h-0 flex-1 overflow-y-auto">
-              {filtered.length ? (
-                filtered.map((m) => (
-                  <LocationCard key={m.id} m={m} selected={selectedId === m.id} onSelect={(x) => setSelectedId(x.id)} onHover={(x) => setHoverId(x.id)} onHoverEnd={() => setHoverId(null)} claim={claimsByLoc[m.id]} onClaim={setClaimTarget} />
-                ))
-              ) : (
-                <div className="p-6 text-center font-mono text-[10px] uppercase tracking-[0.25em] text-dim">// No matches</div>
-              )}
-            </div>
+            <PullToRefresh onRefresh={reloadLocations} className="min-h-0 flex-1">
+              <div className="space-y-px">
+                {filtered.length ? (
+                  filtered.map((m) => (
+                    <LocationCard key={m.id} m={m} selected={selectedId === m.id} onSelect={(x) => setSelectedId(x.id)} onHover={(x) => setHoverId(x.id)} onHoverEnd={() => setHoverId(null)} claim={claimsByLoc[m.id]} onClaim={setClaimTarget} />
+                  ))
+                ) : (
+                  <div className="p-6 text-center font-mono text-[10px] uppercase tracking-[0.25em] text-dim">// No matches</div>
+                )}
+              </div>
+            </PullToRefresh>
           </div>
 
           <div data-tour="map" className={`relative min-h-0 ${mapClass}`}>

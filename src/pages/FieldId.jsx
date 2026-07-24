@@ -4,6 +4,7 @@ import FieldIdCard from "@/components/ooh/fieldid/FieldIdCard";
 import FieldIdBack from "@/components/ooh/fieldid/FieldIdBack";
 import { base44 } from "@/api/base44Client";
 import { IdCard, Printer, Radio } from "lucide-react";
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
 
 const TIERS = ["recruit", "field", "veteran", "legend"];
 
@@ -70,12 +71,14 @@ export default function FieldId() {
               </Field>
               {ops.length > 0 && (
                 <Field label="Or load from roster">
-                  <select className={inputCls} value="" onChange={(e) => e.target.value && loadFromRoster(e.target.value)}>
-                    <option value="">— select operative —</option>
-                    {ops.map((o) => (
-                      <option key={o.id} value={o.handle}>{o.handle} · {o.tier}</option>
-                    ))}
-                  </select>
+                  <Select value="" onValueChange={(v) => v && loadFromRoster(v)}>
+                    <SelectTrigger className={inputCls}><SelectValue placeholder="— select operative —" /></SelectTrigger>
+                    <SelectContent>
+                      {ops.map((o) => (
+                        <SelectItem key={o.id} value={o.handle}>{o.handle} · {o.tier}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </Field>
               )}
               <div className="grid grid-cols-2 gap-3">
@@ -84,9 +87,12 @@ export default function FieldId() {
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <Field label="Tier">
-                  <select className={inputCls} value={op.tier} onChange={(e) => set("tier", e.target.value)}>
-                    {TIERS.map((t) => <option key={t} value={t}>{t}</option>)}
-                  </select>
+                  <Select value={op.tier} onValueChange={(v) => set("tier", v)}>
+                    <SelectTrigger className={inputCls}><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      {TIERS.map((t) => <SelectItem key={t} value={t}>{t}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
                 </Field>
                 <Field label="Points"><input type="number" className={inputCls} value={op.points} onChange={(e) => set("points", Number(e.target.value))} /></Field>
               </div>
