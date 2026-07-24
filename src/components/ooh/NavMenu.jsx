@@ -16,6 +16,7 @@ const SITEMAP = [
     group: "Field Ops",
     items: [
       { to: "/map", label: "Maps" },
+      { to: "/bus-stops", label: "Bus Stops" },
       { to: "/report", label: "Report" },
       { to: "/ar", label: "AR Lens" },
       { to: "/inhome", label: "In-Home" },

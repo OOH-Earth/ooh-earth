@@ -30,6 +30,8 @@ import FieldId from '@/pages/FieldId';
 import SuperCard from '@/pages/SuperCard';
 import Channel from '@/pages/Channel';
 import LocationDetail from '@/pages/LocationDetail';
+import BusStops from '@/pages/BusStops';
+import BusStopDetail from '@/pages/BusStopDetail';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -76,6 +78,8 @@ const AuthenticatedApp = () => {
     <Route path="/card" element={<SuperCard />} />
     <Route path="/channel" element={<Channel />} />
     <Route path="/location/:id" element={<LocationDetail />} />
+    <Route path="/bus-stops" element={<BusStops />} />
+    <Route path="/bus-stop/:id" element={<BusStopDetail />} />
     <Route element={<ProtectedRoute unauthenticatedElement={<Navigate to="/login" replace />} />}>
       <Route path="/dashboard" element={<Dashboard />} />
     </Route>
