@@ -85,6 +85,7 @@ export default function Globe3D({ markers, selectedId, onSelect }) {
     popupRef.current = new maplibregl.Popup({ closeButton: true, closeOnClick: true, maxWidth: "260px" });
 
     map.on("load", () => {
+      try { map.setProjection({ type: "globe" }); } catch (e) {}
       map.addSource("ooh-markers", { type: "geojson", data: dataRef.current });
       map.addLayer({
         id: "ooh-markers",
