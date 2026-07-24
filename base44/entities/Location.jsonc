@@ -39,6 +39,25 @@
     "notes": {
       "type": "string"
     },
+    "access_key": {
+      "type": "string",
+      "enum": [
+        "none",
+        "4-way-utility",
+        "cemusapin",
+        "circle",
+        "circle-set",
+        "circle-wall",
+        "h60",
+        "jcd-superlock",
+        "large-square",
+        "small-square",
+        "t-handle",
+        "unknown"
+      ],
+      "default": "none",
+      "description": "Physical access key type that opens the unit housing (see ooh.earth/access-keys)"
+    },
     "status": {
       "type": "string",
       "enum": [
