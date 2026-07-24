@@ -21,6 +21,8 @@ export default function Nav({ onCommand }) {
           <Link to="/ar" className="flex items-center gap-1 text-ozone transition-colors hover:text-flare">
             <ScanLine className="h-3 w-3" /> AR Lens
           </Link>
+          <Link to="/scan" className="transition-colors hover:text-ozone">TrueCost</Link>
+          <Link to="/trash" className="transition-colors hover:text-ozone">Trash ID</Link>
           <Link to="/campaign" className="text-ozone transition-colors hover:text-flare">Fund</Link>
           <Link to="/about" className="transition-colors hover:text-ozone">About</Link>
           <Link to="/plans" className="transition-colors hover:text-ozone">Plans</Link>
