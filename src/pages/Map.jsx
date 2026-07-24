@@ -41,7 +41,7 @@ export default function Map() {
   const [query, setQuery] = useState("");
   const [selectedId, setSelectedId] = useState(null);
   const [hoverId, setHoverId] = useState(null);
-  const [view, setView] = useState("flat");
+  const [view, setView] = useState("globe");
   const [userLoc, setUserLoc] = useState(null);
   const { startTour, registerSteps } = useWalkthrough();
   const [finderOpen, setFinderOpen] = useState(false);
