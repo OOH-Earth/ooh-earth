@@ -1,13 +1,14 @@
 import { useState, useEffect } from "react";
-import { Sun, Moon, Terminal, Bug } from "lucide-react";
+import { Sun, Moon, Terminal, Bug, PenTool } from "lucide-react";
 
-const ORDER = ["dark", "light", "matrix", "beta"];
+const ORDER = ["dark", "light", "matrix", "beta", "lacquer"];
 
 const META = {
   dark: { icon: Moon, label: "Dark" },
   light: { icon: Sun, label: "Light" },
   matrix: { icon: Terminal, label: "Matrix" },
   beta: { icon: Bug, label: "BETA" },
+  lacquer: { icon: PenTool, label: "Lacquer" },
 };
 
 function applyTheme(theme) {
@@ -15,6 +16,7 @@ function applyTheme(theme) {
   root.classList.toggle("light", theme === "light");
   root.classList.toggle("matrix", theme === "matrix");
   root.classList.toggle("beta", theme === "beta");
+  root.classList.toggle("lacquer", theme === "lacquer");
 }
 
 export default function ThemeToggle() {
