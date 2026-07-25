@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=Audiowide&family=Chakra+Petch:wght@400;500;700&family=Monoton&family=Syncopate:wght@400;700&family=Architects+Daughter:wght@400&family=Rajdhani:wght@400;500;600;700&family=Share+Tech+Mono&family=Anonymous+Pro:wght@400;700;700i&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=Audiowide&family=Chakra+Petch:wght@400;500;700&family=Monoton&family=Syncopate:wght@400;700&family=Architects+Daughter:wght@400&family=Rajdhani:wght@400;500;600;700&family=Share+Tech+Mono&family=Anonymous+Pro:wght@400;700;700i&family=IBM+Plex+Mono:wght@400;500;600;700&family=VT323&family=Major+Mono+Display&display=swap');
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -73,11 +73,11 @@
 
   /* Matrix theme — cyberpunk green-on-black with magenta flare */
   .matrix {
-    --font-heading: "Anonymous Pro", ui-monospace, monospace;
-    --font-body: "Anonymous Pro", ui-monospace, monospace;
-    --font-display: "Anonymous Pro", ui-monospace, monospace;
-    --font-mono: "Anonymous Pro", ui-monospace, monospace;
-    --font-brand: "Anonymous Pro", ui-monospace, monospace;
+    --font-heading: "Share Tech Mono", ui-monospace, monospace;
+    --font-body: "IBM Plex Mono", ui-monospace, monospace;
+    --font-display: "Major Mono Display", ui-monospace, monospace;
+    --font-mono: "IBM Plex Mono", ui-monospace, monospace;
+    --font-brand: "Major Mono Display", ui-monospace, monospace;
     --background: 120 50% 3%;
     --foreground: 130 100% 55%;
     --card: 120 30% 5%;
@@ -147,8 +147,41 @@
     box-shadow: inset 0 0 200px 60px rgba(0, 0, 0, 0.78);
     animation: ooh-crt-flicker 0.14s steps(2) infinite;
   }
-  .matrix h1, .matrix h2, .matrix h3 {
-    text-shadow: 0 0 8px rgba(0, 255, 85, 0.32);
+  .matrix h1 {
+    font-family: var(--font-display);
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+    font-weight: 400;
+    line-height: 1.04;
+    text-shadow: 0 0 8px rgba(0, 255, 85, 0.42), 0 0 28px rgba(0, 255, 85, 0.12);
+  }
+  .matrix h2 {
+    font-family: var(--font-heading);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    font-weight: 700;
+    line-height: 1.1;
+    text-shadow: 0 0 6px rgba(0, 255, 85, 0.3);
+  }
+  .matrix h3, .matrix h4 {
+    font-family: var(--font-heading);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-weight: 700;
+    line-height: 1.15;
+    text-shadow: 0 0 5px rgba(0, 255, 85, 0.25);
+  }
+  .matrix p, .matrix li, .matrix dd, .matrix dt {
+    font-family: var(--font-body);
+    letter-spacing: 0.01em;
+    line-height: 1.6;
+  }
+  .matrix .font-mono, .matrix .font-mono-tech {
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+  }
+  .matrix small, .matrix .text-[8px], .matrix .text-[9px], .matrix .text-[10px] {
+    letter-spacing: 0.12em;
   }
   .matrix ::-webkit-scrollbar { width: 8px; height: 8px; }
   .matrix ::-webkit-scrollbar-track { background: #02110a; }
