@@ -29,7 +29,7 @@
     --font-heading: "Inter Tight", ui-sans-serif, system-ui, sans-serif;
     --font-body: "Inter Tight", ui-sans-serif, system-ui, sans-serif;
     --font-display: "Inter Tight", ui-sans-serif, system-ui, sans-serif;
-    --font-mono: "Inter Tight", ui-sans-serif, system-ui, sans-serif;
+    --font-mono: "IBM Plex Mono", ui-monospace, monospace;
     --font-brand: "Orbitron", ui-sans-serif, system-ui, sans-serif;
 
     /* OOH brand channel tokens — themeable (dark default · V3.1) */
@@ -624,7 +624,7 @@
     font-family: "Inter Tight", ui-sans-serif, system-ui, sans-serif;
   }
   .font-mono-tech {
-    font-family: "Inter Tight", ui-sans-serif, system-ui, sans-serif;
+    font-family: var(--font-mono);
   }
   .crafty .font-display { font-family: var(--font-display); }
   .crafty .font-mono-tech { font-family: var(--font-mono); }
