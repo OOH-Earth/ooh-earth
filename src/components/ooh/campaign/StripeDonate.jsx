@@ -10,15 +10,12 @@ export default function StripeDonate() {
   const [custom, setCustom] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const inIframe = typeof window !== "undefined" && window.self !== window.top;
 
   const donate = async () => {
     const val = custom ? Number(custom) : amount;
     if (!val || val < 1) {
       setError("Enter a valid amount.");
-      return;
-    }
-    if (window.self !== window.top) {
-      alert("Checkout works only from a published app.");
       return;
     }
     setLoading(true);
@@ -59,10 +56,15 @@ export default function StripeDonate() {
           className="w-full border border-slate2 bg-void px-3 py-2.5 font-mono text-sm text-silver outline-none transition-colors placeholder:text-dim focus:border-ozone"
         />
       </div>
+      {inIframe && (
+        <p className="mt-3 border border-flare/40 bg-flare/5 p-3 font-mono text-[9px] uppercase leading-relaxed tracking-[0.2em] text-flare">
+          // Checkout works only from the published app. Open oohearth.app in its own tab to donate by card.
+        </p>
+      )}
       {error && <p className="mt-3 font-mono text-[10px] uppercase tracking-[0.2em] text-flare">{error}</p>}
       <button
         onClick={donate}
-        disabled={loading}
+        disabled={loading || inIframe}
         className="mt-4 flex w-full items-center justify-center gap-2 bg-ozone px-6 py-4 font-mono text-[11px] font-bold uppercase tracking-[0.3em] text-void transition-colors hover:bg-flare disabled:opacity-40"
       >
         {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <CreditCard className="h-4 w-4" />}

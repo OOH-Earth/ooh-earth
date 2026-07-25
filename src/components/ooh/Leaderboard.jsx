@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { Trophy, BadgeCheck, Camera, FileText, Crown } from "lucide-react";
 import { pointsForReport, rankTier, POINTS } from "@/components/ooh/pointsConfig";
+import OperativeUnitRoster from "@/components/ooh/OperativeUnitRoster";
 
 const masked = (id) => `OP-${String(id || "").slice(-4).toUpperCase()}`;
 
@@ -130,6 +131,7 @@ export default function Leaderboard() {
             })}
           </div>
         )}
+        <OperativeUnitRoster />
       </div>
     </section>
   );
