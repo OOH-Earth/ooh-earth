@@ -61,7 +61,7 @@ function Stat({ label, value, Icon, color, suffix, to }) {
   return (
     <Link
       to={to}
-      className="group relative block overflow-hidden border border-border bg-card/70 p-3 backdrop-blur-md transition-all duration-200 hover:-translate-y-0.5 hover:border-ozone/50 hover:shadow-[0_10px_28px_-10px_rgba(0,0,0,0.55)] active:scale-[0.98]"
+      className="group relative block overflow-hidden border border-border bg-card p-3 rounded-xl transition-all duration-200 hover:-translate-y-0.5 hover:border-ozone/50 hover:shadow-[0_10px_28px_-10px_rgba(0,0,0,0.55)] active:scale-[0.98]"
     >
       <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-ozone/50 to-transparent opacity-0 transition-opacity duration-200 group-hover:opacity-100" />
       <ArrowUpRight className="absolute right-2 top-2 h-3 w-3 translate-y-1 text-ozone opacity-0 transition-all duration-200 group-hover:translate-y-0 group-hover:opacity-100" />
@@ -142,9 +142,9 @@ export default function HeroConsole({ onCommand }) {
   const cur = d.feed[fi];
 
   return (
-    <div className="grid grid-cols-2 gap-2.5 md:col-span-6">
+    <div className="console-dark grid grid-cols-2 gap-2.5 md:col-span-6">
       {/* Header rail */}
-      <div className="col-span-2 flex items-center justify-between border border-border bg-card/70 px-3 py-2 backdrop-blur-md">
+      <div className="col-span-2 flex items-center justify-between border border-border bg-card px-3 py-2 rounded-xl">
         <span className="flex items-center gap-1.5">
           <span className="relative flex h-1.5 w-1.5">
             <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-ozone opacity-60" />
@@ -158,7 +158,7 @@ export default function HeroConsole({ onCommand }) {
       </div>
 
       {/* Featured bento — live spots + sparkline + delta */}
-      <Link to="/map" className="group relative col-span-2 block overflow-hidden border border-ozone/40 bg-card/70 p-4 backdrop-blur-md transition-all duration-200 hover:-translate-y-0.5 hover:border-ozone hover:shadow-[0_14px_36px_-12px_rgba(0,0,0,0.6)] active:scale-[0.99]">
+      <Link to="/map" className="group relative col-span-2 block overflow-hidden border border-ozone/40 bg-card p-4 rounded-xl transition-all duration-200 hover:-translate-y-0.5 hover:border-ozone hover:shadow-[0_14px_36px_-12px_rgba(0,0,0,0.6)] active:scale-[0.99]">
         <div className="pointer-events-none absolute inset-0 grid-bg opacity-40" />
         <div className="pointer-events-none absolute -right-10 -top-10 h-28 w-28 rounded-full bg-ozone/20 blur-2xl transition-all duration-300 group-hover:bg-ozone/30" />
         <div className="pointer-events-none absolute -bottom-8 left-6 h-20 w-20 rounded-full bg-flare/10 blur-2xl" />
@@ -186,7 +186,7 @@ export default function HeroConsole({ onCommand }) {
       <Stat label="Verify rate" value={d.rate} Icon={ShieldCheck} color="rgb(var(--c-ozone))" suffix="%" to="/map" />
 
       {/* Streaming ticker */}
-      <div className="col-span-2 flex items-center gap-2 overflow-hidden border border-border bg-card/70 px-3 py-2 backdrop-blur-md">
+      <div className="col-span-2 flex items-center gap-2 overflow-hidden border border-border bg-card px-3 py-2 rounded-xl">
         <span className="flex shrink-0 items-center gap-1.5 font-mono text-[8px] uppercase tracking-[0.25em] text-ozone">
           <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-ozone" /> live feed
         </span>
@@ -203,7 +203,7 @@ export default function HeroConsole({ onCommand }) {
       </div>
 
       {/* Latest log highlight */}
-      <Link to="/map" className="group col-span-2 flex items-center justify-between gap-2 border border-border bg-card/70 px-3 py-2.5 backdrop-blur-md transition-all duration-200 hover:-translate-y-0.5 hover:border-ozone/50 active:scale-[0.99]">
+      <Link to="/map" className="group col-span-2 flex items-center justify-between gap-2 border border-border bg-card px-3 py-2.5 rounded-xl transition-all duration-200 hover:-translate-y-0.5 hover:border-ozone/50 active:scale-[0.99]">
         <div className="flex min-w-0 flex-1 items-center gap-2.5">
           <span className="h-6 w-0.5 shrink-0 bg-ozone transition-all duration-200 group-hover:h-7" />
           <div className="min-w-0 flex-1">
@@ -219,7 +219,7 @@ export default function HeroConsole({ onCommand }) {
       </Link>
 
       {/* Actions */}
-      <div className="col-span-2 flex items-center justify-between gap-2 border border-border bg-card/70 px-3 py-2 backdrop-blur-md">
+      <div className="col-span-2 flex items-center justify-between gap-2 border border-border bg-card px-3 py-2 rounded-xl">
         <span className="font-mono text-[9px] leading-[1.3] text-muted-foreground">Union-made by veterans &amp; street artists.</span>
         <div className="flex gap-1.5">
           <button onClick={onCommand} className="border border-flare/60 px-3 py-2 font-mono text-[9px] font-bold uppercase tracking-[0.2em] text-flare transition-colors hover:bg-flare hover:text-void active:scale-[0.97]">Command</button>
