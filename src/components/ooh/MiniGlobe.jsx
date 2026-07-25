@@ -46,11 +46,6 @@ export default function MiniGlobe() {
           </g>
         </svg>
       </span>
-
-      <span className="hidden flex-col leading-none lg:flex">
-        <span className="font-mono text-[7px] uppercase tracking-[0.3em] text-silver/60">orbital</span>
-        <span className="font-mono text-[9px] font-bold uppercase tracking-[0.2em] text-ozone">atlas</span>
-      </span>
     </Link>
   );
 }
