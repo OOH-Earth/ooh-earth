@@ -611,6 +611,7 @@
 
 /* Light mode: hide hero background video/images for now */
 .light .hero-media { display: none !important; }
+.light .hero-section { background-color: #ffffff !important; }
 
 /* Light mode: MetroKit inverted cards become solid, legible header-style surfaces */
 .light .metro-invert {

@@ -35,7 +35,7 @@ export default function Hero({ onCommand }) {
   const parallax = reduced ? 0 : offset * 0.5;
 
   return (
-    <section id="top" className="relative h-[100svh] w-full overflow-hidden bg-void">
+    <section id="top" className="hero-section relative h-[100svh] w-full overflow-hidden bg-void">
       <div
         className="absolute inset-0 will-change-transform"
         style={{ transform: `translateY(${parallax}px) scale(1.15)` }}>
