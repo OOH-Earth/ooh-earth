@@ -7,6 +7,19 @@ import { Link } from "react-router-dom";
 import {
   Loader2, LogOut, RefreshCw, ArrowDownToLine, Copy, Check, Link2, Coins, PiggyBank,
 } from "lucide-react";
+import InfoTip from "@/components/ooh/InfoTip";
+import { useWalkthrough } from "@/lib/walkthroughContext";
+
+const PORTFOLIO_TOUR = [
+  { title: "Atari Portfolio", body: "Your live treasury console. Every number is read directly from on-chain RPCs and your database — no simulated balances. This tour walks you through it. Press the compass icon in the nav to restart it anytime." },
+  { target: '[data-tour="total"]', title: "Total portfolio value", body: "On-chain USD (Polygon POL + USDC + USDC.e at live rates) plus recorded fiat pledges. This is the real, spendable plus pledged total." },
+  { target: '[data-tour="holdings"]', title: "On-chain holdings", body: "Read live from the Polygon RPC against your treasury wallet. POL is priced via CoinGecko; USDC and USDC.e are stablecoin balances." },
+  { target: '[data-tour="receive"]', title: "Receive addresses", body: "Tap any address to copy it. Share these publicly so adbusters and donors send funds straight to your wallet. Never paste private keys or seed phrases anywhere in this app." },
+  { target: '[data-tour="inbound"]', title: "Inbound transactions", body: "Recent deposits into your SOL and ETH treasury addresses, pulled from public explorers. Click a row to open it on Solscan or Etherscan." },
+  { target: '[data-tour="mints"]', title: "Minted coins", body: "Coins minted through the Zora pipeline. Each links to its contract or transaction on Basescan or Solscan. Creator trading fees accrue to your minting wallet." },
+  { target: '[data-tour="pledges"]', title: "Fiat pledges", body: "The sum of recorded FundingLead amounts — admin-only pledge records. Actually collected fiat lives in Stripe and your bank, not here." },
+  { title: "Revenue flows in", body: "Crypto arrives the moment someone sends to your receive addresses. To grow it: share the addresses, run the Zora mint pipeline, and publish the app so Stripe checkout can collect fiat.", cta: true },
+];
 
 const CHAIN_META = {
   base: { label: "Base", token: (a) => `https://basescan.org/token/${a}`, tx: (h) => `https://basescan.org/tx/${h}` },
@@ -42,6 +55,7 @@ function WalletRow({ label, addr }) {
 }
 
 export default function AtariPortfolio() {
+  const { registerSteps } = useWalkthrough();
   const [user, setUser] = useState(null);
   const [chain, setChain] = useState(null);
   const [mints, setMints] = useState([]);
@@ -68,6 +82,8 @@ export default function AtariPortfolio() {
       finally { setLoading(false); }
     })();
   }, [load]);
+
+  useEffect(() => { registerSteps(PORTFOLIO_TOUR); }, [registerSteps]);
 
   const refresh = async () => {
     setRefreshing(true);
@@ -111,10 +127,10 @@ export default function AtariPortfolio() {
           </div>
 
           {/* total */}
-          <section className="mt-8">
+          <section data-tour="total" className="mt-8">
             <div className="border border-ozone/40 bg-card p-6">
               <div className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.3em] text-ozone">
-                <PiggyBank className="h-4 w-4" /> Total portfolio value
+                <PiggyBank className="h-4 w-4" /> Total portfolio value <InfoTip label="Total portfolio value">On-chain USD (Polygon POL + USDC + USDC.e at live rates) plus recorded fiat pledges. Real, spendable + pledged.</InfoTip>
               </div>
               <div className="mt-3 font-display text-5xl font-bold tabular text-silver">{fmtUsd(totalUsd)}</div>
               <div className="mt-2 flex flex-wrap gap-x-5 gap-y-1 font-mono text-[10px] uppercase tracking-[0.2em] text-dim">
@@ -125,9 +141,9 @@ export default function AtariPortfolio() {
           </section>
 
           {/* on-chain holdings */}
-          <section className="mt-8">
+          <section data-tour="holdings" className="mt-8">
             <h2 className="font-display text-lg font-bold uppercase tracking-[-0.01em] text-silver">On-chain holdings</h2>
-            <span className="font-mono text-[10px] uppercase tracking-[0.25em] text-dim">// polygon treasury — live RPC</span>
+            <span className="font-mono text-[10px] uppercase tracking-[0.25em] text-dim">// polygon treasury — live RPC <InfoTip label="On-chain holdings">Live balances read from the Polygon RPC. POL priced via CoinGecko; USDC / USDC.e are stablecoins.</InfoTip></span>
             <div className="mt-4 grid grid-cols-2 gap-2.5 md:grid-cols-4">
               <Holding label="POL" value={poly ? poly.matic.toFixed(4) : "—"} sub={poly ? `@ ${fmtUsd(poly.maticUsd)}` : ""} />
               <Holding label="USDC" value={poly ? poly.usdc.toFixed(2) : "—"} accent="text-ozone" />
@@ -138,9 +154,9 @@ export default function AtariPortfolio() {
           </section>
 
           {/* receive addresses */}
-          <section className="mt-10">
+          <section data-tour="receive" className="mt-10">
             <h2 className="font-display text-lg font-bold uppercase tracking-[-0.01em] text-silver">Receive addresses</h2>
-            <span className="font-mono text-[10px] uppercase tracking-[0.25em] text-dim">// tap to copy — share to receive</span>
+            <span className="font-mono text-[10px] uppercase tracking-[0.25em] text-dim">// tap to copy — share to receive <InfoTip label="Receive addresses">Tap to copy. Share publicly so funds land in your wallet. Never paste private keys or seed phrases in this app.</InfoTip></span>
             <div className="mt-4 grid gap-2 md:grid-cols-2">
               {Object.entries(CAMPAIGN.wallets).map(([k, addr]) => (
                 <WalletRow key={k} label={k.toUpperCase()} addr={addr} />
@@ -149,9 +165,9 @@ export default function AtariPortfolio() {
           </section>
 
           {/* inbound transactions */}
-          <section className="mt-10">
+          <section data-tour="inbound" className="mt-10">
             <div className="flex items-center justify-between">
-              <h2 className="font-display text-lg font-bold uppercase tracking-[-0.01em] text-silver">Inbound transactions</h2>
+              <h2 className="flex items-center gap-1.5 font-display text-lg font-bold uppercase tracking-[-0.01em] text-silver">Inbound transactions <InfoTip label="Inbound transactions">Recent deposits into your SOL and ETH treasury wallets, from public explorers. Click to open on Solscan or Etherscan.</InfoTip></h2>
               <span className="font-mono text-[10px] uppercase tracking-[0.25em] text-dim">// {inbound.length} recent</span>
             </div>
             <div className="mt-4 space-y-2">
@@ -174,9 +190,9 @@ export default function AtariPortfolio() {
           </section>
 
           {/* minted coins portfolio */}
-          <section className="mt-10">
+          <section data-tour="mints" className="mt-10">
             <div className="flex items-center justify-between">
-              <h2 className="font-display text-lg font-bold uppercase tracking-[-0.01em] text-silver">Minted coins</h2>
+              <h2 className="flex items-center gap-1.5 font-display text-lg font-bold uppercase tracking-[-0.01em] text-silver">Minted coins <InfoTip label="Minted coins">Coins minted via the Zora pipeline. Each links to Basescan or Solscan. Creator trading fees accrue to your minting wallet.</InfoTip></h2>
               <Link to="/zora" className="font-mono text-[10px] uppercase tracking-[0.25em] text-dim transition-colors hover:text-ozone">// mint pipeline →</Link>
             </div>
             <div className="mt-4 grid gap-2 md:grid-cols-2">
@@ -205,9 +221,9 @@ export default function AtariPortfolio() {
           </section>
 
           {/* fiat pledges */}
-          <section className="mt-10">
+          <section data-tour="pledges" className="mt-10">
             <div className="flex items-center justify-between">
-              <h2 className="font-display text-lg font-bold uppercase tracking-[-0.01em] text-silver">Fiat pledges</h2>
+              <h2 className="flex items-center gap-1.5 font-display text-lg font-bold uppercase tracking-[-0.01em] text-silver">Fiat pledges <InfoTip label="Fiat pledges">Sum of recorded FundingLead amounts — admin-only pledge records. Actually collected fiat is in Stripe and your bank.</InfoTip></h2>
               <span className="font-mono text-[10px] uppercase tracking-[0.25em] text-dim">// admin ledger</span>
             </div>
             <div className="mt-4 border border-slate2/60 bg-card p-6">
