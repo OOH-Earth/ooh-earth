@@ -13,6 +13,10 @@
     "description": {
       "type": "string"
     },
+    "content": {
+      "type": "string",
+      "description": "Markdown body for library / research docs"
+    },
     "category": {
       "type": "string",
       "enum": [

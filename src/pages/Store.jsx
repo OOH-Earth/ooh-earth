@@ -1,66 +1,38 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
-import { Loader2, ShoppingBag, BookOpen, Download, ExternalLink, Sparkles, Package, CheckCircle2 } from "lucide-react";
+import { Loader2, ShoppingBag, BookOpen, Download, ExternalLink, CheckCircle2 } from "lucide-react";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import Nav from "@/components/ooh/Nav";
 import HorizonProgress from "@/components/ooh/HorizonProgress";
 import { useWalkthrough } from "@/lib/walkthroughContext";
-import AtlasPreview from "@/components/ooh/store/AtlasPreview";
-import ThemePreview from "@/components/ooh/store/ThemePreview";
-import MetroKitPreview from "@/components/ooh/store/MetroKitPreview";
-import CursorPackPreview from "@/components/ooh/store/CursorPackPreview";
-import NftDropPreview from "@/components/ooh/store/NftDropPreview";
-import PhysicalPreview from "@/components/ooh/store/PhysicalPreview";
+import { CAT_META, priceLabel, ProductPreview } from "@/components/ooh/store/catalog";
 
 const STORE_TOUR = [
   { title: "OOH Store", body: "Two wings. The Library sells our research and field docs. The Store fronts digital products built on this app — plugins, UI kits, the Base44 theme — then NFT drops and one-off physical prototypes." },
-  { title: "How buying works", body: "Paid digital items check out through Stripe (card). Free items download instantly. NFT drops and external releases open their own page. Every sale funds the Field Offensive.", cta: true },
+  { title: "How buying works", body: "Library docs open in a reader and export to PDF. Paid digital products check out through Stripe (card). NFT drops and external releases open their own page. Every sale funds the Field Offensive.", cta: true },
 ];
-
-const CAT_META = {
-  library: { icon: BookOpen, label: "Library" },
-  plugin: { icon: Package, label: "Plugin" },
-  uikit: { icon: Package, label: "UI Kit" },
-  theme: { icon: Sparkles, label: "Theme" },
-  nft: { icon: Sparkles, label: "NFT Drop" },
-  physical: { icon: Package, label: "Prototype" },
-};
-
-const PREVIEW = {
-  library: AtlasPreview,
-  theme: ThemePreview,
-  uikit: MetroKitPreview,
-  plugin: CursorPackPreview,
-  nft: NftDropPreview,
-  physical: PhysicalPreview,
-};
-
-function priceLabel(item) {
-  if (item.status === "free" || Number(item.price_usd) === 0) return "Free";
-  if (item.status === "upcoming") return "Upcoming";
-  if (item.status === "sold_out") return "Sold out";
-  return `$${item.price_usd}`;
-}
 
 function ProductCard({ item, onBuy, busy }) {
   const cat = CAT_META[item.category] || CAT_META.library;
   const Icon = cat.icon;
+  const isLibrary = item.category === "library";
   const actionable = item.status === "available" || item.status === "free";
   const isExternal = !!item.external_url;
   const isFree = item.status === "free" || Number(item.price_usd) === 0;
   const busyThis = busy === item.id;
-  const btnLabel = !actionable
-    ? (item.status === "upcoming" ? "Soon" : "Sold out")
+  const btnLabel = isLibrary ? "Read"
+    : !actionable ? (item.status === "upcoming" ? "Soon" : "Sold out")
     : isExternal ? "Open drop"
     : isFree ? "Download"
     : "Buy";
   return (
     <div className="group flex flex-col border border-slate2/50 bg-card transition-colors hover:border-ozone/40">
-      <div className="relative aspect-[4/3] overflow-hidden border-b border-slate2/50 grid-bg bg-void">
+      <div className="relative aspect-[4/3] overflow-hidden border-b border-slate2/50 bg-void">
         {item.image_url ? (
           <img src={item.image_url} alt={item.title} className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" />
         ) : (
-          <div className="h-full w-full">{(() => { const P = PREVIEW[item.category] || AtlasPreview; return <P />; })()}</div>
+          <ProductPreview item={item} />
         )}
         <span className="absolute left-2 top-2 flex items-center gap-1 border border-slate2/60 bg-void/80 px-1.5 py-0.5 font-mono text-[8px] uppercase tracking-[0.2em] text-ozone backdrop-blur">
           <Icon className="h-2.5 w-2.5" /> {cat.label}
@@ -82,7 +54,7 @@ function ProductCard({ item, onBuy, busy }) {
             disabled={!actionable || busyThis}
             className="flex items-center gap-1.5 border border-ozone bg-ozone px-3 py-2 font-mono text-[9px] font-bold uppercase tracking-[0.25em] text-void transition-colors hover:bg-flare hover:border-flare disabled:border-slate2/60 disabled:bg-slate2/40 disabled:text-dim"
           >
-            {busyThis ? <Loader2 className="h-3 w-3 animate-spin" /> : isExternal ? <ExternalLink className="h-3 w-3" /> : isFree ? <Download className="h-3 w-3" /> : <ShoppingBag className="h-3 w-3" />}
+            {busyThis ? <Loader2 className="h-3 w-3 animate-spin" /> : isLibrary ? <BookOpen className="h-3 w-3" /> : isExternal ? <ExternalLink className="h-3 w-3" /> : isFree ? <Download className="h-3 w-3" /> : <ShoppingBag className="h-3 w-3" />}
             {btnLabel}
           </button>
         </div>
@@ -108,6 +80,7 @@ function Grid({ items, onBuy, busy, emptyNote }) {
 }
 
 export default function Store() {
+  const navigate = useNavigate();
   const { registerSteps } = useWalkthrough();
   const [items, setItems] = useState(null);
   const [busy, setBusy] = useState(null);
@@ -139,6 +112,7 @@ export default function Store() {
 
   const buy = async (item) => {
     setError("");
+    if (item.category === "library") { navigate(`/store/${item.id}`); return; }
     if (item.status === "free" || Number(item.price_usd) === 0) {
       if (item.file_url) window.open(item.file_url, "_blank");
       return;
