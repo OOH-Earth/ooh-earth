@@ -338,29 +338,127 @@
   .guild p, .guild li { font-family: var(--font-body); font-weight: 400; line-height: 1.65; color: #FFFFFF; }
   .guild .font-mono, .guild .font-mono-tech { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
 
-  /* On white-smoke cards/sections, ALL text becomes navy for contrast */
-  .guild .bg-card,
-  .guild .bg-secondary { color: #002554; }
+  /* ====== CONTRAST RULES — strict dark-on-light / light-on-dark ======
+     1. WHITE-SMOKE CARDS (#F1F1F1) → ALL text navy #002554
+     2. YELLOW BACKGROUNDS (#EDFF00) → ALL text navy #002554
+     3. NAVY BACKGROUNDS (#002554) → ALL text white #FFFFFF
+  ==================================================================== */
+
+  /* (1) White-smoke cards/sections — navy text */
+  .guild .bg-card { color: #002554; }
   .guild .bg-card .text-foreground,
   .guild .bg-card .text-silver,
+  .guild .bg-card .text-dim,
+  .guild .bg-card .text-darkgray,
+  .guild .bg-card .text-slate2,
   .guild .bg-card h1, .guild .bg-card h2, .guild .bg-card h3, .guild .bg-card h4,
-  .guild .bg-card p, .guild .bg-card li,
-  .guild .bg-secondary .text-foreground,
-  .guild .bg-secondary .text-silver,
-  .guild .bg-secondary h1, .guild .bg-secondary h2, .guild .bg-secondary h3, .guild .bg-secondary h4,
-  .guild .bg-secondary p, .guild .bg-secondary li { color: #002554 !important; }
-  .guild .bg-card .text-muted-foreground,
-  .guild .bg-secondary .text-muted-foreground { color: #4a5a6a !important; }
+  .guild .bg-card p, .guild .bg-card li, .guild .bg-card span, .guild .bg-card dd, .guild .bg-card dt,
+  .guild .bg-card .text-card-foreground { color: #002554 !important; }
+  .guild .bg-card .text-muted-foreground { color: #4a5a6a !important; }
+  .guild .bg-card .text-ozone,
+  .guild .bg-card .text-accent { color: #002554 !important; }
 
-  /* Links — white on navy, yellow on hover */
+  /* (2) Yellow backgrounds (primary, accent, ozone, flare) — navy text */
+  .guild .bg-primary,
+  .guild .bg-accent,
+  .guild .bg-ozone,
+  .guild .bg-flare { color: #002554; }
+  .guild .bg-primary .text-foreground,
+  .guild .bg-primary .text-silver,
+  .guild .bg-primary .text-muted-foreground,
+  .guild .bg-primary .text-dim,
+  .guild .bg-primary .text-darkgray,
+  .guild .bg-primary .text-slate2,
+  .guild .bg-primary .text-card-foreground,
+  .guild .bg-primary h1, .guild .bg-primary h2, .guild .bg-primary h3, .guild .bg-primary h4,
+  .guild .bg-primary p, .guild .bg-primary li, .guild .bg-primary span,
+  .guild .bg-accent .text-foreground,
+  .guild .bg-accent .text-silver,
+  .guild .bg-accent .text-muted-foreground,
+  .guild .bg-accent .text-dim,
+  .guild .bg-accent .text-darkgray,
+  .guild .bg-accent .text-slate2,
+  .guild .bg-accent h1, .guild .bg-accent h2, .guild .bg-accent h3, .guild .bg-accent h4,
+  .guild .bg-accent p, .guild .bg-accent li, .guild .bg-accent span,
+  .guild .bg-ozone .text-foreground,
+  .guild .bg-ozone .text-silver,
+  .guild .bg-ozone .text-muted-foreground,
+  .guild .bg-ozone .text-dim,
+  .guild .bg-ozone .text-darkgray,
+  .guild .bg-ozone .text-slate2,
+  .guild .bg-ozone h1, .guild .bg-ozone h2, .guild .bg-ozone h3, .guild .bg-ozone h4,
+  .guild .bg-ozone p, .guild .bg-ozone li, .guild .bg-ozone span,
+  .guild .bg-flare .text-foreground,
+  .guild .bg-flare .text-silver,
+  .guild .bg-flare .text-muted-foreground,
+  .guild .bg-flare .text-dim,
+  .guild .bg-flare .text-darkgray,
+  .guild .bg-flare .text-slate2,
+  .guild .bg-flare h1, .guild .bg-flare h2, .guild .bg-flare h3, .guild .bg-flare h4,
+  .guild .bg-flare p, .guild .bg-flare li, .guild .bg-flare span { color: #002554 !important; }
+  /* Yellow text on yellow bg → navy */
+  .guild .bg-primary .text-ozone,
+  .guild .bg-primary .text-accent,
+  .guild .bg-primary .text-flare,
+  .guild .bg-accent .text-ozone,
+  .guild .bg-accent .text-accent,
+  .guild .bg-accent .text-flare,
+  .guild .bg-ozone .text-ozone,
+  .guild .bg-ozone .text-accent,
+  .guild .bg-ozone .text-flare,
+  .guild .bg-flare .text-ozone,
+  .guild .bg-flare .text-accent,
+  .guild .bg-flare .text-flare { color: #002554 !important; }
+
+  /* (3) Navy backgrounds (void, popover, muted, secondary) — white text */
+  .guild .bg-void,
+  .guild .bg-popover,
+  .guild .bg-muted,
+  .guild .bg-secondary { color: #FFFFFF; }
+  .guild .bg-void .text-card-foreground,
+  .guild .bg-void .text-primary-foreground,
+  .guild .bg-void .text-accent-foreground,
+  .guild .bg-void .text-void,
+  .guild .bg-popover .text-card-foreground,
+  .guild .bg-popover .text-primary-foreground,
+  .guild .bg-popover .text-accent-foreground,
+  .guild .bg-popover .text-void,
+  .guild .bg-muted .text-card-foreground,
+  .guild .bg-muted .text-primary-foreground,
+  .guild .bg-muted .text-accent-foreground,
+  .guild .bg-muted .text-void,
+  .guild .bg-secondary .text-card-foreground,
+  .guild .bg-secondary .text-primary-foreground,
+  .guild .bg-secondary .text-accent-foreground,
+  .guild .bg-secondary .text-void { color: #FFFFFF !important; }
+  /* Navy text (text-void) on navy bg → white */
+  .guild .bg-void .text-void,
+  .guild .bg-popover .text-void,
+  .guild .bg-muted .text-void,
+  .guild .bg-secondary .text-void,
+  .guild .bg-background .text-void { color: #FFFFFF !important; }
+
+  /* Links — white on navy, navy on light, yellow hover */
   .guild a { color: #FFFFFF; text-decoration: underline; text-decoration-color: rgba(237,255,0,0.5); text-underline-offset: 3px; }
   .guild a:hover { color: #EDFF00; text-decoration-color: #EDFF00; }
-  .guild .bg-card a, .guild .bg-secondary a { color: #002554; text-decoration-color: rgba(0,37,84,0.4); }
-  .guild .bg-card a:hover, .guild .bg-secondary a:hover { color: #002554; text-decoration-color: #002554; }
+  .guild .bg-card a,
+  .guild .bg-primary a,
+  .guild .bg-accent a,
+  .guild .bg-ozone a,
+  .guild .bg-flare a { color: #002554; text-decoration-color: rgba(0,37,84,0.4); }
+  .guild .bg-card a:hover,
+  .guild .bg-primary a:hover,
+  .guild .bg-accent a:hover,
+  .guild .bg-ozone a:hover,
+  .guild .bg-flare a:hover { color: #002554; text-decoration-color: #002554; }
 
-  /* Yellow highlight phrase (the "public service organisation" treatment) */
+  /* Yellow highlight phrase */
   .guild .guild-emph { color: #EDFF00; font-weight: 700; }
-  .guild .bg-card .guild-emph, .guild .bg-secondary .guild-emph { color: #002554; font-weight: 700; }
+  .guild .bg-card .guild-emph,
+  .guild .bg-primary .guild-emph,
+  .guild .bg-accent .guild-emph,
+  .guild .bg-ozone .guild-emph,
+  .guild .bg-flare .guild-emph { color: #002554; font-weight: 700; }
 
   /* Yellow CTA button — yellow fill, navy text */
   .guild .guild-btn {
