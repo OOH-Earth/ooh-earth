@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=Audiowide&family=Chakra+Petch:wght@400;500;700&family=Monoton&family=Syncopate:wght@400;700&family=Architects+Daughter:wght@400&family=Rajdhani:wght@400;500;600;700&family=Share+Tech+Mono&family=Anonymous+Pro:wght@400;700;700i&family=IBM+Plex+Mono:wght@400;500;600;700&family=VT323&family=Major+Mono+Display&family=Doto:wght@100..900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=Audiowide&family=Chakra+Petch:wght@400;500;700&family=Monoton&family=Syncopate:wght@400;700&family=Architects+Daughter:wght@400&family=Rajdhani:wght@400;500;600;700&family=Share+Tech+Mono&family=Anonymous+Pro:wght@400;700;700i&family=IBM+Plex+Mono:wght@400;500;600;700&family=VT323&family=Major+Mono+Display&family=Doto:wght@100..900&family=Lacquer&display=swap');
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -30,7 +30,7 @@
     --font-body: "Inter Tight", ui-sans-serif, system-ui, sans-serif;
     --font-display: "Inter Tight", ui-sans-serif, system-ui, sans-serif;
     --font-mono: "Inter Tight", ui-sans-serif, system-ui, sans-serif;
-    --font-brand: "Orbitron", ui-sans-serif, system-ui, sans-serif;
+    --font-brand: "Lacquer", "Orbitron", ui-sans-serif, system-ui, sans-serif;
 
     /* OOH brand channel tokens — themeable (dark default · V3.1) */
     --c-void: 0 0 0;
@@ -77,7 +77,7 @@
     --font-body: "IBM Plex Mono", ui-monospace, monospace;
     --font-display: "Doto", ui-monospace, monospace;
     --font-mono: "IBM Plex Mono", ui-monospace, monospace;
-    --font-brand: "Doto", ui-monospace, monospace;
+    --font-brand: "Lacquer", "Doto", ui-monospace, monospace;
     --background: 120 50% 3%;
     --foreground: 130 100% 55%;
     --card: 120 30% 5%;
@@ -193,7 +193,7 @@
     --font-body: "IBM Plex Mono", ui-monospace, monospace;
     --font-display: "Share Tech Mono", ui-monospace, monospace;
     --font-mono: "IBM Plex Mono", ui-monospace, monospace;
-    --font-brand: "Share Tech Mono", ui-monospace, monospace;
+    --font-brand: "Lacquer", "Share Tech Mono", ui-monospace, monospace;
     --background: 220 14% 10%;
     --foreground: 220 8% 83%;
     --card: 220 14% 13%;
