@@ -1,19 +1,20 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
-import { Loader2, ShoppingBag, BookOpen, Download, ExternalLink, CheckCircle2 } from "lucide-react";
+import { Loader2, ShoppingBag, BookOpen, Download, ExternalLink, CheckCircle2, Gift } from "lucide-react";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import Nav from "@/components/ooh/Nav";
 import HorizonProgress from "@/components/ooh/HorizonProgress";
 import { useWalkthrough } from "@/lib/walkthroughContext";
 import { CAT_META, priceLabel, ProductPreview } from "@/components/ooh/store/catalog";
+import { downloadItemPdf } from "@/components/ooh/store/downloadPdf";
 
 const STORE_TOUR = [
   { title: "OOH Store", body: "Two wings. The Library sells our research and field docs. The Store fronts digital products built on this app — plugins, UI kits, the Base44 theme — then NFT drops and one-off physical prototypes." },
   { title: "How buying works", body: "Library docs open in a reader and export to PDF. Paid digital products check out through Stripe (card). NFT drops and external releases open their own page. Every sale funds the Field Offensive.", cta: true },
 ];
 
-function ProductCard({ item, onBuy, busy }) {
+function ProductCard({ item, onBuy, onGiveaway, busy }) {
   const cat = CAT_META[item.category] || CAT_META.library;
   const Icon = cat.icon;
   const isLibrary = item.category === "library";
@@ -47,8 +48,14 @@ function ProductCard({ item, onBuy, busy }) {
         <h3 className="font-display text-base font-bold tracking-[-0.01em] text-silver">{item.title}</h3>
         {item.subtitle && <p className="mt-0.5 font-mono text-[10px] uppercase tracking-[0.15em] text-dim">{item.subtitle}</p>}
         {item.description && <p className="mt-2 flex-1 font-display text-[12px] leading-relaxed text-darkgray">{item.description}</p>}
-        <div className="mt-4 flex items-center justify-between gap-2">
-          <span className="font-display text-lg font-black tabular text-silver">{priceLabel(item)}</span>
+        <div className="mt-4 flex items-center gap-2">
+          <span className="flex-1 font-display text-lg font-black tabular text-silver">{priceLabel(item)}</span>
+          <button
+            onClick={() => onGiveaway(item)}
+            className="flex items-center gap-1.5 border border-slate2/60 px-2.5 py-2 font-mono text-[9px] font-bold uppercase tracking-[0.2em] text-darkgray transition-colors hover:border-[#39FF14] hover:text-[#39FF14]"
+          >
+            <Gift className="h-3 w-3" /> Giveaway
+          </button>
           <button
             onClick={() => onBuy(item)}
             disabled={!actionable || busyThis}
@@ -63,7 +70,7 @@ function ProductCard({ item, onBuy, busy }) {
   );
 }
 
-function Grid({ items, onBuy, busy, emptyNote }) {
+function Grid({ items, onBuy, onGiveaway, busy, emptyNote }) {
   if (!items) return (
     <div className="flex items-center gap-3 font-mono text-[10px] uppercase tracking-[0.3em] text-dim">
       <span className="h-1.5 w-1.5 animate-flicker rounded-full bg-ozone" /> Loading…
@@ -74,7 +81,7 @@ function Grid({ items, onBuy, busy, emptyNote }) {
   );
   return (
     <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-      {items.map((item) => <ProductCard key={item.id} item={item} onBuy={onBuy} busy={busy} />)}
+      {items.map((item) => <ProductCard key={item.id} item={item} onBuy={onBuy} onGiveaway={onGiveaway} busy={busy} />)}
     </div>
   );
 }
@@ -109,6 +116,8 @@ export default function Store() {
 
   const library = (items || []).filter((i) => i.category === "library");
   const shop = (items || []).filter((i) => i.category !== "library");
+
+  const giveaway = (item) => downloadItemPdf(item);
 
   const buy = async (item) => {
     setError("");
@@ -162,11 +171,11 @@ export default function Store() {
             </TabsList>
             <TabsContent value="library" className="mt-6">
               <div className="mb-4 font-mono text-[9px] uppercase tracking-[0.25em] text-dim">// Research, field docs & reference — sourced from our own data</div>
-              <Grid items={library} onBuy={buy} busy={busy} emptyNote="// No library entries yet" />
+              <Grid items={library} onBuy={buy} onGiveaway={giveaway} busy={busy} emptyNote="// No library entries yet" />
             </TabsContent>
             <TabsContent value="store" className="mt-6">
               <div className="mb-4 font-mono text-[9px] uppercase tracking-[0.25em] text-dim">// Digital products · NFT drops · physical prototypes</div>
-              <Grid items={shop} onBuy={buy} busy={busy} emptyNote="// No store entries yet" />
+              <Grid items={shop} onBuy={buy} onGiveaway={giveaway} busy={busy} emptyNote="// No store entries yet" />
             </TabsContent>
           </Tabs>
         </div>

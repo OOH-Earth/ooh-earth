@@ -1,53 +1,16 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
-import { ArrowLeft, Loader2, Download, ShoppingBag, ExternalLink } from "lucide-react";
-import { jsPDF } from "jspdf";
+import { ArrowLeft, Loader2, Download, ShoppingBag, ExternalLink, Gift } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import Nav from "@/components/ooh/Nav";
 import HorizonProgress from "@/components/ooh/HorizonProgress";
 import { CAT_META, priceLabel, ProductPreview } from "@/components/ooh/store/catalog";
+import { downloadItemPdf } from "@/components/ooh/store/downloadPdf";
 
 const inIframe = typeof window !== "undefined" && window.self !== window.top;
 
-function toPlain(md) {
-  return (md || "")
-    .replace(/^#{1,6}\s+/gm, "")
-    .replace(/\*\*/g, "")
-    .replace(/\[([^\]]+)\]\([^)]+\)/g, "$1")
-    .replace(/^[-*]\s+/gm, "•  ");
-}
-
-function downloadPdf(item) {
-  const doc = new jsPDF({ unit: "pt", format: "a4" });
-  const margin = 48;
-  const maxW = doc.internal.pageSize.getWidth() - margin * 2;
-  const pageH = doc.internal.pageSize.getHeight();
-  let y = margin;
-
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(20);
-  doc.splitTextToSize(item.title, maxW).forEach((l) => { doc.text(l, margin, y); y += 26; });
-  if (item.subtitle) {
-    doc.setFont("helvetica", "normal");
-    doc.setFontSize(11);
-    doc.splitTextToSize(item.subtitle, maxW).forEach((l) => { doc.text(l, margin, y); y += 16; });
-    y += 6;
-  }
-  doc.setDrawColor(237, 255, 0);
-  doc.setLineWidth(1.5);
-  doc.line(margin, y, margin + 64, y);
-  y += 20;
-
-  doc.setFont("helvetica", "normal");
-  doc.setFontSize(10);
-  doc.splitTextToSize(toPlain(item.content || item.description || ""), maxW).forEach((l) => {
-    if (y > pageH - margin) { doc.addPage(); y = margin; }
-    doc.text(l, margin, y);
-    y += 14;
-  });
-  doc.save(`${(item.title || "ooh-earth").toLowerCase().replace(/[^a-z0-9]+/g, "-")}.pdf`);
-}
+// PDF export lives in @/components/ooh/store/downloadPdf
 
 const MD_COMPONENTS = {
   h2: (p) => <h2 className="mt-6 mb-2 font-display text-lg font-bold tracking-[-0.01em] text-silver" {...p} />,
@@ -81,7 +44,7 @@ export default function StoreItemDetail() {
     if (!item) return;
     setError("");
     const isFree = item.status === "free" || Number(item.price_usd) === 0;
-    if (isFree) { downloadPdf(item); return; }
+    if (isFree) { downloadItemPdf(item); return; }
     if (item.external_url) { window.open(item.external_url, "_blank"); return; }
     if (inIframe) { setError("Checkout works only from the published app. Open oohearth.app in its own tab."); return; }
     setBusy(true);
@@ -151,8 +114,14 @@ export default function StoreItemDetail() {
               <h1 className="mt-2 font-display text-3xl font-bold leading-[1.05] tracking-[-0.02em] text-silver">{item.title}</h1>
               {item.subtitle && <p className="mt-1 font-mono text-[10px] uppercase tracking-[0.15em] text-dim">{item.subtitle}</p>}
               {item.description && <p className="mt-3 font-display text-[13px] leading-[1.6] text-darkgray">{item.description}</p>}
-              <div className="mt-5 flex items-center gap-3">
+              <div className="mt-5 flex flex-wrap items-center gap-3">
                 <span className="font-display text-2xl font-black tabular text-silver">{priceLabel(item)}</span>
+                <button
+                  onClick={() => downloadItemPdf(item)}
+                  className="flex items-center gap-1.5 border border-slate2/60 px-4 py-2.5 font-mono text-[9px] font-bold uppercase tracking-[0.2em] text-darkgray transition-colors hover:border-[#39FF14] hover:text-[#39FF14]"
+                >
+                  <Gift className="h-3.5 w-3.5" /> Giveaway
+                </button>
                 <button
                   onClick={buy}
                   disabled={!actionable || busy}
