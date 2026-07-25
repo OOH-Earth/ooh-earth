@@ -6,11 +6,11 @@ import HeroConsole from "@/components/ooh/HeroConsole";
 const WORD = "oohearth.app";
 
 const SLIDES = [
-{ kind: "image", src: "https://ooh.earth/wp-content/uploads/2026/05/1777896004-01-d21q.webp", caption: "Billboard · 1039 Ploenchit, Bangkok" },
+{ kind: "image", src: "https://images.unsplash.com/photo-1508009603885-50cf7c5d0aea?w=1600&q=80", caption: "Billboard · 1039 Ploenchit, Bangkok" },
 { kind: "video", src: "https://firebasestorage.googleapis.com/v0/b/standards-site-beta.appspot.com/o/documents%2Fusaglsjaht9%2Fa61ac5238ce%2FSubs6.mp4?alt=media&token=fe1621f1-39b5-4f76-b11e-0700ecedcfba", caption: "Field dispatch · subvertising reel" },
-{ kind: "image", src: "https://ooh.earth/wp-content/uploads/2026/05/1777667192-01-4t5x.webp", caption: "Painted takeover · 778 Sukhumvit" },
-{ kind: "image", src: "https://ooh.earth/wp-content/uploads/2026/05/1777649595-01-nw44.webp", caption: "Digital screen · 28 Chitlom" },
-{ kind: "image", src: "https://ooh.earth/wp-content/uploads/2026/04/1777432241-01-98e1.webp", caption: "Billboard · 900 Ploenchit" }];
+{ kind: "image", src: "https://images.unsplash.com/photo-1563492065-1a3c66f8e1a4?w=1600&q=80", caption: "Painted takeover · 778 Sukhumvit" },
+{ kind: "image", src: "https://images.unsplash.com/photo-1538428494232-9c0d8a3ab403?w=1600&q=80", caption: "Digital screen · 28 Chitlom" },
+{ kind: "image", src: "https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?w=1600&q=80", caption: "Billboard · 900 Ploenchit" }];
 
 
 export default function Hero({ onCommand }) {

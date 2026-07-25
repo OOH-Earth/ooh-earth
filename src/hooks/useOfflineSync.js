@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { base44 } from "@/api/base44Client";
-import { listCaptures, removeCapture } from "@/lib/offlineQueue";
+import { listCaptures, removeCapture, incrementRetries } from "@/lib/offlineQueue";
 
 export function useOfflineSync() {
   const [pending, setPending] = useState([]);
@@ -11,19 +11,24 @@ export function useOfflineSync() {
   }, []);
 
   const flush = useCallback(async () => {
+    const items = await listCaptures();
+    if (!items.length) return; // skip when nothing pending — avoids wasteful polling
+
     setSyncing(true);
-    try {
-      const items = await listCaptures();
-      for (const item of items) {
-        try {
-          await base44.entities.Location.create(item.payload);
-          await removeCapture(item.id);
-        } catch { /* leave for next attempt */ }
+    let changed = false;
+    for (const item of items) {
+      try {
+        await base44.entities.Location.create(item.payload);
+        await removeCapture(item.id);
+        changed = true;
+      } catch (err) {
+        console.warn("Offline sync failed for item", item.id, err?.message);
+        await incrementRetries(item.id); // auto-evicts after MAX_RETRIES
+        changed = true;
       }
-    } finally {
-      setSyncing(false);
-      refresh();
     }
+    setSyncing(false);
+    if (changed) refresh();
   }, [refresh]);
 
   useEffect(() => {

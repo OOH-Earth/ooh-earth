@@ -117,9 +117,22 @@ export default function MintLocationPanel({ loc }) {
           </p>
           <div className="flex flex-wrap items-center gap-2">
             {evm.address ? (
-              <span className="flex items-center gap-1.5 border border-slate2 px-2.5 py-2 font-mono text-[9px] uppercase tracking-[0.2em] text-ozone">
-                <Wallet className="h-3.5 w-3.5" /> {evm.shortAddress}
-              </span>
+              <>
+                <span className="flex items-center gap-1.5 border border-slate2 px-2.5 py-2 font-mono text-[9px] uppercase tracking-[0.2em] text-ozone">
+                  <Wallet className="h-3.5 w-3.5" /> {evm.shortAddress}
+                  {evm.verified && <BadgeCheck className="h-3 w-3 text-brand-green" />}
+                </span>
+                {!evm.verified && (
+                  <button
+                    onClick={evm.verifyOwnership}
+                    disabled={evm.verifying}
+                    className="flex items-center gap-1.5 border border-flare px-2.5 py-2 font-mono text-[9px] font-bold uppercase tracking-[0.2em] text-flare transition-colors hover:bg-flare hover:text-void"
+                  >
+                    {evm.verifying ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <BadgeCheck className="h-3.5 w-3.5" />}
+                    {evm.verifying ? "Verifying…" : "Verify ownership"}
+                  </button>
+                )}
+              </>
             ) : (
               <button
                 onClick={evm.connect}
@@ -131,13 +144,17 @@ export default function MintLocationPanel({ loc }) {
             )}
             <button
               onClick={prepare}
-              className="flex items-center gap-1.5 border border-ozone bg-ozone px-3 py-2 font-mono text-[9px] font-bold uppercase tracking-[0.25em] text-void transition-colors hover:bg-flare hover:border-flare"
+              disabled={!evm.address || !evm.verified}
+              className="flex items-center gap-1.5 border border-ozone bg-ozone px-3 py-2 font-mono text-[9px] font-bold uppercase tracking-[0.25em] text-void transition-colors hover:bg-flare hover:border-flare disabled:opacity-40 disabled:cursor-not-allowed"
             >
               <Coins className="h-3.5 w-3.5" /> Prepare mint
             </button>
           </div>
           {!evm.address && (
             <p className="font-mono text-[9px] uppercase tracking-[0.2em] text-dim/60">// connect first so the mint is attributed to your address</p>
+          )}
+          {evm.address && !evm.verified && (
+            <p className="font-mono text-[9px] uppercase tracking-[0.2em] text-flare/80">// verify wallet ownership to unlock minting — signs a message, no transaction</p>
           )}
         </div>
       ) : phase === "preparing" ? (

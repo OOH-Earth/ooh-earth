@@ -14,7 +14,10 @@ export default function UpcScanner({ onDetected }) {
   const [err, setErr] = useState("");
 
   useEffect(() => {
-    if (typeof window === "undefined" || !("BarcodeDetector" in window)) setSupported(false);
+    if (typeof window === "undefined") return;
+    const hasBarcodeDetector = "BarcodeDetector" in window;
+    const isSecure = window.isSecureContext;
+    if (!hasBarcodeDetector || !isSecure) setSupported(false);
     return () => stop();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
