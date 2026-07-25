@@ -328,6 +328,15 @@
     line-height: 1.05;
   }
   .crafty, .crafty * { text-transform: none !important; }
+  /* Enforce Lacquer across all body copy (beats inline-style leaks);
+     numeric / monospaced readouts remain in the digital font */
+  .crafty * { font-family: var(--font-body) !important; }
+  .crafty .font-mono,
+  .crafty .font-mono-tech,
+  .crafty .tabular,
+  .crafty .tabular-nums,
+  .crafty code,
+  .crafty pre { font-family: var(--font-mono) !important; }
 }
 
 @layer base {
