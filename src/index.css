@@ -270,6 +270,35 @@
   .text-glow-flare {
     text-shadow: 0 0 6px rgba(255, 92, 0, 0.5), 0 0 16px rgba(255, 92, 0, 0.18);
   }
+  .glitch {
+    position: relative;
+    display: inline-block;
+  }
+  .glitch::before,
+  .glitch::after {
+    content: attr(data-text);
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+  }
+  .glitch::before {
+    text-shadow: -1.5px 0 #00eaff;
+    clip-path: inset(0 0 55% 0);
+    animation: ooh-glitch-top 2.6s infinite steps(2) alternate-reverse;
+  }
+  .glitch::after {
+    text-shadow: 1.5px 0 #ff00e5;
+    clip-path: inset(55% 0 0 0);
+    animation: ooh-glitch-bottom 1.9s infinite steps(2) alternate-reverse;
+  }
+  @keyframes ooh-glitch-top {
+    0% { clip-path: inset(0 0 82% 0); transform: translateX(-1px); }
+    100% { clip-path: inset(38% 0 48% 0); transform: translateX(1px); }
+  }
+  @keyframes ooh-glitch-bottom {
+    0% { clip-path: inset(78% 0 0 0); transform: translateX(1px); }
+    100% { clip-path: inset(22% 0 58% 0); transform: translateX(-1px); }
+  }
   .tabular {
     font-variant-numeric: tabular-nums;
   }
