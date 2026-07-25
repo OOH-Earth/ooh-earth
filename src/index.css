@@ -283,61 +283,69 @@
   .beta ::-webkit-scrollbar-track { background: #0d1117; }
   .beta ::-webkit-scrollbar-thumb { background: rgba(78, 201, 176, 0.35); }
 
-  /* Guild — public-service / Reithian (meaningguild.org) */
+  /* Guild — public-service / Reithian (meaningguild.org)
+     Yellow protest-newspaper canvas, navy structural elements, magenta emphasis.
+     Spectral serif headings, Inter Tight body. Sharp corners, generous whitespace. */
   .guild {
     --font-heading: "Spectral", Georgia, "Times New Roman", serif;
     --font-body: "Inter Tight", ui-sans-serif, system-ui, sans-serif;
     --font-display: "Spectral", Georgia, "Times New Roman", serif;
     --font-mono: "IBM Plex Mono", ui-monospace, monospace;
     --font-brand: "Spectral", Georgia, "Times New Roman", serif;
-    --background: 220 100% 16%;
-    --foreground: 0 0% 94%;
-    --card: 220 100% 20%;
-    --card-foreground: 0 0% 94%;
-    --popover: 220 100% 14%;
+    --background: 63 100% 47%;        /* #E8FF00 high-vis yellow canvas */
+    --foreground: 213 100% 10%;       /* #001833 navy text */
+    --card: 213 100% 10%;             /* navy structural cards */
+    --card-foreground: 0 0% 94%;      /* off-white on navy */
+    --popover: 213 100% 12%;
     --popover-foreground: 0 0% 94%;
-    --primary: 0 0% 94%;
-    --primary-foreground: 220 100% 16%;
-    --secondary: 220 60% 26%;
+    --primary: 213 100% 10%;          /* navy primary button */
+    --primary-foreground: 63 100% 47%; /* yellow on navy */
+    --secondary: 213 60% 18%;
     --secondary-foreground: 0 0% 94%;
-    --muted: 220 60% 24%;
-    --muted-foreground: 220 30% 72%;
-    --accent: 63 100% 50%;
-    --accent-foreground: 220 100% 16%;
-    --destructive: 0 70% 55%;
+    --muted: 213 60% 16%;
+    --muted-foreground: 0 0% 60%;
+    --accent: 330 100% 50%;           /* magenta #FF0080 emphasis */
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 70% 50%;
     --destructive-foreground: 0 0% 98%;
-    --border: 220 60% 30%;
-    --input: 220 60% 30%;
-    --ring: 63 100% 50%;
-    --flare: 22 100% 50%;
+    --border: 213 100% 14%;           /* navy hairline */
+    --input: 213 100% 14%;
+    --ring: 330 100% 50%;
+    --flare: 330 100% 50%;            /* magenta flare */
     --radius: 2px;
-    --c-void: 0 37 84;
-    --c-silver: 241 241 241;
-    --c-slate2: 60 80 120;
-    --c-dim: 150 165 190;
-    --c-darkgray: 180 190 205;
-    --c-ozone: 237 255 0;
-    --c-flare: 255 92 0;
+    --c-void: 213 100% 10%;           /* navy canvas for bg-void */
+    --c-silver: 232 237 242;          /* off-white */
+    --c-slate2: 24 40 70;
+    --c-dim: 120 130 145;
+    --c-darkgray: 160 170 185;
+    --c-ozone: 232 255 0;             /* high-vis yellow accent */
+    --c-flare: 255 0 128;             /* magenta */
   }
-  .guild body { background-color: hsl(220 100% 16%); }
-  .guild ::selection { background-color: #EDFF00; color: #002554; }
+  .guild body { background-color: #E8FF00; }
+  .guild ::selection { background-color: #FF0080; color: #fff; }
   .guild h1, .guild h2, .guild h3, .guild h4 {
     font-family: var(--font-display);
-    font-weight: 500;
-    letter-spacing: -0.005em;
-    line-height: 1.12;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    line-height: 1.1;
+    color: #001833;
   }
-  .guild h1 { font-weight: 700; }
   .guild .font-mono, .guild .font-mono-tech {
     font-family: var(--font-mono);
     font-variant-numeric: tabular-nums;
   }
   .guild a {
+    color: #001833;
     text-decoration: underline;
-    text-decoration-color: rgba(237, 255, 0, 0.4);
+    text-decoration-color: rgba(255, 0, 128, 0.5);
     text-underline-offset: 3px;
   }
-  .guild a:hover { text-decoration-color: #EDFF00; }
+  .guild a:hover { text-decoration-color: #FF0080; }
+  /* Guild emphasis — magenta highlighter on key phrases */
+  .guild .guild-emph {
+    color: #FF0080;
+    font-weight: 700;
+  }
 
   /* Crafty — hand-drawn marker mode */
   .crafty {

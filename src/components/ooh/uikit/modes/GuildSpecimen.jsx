@@ -1,41 +1,64 @@
+import { Users, ArrowRight } from "lucide-react";
+
+const ROLES = [
+  { title: "Guild Convenor" },
+  { title: "Guild Training Facilitator" },
+  { title: "Guild Logistics" },
+];
+
 export default function GuildSpecimen() {
   return (
     <div className="guild relative min-h-[320px] overflow-hidden border border-border bg-background p-6 text-foreground">
-      <span className="absolute -right-3 -top-3 h-12 w-12 rounded-full bg-ozone/15 blur-xl" />
-
-      <div className="flex items-center justify-between border-b border-border pb-2">
-        <span className="font-mono text-[9px] uppercase tracking-[0.2em] text-muted-foreground">✦ guild · public service</span>
-        <span className="font-mono text-[8px] uppercase tracking-[0.2em] text-muted-foreground">.guild</span>
+      {/* Navy structural header strip */}
+      <div className="-mx-6 -mt-6 mb-5 flex items-center justify-between bg-card px-5 py-3">
+        <span className="font-display text-[13px] font-bold uppercase tracking-[0.05em] text-ozone">
+          Meaning Transformation Guild
+        </span>
+        <span className="font-mono text-[8px] uppercase tracking-[0.25em] text-card-foreground/60">.guild</span>
       </div>
 
-      <div className="mt-4">
-        <span className="font-mono text-[9px] uppercase tracking-[0.3em] text-ozone">— reithian</span>
-        <h3 className="mt-1 font-display text-[2rem] leading-[1.08]">
-          We aim to <em className="not-italic text-ozone">educate</em>, <em className="not-italic text-ozone">entertain</em> &amp; <em className="not-italic text-ozone">inform</em>.
+      {/* Manifesto — Spectral serif heading + magenta emphasis */}
+      <div>
+        <h3 className="font-display text-[1.7rem] leading-[1.1]">
+          Detoxifying the <span className="guild-emph">propaganda</span> on our streets.
         </h3>
-        <svg viewBox="0 0 200 4" className="mt-3 h-1 w-full" preserveAspectRatio="none">
-          <line x1="0" y1="2" x2="200" y2="2" stroke="rgb(var(--c-ozone))" strokeWidth="2" />
-        </svg>
+        <p className="mt-3 max-w-[34ch] font-body text-[12px] leading-[1.65] text-foreground/85">
+          We are dedicated to the <span className="guild-emph">removal and detoxification of propaganda</span> in our communities — taking down malicious adverts, correcting their errors, and reinstalling them for public benefit.
+        </p>
       </div>
 
-      <p className="mt-4 max-w-[32ch] font-body text-[12px] leading-[1.6] text-foreground/80">
-        A public service organisation following the Brandalism manifesto — dedicated to the removal and detoxification of propaganda on the streets of our communities.
-      </p>
+      <hr className="my-5 border-0 border-t border-border" />
 
-      <div className="mt-4 flex items-center gap-3">
-        <button className="bg-ozone px-4 py-2 font-mono text-[9px] font-bold uppercase tracking-[0.15em] text-void transition-transform hover:scale-105">View the campaign</button>
-        <button className="border border-border px-4 py-2 font-mono text-[9px] font-bold uppercase tracking-[0.15em] text-foreground transition-colors hover:border-ozone hover:text-ozone">Join the guild</button>
+      {/* Role cards — yellow fill, navy text, magenta glyph, navy apply button */}
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+        {ROLES.map((r) => (
+          <div key={r.title} className="flex flex-col justify-between bg-ozone p-4">
+            <Users className="h-5 w-5 text-accent" strokeWidth={1.5} />
+            <h4 className="mt-3 font-body text-[12px] font-bold leading-tight text-primary">{r.title}</h4>
+            <button className="mt-4 inline-flex w-fit items-center gap-1.5 bg-primary px-3 py-1.5 font-body text-[9px] font-bold uppercase tracking-[0.12em] text-ozone transition-opacity hover:opacity-85">
+              <span className="h-px w-2 bg-ozone" />
+              Apply now
+            </button>
+          </div>
+        ))}
       </div>
 
-      <div className="mt-5 inline-block border border-ozone/60 px-3 py-1 font-mono text-[9px] font-bold uppercase tracking-[0.2em] text-ozone">
-        ◆ union-made
+      {/* Actions — primary navy, secondary bordered */}
+      <div className="mt-5 flex items-center gap-3">
+        <button className="inline-flex items-center gap-2 bg-primary px-5 py-2.5 font-body text-[10px] font-bold uppercase tracking-[0.15em] text-ozone transition-opacity hover:opacity-85">
+          Make a donation <ArrowRight className="h-3 w-3" />
+        </button>
+        <button className="border border-border px-5 py-2.5 font-body text-[10px] font-bold uppercase tracking-[0.15em] text-foreground transition-colors hover:border-accent hover:text-accent">
+          View posters
+        </button>
       </div>
 
-      <div className="mt-4 flex items-center gap-3 border-t border-border pt-3">
-        {[["navy", "bg-background"], ["smoke", "bg-foreground"], ["ozone", "bg-ozone"], ["flare", "bg-flare"]].map(([n, c]) => (
+      {/* Palette */}
+      <div className="mt-5 flex items-center gap-3 border-t border-border pt-3">
+        {[["canvas", "bg-background border border-border"], ["navy", "bg-primary"], ["yellow", "bg-ozone"], ["magenta", "bg-accent"]].map(([n, c]) => (
           <span key={n} className="flex items-center gap-1.5">
-            <span className={`h-3 w-3 border border-border ${c}`} />
-            <span className="font-mono text-[8px] uppercase text-muted-foreground">{n}</span>
+            <span className={`h-3 w-3 ${c}`} />
+            <span className="font-mono text-[8px] uppercase tracking-[0.1em] text-muted-foreground">{n}</span>
           </span>
         ))}
       </div>
