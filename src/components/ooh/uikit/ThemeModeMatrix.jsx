@@ -6,12 +6,12 @@ import CraftySpecimen from "./modes/CraftySpecimen";
 import GuildSpecimen from "./modes/GuildSpecimen";
 
 const MODES = [
-  { key: "dark", label: "Dark · Orbital", Comp: DarkSpecimen },
-  { key: "light", label: "Light · Solar Smoke", Comp: LightSpecimen },
-  { key: "matrix", label: "Matrix · Terminal", Comp: MatrixSpecimen },
-  { key: "beta", label: "BETA · Devtools", Comp: BetaSpecimen },
-  { key: "crafty", label: "Crafty · Marker", Comp: CraftySpecimen },
-  { key: "guild", label: "Guild · Public Service", Comp: GuildSpecimen },
+  { key: "dark", label: "Dark · Orbital", status: "DEFAULT", Comp: DarkSpecimen },
+  { key: "light", label: "Light · Solar Smoke", status: "STABLE", Comp: LightSpecimen },
+  { key: "matrix", label: "Matrix · Terminal", status: "STABLE", Comp: MatrixSpecimen },
+  { key: "beta", label: "BETA · Devtools", status: "STABLE", Comp: BetaSpecimen },
+  { key: "crafty", label: "Crafty · Marker", status: "STABLE", Comp: CraftySpecimen },
+  { key: "guild", label: "Guild · Public Service", status: "ALIGNED", Comp: GuildSpecimen },
 ];
 
 export default function ThemeModeMatrix() {
@@ -21,7 +21,7 @@ export default function ThemeModeMatrix() {
         <figure key={m.key} className="flex flex-col gap-1.5">
           <figcaption className="flex items-center justify-between px-0.5">
             <span className="font-mono text-[9px] uppercase tracking-[0.25em] text-foreground/70">{m.label}</span>
-            <span className="font-mono text-[8px] uppercase tracking-[0.2em] text-muted-foreground">.{m.key}</span>
+            <span className={`font-mono text-[8px] uppercase tracking-[0.2em] ${m.status === "DEFAULT" ? "text-ozone" : "text-muted-foreground"}`}>{m.status}</span>
           </figcaption>
           <m.Comp />
         </figure>

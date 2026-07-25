@@ -23,18 +23,18 @@ const NAV = [
 const STATS = [
   { k: "Core tokens", v: "07", s: "active" },
   { k: "Type styles", v: "07", s: "active" },
-  { k: "Themes", v: "05", s: "online" },
+  { k: "Themes", v: "06", s: "online" },
   { k: "Radius", v: "0px", s: "locked" },
 ];
 
-const FONT_IMPORT = "@import url('https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700;800;900&family=Lacquer&display=swap');";
+const FONT_IMPORT = "@import url('https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700;800;900&family=IBM+Plex+Mono:wght@400;500;600;700&family=Orbitron:wght@400;500;700;900&family=Lacquer&family=Doto:wght@100..900&family=Share+Tech+Mono&family=Spectral:ital,wght@0,400;0,500;0,700;1,400&display=swap');";
 
 const FOUNDATION = [
   { label: "Radius", value: "0px", note: "sharp · no rounding" },
   { label: "Body line-height", value: "1.6", note: "scannable" },
   { label: "Body letter-spacing", value: "-0.005em", note: "tight" },
-  { label: "Shadow · ozone-glow", value: "0 0 24px rgba(237,255,0,0.22)" },
-  { label: "Shadow · flare-glow", value: "0 0 24px rgba(255,92,0,0.28)" },
+  { label: "Heading font", value: "Inter Tight", note: "headings · body · UI" },
+  { label: "Mono / telemetry font", value: "IBM Plex Mono", note: "all numeric data · tabular" },
   { label: "Selection", value: "background #EDFF00 / color #000000" },
 ];
 
@@ -149,7 +149,8 @@ export default function UiKit() {
               </p>
               <div className="mt-5 grid gap-2 sm:grid-cols-2">
                 <CopyField label="Font import" value={FONT_IMPORT} />
-                <CopyField label="Primary typeface" value="Inter Tight — 400 / 500 / 600 / 700 / 800 / 900" note="headings · body · mono labels" />
+                <CopyField label="Primary typeface" value="Inter Tight — 400 / 500 / 600 / 700 / 800 / 900" note="headings · body · UI" />
+                <CopyField label="Telemetry font" value="IBM Plex Mono — 400 / 500 / 600 / 700" note="all numeric data · tabular-nums" />
                 <CopyField label="Signature mark" value="Lacquer" note="brand wordmark only" />
                 <CopyField label="Selection" value="background #EDFF00 · color #000000" />
               </div>
@@ -179,7 +180,7 @@ export default function UiKit() {
               </div>
             </Panel>
 
-            <Panel id="modes" idx="06" title="Operational modes" status="5 online">
+            <Panel id="modes" idx="06" title="Operational modes" status="6 online · dark=default">
               <p className="mb-3 max-w-2xl font-body text-sm leading-[1.6] text-darkgray">
                 Live token preview — each panel renders against the real theme tokens, so edits to <span className="text-ozone">src/index.css</span> update here instantly.
               </p>

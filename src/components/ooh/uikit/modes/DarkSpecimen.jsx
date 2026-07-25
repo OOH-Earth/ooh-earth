@@ -19,7 +19,7 @@ export default function DarkSpecimen() {
       <div className="relative">
         <div className="flex items-center justify-between border-b border-border pb-2">
           <span className="flex items-center gap-1.5 font-mono text-[9px] uppercase tracking-[0.25em] text-foreground/70">
-            <span className="h-1.5 w-1.5 animate-flicker bg-ozone" /> ORBITAL · DEFAULT
+            <span className="h-1.5 w-1.5 animate-flicker bg-ozone" /> ORBITAL · DEFAULT · ACTIVE
           </span>
           <span className="font-mono text-[8px] uppercase tracking-[0.2em] text-muted-foreground">:root</span>
         </div>
