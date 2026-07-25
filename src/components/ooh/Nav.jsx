@@ -11,7 +11,7 @@ import DashboardDropdown from "@/components/ooh/DashboardDropdown";
 import NavMenu from "@/components/ooh/NavMenu";
 import OfflineSyncBadge from "@/components/ooh/OfflineSyncBadge";
 import { useWalkthrough } from "@/lib/walkthroughContext";
-import MiniGlobe from "@/components/ooh/MiniGlobe";
+
 
 export default function Nav({ onCommand }) {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -21,7 +21,6 @@ export default function Nav({ onCommand }) {
       <div className="flex items-center justify-between gap-2 px-3 py-3 md:px-8 md:py-4">
         <div className="flex items-center gap-2">
           <ClimateClock />
-          <MiniGlobe />
           <Link to="/" aria-label="Home console" title="Home" className="flex h-8 w-8 items-center justify-center border border-slate2 text-silver transition-colors hover:border-ozone hover:text-ozone">
             <Gauge className="h-3.5 w-3.5" />
           </Link>
