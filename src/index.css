@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=Audiowide&family=Chakra+Petch:wght@400;500;700&family=Monoton&family=Syncopate:wght@400;700&family=Architects+Daughter:wght@400&family=Rajdhani:wght@400;500;600;700&family=Share+Tech+Mono&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=Audiowide&family=Chakra+Petch:wght@400;500;700&family=Monoton&family=Syncopate:wght@400;700&family=Architects+Daughter:wght@400&family=Rajdhani:wght@400;500;600;700&family=Share+Tech+Mono&family=Anonymous+Pro:wght@400;700;700i&display=swap');
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -73,11 +73,11 @@
 
   /* Matrix theme — cyberpunk green-on-black with magenta flare */
   .matrix {
-    --font-heading: "Orbitron", ui-sans-serif, system-ui, sans-serif;
-    --font-body: "Chakra Petch", ui-sans-serif, system-ui, sans-serif;
-    --font-display: "Audiowide", ui-sans-serif, system-ui, sans-serif;
-    --font-mono: "Share Tech Mono", ui-monospace, monospace;
-    --font-brand: "Monoton", ui-sans-serif, system-ui, sans-serif;
+    --font-heading: "Anonymous Pro", ui-monospace, monospace;
+    --font-body: "Anonymous Pro", ui-monospace, monospace;
+    --font-display: "Anonymous Pro", ui-monospace, monospace;
+    --font-mono: "Anonymous Pro", ui-monospace, monospace;
+    --font-brand: "Anonymous Pro", ui-monospace, monospace;
     --background: 120 50% 3%;
     --foreground: 130 100% 55%;
     --card: 120 30% 5%;
