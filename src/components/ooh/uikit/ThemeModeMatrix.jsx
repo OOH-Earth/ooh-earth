@@ -3,6 +3,7 @@ import LightSpecimen from "./modes/LightSpecimen";
 import MatrixSpecimen from "./modes/MatrixSpecimen";
 import BetaSpecimen from "./modes/BetaSpecimen";
 import CraftySpecimen from "./modes/CraftySpecimen";
+import GuildSpecimen from "./modes/GuildSpecimen";
 
 const MODES = [
   { key: "dark", label: "Dark · Orbital", Comp: DarkSpecimen },
@@ -10,6 +11,7 @@ const MODES = [
   { key: "matrix", label: "Matrix · Terminal", Comp: MatrixSpecimen },
   { key: "beta", label: "BETA · Devtools", Comp: BetaSpecimen },
   { key: "crafty", label: "Crafty · Marker", Comp: CraftySpecimen },
+  { key: "guild", label: "Guild · Public Service", Comp: GuildSpecimen },
 ];
 
 export default function ThemeModeMatrix() {
