@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { MapPin, Radio, ShieldCheck, Crosshair, Activity, TrendingUp, TrendingDown } from "lucide-react";
+import { MapPin, Radio, ShieldCheck, Crosshair, Activity, TrendingUp, TrendingDown, ArrowUpRight } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 
 const relTime = (iso) => {
@@ -56,11 +56,15 @@ function Sparkline({ data, color }) {
   );
 }
 
-function Stat({ label, value, Icon, color, suffix, delta }) {
+function Stat({ label, value, Icon, color, suffix, delta, to }) {
   const n = useCountUp(value);
   return (
-    <div className="group relative overflow-hidden border border-border bg-card/70 p-3 backdrop-blur-md transition-colors hover:border-ozone/50">
-      <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-ozone/40 to-transparent opacity-0 transition-opacity group-hover:opacity-100" />
+    <Link
+      to={to}
+      className="group relative block overflow-hidden border border-border bg-card/70 p-3 backdrop-blur-md transition-all duration-200 hover:-translate-y-0.5 hover:border-ozone/50 hover:shadow-[0_10px_28px_-10px_rgba(0,0,0,0.55)]"
+    >
+      <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-ozone/50 to-transparent opacity-0 transition-opacity duration-200 group-hover:opacity-100" />
+      <ArrowUpRight className="absolute right-2 top-2 h-3 w-3 translate-y-1 text-ozone opacity-0 transition-all duration-200 group-hover:translate-y-0 group-hover:opacity-100" />
       <div className="flex items-center justify-between">
         <span className="flex items-center gap-1.5 font-mono text-[8px] uppercase tracking-[0.25em] text-muted-foreground">
           <Icon className="h-3 w-3" style={{ color }} />
@@ -76,7 +80,7 @@ function Stat({ label, value, Icon, color, suffix, delta }) {
       <div className="mt-2 font-mono text-xl font-bold tabular leading-none" style={{ color }}>
         {String(n).padStart(2, "0")}{suffix}
       </div>
-    </div>
+    </Link>
   );
 }
 
@@ -99,7 +103,6 @@ export default function HeroConsole({ onCommand }) {
         const live = (locs || []).filter((x) => x.status !== "rejected");
         const verified = live.filter((x) => x.status === "verified").length;
 
-        // 14-day telemetry series + week-over-week delta
         const days = 14;
         const series = new Array(days).fill(0);
         const nowMs = Date.now();
@@ -160,9 +163,13 @@ export default function HeroConsole({ onCommand }) {
       </div>
 
       {/* Featured bento — live spots + sparkline + delta */}
-      <div className="relative col-span-2 overflow-hidden border border-ozone/40 bg-card/70 p-4 backdrop-blur-md">
-        <div className="pointer-events-none absolute -right-10 -top-10 h-28 w-28 rounded-full bg-ozone/20 blur-2xl" />
+      <Link to="/map" className="group relative col-span-2 block overflow-hidden border border-ozone/40 bg-card/70 p-4 backdrop-blur-md transition-all duration-200 hover:-translate-y-0.5 hover:border-ozone hover:shadow-[0_14px_36px_-12px_rgba(0,0,0,0.6)]">
+        <div className="pointer-events-none absolute -right-10 -top-10 h-28 w-28 rounded-full bg-ozone/20 blur-2xl transition-all duration-300 group-hover:bg-ozone/30" />
         <div className="pointer-events-none absolute -bottom-8 left-6 h-20 w-20 rounded-full bg-flare/10 blur-2xl" />
+        {/* live scan sweep */}
+        <div className="pointer-events-none absolute inset-0 overflow-hidden">
+          <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-ozone/60 to-transparent animate-scan" />
+        </div>
         <div className="relative flex items-start justify-between">
           <div>
             <span className="font-mono text-[8px] uppercase tracking-[0.3em] text-ozone">// live spots</span>
@@ -178,17 +185,17 @@ export default function HeroConsole({ onCommand }) {
         <div className="relative mt-3">
           <Sparkline data={d.series} color="rgb(var(--c-ozone))" />
         </div>
-      </div>
+      </Link>
 
-      <Stat label="Operatives" value={d.ops} Icon={Radio} color="#1F51FF" />
-      <Stat label="Verified" value={d.verified} Icon={ShieldCheck} color="#39FF14" />
-      <Stat label="Leads" value={d.leads} Icon={Crosshair} color="rgb(var(--c-flare))" />
-      <Stat label="Verify rate" value={d.rate} Icon={ShieldCheck} color="rgb(var(--c-ozone))" suffix="%" />
+      <Stat label="Operatives" value={d.ops} Icon={Radio} color="#1F51FF" to="/map" />
+      <Stat label="Verified" value={d.verified} Icon={ShieldCheck} color="#39FF14" to="/map" />
+      <Stat label="Leads" value={d.leads} Icon={Crosshair} color="rgb(var(--c-flare))" to="/campaign" />
+      <Stat label="Verify rate" value={d.rate} Icon={ShieldCheck} color="rgb(var(--c-ozone))" suffix="%" to="/map" />
 
       {/* Latest log */}
-      <div className="col-span-2 flex items-center justify-between gap-2 border border-border bg-card/70 px-3 py-2.5 backdrop-blur-md">
+      <Link to="/map" className="group col-span-2 flex items-center justify-between gap-2 border border-border bg-card/70 px-3 py-2.5 backdrop-blur-md transition-all duration-200 hover:-translate-y-0.5 hover:border-ozone/50">
         <div className="flex min-w-0 flex-1 items-center gap-2.5">
-          <span className="h-6 w-0.5 shrink-0 bg-ozone" />
+          <span className="h-6 w-0.5 shrink-0 bg-ozone transition-all duration-200 group-hover:h-7" />
           <div className="min-w-0 flex-1">
             <div className="font-mono text-[7px] uppercase tracking-[0.25em] text-muted-foreground">latest log</div>
             <div className="truncate font-mono text-[11px] font-bold text-foreground">
@@ -199,7 +206,7 @@ export default function HeroConsole({ onCommand }) {
         <span className="ml-2 shrink-0 font-mono text-[8px] tabular text-ozone">
           {cur ? relTime(cur.created_date) : ""}
         </span>
-      </div>
+      </Link>
 
       {/* Actions */}
       <div className="col-span-2 flex items-center justify-between gap-2 border border-border bg-card/70 px-3 py-2 backdrop-blur-md">
