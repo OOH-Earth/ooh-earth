@@ -186,6 +186,102 @@
   .matrix ::-webkit-scrollbar { width: 8px; height: 8px; }
   .matrix ::-webkit-scrollbar-track { background: #02110a; }
   .matrix ::-webkit-scrollbar-thumb { background: rgba(0, 255, 85, 0.4); }
+
+  /* BETA MODE — developer debug / devtools */
+  .beta {
+    --font-heading: "Share Tech Mono", ui-monospace, monospace;
+    --font-body: "IBM Plex Mono", ui-monospace, monospace;
+    --font-display: "Share Tech Mono", ui-monospace, monospace;
+    --font-mono: "IBM Plex Mono", ui-monospace, monospace;
+    --font-brand: "Share Tech Mono", ui-monospace, monospace;
+    --background: 220 14% 10%;
+    --foreground: 220 8% 83%;
+    --card: 220 14% 13%;
+    --card-foreground: 220 8% 83%;
+    --popover: 220 14% 9%;
+    --popover-foreground: 220 8% 83%;
+    --primary: 187 47% 55%;
+    --primary-foreground: 220 14% 8%;
+    --secondary: 220 12% 18%;
+    --secondary-foreground: 220 8% 83%;
+    --muted: 220 12% 18%;
+    --muted-foreground: 220 6% 52%;
+    --accent: 207 82% 66%;
+    --accent-foreground: 220 14% 8%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 220 14% 24%;
+    --input: 220 14% 24%;
+    --ring: 187 47% 55%;
+    --flare: 28 90% 60%;
+    --radius: 2px;
+    --c-void: 26 30 38;
+    --c-silver: 200 205 212;
+    --c-slate2: 56 60 70;
+    --c-dim: 120 124 130;
+    --c-darkgray: 160 165 170;
+    --c-ozone: 78 201 176;
+    --c-flare: 206 145 120;
+  }
+  .beta body {
+    background-color: hsl(220 14% 10%);
+    background-image:
+      linear-gradient(rgba(78, 201, 176, 0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(78, 201, 176, 0.04) 1px, transparent 1px);
+    background-size: 24px 24px;
+  }
+  .beta ::selection { background-color: #4ec9b0; color: #0d1117; }
+  .beta h1 {
+    font-family: var(--font-display);
+    text-transform: none;
+    letter-spacing: 0.02em;
+    font-weight: 400;
+    line-height: 1.1;
+    color: #61afef;
+    text-shadow: 0 0 8px rgba(97, 175, 239, 0.16);
+  }
+  .beta h2 {
+    font-family: var(--font-heading);
+    text-transform: none;
+    letter-spacing: 0.04em;
+    font-weight: 400;
+    line-height: 1.15;
+    color: #4ec9b0;
+  }
+  .beta h3, .beta h4 {
+    font-family: var(--font-heading);
+    text-transform: none;
+    letter-spacing: 0.05em;
+    font-weight: 700;
+    line-height: 1.2;
+    color: #dcdcaa;
+  }
+  .beta p, .beta li, .beta dd, .beta dt {
+    font-family: var(--font-body);
+    letter-spacing: 0.005em;
+    line-height: 1.55;
+    color: #c8ccd4;
+  }
+  .beta .font-mono, .beta .font-mono-tech {
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+  }
+  .beta a {
+    color: #61afef;
+    text-decoration: underline;
+    text-decoration-color: rgba(97, 175, 239, 0.4);
+    text-underline-offset: 3px;
+  }
+  .beta a:hover { text-decoration-color: #61afef; }
+  .beta button:hover,
+  .beta a:hover,
+  .beta [role="button"]:hover {
+    outline: 1px dashed rgba(78, 201, 176, 0.45);
+    outline-offset: 2px;
+  }
+  .beta ::-webkit-scrollbar { width: 8px; height: 8px; }
+  .beta ::-webkit-scrollbar-track { background: #0d1117; }
+  .beta ::-webkit-scrollbar-thumb { background: rgba(78, 201, 176, 0.35); }
 }
 
 @layer base {
