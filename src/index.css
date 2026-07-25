@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=Audiowide&family=Chakra+Petch:wght@400;500;700&family=Monoton&family=Syncopate:wght@400;700&family=Architects+Daughter:wght@400&family=Rajdhani:wght@400;500;600;700&family=Share+Tech+Mono&family=Anonymous+Pro:wght@400;700;700i&family=IBM+Plex+Mono:wght@400;500;600;700&family=VT323&family=Major+Mono+Display&family=Doto:wght@100..900&family=Bangers&family=Comic+Neue:wght@400;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=Audiowide&family=Chakra+Petch:wght@400;500;700&family=Monoton&family=Syncopate:wght@400;700&family=Architects+Daughter:wght@400&family=Rajdhani:wght@400;500;600;700&family=Share+Tech+Mono&family=Anonymous+Pro:wght@400;700;700i&family=IBM+Plex+Mono:wght@400;500;600;700&family=VT323&family=Major+Mono+Display&family=Doto:wght@100..900&family=Lacquer&family=Comic+Neue:wght@400;700&display=swap');
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -189,11 +189,11 @@
 
   /* Lacquer — glossy enamel + comic book */
   .lacquer {
-    --font-heading: "Bangers", "Comic Neue", cursive;
+    --font-heading: "Lacquer", "Comic Neue", cursive;
     --font-body: "Comic Neue", ui-sans-serif, cursive;
-    --font-display: "Bangers", "Comic Neue", cursive;
+    --font-display: "Lacquer", "Comic Neue", cursive;
     --font-mono: "Comic Neue", ui-monospace, cursive;
-    --font-brand: "Bangers", cursive;
+    --font-brand: "Lacquer", cursive;
     --background: 0 0% 7%;
     --foreground: 0 0% 97%;
     --card: 0 0% 11%;
