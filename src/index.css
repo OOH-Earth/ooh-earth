@@ -356,7 +356,11 @@
   .guild .bg-card .text-card-foreground { color: #002554 !important; }
   .guild .bg-card .text-muted-foreground { color: #4a5a6a !important; }
   .guild .bg-card .text-ozone,
-  .guild .bg-card .text-accent { color: #002554 !important; }
+  .guild .bg-card .text-accent,
+  .guild .bg-card .text-flare { color: #002554 !important; }
+  /* Kill yellow glow on light cards — shadow renders as invisible halo */
+  .guild .bg-card .text-glow-ozone,
+  .guild .bg-card .text-glow-flare { text-shadow: none !important; }
 
   /* (2) Yellow backgrounds (primary, accent, ozone, flare) — navy text */
   .guild .bg-primary,
