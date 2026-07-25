@@ -23,6 +23,7 @@ import Plans from '@/pages/Plans';
 import Dashboard from '@/pages/Dashboard';
 import FdePortal from '@/pages/FdePortal';
 import AtariPortfolio from '@/pages/AtariPortfolio';
+import Sitemap from '@/pages/Sitemap';
 import Campaign from '@/pages/Campaign';
 import ArLens from '@/pages/ArLens';
 import TrueCost from '@/pages/TrueCost';
@@ -102,6 +103,7 @@ const AuthenticatedApp = () => {
       <Route path="/dashboard" element={<Dashboard />} />
       <Route path="/fde" element={<FdePortal />} />
       <Route path="/portfolio" element={<AtariPortfolio />} />
+      <Route path="/sitemap" element={<Sitemap />} />
     </Route>
     <Route path="*" element={<PageNotFound />} />
     </Routes>
