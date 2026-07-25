@@ -8,6 +8,7 @@ import HorizonProgress from "@/components/ooh/HorizonProgress";
 import { useWalkthrough } from "@/lib/walkthroughContext";
 import { CAT_META, priceLabel, ProductPreview } from "@/components/ooh/store/catalog";
 import { downloadItemPdf } from "@/components/ooh/store/downloadPdf";
+import ComponentGallery from "@/components/ooh/store/ComponentGallery";
 
 const STORE_TOUR = [
   { title: "OOH Store", body: "Two wings. The Library sells our research and field docs. The Store fronts digital products built on this app — plugins, UI kits, the Base44 theme — then NFT drops and one-off physical prototypes." },
@@ -168,6 +169,7 @@ export default function Store() {
             <TabsList className="border border-slate2/60 bg-card">
               <TabsTrigger value="library" className="font-mono text-[10px] uppercase tracking-[0.25em] data-[state=active]:bg-ozone data-[state=active]:text-void">Library</TabsTrigger>
               <TabsTrigger value="store" className="font-mono text-[10px] uppercase tracking-[0.25em] data-[state=active]:bg-ozone data-[state=active]:text-void">Store</TabsTrigger>
+              <TabsTrigger value="components" className="font-mono text-[10px] uppercase tracking-[0.25em] data-[state=active]:bg-ozone data-[state=active]:text-void">Components</TabsTrigger>
             </TabsList>
             <TabsContent value="library" className="mt-6">
               <div className="mb-4 font-mono text-[9px] uppercase tracking-[0.25em] text-dim">// Research, field docs & reference — sourced from our own data</div>
@@ -176,6 +178,10 @@ export default function Store() {
             <TabsContent value="store" className="mt-6">
               <div className="mb-4 font-mono text-[9px] uppercase tracking-[0.25em] text-dim">// Digital products · NFT drops · physical prototypes</div>
               <Grid items={shop} onBuy={buy} onGiveaway={giveaway} busy={busy} emptyNote="// No store entries yet" />
+            </TabsContent>
+            <TabsContent value="components" className="mt-6">
+              <div className="mb-4 font-mono text-[9px] uppercase tracking-[0.25em] text-dim">// Live components built on this site — Framer / React / SVG</div>
+              <ComponentGallery onGiveaway={giveaway} />
             </TabsContent>
           </Tabs>
         </div>
