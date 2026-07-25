@@ -6,7 +6,7 @@ import {
   X, ChevronRight, ChevronDown, Compass,
   Home, Map as MapIcon, Megaphone, Scan, Tv, LayoutDashboard,
   Trash2, Coins, CreditCard, LayoutGrid, Info, Briefcase,
-  BookOpen, Heart, Layers, LifeBuoy, Network,
+  BookOpen, Heart, Layers, LifeBuoy, Network, ShoppingBag,
 } from "lucide-react";
 import { BUS_STOP_AREAS } from "@/components/ooh/busStops";
 
@@ -58,6 +58,7 @@ const SITEMAP = [
       { to: "/campaign", label: "Fund" },
       { to: "/plans", label: "Plans" },
       { to: "/support", label: "Support" },
+      { to: "/store", label: "Store" },
       { to: "/sitemap", label: "Sitemap" },
     ],
   },
@@ -68,7 +69,7 @@ const ICON = {
   "OOH·TV": Tv, Dashboard: LayoutDashboard, TrueCost: Scan, "Trash ID": Trash2,
   Zora: Coins, "Field ID": CreditCard, "Union Card": CreditCard, "UI Kit": LayoutGrid,
   About: Info, Careers: Briefcase, Guides: BookOpen, Fund: Heart, Plans: Layers,
-  Support: LifeBuoy, "Bus Stops": MapIcon, "FDE Portal": Compass, "Atari Portfolio": Coins, Sitemap: Network,
+  Support: LifeBuoy, "Bus Stops": MapIcon, "FDE Portal": Compass, "Atari Portfolio": Coins, Sitemap: Network, Store: ShoppingBag,
 };
 
 const AREA_COUNT = BUS_STOP_AREAS.length;
