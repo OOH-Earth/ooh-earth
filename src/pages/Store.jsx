@@ -5,6 +5,12 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import Nav from "@/components/ooh/Nav";
 import HorizonProgress from "@/components/ooh/HorizonProgress";
 import { useWalkthrough } from "@/lib/walkthroughContext";
+import AtlasPreview from "@/components/ooh/store/AtlasPreview";
+import ThemePreview from "@/components/ooh/store/ThemePreview";
+import MetroKitPreview from "@/components/ooh/store/MetroKitPreview";
+import CursorPackPreview from "@/components/ooh/store/CursorPackPreview";
+import NftDropPreview from "@/components/ooh/store/NftDropPreview";
+import PhysicalPreview from "@/components/ooh/store/PhysicalPreview";
 
 const STORE_TOUR = [
   { title: "OOH Store", body: "Two wings. The Library sells our research and field docs. The Store fronts digital products built on this app — plugins, UI kits, the Base44 theme — then NFT drops and one-off physical prototypes." },
@@ -18,6 +24,15 @@ const CAT_META = {
   theme: { icon: Sparkles, label: "Theme" },
   nft: { icon: Sparkles, label: "NFT Drop" },
   physical: { icon: Package, label: "Prototype" },
+};
+
+const PREVIEW = {
+  library: AtlasPreview,
+  theme: ThemePreview,
+  uikit: MetroKitPreview,
+  plugin: CursorPackPreview,
+  nft: NftDropPreview,
+  physical: PhysicalPreview,
 };
 
 function priceLabel(item) {
@@ -45,9 +60,7 @@ function ProductCard({ item, onBuy, busy }) {
         {item.image_url ? (
           <img src={item.image_url} alt={item.title} className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" />
         ) : (
-          <div className="flex h-full w-full items-center justify-center">
-            <Icon className="h-10 w-10 text-dim/40" />
-          </div>
+          <div className="h-full w-full">{(() => { const P = PREVIEW[item.category] || AtlasPreview; return <P />; })()}</div>
         )}
         <span className="absolute left-2 top-2 flex items-center gap-1 border border-slate2/60 bg-void/80 px-1.5 py-0.5 font-mono text-[8px] uppercase tracking-[0.2em] text-ozone backdrop-blur">
           <Icon className="h-2.5 w-2.5" /> {cat.label}
