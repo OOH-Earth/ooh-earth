@@ -435,12 +435,10 @@
   .guild .bg-secondary .text-primary-foreground,
   .guild .bg-secondary .text-accent-foreground,
   .guild .bg-secondary .text-void { color: #FFFFFF !important; }
-  /* Navy text (text-void) on navy bg → white */
-  .guild .bg-void .text-void,
-  .guild .bg-popover .text-void,
-  .guild .bg-muted .text-void,
-  .guild .bg-secondary .text-void,
-  .guild .bg-background .text-void { color: #FFFFFF !important; }
+  /* NOTE: text-void (navy) is designed for light/yellow backgrounds — do NOT
+     force it white just because an ancestor has a navy bg, or buttons like
+     "EXPLORE THE MAP" (bg-ozone text-void inside a bg-void hero) lose their
+     navy-on-yellow contrast. */
 
   /* Links — white on navy, navy on light, yellow hover */
   .guild a { color: #FFFFFF; text-decoration: underline; text-decoration-color: rgba(237,255,0,0.5); text-underline-offset: 3px; }

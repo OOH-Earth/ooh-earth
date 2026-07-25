@@ -29,7 +29,7 @@ function useCountUp(target, dur = 1100) {
   return n;
 }
 
-function Sparkline({ data, color }) {
+function Sparkline({ data, colorClass }) {
   if (!data || data.length < 2) return null;
   const w = 100, h = 30;
   const max = Math.max(...data, 1);
@@ -43,20 +43,20 @@ function Sparkline({ data, color }) {
   const line = `M${pts.join(" L")}`;
   const area = `${line} L${w},${h} L0,${h} Z`;
   return (
-    <svg viewBox={`0 0 ${w} ${h}`} preserveAspectRatio="none" className="h-7 w-full overflow-visible">
+    <svg viewBox={`0 0 ${w} ${h}`} preserveAspectRatio="none" className={`h-7 w-full overflow-visible ${colorClass}`}>
       <defs>
         <linearGradient id="spark-fill" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor={color} stopOpacity="0.4" />
-          <stop offset="100%" stopColor={color} stopOpacity="0" />
+          <stop offset="0%" stopColor="currentColor" stopOpacity="0.4" />
+          <stop offset="100%" stopColor="currentColor" stopOpacity="0" />
         </linearGradient>
       </defs>
       <path className="spark-area" d={area} fill="url(#spark-fill)" />
-      <path className="spark-line" d={line} fill="none" stroke={color} strokeWidth="1.6" strokeLinejoin="round" strokeLinecap="round" />
+      <path className="spark-line" d={line} fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" strokeLinecap="round" />
     </svg>
   );
 }
 
-function Stat({ label, value, Icon, color, suffix, to }) {
+function Stat({ label, value, Icon, colorClass, suffix, to }) {
   const n = useCountUp(value);
   return (
     <Link
@@ -67,11 +67,11 @@ function Stat({ label, value, Icon, color, suffix, to }) {
       <ArrowUpRight className="absolute right-2 top-2 h-3 w-3 translate-y-1 text-ozone opacity-0 transition-all duration-200 group-hover:translate-y-0 group-hover:opacity-100" />
       <div className="flex items-center justify-between">
         <span className="flex items-center gap-1.5 font-mono text-[8px] uppercase tracking-[0.25em] text-muted-foreground">
-          <Icon className="h-3 w-3" style={{ color }} />
+          <Icon className={`h-3 w-3 ${colorClass}`} />
           {label}
         </span>
       </div>
-      <div className="mt-2 font-mono text-xl font-bold tabular leading-none" style={{ color }}>
+      <div className={`mt-2 font-mono text-xl font-bold tabular leading-none ${colorClass}`}>
         {String(n).padStart(2, "0")}{suffix}
       </div>
     </Link>
@@ -176,14 +176,14 @@ export default function HeroConsole({ onCommand }) {
           </span>
         </div>
         <div className="relative mt-3">
-          <Sparkline key={d.series.join("-")} data={d.series} color="rgb(var(--c-ozone))" />
+          <Sparkline key={d.series.join("-")} data={d.series} colorClass="text-ozone" />
         </div>
       </Link>
 
-      <Stat label="Operatives" value={d.ops} Icon={Radio} color="#1F51FF" to="/map" />
-      <Stat label="Verified" value={d.verified} Icon={ShieldCheck} color="#39FF14" to="/map" />
-      <Stat label="Leads" value={d.leads} Icon={Crosshair} color="rgb(var(--c-flare))" to="/campaign" />
-      <Stat label="Verify rate" value={d.rate} Icon={ShieldCheck} color="rgb(var(--c-ozone))" suffix="%" to="/map" />
+      <Stat label="Operatives" value={d.ops} Icon={Radio} colorClass="text-brand-blue" to="/map" />
+      <Stat label="Verified" value={d.verified} Icon={ShieldCheck} colorClass="text-brand-green" to="/map" />
+      <Stat label="Leads" value={d.leads} Icon={Crosshair} colorClass="text-flare" to="/campaign" />
+      <Stat label="Verify rate" value={d.rate} Icon={ShieldCheck} colorClass="text-ozone" suffix="%" to="/map" />
 
       {/* Streaming ticker */}
       <div className="col-span-2 flex items-center gap-2 overflow-hidden border border-border bg-card px-3 py-2 rounded-xl">
