@@ -33,15 +33,15 @@ function Ring({ pct, label, color }) {
   return (
     <div className="flex flex-col items-center gap-2">
       <svg viewBox="0 0 64 64" className="h-16 w-16">
-        <circle cx="32" cy="32" r={r} fill="none" stroke="currentColor" strokeWidth="5" className="text-white/10" />
+        <circle cx="32" cy="32" r={r} fill="none" stroke="currentColor" strokeWidth="5" className="text-foreground/10" />
         <circle
           cx="32" cy="32" r={r} fill="none" stroke={color} strokeWidth="5" strokeLinecap="round"
           strokeDasharray={c} strokeDashoffset={go ? off : c} transform="rotate(-90 32 32)"
           style={{ transition: "stroke-dashoffset 1.3s cubic-bezier(0.22,1,0.36,1)" }}
         />
-        <text x="32" y="37" textAnchor="middle" className="fill-white text-[11px] font-bold" style={{ fontFamily: "inherit" }}>{pct}%</text>
+        <text x="32" y="37" textAnchor="middle" className="fill-foreground text-[11px] font-bold" style={{ fontFamily: "inherit" }}>{pct}%</text>
       </svg>
-      <span className="font-mono text-[8px] uppercase tracking-[0.15em] text-white/60">{label}</span>
+      <span className="font-mono text-[8px] uppercase tracking-[0.15em] text-foreground/60">{label}</span>
     </div>
   );
 }
@@ -122,7 +122,7 @@ export default function MetroKit() {
           </article>
 
           {/* 2 · Global Offense Map — inverted card */}
-          <article className="group flex flex-col gap-5 rounded-xl border border-border bg-primary p-6 text-primary-foreground shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-ozone/40 hover:shadow-[0_18px_44px_-18px_rgba(237,255,0,0.22)] active:scale-[0.99]">
+          <article className="group metro-invert flex flex-col gap-5 rounded-xl border border-border bg-primary p-6 text-primary-foreground shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-ozone/40 hover:shadow-[0_18px_44px_-18px_rgba(237,255,0,0.22)] active:scale-[0.99]">
             <div>
               <h3 className="font-display text-lg font-bold tracking-[-0.01em]">Global Offense Map</h3>
               <p className="mt-1 font-display text-[13px] leading-relaxed text-primary-foreground/60">
@@ -130,14 +130,14 @@ export default function MetroKit() {
               </p>
             </div>
 
-            <div className="rounded-lg border border-primary-foreground/10 bg-primary-foreground/5 p-4">
+            <div className="metro-sub rounded-lg border border-primary-foreground/10 bg-primary-foreground/5 p-4">
               <div className="flex items-center justify-between border-b border-primary-foreground/10 pb-2">
                 <span className="font-mono text-[9px] uppercase tracking-[0.2em] text-primary-foreground/70">City Dashboard</span>
                 <span className="font-mono text-[10px] tabular text-ozone">{billboardsPct}% Completion</span>
               </div>
               <div className="mt-2 space-y-1.5">
                 {CITY_ROWS.map((r, i) => (
-                  <div key={i} className="flex items-center gap-3 rounded-md bg-primary-foreground/5 px-2.5 py-1.5">
+                  <div key={i} className="metro-row flex items-center gap-3 rounded-md bg-primary-foreground/5 px-2.5 py-1.5">
                     <span className={`h-1.5 w-1.5 shrink-0 rounded-full ${r.on ? "bg-[#39FF14]" : "bg-primary-foreground/30"}`} />
                     <span className="font-mono text-[9px] tabular text-primary-foreground/50">{r.t}</span>
                     <span className="flex-1 truncate font-display text-[12px] font-medium">{r.s}</span>
@@ -171,7 +171,7 @@ export default function MetroKit() {
           </article>
 
           {/* 4 · City Impact Reports — inverted card with rings */}
-          <article className="group flex flex-col gap-5 rounded-xl border border-border bg-primary p-6 text-primary-foreground shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-ozone/40 hover:shadow-[0_18px_44px_-18px_rgba(237,255,0,0.22)] active:scale-[0.99]">
+          <article className="group metro-invert flex flex-col gap-5 rounded-xl border border-border bg-primary p-6 text-primary-foreground shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-ozone/40 hover:shadow-[0_18px_44px_-18px_rgba(237,255,0,0.22)] active:scale-[0.99]">
             <div>
               <h3 className="font-display text-lg font-bold tracking-[-0.01em]">City Impact Reports</h3>
               <p className="mt-1 font-display text-[13px] leading-relaxed text-primary-foreground/60">
@@ -179,7 +179,7 @@ export default function MetroKit() {
               </p>
             </div>
 
-            <div className="rounded-lg border border-primary-foreground/10 bg-primary-foreground/5 p-5">
+            <div className="metro-sub rounded-lg border border-primary-foreground/10 bg-primary-foreground/5 p-5">
               <div className="mb-4 font-mono text-[9px] uppercase tracking-[0.2em] text-primary-foreground/70">Your city this month</div>
               <div className="flex items-center justify-around">
                 <Ring pct={billboardsPct} label="Billboards" color="#FF8A00" />

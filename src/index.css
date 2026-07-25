@@ -609,6 +609,17 @@
 
 .tape { background: rgb(var(--c-ozone) / 0.16); border: 1px dashed rgb(var(--c-ozone) / 0.5); box-shadow: 0 2px 8px rgba(0,0,0,0.3); }
 
+/* Light mode: MetroKit inverted cards become solid, legible header-style surfaces */
+.light .metro-invert {
+  --primary: var(--card);
+  --primary-foreground: var(--foreground);
+}
+.light .metro-invert .metro-sub,
+.light .metro-invert .metro-row {
+  background-color: hsl(var(--background));
+  border-color: hsl(var(--border));
+}
+
 /* BrandMark — orbital gyroscope */
 @keyframes ooh-core-pulse {
   0%, 100% { transform: scale(1); }
