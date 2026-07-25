@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { MapPin, Radio, ShieldCheck, Crosshair, Activity } from "lucide-react";
+import { MapPin, Radio, ShieldCheck, Crosshair, Activity, TrendingUp, TrendingDown } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 
 const relTime = (iso) => {
@@ -29,25 +29,62 @@ function useCountUp(target, dur = 1100) {
   return n;
 }
 
-function Stat({ label, value, Icon, color }) {
+function Sparkline({ data, color }) {
+  if (!data || data.length < 2) return null;
+  const w = 100, h = 30;
+  const max = Math.max(...data, 1);
+  const min = Math.min(...data, 0);
+  const range = max - min || 1;
+  const pts = data.map((v, i) => {
+    const x = (i / (data.length - 1)) * w;
+    const y = h - ((v - min) / range) * (h - 6) - 3;
+    return `${x.toFixed(1)},${y.toFixed(1)}`;
+  });
+  const line = `M${pts.join(" L")}`;
+  const area = `${line} L${w},${h} L0,${h} Z`;
+  return (
+    <svg viewBox={`0 0 ${w} ${h}`} preserveAspectRatio="none" className="h-7 w-full overflow-visible">
+      <defs>
+        <linearGradient id="spark-fill" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor={color} stopOpacity="0.4" />
+          <stop offset="100%" stopColor={color} stopOpacity="0" />
+        </linearGradient>
+      </defs>
+      <path d={area} fill="url(#spark-fill)" />
+      <path d={line} fill="none" stroke={color} strokeWidth="1.6" strokeLinejoin="round" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+function Stat({ label, value, Icon, color, suffix, delta }) {
   const n = useCountUp(value);
   return (
-    <div className="flex flex-col justify-between border border-slate2/60 bg-void/50 p-3 backdrop-blur-sm transition-colors hover:border-ozone/40">
+    <div className="group relative overflow-hidden border border-border bg-card/70 p-3 backdrop-blur-md transition-colors hover:border-ozone/50">
+      <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-ozone/40 to-transparent opacity-0 transition-opacity group-hover:opacity-100" />
       <div className="flex items-center justify-between">
-        <span className="font-mono text-[8px] uppercase tracking-[0.25em] text-dim">{label}</span>
-        <Icon className="h-3 w-3" style={{ color }} />
+        <span className="flex items-center gap-1.5 font-mono text-[8px] uppercase tracking-[0.25em] text-muted-foreground">
+          <Icon className="h-3 w-3" style={{ color }} />
+          {label}
+        </span>
+        {delta != null && (
+          <span className="flex items-center gap-0.5 font-mono text-[8px] tabular" style={{ color: delta >= 0 ? "rgb(var(--c-ozone))" : "rgb(var(--c-flare))" }}>
+            {delta >= 0 ? <TrendingUp className="h-2.5 w-2.5" /> : <TrendingDown className="h-2.5 w-2.5" />}
+            {Math.abs(delta)}%
+          </span>
+        )}
       </div>
-      <div className="mt-2 font-mono text-xl font-bold tabular leading-none text-glow-ozone" style={{ color }}>
-        {String(n).padStart(2, "0")}
+      <div className="mt-2 font-mono text-xl font-bold tabular leading-none" style={{ color }}>
+        {String(n).padStart(2, "0")}{suffix}
       </div>
     </div>
   );
 }
 
 export default function HeroConsole({ onCommand }) {
-  const [d, setD] = useState({ spots: 0, verified: 0, leads: 0, ops: 0, feed: [] });
+  const [d, setD] = useState({ spots: 0, verified: 0, leads: 0, ops: 0, rate: 0, feed: [], series: [], delta: 0 });
   const [now, setNow] = useState(() => new Date());
   const [fi, setFi] = useState(0);
+  const spotsCount = useCountUp(d.spots, 1300);
 
   useEffect(() => {
     let cancelled = false;
@@ -60,12 +97,30 @@ export default function HeroConsole({ onCommand }) {
         ]);
         if (cancelled) return;
         const live = (locs || []).filter((x) => x.status !== "rejected");
+        const verified = live.filter((x) => x.status === "verified").length;
+
+        // 14-day telemetry series + week-over-week delta
+        const days = 14;
+        const series = new Array(days).fill(0);
+        const nowMs = Date.now();
+        live.forEach((x) => {
+          if (!x.created_date) return;
+          const dayAgo = Math.floor((nowMs - new Date(x.created_date).getTime()) / 86400000);
+          if (dayAgo >= 0 && dayAgo < days) series[days - 1 - dayAgo]++;
+        });
+        const recent = series.slice(7).reduce((a, b) => a + b, 0);
+        const prev = series.slice(0, 7).reduce((a, b) => a + b, 0);
+        const delta = prev > 0 ? Math.round(((recent - prev) / prev) * 100) : (recent > 0 ? 100 : 0);
+
         setD({
           spots: live.length,
-          verified: live.filter((x) => x.status === "verified").length,
+          verified,
           leads: (leads || []).filter((x) => x.status === "pending").length,
           ops: (ops || []).length,
+          rate: live.length ? Math.round((verified / live.length) * 100) : 0,
           feed: (locs || []).slice(0, 10),
+          series,
+          delta,
         });
       } catch { /* offline */ }
     };
@@ -90,26 +145,55 @@ export default function HeroConsole({ onCommand }) {
 
   return (
     <div className="grid grid-cols-2 gap-2.5 md:col-span-6">
-      <div className="col-span-2 flex items-center justify-between border border-ozone/40 bg-void/50 px-3 py-2 backdrop-blur-sm">
+      {/* Header rail */}
+      <div className="col-span-2 flex items-center justify-between border border-border bg-card/70 px-3 py-2 backdrop-blur-md">
         <span className="flex items-center gap-1.5">
-          <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-ozone" />
+          <span className="relative flex h-1.5 w-1.5">
+            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-ozone opacity-60" />
+            <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-ozone" />
+          </span>
           <span className="font-mono text-[8px] uppercase tracking-[0.3em] text-ozone">// field telemetry</span>
         </span>
-        <span className="flex items-center gap-2 font-mono text-[9px] tabular text-silver/70">
+        <span className="flex items-center gap-2 font-mono text-[9px] tabular text-muted-foreground">
           <Activity className="h-3 w-3 text-ozone" /> BKK {time}
         </span>
       </div>
 
-      <Stat label="Spots" value={d.spots} Icon={MapPin} color="rgb(var(--c-ozone))" />
+      {/* Featured bento — live spots + sparkline + delta */}
+      <div className="relative col-span-2 overflow-hidden border border-ozone/40 bg-card/70 p-4 backdrop-blur-md">
+        <div className="pointer-events-none absolute -right-10 -top-10 h-28 w-28 rounded-full bg-ozone/20 blur-2xl" />
+        <div className="pointer-events-none absolute -bottom-8 left-6 h-20 w-20 rounded-full bg-flare/10 blur-2xl" />
+        <div className="relative flex items-start justify-between">
+          <div>
+            <span className="font-mono text-[8px] uppercase tracking-[0.3em] text-ozone">// live spots</span>
+            <div className="mt-1 font-mono text-4xl font-bold tabular leading-none text-foreground text-glow-ozone">
+              {String(spotsCount).padStart(3, "0")}
+            </div>
+          </div>
+          <span className="flex items-center gap-1 rounded-full border border-ozone/40 px-2 py-0.5 font-mono text-[9px] tabular text-ozone">
+            {d.delta >= 0 ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
+            {d.delta >= 0 ? "+" : ""}{d.delta}%
+          </span>
+        </div>
+        <div className="relative mt-3">
+          <Sparkline data={d.series} color="rgb(var(--c-ozone))" />
+        </div>
+      </div>
+
       <Stat label="Operatives" value={d.ops} Icon={Radio} color="#1F51FF" />
       <Stat label="Verified" value={d.verified} Icon={ShieldCheck} color="#39FF14" />
-      <Stat label="Leads" value={d.leads} Icon={Crosshair} color="#FF5C00" />
+      <Stat label="Leads" value={d.leads} Icon={Crosshair} color="rgb(var(--c-flare))" />
+      <Stat label="Verify rate" value={d.rate} Icon={ShieldCheck} color="rgb(var(--c-ozone))" suffix="%" />
 
-      <div className="col-span-2 flex items-center justify-between border border-slate2/60 bg-void/50 px-3 py-2 backdrop-blur-sm">
-        <div className="min-w-0 flex-1">
-          <div className="font-mono text-[7px] uppercase tracking-[0.25em] text-dim">latest log</div>
-          <div className="truncate font-mono text-[11px] font-bold text-silver">
-            {cur ? cur.title : "// awaiting field input"}
+      {/* Latest log */}
+      <div className="col-span-2 flex items-center justify-between gap-2 border border-border bg-card/70 px-3 py-2.5 backdrop-blur-md">
+        <div className="flex min-w-0 flex-1 items-center gap-2.5">
+          <span className="h-6 w-0.5 shrink-0 bg-ozone" />
+          <div className="min-w-0 flex-1">
+            <div className="font-mono text-[7px] uppercase tracking-[0.25em] text-muted-foreground">latest log</div>
+            <div className="truncate font-mono text-[11px] font-bold text-foreground">
+              {cur ? cur.title : "// awaiting field input"}
+            </div>
           </div>
         </div>
         <span className="ml-2 shrink-0 font-mono text-[8px] tabular text-ozone">
@@ -117,8 +201,9 @@ export default function HeroConsole({ onCommand }) {
         </span>
       </div>
 
-      <div className="col-span-2 flex items-center justify-between gap-2 border border-slate2/60 bg-void/50 px-3 py-2 backdrop-blur-sm">
-        <span className="font-mono text-[9px] leading-[1.3] text-silver/60">Union-made by veterans &amp; street artists.</span>
+      {/* Actions */}
+      <div className="col-span-2 flex items-center justify-between gap-2 border border-border bg-card/70 px-3 py-2 backdrop-blur-md">
+        <span className="font-mono text-[9px] leading-[1.3] text-muted-foreground">Union-made by veterans &amp; street artists.</span>
         <div className="flex gap-1.5">
           <button onClick={onCommand} className="border border-flare/60 px-3 py-2 font-mono text-[9px] font-bold uppercase tracking-[0.2em] text-flare transition-colors hover:bg-flare hover:text-void">Command</button>
           <Link to="/campaign" className="border border-ozone/60 px-3 py-2 font-mono text-[9px] font-bold uppercase tracking-[0.2em] text-ozone transition-colors hover:bg-ozone hover:text-void">Fund</Link>
