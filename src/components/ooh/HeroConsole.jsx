@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { MapPin, Radio, ShieldCheck, Crosshair, Activity, TrendingUp, TrendingDown, ArrowUpRight } from "lucide-react";
+import { Radio, ShieldCheck, Crosshair, Activity, TrendingUp, TrendingDown, ArrowUpRight } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 
 const relTime = (iso) => {
@@ -50,18 +50,18 @@ function Sparkline({ data, color }) {
           <stop offset="100%" stopColor={color} stopOpacity="0" />
         </linearGradient>
       </defs>
-      <path d={area} fill="url(#spark-fill)" />
-      <path d={line} fill="none" stroke={color} strokeWidth="1.6" strokeLinejoin="round" strokeLinecap="round" />
+      <path className="spark-area" d={area} fill="url(#spark-fill)" />
+      <path className="spark-line" d={line} fill="none" stroke={color} strokeWidth="1.6" strokeLinejoin="round" strokeLinecap="round" />
     </svg>
   );
 }
 
-function Stat({ label, value, Icon, color, suffix, delta, to }) {
+function Stat({ label, value, Icon, color, suffix, to }) {
   const n = useCountUp(value);
   return (
     <Link
       to={to}
-      className="group relative block overflow-hidden border border-border bg-card/70 p-3 backdrop-blur-md transition-all duration-200 hover:-translate-y-0.5 hover:border-ozone/50 hover:shadow-[0_10px_28px_-10px_rgba(0,0,0,0.55)]"
+      className="group relative block overflow-hidden border border-border bg-card/70 p-3 backdrop-blur-md transition-all duration-200 hover:-translate-y-0.5 hover:border-ozone/50 hover:shadow-[0_10px_28px_-10px_rgba(0,0,0,0.55)] active:scale-[0.98]"
     >
       <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-ozone/50 to-transparent opacity-0 transition-opacity duration-200 group-hover:opacity-100" />
       <ArrowUpRight className="absolute right-2 top-2 h-3 w-3 translate-y-1 text-ozone opacity-0 transition-all duration-200 group-hover:translate-y-0 group-hover:opacity-100" />
@@ -70,12 +70,6 @@ function Stat({ label, value, Icon, color, suffix, delta, to }) {
           <Icon className="h-3 w-3" style={{ color }} />
           {label}
         </span>
-        {delta != null && (
-          <span className="flex items-center gap-0.5 font-mono text-[8px] tabular" style={{ color: delta >= 0 ? "rgb(var(--c-ozone))" : "rgb(var(--c-flare))" }}>
-            {delta >= 0 ? <TrendingUp className="h-2.5 w-2.5" /> : <TrendingDown className="h-2.5 w-2.5" />}
-            {Math.abs(delta)}%
-          </span>
-        )}
       </div>
       <div className="mt-2 font-mono text-xl font-bold tabular leading-none" style={{ color }}>
         {String(n).padStart(2, "0")}{suffix}
@@ -144,6 +138,7 @@ export default function HeroConsole({ onCommand }) {
   }, [d.feed.length]);
 
   const time = now.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit", second: "2-digit", timeZone: "Asia/Bangkok" });
+  const tickerItems = d.feed.length ? d.feed : [{ title: "// awaiting field input", created_date: null }];
   const cur = d.feed[fi];
 
   return (
@@ -163,18 +158,16 @@ export default function HeroConsole({ onCommand }) {
       </div>
 
       {/* Featured bento — live spots + sparkline + delta */}
-      <Link to="/map" className="group relative col-span-2 block overflow-hidden border border-ozone/40 bg-card/70 p-4 backdrop-blur-md transition-all duration-200 hover:-translate-y-0.5 hover:border-ozone hover:shadow-[0_14px_36px_-12px_rgba(0,0,0,0.6)]">
+      <Link to="/map" className="group relative col-span-2 block overflow-hidden border border-ozone/40 bg-card/70 p-4 backdrop-blur-md transition-all duration-200 hover:-translate-y-0.5 hover:border-ozone hover:shadow-[0_14px_36px_-12px_rgba(0,0,0,0.6)] active:scale-[0.99]">
+        <div className="pointer-events-none absolute inset-0 grid-bg opacity-40" />
         <div className="pointer-events-none absolute -right-10 -top-10 h-28 w-28 rounded-full bg-ozone/20 blur-2xl transition-all duration-300 group-hover:bg-ozone/30" />
         <div className="pointer-events-none absolute -bottom-8 left-6 h-20 w-20 rounded-full bg-flare/10 blur-2xl" />
-        {/* live scan sweep */}
-        <div className="pointer-events-none absolute inset-0 overflow-hidden">
-          <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-ozone/60 to-transparent animate-scan" />
-        </div>
         <div className="relative flex items-start justify-between">
           <div>
             <span className="font-mono text-[8px] uppercase tracking-[0.3em] text-ozone">// live spots</span>
-            <div className="mt-1 font-mono text-4xl font-bold tabular leading-none text-foreground text-glow-ozone">
+            <div className="mt-1 flex items-end font-mono text-4xl font-bold tabular leading-none text-foreground text-glow-ozone">
               {String(spotsCount).padStart(3, "0")}
+              <span className="ml-1 animate-blink text-ozone">_</span>
             </div>
           </div>
           <span className="flex items-center gap-1 rounded-full border border-ozone/40 px-2 py-0.5 font-mono text-[9px] tabular text-ozone">
@@ -183,7 +176,7 @@ export default function HeroConsole({ onCommand }) {
           </span>
         </div>
         <div className="relative mt-3">
-          <Sparkline data={d.series} color="rgb(var(--c-ozone))" />
+          <Sparkline key={d.series.join("-")} data={d.series} color="rgb(var(--c-ozone))" />
         </div>
       </Link>
 
@@ -192,8 +185,25 @@ export default function HeroConsole({ onCommand }) {
       <Stat label="Leads" value={d.leads} Icon={Crosshair} color="rgb(var(--c-flare))" to="/campaign" />
       <Stat label="Verify rate" value={d.rate} Icon={ShieldCheck} color="rgb(var(--c-ozone))" suffix="%" to="/map" />
 
-      {/* Latest log */}
-      <Link to="/map" className="group col-span-2 flex items-center justify-between gap-2 border border-border bg-card/70 px-3 py-2.5 backdrop-blur-md transition-all duration-200 hover:-translate-y-0.5 hover:border-ozone/50">
+      {/* Streaming ticker */}
+      <div className="col-span-2 flex items-center gap-2 overflow-hidden border border-border bg-card/70 px-3 py-2 backdrop-blur-md">
+        <span className="flex shrink-0 items-center gap-1.5 font-mono text-[8px] uppercase tracking-[0.25em] text-ozone">
+          <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-ozone" /> live feed
+        </span>
+        <div className="relative flex-1 overflow-hidden">
+          <div className="flex w-max animate-marquee gap-6 whitespace-nowrap">
+            {[...tickerItems, ...tickerItems].map((f, i) => (
+              <span key={i} className="font-mono text-[9px] text-muted-foreground">
+                <span className="text-ozone">›</span> {f.title}
+                {f.created_date && <span className="ml-1 text-dim">{relTime(f.created_date)}</span>}
+              </span>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Latest log highlight */}
+      <Link to="/map" className="group col-span-2 flex items-center justify-between gap-2 border border-border bg-card/70 px-3 py-2.5 backdrop-blur-md transition-all duration-200 hover:-translate-y-0.5 hover:border-ozone/50 active:scale-[0.99]">
         <div className="flex min-w-0 flex-1 items-center gap-2.5">
           <span className="h-6 w-0.5 shrink-0 bg-ozone transition-all duration-200 group-hover:h-7" />
           <div className="min-w-0 flex-1">
@@ -212,8 +222,8 @@ export default function HeroConsole({ onCommand }) {
       <div className="col-span-2 flex items-center justify-between gap-2 border border-border bg-card/70 px-3 py-2 backdrop-blur-md">
         <span className="font-mono text-[9px] leading-[1.3] text-muted-foreground">Union-made by veterans &amp; street artists.</span>
         <div className="flex gap-1.5">
-          <button onClick={onCommand} className="border border-flare/60 px-3 py-2 font-mono text-[9px] font-bold uppercase tracking-[0.2em] text-flare transition-colors hover:bg-flare hover:text-void">Command</button>
-          <Link to="/campaign" className="border border-ozone/60 px-3 py-2 font-mono text-[9px] font-bold uppercase tracking-[0.2em] text-ozone transition-colors hover:bg-ozone hover:text-void">Fund</Link>
+          <button onClick={onCommand} className="border border-flare/60 px-3 py-2 font-mono text-[9px] font-bold uppercase tracking-[0.2em] text-flare transition-colors hover:bg-flare hover:text-void active:scale-[0.97]">Command</button>
+          <Link to="/campaign" className="border border-ozone/60 px-3 py-2 font-mono text-[9px] font-bold uppercase tracking-[0.2em] text-ozone transition-colors hover:bg-ozone hover:text-void active:scale-[0.97]">Fund</Link>
         </div>
       </div>
     </div>

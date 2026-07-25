@@ -575,6 +575,16 @@
   animation: scan-sweep 7s linear infinite;
 }
 
+/* Sparkline draw-in */
+@keyframes spark-draw { from { stroke-dashoffset: 1000; } to { stroke-dashoffset: 0; } }
+.spark-line { stroke-dasharray: 1000; stroke-dashoffset: 1000; animation: spark-draw 1.4s ease-out forwards; }
+@keyframes spark-fade { from { opacity: 0; } to { opacity: 1; } }
+.spark-area { opacity: 0; animation: spark-fade 1.2s ease-out 0.4s forwards; }
+
+/* Click ripple */
+@keyframes ripple-expand { from { transform: translate(-50%,-50%) scale(0); opacity: 0.55; } to { transform: translate(-50%,-50%) scale(2.6); opacity: 0; } }
+.ripple-pulse { animation: ripple-expand 0.6s ease-out forwards; }
+
 /* BrandMark — orbital gyroscope */
 @keyframes ooh-core-pulse {
   0%, 100% { transform: scale(1); }

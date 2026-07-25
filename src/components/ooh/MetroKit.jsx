@@ -28,13 +28,16 @@ function Ring({ pct, label, color }) {
   const r = 26;
   const c = 2 * Math.PI * r;
   const off = c * (1 - pct / 100);
+  const [go, setGo] = useState(false);
+  useEffect(() => { const t = setTimeout(() => setGo(true), 120); return () => clearTimeout(t); }, []);
   return (
     <div className="flex flex-col items-center gap-2">
       <svg viewBox="0 0 64 64" className="h-16 w-16">
         <circle cx="32" cy="32" r={r} fill="none" stroke="currentColor" strokeWidth="5" className="text-white/10" />
         <circle
           cx="32" cy="32" r={r} fill="none" stroke={color} strokeWidth="5" strokeLinecap="round"
-          strokeDasharray={c} strokeDashoffset={off} transform="rotate(-90 32 32)"
+          strokeDasharray={c} strokeDashoffset={go ? off : c} transform="rotate(-90 32 32)"
+          style={{ transition: "stroke-dashoffset 1.3s cubic-bezier(0.22,1,0.36,1)" }}
         />
         <text x="32" y="37" textAnchor="middle" className="fill-white text-[11px] font-bold" style={{ fontFamily: "inherit" }}>{pct}%</text>
       </svg>
@@ -78,7 +81,7 @@ export default function MetroKit() {
 
         <div className="grid gap-4 md:grid-cols-2">
           {/* 1 · Offense Categories — light card */}
-          <article className="flex flex-col gap-5 rounded-xl border border-border bg-card p-6 shadow-sm">
+          <article className="group flex flex-col gap-5 rounded-xl border border-border bg-card p-6 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-ozone/50 hover:shadow-[0_18px_44px_-18px_rgba(0,0,0,0.65)] active:scale-[0.99]">
             <div className="flex items-start justify-between gap-4">
               <div>
                 <h3 className="font-display text-lg font-bold tracking-[-0.01em] text-foreground">9 Offense Categories</h3>
@@ -119,7 +122,7 @@ export default function MetroKit() {
           </article>
 
           {/* 2 · Global Offense Map — inverted card */}
-          <article className="flex flex-col gap-5 rounded-xl border border-border bg-primary p-6 text-primary-foreground shadow-sm">
+          <article className="group flex flex-col gap-5 rounded-xl border border-border bg-primary p-6 text-primary-foreground shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-ozone/40 hover:shadow-[0_18px_44px_-18px_rgba(237,255,0,0.22)] active:scale-[0.99]">
             <div>
               <h3 className="font-display text-lg font-bold tracking-[-0.01em]">Global Offense Map</h3>
               <p className="mt-1 font-display text-[13px] leading-relaxed text-primary-foreground/60">
@@ -150,7 +153,7 @@ export default function MetroKit() {
           </article>
 
           {/* 3 · Community Action Stacks — image card */}
-          <article className="relative flex min-h-[260px] flex-col justify-between overflow-hidden rounded-xl border border-border p-6 shadow-sm">
+          <article className="group relative flex min-h-[260px] flex-col justify-between overflow-hidden rounded-xl border border-border p-6 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-ozone/50 hover:shadow-[0_18px_44px_-18px_rgba(0,0,0,0.65)] active:scale-[0.99]">
             <Image src={STACK_IMG} alt="Field action" className="absolute inset-0 h-full w-full" fittingType="fill" />
             <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/55 to-black/20" />
             <div className="relative">
@@ -168,7 +171,7 @@ export default function MetroKit() {
           </article>
 
           {/* 4 · City Impact Reports — inverted card with rings */}
-          <article className="flex flex-col gap-5 rounded-xl border border-border bg-primary p-6 text-primary-foreground shadow-sm">
+          <article className="group flex flex-col gap-5 rounded-xl border border-border bg-primary p-6 text-primary-foreground shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-ozone/40 hover:shadow-[0_18px_44px_-18px_rgba(237,255,0,0.22)] active:scale-[0.99]">
             <div>
               <h3 className="font-display text-lg font-bold tracking-[-0.01em]">City Impact Reports</h3>
               <p className="mt-1 font-display text-[13px] leading-relaxed text-primary-foreground/60">
