@@ -665,8 +665,9 @@
 
 .tape { background: rgb(var(--c-ozone) / 0.16); border: 1px dashed rgb(var(--c-ozone) / 0.5); box-shadow: 0 2px 8px rgba(0,0,0,0.3); }
 
-/* Light mode: hide hero background video/images for now */
-.light .hero-media { display: none !important; }
+/* Light mode: hide hero background video/images + dark gradient overlays for now */
+.light .hero-media,
+.light .hero-overlay { display: none !important; }
 .light .hero-section { background-color: #ffffff !important; }
 
 /* Light mode: MetroKit inverted cards become solid, legible header-style surfaces */

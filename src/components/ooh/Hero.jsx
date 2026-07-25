@@ -49,8 +49,8 @@ export default function Hero({ onCommand }) {
           }
           </div>
         )}
-        <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/30 to-black" />
-        <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-transparent to-black/70" />
+        <div className="hero-overlay absolute inset-0 bg-gradient-to-b from-black/60 via-black/30 to-black" />
+        <div className="hero-overlay absolute inset-0 bg-gradient-to-r from-black/70 via-transparent to-black/70" />
       </div>
 
       {/* Corner registration marks */}
