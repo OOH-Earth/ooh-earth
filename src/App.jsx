@@ -33,6 +33,7 @@ import TrashId from '@/pages/TrashId';
 import InHome from '@/pages/InHome';
 import Zora from '@/pages/Zora';
 import UiKit from '@/pages/UiKit';
+import OperativeProfile from '@/pages/OperativeProfile';
 import Guides from '@/pages/Guides';
 import FieldId from '@/pages/FieldId';
 import SuperCard from '@/pages/SuperCard';
@@ -95,6 +96,7 @@ const AuthenticatedApp = () => {
     <Route path="/inhome" element={<InHome />} />
     <Route path="/zora" element={<Zora />} />
     <Route path="/kit" element={<UiKit />} />
+    <Route path="/operative" element={<OperativeProfile />} />
     <Route path="/guides" element={<Guides />} />
     <Route path="/field-id" element={<FieldId />} />
     <Route path="/card" element={<SuperCard />} />

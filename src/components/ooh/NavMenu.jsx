@@ -17,6 +17,7 @@ const SITEMAP = [
       { to: "/", label: "Home" },
       { to: "/channel", label: "OOH·TV" },
       { to: "/dashboard", label: "Dashboard" },
+      { to: "/operative", label: "Operative Profile" },
       { to: "/fde", label: "FDE Portal" },
       { to: "/portfolio", label: "Atari Portfolio" },
     ],

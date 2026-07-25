@@ -1,0 +1,37 @@
+{
+  "name": "QuestCompletion",
+  "type": "object",
+  "properties": {
+    "quest_id": {
+      "type": "string",
+      "description": "Quest identifier, e.g. daily_report, weekly_mint"
+    },
+    "period_key": {
+      "type": "string",
+      "description": "Time window key: YYYY-MM-DD for daily, YYYY-WNN for weekly"
+    },
+    "xp_awarded": {
+      "type": "number",
+      "default": 0,
+      "description": "Bonus XP granted on claim"
+    }
+  },
+  "required": [
+    "quest_id",
+    "period_key"
+  ],
+  "rls": {
+    "read": {},
+    "create": {},
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

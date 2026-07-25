@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Crosshair, Menu, Tv, Map as MapIcon, Compass, Gauge } from "lucide-react";
+import { Crosshair, Menu, Tv, Map as MapIcon, Compass, Gauge, Zap } from "lucide-react";
 import { Link } from "react-router-dom";
 import ThemeToggle from "@/components/ooh/ThemeToggle";
 import HapticsToggle from "@/components/ooh/cognitive/HapticsToggle";
@@ -38,6 +38,9 @@ export default function Nav({ onCommand }) {
           <button onClick={startTour} aria-label="Start walkthrough" title="Tour" className="hidden h-8 w-8 items-center justify-center border border-slate2 text-silver transition-colors hover:border-ozone hover:text-ozone md:flex">
             <Compass className="h-3.5 w-3.5" />
           </button>
+          <Link to="/operative" aria-label="Operative profile" title="Operative" className="hidden h-8 w-8 items-center justify-center border border-slate2 text-silver transition-colors hover:border-ozone hover:text-ozone md:flex">
+            <Zap className="h-3.5 w-3.5" />
+          </Link>
           <Link to="/channel" aria-label="OOH·TV channel" title="OOH·TV" className="hidden h-8 w-8 items-center justify-center border border-slate2 text-silver transition-colors hover:border-ozone hover:text-ozone md:flex">
             <Tv className="h-3.5 w-3.5" />
           </Link>

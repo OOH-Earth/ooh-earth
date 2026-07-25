@@ -21,6 +21,7 @@ import GlobeSection from "@/components/ooh/GlobeSection";
 import MetroKit from "@/components/ooh/MetroKit";
 import OperativeNetwork from "@/components/ooh/OperativeNetwork";
 import Leaderboard from "@/components/ooh/Leaderboard";
+import GamificationWidget from "@/components/ooh/gamification/GamificationWidget";
 import KlimaWidget from "@/components/ooh/KlimaWidget";
 import DonationMomentum from "@/components/ooh/DonationMomentum";
 import Manifesto from "@/components/ooh/Manifesto";
@@ -74,6 +75,7 @@ export default function Home() {
         <FieldWorkflow />
         <Reveal><FieldIdGenerator /></Reveal>
         <Reveal><Leaderboard /></Reveal>
+        <Reveal><GamificationWidget /></Reveal>
         <Reveal><Manifesto /></Reveal>
         <Reveal><OnChain /></Reveal>
         <Reveal><SkyIntel /></Reveal>
