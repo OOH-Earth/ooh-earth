@@ -288,7 +288,7 @@
     --font-heading: "Lacquer", "Inter Tight", ui-sans-serif, system-ui, sans-serif;
     --font-body: "Lacquer", "Inter Tight", ui-sans-serif, system-ui, sans-serif;
     --font-display: "Lacquer", "Inter Tight", ui-sans-serif, system-ui, sans-serif;
-    --font-mono: "Lacquer", "Inter Tight", ui-sans-serif, system-ui, sans-serif;
+    --font-mono: "Doto", "Share Tech Mono", ui-monospace, monospace;
     --font-brand: "Lacquer", "Inter Tight", ui-sans-serif, system-ui, sans-serif;
     --background: 40 12% 8%;
     --foreground: 40 18% 92%;
@@ -391,6 +391,8 @@
   .font-mono-tech {
     font-family: "Inter Tight", ui-sans-serif, system-ui, sans-serif;
   }
+  .crafty .font-display { font-family: var(--font-display); }
+  .crafty .font-mono-tech { font-family: var(--font-mono); }
   .meridian-line {
     border-color: rgba(241, 241, 241, 0.08);
   }
