@@ -41,7 +41,7 @@ export default function Hero({ onCommand }) {
         style={{ transform: `translateY(${parallax}px) scale(1.15)` }}>
         
         {SLIDES.map((s, idx) =>
-        <div key={idx} className={`absolute inset-0 transition-opacity duration-[1200ms] ${idx === slide ? "opacity-60" : "opacity-0"}`}>
+        <div key={idx} className={`hero-media absolute inset-0 transition-opacity duration-[1200ms] ${idx === slide ? "opacity-60" : "opacity-0"}`}>
             {s.kind === "video" ?
           <video src={s.src} autoPlay muted loop playsInline className="h-full w-full object-cover" data-cursor="view" /> :
 
