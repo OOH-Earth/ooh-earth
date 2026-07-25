@@ -4,7 +4,7 @@
 @tailwind utilities;
 
 @layer base {
-  :root {
+  :root, .dark {
     --background: 0 0% 0%;
     --foreground: 0 0% 94.5%;
     --card: 0 0% 4%;
@@ -283,12 +283,12 @@
   .beta ::-webkit-scrollbar-track { background: #0d1117; }
   .beta ::-webkit-scrollbar-thumb { background: rgba(78, 201, 176, 0.35); }
 
-  /* Lacquer — hand-drawn marker mode */
-  .lacquer {
+  /* Crafty — hand-drawn marker mode */
+  .crafty {
     --font-heading: "Lacquer", "Inter Tight", ui-sans-serif, system-ui, sans-serif;
-    --font-body: "Inter Tight", ui-sans-serif, system-ui, sans-serif;
+    --font-body: "Lacquer", "Inter Tight", ui-sans-serif, system-ui, sans-serif;
     --font-display: "Lacquer", "Inter Tight", ui-sans-serif, system-ui, sans-serif;
-    --font-mono: "Inter Tight", ui-sans-serif, system-ui, sans-serif;
+    --font-mono: "Lacquer", "Inter Tight", ui-sans-serif, system-ui, sans-serif;
     --font-brand: "Lacquer", "Inter Tight", ui-sans-serif, system-ui, sans-serif;
     --background: 40 12% 8%;
     --foreground: 40 18% 92%;
@@ -319,9 +319,9 @@
     --c-ozone: 229 57 53;
     --c-flare: 245 158 60;
   }
-  .lacquer body { background-color: hsl(40 12% 8%); }
-  .lacquer ::selection { background-color: #E53935; color: #fff; }
-  .lacquer h1, .lacquer h2, .lacquer h3, .lacquer h4 {
+  .crafty body { background-color: hsl(40 12% 8%); }
+  .crafty ::selection { background-color: #E53935; color: #fff; }
+  .crafty h1, .crafty h2, .crafty h3, .crafty h4 {
     font-family: var(--font-display);
     font-weight: 400;
     letter-spacing: 0.01em;

@@ -6,6 +6,7 @@ import BrandPalette from "@/components/ooh/uikit/BrandPalette";
 import TypeScale from "@/components/ooh/uikit/TypeScale";
 import ComponentShowcase from "@/components/ooh/uikit/ComponentShowcase";
 import PinLab from "@/components/ooh/uikit/pinlab/PinLab";
+import ThemeModeMatrix from "@/components/ooh/uikit/ThemeModeMatrix";
 import NomadPulse from "@/components/ooh/NomadPulse";
 import { Radio } from "lucide-react";
 
@@ -22,7 +23,7 @@ const NAV = [
 const STATS = [
   { k: "Core tokens", v: "07", s: "active" },
   { k: "Type styles", v: "07", s: "active" },
-  { k: "Themes", v: "03", s: "online" },
+  { k: "Themes", v: "05", s: "online" },
   { k: "Radius", v: "0px", s: "locked" },
 ];
 
@@ -35,12 +36,6 @@ const FOUNDATION = [
   { label: "Shadow · ozone-glow", value: "0 0 24px rgba(237,255,0,0.22)" },
   { label: "Shadow · flare-glow", value: "0 0 24px rgba(255,92,0,0.28)" },
   { label: "Selection", value: "background #EDFF00 / color #000000" },
-];
-
-const THEMES = [
-  { mode: "Dark · Default", bg: "#000000", fg: "#F1F1F1", ozone: "#EDFF00", flare: "#FF5C00" },
-  { mode: "Light · Solar Smoke", bg: "#F5F5F5", fg: "#0D0D0D", ozone: "#E84A00", flare: "#FF5C00" },
-  { mode: "Matrix · Terminal", bg: "#040C04", fg: "#1AFF3F", ozone: "#00FF55", flare: "#FF00C8" },
 ];
 
 function Panel({ id, idx, title, status, children }) {
@@ -184,21 +179,11 @@ export default function UiKit() {
               </div>
             </Panel>
 
-            <Panel id="modes" idx="06" title="Operational modes" status="3 online">
-              <div className="space-y-2">
-                {THEMES.map((t) => (
-                  <div key={t.mode} className="grid gap-2 border border-slate2/50 bg-void p-3 md:grid-cols-5">
-                    <div className="flex items-center gap-3 md:col-span-1">
-                      <span className="h-7 w-7 shrink-0 border border-white/10" style={{ backgroundColor: t.bg }} />
-                      <span className="font-mono text-[9px] uppercase tracking-[0.2em] text-silver">{t.mode}</span>
-                    </div>
-                    <CopyField label="bg" value={t.bg} swatch={t.bg} />
-                    <CopyField label="fg" value={t.fg} swatch={t.fg} />
-                    <CopyField label="ozone" value={t.ozone} swatch={t.ozone} />
-                    <CopyField label="flare" value={t.flare} swatch={t.flare} />
-                  </div>
-                ))}
-              </div>
+            <Panel id="modes" idx="06" title="Operational modes" status="5 online">
+              <p className="mb-3 max-w-2xl font-body text-sm leading-[1.6] text-darkgray">
+                Live token preview — each panel renders against the real theme tokens, so edits to <span className="text-ozone">src/index.css</span> update here instantly.
+              </p>
+              <ThemeModeMatrix />
             </Panel>
 
             <Panel id="mobility" idx="07" title="Mobility intel · nomads.com" status="live · Web7">
