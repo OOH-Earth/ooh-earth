@@ -18,6 +18,7 @@ const SITEMAP = [
       { to: "/channel", label: "OOH·TV" },
       { to: "/dashboard", label: "Dashboard" },
       { to: "/fde", label: "FDE Portal" },
+      { to: "/portfolio", label: "Atari Portfolio" },
     ],
   },
   {
@@ -66,7 +67,7 @@ const ICON = {
   "OOH·TV": Tv, Dashboard: LayoutDashboard, TrueCost: Scan, "Trash ID": Trash2,
   Zora: Coins, "Field ID": CreditCard, "Union Card": CreditCard, "UI Kit": LayoutGrid,
   About: Info, Careers: Briefcase, Guides: BookOpen, Fund: Heart, Plans: Layers,
-  Support: LifeBuoy, "Bus Stops": MapIcon, "FDE Portal": Compass,
+  Support: LifeBuoy, "Bus Stops": MapIcon, "FDE Portal": Compass, "Atari Portfolio": Coins,
 };
 
 const AREA_COUNT = BUS_STOP_AREAS.length;
