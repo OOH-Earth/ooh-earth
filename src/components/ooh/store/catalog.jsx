@@ -26,6 +26,7 @@ const PREVIEW = {
 
 export function priceLabel(item) {
   if (item.status === "free" || Number(item.price_usd) === 0) return "Free";
+  if (item.status === "in_build") return "In build";
   if (item.status === "upcoming") return "Upcoming";
   if (item.status === "sold_out") return "Sold out";
   return `$${item.price_usd}`;

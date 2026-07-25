@@ -87,7 +87,7 @@ export default function StoreItemDetail() {
   const actionable = ["available", "free"].includes(item.status);
   const isFree = item.status === "free" || Number(item.price_usd) === 0;
   const isExternal = !!item.external_url;
-  const btnLabel = isFree ? "Download PDF" : isExternal ? "Open drop" : `Buy ${priceLabel(item)}`;
+  const btnLabel = !actionable ? "Coming soon" : isFree ? "Download PDF" : isExternal ? "Open drop" : `Buy ${priceLabel(item)}`;
 
   return (
     <div className="relative min-h-screen bg-void page-top">

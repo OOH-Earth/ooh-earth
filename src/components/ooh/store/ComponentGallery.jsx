@@ -63,6 +63,7 @@ function ComponentCard({ entry, onGiveaway }) {
       <div className="relative flex aspect-[4/3] items-center justify-center overflow-hidden border-b border-slate2/50 bg-void">
         <div className="absolute inset-0 flex items-center justify-center">{entry.demo}</div>
         <span className="absolute left-2 top-2 border border-slate2/60 bg-void/80 px-1.5 py-0.5 font-mono text-[8px] uppercase tracking-[0.2em] text-ozone backdrop-blur">Component</span>
+        <span className="absolute right-2 top-2 border border-flare/50 bg-void/80 px-1.5 py-0.5 font-mono text-[8px] uppercase tracking-[0.2em] text-flare backdrop-blur">In build</span>
       </div>
       <div className="flex flex-1 flex-col p-4">
         <h3 className="font-display text-base font-bold tracking-[-0.01em] text-silver">{entry.title}</h3>

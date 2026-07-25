@@ -41,7 +41,8 @@
         "available",
         "free",
         "upcoming",
-        "sold_out"
+        "sold_out",
+        "in_build"
       ],
       "default": "available"
     },

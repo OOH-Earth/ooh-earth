@@ -24,7 +24,7 @@ function ProductCard({ item, onBuy, onGiveaway, busy }) {
   const isFree = item.status === "free" || Number(item.price_usd) === 0;
   const busyThis = busy === item.id;
   const btnLabel = isLibrary ? "Read"
-    : !actionable ? (item.status === "upcoming" ? "Soon" : "Sold out")
+    : !actionable ? (item.status === "upcoming" || item.status === "in_build" ? "Coming soon" : "Sold out")
     : isExternal ? "Open drop"
     : isFree ? "Download"
     : "Buy";
@@ -44,6 +44,9 @@ function ProductCard({ item, onBuy, onGiveaway, busy }) {
             {item.edition_sold || 0}/{item.edition_size}
           </span>
         ) : null}
+        {item.status === "in_build" && (
+          <span className="absolute right-2 top-2 border border-flare/50 bg-void/80 px-1.5 py-0.5 font-mono text-[8px] uppercase tracking-[0.2em] text-flare backdrop-blur">In build</span>
+        )}
       </div>
       <div className="flex flex-1 flex-col p-4">
         <h3 className="font-display text-base font-bold tracking-[-0.01em] text-silver">{item.title}</h3>
