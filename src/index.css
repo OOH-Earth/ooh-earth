@@ -283,68 +283,178 @@
   .beta ::-webkit-scrollbar-track { background: #0d1117; }
   .beta ::-webkit-scrollbar-thumb { background: rgba(78, 201, 176, 0.35); }
 
-  /* Guild — public-service / Reithian (meaningguild.org)
-     Yellow protest-newspaper canvas, navy structural elements, magenta emphasis.
-     Spectral serif headings, Inter Tight body. Sharp corners, generous whitespace. */
+  /* =====================================================================
+     Guild — Meaning Transformation Guild brand system (style-sheet Jul 2022)
+     PRIMARY PALETTE:
+       MTG Blue/Navy  #13323F  (dark teal-navy — headings, structural chrome)
+       HiViz Yellow   #EDFF00  (primary accent, CTA fills, nav stripe)
+       Fiery Rose     #FF5470  (secondary accent, emphasis, icon colour)
+       Good White     #F1F1F1  (light surface, card BG)
+       Boozer Black   #171D1A  (deep black, footer, inverse sections)
+     TYPOGRAPHY: Inter (all weights) — no Spectral
+     AESTHETIC: bold flat colour blocks, sharp corners, high contrast,
+                yellow stripe separators, navy header/footer bands.
+  ====================================================================== */
   .guild {
-    --font-heading: "Spectral", Georgia, "Times New Roman", serif;
+    --font-heading: "Inter Tight", ui-sans-serif, system-ui, sans-serif;
     --font-body: "Inter Tight", ui-sans-serif, system-ui, sans-serif;
-    --font-display: "Spectral", Georgia, "Times New Roman", serif;
+    --font-display: "Inter Tight", ui-sans-serif, system-ui, sans-serif;
     --font-mono: "IBM Plex Mono", ui-monospace, monospace;
-    --font-brand: "Spectral", Georgia, "Times New Roman", serif;
-    --background: 63 100% 47%;        /* #E8FF00 high-vis yellow canvas */
-    --foreground: 213 100% 10%;       /* #001833 navy text */
-    --card: 213 100% 10%;             /* navy structural cards */
-    --card-foreground: 0 0% 94%;      /* off-white on navy */
-    --popover: 213 100% 12%;
-    --popover-foreground: 0 0% 94%;
-    --primary: 213 100% 10%;          /* navy primary button */
-    --primary-foreground: 63 100% 47%; /* yellow on navy */
-    --secondary: 213 60% 18%;
-    --secondary-foreground: 0 0% 94%;
-    --muted: 213 60% 16%;
-    --muted-foreground: 0 0% 60%;
-    --accent: 330 100% 50%;           /* magenta #FF0080 emphasis */
+    --font-brand: "Inter Tight", ui-sans-serif, system-ui, sans-serif;
+    /* Navy background — the dominant structural colour */
+    --background: 196 51% 16%;        /* #13323F MTG Blue */
+    --foreground: 0 0% 95%;           /* near-white on navy */
+    --card: 0 0% 95%;                 /* #F1F1F1 Good White cards */
+    --card-foreground: 196 51% 16%;   /* navy text on white cards */
+    --popover: 196 51% 12%;
+    --popover-foreground: 0 0% 95%;
+    --primary: 63 100% 50%;           /* #EDFF00 HiViz Yellow — CTAs */
+    --primary-foreground: 196 51% 16%; /* navy text on yellow */
+    --secondary: 196 40% 22%;
+    --secondary-foreground: 0 0% 95%;
+    --muted: 196 40% 20%;
+    --muted-foreground: 196 20% 65%;
+    --accent: 350 100% 64%;           /* #FF5470 Fiery Rose */
     --accent-foreground: 0 0% 100%;
-    --destructive: 0 70% 50%;
+    --destructive: 0 70% 55%;
     --destructive-foreground: 0 0% 98%;
-    --border: 213 100% 14%;           /* navy hairline */
-    --input: 213 100% 14%;
-    --ring: 330 100% 50%;
-    --flare: 330 100% 50%;            /* magenta flare */
-    --radius: 2px;
-    --c-void: 213 100% 10%;           /* navy canvas for bg-void */
-    --c-silver: 232 237 242;          /* off-white */
-    --c-slate2: 24 40 70;
-    --c-dim: 120 130 145;
-    --c-darkgray: 160 170 185;
-    --c-ozone: 232 255 0;             /* high-vis yellow accent */
-    --c-flare: 255 0 128;             /* magenta */
+    --border: 196 30% 26%;
+    --input: 196 30% 26%;
+    --ring: 63 100% 50%;
+    --flare: 350 100% 64%;
+    --radius: 0px;                    /* sharp corners throughout */
+    /* Channel tokens */
+    --c-void: 19 50 63;               /* #13323F as RGB */
+    --c-silver: 241 241 241;          /* #F1F1F1 Good White */
+    --c-slate2: 30 65 80;
+    --c-dim: 100 130 145;
+    --c-darkgray: 160 175 185;
+    --c-ozone: 237 255 0;             /* #EDFF00 HiViz Yellow */
+    --c-flare: 255 84 112;            /* #FF5470 Fiery Rose */
   }
-  .guild body { background-color: #E8FF00; }
-  .guild ::selection { background-color: #FF0080; color: #fff; }
-  .guild h1, .guild h2, .guild h3, .guild h4 {
+  .guild body { background-color: #13323F; }
+  .guild ::selection { background-color: #EDFF00; color: #13323F; }
+
+  /* Typography — Inter bold, no serif */
+  .guild h1 {
+    font-family: var(--font-display);
+    font-weight: 800;
+    letter-spacing: -0.025em;
+    line-height: 1.0;
+  }
+  .guild h2 {
     font-family: var(--font-display);
     font-weight: 700;
-    letter-spacing: -0.01em;
-    line-height: 1.1;
-    color: #001833;
+    letter-spacing: -0.02em;
+    line-height: 1.08;
+  }
+  .guild h3, .guild h4 {
+    font-family: var(--font-display);
+    font-weight: 700;
+    letter-spacing: -0.015em;
+    line-height: 1.12;
+  }
+  .guild p, .guild li {
+    font-family: var(--font-body);
+    font-weight: 400;
+    line-height: 1.65;
   }
   .guild .font-mono, .guild .font-mono-tech {
     font-family: var(--font-mono);
     font-variant-numeric: tabular-nums;
   }
-  .guild a {
-    color: #001833;
-    text-decoration: underline;
-    text-decoration-color: rgba(255, 0, 128, 0.5);
-    text-underline-offset: 3px;
+  /* Yellow stripe separator — the MTG signature divider */
+  .guild .guild-stripe {
+    display: block;
+    height: 6px;
+    background: #EDFF00;
   }
-  .guild a:hover { text-decoration-color: #FF0080; }
-  /* Guild emphasis — magenta highlighter on key phrases */
+  /* HiViz card — yellow fill, navy text (role cards, callouts) */
+  .guild .guild-hiviz {
+    background: #EDFF00;
+    color: #13323F;
+  }
+  /* Fiery Rose emphasis */
   .guild .guild-emph {
-    color: #FF0080;
+    color: #FF5470;
     font-weight: 700;
+  }
+  /* Navy apply/CTA button on yellow card */
+  .guild .guild-btn-navy {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: #13323F;
+    color: #EDFF00;
+    font-family: var(--font-body);
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    padding: 8px 14px;
+    border: none;
+    cursor: pointer;
+    transition: opacity 0.15s;
+  }
+  .guild .guild-btn-navy:hover { opacity: 0.88; }
+  /* Yellow outline button on dark bg */
+  .guild .guild-btn-outline {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: transparent;
+    color: #EDFF00;
+    border: 1.5px solid #EDFF00;
+    font-family: var(--font-body);
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    padding: 8px 14px;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+  }
+  .guild .guild-btn-outline:hover { background: #EDFF00; color: #13323F; }
+  /* Fiery Rose outlined button */
+  .guild .guild-btn-rose {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: transparent;
+    color: #FF5470;
+    border: 1.5px solid #FF5470;
+    font-family: var(--font-body);
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    padding: 8px 14px;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+  }
+  .guild .guild-btn-rose:hover { background: #FF5470; color: #fff; }
+  /* Nav + structural chrome stay navy */
+  .guild nav,
+  .guild header,
+  .guild footer { background: #13323F !important; border-color: rgba(237,255,0,0.15) !important; }
+  .guild nav * { color: #F1F1F1; }
+  .guild nav a:hover, .guild nav button:hover { color: #EDFF00 !important; border-color: #EDFF00 !important; }
+  /* Yellow HiViz accent on nav CTA */
+  .guild header .bg-ozone { background: #EDFF00 !important; color: #13323F !important; }
+  .guild header .bg-ozone:hover { background: #FF5470 !important; color: #fff !important; border-color: #FF5470 !important; }
+  /* Scrollbar */
+  .guild ::-webkit-scrollbar { width: 8px; height: 8px; }
+  .guild ::-webkit-scrollbar-track { background: #0d2530; }
+  .guild ::-webkit-scrollbar-thumb { background: rgba(237,255,0,0.45); }
+  /* Yellow stripe at very top of page (brand signature) */
+  .guild body::before {
+    content: "";
+    display: block;
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    height: 4px;
+    background: #EDFF00;
+    z-index: 9999;
   }
 
   /* Crafty — hand-drawn marker mode */
