@@ -142,7 +142,7 @@ export default function HeroConsole({ onCommand }) {
   const cur = d.feed[fi];
 
   return (
-    <div className="console-dark grid grid-cols-2 gap-2.5 md:col-span-6">
+    <div className="grid grid-cols-2 gap-2.5 md:col-span-6">
       {/* Header rail */}
       <div className="col-span-2 flex items-center justify-between border border-border bg-card px-3 py-2 rounded-xl">
         <span className="flex items-center gap-1.5">
