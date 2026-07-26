@@ -36,13 +36,22 @@ const GLYPH = {
   other: `<path d="M16 7c-4 0-7 3-7 7 0 5 7 11 7 11s7-6 7-11c0-4-3-7-7-7z" fill="none" stroke="{A}" stroke-width="1.5"/><circle cx="16" cy="14" r="2.5" fill="{A}"/>`,
 };
 
+// Escape HTML entities for safe interpolation into raw HTML strings
+const esc = (s) =>
+  String(s ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+
 // HTML string for popup contexts — real photo w/ CONFIRMED badge, else glyph placeholder
 export function thumbHTML(m) {
   const meta = metaFor(m.type);
   const accent = meta.accent;
   if (m.image) {
     return `<div style="position:relative;width:100%;height:110px">
-      <img src="${String(m.image).replace(/-\d+x\d+(?=\.\w+$)/, "")}" alt="${(m.title || "").replace(/"/g, "")}" style="width:100%;height:110px;object-fit:cover;display:block;background:#111" />
+      <img src="${esc(String(m.image).replace(/-\d+x\d+(?=\.\w+$)/, ""))}" alt="${esc(m.title)}" style="width:100%;height:110px;object-fit:cover;display:block;background:#111" />
       <svg viewBox="0 0 24 24" width="14" height="14" style="position:absolute;left:4px;top:4px"><path d="M12 2l2.4 1.8 3 .2.9 2.9 2.2 2-1 2.8 1 2.8-2.2 2-.9 2.9-3 .2L12 22l-2.4-1.8-3-.2-.9-2.9-2.2-2 1-2.8-1-2.8 2.2-2 .9-2.9 3-.2z" fill="#EDFF00"/><path d="M9 12l2 2 4-4" fill="none" stroke="#000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
     </div>`;
   }
