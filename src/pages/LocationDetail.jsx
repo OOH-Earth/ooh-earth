@@ -169,7 +169,7 @@ export default function LocationDetail() {
               )}
               <div className="flex justify-between"><span className="uppercase tracking-[0.2em] text-dim/60">type</span><span className="text-silver">{meta.label}</span></div>
               <div className="flex justify-between"><span className="uppercase tracking-[0.2em] text-dim/60">key slug</span><span className="text-silver">{loc.access_key || "none"}</span></div>
-              {loc.source_link && (
+              {loc.source_link && /^https?:\/\//i.test(loc.source_link) && (
                 <a href={loc.source_link} target="_blank" rel="noreferrer" className="mt-1 inline-flex items-center gap-1 text-ozone transition-colors hover:text-flare">
                   oohearth.app record <ExternalLink className="h-3 w-3" />
                 </a>
