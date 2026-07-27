@@ -1,22 +1,19 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { ArrowDown, Radio, ShieldAlert, Workflow, ArrowUpRight } from "lucide-react";
+import { ArrowDown, Radio, ArrowUpRight } from "lucide-react";
 import HeroConsole from "@/components/ooh/HeroConsole";
+import { useHeroSlides } from "@/hooks/useHeroSlides";
 
 const WORD = "oohearth.app";
 
-const SLIDES = [
-{ kind: "image", src: "https://images.unsplash.com/photo-1508009603885-50cf7c5d0aea?w=1600&q=80", caption: "Billboard · 1039 Ploenchit, Bangkok" },
-{ kind: "video", src: "https://firebasestorage.googleapis.com/v0/b/standards-site-beta.appspot.com/o/documents%2Fusaglsjaht9%2Fa61ac5238ce%2FSubs6.mp4?alt=media&token=fe1621f1-39b5-4f76-b11e-0700ecedcfba", caption: "Field dispatch · subvertising reel" },
-{ kind: "image", src: "https://images.unsplash.com/photo-1563492065-1a3c66f8e1a4?w=1600&q=80", caption: "Painted takeover · 778 Sukhumvit" },
-{ kind: "image", src: "https://images.unsplash.com/photo-1538428494232-9c0d8a3ab403?w=1600&q=80", caption: "Digital screen · 28 Chitlom" },
-{ kind: "image", src: "https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?w=1600&q=80", caption: "Billboard · 900 Ploenchit" }];
-
+// Generated cinematic base layer — orbital descent over nocturnal metropolis
+const VIDEO_SRC = "https://media.base44.com/videos/public/6a62213cff3ccbca88c04ff5/13f721b2e_Hero_Background.mp4";
 
 export default function Hero({ onCommand }) {
   const [offset, setOffset] = useState(0);
   const [reduced, setReduced] = useState(false);
   const [slide, setSlide] = useState(0);
+  const fieldSlides = useHeroSlides();
 
   useEffect(() => {
     const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
@@ -27,26 +24,31 @@ export default function Hero({ onCommand }) {
   }, []);
 
   useEffect(() => {
-    if (reduced) return;
-    const id = setInterval(() => setSlide((p) => (p + 1) % SLIDES.length), 6000);
+    if (reduced || fieldSlides.length < 2) return;
+    const id = setInterval(() => setSlide((p) => (p + 1) % fieldSlides.length), 6000);
     return () => clearInterval(id);
-  }, [reduced]);
+  }, [reduced, fieldSlides.length]);
+
+  useEffect(() => {
+    if (slide >= fieldSlides.length) setSlide(0);
+  }, [fieldSlides.length, slide]);
 
   const parallax = reduced ? 0 : offset * 0.5;
+  const currentCaption = fieldSlides[slide]?.caption || "Orbital feed · live";
 
   return (
     <section id="top" className="hero-section relative h-[100svh] w-full overflow-hidden bg-void">
       <div
         className="absolute inset-0 will-change-transform"
         style={{ transform: `translateY(${parallax}px) scale(1.15)` }}>
-        
-        {SLIDES.map((s, idx) =>
-        <div key={idx} className={`hero-media absolute inset-0 transition-opacity duration-[1200ms] ${idx === slide ? "opacity-60" : "opacity-0"}`}>
-            {s.kind === "video" ?
-          <video src={s.src} autoPlay muted loop playsInline className="h-full w-full object-cover" data-cursor="view" /> :
 
-          <img src={s.src} alt={s.caption} className="h-full w-full object-cover" data-cursor="view" />
-          }
+        {/* Base video layer — always playing */}
+        <video src={VIDEO_SRC} autoPlay muted loop playsInline className="hero-media absolute inset-0 h-full w-full object-cover" data-cursor="view" />
+
+        {/* Live field photo overlay — cross-fades from verified reports */}
+        {fieldSlides.map((s, idx) =>
+          <div key={idx} className={`hero-media absolute inset-0 transition-opacity duration-[1200ms] ${idx === slide ? "opacity-50" : "opacity-0"}`}>
+            <img src={s.src} alt={s.caption} className="h-full w-full object-cover" data-cursor="view" />
           </div>
         )}
         <div className="hero-overlay absolute inset-0 bg-gradient-to-b from-black/60 via-black/30 to-black" />
@@ -106,19 +108,22 @@ export default function Hero({ onCommand }) {
         </div>
       </div>
 
-      <div className="absolute bottom-4 left-6 z-20 font-mono text-[9px] uppercase tracking-[0.25em] text-silver/70 md:left-10">
-        // {SLIDES[slide].caption}
+      <div className="absolute bottom-4 left-6 z-20 flex items-center gap-2 font-mono text-[9px] uppercase tracking-[0.25em] text-silver/70 md:left-10">
+        <span className="h-1.5 w-1.5 rounded-full bg-ozone animate-pulse" />
+        // {currentCaption}
       </div>
-      <div className="absolute bottom-4 right-6 z-20 flex items-center gap-1.5 md:right-10">
-        {SLIDES.map((s, idx) =>
-        <button
-          key={idx}
-          onClick={() => setSlide(idx)}
-          aria-label={`Slide ${idx + 1}`}
-          className={`h-1.5 transition-all ${idx === slide ? "w-6 bg-ozone" : "w-1.5 bg-silver/40 hover:bg-silver/70"}`} />
+      {fieldSlides.length > 1 && (
+        <div className="absolute bottom-4 right-6 z-20 flex items-center gap-1.5 md:right-10">
+          {fieldSlides.map((s, idx) =>
+          <button
+            key={idx}
+            onClick={() => setSlide(idx)}
+            aria-label={`Slide ${idx + 1}`}
+            className={`h-1.5 transition-all ${idx === slide ? "w-6 bg-ozone" : "w-1.5 bg-silver/40 hover:bg-silver/70"}`} />
 
-        )}
-      </div>
+          )}
+        </div>
+      )}
 
       {/* High-vis baseline strip */}
       <div className="absolute inset-x-0 bottom-0 h-1 hi-vis-stripes opacity-80" />
