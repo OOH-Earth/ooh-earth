@@ -14,6 +14,7 @@ import UnitFinder from "@/components/ooh/UnitFinder";
 import QuickCapture from "@/components/ooh/QuickCapture";
 import Globe3D from "@/components/ooh/Globe3D";
 import MapAlertTicker from "@/components/ooh/map/MapAlertTicker";
+import MapLayerToggle from "@/components/ooh/map/MapLayerToggle";
 import PullToRefresh from "@/components/ooh/PullToRefresh";
 import ClaimLeadDialog from "@/components/ooh/map/ClaimLeadDialog";
 import SpecsBar from "@/components/ooh/uikit/pinlab/SpecsBar";
@@ -46,6 +47,13 @@ export default function Map() {
   const [userLoc, setUserLoc] = useState(null);
   const { startTour, registerSteps } = useWalkthrough();
   const [finderOpen, setFinderOpen] = useState(false);
+  const [activeLayers, setActiveLayers] = useState(["ads"]);
+
+  const toggleLayer = (id) => {
+    setActiveLayers((prev) =>
+      prev.includes(id) ? prev.filter((l) => l !== id) : [...prev, id]
+    );
+  };
 
   useEffect(() => { registerSteps(TOUR); }, [registerSteps]);
   const [captureOpen, setCaptureOpen] = useState(false);
@@ -178,6 +186,7 @@ export default function Map() {
         counts={counts}
         total={raw?.markers?.length || 0}
       />
+      <MapLayerToggle activeLayers={activeLayers} onToggle={toggleLayer} />
 
       {!raw ? (
         <div className="flex flex-1 items-center justify-center">
