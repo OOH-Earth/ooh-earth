@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
+import { usePersistentState } from "@/hooks/usePersistentState";
 import { base44 } from "@/api/base44Client";
 import Nav from "@/components/ooh/Nav";
 import LocationMap from "@/components/ooh/LocationMap";
@@ -43,16 +44,16 @@ const TOUR = [
 
 export default function Map() {
   const [raw, setRaw] = useState(null);
-  const [mode, setMode] = useState("split");
+  const [mode, setMode] = usePersistentState("ooh-map-mode", "split");
   const [typeFilter, setTypeFilter] = useState("all");
   const [query, setQuery] = useState("");
   const [selectedId, setSelectedId] = useState(null);
   const [hoverId, setHoverId] = useState(null);
-  const [view, setView] = useState("globe");
+  const [view, setView] = usePersistentState("ooh-map-view", "globe");
   const [userLoc, setUserLoc] = useState(null);
   const { startTour, registerSteps } = useWalkthrough();
   const [finderOpen, setFinderOpen] = useState(false);
-  const [activeLayers, setActiveLayers] = useState(["ads"]);
+  const [activeLayers, setActiveLayers] = usePersistentState("ooh-map-layers", ["ads"]);
   const [layerFilter, setLayerFilter] = useState("all");
   const { spots: mushrooms, loading: mushLoading } = useMushroomData();
   const { spots: floraSpots, loading: floraLoading } = useFloraData();
@@ -254,7 +255,7 @@ export default function Map() {
                 {!primaryLayer ? (
                   <div className="p-6 text-center font-mono text-[10px] uppercase tracking-[0.25em] text-dim">// No active layers — toggle a layer above</div>
                 ) : layerLoading ? (
-                  <div className="p-6 text-center font-mono text-[10px] uppercase tracking-[0.25em] text-dim">// Loading layer data…</div>
+                  <div className="p-6 text-center font-mono text-[10px] uppercase tracking-[0.25em] text-dim">// Loading {primaryLayer} data…</div>
                 ) : layerResults.length ? (
                   primaryLayer === "ads" ? (
                     layerResults.map((m) => (
@@ -266,7 +267,7 @@ export default function Map() {
                     ))
                   )
                 ) : (
-                  <div className="p-6 text-center font-mono text-[10px] uppercase tracking-[0.25em] text-dim">// No matches</div>
+                  <div className="p-6 text-center font-mono text-[10px] uppercase tracking-[0.25em] text-dim">// No {primaryLayer} matches{query ? ` for "${query}"` : ""}</div>
                 )}
               </div>
             </PullToRefresh>

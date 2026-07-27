@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { usePersistentState } from "@/hooks/usePersistentState";
 import { Loader2, Map as MapIcon, Globe, Search, RotateCcw } from "lucide-react";
 import Nav from "@/components/ooh/Nav";
 import Globe3D from "@/components/ooh/Globe3D";
@@ -28,8 +29,8 @@ export default function PortalShell({
 }) {
   const [selectedId, setSelectedId] = useState(null);
   const [hoverId, setHoverId] = useState(null);
-  const [view, setView] = useState("globe");
-  const [mode, setMode] = useState("split");
+  const [view, setView] = usePersistentState("ooh-portal-view", "globe");
+  const [mode, setMode] = usePersistentState("ooh-portal-mode", "split");
 
   const cardsClass =
     mode === "map" ? "hidden" : mode === "list" ? "flex w-full lg:flex-1" : "hidden lg:flex lg:w-[340px]";
