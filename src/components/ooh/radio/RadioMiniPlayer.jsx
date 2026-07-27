@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { Radio, Play, Pause, Volume2, VolumeX } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import { useRadio } from "@/lib/radioContext";
+import RadioVisualizer from "@/components/ooh/radio/RadioVisualizer";
 
 function EqBars({ active, bars = 3 }) {
   if (!active) return null;
@@ -30,15 +31,7 @@ export default function RadioMiniPlayer() {
 
   return (
     <div ref={ref} className="relative">
-      <button
-        onClick={() => setOpen((v) => !v)}
-        aria-label="Open radio"
-        aria-expanded={open}
-        title="Radio"
-        className={`flex h-8 w-8 items-center justify-center border border-slate2 transition-colors hover:border-ozone hover:text-ozone ${playing ? "border-ozone/60 text-ozone" : "text-silver"}`}
-      >
-        {playing ? <EqBars active /> : <Radio className="h-3.5 w-3.5" />}
-      </button>
+      <RadioVisualizer onClick={() => setOpen((v) => !v)} open={open} />
 
       <AnimatePresence>
         {open && (
