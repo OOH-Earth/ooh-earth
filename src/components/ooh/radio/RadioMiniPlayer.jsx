@@ -102,7 +102,10 @@ export default function RadioMiniPlayer() {
                     <div className={`truncate font-display text-[12px] font-medium tracking-[-0.01em] ${s.id === station?.id ? "text-ozone" : "text-silver/80"}`}>
                       {s.name}
                     </div>
-                    <div className="font-mono text-[7px] uppercase tracking-[0.15em] text-dim/60">{s.genre}</div>
+                    <div className="flex items-center gap-1.5">
+                      <span className={`font-mono text-[7px] font-bold uppercase tracking-[0.15em] ${s.category === "news" ? "text-flare" : "text-ozone/60"}`}>{s.category === "news" ? "[NEWS]" : "[MUSIC]"}</span>
+                      <span className="font-mono text-[7px] uppercase tracking-[0.15em] text-dim/60">{s.genre}</span>
+                    </div>
                   </div>
                   {s.id === station?.id && <EqBars active={playing} bars={3} />}
                 </button>

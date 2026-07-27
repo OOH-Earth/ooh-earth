@@ -25,6 +25,8 @@ import { useFloraData } from "@/components/ooh/map/layers/useFloraData";
 import { useWarZoneData } from "@/components/ooh/map/layers/useWarZoneData";
 import { RIVER_SOURCES } from "@/components/ooh/map/layers/riverData";
 import LayerResultCard from "@/components/ooh/map/LayerResultCard";
+import RadioStationCard from "@/components/ooh/map/RadioStationCard";
+import { RADIO_STATIONS } from "@/components/ooh/radio/radioStations";
 
 const TOUR = [
   { title: "Welcome to OOH Map", body: "The live field map of corporate advertising spots — documented by operatives worldwide." },
@@ -154,7 +156,7 @@ export default function Map() {
   }, [raw, typeFilter, query]);
 
   const primaryLayer = useMemo(
-    () => ["ads", "rivers", "mushrooms", "flora", "war"].find((l) => activeLayers.includes(l)) || null,
+    () => ["ads", "rivers", "mushrooms", "flora", "war", "radio"].find((l) => activeLayers.includes(l)) || null,
     [activeLayers]
   );
 
@@ -182,6 +184,10 @@ export default function Map() {
       case "rivers": return RIVER_SOURCES.filter((s) =>
         (layerFilter === "all" || s.pollution === layerFilter) &&
         matches(`${s.name} ${s.river} ${s.notes}`));
+      case "radio": return RADIO_STATIONS.filter((s) =>
+        isFinite(s.lat) && isFinite(s.lng) &&
+        (layerFilter === "all" || s.category === layerFilter) &&
+        matches(`${s.name} ${s.city} ${s.country} ${s.genre}`));
       default: return [];
     }
   }, [primaryLayer, filtered, mushrooms, floraSpots, warZones, layerFilter, query]);
@@ -260,6 +266,10 @@ export default function Map() {
                   primaryLayer === "ads" ? (
                     layerResults.map((m) => (
                       <LocationCard key={m.id} m={m} selected={selectedId === m.id} onSelect={(x) => setSelectedId(x.id)} onHover={(x) => setHoverId(x.id)} onHoverEnd={() => setHoverId(null)} claim={claimsByLoc[m.id]} onClaim={setClaimTarget} />
+                    ))
+                  ) : primaryLayer === "radio" ? (
+                    layerResults.map((s) => (
+                      <RadioStationCard key={s.id} station={s} />
                     ))
                   ) : (
                     layerResults.map((item, i) => (

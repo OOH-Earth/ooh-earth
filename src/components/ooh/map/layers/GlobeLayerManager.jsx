@@ -4,6 +4,8 @@ import { useMushroomData } from "./useMushroomData";
 import { useFloraData } from "./useFloraData";
 import { useWarZoneData } from "./useWarZoneData";
 import { riversToGeoJSON, riverSourcesToGeoJSON, POLLUTION_META } from "./riverData";
+import { RADIO_STATIONS } from "@/components/ooh/radio/radioStations";
+import { useRadio } from "@/lib/radioContext";
 
 // GlobeLayerManager — adds/removes MapLibre GL sources and layers on the 3D
 // globe based on which layer IDs are active. Must receive the ready map instance.
@@ -314,12 +316,84 @@ function removeWarZones(map) {
   removeLayerAndSource(map, "ooh-warzone-markers", "ooh-warzones");
 }
 
+// ---- Radio Beacons ----
+function radioPopupHTML(p) {
+  const color = p.category === "news" ? "#FF5C00" : "#EDFF00";
+  return `
+    <div style="width:200px;font-family:'Inter Tight',sans-serif">
+      <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px">
+        <span style="font-size:9px;text-transform:uppercase;letter-spacing:0.2em;color:${color};font-weight:700">${p.category === "news" ? "// News Signal" : "// Music Signal"}</span>
+      </div>
+      <div style="font-weight:700;font-size:14px;color:hsl(var(--foreground));line-height:1.25">${esc(p.name)}</div>
+      <div style="font-size:11px;color:hsl(var(--muted-foreground));margin-top:3px">${esc(p.city)}, ${esc(p.country)}</div>
+      <div style="font-size:10px;color:${color};margin-top:4px">${esc(p.genre)}</div>
+      <div style="font-size:9px;color:hsl(var(--muted-foreground));margin-top:8px;text-transform:uppercase;letter-spacing:0.15em">▶ Click to tune in</div>
+    </div>`;
+}
+
+function radioFC() {
+  return {
+    type: "FeatureCollection",
+    features: RADIO_STATIONS
+      .filter((s) => isFinite(s.lat) && isFinite(s.lng))
+      .map((s) => ({
+        type: "Feature",
+        geometry: { type: "Point", coordinates: [s.lng, s.lat] },
+        properties: { id: s.id, name: s.name, city: s.city, country: s.country, genre: s.genre, category: s.category },
+      })),
+  };
+}
+
+function addRadio(map, popup, selectStation) {
+  map.addSource("ooh-radio", { type: "geojson", data: radioFC() });
+  map.addLayer({
+    id: "ooh-radio-markers",
+    type: "circle",
+    source: "ooh-radio",
+    paint: {
+      "circle-radius": ["case", ["==", ["get", "category"], "news"], 8, 7],
+      "circle-color": ["case", ["==", ["get", "category"], "news"], "#FF5C00", "#EDFF00"],
+      "circle-stroke-color": "#000",
+      "circle-stroke-width": 2,
+      "circle-opacity": 0.65,
+    },
+  });
+
+  handlers.radio = {
+    click: (e) => {
+      const f = e.features?.[0];
+      if (!f) return;
+      const p = f.properties;
+      popup.setLngLat(f.geometry.coordinates.slice()).setHTML(radioPopupHTML(p)).addTo(map);
+      selectStation(p.id);
+    },
+    mouseenter: () => { map.getCanvas().style.cursor = "pointer"; },
+    mouseleave: () => { map.getCanvas().style.cursor = ""; },
+  };
+
+  map.on("click", "ooh-radio-markers", handlers.radio.click);
+  map.on("mouseenter", "ooh-radio-markers", handlers.radio.mouseenter);
+  map.on("mouseleave", "ooh-radio-markers", handlers.radio.mouseleave);
+}
+
+function removeRadio(map) {
+  if (!map || map._removed) return;
+  if (handlers.radio) {
+    map.off("click", "ooh-radio-markers", handlers.radio.click);
+    map.off("mouseenter", "ooh-radio-markers", handlers.radio.mouseenter);
+    map.off("mouseleave", "ooh-radio-markers", handlers.radio.mouseleave);
+    handlers.radio = null;
+  }
+  removeLayerAndSource(map, "ooh-radio-markers", "ooh-radio");
+}
+
 // ---- Main component ----
 export default function GlobeLayerManager({ map, activeLayers }) {
   const popupRef = useRef(null);
   const { spots: mushrooms, loading: mushLoading } = useMushroomData();
   const { spots: floraSpots, loading: floraLoading } = useFloraData();
   const { zones: warZones, loading: warLoading } = useWarZoneData();
+  const { selectStation } = useRadio();
 
   // Initialize popup instance once
   useEffect(() => {
@@ -331,6 +405,7 @@ export default function GlobeLayerManager({ map, activeLayers }) {
       removeMushrooms(map);
       removeFlora(map);
       removeWarZones(map);
+      removeRadio(map);
       if (popupRef.current) popupRef.current.remove();
     };
   }, [map]);
@@ -386,6 +461,16 @@ export default function GlobeLayerManager({ map, activeLayers }) {
       removeWarZones(map);
     }
   }, [map, activeLayers, warZones, warLoading]);
+
+  // Radio beacons — static data, toggle on/off
+  useEffect(() => {
+    if (!map || !popupRef.current) return;
+    if (activeLayers.includes("radio")) {
+      if (!map.getSource("ooh-radio")) addRadio(map, popupRef.current, selectStation);
+    } else {
+      removeRadio(map);
+    }
+  }, [map, activeLayers, selectStation]);
 
   return null;
 }

@@ -1,4 +1,4 @@
-import { Waves, Leaf, Sprout, AlertTriangle, Palette } from "lucide-react";
+import { Waves, Leaf, Sprout, AlertTriangle, Palette, Radio } from "lucide-react";
 
 // Layer groups — four research categories, each with sub-layer toggles.
 // ECOLOGY    → Mushrooms, Flora
@@ -37,6 +37,14 @@ export const LAYER_GROUPS = [
     color: "#1F51FF",
     layers: [
       { id: "rivers", label: "Hydrology", icon: Waves, color: "#39FF14" },
+    ],
+  },
+  {
+    id: "radio",
+    label: "Radio",
+    color: "#EDFF00",
+    layers: [
+      { id: "radio", label: "Live Signals", icon: Radio, color: "#EDFF00" },
     ],
   },
 ];
