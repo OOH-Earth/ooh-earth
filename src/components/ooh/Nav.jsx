@@ -10,6 +10,7 @@ import TypeEnhancer from "@/components/ooh/TypeEnhancer";
 import DashboardDropdown from "@/components/ooh/DashboardDropdown";
 import NavMenu from "@/components/ooh/NavMenu";
 import OfflineSyncBadge from "@/components/ooh/OfflineSyncBadge";
+import RadioMiniPlayer from "@/components/ooh/radio/RadioMiniPlayer";
 import { useWalkthrough } from "@/lib/walkthroughContext";
 
 
@@ -29,6 +30,7 @@ export default function Nav({ onCommand }) {
 
         <div className="flex items-center gap-2">
           <OfflineSyncBadge />
+          <RadioMiniPlayer />
           <ThemeToggle />
           <span data-tour="theme" className="hidden md:flex items-center gap-1.5"><HapticsToggle /><SoundToggle /><ReadAloudToggle /></span>
           <Link to="/map" aria-label="Field map" title="Map" className="hidden h-8 w-8 items-center justify-center border border-slate2 text-silver transition-colors hover:border-ozone hover:text-ozone md:flex">
