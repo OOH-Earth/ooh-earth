@@ -4,20 +4,26 @@ import { RADIO_STATIONS } from "@/components/ooh/radio/radioStations";
 const RadioContext = createContext(null);
 
 /**
- * RadioProvider owns a single HTML5 Audio element that lives at the app root.
- * Because the provider never unmounts during route changes, the audio stream
- * keeps playing seamlessly while the user navigates between pages.
+ * RadioProvider owns the audio playback that lives at the app root, so
+ * streams keep playing during route changes.
  *
- * The Audio element is connected to a Web Audio API AnalyserNode so the
- * visualizer can render real FFT frequency data. crossOrigin="anonymous" is
- * set to enable CORS for the analyser; if a stream server doesn't support
- * CORS, the error handler retries without it (audio plays, visualizer
- * falls back to simulated bars).
+ * **Two-element architecture for mobile-safe FFT:**
+ * 1. `playbackRef` — the element the user hears. No `crossOrigin`, so it
+ *    plays ANY stream without CORS issues. Never connected to AudioContext.
+ * 2. `analysisRef` — a muted duplicate with `crossOrigin="anonymous"`,
+ *    connected to an AnalyserNode (but NOT to destination, so it's silent).
+ *    Provides real FFT data for the visualizer when the stream supports CORS.
+ *    If CORS fails, it errors silently and the visualizer falls back to
+ *    simulated animation.
+ *
+ * The AudioContext is created lazily inside the first user gesture (required
+ * by iOS / mobile autoplay policies). This ensures the context starts in
+ * "running" state, not "suspended".
  */
 export function RadioProvider({ children }) {
-  const audioRef = useRef(null);
+  const playbackRef = useRef(null);
+  const analysisRef = useRef(null);
   const audioCtxRef = useRef(null);
-  const corsRetryRef = useRef(false);
   const [stationId, setStationId] = useState(null);
   const [playing, setPlaying] = useState(false);
   const [volume, setVolumeState] = useState(0.5);
@@ -26,45 +32,27 @@ export function RadioProvider({ children }) {
 
   const station = RADIO_STATIONS.find((s) => s.id === stationId) || null;
 
-  // Create the persistent Audio element + AudioContext once
+  // Create the playback element once (no Web Audio, no CORS)
   useEffect(() => {
     const audio = new Audio();
-    audio.crossOrigin = "anonymous";
     audio.volume = 0.5;
-    audioRef.current = audio;
+    playbackRef.current = audio;
 
-    // Set up Web Audio API for the FFT visualizer
-    const AudioCtx = window.AudioContext || window.webkitAudioContext;
-    if (AudioCtx) {
-      try {
-        const ctx = new AudioCtx();
-        const an = ctx.createAnalyser();
-        an.fftSize = 64;
-        an.smoothingTimeConstant = 0.72;
-        const source = ctx.createMediaElementSource(audio);
-        source.connect(an);
-        an.connect(ctx.destination);
-        audioCtxRef.current = ctx;
-        setAnalyser(an);
-      } catch (e) {
-        // AudioContext unavailable — audio still works, visualizer simulates
+    const onPlaying = () => {
+      setPlaying(true);
+      setError(false);
+      // Keep analysis element in sync
+      if (analysisRef.current && analysisRef.current.paused) {
+        analysisRef.current.play().catch(() => {});
       }
-    }
-
-    const onPlaying = () => { setPlaying(true); setError(false); };
-    const onPause = () => setPlaying(false);
-    const onError = () => {
-      // If CORS caused the failure, retry without it (visualizer falls back)
-      if (!corsRetryRef.current && audio.crossOrigin) {
-        corsRetryRef.current = true;
-        audio.crossOrigin = null;
-        audio.load();
-        audio.play().catch(() => { setError(true); setPlaying(false); });
-        return;
-      }
-      setError(true);
-      setPlaying(false);
     };
+    const onPause = () => {
+      setPlaying(false);
+      if (analysisRef.current && !analysisRef.current.paused) {
+        analysisRef.current.pause();
+      }
+    };
+    const onError = () => { setError(true); setPlaying(false); };
 
     audio.addEventListener("playing", onPlaying);
     audio.addEventListener("pause", onPause);
@@ -76,58 +64,105 @@ export function RadioProvider({ children }) {
       audio.removeEventListener("playing", onPlaying);
       audio.removeEventListener("pause", onPause);
       audio.removeEventListener("error", onError);
+      if (analysisRef.current) { analysisRef.current.pause(); analysisRef.current.src = ""; }
       if (audioCtxRef.current) audioCtxRef.current.close().catch(() => {});
     };
   }, []);
 
-  const resumeCtx = useCallback(() => {
-    if (audioCtxRef.current?.state === "suspended") {
-      audioCtxRef.current.resume().catch(() => {});
+  /**
+   * Lazily create the AudioContext + analysis element on the first user
+   * gesture. Must be called synchronously inside a click/tap handler for
+   * iOS to allow the context to start in "running" state.
+   */
+  const ensureAudioGraph = useCallback(() => {
+    if (audioCtxRef.current) {
+      if (audioCtxRef.current.state === "suspended") {
+        audioCtxRef.current.resume().catch(() => {});
+      }
+      return;
+    }
+    const AudioCtx = window.AudioContext || window.webkitAudioContext;
+    if (!AudioCtx) return;
+    try {
+      const ctx = new AudioCtx();
+      const an = ctx.createAnalyser();
+      an.fftSize = 64;
+      an.smoothingTimeConstant = 0.72;
+      // Analysis audio element — CORS required for real FFT data
+      const analysisAudio = new Audio();
+      analysisAudio.crossOrigin = "anonymous";
+      analysisAudio.volume = 1; // Full signal to analyser; output is muted (not connected to destination)
+      const source = ctx.createMediaElementSource(analysisAudio);
+      source.connect(an);
+      // Do NOT connect analyser to ctx.destination — analysis audio is silent
+      analysisRef.current = analysisAudio;
+      audioCtxRef.current = ctx;
+      setAnalyser(an);
+    } catch (e) {
+      // AudioContext unavailable — visualizer will use simulated fallback
     }
   }, []);
 
   // Load + play when station changes
   useEffect(() => {
-    if (!station || !audioRef.current) return;
+    if (!station || !playbackRef.current) return;
     setError(false);
-    corsRetryRef.current = false;
-    // Reset to CORS mode for each new station (enables real FFT data)
-    audioRef.current.crossOrigin = "anonymous";
-    audioRef.current.src = station.stream;
-    audioRef.current.load();
-    resumeCtx();
-    audioRef.current.play().catch(() => setError(true));
-  }, [stationId, resumeCtx]);
 
-  // Sync volume
+    // Main playback — always works (no CORS restriction)
+    const pb = playbackRef.current;
+    pb.src = station.stream;
+    pb.load();
+    pb.play().catch(() => setError(true));
+
+    // Analysis stream — CORS required, fails silently for non-CORS streams
+    if (analysisRef.current) {
+      const an = analysisRef.current;
+      an.crossOrigin = "anonymous";
+      an.src = station.stream;
+      an.load();
+      an.play().catch(() => {});
+    }
+  }, [stationId]);
+
+  // Sync volume on playback element only
   useEffect(() => {
-    if (audioRef.current) audioRef.current.volume = volume;
+    if (playbackRef.current) playbackRef.current.volume = volume;
   }, [volume]);
 
   const togglePlay = useCallback(() => {
-    const audio = audioRef.current;
+    ensureAudioGraph();
+    const audio = playbackRef.current;
     if (!audio) return;
-    resumeCtx();
     if (!station) { setStationId(RADIO_STATIONS[0].id); return; }
-    if (audio.paused) audio.play().catch(() => setError(true));
-    else audio.pause();
-  }, [station, resumeCtx]);
+    if (audio.paused) {
+      audio.play().catch(() => setError(true));
+      if (analysisRef.current) analysisRef.current.play().catch(() => {});
+    } else {
+      audio.pause();
+      if (analysisRef.current) analysisRef.current.pause();
+    }
+  }, [station, ensureAudioGraph]);
 
   const selectStation = useCallback((id) => {
-    resumeCtx();
+    ensureAudioGraph();
     setStationId((cur) => {
       if (cur === id) {
         // Same station tapped → toggle play/pause
-        const audio = audioRef.current;
+        const audio = playbackRef.current;
         if (audio) {
-          if (audio.paused) audio.play().catch(() => setError(true));
-          else audio.pause();
+          if (audio.paused) {
+            audio.play().catch(() => setError(true));
+            if (analysisRef.current) analysisRef.current.play().catch(() => {});
+          } else {
+            audio.pause();
+            if (analysisRef.current) analysisRef.current.pause();
+          }
         }
         return cur;
       }
       return id;
     });
-  }, [resumeCtx]);
+  }, [ensureAudioGraph]);
 
   const setVolume = useCallback((v) => setVolumeState(v), []);
   const toggleMute = useCallback(() => setVolumeState((v) => (v > 0 ? 0 : 0.5)), []);
