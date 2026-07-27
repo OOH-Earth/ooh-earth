@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { Image } from "@/components/ui/image";
 import { Link } from "react-router-dom";
 import { ArrowUpRight, Crosshair, HandHeart } from "lucide-react";
 import Nav from "@/components/ooh/Nav";
@@ -32,7 +31,7 @@ export default function About() {
       <main>
         {/* Hero */}
         <section className="relative flex min-h-[78vh] items-end overflow-hidden">
-          <Image
+          <img
             src="https://ooh.earth/wp-content/uploads/2025/01/517shots_so.jpeg"
             alt="OOH field intervention"
             className="absolute inset-0 h-full w-full object-cover opacity-50"
@@ -105,7 +104,7 @@ export default function About() {
             <div className="mt-8 grid grid-cols-2 gap-px border border-slate2/40 bg-slate2/40 sm:grid-cols-3 lg:grid-cols-4">
               {GALLERY.map((src, i) => (
                 <div key={i} className="aspect-square overflow-hidden bg-void">
-                  <Image src={src} alt={`OOH field intervention ${i + 1}`} className="h-full w-full object-cover transition-opacity hover:opacity-80" />
+                  <img src={src} alt={`OOH field intervention ${i + 1}`} className="h-full w-full object-cover transition-opacity hover:opacity-80" />
                 </div>
               ))}
             </div>
