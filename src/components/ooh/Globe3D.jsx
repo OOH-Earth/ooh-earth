@@ -77,7 +77,7 @@ function popupHTML(m) {
         <div style="display:flex;gap:10px;margin-top:8px">
           <a href="https://www.google.com/maps/dir/?api=1&destination=${m.lat},${m.lng}" target="_blank" rel="noreferrer" style="font-size:9px;text-transform:uppercase;letter-spacing:0.15em;color:#FF5C00;text-decoration:none">Directions ↗</a>
           <a href="/location/${esc(m.id)}" style="font-size:9px;text-transform:uppercase;letter-spacing:0.15em;color:#EDFF00;text-decoration:none">Page ↗</a>
-          ${m.link ? `<a href="${esc(m.link)}" target="_blank" rel="noreferrer" style="font-size:9px;text-transform:uppercase;letter-spacing:0.15em;color:#EDFF00;text-decoration:none">OOH.EARTH ↗</a>` : ""}
+          ${m.link && /^https?:\/\//i.test(m.link) ? `<a href="${esc(m.link)}" target="_blank" rel="noreferrer" style="font-size:9px;text-transform:uppercase;letter-spacing:0.15em;color:#EDFF00;text-decoration:none">OOH.EARTH ↗</a>` : ""}
         </div>
       </div>
     </div>`;

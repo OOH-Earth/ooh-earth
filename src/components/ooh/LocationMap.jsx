@@ -154,7 +154,7 @@ function PinMarker({ m, selected, onSelect }) {
               >
                 Page ↗
               </Link>
-              {m.link && (
+              {m.link && /^https?:\/\//i.test(m.link) && (
                 <a
                   href={m.link}
                   target="_blank"
