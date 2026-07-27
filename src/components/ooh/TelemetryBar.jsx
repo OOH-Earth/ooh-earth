@@ -29,7 +29,7 @@ function LiveFeed() {
 
   return (
     <div className="flex h-full items-center gap-2 overflow-hidden">
-      <span className="flex shrink-0 items-center gap-1.5 pr-3 border-r border-slate2/60">
+      <span className="flex shrink-0 items-center gap-1.5 px-3 border-r border-slate2/60">
         <Radio className="h-3 w-3 animate-pulse text-ozone" />
         <span className="font-mono text-[8px] font-bold uppercase tracking-[0.25em] text-ozone">LIVE</span>
       </span>
