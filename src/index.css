@@ -595,6 +595,14 @@
     padding-bottom: env(safe-area-inset-bottom);
   }
 
+  /* Lock the React root to viewport width — prevents any child from pushing sideways */
+  #root {
+    max-width: 100%;
+    width: 100%;
+    overflow-x: hidden;
+    overflow-y: visible;
+  }
+
   /* Prevent any media element from exceeding the viewport width */
   img, video, canvas, svg, iframe, table {
     max-width: 100%;
