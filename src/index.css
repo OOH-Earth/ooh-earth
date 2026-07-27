@@ -579,15 +579,30 @@
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
     overscroll-behavior: none;
+    overflow-x: hidden;
+    max-width: 100%;
   }
 
   body {
     @apply bg-background text-foreground font-body;
     background-color: hsl(var(--background));
     overflow-x: hidden;
+    max-width: 100%;
+    width: 100%;
+    position: relative;
     line-height: 1.6;
     letter-spacing: -0.005em;
     padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  /* Prevent any media element from exceeding the viewport width */
+  img, video, canvas, svg, iframe, table {
+    max-width: 100%;
+  }
+
+  /* Ensure flex/grid children don't force horizontal overflow */
+  main, section, footer, header, nav {
+    max-width: 100%;
   }
 
   /* Mobile — clear fixed bottom tab bar so page content isn't hidden */
