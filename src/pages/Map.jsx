@@ -217,7 +217,7 @@ export default function Map() {
   const mapClass = mode === "list" ? "hidden" : "flex-1";
 
   return (
-    <div className="flex h-[100dvh] flex-col overflow-hidden bg-void">
+    <div className="flex h-[calc(100dvh-76px-env(safe-area-inset-bottom))] flex-col overflow-hidden bg-void lg:h-[100dvh]">
       <Nav />
       <MapToolbar
         typeFilter={typeFilter}
