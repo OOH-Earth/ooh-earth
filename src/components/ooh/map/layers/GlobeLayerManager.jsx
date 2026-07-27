@@ -18,6 +18,7 @@ const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "
 const handlers = {};
 
 function removeLayerAndSource(map, layerId, sourceId) {
+  if (!map || map._removed) return;
   if (map.getLayer(layerId)) map.removeLayer(layerId);
   if (map.getSource(sourceId)) map.removeSource(sourceId);
 }
@@ -96,6 +97,7 @@ function addRivers(map, popup) {
 }
 
 function removeRivers(map) {
+  if (!map || map._removed) return;
   if (handlers.rivers) {
     map.off("click", "ooh-river-source-markers", handlers.rivers.click);
     map.off("mouseenter", "ooh-river-source-markers", handlers.rivers.mouseenter);
@@ -164,6 +166,7 @@ function addMushrooms(map, popup, spots) {
 }
 
 function removeMushrooms(map) {
+  if (!map || map._removed) return;
   if (handlers.mushrooms) {
     map.off("click", "ooh-mushroom-markers", handlers.mushrooms.click);
     map.off("mouseenter", "ooh-mushroom-markers", handlers.mushrooms.mouseenter);
@@ -231,6 +234,7 @@ function addFlora(map, popup, spots) {
 }
 
 function removeFlora(map) {
+  if (!map || map._removed) return;
   if (handlers.flora) {
     map.off("click", "ooh-flora-markers", handlers.flora.click);
     map.off("mouseenter", "ooh-flora-markers", handlers.flora.mouseenter);
@@ -300,6 +304,7 @@ function addWarZones(map, popup, zones) {
 }
 
 function removeWarZones(map) {
+  if (!map || map._removed) return;
   if (handlers.war) {
     map.off("click", "ooh-warzone-markers", handlers.war.click);
     map.off("mouseenter", "ooh-warzone-markers", handlers.war.mouseenter);
