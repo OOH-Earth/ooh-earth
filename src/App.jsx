@@ -41,6 +41,10 @@ import Channel from '@/pages/Channel';
 import LocationDetail from '@/pages/LocationDetail';
 import BusStops from '@/pages/BusStops';
 import BusStopDetail from '@/pages/BusStopDetail';
+import AdbustingPortal from '@/pages/portals/AdbustingPortal';
+import EcologyPortal from '@/pages/portals/EcologyPortal';
+import RiversPortal from '@/pages/portals/RiversPortal';
+import WarZonesPortal from '@/pages/portals/WarZonesPortal';
 import Careers from '@/pages/Careers';
 import Login from '@/pages/Login';
 import Register from '@/pages/Register';
@@ -83,6 +87,10 @@ const AuthenticatedApp = () => {
     <Route path="/reset-password" element={<ResetPassword />} />
     <Route path="/" element={<Home />} />
     <Route path="/map" element={<Map />} />
+    <Route path="/adbusting" element={<AdbustingPortal />} />
+    <Route path="/ecology" element={<EcologyPortal />} />
+    <Route path="/rivers" element={<RiversPortal />} />
+    <Route path="/warzones" element={<WarZonesPortal />} />
     <Route path="/report" element={<Report />} />
     <Route path="/about" element={<About />} />
     <Route path="/support" element={<Support />} />

@@ -7,6 +7,7 @@ import {
   Home, Map as MapIcon, Megaphone, Scan, Tv, LayoutDashboard,
   Trash2, Coins, CreditCard, LayoutGrid, Info, Briefcase,
   BookOpen, Heart, Layers, LifeBuoy, Network, ShoppingBag,
+  Ban, Leaf, Droplets, AlertTriangle,
 } from "lucide-react";
 import { BUS_STOP_AREAS } from "@/components/ooh/busStops";
 
@@ -26,6 +27,10 @@ const SITEMAP = [
     group: "Field Ops",
     items: [
       { to: "/map", label: "Maps" },
+      { to: "/adbusting", label: "Adbusting" },
+      { to: "/ecology", label: "Ecology" },
+      { to: "/rivers", label: "Rivers" },
+      { to: "/warzones", label: "War Zones" },
       { to: "/bus-stops", label: "Bus Stops" },
       { to: "/report", label: "Report" },
       { to: "/ar", label: "AR Lens" },
@@ -71,6 +76,7 @@ const ICON = {
   Zora: Coins, "Field ID": CreditCard, "Union Card": CreditCard, "UI Kit": LayoutGrid,
   About: Info, Careers: Briefcase, Guides: BookOpen, Fund: Heart, Plans: Layers,
   Support: LifeBuoy, "Bus Stops": MapIcon, "FDE Portal": Compass, "Atari Portfolio": Coins, Sitemap: Network, Store: ShoppingBag,
+  Adbusting: Ban, Ecology: Leaf, Rivers: Droplets, "War Zones": AlertTriangle,
 };
 
 const AREA_COUNT = BUS_STOP_AREAS.length;
