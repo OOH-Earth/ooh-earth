@@ -19,6 +19,11 @@ import PullToRefresh from "@/components/ooh/PullToRefresh";
 import ClaimLeadDialog from "@/components/ooh/map/ClaimLeadDialog";
 import SpecsBar from "@/components/ooh/uikit/pinlab/SpecsBar";
 import { OOH_FUTURES } from "@/components/ooh/map/futures";
+import { useMushroomData } from "@/components/ooh/map/layers/useMushroomData";
+import { useFloraData } from "@/components/ooh/map/layers/useFloraData";
+import { useWarZoneData } from "@/components/ooh/map/layers/useWarZoneData";
+import { RIVER_SOURCES } from "@/components/ooh/map/layers/riverData";
+import LayerResultCard from "@/components/ooh/map/LayerResultCard";
 
 const TOUR = [
   { title: "Welcome to OOH Map", body: "The live field map of corporate advertising spots — documented by operatives worldwide." },
@@ -48,6 +53,10 @@ export default function Map() {
   const { startTour, registerSteps } = useWalkthrough();
   const [finderOpen, setFinderOpen] = useState(false);
   const [activeLayers, setActiveLayers] = useState(["ads"]);
+  const [layerFilter, setLayerFilter] = useState("all");
+  const { spots: mushrooms, loading: mushLoading } = useMushroomData();
+  const { spots: floraSpots, loading: floraLoading } = useFloraData();
+  const { zones: warZones, loading: warLoading } = useWarZoneData();
 
   const toggleLayer = (id) => {
     setActiveLayers((prev) =>
@@ -143,6 +152,39 @@ export default function Map() {
       });
   }, [raw, typeFilter, query]);
 
+  const primaryLayer = useMemo(
+    () => ["ads", "rivers", "mushrooms", "flora", "war"].find((l) => activeLayers.includes(l)) || null,
+    [activeLayers]
+  );
+
+  useEffect(() => { setLayerFilter("all"); }, [primaryLayer]);
+
+  const layerLoading = primaryLayer === "mushrooms" ? mushLoading
+    : primaryLayer === "flora" ? floraLoading
+    : primaryLayer === "war" ? warLoading
+    : false;
+
+  const layerResults = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    const matches = (text) => !q || text.toLowerCase().includes(q);
+    switch (primaryLayer) {
+      case "ads": return filtered;
+      case "mushrooms": return mushrooms.filter((s) =>
+        (layerFilter === "all" || s.region === layerFilter) &&
+        matches(`${s.species} ${s.region} ${s.habitat} ${s.note || ""}`));
+      case "flora": return floraSpots.filter((s) =>
+        (layerFilter === "all" || s.ecosystem === layerFilter) &&
+        matches(`${s.species} ${s.region} ${s.ecosystem} ${s.note || ""}`));
+      case "war": return warZones.filter((z) =>
+        (layerFilter === "all" || (layerFilter === "critical" ? z.severity === "critical" : z.severity !== "critical")) &&
+        matches(`${z.title} ${z.region} ${z.advisory} ${z.source || ""}`));
+      case "rivers": return RIVER_SOURCES.filter((s) =>
+        (layerFilter === "all" || s.pollution === layerFilter) &&
+        matches(`${s.name} ${s.river} ${s.notes}`));
+      default: return [];
+    }
+  }, [primaryLayer, filtered, mushrooms, floraSpots, warZones, layerFilter, query]);
+
   const counts = useMemo(() => {
     const c = {};
     (raw?.markers || []).forEach((m) => { c[m.type] = (c[m.type] || 0) + 1; });
@@ -181,11 +223,14 @@ export default function Map() {
         setTypeFilter={setTypeFilter}
         mode={mode}
         setMode={setMode}
-        count={filtered.length}
+        count={layerResults.length}
         live={raw?.live}
         counts={counts}
         total={raw?.markers?.length || 0}
         activeLayers={activeLayers}
+        primaryLayer={primaryLayer}
+        layerFilter={layerFilter}
+        setLayerFilter={setLayerFilter}
       />
       <MapLayerToggle activeLayers={activeLayers} onToggle={toggleLayer} />
 
@@ -198,18 +243,28 @@ export default function Map() {
         </div>
       ) : (
         <div className="flex min-h-0 flex-1 flex-col lg:flex-row">
-          {mode !== "map" && <MapSidebar query={query} setQuery={setQuery} onReset={() => { setQuery(""); setTypeFilter("all"); }} onBeginTour={startTour} />}
+          {mode !== "map" && <MapSidebar query={query} setQuery={setQuery}         onReset={() => { setQuery(""); setTypeFilter("all"); setLayerFilter("all"); }} onBeginTour={startTour} />}
 
           <div data-tour="cards" className={`min-h-0 flex-col border-r border-slate2/60 ${cardsClass}`}>
             <div className="flex items-center justify-between border-b border-slate2/60 px-4 py-2">
-              <span className="font-mono text-[10px] uppercase tracking-[0.25em] text-dim">// {filtered.length} results {leads > 0 && <span className="text-flare/80">· {leads} leads</span>}</span>
+              <span className="font-mono text-[10px] uppercase tracking-[0.25em] text-dim">// {layerResults.length} results {primaryLayer === "ads" && leads > 0 && <span className="text-flare/80">· {leads} leads</span>}</span>
             </div>
             <PullToRefresh onRefresh={reloadLocations} className="min-h-0 flex-1">
               <div className="space-y-px">
-                {filtered.length ? (
-                  filtered.map((m) => (
-                    <LocationCard key={m.id} m={m} selected={selectedId === m.id} onSelect={(x) => setSelectedId(x.id)} onHover={(x) => setHoverId(x.id)} onHoverEnd={() => setHoverId(null)} claim={claimsByLoc[m.id]} onClaim={setClaimTarget} />
-                  ))
+                {!primaryLayer ? (
+                  <div className="p-6 text-center font-mono text-[10px] uppercase tracking-[0.25em] text-dim">// No active layers — toggle a layer above</div>
+                ) : layerLoading ? (
+                  <div className="p-6 text-center font-mono text-[10px] uppercase tracking-[0.25em] text-dim">// Loading layer data…</div>
+                ) : layerResults.length ? (
+                  primaryLayer === "ads" ? (
+                    layerResults.map((m) => (
+                      <LocationCard key={m.id} m={m} selected={selectedId === m.id} onSelect={(x) => setSelectedId(x.id)} onHover={(x) => setHoverId(x.id)} onHoverEnd={() => setHoverId(null)} claim={claimsByLoc[m.id]} onClaim={setClaimTarget} />
+                    ))
+                  ) : (
+                    layerResults.map((item, i) => (
+                      <LayerResultCard key={`${primaryLayer}-${i}`} item={item} layer={primaryLayer} />
+                    ))
+                  )
                 ) : (
                   <div className="p-6 text-center font-mono text-[10px] uppercase tracking-[0.25em] text-dim">// No matches</div>
                 )}

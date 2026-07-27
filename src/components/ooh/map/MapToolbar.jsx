@@ -20,7 +20,7 @@ const MODES = [
   { value: "list", label: "List", icon: List },
 ];
 
-export default function MapToolbar({ typeFilter, setTypeFilter, mode, setMode, count, live, counts = {}, total = 0, activeLayers = ["ads"] }) {
+export default function MapToolbar({ typeFilter, setTypeFilter, mode, setMode, count, live, counts = {}, total = 0, activeLayers = ["ads"], primaryLayer, layerFilter, setLayerFilter }) {
 
   return (
     <div className="shrink-0 border-b border-slate2/60 bg-void/90 backdrop-blur-md">
@@ -48,7 +48,7 @@ export default function MapToolbar({ typeFilter, setTypeFilter, mode, setMode, c
           })}
         </div>
       </div>
-      <DynamicFilterBar activeLayers={activeLayers} typeFilter={typeFilter} setTypeFilter={setTypeFilter} counts={counts} total={total} />
+      <DynamicFilterBar typeFilter={typeFilter} setTypeFilter={setTypeFilter} counts={counts} total={total} primaryLayer={primaryLayer} layerFilter={layerFilter} setLayerFilter={setLayerFilter} />
     </div>
   );
 }

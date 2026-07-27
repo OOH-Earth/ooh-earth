@@ -1,4 +1,4 @@
-import { Fragment, useEffect, useMemo, useState } from "react";
+import { Fragment, useMemo } from "react";
 import { useMushroomData } from "./layers/useMushroomData";
 import { useFloraData } from "./layers/useFloraData";
 import { useWarZoneData } from "./layers/useWarZoneData";
@@ -14,8 +14,6 @@ const ADS_TYPES = [
   { value: "mural", label: "Mural" },
   { value: "other", label: "Other" },
 ];
-
-// --- Tag builders per layer context ---
 
 function adsTags(counts, total) {
   return [
@@ -80,7 +78,6 @@ function warTags(zones) {
   ];
 }
 
-// Accent colour per layer context
 const LAYER_ACCENT = {
   ads: "#EDFF00",
   rivers: "#39FF14",
@@ -89,25 +86,10 @@ const LAYER_ACCENT = {
   war: "#FF0040",
 };
 
-// Priority order for which layer drives the filter bar
-const LAYER_PRIORITY = ["ads", "rivers", "mushrooms", "flora", "war"];
-
-export default function DynamicFilterBar({ activeLayers, typeFilter, setTypeFilter, counts = {}, total = 0 }) {
+export default function DynamicFilterBar({ typeFilter, setTypeFilter, counts = {}, total = 0, primaryLayer, layerFilter, setLayerFilter }) {
   const { spots: mushrooms } = useMushroomData();
   const { spots: flora } = useFloraData();
   const { zones: warZones } = useWarZoneData();
-
-  const [localFilter, setLocalFilter] = useState("all");
-
-  const primaryLayer = useMemo(
-    () => LAYER_PRIORITY.find((l) => activeLayers.includes(l)) || "ads",
-    [activeLayers]
-  );
-
-  // Reset local filter when the primary layer changes
-  useEffect(() => {
-    setLocalFilter("all");
-  }, [primaryLayer]);
 
   const tags = useMemo(() => {
     switch (primaryLayer) {
@@ -116,13 +98,15 @@ export default function DynamicFilterBar({ activeLayers, typeFilter, setTypeFilt
       case "mushrooms": return mushroomTags(mushrooms);
       case "flora": return floraTags(flora);
       case "war": return warTags(warZones);
-      default: return adsTags(counts, total);
+      default: return [];
     }
   }, [primaryLayer, counts, total, mushrooms, flora, warZones]);
 
   const accent = LAYER_ACCENT[primaryLayer] || "#EDFF00";
-  const selected = primaryLayer === "ads" ? typeFilter : localFilter;
-  const onSelect = primaryLayer === "ads" ? setTypeFilter : setLocalFilter;
+  const selected = primaryLayer === "ads" ? typeFilter : layerFilter;
+  const onSelect = primaryLayer === "ads" ? setTypeFilter : setLayerFilter;
+
+  if (!tags.length) return null;
 
   return (
     <div
