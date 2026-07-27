@@ -65,28 +65,26 @@ export default function Hero({ onCommand }) {
         )}
       </div>
 
-      <div className="relative z-20 flex h-full flex-col justify-between px-6 pb-6 pt-[calc(4rem_+_env(safe-area-inset-top))] md:px-10 md:pb-10 md:pt-[calc(5rem_+_env(safe-area-inset-top))]">
-        <div className="flex items-start justify-between gap-3 font-mono text-[10px] uppercase tracking-[0.3em] text-silver/50">
-          <span className="hidden sm:block">LAT 13.7563°N · LON 100.5018°E · BKK · PM2.5 62µg/m³</span>
-          <span className="sm:hidden">BKK · PM2.5 62µg/m³</span>
-          <span className="flex shrink-0 items-center gap-1.5">
+      <div className="relative z-20 flex h-full flex-col justify-between px-6 pb-6 pt-[calc(7rem_+_env(safe-area-inset-top))] md:px-10 md:pb-10 md:pt-[calc(8rem_+_env(safe-area-inset-top))]">
+        <div className="flex items-center justify-end gap-3">
+          <span className="flex shrink-0 items-center gap-2 font-mono text-[10px] uppercase tracking-[0.3em] text-silver/50">
             <Radio className="h-3 w-3 animate-flicker text-ozone" />
             <span className="glitch" data-text="LIVE FEED">LIVE FEED</span>
           </span>
         </div>
 
-        <div className="grid flex-1 grid-cols-1 items-center gap-6 md:grid-cols-12">
+        <div className="grid flex-1 grid-cols-1 items-center gap-8 md:grid-cols-12">
           {/* Left · wordmark + tagline */}
           <div className="md:col-span-6">
-            <h1 className="mt-2 whitespace-nowrap font-brand text-[clamp(1.4rem,7vw,4.25vw)] leading-[0.82] tracking-[-0.03em] text-silver">
+            <h1 className="whitespace-nowrap font-brand text-[clamp(1.5rem,7vw,4.5vw)] leading-[0.85] tracking-[-0.03em] text-silver">
               {WORD.split("").map((ch, i) =>
               <span key={i} className="inline-block">{ch === "." ? <span className="text-ozone">.</span> : ch}</span>
               )}
             </h1>
-            <p className="mt-5 max-w-md font-display text-sm font-medium leading-[1.45] text-silver/70 md:text-[15px]">
+            <p className="mt-6 max-w-[42ch] font-display text-[15px] font-medium leading-[1.6] text-silver/70 md:text-base">
               An open-source, community-funded app reclaiming the visual commons. Mapping corporate advertising offenses and street-art adbusting worldwide — SDG-aligned, from the orbital perspective.
             </p>
-            <div className="mt-6 flex flex-wrap gap-2">
+            <div className="mt-8 flex flex-wrap gap-3">
               <Link to="/map" className="group inline-flex items-center gap-2 bg-ozone px-5 py-3 font-mono text-[10px] font-bold uppercase tracking-[0.25em] text-void transition-colors hover:bg-flare">
                 Explore the map <ArrowUpRight className="h-3.5 w-3.5" />
               </Link>
