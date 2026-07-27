@@ -35,6 +35,7 @@ const userIcon = L.divIcon({
 
 import { thumbHTML, metaFor } from "@/components/ooh/map/LocationThumb";
 import FutureLayer from "@/components/ooh/map/FutureLayer";
+import LayerManager from "@/components/ooh/map/layers/LayerManager";
 
 // Micro-icon badges — small colored circles with a black category glyph,
 // overlaid on the photo pin (oohearth.app field style).
@@ -236,7 +237,7 @@ function ClusteredMarkers({ pins, selectedId, onSelect }) {
   );
 }
 
-export default function LocationMap({ markers, selectedId, hoverId, onSelect, userLoc, futures }) {
+export default function LocationMap({ markers, selectedId, hoverId, onSelect, userLoc, futures, activeLayers = [] }) {
   const pins = useMemo(() => markers.filter((m) => isFinite(m.lat) && isFinite(m.lng)), [markers]);
 
   return (
@@ -272,6 +273,7 @@ export default function LocationMap({ markers, selectedId, hoverId, onSelect, us
       )}
       <ClusteredMarkers pins={pins} selectedId={selectedId} onSelect={onSelect} />
       <FutureLayer futures={futures} />
+      <LayerManager activeLayers={activeLayers} />
     </MapContainer>
   );
 }

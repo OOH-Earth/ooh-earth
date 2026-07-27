@@ -236,7 +236,7 @@ export default function Map() {
             {view === "globe" ? (
               <Globe3D markers={filtered} selectedId={selectedId} hoverId={hoverId} onSelect={setSelectedId} userLoc={userLoc} />
             ) : (
-              <LocationMap markers={filtered} selectedId={selectedId} hoverId={hoverId} onSelect={setSelectedId} userLoc={userLoc} futures={OOH_FUTURES} />
+              <LocationMap markers={filtered} selectedId={selectedId} hoverId={hoverId} onSelect={setSelectedId} userLoc={userLoc} futures={OOH_FUTURES} activeLayers={activeLayers} />
             )}
             <div className="pointer-events-none absolute inset-x-0 top-0 z-[900] px-3 pt-16">
               <MapAlertTicker />

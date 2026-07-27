@@ -1,12 +1,12 @@
-import { Waves, Leaf, Wind, Layers } from "lucide-react";
+import { Waves, Leaf, AlertTriangle, Layers } from "lucide-react";
 
-// Layer toggle chips for the map — toggles environmental research layers
-// (rivers, mushrooms, air quality) alongside the advertising spot layer.
+// Layer toggle chips for the map — toggles research overlay layers
+// (rivers, mushrooms, war zones) alongside the advertising spot layer.
 export const LAYERS = [
   { id: "ads", label: "Ad Spots", icon: Layers, color: "#EDFF00", defaultOn: true },
   { id: "rivers", label: "Rivers", icon: Waves, color: "#39FF14" },
   { id: "mushrooms", label: "Mushrooms", icon: Leaf, color: "#FF5C00" },
-  { id: "air", label: "Air Quality", icon: Wind, color: "#1F51FF" },
+  { id: "war", label: "War Zones", icon: AlertTriangle, color: "#FF0040" },
 ];
 
 export default function MapLayerToggle({ activeLayers, onToggle }) {
