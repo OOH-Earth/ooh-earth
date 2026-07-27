@@ -13,6 +13,7 @@ import { useWalkthrough } from "@/lib/walkthroughContext";
 import UnitFinder from "@/components/ooh/UnitFinder";
 import QuickCapture from "@/components/ooh/QuickCapture";
 import Globe3D from "@/components/ooh/Globe3D";
+import MapAlertTicker from "@/components/ooh/map/MapAlertTicker";
 import PullToRefresh from "@/components/ooh/PullToRefresh";
 import ClaimLeadDialog from "@/components/ooh/map/ClaimLeadDialog";
 import SpecsBar from "@/components/ooh/uikit/pinlab/SpecsBar";
@@ -228,6 +229,9 @@ export default function Map() {
             ) : (
               <LocationMap markers={filtered} selectedId={selectedId} hoverId={hoverId} onSelect={setSelectedId} userLoc={userLoc} futures={OOH_FUTURES} />
             )}
+            <div className="pointer-events-none absolute inset-x-0 top-0 z-[900] px-3 pt-16">
+              <MapAlertTicker />
+            </div>
             {view === "flat" && (
               <div className="pointer-events-none absolute inset-x-0 bottom-0 z-[900]">
                 <SpecsBar counts={counts} total={raw?.markers?.length || 0} />

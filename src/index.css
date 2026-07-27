@@ -590,6 +590,13 @@
     padding-bottom: env(safe-area-inset-bottom);
   }
 
+  /* Mobile — clear fixed bottom tab bar so page content isn't hidden */
+  @media (max-width: 1023px) {
+    body {
+      padding-bottom: calc(76px + env(safe-area-inset-bottom));
+    }
+  }
+
   /* Mobile-native feel — no text selection / callouts on interactive chrome */
   button,
   a,
