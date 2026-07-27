@@ -1,5 +1,6 @@
 import { Columns, Map as MapIcon, List } from "lucide-react";
 import CryptoTicker from "@/components/ooh/CryptoTicker";
+import DynamicFilterBar from "@/components/ooh/map/DynamicFilterBar";
 
 export const TYPES = [
   { value: "all", label: "All" },
@@ -19,8 +20,7 @@ const MODES = [
   { value: "list", label: "List", icon: List },
 ];
 
-export default function MapToolbar({ typeFilter, setTypeFilter, mode, setMode, count, live, counts = {}, total = 0 }) {
-  const chips = [{ value: "all", label: "All" }, ...TYPES.filter((t) => t.value !== "all" && (counts[t.value] || 0) > 0)];
+export default function MapToolbar({ typeFilter, setTypeFilter, mode, setMode, count, live, counts = {}, total = 0, activeLayers = ["ads"] }) {
 
   return (
     <div className="shrink-0 border-b border-slate2/60 bg-void/90 backdrop-blur-md">
@@ -48,24 +48,7 @@ export default function MapToolbar({ typeFilter, setTypeFilter, mode, setMode, c
           })}
         </div>
       </div>
-      <div data-tour="filters" className="atlas-track flex items-center gap-1.5 overflow-x-auto px-5 pb-2.5 md:px-8">
-        {chips.map((t) => {
-          const n = t.value === "all" ? total : counts[t.value] || 0;
-          const active = typeFilter === t.value;
-          return (
-            <button
-              key={t.value}
-              onClick={() => setTypeFilter(t.value)}
-              className={`flex shrink-0 items-center gap-1.5 border px-3 py-1.5 font-mono text-[10px] font-bold uppercase tracking-[0.15em] transition-colors ${
-                active ? "border-ozone bg-ozone text-void" : "border-slate2/60 text-darkgray hover:border-ozone hover:text-ozone"
-              }`}
-            >
-              {t.label}
-              <span className={`text-[9px] ${active ? "text-void/70" : "text-dim"}`}>{n}</span>
-            </button>
-          );
-        })}
-      </div>
+      <DynamicFilterBar activeLayers={activeLayers} typeFilter={typeFilter} setTypeFilter={setTypeFilter} counts={counts} total={total} />
     </div>
   );
 }

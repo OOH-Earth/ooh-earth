@@ -185,6 +185,7 @@ export default function Map() {
         live={raw?.live}
         counts={counts}
         total={raw?.markers?.length || 0}
+        activeLayers={activeLayers}
       />
       <MapLayerToggle activeLayers={activeLayers} onToggle={toggleLayer} />
 
