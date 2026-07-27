@@ -843,6 +843,13 @@
 @keyframes ripple-expand { from { transform: translate(-50%,-50%) scale(0); opacity: 0.55; } to { transform: translate(-50%,-50%) scale(2.6); opacity: 0; } }
 .ripple-pulse { animation: ripple-expand 0.6s ease-out forwards; }
 
+/* Radio equalizer bars */
+@keyframes ooh-eq {
+  0%, 100% { transform: scaleY(0.25); }
+  50% { transform: scaleY(1); }
+}
+.eq-bar { transform-origin: bottom; animation: ooh-eq 0.8s ease-in-out infinite; }
+
 /* === Mode style-kit specimens (ThemeModeMatrix) === */
 @keyframes kit-draw { from { stroke-dashoffset: 240; } to { stroke-dashoffset: 0; } }
 .draw-stroke { stroke-dasharray: 240; stroke-dashoffset: 240; animation: kit-draw 1.8s ease-out 0.2s forwards; }
