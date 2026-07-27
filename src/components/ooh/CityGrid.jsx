@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { Radio, ArrowUpRight } from "lucide-react";
+import { Image } from "@/components/ui/image";
 
 const NORTH = [
   { city: "London", country: "United Kingdom", logged: 14, level: 35, img: "https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?w=800&q=80" },
@@ -17,7 +18,7 @@ const SOUTH = [
   { city: "Lagos", country: "Nigeria", logged: 0, level: 0 },
   { city: "Mumbai", country: "India", logged: 0, level: 0 },
   { city: "Jakarta", country: "Indonesia", logged: 0, level: 0 },
-  { city: "Bangkok", country: "Thailand", logged: 10, level: 40, img: "https://images.unsplash.com/photo-1508009603885-50cf7c5d0aea?w=800&q=80" },
+  { city: "Bangkok", country: "Thailand", logged: 10, level: 40, img: "https://images.unsplash.com/photo-1523731407965-2430cd12f5e4?auto=format&fit=crop&w=800&q=80" },
   { city: "Nairobi", country: "Kenya", logged: 0, level: 0 },
   { city: "Bogotá", country: "Colombia", logged: 0, level: 0 },
   { city: "Manila", country: "Philippines", logged: 0, level: 0 },
@@ -33,7 +34,7 @@ function CityCard({ c, highlighted }) {
     >
       {c.img ? (
         <>
-          <img
+          <Image
             src={c.img}
             alt={`${c.city} field photography`}
             loading="lazy"
