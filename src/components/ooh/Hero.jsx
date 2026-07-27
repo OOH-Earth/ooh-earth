@@ -2,18 +2,14 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { ArrowDown, Radio, ArrowUpRight } from "lucide-react";
 import HeroConsole from "@/components/ooh/HeroConsole";
-import { useHeroSlides } from "@/hooks/useHeroSlides";
 
 const WORD = "oohearth.app";
 
-// Generated cinematic base layer — orbital descent over nocturnal metropolis
-const VIDEO_SRC = "https://media.base44.com/videos/public/6a62213cff3ccbca88c04ff5/13f721b2e_Hero_Background.mp4";
+const VIDEO_SRC = "https://firebasestorage.googleapis.com/v0/b/standards-site-beta.appspot.com/o/documents%2Fusaglsjaht9%2Fa61ac5238ce%2FSubs6.mp4?alt=media&token=fe1621f1-39b5-4f76-b11e-0700ecedcfba";
 
 export default function Hero({ onCommand }) {
   const [offset, setOffset] = useState(0);
   const [reduced, setReduced] = useState(false);
-  const [slide, setSlide] = useState(0);
-  const fieldSlides = useHeroSlides();
 
   useEffect(() => {
     const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
@@ -23,18 +19,7 @@ export default function Hero({ onCommand }) {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  useEffect(() => {
-    if (reduced || fieldSlides.length < 2) return;
-    const id = setInterval(() => setSlide((p) => (p + 1) % fieldSlides.length), 6000);
-    return () => clearInterval(id);
-  }, [reduced, fieldSlides.length]);
-
-  useEffect(() => {
-    if (slide >= fieldSlides.length) setSlide(0);
-  }, [fieldSlides.length, slide]);
-
   const parallax = reduced ? 0 : offset * 0.5;
-  const currentCaption = fieldSlides[slide]?.caption || "Orbital feed · live";
 
   return (
     <section id="top" className="hero-section relative h-[100svh] w-full overflow-hidden bg-void">
@@ -42,15 +27,7 @@ export default function Hero({ onCommand }) {
         className="absolute inset-0 will-change-transform"
         style={{ transform: `translateY(${parallax}px) scale(1.15)` }}>
 
-        {/* Base video layer — always playing */}
         <video src={VIDEO_SRC} autoPlay muted loop playsInline className="hero-media absolute inset-0 h-full w-full object-cover" data-cursor="view" />
-
-        {/* Live field photo overlay — cross-fades from verified reports */}
-        {fieldSlides.map((s, idx) =>
-          <div key={idx} className={`hero-media absolute inset-0 transition-opacity duration-[1200ms] ${idx === slide ? "opacity-50" : "opacity-0"}`}>
-            <img src={s.src} alt={s.caption} className="h-full w-full object-cover" data-cursor="view" />
-          </div>
-        )}
         <div className="hero-overlay absolute inset-0 bg-gradient-to-b from-black/60 via-black/30 to-black" />
         <div className="hero-overlay absolute inset-0 bg-gradient-to-r from-black/70 via-transparent to-black/70" />
       </div>
@@ -108,22 +85,9 @@ export default function Hero({ onCommand }) {
         </div>
       </div>
 
-      <div className="absolute bottom-4 left-6 z-20 flex items-center gap-2 font-mono text-[9px] uppercase tracking-[0.25em] text-silver/70 md:left-10">
-        <span className="h-1.5 w-1.5 rounded-full bg-ozone animate-pulse" />
-        // {currentCaption}
+      <div className="absolute bottom-4 left-6 z-20 font-mono text-[9px] uppercase tracking-[0.25em] text-silver/70 md:left-10">
+        // Field dispatch · subvertising reel
       </div>
-      {fieldSlides.length > 1 && (
-        <div className="absolute bottom-4 right-6 z-20 flex items-center gap-1.5 md:right-10">
-          {fieldSlides.map((s, idx) =>
-          <button
-            key={idx}
-            onClick={() => setSlide(idx)}
-            aria-label={`Slide ${idx + 1}`}
-            className={`h-1.5 transition-all ${idx === slide ? "w-6 bg-ozone" : "w-1.5 bg-silver/40 hover:bg-silver/70"}`} />
-
-          )}
-        </div>
-      )}
 
       {/* High-vis baseline strip */}
       <div className="absolute inset-x-0 bottom-0 h-1 hi-vis-stripes opacity-80" />
