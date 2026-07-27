@@ -1,6 +1,7 @@
 import { useEffect, useRef } from "react";
 import maplibregl from "maplibre-gl";
 import { useMushroomData } from "./useMushroomData";
+import { useFloraData } from "./useFloraData";
 import { useWarZoneData } from "./useWarZoneData";
 import { riversToGeoJSON, riverSourcesToGeoJSON, POLLUTION_META } from "./riverData";
 
@@ -140,6 +141,57 @@ function removeMushrooms(map) {
   removeLayerAndSource(map, "ooh-mushroom-markers", "ooh-mushrooms");
 }
 
+// ---- Flora ----
+function floraPopupHTML(p) {
+  return `
+    <div style="width:180px;font-family:'Inter Tight',sans-serif">
+      <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px">
+        <span style="font-size:9px;text-transform:uppercase;letter-spacing:0.2em;color:#39FF14;font-weight:700">Flora Index</span>
+      </div>
+      <div style="font-weight:700;font-size:14px;color:hsl(var(--foreground))">${esc(p.region || "Unknown")}</div>
+      <div style="font-size:11px;color:#39FF14;margin-top:4px;font-style:italic">${esc(p.species)}</div>
+      ${p.ecosystem ? `<div style="font-size:10px;color:hsl(var(--muted-foreground));margin-top:4px"><span style="text-transform:uppercase;letter-spacing:0.1em;font-weight:700;font-size:8">Ecosystem</span><br/>${esc(p.ecosystem)}</div>` : ""}
+      ${p.note ? `<div style="font-size:10px;color:hsl(var(--muted-foreground));margin-top:4px;line-height:1.4">${esc(p.note)}</div>` : ""}
+    </div>`;
+}
+
+function addFlora(map, popup, spots) {
+  const fc = {
+    type: "FeatureCollection",
+    features: spots
+      .filter((s) => isFinite(s.lat) && isFinite(s.lng))
+      .map((s) => ({
+        type: "Feature",
+        geometry: { type: "Point", coordinates: [s.lng, s.lat] },
+        properties: { species: s.species, ecosystem: s.ecosystem, note: s.note, region: s.region },
+      })),
+  };
+  map.addSource("ooh-flora", { type: "geojson", data: fc });
+  map.addLayer({
+    id: "ooh-flora-markers",
+    type: "circle",
+    source: "ooh-flora",
+    paint: {
+      "circle-radius": 7,
+      "circle-color": "#39FF14",
+      "circle-stroke-color": "#000",
+      "circle-stroke-width": 2,
+      "circle-opacity": 0.55,
+    },
+  });
+  map.on("click", "ooh-flora-markers", (e) => {
+    const f = e.features?.[0];
+    if (!f) return;
+    popup.setLngLat(f.geometry.coordinates.slice()).setHTML(floraPopupHTML(f.properties)).addTo(map);
+  });
+  map.on("mouseenter", "ooh-flora-markers", () => { map.getCanvas().style.cursor = "pointer"; });
+  map.on("mouseleave", "ooh-flora-markers", () => { map.getCanvas().style.cursor = ""; });
+}
+
+function removeFlora(map) {
+  removeLayerAndSource(map, "ooh-flora-markers", "ooh-flora");
+}
+
 // ---- War Zones ----
 function warPopupHTML(z) {
   const critical = z.severity === "critical";
@@ -197,6 +249,7 @@ function removeWarZones(map) {
 export default function GlobeLayerManager({ map, activeLayers }) {
   const popupRef = useRef(null);
   const { spots: mushrooms, loading: mushLoading } = useMushroomData();
+  const { spots: floraSpots, loading: floraLoading } = useFloraData();
   const { zones: warZones, loading: warLoading } = useWarZoneData();
 
   // Initialize popup instance once
@@ -235,6 +288,27 @@ export default function GlobeLayerManager({ map, activeLayers }) {
       removeMushrooms(map);
     }
   }, [map, activeLayers, mushrooms, mushLoading]);
+
+  // Flora — live data, update when spots arrive
+  useEffect(() => {
+    if (!map || !popupRef.current) return;
+    if (activeLayers.includes("flora") && !floraLoading && floraSpots.length) {
+      if (!map.getSource("ooh-flora")) {
+        addFlora(map, popupRef.current, floraSpots);
+      } else {
+        map.getSource("ooh-flora").setData({
+          type: "FeatureCollection",
+          features: floraSpots.filter((s) => isFinite(s.lat) && isFinite(s.lng)).map((s) => ({
+            type: "Feature",
+            geometry: { type: "Point", coordinates: [s.lng, s.lat] },
+            properties: { species: s.species, ecosystem: s.ecosystem, note: s.note, region: s.region },
+          })),
+        });
+      }
+    } else if (!activeLayers.includes("flora")) {
+      removeFlora(map);
+    }
+  }, [map, activeLayers, floraSpots, floraLoading]);
 
   // War zones — live data, update when zones arrive
   useEffect(() => {

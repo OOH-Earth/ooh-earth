@@ -1,5 +1,6 @@
 import RiverLayer from "./RiverLayer";
 import MushroomLayer from "./MushroomLayer";
+import FloraLayer from "./FloraLayer";
 import WarZoneLayer from "./WarZoneLayer";
 
 // Layer registry — renders the appropriate overlay components based on which
@@ -7,6 +8,7 @@ import WarZoneLayer from "./WarZoneLayer";
 const REGISTRY = {
   rivers: RiverLayer,
   mushrooms: MushroomLayer,
+  flora: FloraLayer,
   war: WarZoneLayer,
 };
 
