@@ -267,6 +267,16 @@ export default function Globe3D({ markers, selectedId, hoverId, onSelect, userLo
     };
   }, []);
 
+  // Toggle ad-spot layer visibility based on "ads" in activeLayers
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!readyRef.current || !map) return;
+    const vis = activeLayers.includes("ads") ? "visible" : "none";
+    ["ooh-markers", "ooh-clusters", "ooh-cluster-count"].forEach((id) => {
+      if (map.getLayer(id)) map.setLayoutProperty(id, "visibility", vis);
+    });
+  }, [activeLayers, ready]);
+
   useEffect(() => {
     dataRef.current = buildFC(markers, selectedId);
     const map = mapRef.current;
