@@ -7,6 +7,7 @@ import FieldStatsHud from "@/components/ooh/FieldStatsHud";
 import { motion } from "framer-motion";
 
 import { thumbHTML, metaFor } from "@/components/ooh/map/LocationThumb";
+import GlobeLayerManager from "@/components/ooh/map/layers/GlobeLayerManager";
 
 const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 
@@ -107,7 +108,7 @@ function buildFC(markers, selectedId) {
   };
 }
 
-export default function Globe3D({ markers, selectedId, hoverId, onSelect, userLoc, interactive = true, spin = false, scrollZoom = true }) {
+export default function Globe3D({ markers, selectedId, hoverId, onSelect, userLoc, activeLayers = [], interactive = true, spin = false, scrollZoom = true }) {
   const containerRef = useRef(null);
   const mapRef = useRef(null);
   const popupRef = useRef(null);
@@ -400,6 +401,7 @@ export default function Globe3D({ markers, selectedId, hoverId, onSelect, userLo
         </button>
       </div>
       )}
+      {ready && mapRef.current && <GlobeLayerManager map={mapRef.current} activeLayers={activeLayers} />}
       {ready && <GlobeHud map={mapRef.current} />}
       {ready && <FieldStatsHud />}
     </div>
