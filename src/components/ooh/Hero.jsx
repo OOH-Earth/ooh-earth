@@ -78,8 +78,7 @@ export default function Hero({ onCommand }) {
         <div className="grid flex-1 grid-cols-1 items-center gap-6 md:grid-cols-12">
           {/* Left · wordmark + tagline */}
           <div className="md:col-span-6">
-            <span className="font-mono text-[10px] uppercase tracking-[0.4em] text-ozone">OOH Street Art & Adbusting Maps</span>
-            <h1 className="mt-6 whitespace-nowrap font-brand text-[clamp(1.4rem,7vw,4.25vw)] leading-[0.82] tracking-[-0.03em] text-silver">
+            <h1 className="mt-2 whitespace-nowrap font-brand text-[clamp(1.4rem,7vw,4.25vw)] leading-[0.82] tracking-[-0.03em] text-silver">
               {WORD.split("").map((ch, i) =>
               <span key={i} className="inline-block">{ch === "." ? <span className="text-ozone">.</span> : ch}</span>
               )}
