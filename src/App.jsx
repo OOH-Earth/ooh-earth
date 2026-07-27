@@ -13,6 +13,7 @@ import CognitiveLayer from '@/components/ooh/cognitive/CognitiveLayer';
 import MobileBottomTabs from '@/components/ooh/MobileBottomTabs';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import { WalkthroughProvider } from '@/lib/walkthroughContext';
+import { RadioProvider } from '@/lib/radioContext';
 // Add page imports here
 import Home from '@/pages/Home';
 import Map from '@/pages/Map';
@@ -133,14 +134,16 @@ function App() {
     <AuthProvider>
       <QueryClientProvider client={queryClientInstance}>
         <Router>
-          <WalkthroughProvider>
-            <ScrollToTop />
-            <AuthenticatedApp />
-            <CrtOverlay />
-            <TvStatic />
-            <CognitiveLayer />
-            <MobileBottomTabs />
-          </WalkthroughProvider>
+          <RadioProvider>
+            <WalkthroughProvider>
+              <ScrollToTop />
+              <AuthenticatedApp />
+              <CrtOverlay />
+              <TvStatic />
+              <CognitiveLayer />
+              <MobileBottomTabs />
+            </WalkthroughProvider>
+          </RadioProvider>
         </Router>
         <Toaster />
       </QueryClientProvider>

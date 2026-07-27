@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { MapPin, Wind, Radio, Loader2 } from "lucide-react";
 import ClimateClock from "@/components/ooh/ClimateClock";
 import { useNewsHeadlines } from "@/hooks/useNewsHeadlines";
+import RadioMiniPlayer from "@/components/ooh/radio/RadioMiniPlayer";
 
 const BKK = { lat: 13.7563, lng: 100.5018 };
 
@@ -113,6 +114,9 @@ export default function TelemetryBar() {
         </span>
         <span className="font-mono text-[8px] uppercase tracking-[0.1em] text-darkgray">µg/m³</span>
       </div>
+
+      {/* Radio */}
+      <RadioMiniPlayer />
 
       {/* Live intel feed */}
       <div className="flex flex-1 items-center overflow-hidden">
