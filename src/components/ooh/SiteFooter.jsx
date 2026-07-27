@@ -10,7 +10,7 @@ export default function SiteFooter({ onCommand }) {
           <div>
             <Link to="/" className="group inline-flex items-center gap-3" aria-label="OOH Earth — home">
               <BrandMark className="h-9 w-9 md:h-11 md:w-11" />
-              <span className="font-brand text-3xl tracking-tight text-silver transition-colors group-hover:text-ozone md:text-5xl">
+              <span className="font-brand text-xl tracking-tight text-silver transition-colors group-hover:text-ozone md:text-5xl">
                 oohearth<span className="text-ozone">.</span>app
               </span>
             </Link>

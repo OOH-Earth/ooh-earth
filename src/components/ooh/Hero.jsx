@@ -65,10 +65,11 @@ export default function Hero({ onCommand }) {
         )}
       </div>
 
-      <div className="relative z-20 flex h-full flex-col justify-between p-6 md:p-10">
-        <div className="flex items-start justify-between font-mono text-[10px] uppercase tracking-[0.3em] text-silver/50">
-          <span>LAT 13.7563°N · LON 100.5018°E · BKK · PM2.5 62µg/m³</span>
-          <span className="flex items-center gap-1.5">
+      <div className="relative z-20 flex h-full flex-col justify-between px-6 pb-6 pt-[calc(4rem_+_env(safe-area-inset-top))] md:px-10 md:pb-10 md:pt-[calc(5rem_+_env(safe-area-inset-top))]">
+        <div className="flex items-start justify-between gap-3 font-mono text-[10px] uppercase tracking-[0.3em] text-silver/50">
+          <span className="hidden sm:block">LAT 13.7563°N · LON 100.5018°E · BKK · PM2.5 62µg/m³</span>
+          <span className="sm:hidden">BKK · PM2.5 62µg/m³</span>
+          <span className="flex shrink-0 items-center gap-1.5">
             <Radio className="h-3 w-3 animate-flicker text-ozone" />
             <span className="glitch" data-text="LIVE FEED">LIVE FEED</span>
           </span>
@@ -78,7 +79,7 @@ export default function Hero({ onCommand }) {
           {/* Left · wordmark + tagline */}
           <div className="md:col-span-6">
             <span className="font-mono text-[10px] uppercase tracking-[0.4em] text-ozone">OOH Street Art & Adbusting Maps</span>
-            <h1 className="mt-6 whitespace-nowrap font-brand text-[clamp(1.75rem,7vw,4.25vw)] leading-[0.82] tracking-[-0.03em] text-silver">
+            <h1 className="mt-6 whitespace-nowrap font-brand text-[clamp(1.4rem,7vw,4.25vw)] leading-[0.82] tracking-[-0.03em] text-silver">
               {WORD.split("").map((ch, i) =>
               <span key={i} className="inline-block">{ch === "." ? <span className="text-ozone">.</span> : ch}</span>
               )}
