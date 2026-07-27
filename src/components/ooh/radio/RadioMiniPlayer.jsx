@@ -30,8 +30,28 @@ export default function RadioMiniPlayer() {
   }, [open]);
 
   return (
-    <div ref={ref} className="relative">
-      <RadioVisualizer onClick={() => setOpen((v) => !v)} open={open} />
+    <div ref={ref} className="flex items-center">
+      {/* Label + inline visualizer — opens dropdown */}
+      <button
+        onClick={() => setOpen((v) => !v)}
+        aria-label="Open radio"
+        aria-expanded={open}
+        title="Radio"
+        className={`flex h-8 items-center gap-2 border border-slate2 px-2.5 font-mono text-[10px] font-bold uppercase tracking-[0.25em] transition-colors hover:border-ozone hover:text-ozone ${playing ? "border-ozone/60 text-ozone" : "text-silver"}`}
+      >
+        <Radio className="h-3.5 w-3.5" />
+        <span className="hidden sm:inline">Radio</span>
+        <RadioVisualizer />
+      </button>
+      {/* On/off toggle — separate from visualizer */}
+      <button
+        onClick={togglePlay}
+        aria-label={playing ? "Pause" : "Play"}
+        title={playing ? "Pause" : "Play"}
+        className={`flex h-8 w-8 items-center justify-center border-y border-r border-slate2 transition-colors hover:border-ozone hover:text-ozone ${playing ? "text-ozone" : "text-silver"}`}
+      >
+        {playing ? <Pause className="h-3.5 w-3.5" /> : <Play className="h-3.5 w-3.5" />}
+      </button>
 
       <AnimatePresence>
         {open && (

@@ -7,13 +7,15 @@ const CW = 48;
 const CH = 26;
 
 /**
- * RadioVisualizer — a compact canvas-based FFT spectrum analyzer that replaces
- * the radio toggle button in the header nav. Reads real frequency data from
- * the Web Audio AnalyserNode when available (CORS-friendly streams). Falls
- * back to a smooth simulated waveform for non-CORS streams. Bars use the
- * station category color (news = orange, music = yellow).
+ * RadioVisualizer — a compact canvas-based FFT spectrum analyzer that renders
+ * inline inside the nav radio button. Reads real frequency data from the Web
+ * Audio AnalyserNode when available (CORS-friendly streams). Falls back to a
+ * smooth simulated waveform for non-CORS streams. Bars use the station
+ * category color (news = orange, music = yellow).
+ *
+ * This is a pure canvas — the parent supplies the button wrapper.
  */
-export default function RadioVisualizer({ onClick, open }) {
+export default function RadioVisualizer() {
   const { analyser, playing, error, station } = useRadio();
   const canvasRef = useRef(null);
   const rafRef = useRef(null);
@@ -55,7 +57,6 @@ export default function RadioVisualizer({ onClick, open }) {
           }
         }
         if (!hasReal) {
-          // Simulated fallback for non-CORS streams
           simPhase.current += 0.06;
           for (let i = 0; i < NUM_BARS; i++) {
             const wave = Math.sin(simPhase.current + i * 0.45) * 0.22 + 0.32;
@@ -82,15 +83,5 @@ export default function RadioVisualizer({ onClick, open }) {
     return () => cancelAnimationFrame(rafRef.current);
   }, []);
 
-  return (
-    <button
-      onClick={onClick}
-      aria-label="Open radio"
-      aria-expanded={open}
-      title="Radio"
-      className={`flex h-8 items-center justify-center border px-1 transition-colors hover:border-ozone ${playing ? "border-ozone/60" : "border-slate2"}`}
-    >
-      <canvas ref={canvasRef} style={{ width: CW, height: CH, display: "block" }} />
-    </button>
-  );
+  return <canvas ref={canvasRef} style={{ width: CW, height: CH, display: "block" }} />;
 }
