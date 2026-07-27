@@ -49,7 +49,7 @@ export default function PortalShell({
   );
 
   return (
-    <div className="fixed inset-0 flex flex-col overflow-hidden bg-void pt-[calc(4rem+env(safe-area-inset-top))] pb-[calc(76px+env(safe-area-inset-bottom))] lg:pb-0">
+    <div className="fixed inset-0 flex flex-col overflow-hidden bg-void pt-[calc(4rem_+_env(safe-area-inset-top))] pb-[calc(76px_+_env(safe-area-inset-bottom))] lg:pb-0">
       <Nav />
 
       {/* Portal header */}
