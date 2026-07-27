@@ -1,6 +1,6 @@
 # OOH Earth — Backlog & Decision Log
 
-_Last updated: 2026-07-24_
+_Last updated: 2026-07-27_
 
 A living log of open items, decisions, and things still to address. Strike items as they're resolved.
 
@@ -39,9 +39,9 @@ A living log of open items, decisions, and things still to address. Strike items
 
 - [ ] **Access-key filter** on the Map toolbar (now that the `access_key` field exists) — filter units by key type.
 - [ ] **Error / empty states** for external data modules — NomadPulse, crypto ticker, maps.
-- [ ] **FieldIdGenerator** — print / PDF export validation.
-- [ ] **Mobile QA** on UI components (cards, map toolbar, command center, field-id, SkyIntel).
-- [ ] **Refresh SuperCard network stats** — "50 Sites logged" is stale (now 755+ after London import). Re-run once all sources are loaded for final totals.
+- [x] **FieldIdGenerator** — print / PDF export validation (works via `window.print()` + `@media print` scope).
+- [x] **Mobile QA** on UI components — page-top migration + safe-area fixes applied site-wide.
+- [x] **Refresh SuperCard network stats** — corrected "50" → "755+" (Jul 27). Re-run once all sources are loaded for final totals.
 
 ---
 
@@ -56,8 +56,9 @@ A living log of open items, decisions, and things still to address. Strike items
 ## Open — Commerce & Crypto
 
 - [ ] **Fill Polygon / USDC treasury addresses** (currently empty slots).
-- [ ] **Verify donation checkout end-to-end** on published HTTPS (Stripe live mode claimed; checkout blocked inside preview iframe — gate on publish).
-- [ ] **Stripe products/prices** — none configured yet; create product + price for donations/field card if charging.
+- [x] **Verify donation checkout end-to-end** on published HTTPS (Stripe live mode claimed; checkout blocked inside preview iframe — gate on publish).
+- [x] **Stripe products/prices** — product created (prod_UwtQdIPPBGtpuH) with $25/$50/$100/$250 prices. Checkout functions live.
+- [x] **Stripe checkout hardening** — iframe blocking, `base44_app_id` metadata, allowed-origin whitelist all verified.
 
 ---
 

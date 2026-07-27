@@ -64,7 +64,7 @@ export default function TrashId() {
   return (
     <div className="min-h-screen bg-void">
       <Nav />
-      <main className="mx-auto max-w-3xl px-5 pb-24 pt-24 md:px-8">
+      <main className="page-top mx-auto max-w-3xl px-5 pb-24 md:px-8">
         <div className="flex flex-col gap-1">
           <span className="font-mono text-[10px] uppercase tracking-[0.3em] text-ozone">// Field tool · Trash attribution</span>
           <h1 className="font-display text-3xl font-black uppercase tracking-tight2 text-silver md:text-5xl">Photograph the dump.<br />Name the brand.</h1>

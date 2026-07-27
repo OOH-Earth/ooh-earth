@@ -9,7 +9,7 @@ export default function Report() {
     <div className="relative min-h-screen bg-void">
       <HorizonProgress />
       <Nav />
-      <main className="px-5 pb-24 pt-28 md:px-8">
+      <main className="page-top px-5 pb-24 md:px-8">
         <div className="mx-auto max-w-2xl">
           <span className="font-mono text-[10px] uppercase tracking-[0.3em] text-ozone">// Field protocol · 01</span>
           <h1 className="mt-3 font-display text-5xl font-bold leading-[1.02] tracking-[-0.02em] text-silver md:text-7xl">

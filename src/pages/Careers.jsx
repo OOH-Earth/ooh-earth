@@ -12,7 +12,7 @@ export default function Careers() {
       <Nav />
 
       {/* Hero */}
-      <section className="relative overflow-hidden border-b border-slate2/40 px-4 pt-28 pb-16 md:px-8 md:pt-36 md:pb-24">
+      <section className="relative overflow-hidden border-b border-slate2/40 page-top px-4 pb-16 md:px-8 md:pb-24">
         <div className="grid-bg pointer-events-none absolute inset-0 opacity-60" />
         <div className="relative mx-auto max-w-5xl">
           <span className="font-mono text-[10px] uppercase tracking-[0.3em] text-ozone">// Careers · Join us</span>

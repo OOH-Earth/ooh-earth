@@ -74,7 +74,7 @@ export default function UiKit() {
       <Nav />
 
       {/* Operations status strip */}
-      <div className="fixed left-0 right-0 top-[57px] z-30 border-b border-slate2/60 bg-void/85 backdrop-blur-md md:top-[64px]">
+      <div className="fixed left-0 right-0 top-[calc(57px+env(safe-area-inset-top))] z-30 border-b border-slate2/60 bg-void/85 backdrop-blur-md md:top-[calc(64px+env(safe-area-inset-top))]">
         <div className="mx-auto flex max-w-[1400px] items-center justify-between px-5 py-2 md:px-8">
           <span className="flex items-center gap-2 font-mono text-[9px] uppercase tracking-[0.3em] text-silver/70">
             <Radio className="h-3 w-3 animate-flicker text-ozone" /> Operations // Tactical Inc.
@@ -86,9 +86,9 @@ export default function UiKit() {
         </div>
       </div>
 
-      <div className="mx-auto flex max-w-[1400px] gap-0 px-0 pt-[92px] md:pt-[104px]">
+      <div className="mx-auto flex max-w-[1400px] gap-0 px-0 pt-[calc(92px+env(safe-area-inset-top))] md:pt-[calc(104px+env(safe-area-inset-top))]">
         {/* Sidebar rail */}
-        <aside className="sticky top-[104px] hidden h-[calc(100vh-104px)] w-[220px] shrink-0 border-r border-slate2/40 bg-void/60 md:block">
+        <aside className="sticky top-[calc(104px+env(safe-area-inset-top))] hidden h-[calc(100vh-104px-env(safe-area-inset-top))] w-[220px] shrink-0 border-r border-slate2/40 bg-void/60 md:block">
           <div className="flex h-full flex-col">
             <div className="flex items-center gap-2.5 border-b border-slate2/40 px-5 py-4">
               <BrandMark className="h-6 w-6" />

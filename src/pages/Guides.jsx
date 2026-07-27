@@ -39,7 +39,7 @@ export default function Guides() {
     <div className="min-h-screen bg-void grid-bg">
       <Nav />
 
-      <div className="fixed left-0 right-0 top-[57px] z-30 border-b border-slate2/60 bg-void/85 backdrop-blur-md md:top-[64px]">
+      <div className="fixed left-0 right-0 top-[calc(57px+env(safe-area-inset-top))] z-30 border-b border-slate2/60 bg-void/85 backdrop-blur-md md:top-[calc(64px+env(safe-area-inset-top))]">
         <div className="mx-auto flex max-w-5xl items-center justify-between px-5 py-2 md:px-8">
           <span className="flex items-center gap-2 font-mono text-[9px] uppercase tracking-[0.3em] text-silver/85">
             <Radio className="h-3 w-3 animate-flicker text-ozone" /> Field Manual // Operations
@@ -51,7 +51,7 @@ export default function Guides() {
         </div>
       </div>
 
-      <main className="mx-auto max-w-5xl px-5 pb-24 pt-[104px] md:px-8">
+      <main className="mx-auto max-w-5xl px-5 pb-24 pt-[calc(104px+env(safe-area-inset-top))] md:px-8">
         <header className="border-b border-slate2/40 pb-10">
           <span className="font-mono text-[10px] uppercase tracking-[0.4em] text-ozone">// Field manual</span>
           <h1 className="mt-3 font-display text-4xl font-bold leading-[1.02] tracking-[-0.02em] text-silver md:text-6xl">Guides &amp; gap report</h1>

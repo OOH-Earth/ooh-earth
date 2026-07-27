@@ -105,7 +105,7 @@ export default function Dashboard() {
     <div className="relative min-h-screen bg-void">
       <HorizonProgress />
       <Nav />
-      <main className="px-5 pb-24 pt-28 md:px-8">
+      <main className="page-top px-5 pb-24 md:px-8">
         <div className="mx-auto max-w-4xl">
           {/* header */}
           <div className="flex flex-wrap items-end justify-between gap-4 border-b border-slate2/50 pb-6">

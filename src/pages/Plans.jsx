@@ -74,7 +74,7 @@ export default function Plans() {
 
       <main>
         {/* Hero */}
-        <section className="px-5 pt-28 pb-12 md:px-8 md:pt-36">
+        <section className="page-top px-5 pb-12 md:px-8">
           <div className="mx-auto max-w-3xl">
             <span className="font-mono text-[10px] uppercase tracking-[0.3em] text-ozone">// Plans & Support</span>
             <h1 className="mt-3 font-display text-4xl font-bold leading-[1.02] tracking-[-0.02em] text-silver md:text-6xl">

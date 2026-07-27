@@ -23,7 +23,7 @@ const KEY = [
 
 const STATS = [
   { v: "14", s: "Cities mapped" },
-  { v: "50", s: "Sites logged" },
+  { v: "755+", s: "Sites logged" },
   { v: "32", s: "Digital busts" },
   { v: "100%", s: "Open-source" },
 ];
@@ -33,7 +33,7 @@ export default function SuperCard() {
     <div className="min-h-screen bg-void grid-bg">
       <Nav />
 
-      <main className="pt-[57px] md:pt-[64px]">
+      <main className="pt-[calc(57px+env(safe-area-inset-top))] md:pt-[calc(64px+env(safe-area-inset-top))]">
         {/* Hero */}
         <section className="relative overflow-hidden border-b border-slate2/40 px-5 py-16 md:px-8 md:py-24">
           <div className="mx-auto grid max-w-5xl items-center gap-10 md:grid-cols-2">

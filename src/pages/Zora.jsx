@@ -12,10 +12,10 @@ export default function Zora() {
   const [commandOpen, setCommandOpen] = useState(false);
 
   return (
-    <div className="relative min-h-screen bg-void pt-16">
+    <div className="relative min-h-screen bg-void">
       <Nav onCommand={() => setCommandOpen(true)} />
 
-      <section className="border-b border-slate2/40 px-5 py-14 md:px-8 md:py-20">
+      <section className="page-top border-b border-slate2/40 px-5 pb-14 md:px-8 md:pb-20">
         <span className="font-mono text-[10px] uppercase tracking-[0.3em] text-ozone">// On-chain resistance · Zora + Base + Solana</span>
         <h1 className="mt-3 font-display text-5xl font-bold leading-[1.02] tracking-[-0.02em] text-silver md:text-7xl">
           The resistance<br />economy
