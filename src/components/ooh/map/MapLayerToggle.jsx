@@ -1,4 +1,4 @@
-import { Waves, Leaf, Sprout, AlertTriangle, Layers, Palette } from "lucide-react";
+import { Waves, Leaf, Sprout, AlertTriangle, Palette } from "lucide-react";
 
 // Layer groups — four research categories, each with sub-layer toggles.
 // ECOLOGY    → Mushrooms, Flora

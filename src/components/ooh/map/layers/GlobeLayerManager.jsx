@@ -8,10 +8,14 @@ import { riversToGeoJSON, riverSourcesToGeoJSON, POLLUTION_META } from "./riverD
 // GlobeLayerManager — adds/removes MapLibre GL sources and layers on the 3D
 // globe based on which layer IDs are active. Must receive the ready map instance.
 //
-// Layer IDs: "rivers" | "mushrooms" | "war"
+// Layer IDs: "rivers" | "mushrooms" | "flora" | "war"
 // Each layer manages its own source + render layers + popup handlers.
+// Event handlers are stored so they can be properly removed on cleanup.
 
 const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+
+// Module-level handler storage — allows remove functions to off() handlers
+const handlers = {};
 
 function removeLayerAndSource(map, layerId, sourceId) {
   if (map.getLayer(layerId)) map.removeLayer(layerId);
@@ -46,46 +50,58 @@ function addRivers(map, popup) {
     },
   });
 
-  map.on("click", "ooh-river-source-markers", (e) => {
-    const f = e.features?.[0];
-    if (!f) return;
-    const p = f.properties;
-    const meta = POLLUTION_META[p.pollution] || { color: "#B2B2B2", label: "Unknown" };
-    popup.setLngLat(f.geometry.coordinates.slice()).setHTML(`
-      <div style="width:200px;font-family:'Inter Tight',sans-serif">
-        <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px">
-          <span style="font-size:9px;text-transform:uppercase;letter-spacing:0.2em;color:${meta.color};font-weight:700">${meta.label} Pollution</span>
+  handlers.rivers = {
+    click: (e) => {
+      const f = e.features?.[0];
+      if (!f) return;
+      const p = f.properties;
+      const meta = POLLUTION_META[p.pollution] || { color: "#B2B2B2", label: "Unknown" };
+      popup.setLngLat(f.geometry.coordinates.slice()).setHTML(`
+        <div style="width:200px;font-family:'Inter Tight',sans-serif">
+          <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px">
+            <span style="font-size:9px;text-transform:uppercase;letter-spacing:0.2em;color:${meta.color};font-weight:700">${meta.label} Pollution</span>
+          </div>
+          <div style="font-weight:700;font-size:14px;color:hsl(var(--foreground));line-height:1.25">${esc(p.name)}</div>
+          <div style="font-size:11px;color:hsl(var(--muted-foreground));margin-top:2px">${esc(p.river)} · Source Monitoring Station</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:8px">
+            <div style="border:1px solid rgba(241,241,241,0.1);padding:4px 6px">
+              <div style="font-size:7px;text-transform:uppercase;letter-spacing:0.15em;color:hsl(var(--muted-foreground))">WQI</div>
+              <div style="font-size:16px;font-weight:700;font-family:monospace;color:${meta.color}">${p.wqi}</div>
+            </div>
+            <div style="border:1px solid rgba(241,241,241,0.1);padding:4px 6px">
+              <div style="font-size:7px;text-transform:uppercase;letter-spacing:0.15em;color:hsl(var(--muted-foreground))">pH</div>
+              <div style="font-size:16px;font-weight:700;font-family:monospace;color:hsl(var(--foreground))">${p.ph}</div>
+            </div>
+            <div style="border:1px solid rgba(241,241,241,0.1);padding:4px 6px">
+              <div style="font-size:7px;text-transform:uppercase;letter-spacing:0.15em;color:hsl(var(--muted-foreground))">Turbidity</div>
+              <div style="font-size:16px;font-weight:700;font-family:monospace;color:hsl(var(--foreground))">${p.turbidity}<span style="font-size:8"> NTU</span></div>
+            </div>
+            <div style="border:1px solid rgba(241,241,241,0.1);padding:4px 6px">
+              <div style="font-size:7px;text-transform:uppercase;letter-spacing:0.15em;color:hsl(var(--muted-foreground))">Status</div>
+              <div style="font-size:10px;font-weight:700;color:${meta.color};text-transform:uppercase">${meta.label}</div>
+            </div>
+          </div>
+          <div style="font-size:10px;color:hsl(var(--foreground));margin-top:8px;line-height:1.45;opacity:0.85">${esc(p.notes)}</div>
+          <div style="font-size:8px;color:hsl(var(--muted-foreground));margin-top:8px;text-transform:uppercase;letter-spacing:0.15em">Benchmarked: WHO Drinking Water · SDG 6.3</div>
         </div>
-        <div style="font-weight:700;font-size:14px;color:hsl(var(--foreground));line-height:1.25">${esc(p.name)}</div>
-        <div style="font-size:11px;color:hsl(var(--muted-foreground));margin-top:2px">${esc(p.river)} · Source Monitoring Station</div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:8px">
-          <div style="border:1px solid rgba(241,241,241,0.1);padding:4px 6px">
-            <div style="font-size:7px;text-transform:uppercase;letter-spacing:0.15em;color:hsl(var(--muted-foreground))">WQI</div>
-            <div style="font-size:16px;font-weight:700;font-family:monospace;color:${meta.color}">${p.wqi}</div>
-          </div>
-          <div style="border:1px solid rgba(241,241,241,0.1);padding:4px 6px">
-            <div style="font-size:7px;text-transform:uppercase;letter-spacing:0.15em;color:hsl(var(--muted-foreground))">pH</div>
-            <div style="font-size:16px;font-weight:700;font-family:monospace;color:hsl(var(--foreground))">${p.ph}</div>
-          </div>
-          <div style="border:1px solid rgba(241,241,241,0.1);padding:4px 6px">
-            <div style="font-size:7px;text-transform:uppercase;letter-spacing:0.15em;color:hsl(var(--muted-foreground))">Turbidity</div>
-            <div style="font-size:16px;font-weight:700;font-family:monospace;color:hsl(var(--foreground))">${p.turbidity}<span style="font-size:8"> NTU</span></div>
-          </div>
-          <div style="border:1px solid rgba(241,241,241,0.1);padding:4px 6px">
-            <div style="font-size:7px;text-transform:uppercase;letter-spacing:0.15em;color:hsl(var(--muted-foreground))">Status</div>
-            <div style="font-size:10px;font-weight:700;color:${meta.color};text-transform:uppercase">${meta.label}</div>
-          </div>
-        </div>
-        <div style="font-size:10px;color:hsl(var(--foreground));margin-top:8px;line-height:1.45;opacity:0.85">${esc(p.notes)}</div>
-        <div style="font-size:8px;color:hsl(var(--muted-foreground));margin-top:8px;text-transform:uppercase;letter-spacing:0.15em">Benchmarked: WHO Drinking Water · SDG 6.3</div>
-      </div>
-    `).addTo(map);
-  });
-  map.on("mouseenter", "ooh-river-source-markers", () => { map.getCanvas().style.cursor = "pointer"; });
-  map.on("mouseleave", "ooh-river-source-markers", () => { map.getCanvas().style.cursor = ""; });
+      `).addTo(map);
+    },
+    mouseenter: () => { map.getCanvas().style.cursor = "pointer"; },
+    mouseleave: () => { map.getCanvas().style.cursor = ""; },
+  };
+
+  map.on("click", "ooh-river-source-markers", handlers.rivers.click);
+  map.on("mouseenter", "ooh-river-source-markers", handlers.rivers.mouseenter);
+  map.on("mouseleave", "ooh-river-source-markers", handlers.rivers.mouseleave);
 }
 
 function removeRivers(map) {
+  if (handlers.rivers) {
+    map.off("click", "ooh-river-source-markers", handlers.rivers.click);
+    map.off("mouseenter", "ooh-river-source-markers", handlers.rivers.mouseenter);
+    map.off("mouseleave", "ooh-river-source-markers", handlers.rivers.mouseleave);
+    handlers.rivers = null;
+  }
   removeLayerAndSource(map, "ooh-river-source-markers", "ooh-river-sources");
   removeLayerAndSource(map, "ooh-river-lines", "ooh-rivers");
 }
@@ -104,8 +120,8 @@ function mushroomPopupHTML(p) {
     </div>`;
 }
 
-function addMushrooms(map, popup, spots) {
-  const fc = {
+function mushroomFC(spots) {
+  return {
     type: "FeatureCollection",
     features: spots
       .filter((s) => isFinite(s.lat) && isFinite(s.lng))
@@ -115,7 +131,10 @@ function addMushrooms(map, popup, spots) {
         properties: { species: s.species, habitat: s.habitat, note: s.note, region: s.region },
       })),
   };
-  map.addSource("ooh-mushrooms", { type: "geojson", data: fc });
+}
+
+function addMushrooms(map, popup, spots) {
+  map.addSource("ooh-mushrooms", { type: "geojson", data: mushroomFC(spots) });
   map.addLayer({
     id: "ooh-mushroom-markers",
     type: "circle",
@@ -128,16 +147,29 @@ function addMushrooms(map, popup, spots) {
       "circle-opacity": 0.65,
     },
   });
-  map.on("click", "ooh-mushroom-markers", (e) => {
-    const f = e.features?.[0];
-    if (!f) return;
-    popup.setLngLat(f.geometry.coordinates.slice()).setHTML(mushroomPopupHTML(f.properties)).addTo(map);
-  });
-  map.on("mouseenter", "ooh-mushroom-markers", () => { map.getCanvas().style.cursor = "pointer"; });
-  map.on("mouseleave", "ooh-mushroom-markers", () => { map.getCanvas().style.cursor = ""; });
+
+  handlers.mushrooms = {
+    click: (e) => {
+      const f = e.features?.[0];
+      if (!f) return;
+      popup.setLngLat(f.geometry.coordinates.slice()).setHTML(mushroomPopupHTML(f.properties)).addTo(map);
+    },
+    mouseenter: () => { map.getCanvas().style.cursor = "pointer"; },
+    mouseleave: () => { map.getCanvas().style.cursor = ""; },
+  };
+
+  map.on("click", "ooh-mushroom-markers", handlers.mushrooms.click);
+  map.on("mouseenter", "ooh-mushroom-markers", handlers.mushrooms.mouseenter);
+  map.on("mouseleave", "ooh-mushroom-markers", handlers.mushrooms.mouseleave);
 }
 
 function removeMushrooms(map) {
+  if (handlers.mushrooms) {
+    map.off("click", "ooh-mushroom-markers", handlers.mushrooms.click);
+    map.off("mouseenter", "ooh-mushroom-markers", handlers.mushrooms.mouseenter);
+    map.off("mouseleave", "ooh-mushroom-markers", handlers.mushrooms.mouseleave);
+    handlers.mushrooms = null;
+  }
   removeLayerAndSource(map, "ooh-mushroom-markers", "ooh-mushrooms");
 }
 
@@ -155,8 +187,8 @@ function floraPopupHTML(p) {
     </div>`;
 }
 
-function addFlora(map, popup, spots) {
-  const fc = {
+function floraFC(spots) {
+  return {
     type: "FeatureCollection",
     features: spots
       .filter((s) => isFinite(s.lat) && isFinite(s.lng))
@@ -166,7 +198,10 @@ function addFlora(map, popup, spots) {
         properties: { species: s.species, ecosystem: s.ecosystem, note: s.note, region: s.region },
       })),
   };
-  map.addSource("ooh-flora", { type: "geojson", data: fc });
+}
+
+function addFlora(map, popup, spots) {
+  map.addSource("ooh-flora", { type: "geojson", data: floraFC(spots) });
   map.addLayer({
     id: "ooh-flora-markers",
     type: "circle",
@@ -179,16 +214,29 @@ function addFlora(map, popup, spots) {
       "circle-opacity": 0.55,
     },
   });
-  map.on("click", "ooh-flora-markers", (e) => {
-    const f = e.features?.[0];
-    if (!f) return;
-    popup.setLngLat(f.geometry.coordinates.slice()).setHTML(floraPopupHTML(f.properties)).addTo(map);
-  });
-  map.on("mouseenter", "ooh-flora-markers", () => { map.getCanvas().style.cursor = "pointer"; });
-  map.on("mouseleave", "ooh-flora-markers", () => { map.getCanvas().style.cursor = ""; });
+
+  handlers.flora = {
+    click: (e) => {
+      const f = e.features?.[0];
+      if (!f) return;
+      popup.setLngLat(f.geometry.coordinates.slice()).setHTML(floraPopupHTML(f.properties)).addTo(map);
+    },
+    mouseenter: () => { map.getCanvas().style.cursor = "pointer"; },
+    mouseleave: () => { map.getCanvas().style.cursor = ""; },
+  };
+
+  map.on("click", "ooh-flora-markers", handlers.flora.click);
+  map.on("mouseenter", "ooh-flora-markers", handlers.flora.mouseenter);
+  map.on("mouseleave", "ooh-flora-markers", handlers.flora.mouseleave);
 }
 
 function removeFlora(map) {
+  if (handlers.flora) {
+    map.off("click", "ooh-flora-markers", handlers.flora.click);
+    map.off("mouseenter", "ooh-flora-markers", handlers.flora.mouseenter);
+    map.off("mouseleave", "ooh-flora-markers", handlers.flora.mouseleave);
+    handlers.flora = null;
+  }
   removeLayerAndSource(map, "ooh-flora-markers", "ooh-flora");
 }
 
@@ -208,8 +256,8 @@ function warPopupHTML(z) {
     </div>`;
 }
 
-function addWarZones(map, popup, zones) {
-  const fc = {
+function warFC(zones) {
+  return {
     type: "FeatureCollection",
     features: zones
       .filter((z) => isFinite(z.lat) && isFinite(z.lng))
@@ -219,7 +267,10 @@ function addWarZones(map, popup, zones) {
         properties: { title: z.title, region: z.region, advisory: z.advisory, severity: z.severity, source: z.source },
       })),
   };
-  map.addSource("ooh-warzones", { type: "geojson", data: fc });
+}
+
+function addWarZones(map, popup, zones) {
+  map.addSource("ooh-warzones", { type: "geojson", data: warFC(zones) });
   map.addLayer({
     id: "ooh-warzone-markers",
     type: "circle",
@@ -232,16 +283,29 @@ function addWarZones(map, popup, zones) {
       "circle-opacity": ["case", ["==", ["get", "severity"], "critical"], 0.55, 0.4],
     },
   });
-  map.on("click", "ooh-warzone-markers", (e) => {
-    const f = e.features?.[0];
-    if (!f) return;
-    popup.setLngLat(f.geometry.coordinates.slice()).setHTML(warPopupHTML(f.properties)).addTo(map);
-  });
-  map.on("mouseenter", "ooh-warzone-markers", () => { map.getCanvas().style.cursor = "pointer"; });
-  map.on("mouseleave", "ooh-warzone-markers", () => { map.getCanvas().style.cursor = ""; });
+
+  handlers.war = {
+    click: (e) => {
+      const f = e.features?.[0];
+      if (!f) return;
+      popup.setLngLat(f.geometry.coordinates.slice()).setHTML(warPopupHTML(f.properties)).addTo(map);
+    },
+    mouseenter: () => { map.getCanvas().style.cursor = "pointer"; },
+    mouseleave: () => { map.getCanvas().style.cursor = ""; },
+  };
+
+  map.on("click", "ooh-warzone-markers", handlers.war.click);
+  map.on("mouseenter", "ooh-warzone-markers", handlers.war.mouseenter);
+  map.on("mouseleave", "ooh-warzone-markers", handlers.war.mouseleave);
 }
 
 function removeWarZones(map) {
+  if (handlers.war) {
+    map.off("click", "ooh-warzone-markers", handlers.war.click);
+    map.off("mouseenter", "ooh-warzone-markers", handlers.war.mouseenter);
+    map.off("mouseleave", "ooh-warzone-markers", handlers.war.mouseleave);
+    handlers.war = null;
+  }
   removeLayerAndSource(map, "ooh-warzone-markers", "ooh-warzones");
 }
 
@@ -256,6 +320,14 @@ export default function GlobeLayerManager({ map, activeLayers }) {
   useEffect(() => {
     if (!map) return;
     popupRef.current = new maplibregl.Popup({ closeButton: true, closeOnClick: true, maxWidth: "260px" });
+    return () => {
+      // Clean up all layers + handlers on unmount
+      removeRivers(map);
+      removeMushrooms(map);
+      removeFlora(map);
+      removeWarZones(map);
+      if (popupRef.current) popupRef.current.remove();
+    };
   }, [map]);
 
   // Rivers — static data, toggle on/off
@@ -275,14 +347,7 @@ export default function GlobeLayerManager({ map, activeLayers }) {
       if (!map.getSource("ooh-mushrooms")) {
         addMushrooms(map, popupRef.current, mushrooms);
       } else {
-        map.getSource("ooh-mushrooms").setData({
-          type: "FeatureCollection",
-          features: mushrooms.filter((s) => isFinite(s.lat) && isFinite(s.lng)).map((s) => ({
-            type: "Feature",
-            geometry: { type: "Point", coordinates: [s.lng, s.lat] },
-            properties: { species: s.species, habitat: s.habitat, note: s.note, region: s.region },
-          })),
-        });
+        map.getSource("ooh-mushrooms").setData(mushroomFC(mushrooms));
       }
     } else if (!activeLayers.includes("mushrooms")) {
       removeMushrooms(map);
@@ -296,14 +361,7 @@ export default function GlobeLayerManager({ map, activeLayers }) {
       if (!map.getSource("ooh-flora")) {
         addFlora(map, popupRef.current, floraSpots);
       } else {
-        map.getSource("ooh-flora").setData({
-          type: "FeatureCollection",
-          features: floraSpots.filter((s) => isFinite(s.lat) && isFinite(s.lng)).map((s) => ({
-            type: "Feature",
-            geometry: { type: "Point", coordinates: [s.lng, s.lat] },
-            properties: { species: s.species, ecosystem: s.ecosystem, note: s.note, region: s.region },
-          })),
-        });
+        map.getSource("ooh-flora").setData(floraFC(floraSpots));
       }
     } else if (!activeLayers.includes("flora")) {
       removeFlora(map);
@@ -317,14 +375,7 @@ export default function GlobeLayerManager({ map, activeLayers }) {
       if (!map.getSource("ooh-warzones")) {
         addWarZones(map, popupRef.current, warZones);
       } else {
-        map.getSource("ooh-warzones").setData({
-          type: "FeatureCollection",
-          features: warZones.filter((z) => isFinite(z.lat) && isFinite(z.lng)).map((z) => ({
-            type: "Feature",
-            geometry: { type: "Point", coordinates: [z.lng, z.lat] },
-            properties: { title: z.title, region: z.region, advisory: z.advisory, severity: z.severity, source: z.source },
-          })),
-        });
+        map.getSource("ooh-warzones").setData(warFC(warZones));
       }
     } else if (!activeLayers.includes("war")) {
       removeWarZones(map);
