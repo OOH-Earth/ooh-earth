@@ -1,6 +1,5 @@
-import { useEffect, useState } from "react";
-import { base44 } from "@/api/base44Client";
 import { Radio, Loader2 } from "lucide-react";
+import { useNewsHeadlines } from "@/hooks/useNewsHeadlines";
 
 function Row({ items }) {
   return (
@@ -24,42 +23,9 @@ function Row({ items }) {
 }
 
 export default function NewsTicker() {
-  const [items, setItems] = useState([]);
+  const { items, loading } = useNewsHeadlines();
 
-  useEffect(() => {
-    let active = true;
-    (async () => {
-      try {
-        const res = await base44.integrations.Core.InvokeLLM({
-          prompt:
-            "Return 8 recent real news headlines about outdoor advertising bans, billboard regulation, cities restricting commercial advertising in public spaces, or climate-justice activism against corporate advertising. Use real verifiable headlines from the last 18 months. Include source name and article URL.",
-          add_context_from_internet: true,
-          response_json_schema: {
-            type: "object",
-            properties: {
-              headlines: {
-                type: "array",
-                items: {
-                  type: "object",
-                  properties: { title: { type: "string" }, source: { type: "string" }, url: { type: "string" } },
-                  required: ["title"],
-                },
-              },
-            },
-            required: ["headlines"],
-          },
-        });
-        if (active) setItems(res?.headlines || []);
-      } catch {
-        if (active) setItems([]);
-      }
-    })();
-    return () => {
-      active = false;
-    };
-  }, []);
-
-  if (!items.length) {
+  if (loading || !items.length) {
     return (
       <div className="flex h-8 items-center gap-2 border-b border-slate2/60 bg-void/90 px-5">
         <Loader2 className="h-3 w-3 animate-spin text-ozone" />

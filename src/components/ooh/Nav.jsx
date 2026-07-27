@@ -5,7 +5,7 @@ import ThemeToggle from "@/components/ooh/ThemeToggle";
 import HapticsToggle from "@/components/ooh/cognitive/HapticsToggle";
 import SoundToggle from "@/components/ooh/SoundToggle";
 import ReadAloudToggle from "@/components/ooh/ReadAloudToggle";
-import ClimateClock from "@/components/ooh/ClimateClock";
+import TelemetryBar from "@/components/ooh/TelemetryBar";
 import TypeEnhancer from "@/components/ooh/TypeEnhancer";
 import DashboardDropdown from "@/components/ooh/DashboardDropdown";
 import NavMenu from "@/components/ooh/NavMenu";
@@ -20,7 +20,6 @@ export default function Nav({ onCommand }) {
     <header className="fixed inset-x-0 top-0 z-50 border-b border-border bg-background shadow-[0_1px_0_rgba(0,0,0,0.04),0_4px_16px_rgba(0,0,0,0.06)] backdrop-blur-md" style={{ paddingTop: "env(safe-area-inset-top)" }}>
       <div className="flex items-center justify-between gap-2 px-3 py-3 md:px-8 md:py-4">
         <div className="flex items-center gap-2">
-          <ClimateClock />
           <Link to="/" aria-label="Home console" title="Home" className="flex h-8 w-8 items-center justify-center border border-slate2 text-silver transition-colors hover:border-ozone hover:text-ozone">
             <Gauge className="h-3.5 w-3.5" />
           </Link>
@@ -60,6 +59,8 @@ export default function Nav({ onCommand }) {
           </button>
         </div>
       </div>
+
+      <TelemetryBar />
 
       <NavMenu open={menuOpen} onClose={() => setMenuOpen(false)} onTour={startTour} />
     </header>
