@@ -1,5 +1,10 @@
 import { createContext, useContext, useRef, useState, useEffect, useCallback } from "react";
 import { RADIO_STATIONS } from "@/components/ooh/radio/radioStations";
+import { OOH_STATION, RADIO_OPS_ENABLED, fetchNowPlaying } from "@/lib/radioOps";
+
+// The OOH broadcast channel is merged in ONLY for the player list —
+// never injected into RADIO_STATIONS (which the map + globe consume).
+const STATIONS = RADIO_OPS_ENABLED ? [OOH_STATION, ...RADIO_STATIONS] : RADIO_STATIONS;
 
 const RadioContext = createContext(null);
 
@@ -29,8 +34,9 @@ export function RadioProvider({ children }) {
   const [volume, setVolumeState] = useState(0.5);
   const [error, setError] = useState(false);
   const [analyser, setAnalyser] = useState(null);
+  const [nowPlaying, setNowPlaying] = useState(null);
 
-  const station = RADIO_STATIONS.find((s) => s.id === stationId) || null;
+  const station = STATIONS.find((s) => s.id === stationId) || null;
 
   // Create the playback element once (no Web Audio, no CORS)
   useEffect(() => {
@@ -129,11 +135,29 @@ export function RadioProvider({ children }) {
     if (playbackRef.current) playbackRef.current.volume = volume;
   }, [volume]);
 
+  // Poll AzuraCast now-playing while the OOH broadcast channel is on air.
+  // No-op (and clears) for any other station or when Radio Ops isn't configured.
+  useEffect(() => {
+    if (!RADIO_OPS_ENABLED || stationId !== OOH_STATION.id || !playing) {
+      setNowPlaying(null);
+      return;
+    }
+    let active = true;
+    const controller = new AbortController();
+    const tick = async () => {
+      const np = await fetchNowPlaying(controller.signal);
+      if (active) setNowPlaying(np);
+    };
+    tick();
+    const iv = setInterval(tick, 15000);
+    return () => { active = false; controller.abort(); clearInterval(iv); };
+  }, [stationId, playing]);
+
   const togglePlay = useCallback(() => {
     ensureAudioGraph();
     const audio = playbackRef.current;
     if (!audio) return;
-    if (!station) { setStationId(RADIO_STATIONS[0].id); return; }
+    if (!station) { setStationId(STATIONS[0].id); return; }
     if (audio.paused) {
       audio.play().catch(() => setError(true));
       if (analysisRef.current) analysisRef.current.play().catch(() => {});
@@ -168,7 +192,7 @@ export function RadioProvider({ children }) {
   const toggleMute = useCallback(() => setVolumeState((v) => (v > 0 ? 0 : 0.5)), []);
 
   return (
-    <RadioContext.Provider value={{ station, stationId, playing, volume, error, stations: RADIO_STATIONS, selectStation, togglePlay, setVolume, toggleMute, analyser }}>
+    <RadioContext.Provider value={{ station, stationId, playing, volume, error, stations: STATIONS, selectStation, togglePlay, setVolume, toggleMute, analyser, nowPlaying }}>
       {children}
     </RadioContext.Provider>
   );
