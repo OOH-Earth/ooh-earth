@@ -3,6 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { ArrowLeft, Loader2, Download, ShoppingBag, ExternalLink, Gift } from "lucide-react";
 import ReactMarkdown from "react-markdown";
+import { Image } from "@/components/ui/image";
 import Nav from "@/components/ooh/Nav";
 import HorizonProgress from "@/components/ooh/HorizonProgress";
 import { CAT_META, priceLabel, ProductPreview } from "@/components/ooh/store/catalog";
@@ -102,7 +103,7 @@ export default function StoreItemDetail() {
           <div className="mt-4 flex flex-col gap-5 md:flex-row">
             <div className="aspect-[4/3] w-full shrink-0 overflow-hidden border border-slate2/50 bg-void md:w-56">
               {item.image_url ? (
-                <img src={item.image_url} alt={item.title} className="h-full w-full object-cover" />
+                <Image src={item.image_url} alt={item.title} className="h-full w-full object-cover" />
               ) : (
                 <ProductPreview item={item} />
               )}
