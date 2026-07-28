@@ -16,7 +16,7 @@ function EqBars({ active, bars = 3 }) {
 }
 
 export default function RadioMiniPlayer() {
-  const { station, playing, volume, error, stations, selectStation, togglePlay, setVolume, toggleMute } = useRadio();
+  const { station, playing, volume, error, stations, selectStation, togglePlay, setVolume, toggleMute, nowPlaying } = useRadio();
   const [open, setOpen] = useState(false);
   const ref = useRef(null);
 
@@ -74,12 +74,22 @@ export default function RadioMiniPlayer() {
                 </button>
               </div>
               <div className="mt-2">
-                <div className="font-display text-[14px] font-semibold tracking-[-0.02em] text-silver">
-                  {station ? station.name : "No station"}
+                <div className="flex items-center gap-1.5">
+                  <div className="font-display text-[14px] font-semibold tracking-[-0.02em] text-silver">
+                    {station ? station.name : "No station"}
+                  </div>
+                  {nowPlaying?.isLive && (
+                    <span className="font-mono text-[7px] font-bold uppercase tracking-[0.2em] text-flare">● LIVE</span>
+                  )}
                 </div>
                 <div className="font-mono text-[8px] uppercase tracking-[0.2em] text-dim">
                   {station ? station.genre : "Select below"}
                 </div>
+                {nowPlaying?.text && (
+                  <div className="mt-1 truncate font-mono text-[9px] tracking-[0.02em] text-ozone/80" title={nowPlaying.text}>
+                    ♪ {nowPlaying.streamerName ? `${nowPlaying.streamerName} · ` : ""}{nowPlaying.text}
+                  </div>
+                )}
               </div>
               {error && <div className="mt-2 font-mono text-[8px] uppercase tracking-[0.2em] text-flare">// Stream unavailable</div>}
             </div>
