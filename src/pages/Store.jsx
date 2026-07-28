@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
+import { Image } from "@/components/ui/image";
 import { Loader2, ShoppingBag, BookOpen, Download, ExternalLink, CheckCircle2, Gift } from "lucide-react";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import Nav from "@/components/ooh/Nav";
@@ -32,7 +33,7 @@ function ProductCard({ item, onBuy, onGiveaway, busy }) {
     <div className="group flex flex-col border border-slate2/50 bg-card transition-colors hover:border-ozone/40">
       <div className="relative aspect-[4/3] overflow-hidden border-b border-slate2/50 bg-void">
         {item.image_url ? (
-          <img src={item.image_url} alt={item.title} className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" />
+          <Image src={item.image_url} alt={item.title} className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" />
         ) : (
           <ProductPreview item={item} />
         )}
