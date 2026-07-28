@@ -1,6 +1,6 @@
 # OOH Earth — Backlog & Decision Log
 
-_Last updated: 2026-07-27_
+_Last updated: 2026-07-28_
 
 A living log of open items, decisions, and things still to address. Strike items as they're resolved.
 
@@ -23,6 +23,7 @@ A living log of open items, decisions, and things still to address. Strike items
 - **London transit map** imported: 705 verified transit locations from Google My Maps (mid `1JE50Oz1sEg8Cugs9O-fBdxOkCvSZOosk`).
 - **Access keys** referenced on the Map via oohearth.app/access-keys/ (4-Way Utility, H60, JCD Superlock, etc.).
 - **Sky Intel** module — astro-activity alerts (conjunctions, meteor showers, planet oppositions, satellite passes) via web-search LLM, cached daily in localStorage; moon phase computed locally ("moon calculus"); each event tagged with a cryptid "bets" signal. Mounted on Home after OnChain.
+- **OOH Radio — self-hosted** — broadcast engine is self-hosted AzuraCast (open-source) on our own VPS; app is a thin client pointing at one Icecast URL. No rented service (radio.co/managed) and no from-scratch streaming server. App-side integration built + shipped dark (see CHANGELOG 2026-07-28). Launch runbook: `RADIO-SELF-HOST-RUNBOOK.md`.
 
 ---
 
@@ -72,6 +73,24 @@ A living log of open items, decisions, and things still to address. Strike items
 ## Open — Data Integrity
 
 - [ ] **Audit dashboard stats for inflation** — ImpactLedger, OperativeNetwork modules (SuperCard already corrected to live counts).
+
+---
+
+## Open — OOH Radio (self-host launch)
+
+_App side is built and shipped dark; these are the server-side steps that unlock it. Full detail in `RADIO-SELF-HOST-RUNBOOK.md`._
+
+- [ ] **Provision VPS** + harden (non-root user, ufw firewall).
+- [ ] **DNS** — `radio.ooh.earth` A record.
+- [ ] **Install AzuraCast** (Docker), create super-admin, enable HTTPS/Let's Encrypt.
+- [ ] **Create station** "OOH Radio" (shortcode `ooh`), AutoDJ + streamers enabled.
+- [ ] **Enable CORS** on the stream (visualizer bonus; non-fatal).
+- [ ] **Ingest library** — SFTP bulk upload, clean ID3 tags, ReplayGain on.
+- [ ] **Programming** — playlists (OOH-Signal / Protest-Cuts / Ambient-Ops / Station-IDs) + clock + crossfade.
+- [ ] **Hand two URLs to Claude** (`AZURACAST_BASE`, `OOH_STREAM_URL`) → flip live.
+- [ ] **Nav link** to `/radio-ops` (+ optional admin-only gate).
+- [ ] **Licensing** — CC/cleared/original content or PRS/PPL/SoundExchange.
+- [ ] **Backups** scheduled off-box; n8n uptime watch.
 
 ---
 
