@@ -47,6 +47,7 @@ import EcologyPortal from '@/pages/portals/EcologyPortal';
 import RiversPortal from '@/pages/portals/RiversPortal';
 import WarZonesPortal from '@/pages/portals/WarZonesPortal';
 import Careers from '@/pages/Careers';
+import RadioOps from '@/pages/RadioOps';
 import Login from '@/pages/Login';
 import Register from '@/pages/Register';
 import ForgotPassword from '@/pages/ForgotPassword';
@@ -118,6 +119,7 @@ const AuthenticatedApp = () => {
       <Route path="/dashboard" element={<Dashboard />} />
       <Route path="/fde" element={<FdePortal />} />
       <Route path="/portfolio" element={<AtariPortfolio />} />
+      <Route path="/radio-ops" element={<RadioOps />} />
       <Route path="/sitemap" element={<Sitemap />} />
     </Route>
     <Route path="*" element={<PageNotFound />} />
