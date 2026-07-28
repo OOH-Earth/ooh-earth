@@ -1,12 +1,21 @@
 # OOH Earth — Changelog & Pre-Launch Checklist
 
-_Last updated: 2026-07-27_
+_Last updated: 2026-07-28_
 
 ## Recent fixes
 
 - **Map page bottom nav** — Leaflet/MapLibre panes (z-index 200–700) escaped the map container and painted over the `z-50` mobile bottom tabs. Added `isolate` to the map wrapper so its internal stacking context can no longer cover the nav.
 - **Mobile menu clipping** — `NavMenu` now portals to `document.body`, escaping the backdrop-blur containing block so the full-screen launcher fills the viewport on mobile.
 - **Header hidden under nav on notched devices** — the fixed nav inflates by `env(safe-area-inset-top)` on iPhones with notches/dynamic islands, but page top padding was a fixed `pt-24/pt-28`, causing masthead H1s to slip underneath. Added a `.page-top` utility (`calc(6rem + env(safe-area-inset-top))`, `7rem` on md) and applied it to `Channel.jsx`.
+
+## 2026-07-28 — OOH Radio Ops (scaffolding, shipped dark)
+
+- **Radio Ops architecture decided** — self-hosted AzuraCast (open-source) on our own VPS as the broadcast engine; the app stays a thin client that points at one Icecast stream URL. Not a rented service; not a from-scratch streaming server. Full runbook: `RADIO-SELF-HOST-RUNBOOK.md`; strategy: `OOH-Radio-Ops-Plan.md`.
+- **`src/lib/radioOps.js`** — single control file. Empty `AZURACAST_BASE` + `OOH_STREAM_URL` keep `RADIO_OPS_ENABLED=false`, so the whole feature is inert until configured (nothing appears, no polling). Includes `fetchNowPlaying()` normaliser for the AzuraCast now-playing API.
+- **`radioContext.jsx`** — merges the OOH broadcast channel into the *player list only* (RADIO_STATIONS untouched, so map/globe are unaffected); polls now-playing every 15s while OOH Radio is on air.
+- **`RadioMiniPlayer.jsx`** — shows current track under the station name + ● LIVE badge during live DJ sets.
+- **`RadioOps.jsx` + `/radio-ops` route (protected)** — read-only ops dashboard (on-air, listeners, up-next, recent history, progress, "Manage in AzuraCast"), Orbital Perspective styling. Shows a clean "not connected" state until configured.
+- Build verified green (vite build exit 0). Ships dark — no live UI change until the two URLs are pasted.
 
 ## 2026-07-27 — Pre-launch sweep
 
