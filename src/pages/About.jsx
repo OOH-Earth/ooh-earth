@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
+import { Image } from "@/components/ui/image";
 import { ArrowUpRight, Crosshair, HandHeart } from "lucide-react";
 import Nav from "@/components/ooh/Nav";
 import SiteFooter from "@/components/ooh/SiteFooter";
@@ -104,7 +105,7 @@ export default function About() {
             <div className="mt-8 grid grid-cols-2 gap-px border border-slate2/40 bg-slate2/40 sm:grid-cols-3 lg:grid-cols-4">
               {GALLERY.map((src, i) => (
                 <div key={i} className="aspect-square overflow-hidden bg-void">
-                  <img src={src} alt={`OOH field intervention ${i + 1}`} className="h-full w-full object-cover transition-opacity hover:opacity-80" />
+                  <Image src={src} alt={`OOH field intervention ${i + 1}`} className="h-full w-full object-cover transition-opacity hover:opacity-80" />
                 </div>
               ))}
             </div>
