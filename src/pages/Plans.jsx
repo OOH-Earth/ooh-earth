@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
+import { Image } from "@/components/ui/image";
 import { Check, ArrowUpRight, Globe2 } from "lucide-react";
 import {
   Accordion,
@@ -103,7 +104,7 @@ export default function Plans() {
                 </ul>
               </div>
               <div className="overflow-hidden border border-slate2/60">
-                <img src="https://oohearth.app/wp-content/uploads/2026/04/V0y9dTu39TVeFcT18S6UcyVbHA-01-0eia-1024x768.webp" alt="OOH field documentation" className="h-full w-full object-cover" />
+                <Image src="https://oohearth.app/wp-content/uploads/2026/04/V0y9dTu39TVeFcT18S6UcyVbHA-01-0eia-1024x768.webp" alt="OOH field documentation" className="h-full w-full object-cover" />
               </div>
             </div>
           </div>
