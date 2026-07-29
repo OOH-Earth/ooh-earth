@@ -107,6 +107,23 @@ function FlyToHover({ hoverId, selectedId, markers }) {
   return null;
 }
 
+// Emits the current viewport bounds on every pan/zoom so the results feed can
+// follow the map (the "search this area" pattern). Also emits once on mount.
+function BoundsWatcher({ onBoundsChange }) {
+  const map = useMap();
+  const emit = () => {
+    if (!onBoundsChange) return;
+    const b = map.getBounds();
+    onBoundsChange({ n: b.getNorth(), s: b.getSouth(), e: b.getEast(), w: b.getWest() });
+  };
+  useMapEvents({ moveend: emit, zoomend: emit });
+  useEffect(() => {
+    emit();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+  return null;
+}
+
 // Military-grade cluster disc — dark core, ozone ring, cardinal ticks, count.
 function clusterIcon(count) {
   const size = count > 99 ? 52 : count > 9 ? 46 : 40;
@@ -237,7 +254,7 @@ function ClusteredMarkers({ pins, selectedId, onSelect }) {
   );
 }
 
-export default function LocationMap({ markers, selectedId, hoverId, onSelect, userLoc, futures, activeLayers = [] }) {
+export default function LocationMap({ markers, selectedId, hoverId, onSelect, userLoc, futures, activeLayers = [], onBoundsChange }) {
   const pins = useMemo(() => markers.filter((m) => isFinite(m.lat) && isFinite(m.lng)), [markers]);
 
   return (
@@ -255,6 +272,7 @@ export default function LocationMap({ markers, selectedId, hoverId, onSelect, us
         maxZoom={20}
       />
       <FitBounds markers={pins} />
+      <BoundsWatcher onBoundsChange={onBoundsChange} />
       <FlyTo selectedId={selectedId} markers={pins} />
       <FlyToHover hoverId={hoverId} selectedId={selectedId} markers={pins} />
       <FlyToUser userLoc={userLoc} />
