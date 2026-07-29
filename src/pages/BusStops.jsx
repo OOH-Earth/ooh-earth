@@ -5,11 +5,14 @@ import Nav from "@/components/ooh/Nav";
 import { BUS_STOPS, BUS_STOP_LEGEND } from "@/components/ooh/busStops";
 import ProgressInfographic from "@/components/ooh/bus/ProgressInfographic";
 import AreaDirectory from "@/components/ooh/bus/AreaDirectory";
+import CategoryNav from "@/components/ooh/CategoryNav";
+import { regionBySlug, REGION_STATUS, REGION_ACCESS } from "@/components/ooh/regions";
 
 export default function BusStops() {
   const [q, setQ] = useState("");
   const [face, setFace] = useState("all");
   const [shape, setShape] = useState("all");
+  const rg = regionBySlug("london");
 
   const list = useMemo(() => {
     const s = q.trim().toLowerCase();
@@ -32,13 +35,21 @@ export default function BusStops() {
 
         <div className="flex items-center gap-2">
           <BusFront className="h-4 w-4 text-ozone" />
-          <span className="font-mono text-[9px] uppercase tracking-[0.3em] text-ozone">// london · accessible bus stops</span>
+          <span className="font-mono text-[9px] uppercase tracking-[0.3em] text-ozone">// {rg.city} · {rg.country} · accessible bus stops</span>
         </div>
-        <h1 className="mt-2 font-display text-3xl font-bold tracking-[-0.02em] md:text-4xl">Bus-stop directory</h1>
+        <div className="mt-2 flex flex-wrap items-center gap-2">
+          <h1 className="font-display text-3xl font-bold tracking-[-0.02em] md:text-4xl">Bus-stop directory</h1>
+          <span className={`border px-1.5 py-0.5 font-mono text-[8px] uppercase tracking-[0.2em] ${REGION_STATUS[rg.status].cls}`}>{REGION_STATUS[rg.status].text}</span>
+          <span className={`border px-1.5 py-0.5 font-mono text-[8px] uppercase tracking-[0.2em] ${REGION_ACCESS[rg.access].cls}`}>{REGION_ACCESS[rg.access].text}</span>
+        </div>
         <p className="mt-2 max-w-2xl text-[13px] leading-relaxed text-darkgray">
           {BUS_STOPS.length} shelters mapped from the public accessible-bus-stops record. Each has its own page
           listing unit type, facing, and a probable access key — <span className="text-flare">unconfirmed until a field check</span>.
         </p>
+
+        <div className="mt-5">
+          <CategoryNav current="bus-stops" />
+        </div>
 
         <div className="mt-5 flex flex-wrap gap-3">
           {BUS_STOP_LEGEND.map((l) => (
