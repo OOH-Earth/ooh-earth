@@ -1,0 +1,39 @@
+name: "🗺️ Map data correction"
+description: "A billboard/OOH record on the map is wrong, missing, moved, or duplicated"
+title: "[Data]: "
+labels: ["map-data"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use this to fix the map itself. To document a **brand-new** sighting, please
+        use the app's capture flow — it handles photos, coordinates and offense
+        categories properly. This form is for corrections to existing data.
+  - type: dropdown
+    id: correction-type
+    attributes:
+      label: What kind of correction?
+      options:
+        - Location is wrong
+        - Record is a duplicate
+        - Advert/structure has been removed
+        - Offense category is wrong
+        - Missing record that should be on the map
+        - Other
+    validations:
+      required: true
+  - type: input
+    id: location
+    attributes:
+      label: Location
+      description: City and approximate coordinates or address, if you have them.
+      placeholder: "Bangkok · 13.7563° N, 100.5018° E"
+    validations:
+      required: true
+  - type: textarea
+    id: details
+    attributes:
+      label: Details
+      description: What's wrong and what it should be.
+    validations:
+      required: true
