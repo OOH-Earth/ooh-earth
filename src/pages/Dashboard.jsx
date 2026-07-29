@@ -24,6 +24,9 @@ const ACCESS_BADGE = {
 
 // unwrap base44.functions.invoke result (SDK returns { data })
 const payload = (res) => (res && typeof res === "object" && "data" in res ? res.data : res);
+// read clearance regardless of whether the SDK returns it flat or under .data
+const accessOf = (u) => (u && (u.access ?? u.data?.access)) || "member";
+const roleOf = (u) => (u && (u.role ?? u.data?.role)) || "user";
 
 function Row({ r, onVerify, busy, triage }) {
   return (
@@ -66,8 +69,8 @@ export default function Dashboard() {
   const load = useCallback(async () => {
     const u = await base44.auth.me();
     setUser(u);
-    const elevated = u?.role === "admin" || u?.access === "admin";
-    const canView = elevated || u?.access === "moderator" || u?.access === "operative";
+    const elevated = roleOf(u) === "admin" || accessOf(u) === "admin";
+    const canView = elevated || accessOf(u) === "moderator" || accessOf(u) === "operative";
 
     const myTask = base44.entities.Location.filter({ created_by_id: u.id }, "-created_date", 100);
     let pendTask;
@@ -108,7 +111,7 @@ export default function Dashboard() {
   const verify = async (id, status) => {
     setBusy((b) => ({ ...b, [id]: true }));
     try {
-      const adminNow = user?.role === "admin" || user?.access === "admin";
+      const adminNow = roleOf(user) === "admin" || accessOf(user) === "admin";
       if (adminNow) {
         await base44.entities.Location.update(id, { status });
       } else {
@@ -127,10 +130,10 @@ export default function Dashboard() {
     );
   }
 
-  const realIsAdmin = user?.role === "admin" || user?.access === "admin";
-  const realCanAct = realIsAdmin || user?.access === "moderator";
-  const realCanView = realCanAct || user?.access === "operative";
-  const effAccess = previewAs || (realIsAdmin ? "admin" : (user?.access || "member"));
+  const realIsAdmin = roleOf(user) === "admin" || accessOf(user) === "admin";
+  const realCanAct = realIsAdmin || accessOf(user) === "moderator";
+  const realCanView = realCanAct || accessOf(user) === "operative";
+  const effAccess = previewAs || (realIsAdmin ? "admin" : accessOf(user));
   const isAdmin = previewAs ? previewAs === "admin" : realIsAdmin;
   const canAct = previewAs ? (previewAs === "admin" || previewAs === "moderator") : realCanAct;
   const canView = previewAs ? (previewAs === "admin" || previewAs === "moderator" || previewAs === "operative") : realCanView;
