@@ -69,22 +69,26 @@ export default function GlobeHud({ map }) {
   const [showAir, setShowAir] = useState(true);
   const [moon, setMoon] = useState({ phase: 0, name: "—", illum: 0 });
 
-  // PM2.5 — Open-Meteo Air Quality (free, no key)
+  // PM2.5 — Open-Meteo Air Quality (free, no key). Fetch each station
+  // independently (the multi-coordinate endpoint returns a different response
+  // shape), matching the proven per-city pattern used elsewhere in the app.
   useEffect(() => {
     let active = true;
     const load = async () => {
-      try {
-        const lat = STATIONS.map((s) => s.lat).join(",");
-        const lng = STATIONS.map((s) => s.lng).join(",");
-        const url = `https://air-quality-api.open-meteo.com/v1/air-quality?latitude=${lat}&longitude=${lng}&current=pm2_5`;
-        const res = await fetch(url);
-        const j = await res.json();
-        const arr = (j && j.current && j.current.pm2_5) || [];
-        const vals = Array.isArray(arr) ? arr : [arr];
-        if (active) setPm(STATIONS.map((s, i) => ({ name: s.name, v: vals[i] ?? null })));
-      } catch (e) {
-        if (active) setPm(STATIONS.map((s) => ({ name: s.name, v: null })));
-      }
+      const results = await Promise.all(
+        STATIONS.map(async (s) => {
+          try {
+            const res = await fetch(
+              `https://air-quality-api.open-meteo.com/v1/air-quality?latitude=${s.lat}&longitude=${s.lng}&current=pm2_5`
+            );
+            const j = await res.json();
+            return { name: s.name, v: j?.current?.pm2_5 ?? null };
+          } catch {
+            return { name: s.name, v: null };
+          }
+        })
+      );
+      if (active) setPm(results);
     };
     load();
     const t = setInterval(load, 600000);
