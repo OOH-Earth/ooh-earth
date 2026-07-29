@@ -890,6 +890,15 @@
   border-color: hsl(var(--border));
 }
 
+/* Crafty (mid-tone red primary): the inverted red cards' inset dashboard /
+   telemetry panels need a dark ground, otherwise the cream readouts wash out
+   red-on-red. Unlayered like the .light rules above so it beats the utility bg. */
+.crafty .metro-invert .metro-sub,
+.crafty .metro-invert .metro-row {
+  background-color: rgba(20, 18, 16, 0.5);
+  border-color: rgba(235, 228, 214, 0.16);
+}
+
 /* BrandMark — orbital gyroscope */
 @keyframes ooh-core-pulse {
   0%, 100% { transform: scale(1); }
