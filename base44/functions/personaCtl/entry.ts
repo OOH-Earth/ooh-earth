@@ -1,21 +1,18 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
 
 // personaCtl — admin-only identity/clearance controller.
-// Manages TWO layers per account:
 //   role   : Base44 built-in platform gate   [admin | user]
 //   access : app-level clearance ladder       [admin | moderator | operative | member]
 // Every change is written to the AccessLog audit entity (best-effort).
-//
-// Authorize by EITHER an authenticated caller whose role/access === 'admin',
-// OR an X-Persona-Key header / body.key matching the PERSONA_KEY secret.
-//
-// Actions (POST JSON):
-//   { action: "list" }
-//   { action: "set", email: "david@ooh.earth", role: "user", access: "moderator" }
-//   { action: "reset", anchor_email: "davidsidhom@proton.me" }
+// Authorize by an authenticated admin (role/access) OR the PERSONA_KEY secret.
 
 const ROLES = new Set(['admin', 'user']);
 const ACCESS = new Set(['admin', 'moderator', 'operative', 'member']);
+
+// Read clearance regardless of whether the SDK returns it flat or under .data
+const accessOf = (u) => (u && (u.access ?? u.data?.access)) || 'member';
+const roleOf = (u) => (u && (u.role ?? u.data?.role)) || 'user';
+const isElevated = (u) => !!u && (roleOf(u) === 'admin' || accessOf(u) === 'admin');
 
 const ALLOWED_ORIGINS = new Set([
   'https://oohearth.app', 'https://www.oohearth.app', 'https://ooh.earth',
@@ -32,8 +29,6 @@ function cors(origin) {
   };
 }
 
-const isElevated = (u) => !!u && (u.role === 'admin' || u.access === 'admin');
-
 Deno.serve(async (req) => {
   const headers = cors(req.headers.get('origin'));
   if (req.method === 'OPTIONS') return new Response(null, { status: 204, headers });
@@ -44,7 +39,6 @@ Deno.serve(async (req) => {
     const body = await req.json().catch(() => ({}));
     const action = String(body?.action || 'list').toLowerCase();
 
-    // --- authorize (fetch caller for both auth + audit attribution) ---
     let caller = null;
     try { caller = await base44.auth.me(); } catch { caller = null; }
     const keyProvided = req.headers.get('x-persona-key') || body?.key || '';
@@ -65,7 +59,7 @@ Deno.serve(async (req) => {
       const users = await svc.list('-created_date', 500);
       return (users || []).map((u) => ({
         id: u.id, email: u.email, full_name: u.full_name,
-        role: u.role || 'user', access: u.access || 'member',
+        role: roleOf(u), access: accessOf(u),
       }));
     };
 
@@ -106,14 +100,14 @@ Deno.serve(async (req) => {
       if (!target) return Response.json({ error: 'Target user not found — pass a valid id or email.' }, { status: 404, headers });
 
       // lockout guard: never drop the last platform admin
-      if (patch.role === 'user' && target.role === 'admin') {
+      if (patch.role === 'user' && roleOf(target) === 'admin') {
         const all = await svc.list('-created_date', 500);
-        if ((all || []).filter((u) => u.role === 'admin').length <= 1) {
+        if ((all || []).filter((u) => roleOf(u) === 'admin').length <= 1) {
           return Response.json({ error: 'Refused — that is the last platform admin. Promote another account first.' }, { status: 409, headers });
         }
       }
 
-      const before = { role: target.role || 'user', access: target.access || 'member' };
+      const before = { role: roleOf(target), access: accessOf(target) };
       await svc.update(target.id, patch);
       const after = { ...before, ...patch };
 
@@ -139,7 +133,7 @@ Deno.serve(async (req) => {
 
       for (const u of all || []) {
         const want = u.id === anchorUser.id ? { role: 'admin', access: 'admin' } : { role: 'user', access: 'member' };
-        const before = { role: u.role || 'user', access: u.access || 'member' };
+        const before = { role: roleOf(u), access: accessOf(u) };
         if (before.role !== want.role || before.access !== want.access) {
           await svc.update(u.id, want);
           await logChange({
