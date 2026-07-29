@@ -1,0 +1,40 @@
+{
+  "name": "IntelCache",
+  "properties": {
+    "cache_key": {
+      "description": "Registry key for the cached intel, e.g. skyIntel",
+      "type": "string"
+    },
+    "payload": {
+      "description": "JSON-stringified LLM result served to all visitors this period",
+      "type": "string"
+    },
+    "period_key": {
+      "description": "Cache window, e.g. YYYY-MM-DD for daily refresh",
+      "type": "string"
+    }
+  },
+  "required": [
+    "cache_key",
+    "period_key"
+  ],
+  "rls": {
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "read": {},
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  },
+  "type": "object"
+}
