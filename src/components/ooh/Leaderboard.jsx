@@ -35,7 +35,7 @@ export default function Leaderboard() {
     const load = async () => {
       try {
         const [recs, user] = await Promise.all([
-          base44.entities.Location.list("-created_date", 500),
+          base44.listAllLocations(),
           base44.auth.me().catch(() => null),
         ]);
         if (!cancelled) {
@@ -49,7 +49,7 @@ export default function Leaderboard() {
     load();
 
     const unsub = base44.entities.Location.subscribe(() => {
-      base44.entities.Location.list("-created_date", 500).then((recs) => {
+      base44.listAllLocations().then((recs) => {
         if (!cancelled) setRows(aggregate(recs));
       });
     });
