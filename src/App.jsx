@@ -46,6 +46,10 @@ import Channel from '@/pages/Channel';
 import LocationDetail from '@/pages/LocationDetail';
 import BusStops from '@/pages/BusStops';
 import BusStopDetail from '@/pages/BusStopDetail';
+import JourneyMap from '@/pages/JourneyMap';
+import Categories from '@/pages/Categories';
+import CategoryDirectory from '@/pages/CategoryDirectory';
+import Regions from '@/pages/Regions';
 import AdbustingPortal from '@/pages/portals/AdbustingPortal';
 import EcologyPortal from '@/pages/portals/EcologyPortal';
 import RiversPortal from '@/pages/portals/RiversPortal';
@@ -125,6 +129,10 @@ const AuthenticatedApp = () => {
     <Route path="/location/:id" element={<LocationDetail />} />
     <Route path="/bus-stops" element={<BusStops />} />
     <Route path="/bus-stop/:id" element={<BusStopDetail />} />
+    <Route path="/journey" element={<JourneyMap />} />
+    <Route path="/categories" element={<Categories />} />
+    <Route path="/category/:slug" element={<CategoryDirectory />} />
+    <Route path="/regions" element={<Regions />} />
     <Route path="/careers" element={<Careers />} />
     <Route path="/blog" element={<Blog scope="public" />} />
     <Route path="/blog/:slug" element={<BlogArticle scope="public" />} />
