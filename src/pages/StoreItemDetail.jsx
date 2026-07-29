@@ -6,6 +6,7 @@ import ReactMarkdown from "react-markdown";
 import { Image } from "@/components/ui/image";
 import Nav from "@/components/ooh/Nav";
 import HorizonProgress from "@/components/ooh/HorizonProgress";
+import Breadcrumbs from "@/components/ooh/Breadcrumbs";
 import { CAT_META, priceLabel, ProductPreview } from "@/components/ooh/store/catalog";
 import { downloadItemPdf } from "@/components/ooh/store/downloadPdf";
 
@@ -96,6 +97,7 @@ export default function StoreItemDetail() {
       <Nav />
       <main className="px-5 pb-24 pt-28 md:px-8">
         <div className="mx-auto max-w-3xl">
+          <Breadcrumbs items={[{ label: "Store", to: "/store" }, { label: "Item" }]} className="mb-4" />
           <button onClick={() => navigate("/store")} className="flex items-center gap-2 font-mono text-[9px] uppercase tracking-[0.25em] text-dim transition-colors hover:text-ozone">
             <ArrowLeft className="h-3.5 w-3.5" /> Store
           </button>
