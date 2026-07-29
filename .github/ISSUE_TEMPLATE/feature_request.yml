@@ -1,0 +1,26 @@
+name: "💡 Feature / idea"
+description: "Suggest something new for the platform or the movement"
+title: "[Idea]: "
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: What's the problem or opportunity?
+      description: What are you trying to do that the platform doesn't support yet?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: What would you build?
+      description: Describe the feature or change.
+    validations:
+      required: true
+  - type: textarea
+    id: ethos
+    attributes:
+      label: How does it serve the movement?
+      description: |
+        OOH Earth is community-first and copyleft. A quick note on how this keeps
+        the platform open and accountable to the people using it.
