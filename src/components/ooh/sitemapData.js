@@ -38,6 +38,8 @@ export const SITEMAP_GROUPS = [
       { path: "/bus-stops", name: "Bus Stop Directory", vis: "public", ux: "Area directory of adopted bus-stop ad panels, grouped by region.", audience: "All visitors", auth: "none", flows: ["/bus-stop/:id"] },
       { path: "/location/:id", name: "Location Detail", vis: "public", ux: "Full record for a single logged location: photo, type, coords, access key, source, status, and claim/mint actions.", audience: "All visitors", auth: "optional", flows: ["/map", "/zora"] },
       { path: "/bus-stop/:id", name: "Bus Stop Detail", vis: "public", ux: "Single bus-stop panel: status, location, and field activity.", audience: "All visitors", auth: "none", flows: ["/bus-stops"] },
+      { path: "/blog", name: "Blog", vis: "public", ux: "Public field dispatches — launches, evidence drops, and movement thinking. Served via the gated blog function (public audience).", audience: "All visitors", auth: "none", flows: ["/blog/:slug", "/campaign"] },
+      { path: "/blog/:slug", name: "Blog Post", vis: "public", ux: "A single published public post, with a light markdown-ish body renderer and breadcrumbs.", audience: "All visitors", auth: "none", flows: ["/blog"] },
     ],
   },
   {
@@ -89,6 +91,17 @@ export const SITEMAP_GROUPS = [
     ],
   },
   {
+    group: "Content · Newsroom",
+    accent: "text-ozone",
+    desc: "The blogs. Public dispatches for anyone; the agency newsroom for agency members.",
+    routes: [
+      { path: "/agency/blog", name: "Agency Newsroom", vis: "internal", ux: "Internal newsroom / agency blog: Q4 strategy, dispatch notes, and the posts queued to share across networks. Gated to agency members + admins via the blog function.", audience: "Agency / Admin", auth: "protected", flows: ["/agency/blog/:slug", "/dashboard"] },
+      { path: "fn \u203a blog", name: "Blog Service", vis: "internal", ux: "Server-gated read/write for BlogPost. Public audience \u2192 anyone (published); agency audience \u2192 agency members + admins; drafts \u2192 admins. The only path to posts; entity RLS stays admin-only.", audience: "System", auth: "protected", flows: ["/blog", "/agency/blog"] },
+      { path: "entity \u203a BlogPost", name: "BlogPost", vis: "internal", ux: "audience (public|agency), status (draft|published), category, network, pinned, slug, body. Agency posts never reach a non-agency client.", audience: "System", auth: "protected", flows: [] },
+      { path: "user \u203a agency", name: "Agency status flag", vis: "internal", ux: "Boolean on User, admin-toggled in Persona Control. Grants read access to the agency newsroom. Orthogonal to the moderation ladder.", audience: "Admin", auth: "protected", flows: ["/dashboard"] },
+    ],
+  },
+  {
     group: "Capital · Investor",
     accent: "text-ozone",
     desc: "Funder-facing surface. Public lead pages are marketing; the hub, console, valuation logic, and portals are agency-internal.",
@@ -119,6 +132,7 @@ export const ACCESS_LADDER = [
 export const ARCHITECTURE = [
   { layer: "Access & clearance", vis: "internal", detail: "Two layers per account: the Base44 platform role (admin | user) as the hard gate, plus a custom access ladder (member → operative → moderator → admin). Moderation flows through the server-gated moderate function; entity row-level security stays admin-only, so the data layer is never widened." },
   { layer: "Backend", vis: "internal", detail: "Base44 (Deno) functions + entities. personaCtl (admin/key-gated identity control, writes AccessLog), moderate (queue + verify), plus donation/checkout/stats/map/import functions. Service-role writes bypass RLS inside functions only." },
+  { layer: "Content & newsroom", vis: "internal", detail: "BlogPost entity + the blog function serve two blogs: public (anyone) and agency (agency members + admins). Audience gating lives in the function; a boolean agency flag on User (admin-toggled in Persona Control) grants newsroom access, orthogonal to the moderation ladder." },
   { layer: "Automation spine", vis: "internal", detail: "An n8n ops hub bridges the civic app to back-office ops (donation events, task mirroring, social routing) over a proven Base44↔n8n webhook. Webhook URLs, keys, and tokens live in n8n / env — never in the client bundle." },
   { layer: "Environments", vis: "stage", detail: "Two Base44 apps: STAGE / BACKUP (this build — internal review) and LIVE (production). Standing rule: prove on BACKUP before promoting to main. The stage build carries a persistent hazard banner, a [STAGE] title prefix, and a noindex tag." },
 ];
@@ -133,6 +147,7 @@ export const JOURNEYS = [
 // note: the loose-ends checklist is insider review material — gated to internal.
 export const LOOSE_ENDS = [
   { item: "Access clearance read-path", status: "verify", vis: "internal", note: "New access ladder shipped to both apps. Confirm in a live session that a moderator/operative account actually gains its queue. Reads are hardened for both SDK shapes; fails safe (admins run off role)." },
+  { item: "Blog authoring UI", status: "partial", vis: "internal", note: "Posts are seeded/edited via the blog function (save action, admin-only). A compose form in the console is not built yet — add when needed." },
   { item: "Sitemap internal tiers are UI-gated", status: "clarify", vis: "internal", note: "Internal/stage entries are hidden from non-admins at render, but their strings still ship in the client bundle. Keep true secrets (keys, wallet seeds, webhook URLs) out of code entirely — never rely on UI gating for those." },
   { item: "Image assets 404 on oohearth.app host", status: "workaround", vis: "internal", note: "Components point to legacy ooh.earth media — migrate to a stable host before publish." },
   { item: "TrueCost / TrashID camera scan", status: "blocked", vis: "internal", note: "Requires HTTPS; blocked inside the preview iframe. Works only on a published domain." },
