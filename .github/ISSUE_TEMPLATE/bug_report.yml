@@ -1,0 +1,52 @@
+name: "🐛 Bug report"
+description: "Something in the app is broken or behaving wrong"
+title: "[Bug]: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting. The more detail you give, the faster we can fix it.
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: What went wrong, and what did you expect instead?
+      placeholder: "When I tried to add a sighting, the map marker landed in the wrong place…"
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Go to '...'
+        2. Tap '...'
+        3. See the error
+    validations:
+      required: true
+  - type: dropdown
+    id: area
+    attributes:
+      label: Where in the app?
+      options:
+        - Live map
+        - Capture / add a sighting
+        - Evidence feed
+        - Impact dashboard
+        - AR Reimagine
+        - Objection Generator
+        - Operative tiers / profile
+        - Other
+    validations:
+      required: true
+  - type: input
+    id: environment
+    attributes:
+      label: Device & browser
+      placeholder: "iPhone 15, Safari / Windows, Chrome 126"
+  - type: textarea
+    id: extra
+    attributes:
+      label: Screenshots or anything else
+      description: Drag in screenshots if you have them. Please redact anything sensitive.
