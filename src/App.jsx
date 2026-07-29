@@ -52,6 +52,13 @@ import RiversPortal from '@/pages/portals/RiversPortal';
 import WarZonesPortal from '@/pages/portals/WarZonesPortal';
 import Careers from '@/pages/Careers';
 import RadioOps from '@/pages/RadioOps';
+import Console from '@/pages/Console';
+import InvestorHub from '@/pages/InvestorHub';
+import InvestorAccess from '@/pages/InvestorAccess';
+import CapitalLead from '@/pages/CapitalLead';
+import ClientPortal from '@/pages/portals/ClientPortal';
+import InvestorDashboard from '@/pages/portals/InvestorDashboard';
+import InvestorRoute from '@/components/InvestorRoute';
 import Login from '@/pages/Login';
 import Register from '@/pages/Register';
 import ForgotPassword from '@/pages/ForgotPassword';
@@ -121,6 +128,8 @@ const AuthenticatedApp = () => {
     <Route path="/careers" element={<Careers />} />
     <Route path="/blog" element={<Blog scope="public" />} />
     <Route path="/blog/:slug" element={<BlogArticle scope="public" />} />
+    <Route path="/investor-access" element={<InvestorAccess />} />
+    <Route path="/capital/:slug" element={<CapitalLead />} />
     <Route element={<ProtectedRoute unauthenticatedElement={<Navigate to="/login" replace />} />}>
       <Route path="/dashboard" element={<Dashboard />} />
       <Route path="/fde" element={<FdePortal />} />
@@ -130,6 +139,12 @@ const AuthenticatedApp = () => {
       <Route path="/agency" element={<AgencyNewsroom />} />
       <Route path="/agency/blog" element={<Blog scope="agency" />} />
       <Route path="/agency/blog/:slug" element={<BlogArticle scope="agency" />} />
+    </Route>
+    <Route element={<InvestorRoute />}>
+      <Route path="/investor" element={<InvestorHub />} />
+      <Route path="/console" element={<Console />} />
+      <Route path="/portal/investor" element={<InvestorDashboard />} />
+      <Route path="/portal/client" element={<ClientPortal />} />
     </Route>
     <Route path="*" element={<PageNotFound />} />
     </Routes>
