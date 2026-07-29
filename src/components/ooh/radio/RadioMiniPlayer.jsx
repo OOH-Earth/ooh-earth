@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { Radio, Play, Pause, Volume2, VolumeX } from "lucide-react";
+import { Radio, Play, Pause, Volume2, VolumeX, SkipBack, SkipForward, Loader2 } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import { useRadio } from "@/lib/radioContext";
 import RadioVisualizer from "@/components/ooh/radio/RadioVisualizer";
@@ -16,7 +16,7 @@ function EqBars({ active, bars = 3 }) {
 }
 
 export default function RadioMiniPlayer() {
-  const { station, playing, volume, error, stations, selectStation, togglePlay, setVolume, toggleMute, nowPlaying } = useRadio();
+  const { station, playing, loading, volume, error, stations, selectStation, stepStation, togglePlay, setVolume, toggleMute, nowPlaying } = useRadio();
   const [open, setOpen] = useState(false);
   const ref = useRef(null);
 
@@ -50,7 +50,7 @@ export default function RadioMiniPlayer() {
         title={playing ? "Pause" : "Play"}
         className={`flex h-8 w-8 items-center justify-center border-y border-r border-slate2 transition-colors hover:border-ozone hover:text-ozone ${playing ? "text-ozone" : "text-silver"}`}
       >
-        {playing ? <Pause className="h-3.5 w-3.5" /> : <Play className="h-3.5 w-3.5" />}
+        {loading && !playing ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : playing ? <Pause className="h-3.5 w-3.5" /> : <Play className="h-3.5 w-3.5" />}
       </button>
 
       <AnimatePresence>
@@ -69,9 +69,13 @@ export default function RadioMiniPlayer() {
                 <span className="flex items-center gap-1.5 font-mono text-[8px] font-bold uppercase tracking-[0.25em] text-ozone">
                   <Radio className="h-2.5 w-2.5" /> OOH Radio
                 </span>
-                <button onClick={togglePlay} aria-label={playing ? "Pause" : "Play"} className="flex h-8 w-8 items-center justify-center border border-ozone bg-ozone text-void transition-colors hover:bg-flare hover:border-flare">
-                  {playing ? <Pause className="h-3.5 w-3.5" /> : <Play className="h-3.5 w-3.5" />}
-                </button>
+                <div className="flex items-center gap-1">
+                  <button onClick={() => stepStation(-1)} aria-label="Previous station" title="Previous station" className="flex h-8 w-7 items-center justify-center border border-slate2 text-silver transition-colors hover:border-ozone hover:text-ozone"><SkipBack className="h-3 w-3" /></button>
+                  <button onClick={togglePlay} aria-label={playing ? "Pause" : "Play"} className="flex h-8 w-8 items-center justify-center border border-ozone bg-ozone text-void transition-colors hover:bg-flare hover:border-flare">
+                    {loading && !playing ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : playing ? <Pause className="h-3.5 w-3.5" /> : <Play className="h-3.5 w-3.5" />}
+                  </button>
+                  <button onClick={() => stepStation(1)} aria-label="Next station" title="Next station" className="flex h-8 w-7 items-center justify-center border border-slate2 text-silver transition-colors hover:border-ozone hover:text-ozone"><SkipForward className="h-3 w-3" /></button>
+                </div>
               </div>
               <div className="mt-2">
                 <div className="flex items-center gap-1.5">
@@ -91,6 +95,7 @@ export default function RadioMiniPlayer() {
                   </div>
                 )}
               </div>
+              {loading && !error && <div className="mt-2 font-mono text-[8px] uppercase tracking-[0.2em] text-ozone/70">// Connecting…</div>}
               {error && <div className="mt-2 font-mono text-[8px] uppercase tracking-[0.2em] text-flare">// Stream unavailable</div>}
             </div>
 
