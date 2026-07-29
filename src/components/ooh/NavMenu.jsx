@@ -17,6 +17,7 @@ const SITEMAP = [
     items: [
       { to: "/", label: "Home" },
       { to: "/blog", label: "Blog" },
+      { to: "/agency", label: "Agency HQ" },
       { to: "/agency/blog", label: "Agency Newsroom" },
       { to: "/dashboard", label: "Dashboard" },
       { to: "/operative", label: "Operative Profile" },
