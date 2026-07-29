@@ -1,0 +1,73 @@
+{
+  "name": "AccessLog",
+  "properties": {
+    "action": {
+      "default": "set",
+      "enum": [
+        "set",
+        "reset"
+      ],
+      "type": "string"
+    },
+    "actor_email": {
+      "type": "string"
+    },
+    "actor_id": {
+      "type": "string"
+    },
+    "from_access": {
+      "type": "string"
+    },
+    "from_role": {
+      "type": "string"
+    },
+    "target_email": {
+      "type": "string"
+    },
+    "target_id": {
+      "type": "string"
+    },
+    "to_access": {
+      "type": "string"
+    },
+    "to_role": {
+      "type": "string"
+    },
+    "via": {
+      "default": "api",
+      "description": "Auth path used for the change",
+      "enum": [
+        "panel",
+        "key",
+        "api"
+      ],
+      "type": "string"
+    }
+  },
+  "required": [
+    "target_id"
+  ],
+  "rls": {
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  },
+  "type": "object"
+}
