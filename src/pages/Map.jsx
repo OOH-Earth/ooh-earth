@@ -76,7 +76,7 @@ export default function Map() {
 
   const reloadLocations = useCallback(async () => {
     try {
-      const recs = await base44.entities.Location.list("-created_date", 500);
+      const recs = await base44.listAllLocations();
       const markers = (recs || []).filter((r) => r.status !== "rejected").map(toMarker);
       setRaw(markers.length ? { markers, live: true } : { markers: seedMarkers, live: false });
     } catch (e) {
