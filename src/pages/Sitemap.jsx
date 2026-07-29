@@ -3,12 +3,13 @@ import { base44 } from "@/api/base44Client";
 import Nav from "@/components/ooh/Nav";
 import HorizonProgress from "@/components/ooh/HorizonProgress";
 import { Link } from "react-router-dom";
-import { ArrowRight, Map as MapIcon, ShieldCheck, Users, Zap, Eye, EyeOff, Server, KeySquare } from "lucide-react";
+import { ArrowRight, ArrowUpRight, Map as MapIcon, ShieldCheck, Users, Zap, Eye, EyeOff, Server, KeySquare } from "lucide-react";
 import {
   SITEMAP_GROUPS, JOURNEYS, LOOSE_ENDS, AUTH_LABEL, LOOSE_STATUS,
   VISIBILITY, ACCESS_LADDER, ARCHITECTURE,
 } from "@/components/ooh/sitemapData";
 import { IS_STAGE, APP_ENV } from "@/lib/appEnv";
+import Breadcrumbs from "@/components/ooh/Breadcrumbs";
 
 // clearance readers — tolerate flat or nested SDK shapes
 const accessOf = (u) => (u && (u.access ?? u.data?.access)) || "member";
@@ -21,8 +22,11 @@ function VisBadge({ vis }) {
 
 function RouteCard({ r }) {
   const auth = AUTH_LABEL[r.auth] || AUTH_LABEL.none;
+  const to = r.path.startsWith("/") && !r.path.includes(":") ? r.path : null;
+  const Wrap = to ? Link : "div";
+  const wrapProps = to ? { to } : {};
   return (
-    <div className={`flex flex-col border p-4 transition-colors ${r.planned ? "border-dashed border-ozone/40 bg-card/40 hover:border-ozone/70" : "border-slate2/50 bg-card hover:border-ozone/40"}`}>
+    <Wrap {...wrapProps} className={`group flex flex-col border p-4 transition-colors ${r.planned ? "border-dashed border-ozone/40 bg-card/40 hover:border-ozone/70" : "border-slate2/50 bg-card hover:border-ozone/40"} ${to ? "cursor-pointer" : ""}`}>
       <div className="flex items-center justify-between gap-2">
         <code className="min-w-0 truncate font-mono text-[11px] text-ozone">{r.path}</code>
         <div className="flex shrink-0 items-center gap-1">
@@ -31,7 +35,7 @@ function RouteCard({ r }) {
           <span className={`border px-1.5 py-0.5 font-mono text-[8px] uppercase tracking-[0.2em] ${auth.cls}`}>{auth.text}</span>
         </div>
       </div>
-      <h3 className="mt-2 font-display text-base font-bold tracking-[-0.01em] text-silver">{r.name}</h3>
+      <h3 className="mt-2 flex items-center gap-1 font-display text-base font-bold tracking-[-0.01em] text-silver">{r.name}{to && <ArrowUpRight className="h-3.5 w-3.5 text-dim opacity-0 transition-opacity group-hover:opacity-100" />}</h3>
       <p className="mt-1.5 flex-1 font-display text-[12px] leading-[1.5] text-darkgray">{r.ux}</p>
       <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 font-mono text-[9px] uppercase tracking-[0.15em] text-dim">
         <span className="flex items-center gap-1"><Users className="h-3 w-3" /> {r.audience}</span>
@@ -43,7 +47,7 @@ function RouteCard({ r }) {
           ))}
         </div>
       )}
-    </div>
+    </Wrap>
   );
 }
 
@@ -90,6 +94,7 @@ export default function Sitemap() {
       <Nav />
       <main className="px-5 pb-24 pt-28 md:px-8">
         <div className="mx-auto max-w-6xl">
+          <Breadcrumbs items={[{ label: "Sitemap" }]} className="mb-6" />
           {/* header */}
           <div className="border-b border-slate2/50 pb-6">
             <div className="flex flex-wrap items-center gap-3">
