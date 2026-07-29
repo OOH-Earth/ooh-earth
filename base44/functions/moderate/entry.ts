@@ -2,16 +2,15 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
 
 // moderate — verification surface for the ops ladder.
 // Entity RLS stays admin-only; this function is the elevated path.
-// Authority (checked server-side on every call):
 //   queue  (read incoming) : admin | moderator | operative
 //   verify (approve/reject): admin | moderator
-//
-// Actions (POST JSON, authenticated):
-//   { action: "queue" }
-//   { action: "verify", entity: "Location" | "DigitalBust", id: "...", status: "verified" | "rejected" }
 
-const CAN_VIEW = (u) => !!u && (u.role === 'admin' || ['admin', 'moderator', 'operative'].includes(u.access));
-const CAN_ACT = (u) => !!u && (u.role === 'admin' || ['admin', 'moderator'].includes(u.access));
+// Read clearance regardless of whether the SDK returns it flat or under .data
+const accessOf = (u) => (u && (u.access ?? u.data?.access)) || 'member';
+const roleOf = (u) => (u && (u.role ?? u.data?.role)) || 'user';
+const CAN_VIEW = (u) => !!u && (roleOf(u) === 'admin' || ['admin', 'moderator', 'operative'].includes(accessOf(u)));
+const CAN_ACT = (u) => !!u && (roleOf(u) === 'admin' || ['admin', 'moderator'].includes(accessOf(u)));
+
 const ENTITIES = new Set(['Location', 'DigitalBust']);
 const VERIFY_STATUS = new Set(['verified', 'rejected']);
 
@@ -52,7 +51,7 @@ Deno.serve(async (req) => {
       return Response.json({
         ok: true, action,
         readonly: !CAN_ACT(caller),
-        moderator: { email: caller.email, role: caller.role, access: caller.access || 'member' },
+        moderator: { email: caller.email, role: roleOf(caller), access: accessOf(caller) },
         locations: locations || [],
         digital_busts: digital_busts || [],
       }, { headers });
