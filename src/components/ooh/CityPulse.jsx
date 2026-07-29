@@ -36,7 +36,7 @@ export default function CityPulse() {
     let cancelled = false;
     (async () => {
       try {
-        const recs = await base44.entities.Location.list("-created_date", 500);
+        const recs = await base44.listAllLocations();
         const active = (recs || []).filter((r) => r.status !== "rejected");
         const tally = {};
         active.forEach((r) => {
