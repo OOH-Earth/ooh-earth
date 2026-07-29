@@ -18,7 +18,7 @@ export default function OffenderRegistry() {
   useEffect(() => {
     (async () => {
       try {
-        const recs = await base44.entities.Location.list("-created_date", 500);
+        const recs = await base44.listAllLocations();
         const corpus = (recs || [])
           .filter((r) => r.status !== "rejected")
           .map((r) => `${r.title || ""} · ${r.notes || ""} · ${r.address || ""}`)
