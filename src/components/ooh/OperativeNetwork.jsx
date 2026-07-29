@@ -24,7 +24,7 @@ export default function OperativeNetwork() {
   useEffect(() => {
     (async () => {
       try {
-        const recs = await base44.entities.Location.list("-created_date", 500);
+        const recs = await base44.listAllLocations();
         const active = (recs || []).filter((r) => r.status !== "rejected");
         const operatives = new Set(active.map((r) => r.created_by_id).filter(Boolean)).size;
         const cities = new Set(active.map((r) => cityOf(r.address)).filter(Boolean)).size;
