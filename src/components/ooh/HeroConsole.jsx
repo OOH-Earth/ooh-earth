@@ -89,7 +89,7 @@ export default function HeroConsole({ onCommand }) {
     const load = async () => {
       try {
         const [locs, ops, leads] = await Promise.all([
-          base44.entities.Location.list("-created_date", 500).catch(() => []),
+          base44.listAllLocations().catch(() => []),
           base44.entities.Operative.list("-created_date", 500).catch(() => []),
           base44.entities.LeadClaim.list("-created_date", 200).catch(() => []),
         ]);
