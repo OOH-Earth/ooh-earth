@@ -18,7 +18,7 @@ export default function DashboardDropdown() {
   useEffect(() => {
     if (!open) return;
     Promise.all([
-      base44.entities.Location.list("-created_date", 500).catch(() => []),
+      base44.listAllLocations().catch(() => []),
       base44.entities.Operative.list("-created_date", 500).catch(() => []),
     ]).then(([locs, ops]) => {
       const live = (locs || []).filter((x) => x.status !== "rejected");
