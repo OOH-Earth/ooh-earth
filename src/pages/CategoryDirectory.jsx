@@ -52,7 +52,7 @@ export default function CategoryDirectory() {
     let alive = true;
     (async () => {
       try {
-        const rows = await base44.entities.Location.list("-created_date", 500);
+        const rows = await base44.listAllLocations();
         if (alive) setLive(Array.isArray(rows) ? rows : []);
       } catch {
         if (alive) setLive([]);
