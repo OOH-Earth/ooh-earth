@@ -1,0 +1,88 @@
+{
+  "name": "BlogPost",
+  "properties": {
+    "audience": {
+      "default": "agency",
+      "description": "public = anyone; agency = agency members + admins only",
+      "enum": [
+        "public",
+        "agency"
+      ],
+      "type": "string"
+    },
+    "author": {
+      "type": "string"
+    },
+    "body": {
+      "description": "Full post body (markdown/plain)",
+      "type": "string"
+    },
+    "category": {
+      "description": "e.g. strategy, dispatch, launch, futures, post",
+      "type": "string"
+    },
+    "cover_image": {
+      "type": "string"
+    },
+    "cta": {
+      "type": "string"
+    },
+    "excerpt": {
+      "description": "Short summary for cards",
+      "type": "string"
+    },
+    "network": {
+      "description": "Target network for share-out posts, e.g. LinkedIn, Instagram",
+      "type": "string"
+    },
+    "pinned": {
+      "default": false,
+      "type": "boolean"
+    },
+    "published_date": {
+      "description": "ISO date string",
+      "type": "string"
+    },
+    "slug": {
+      "description": "URL slug, unique",
+      "type": "string"
+    },
+    "status": {
+      "default": "draft",
+      "enum": [
+        "draft",
+        "published"
+      ],
+      "type": "string"
+    },
+    "title": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "title"
+  ],
+  "rls": {
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  },
+  "type": "object"
+}
