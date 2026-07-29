@@ -22,7 +22,7 @@ function VisBadge({ vis }) {
 
 function RouteCard({ r }) {
   const auth = AUTH_LABEL[r.auth] || AUTH_LABEL.none;
-  const to = r.path.startsWith("/") && !r.path.includes(":") ? r.path : null;
+  const to = r.path.startsWith("/") && !r.path.includes(":") && !r.planned ? r.path : null;
   const Wrap = to ? Link : "div";
   const wrapProps = to ? { to } : {};
   return (
