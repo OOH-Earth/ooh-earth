@@ -2,17 +2,28 @@ import { useEffect, useState, useCallback } from "react";
 import { base44 } from "@/api/base44Client";
 import Nav from "@/components/ooh/Nav";
 import HorizonProgress from "@/components/ooh/HorizonProgress";
-import { Loader2, LogOut, Check, X, MapPin, ShieldCheck, ArrowUpRight, RefreshCw, Trash2, AlertTriangle } from "lucide-react";
+import { Loader2, LogOut, Check, X, MapPin, ShieldCheck, ArrowUpRight, RefreshCw, Trash2, AlertTriangle, Eye } from "lucide-react";
 import { Link } from "react-router-dom";
 import LocationThumb from "@/components/ooh/map/LocationThumb";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import PullToRefresh from "@/components/ooh/PullToRefresh";
+import PersonaControl from "@/components/ooh/PersonaControl";
 
 const STATUS_BADGE = {
   pending: "border-ozone/50 text-ozone",
   verified: "border-silver/30 text-silver",
   rejected: "border-flare/50 text-flare",
 };
+
+const ACCESS_BADGE = {
+  admin: "border-ozone/50 text-ozone",
+  moderator: "border-flare/50 text-flare",
+  operative: "border-silver/40 text-silver",
+  member: "border-slate2/60 text-darkgray",
+};
+
+// unwrap base44.functions.invoke result (SDK returns { data })
+const payload = (res) => (res && typeof res === "object" && "data" in res ? res.data : res);
 
 function Row({ r, onVerify, busy, triage }) {
   return (
@@ -45,6 +56,7 @@ export default function Dashboard() {
   const [refreshing, setRefreshing] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [previewAs, setPreviewAs] = useState(null); // UI-only persona preview
 
   const deleteAccount = async () => {
     setDeleting(true);
@@ -54,10 +66,24 @@ export default function Dashboard() {
   const load = useCallback(async () => {
     const u = await base44.auth.me();
     setUser(u);
-    const [myList, pendList] = await Promise.all([
-      base44.entities.Location.filter({ created_by_id: u.id }, "-created_date", 100),
-      u.role === "admin" ? base44.entities.Location.filter({ status: "pending" }, "-created_date", 100) : Promise.resolve([]),
-    ]);
+    const elevated = u?.role === "admin" || u?.access === "admin";
+    const canView = elevated || u?.access === "moderator" || u?.access === "operative";
+
+    const myTask = base44.entities.Location.filter({ created_by_id: u.id }, "-created_date", 100);
+    let pendTask;
+    if (elevated) {
+      pendTask = base44.entities.Location.filter({ status: "pending" }, "-created_date", 100);
+    } else if (canView) {
+      // moderators + operatives read the queue via the server-gated function
+      pendTask = base44.functions
+        .invoke("moderate", { action: "queue" })
+        .then((res) => payload(res)?.locations || [])
+        .catch(() => []);
+    } else {
+      pendTask = Promise.resolve([]);
+    }
+
+    const [myList, pendList] = await Promise.all([myTask, pendTask]);
     setMine(myList || []);
     setPending(pendList || []);
   }, []);
@@ -82,7 +108,12 @@ export default function Dashboard() {
   const verify = async (id, status) => {
     setBusy((b) => ({ ...b, [id]: true }));
     try {
-      await base44.entities.Location.update(id, { status });
+      const adminNow = user?.role === "admin" || user?.access === "admin";
+      if (adminNow) {
+        await base44.entities.Location.update(id, { status });
+      } else {
+        await base44.functions.invoke("moderate", { action: "verify", entity: "Location", id, status });
+      }
       setPending((p) => p.filter((r) => r.id !== id));
     } catch { /* error bubbles */ }
     finally { setBusy((b) => ({ ...b, [id]: false })); }
@@ -96,7 +127,14 @@ export default function Dashboard() {
     );
   }
 
-  const isAdmin = user?.role === "admin";
+  const realIsAdmin = user?.role === "admin" || user?.access === "admin";
+  const realCanAct = realIsAdmin || user?.access === "moderator";
+  const realCanView = realCanAct || user?.access === "operative";
+  const effAccess = previewAs || (realIsAdmin ? "admin" : (user?.access || "member"));
+  const isAdmin = previewAs ? previewAs === "admin" : realIsAdmin;
+  const canAct = previewAs ? (previewAs === "admin" || previewAs === "moderator") : realCanAct;
+  const canView = previewAs ? (previewAs === "admin" || previewAs === "moderator" || previewAs === "operative") : realCanView;
+
   const triageScore = (r) => (r.image_url ? 2 : 0) + (r.source_link ? 1 : 0);
   const sortedPending = [...pending].sort((a, b) => triageScore(b) - triageScore(a));
   const triageCount = sortedPending.filter((r) => triageScore(r) >= 2).length;
@@ -114,7 +152,9 @@ export default function Dashboard() {
               <h1 className="mt-2 font-display text-4xl font-bold leading-[1.02] tracking-[-0.02em] text-silver md:text-5xl">Dashboard</h1>
               <p className="mt-2 flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.2em] text-dim">
                 {user?.email}
-                {isAdmin ? <span className="flex items-center gap-1 border border-ozone/50 px-2 py-0.5 text-ozone"><ShieldCheck className="h-3 w-3" /> admin</span> : <span className="border border-slate2/60 px-2 py-0.5 text-darkgray">operative</span>}
+                <span className={`flex items-center gap-1 border px-2 py-0.5 ${ACCESS_BADGE[effAccess] || ACCESS_BADGE.member}`}>
+                  {(effAccess === "admin" || effAccess === "moderator") && <ShieldCheck className="h-3 w-3" />} {effAccess}
+                </span>
               </p>
             </div>
             <div className="flex items-center gap-2">
@@ -127,15 +167,31 @@ export default function Dashboard() {
             </div>
           </div>
 
-          {/* admin verification queue */}
-          {isAdmin && (
+          {/* persona preview strip — real admins only, UI gating test */}
+          {realIsAdmin && (
+            <div className="mt-4 flex flex-wrap items-center gap-2 border border-ozone/20 bg-ozone/[0.03] px-3 py-2">
+              <span className="flex items-center gap-1.5 font-mono text-[9px] uppercase tracking-[0.2em] text-dim"><Eye className="h-3 w-3" /> Preview as</span>
+              {[["live", null], ["member", "member"], ["operative", "operative"], ["moderator", "moderator"], ["admin", "admin"]].map(([label, val]) => (
+                <button key={label} onClick={() => setPreviewAs(val)} className={`border px-2 py-0.5 font-mono text-[9px] uppercase tracking-[0.2em] transition-colors ${(previewAs ?? null) === val ? "border-ozone bg-ozone text-void" : "border-slate2/60 text-darkgray hover:border-ozone hover:text-ozone"}`}>{label}</button>
+              ))}
+              {previewAs && <span className="font-mono text-[9px] uppercase tracking-[0.2em] text-flare/80">UI preview only · data + permissions unchanged</span>}
+            </div>
+          )}
+
+          {/* verification queue — operatives view (read-only), moderators + admins act */}
+          {canView && (
             <section className="mt-10">
               <div className="flex items-center justify-between">
-                <h2 className="font-display text-lg font-bold uppercase tracking-[-0.01em] text-silver">Verification queue</h2>
-                <span className="font-mono text-[10px] uppercase tracking-[0.25em] text-dim">// {pending.length} pending {triageCount > 0 && <span className="text-flare/80">· {triageCount} triage</span>}</span>
+                <h2 className="font-display text-lg font-bold uppercase tracking-[-0.01em] text-silver">
+                  {canAct ? "Verification queue" : "Incoming — field intel"}
+                </h2>
+                <span className="font-mono text-[10px] uppercase tracking-[0.25em] text-dim">
+                  // {pending.length} pending {triageCount > 0 && <span className="text-flare/80">· {triageCount} triage</span>}
+                  {!canAct && <span className="text-silver/60"> · read-only</span>}
+                </span>
               </div>
               <div className="mt-4 space-y-2">
-                {sortedPending.length ? sortedPending.map((r) => <Row key={r.id} r={r} onVerify={verify} busy={busy[r.id]} triage={triageScore(r) >= 2} />) : (
+                {sortedPending.length ? sortedPending.map((r) => <Row key={r.id} r={r} onVerify={canAct ? verify : undefined} busy={busy[r.id]} triage={triageScore(r) >= 2} />) : (
                   <div className="border border-slate2/40 bg-card p-6 text-center font-mono text-[10px] uppercase tracking-[0.25em] text-dim">// Queue clear — no pending captures</div>
                 )}
               </div>
@@ -161,6 +217,9 @@ export default function Dashboard() {
               </div>
             </PullToRefresh>
           </section>
+
+          {/* persona control — admins only */}
+          {isAdmin && <PersonaControl meId={user?.id} />}
 
           {/* danger zone */}
           <section className="mt-10">
