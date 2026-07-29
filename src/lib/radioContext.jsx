@@ -97,7 +97,15 @@ export function RadioProvider({ children }) {
       // Analysis audio element — CORS required for real FFT data
       const analysisAudio = new Audio();
       analysisAudio.crossOrigin = "anonymous";
-      analysisAudio.volume = 1; // Full signal to analyser; output is muted (not connected to destination)
+      // Silence the analysis element at the ELEMENT level, not just via the graph.
+      // The graph only mutes it when createMediaElementSource() successfully reroutes
+      // the element's output — which is unreliable on mobile Safari/iOS, where the
+      // element instead keeps playing straight to the speaker and layers a second,
+      // slightly-out-of-phase copy on top of the playback element (the "double audio"
+      // bug). muted=true guarantees hardware silence on every platform; the
+      // AnalyserNode still taps the decoded signal for the visualizer where CORS
+      // allows, and RadioVisualizer falls back to a simulated waveform when it can't.
+      analysisAudio.muted = true;
       const source = ctx.createMediaElementSource(analysisAudio);
       source.connect(an);
       // Do NOT connect analyser to ctx.destination — analysis audio is silent
