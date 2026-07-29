@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
-import { Moon, Bell, Loader2, Sparkles, Telescope } from "lucide-react";
+import { Bell, Loader2, Sparkles, Telescope } from "lucide-react";
 
 // --- Moon calculus (mirrors LunarMarketOverlay) ---
 const SYNODIC = 29.530588853;
@@ -71,32 +71,9 @@ export default function SkyIntel() {
       try { setEvents(JSON.parse(cached)); return; } catch { /* fall through */ }
     }
     let cancelled = false;
-    base44.integrations.Core.InvokeLLM({
-      prompt: `List notable naked-eye astronomical events occurring in the next 7 days starting ${dateKey}. Include Moon conjunctions with bright stars or planets (e.g. Moon–Antares), meteor showers, planet oppositions/conjunctions, eclipses, supermoons, and notable ISS/Starlink passes. Focus on events a casual observer can see. For each: date (YYYY-MM-DD), title (short, e.g. "Moon × Antares conjunction"), body (one sentence on what + visibility), type (one of: conjunction, meteor shower, opposition, eclipse, full moon, new moon, super moon, satellite pass, planet). Order by date. Max 8 events.`,
-      add_context_from_internet: true,
-      model: "gemini_3_flash",
-      response_json_schema: {
-        type: "object",
-        properties: {
-          events: {
-            type: "array",
-            items: {
-              type: "object",
-              properties: {
-                date: { type: "string" },
-                title: { type: "string" },
-                body: { type: "string" },
-                type: { type: "string" },
-              },
-              required: ["date", "title", "body", "type"],
-            },
-          },
-        },
-        required: ["events"],
-      },
-    }).then((res) => {
+    base44.functions.invoke("cachedIntel", { key: "skyIntel" }).then((res) => {
       if (cancelled) return;
-      const list = (res && res.events) || [];
+      const list = (res && res.data && res.data.events) || [];
       localStorage.setItem(cacheKey, JSON.stringify(list));
       setEvents(list);
     }).catch(() => {
@@ -105,7 +82,6 @@ export default function SkyIntel() {
       if (!cancelled) setLoading(false);
     });
     return () => { cancelled = true; };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dateKey]);
 
   const moonSignal = cryptidSignal(label.toLowerCase(), label);
