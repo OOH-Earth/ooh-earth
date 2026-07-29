@@ -26,6 +26,8 @@ import Dashboard from '@/pages/Dashboard';
 import FdePortal from '@/pages/FdePortal';
 import AtariPortfolio from '@/pages/AtariPortfolio';
 import Sitemap from '@/pages/Sitemap';
+import Blog from '@/pages/Blog';
+import BlogArticle from '@/pages/BlogArticle';
 import Store from '@/pages/Store';
 import StoreItemDetail from '@/pages/StoreItemDetail';
 import Campaign from '@/pages/Campaign';
@@ -116,12 +118,16 @@ const AuthenticatedApp = () => {
     <Route path="/bus-stops" element={<BusStops />} />
     <Route path="/bus-stop/:id" element={<BusStopDetail />} />
     <Route path="/careers" element={<Careers />} />
+    <Route path="/blog" element={<Blog scope="public" />} />
+    <Route path="/blog/:slug" element={<BlogArticle scope="public" />} />
     <Route element={<ProtectedRoute unauthenticatedElement={<Navigate to="/login" replace />} />}>
       <Route path="/dashboard" element={<Dashboard />} />
       <Route path="/fde" element={<FdePortal />} />
       <Route path="/portfolio" element={<AtariPortfolio />} />
       <Route path="/radio-ops" element={<RadioOps />} />
       <Route path="/sitemap" element={<Sitemap />} />
+      <Route path="/agency/blog" element={<Blog scope="agency" />} />
+      <Route path="/agency/blog/:slug" element={<BlogArticle scope="agency" />} />
     </Route>
     <Route path="*" element={<PageNotFound />} />
     </Routes>
