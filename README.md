@@ -1,77 +1,84 @@
-# Base44 Project
+# OOH Earth
 
-Use this repository to run and edit the app locally, then publish changes back through Base44.
+**Public space isn't blank space.**
 
-Any change pushed to the repo will also be reflected in the Base44 Builder.
+OOH Earth maps the corporate outdoor advertising you never agreed to — the billboards, the digital screens, the wraps and the takeovers colonising the streets you walk every day — and gives communities the evidence, the tools, and the cover to push back.
 
-## Prerequisites
+It's a civic platform, not a startup. Community-funded, copyleft, and not for sale. Every pound goes to the movement.
 
-1. Clone the repository using the project's Git URL.
-2. Navigate to the project directory.
-3. Install dependencies: `npm install`.
-4. Install the Base44 CLI: `npm install -g base44@latest`.
+🌍 [oohearth.app](https://oohearth.app) · [ooh.earth](https://ooh.earth) · ✉️ hello@outofhell.org
 
-See the [Base44 CLI docs](https://docs.base44.com/developers/references/cli/get-started/overview) if you want to run Base44 commands directly.
+---
 
-## Run Locally
+## What this is
 
-Run the full local development environment from the project root:
+This repo is the OOH Earth civic app: a live map of outdoor advertising in public space, AI-assisted capture for documenting what you find on the street, an evidence feed, an impact dashboard, AR tools for reimagining what a wall could be instead, and an objection generator for taking it to the people who put it there. Contributors move up through an operative system — Scout, Field Operative, City Ambassador — as they map their cities.
 
-```bash
-base44 dev
-```
+## Why
 
-`base44 dev` starts the local Base44 development backend and, when this app is configured for it, also starts the frontend dev server for you. Use the frontend URL printed by the command.
+Outdoor advertising is the one medium you can't turn off, close, or scroll past. It's imposed on public space without consent, and it's overwhelmingly one-directional: corporate messages, aimed at everyone, answerable to no one.
 
-For example, when the Base44 project config includes a `serveCommand`, `base44 dev` can launch the frontend too:
+We think that's a public-space problem, a democratic problem, and a cultural-rights problem — and we're not the first to say so. OOH Earth stands on:
 
-```json5
-{
-  "site": {
-    "serveCommand": "npm run dev"
-  }
-}
-```
+- **UN SDG 11.7** — universal access to safe, inclusive, accessible public space.
+- **UN SDG 12.8 & 16.7** — informed, responsive, inclusive participation.
+- **UN Special Rapporteur on cultural rights, report A/69/286** — advertising and marketing's impact on the enjoyment of cultural rights.
+- **The Les Déboulonneurs acquittal (Paris, 25 March 2013)** — the tradition of principled, non-violent resistance to visual pollution.
+- **The First Things First lineage** — designers refusing to spend their craft only on selling.
 
-In a Base44 project this lives in `base44/config.jsonc`.
+Mapping is the first act. Evidence is the second. Everything after that belongs to the communities doing the work.
 
-## Run Only The Frontend
+## Not for sale
 
-If you only want to work on the frontend against the hosted Base44 backend, run:
+OOH Earth is anti-VC by design. There is no exit, no acquisition, no growth-at-all-costs. The code is copyleft so it can never be enclosed, and the platform is community-funded so it never has to answer to advertisers. If that sounds unusual, that's the point.
 
-```bash
-npm run dev
-```
+## Tech
 
-Open the local URL printed by Vite.
+- **App** — [Base44](https://base44.com) (React front end in `src/`, Deno backend functions in `base44/functions/<name>/entry.ts`), Vite + Tailwind.
+- **Secrets** — always via `Deno.env.get("SECRET_NAME")`. Never in code, never committed. See [SECURITY.md](./SECURITY.md).
+- **Marketing sites** — Framer.
+- **Automation spine** — n8n, bridged to the app by webhook.
 
-## Use The Hosted Backend
-
-For frontend-only development, create or update `.env.local` in the project root:
+## Running locally
 
 ```bash
-VITE_BASE44_APP_ID=your_app_id
-VITE_BASE44_APP_BASE_URL=https://your-app.base44.app
+npm install
+npm run dev        # local dev server
+npm run build      # production build — the gate before anything ships
 ```
 
-`VITE_BASE44_APP_ID` identifies the Base44 app.
-
-`VITE_BASE44_APP_BASE_URL` tells the Base44 Vite plugin where to send local `/api` requests. Point it at your deployed Base44 app URL when you want the local frontend to use the hosted backend.
-
-When you use `base44 dev`, the command injects the local Base44 values for you, so `.env.local` is mainly needed for frontend-only workflows.
-
-## Publish Your Changes
-
-After pushing your changes to git, open the Base44 dashboard and publish the app:
+Build-verify (the habit we hold everyone to):
 
 ```bash
-base44 dashboard open
+npm run build > /tmp/b.log 2>&1; echo "BUILD EXIT: $?"; tail -3 /tmp/b.log
 ```
 
-## Docs & Support
+If it doesn't build clean, it doesn't merge.
 
-Documentation: [https://docs.base44.com/Integrations/Using-GitHub](https://docs.base44.com/Integrations/Using-GitHub)
+## Contributing
 
-Base44 CLI command reference: [https://docs.base44.com/developers/references/cli/commands/introduction](https://docs.base44.com/developers/references/cli/commands/introduction)
+Read [CONTRIBUTING.md](./CONTRIBUTING.md) first — it covers the BACKUP-first rule, how we treat the production app, and the standards we hold. Then find an open issue, or open one.
 
-Support: [https://app.base44.com/support](https://app.base44.com/support)
+By contributing, you agree your work is released under the licences below.
+
+## Licence
+
+Dual-licensed, deliberately:
+
+- **Code** — [GNU AGPL-3.0](./LICENSE). Copyleft that closes the SaaS loophole: run a modified OOH Earth as a network service, and you must publish your source too. No enclosure.
+- **Content, data & design** — [CC BY-SA 4.0](./LICENSE-CONTENT.md). Share it, remix it, build on it — keep it open and credit the movement.
+
+## The movement
+
+OOH Earth is one node in a wider network of people reclaiming public space:
+
+- [Brandalism](https://brandalism.ch)
+- [Adfree Cities](https://adfreecities.org.uk)
+- Subvertisers International
+- [Adbusters](https://adbusters.org)
+
+Trading as **Out of Hell** · hello@outofhell.org
+
+---
+
+*Built and maintained by Dee Sidhom, Founder. Zen anarchist, ex-adland, now on the other side of the billboard.*
