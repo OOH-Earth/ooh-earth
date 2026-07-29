@@ -8,7 +8,7 @@ import MapSidebar from "@/components/ooh/map/MapSidebar";
 import LocationCard from "@/components/ooh/map/LocationCard";
 import seedMarkers from "@/components/ooh/mapSeed";
 import { toMarker } from "@/components/ooh/map/markerUtils";
-import { Loader2, FileDown, Megaphone, Map as MapIcon, Globe, ScanSearch, Camera, Key } from "lucide-react";
+import { Loader2, FileDown, Megaphone, Map as MapIcon, Globe, ScanSearch, Camera, Key, Crosshair } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useWalkthrough } from "@/lib/walkthroughContext";
 import UnitFinder from "@/components/ooh/UnitFinder";
@@ -52,6 +52,8 @@ export default function Map() {
   const [selectedId, setSelectedId] = useState(null);
   const [hoverId, setHoverId] = useState(null);
   const [view, setView] = usePersistentState("ooh-map-view", "globe");
+  const [bounds, setBounds] = useState(null);
+  const [followViewport, setFollowViewport] = usePersistentState("ooh-map-follow", true);
   const [userLoc, setUserLoc] = useState(null);
   const { startTour, registerSteps } = useWalkthrough();
   const [finderOpen, setFinderOpen] = useState(false);
@@ -155,6 +157,19 @@ export default function Map() {
       });
   }, [raw, typeFilter, query]);
 
+  // Results feed follows the map viewport (flat view): only spots inside the
+  // visible bounds, nearest-to-centre first — the "search this area" pattern.
+  const adsInView = useMemo(() => {
+    if (view !== "flat" || !followViewport || !bounds) return filtered;
+    const { n, s, e, w } = bounds;
+    const inLng = (lng) => (w <= e ? lng >= w && lng <= e : lng >= w || lng <= e);
+    const cLat = (n + s) / 2;
+    const cLng = (w + e) / 2;
+    return filtered
+      .filter((m) => isFinite(m.lat) && isFinite(m.lng) && m.lat <= n && m.lat >= s && inLng(m.lng))
+      .sort((a, b) => ((a.lat - cLat) ** 2 + (a.lng - cLng) ** 2) - ((b.lat - cLat) ** 2 + (b.lng - cLng) ** 2));
+  }, [filtered, view, followViewport, bounds]);
+
   const primaryLayer = useMemo(
     () => ["ads", "rivers", "mushrooms", "flora", "war", "radio"].find((l) => activeLayers.includes(l)) || null,
     [activeLayers]
@@ -171,7 +186,7 @@ export default function Map() {
     const q = query.trim().toLowerCase();
     const matches = (text) => !q || text.toLowerCase().includes(q);
     switch (primaryLayer) {
-      case "ads": return filtered;
+      case "ads": return adsInView;
       case "mushrooms": return mushrooms.filter((s) =>
         (layerFilter === "all" || s.region === layerFilter) &&
         matches(`${s.species} ${s.region} ${s.habitat} ${s.note || ""}`));
@@ -190,7 +205,7 @@ export default function Map() {
         matches(`${s.name} ${s.city} ${s.country} ${s.genre}`));
       default: return [];
     }
-  }, [primaryLayer, filtered, mushrooms, floraSpots, warZones, layerFilter, query]);
+  }, [primaryLayer, filtered, adsInView, mushrooms, floraSpots, warZones, layerFilter, query]);
 
   const counts = useMemo(() => {
     const c = {};
@@ -216,7 +231,7 @@ export default function Map() {
     URL.revokeObjectURL(url);
   };
 
-  const leads = filtered.filter((m) => !m.image && m.status !== "verified").length;
+  const leads = adsInView.filter((m) => !m.image && m.status !== "verified").length;
 
   const cardsClass =
     mode === "map" ? "hidden" : mode === "list" ? "flex w-full lg:flex-1" : "hidden lg:flex lg:w-[340px]";
@@ -254,7 +269,19 @@ export default function Map() {
 
           <div data-tour="cards" className={`min-h-0 flex-col border-r border-slate2/60 ${cardsClass}`}>
             <div className="flex items-center justify-between border-b border-slate2/60 px-4 py-2">
-              <span className="font-mono text-[10px] uppercase tracking-[0.25em] text-dim">// {layerResults.length} results {primaryLayer === "ads" && leads > 0 && <span className="text-flare/80">· {leads} leads</span>}</span>
+              <span className="font-mono text-[10px] uppercase tracking-[0.25em] text-dim">
+                // {layerResults.length}{primaryLayer === "ads" && followViewport && view === "flat" ? <> in view<span className="text-dim/60"> · {filtered.length} total</span></> : " results"}
+                {primaryLayer === "ads" && leads > 0 && <span className="text-flare/80"> · {leads} leads</span>}
+              </span>
+              {primaryLayer === "ads" && view === "flat" && (
+                <button
+                  onClick={() => setFollowViewport((v) => !v)}
+                  title="Results feed follows the map view"
+                  className={`flex items-center gap-1 border px-1.5 py-1 font-mono text-[9px] font-bold uppercase tracking-[0.2em] transition-colors ${followViewport ? "border-ozone/60 bg-ozone/10 text-ozone" : "border-slate2 text-darkgray hover:border-ozone/60 hover:text-ozone"}`}
+                >
+                  <Crosshair className="h-3 w-3" /> Follow map
+                </button>
+              )}
             </div>
             <PullToRefresh onRefresh={reloadLocations} className="min-h-0 flex-1">
               <div className="space-y-px">
@@ -276,6 +303,16 @@ export default function Map() {
                       <LayerResultCard key={`${primaryLayer}-${i}`} item={item} layer={primaryLayer} />
                     ))
                   )
+                ) : primaryLayer === "ads" && followViewport && view === "flat" ? (
+                  <div className="p-6 text-center">
+                    <div className="font-mono text-[10px] uppercase tracking-[0.25em] text-dim">// No spots in this view</div>
+                    <p className="mt-1 font-mono text-[9px] uppercase tracking-[0.2em] text-dim/60">Pan or zoom out to widen the sweep</p>
+                    {filtered.length > 0 && (
+                      <button onClick={() => setFollowViewport(false)} className="mt-3 inline-flex items-center gap-1 border border-slate2 px-3 py-1.5 font-mono text-[9px] font-bold uppercase tracking-[0.2em] text-darkgray transition-colors hover:border-ozone hover:text-ozone">
+                        Show all {filtered.length}
+                      </button>
+                    )}
+                  </div>
                 ) : (
                   <div className="p-6 text-center font-mono text-[10px] uppercase tracking-[0.25em] text-dim">// No {primaryLayer} matches{query ? ` for "${query}"` : ""}</div>
                 )}
@@ -303,7 +340,7 @@ export default function Map() {
             {view === "globe" ? (
               <Globe3D markers={filtered} selectedId={selectedId} hoverId={hoverId} onSelect={setSelectedId} userLoc={userLoc} activeLayers={activeLayers} />
             ) : (
-              <LocationMap markers={filtered} selectedId={selectedId} hoverId={hoverId} onSelect={setSelectedId} userLoc={userLoc} futures={OOH_FUTURES} activeLayers={activeLayers} />
+              <LocationMap markers={filtered} selectedId={selectedId} hoverId={hoverId} onSelect={setSelectedId} userLoc={userLoc} futures={OOH_FUTURES} activeLayers={activeLayers} onBoundsChange={setBounds} />
             )}
             <div className="pointer-events-none absolute inset-x-0 top-0 z-[900] px-3 pt-16">
               <MapAlertTicker />
