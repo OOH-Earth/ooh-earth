@@ -12,6 +12,7 @@ import TvStatic from '@/components/ooh/TvStatic';
 import CognitiveLayer from '@/components/ooh/cognitive/CognitiveLayer';
 import MobileBottomTabs from '@/components/ooh/MobileBottomTabs';
 import ProtectedRoute from '@/components/ProtectedRoute';
+import StageBanner from '@/components/ooh/StageBanner';
 import { WalkthroughProvider } from '@/lib/walkthroughContext';
 import { RadioProvider } from '@/lib/radioContext';
 // Add page imports here
@@ -139,6 +140,7 @@ function App() {
           <RadioProvider>
             <WalkthroughProvider>
               <ScrollToTop />
+              <StageBanner />
               <AuthenticatedApp />
               <CrtOverlay />
               <TvStatic />
