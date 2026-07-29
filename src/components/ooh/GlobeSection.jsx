@@ -26,7 +26,7 @@ export default function GlobeSection() {
       onClick={handleClick}
       className="group relative h-[58dvh] min-h-[360px] w-full cursor-pointer overflow-hidden border-b border-slate2/60 bg-void transition-all duration-500 hover:border-ozone/40 hover:shadow-[inset_0_0_90px_-24px_rgba(237,255,0,0.2)]"
     >
-      <Globe3D markers={markers} scrollZoom={false} />
+      <Globe3D markers={markers} activeLayers={["ads"]} scrollZoom={false} />
 
       {/* hover scan sweep */}
       <div className="pointer-events-none absolute inset-0 z-[1000] overflow-hidden opacity-0 transition-opacity duration-500 group-hover:opacity-100">
