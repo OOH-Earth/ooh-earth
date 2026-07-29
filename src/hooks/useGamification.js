@@ -19,7 +19,7 @@ export function useGamification() {
       setUser(me);
 
       const [locations, busts, mints, leads, quests] = await Promise.all([
-        base44.entities.Location.list("-created_date", 500).catch(() => []),
+        base44.listAllLocations().catch(() => []),
         base44.entities.DigitalBust.list("-created_date", 200).catch(() => []),
         base44.entities.Mint.list("-created_date", 100).catch(() => []),
         base44.entities.LeadClaim.list("-created_date", 200).catch(() => []),
