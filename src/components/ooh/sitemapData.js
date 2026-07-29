@@ -95,6 +95,7 @@ export const SITEMAP_GROUPS = [
     accent: "text-ozone",
     desc: "The blogs. Public dispatches for anyone; the agency newsroom for agency members.",
     routes: [
+      { path: "/agency", name: "Agency HQ", vis: "internal", ux: "Newsroom intranet hub: quick-launch tiles, live dispatch feed, LinkedIn KPI panel, the Road-to-1,000 ladder, and the post queue with copy-to-post. Gated to agency members + admins.", audience: "Agency / Admin", auth: "protected", flows: ["/agency/blog", "/kit", "/sitemap"] },
       { path: "/agency/blog", name: "Agency Newsroom", vis: "internal", ux: "Internal newsroom / agency blog: Q4 strategy, dispatch notes, and the posts queued to share across networks. Gated to agency members + admins via the blog function.", audience: "Agency / Admin", auth: "protected", flows: ["/agency/blog/:slug", "/dashboard"] },
       { path: "fn \u203a blog", name: "Blog Service", vis: "internal", ux: "Server-gated read/write for BlogPost. Public audience \u2192 anyone (published); agency audience \u2192 agency members + admins; drafts \u2192 admins. The only path to posts; entity RLS stays admin-only.", audience: "System", auth: "protected", flows: ["/blog", "/agency/blog"] },
       { path: "entity \u203a BlogPost", name: "BlogPost", vis: "internal", ux: "audience (public|agency), status (draft|published), category, network, pinned, slug, body. Agency posts never reach a non-agency client.", audience: "System", auth: "protected", flows: [] },
