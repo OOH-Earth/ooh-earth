@@ -1,6 +1,7 @@
 import { useParams, Link } from "react-router-dom";
 import { ArrowLeft, BusFront, Key, MapPin, HelpCircle, ExternalLink } from "lucide-react";
 import Nav from "@/components/ooh/Nav";
+import Breadcrumbs from "@/components/ooh/Breadcrumbs";
 import MobileHeader from "@/components/ooh/MobileHeader";
 import { getBusStop, LONDON_SHELTER_GUESS, BUS_STOP_LEGEND } from "@/components/ooh/busStops";
 import { ACCESS_KEYS } from "@/components/ooh/accessKeys";
@@ -34,6 +35,7 @@ export default function BusStopDetail() {
       <Nav />
       <MobileHeader to="/bus-stops" label="Bus-stop directory" />
       <main className="page-top mx-auto max-w-5xl px-5 pb-24">
+        <Breadcrumbs items={[{ label: "Bus Stops", to: "/bus-stops" }, { label: "Detail" }]} className="mb-4" />
         <Link to="/bus-stops" className="mb-6 hidden items-center gap-2 font-mono text-[10px] uppercase tracking-[0.25em] text-dim hover:text-ozone lg:inline-flex">
           <ArrowLeft className="h-3.5 w-3.5" /> Bus-stop directory
         </Link>
