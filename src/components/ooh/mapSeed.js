@@ -5,18 +5,28 @@
 // fetches). The moment a JSON feed is published, the map goes live automatically.
 // Detail-page data (brand, sub-type, context) is folded into `notes`.
 
-// Stock photography fallbacks by surface type (replaces broken legacy ooh.earth media host)
-const IMG = {
-  billboard: "https://images.unsplash.com/photo-1496564203457-11bb12075d90?w=800&q=80",
-  painted:   "https://images.unsplash.com/photo-1496242746280-72b89ab08a78?w=800&q=80",
-  digital:   "https://images.unsplash.com/photo-1538428494232-9c0d8a3ab403?w=800&q=80",
-  projection:"https://images.unsplash.com/photo-1567608131644-83f81777f465?w=800&q=80",
-  sticker:   "https://images.unsplash.com/photo-1579271842857-4c5e9a3a0699?w=800&q=80",
-  mural:     "https://images.unsplash.com/photo-1567597366-3cbf2b86d9c3?w=800&q=80",
-  transit:   "https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?w=800&q=80",
-  other:     "https://images.unsplash.com/photo-1508009603885-50cf7c5d0aea?w=800&q=80",
+// Branded surface placeholder — a self-contained inline SVG data-URI (Orbital
+// Perspective: void grid + reticle + surface label). No external host, so it can
+// never 404. Replaces the old stock/legacy media so the map renders clean off
+// fixtures whenever the live Location entity is empty (e.g. the stage build).
+const tile = (type) => {
+  const label = String(type || "location").toUpperCase();
+  const svg =
+    "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 500'>" +
+      "<defs><pattern id='g' width='40' height='40' patternUnits='userSpaceOnUse'>" +
+      "<path d='M40 0H0V40' fill='none' stroke='rgba(255,255,255,0.06)' stroke-width='1'/></pattern></defs>" +
+      "<rect width='800' height='500' fill='#0A0A0A'/>" +
+      "<rect width='800' height='500' fill='url(#g)'/>" +
+      "<g fill='none' stroke='#EDFF00' stroke-width='3' opacity='0.85'>" +
+      "<path d='M40 70V40H70'/><path d='M730 40H760V70'/><path d='M40 430V460H70'/><path d='M730 460H760V430'/></g>" +
+      "<circle cx='400' cy='222' r='30' fill='none' stroke='#EDFF00' stroke-width='2' opacity='0.55'/>" +
+      "<path d='M400 186V258M364 222H436' stroke='#EDFF00' stroke-width='2' opacity='0.55'/>" +
+      "<text x='400' y='312' text-anchor='middle' font-family='monospace' font-size='24' letter-spacing='6' fill='#EDFF00' opacity='0.85'>" + label + "</text>" +
+      "<text x='400' y='340' text-anchor='middle' font-family='monospace' font-size='12' letter-spacing='4' fill='rgba(255,255,255,0.4)'>OOH \u00b7 EARTH</text>" +
+    "</svg>";
+  return "data:image/svg+xml," + encodeURIComponent(svg);
 };
-const img = (t) => IMG[t] || IMG.other;
+const img = (t) => tile(t);
 
 export default [
   // ---- Bangkok, Thailand (prioritised) ----
