@@ -23,7 +23,7 @@ export default function CarbonCounter() {
   useEffect(() => {
     (async () => {
       try {
-        const recs = await base44.entities.Location.list("-created_date", 500);
+        const recs = await base44.listAllLocations();
         const digital = (recs || []).filter((r) => r.type === "digital" && r.status !== "rejected");
         const count = digital.length;
         const kwh = count * KWH_PER_SCREEN_YR;
