@@ -41,6 +41,21 @@ export default function LocationDetail() {
         rec = await base44.entities.Location.get(id);
       } catch {}
       if (!rec) {
+        // Legacy ooh.earth / WordPress ids (e.g. "1777896004") and slugs aren't Base44
+        // record ids. The real record stores that id inside its source_link — resolve it
+        // there so the real field photo shows instead of the seed placeholder.
+        try {
+          const matches = await base44.entities.Location.filter(
+            { source_link: `https://ooh.earth/location/${id}/` },
+            "-created_date",
+            5
+          );
+          if (matches && matches.length) {
+            rec = matches.find((m) => m.status !== "rejected") || matches[0];
+          }
+        } catch {}
+      }
+      if (!rec) {
         const s = seed.find((x) => String(x.id) === String(id));
         if (s) rec = normalizeSeed(s);
       }
