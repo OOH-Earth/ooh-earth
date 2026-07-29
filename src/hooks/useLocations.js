@@ -17,7 +17,7 @@ export function useLocations() {
 
     const load = async () => {
       try {
-        const recs = await base44.entities.Location.list("-created_date", 500);
+        const recs = await base44.listAllLocations();
         if (cancelled) return;
         const markers = (recs || []).filter((r) => r.status !== "rejected").map(toMarker);
         setData(markers.length ? { markers, live: true } : { markers: seedMarkers, live: false });
