@@ -33,6 +33,7 @@ export function RadioProvider({ children }) {
   const [playing, setPlaying] = useState(false);
   const [volume, setVolumeState] = useState(0.5);
   const [error, setError] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [analyser, setAnalyser] = useState(null);
   const [nowPlaying, setNowPlaying] = useState(null);
 
@@ -47,6 +48,7 @@ export function RadioProvider({ children }) {
     const onPlaying = () => {
       setPlaying(true);
       setError(false);
+      setLoading(false);
       // Keep analysis element in sync
       if (analysisRef.current && analysisRef.current.paused) {
         analysisRef.current.play().catch(() => {});
@@ -54,11 +56,12 @@ export function RadioProvider({ children }) {
     };
     const onPause = () => {
       setPlaying(false);
+      setLoading(false);
       if (analysisRef.current && !analysisRef.current.paused) {
         analysisRef.current.pause();
       }
     };
-    const onError = () => { setError(true); setPlaying(false); };
+    const onError = () => { setError(true); setPlaying(false); setLoading(false); };
 
     audio.addEventListener("playing", onPlaying);
     audio.addEventListener("pause", onPause);
@@ -121,6 +124,7 @@ export function RadioProvider({ children }) {
   useEffect(() => {
     if (!station || !playbackRef.current) return;
     setError(false);
+    setLoading(true);
 
     // Main playback — always works (no CORS restriction)
     const pb = playbackRef.current;
@@ -199,8 +203,42 @@ export function RadioProvider({ children }) {
   const setVolume = useCallback((v) => setVolumeState(v), []);
   const toggleMute = useCallback(() => setVolumeState((v) => (v > 0 ? 0 : 0.5)), []);
 
+  // Skip to the next / previous station in the list (wraps around).
+  const stepStation = useCallback((dir) => {
+    ensureAudioGraph();
+    setStationId((cur) => {
+      const idx = STATIONS.findIndex((s) => s.id === cur);
+      const nextIdx = idx < 0 ? 0 : (idx + dir + STATIONS.length) % STATIONS.length;
+      return STATIONS[nextIdx].id;
+    });
+  }, [ensureAudioGraph]);
+
+  // Media Session — lock screen / Control Center / Bluetooth metadata + controls.
+  useEffect(() => {
+    if (typeof navigator === "undefined" || !("mediaSession" in navigator)) return;
+    const ms = navigator.mediaSession;
+    if (station && typeof window.MediaMetadata === "function") {
+      try {
+        ms.metadata = new window.MediaMetadata({
+          title: station.name,
+          artist: station.genre || "OOH Radio",
+          album: "OOH Radio \u00b7 ooh.earth",
+        });
+      } catch { /* metadata unsupported */ }
+    }
+    ms.playbackState = playing ? "playing" : "paused";
+    const setAction = (name, handler) => {
+      try { ms.setActionHandler(name, handler); } catch { /* action unsupported */ }
+    };
+    setAction("play", () => togglePlay());
+    setAction("pause", () => togglePlay());
+    setAction("nexttrack", () => stepStation(1));
+    setAction("previoustrack", () => stepStation(-1));
+    return () => ["play", "pause", "nexttrack", "previoustrack"].forEach((a) => setAction(a, null));
+  }, [station, playing, togglePlay, stepStation]);
+
   return (
-    <RadioContext.Provider value={{ station, stationId, playing, volume, error, stations: STATIONS, selectStation, togglePlay, setVolume, toggleMute, analyser, nowPlaying }}>
+    <RadioContext.Provider value={{ station, stationId, playing, loading, volume, error, stations: STATIONS, selectStation, stepStation, togglePlay, setVolume, toggleMute, analyser, nowPlaying }}>
       {children}
     </RadioContext.Provider>
   );
