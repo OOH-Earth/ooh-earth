@@ -12,6 +12,7 @@ const ACCESS = new Set(['admin', 'moderator', 'operative', 'member']);
 // Read clearance regardless of whether the SDK returns it flat or under .data
 const accessOf = (u) => (u && (u.access ?? u.data?.access)) || 'member';
 const roleOf = (u) => (u && (u.role ?? u.data?.role)) || 'user';
+const agencyOf = (u) => !!(u && (u.agency ?? u.data?.agency));
 const isElevated = (u) => !!u && (roleOf(u) === 'admin' || accessOf(u) === 'admin');
 
 const ALLOWED_ORIGINS = new Set([
@@ -59,7 +60,7 @@ Deno.serve(async (req) => {
       const users = await svc.list('-created_date', 500);
       return (users || []).map((u) => ({
         id: u.id, email: u.email, full_name: u.full_name,
-        role: roleOf(u), access: accessOf(u),
+        role: roleOf(u), access: accessOf(u), agency: agencyOf(u),
       }));
     };
 
@@ -90,8 +91,11 @@ Deno.serve(async (req) => {
         if (!ACCESS.has(access)) return Response.json({ error: `Invalid access. Use: ${[...ACCESS].join(', ')}` }, { status: 400, headers });
         patch.access = access;
       }
-      if (!('role' in patch) && !('access' in patch)) {
-        return Response.json({ error: 'Nothing to set — pass role and/or access.' }, { status: 400, headers });
+      if (body?.agency !== undefined) {
+        patch.agency = !!body.agency;
+      }
+      if (!('role' in patch) && !('access' in patch) && !('agency' in patch)) {
+        return Response.json({ error: 'Nothing to set — pass role, access, and/or agency.' }, { status: 400, headers });
       }
 
       let target = null;
