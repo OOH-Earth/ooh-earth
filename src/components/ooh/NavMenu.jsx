@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import { createPortal } from "react-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import { Link } from "react-router-dom";
+import { useAuth } from "@/lib/AuthContext";
 import {
   X, Compass,
   Home, Map as MapIcon, Megaphone, Scan, Tv, LayoutDashboard,
@@ -112,6 +113,7 @@ const SITEMAP = [
       { to: "/agency", label: "Agency HQ" },
       { to: "/agency/blog", label: "Agency Newsroom" },
       { to: "/fde", label: "FDE Portal" },
+      { to: "/portal/ops", label: "Architecture Ops", agencyOnly: true },
       { to: "/portfolio", label: "Treasury Console" },
       { to: "/radio-ops", label: "Radio Ops" },
       { to: null, label: "Automation · n8n", status: "building" },
@@ -142,7 +144,7 @@ const ICON = {
   "Investor Access": ShieldCheck, "Investor Hub": ShieldCheck, "Investor Console": LineChart,
   "Investor Dashboard": Gauge, "Client Portal": Users, "Impact Grants": Landmark,
   Philanthropic: HeartHandshake, "Retro Public Goods": Recycle, "Civic-Tech": Cpu,
-  "Agency HQ": Compass, "Agency Newsroom": Newspaper, "FDE Portal": Compass, "Treasury Console": Coins,
+  "Agency HQ": Compass, "Agency Newsroom": Newspaper, "FDE Portal": Compass, "Architecture Ops": Cpu, "Treasury Console": Coins,
   "Radio Ops": Radio, "Automation · n8n": Workflow,
   "Journey Map": Milestone, Sitemap: Network, "Brand Guide": Palette,
 };
@@ -166,7 +168,16 @@ const groupV = {
   exit: { opacity: 0, y: 8, transition: { duration: 0.15 } },
 };
 
+const isAgencyMember = (u) => {
+  const r = u?.role ?? u?.data?.role;
+  const a = u?.access ?? u?.data?.access;
+  const ag = u?.agency ?? u?.data?.agency;
+  return r === "admin" || a === "admin" || !!ag;
+};
+
 function MobileLauncher({ onClose, onTour }) {
+  const { user } = useAuth();
+  const agency = isAgencyMember(user);
   let n = 0;
   return (
     <motion.div
@@ -209,7 +220,7 @@ function MobileLauncher({ onClose, onTour }) {
                 <span className="h-px flex-1 bg-slate2/40" />
               </div>
               <div className="grid grid-cols-2 gap-2">
-                {g.items.map((l) => {
+                {g.items.filter((l) => !l.agencyOnly || agency).map((l) => {
                   n += 1;
                   const Icon = ICON[l.label] || LayoutGrid;
                   const st = l.status ? STATUS[l.status] : null;
@@ -247,6 +258,8 @@ function MobileLauncher({ onClose, onTour }) {
 }
 
 function PopoverLinks({ onClose }) {
+  const { user } = useAuth();
+  const agency = isAgencyMember(user);
   let n = 0;
   return (
     <motion.div variants={list} initial="hidden" animate="show" exit="exit" className="grid grid-cols-2 gap-x-5 gap-y-4 px-2 py-2">
@@ -255,7 +268,7 @@ function PopoverLinks({ onClose }) {
           <div className="mb-1 flex items-center gap-2 border-b border-slate2/40 pb-1">
             <span className="font-mono text-[9px] uppercase tracking-[0.3em] text-ozone">// {g.group}</span>
           </div>
-          {g.items.map((l) => {
+          {g.items.filter((l) => !l.agencyOnly || agency).map((l) => {
             n += 1;
             const st = l.status ? STATUS[l.status] : null;
             const Wrap = l.to ? Link : "div";
