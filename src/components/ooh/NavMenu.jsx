@@ -120,6 +120,19 @@ const SITEMAP = [
     ],
   },
   {
+    group: "Lab",
+    agencyOnly: true,
+    items: [
+      { to: "/lab", label: "Hex Engine Lab" },
+      { to: "/lab/coin", label: "Genesis Coin" },
+      { to: "/lab/simulator", label: "Hex Engine Simulator" },
+      { to: "/lab/spec", label: "Engineering Spec" },
+      { to: "/lab/sequencer", label: "I Ching Sequencer" },
+      { to: "/lab/companion", label: "Companion App" },
+      { to: "/lab/poster", label: "Concept Poster" },
+    ],
+  },
+  {
     group: "Reference & Docs",
     items: [
       { to: "/journey", label: "Journey Map" },
@@ -213,7 +226,7 @@ function MobileLauncher({ onClose, onTour }) {
 
       <div className="min-h-0 flex-1 overflow-y-auto px-4 py-4 pb-10">
         <motion.div variants={list} initial="hidden" animate="show" exit="exit" className="space-y-5">
-          {SITEMAP.map((g) => (
+          {SITEMAP.filter((g) => !g.agencyOnly || agency).map((g) => (
             <motion.div key={g.group} variants={groupV}>
               <div className="mb-2 flex items-center gap-2">
                 <span className="font-mono text-[9px] uppercase tracking-[0.3em] text-ozone">// {g.group}</span>
@@ -263,7 +276,7 @@ function PopoverLinks({ onClose }) {
   let n = 0;
   return (
     <motion.div variants={list} initial="hidden" animate="show" exit="exit" className="grid grid-cols-2 gap-x-5 gap-y-4 px-2 py-2">
-      {SITEMAP.map((g) => (
+      {SITEMAP.filter((g) => !g.agencyOnly || agency).map((g) => (
         <motion.div key={g.group} variants={groupV}>
           <div className="mb-1 flex items-center gap-2 border-b border-slate2/40 pb-1">
             <span className="font-mono text-[9px] uppercase tracking-[0.3em] text-ozone">// {g.group}</span>
