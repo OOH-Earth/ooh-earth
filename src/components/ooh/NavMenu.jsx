@@ -9,7 +9,7 @@ import {
   Trash2, Coins, CreditCard, LayoutGrid, Info, Briefcase,
   BookOpen, Heart, Layers, LifeBuoy, Network, ShoppingBag,
   Ban, Leaf, Droplets, AlertTriangle,
-  LineChart, TrendingUp, Landmark, Rocket, Palette,
+  LineChart, TrendingUp, Landmark, Palette,
   HeartHandshake, Recycle, Cpu,
   ShieldCheck, Gauge, Users, Milestone, Radio, Workflow, FileText, Newspaper,
   BusFront, RectangleHorizontal, MonitorPlay, Paintbrush2, Shapes, Globe,
