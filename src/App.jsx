@@ -16,6 +16,13 @@ import StageBanner from '@/components/ooh/StageBanner';
 import { WalkthroughProvider } from '@/lib/walkthroughContext';
 import { RadioProvider } from '@/lib/radioContext';
 // Add page imports here
+import LabHub from '@/pages/LabHub';
+import GenesisCoin from '@/pages/GenesisCoin';
+import HexPoster from '@/pages/HexPoster';
+import HexSimulator from '@/pages/HexSimulator';
+import HexSpec from '@/pages/HexSpec';
+import HexSequencer from '@/pages/HexSequencer';
+import HexCompanion from '@/pages/HexCompanion';
 import Home from '@/pages/Home';
 import Map from '@/pages/Map';
 import Report from '@/pages/Report';
@@ -149,6 +156,13 @@ const AuthenticatedApp = () => {
       <Route path="/agency" element={<AgencyNewsroom />} />
       <Route path="/agency/blog" element={<Blog scope="agency" />} />
       <Route path="/agency/blog/:slug" element={<BlogArticle scope="agency" />} />
+      <Route path="/lab" element={<LabHub />} />
+      <Route path="/lab/coin" element={<GenesisCoin />} />
+      <Route path="/lab/poster" element={<HexPoster />} />
+      <Route path="/lab/simulator" element={<HexSimulator />} />
+      <Route path="/lab/spec" element={<HexSpec />} />
+      <Route path="/lab/sequencer" element={<HexSequencer />} />
+      <Route path="/lab/companion" element={<HexCompanion />} />
     </Route>
     <Route element={<InvestorRoute />}>
       <Route path="/investor" element={<InvestorHub />} />
