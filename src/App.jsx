@@ -24,6 +24,7 @@ import Support from '@/pages/Support';
 import Plans from '@/pages/Plans';
 import Dashboard from '@/pages/Dashboard';
 import FdePortal from '@/pages/FdePortal';
+import PortalOps from '@/pages/PortalOps';
 import AtariPortfolio from '@/pages/AtariPortfolio';
 import Sitemap from '@/pages/Sitemap';
 import Blog from '@/pages/Blog';
@@ -141,6 +142,7 @@ const AuthenticatedApp = () => {
     <Route element={<ProtectedRoute unauthenticatedElement={<Navigate to="/login" replace />} />}>
       <Route path="/dashboard" element={<Dashboard />} />
       <Route path="/fde" element={<FdePortal />} />
+      <Route path="/portal/ops" element={<PortalOps />} />
       <Route path="/portfolio" element={<AtariPortfolio />} />
       <Route path="/radio-ops" element={<RadioOps />} />
       <Route path="/sitemap" element={<Sitemap />} />
