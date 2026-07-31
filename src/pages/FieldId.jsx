@@ -50,7 +50,7 @@ export default function FieldId() {
         </div>
       </div>
 
-      <main className="mx-auto max-w-5xl px-5 pb-24 pt-[calc(104px+env(safe-area-inset-top))] md:px-8">
+      <main className="mx-auto max-w-5xl px-5 pb-24 page-top md:px-8">
         <header className="border-b border-slate2/40 pb-8">
           <span className="font-mono text-[10px] uppercase tracking-[0.4em] text-ozone">// Field id kit</span>
           <h1 className="mt-3 flex items-center gap-3 font-display text-4xl font-bold leading-[1.02] tracking-[-0.02em] text-silver md:text-6xl">
