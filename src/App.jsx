@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { Toaster } from "@/components/ui/toaster"
 import { QueryClientProvider } from '@tanstack/react-query'
 import { queryClientInstance } from '@/lib/query-client'
@@ -83,6 +84,21 @@ import ResetPassword from '@/pages/ResetPassword';
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
   const location = useLocation();
+
+  // Per-route canonical + og:url. Without this, the static homepage canonical in
+  // index.html applies to every route (tells crawlers each page duplicates the
+  // homepage). JS-executing crawlers pick this up; non-JS link-preview bots still
+  // need server prerendering for full per-route OG (platform-level).
+  useEffect(() => {
+    const url = window.location.origin + location.pathname;
+    const set = (sel, make, attr) => {
+      let el = document.head.querySelector(sel);
+      if (!el) { el = make(); document.head.appendChild(el); }
+      el.setAttribute(attr, url);
+    };
+    set('link[rel="canonical"]', () => { const l = document.createElement("link"); l.setAttribute("rel", "canonical"); return l; }, "href");
+    set('meta[property="og:url"]', () => { const m = document.createElement("meta"); m.setAttribute("property", "og:url"); return m; }, "content");
+  }, [location.pathname]);
 
   // Show loading spinner while checking app public settings or auth
   if (isLoadingPublicSettings || isLoadingAuth) {
