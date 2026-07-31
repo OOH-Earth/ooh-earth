@@ -5,8 +5,8 @@ import HorizonProgress from "@/components/ooh/HorizonProgress";
 import { Link } from "react-router-dom";
 import { ArrowRight, ArrowUpRight, Map as MapIcon, ShieldCheck, Users, Zap, Eye, EyeOff, Server, KeySquare } from "lucide-react";
 import {
-  SITEMAP_GROUPS, JOURNEYS, LOOSE_ENDS, AUTH_LABEL, LOOSE_STATUS,
-  VISIBILITY, ACCESS_LADDER, ARCHITECTURE,
+  SITEMAP_GROUPS, JOURNEYS, AUTH_LABEL, LOOSE_STATUS,
+  VISIBILITY, STATUS,
 } from "@/components/ooh/sitemapData";
 import { IS_STAGE, APP_ENV } from "@/lib/appEnv";
 import Breadcrumbs from "@/components/ooh/Breadcrumbs";
@@ -19,6 +19,12 @@ function VisBadge({ vis }) {
   return <span className={`shrink-0 border px-1.5 py-0.5 font-mono text-[8px] uppercase tracking-[0.2em] ${v.cls}`}>{v.text}</span>;
 }
 
+function StatusBadge({ status }) {
+  const s = STATUS[status];
+  if (!s) return null;
+  return <span className={`shrink-0 border px-1.5 py-0.5 font-mono text-[8px] uppercase tracking-[0.2em] ${s.cls}`}>{s.text}</span>;
+}
+
 function RouteCard({ r }) {
   const auth = AUTH_LABEL[r.auth] || AUTH_LABEL.none;
   const to = r.path.startsWith("/") && !r.path.includes(":") && !r.planned ? r.path : null;
@@ -29,7 +35,7 @@ function RouteCard({ r }) {
       <div className="flex items-center justify-between gap-2">
         <code className="min-w-0 truncate font-mono text-[11px] text-ozone">{r.path}</code>
         <div className="flex shrink-0 items-center gap-1">
-          {r.planned && <span className="border border-ozone/50 px-1.5 py-0.5 font-mono text-[8px] uppercase tracking-[0.2em] text-ozone">Planned</span>}
+          <StatusBadge status={r.status} />
           <VisBadge vis={r.vis} />
           <span className={`border px-1.5 py-0.5 font-mono text-[8px] uppercase tracking-[0.2em] ${auth.cls}`}>{auth.text}</span>
         </div>
@@ -67,9 +73,26 @@ function Journey({ j }) {
 export default function Sitemap() {
   const [user, setUser] = useState(null);
   const [previewPublic, setPreviewPublic] = useState(false);
+  const [intel, setIntel] = useState({ access_ladder: [], architecture: [], loose_ends: [] });
+  const [intelLoading, setIntelLoading] = useState(false);
 
   useEffect(() => {
-    (async () => { try { setUser(await base44.auth.me()); } catch { /* route guard handles auth */ } })();
+    (async () => {
+      let me = null;
+      try { me = await base44.auth.me(); setUser(me); } catch { /* route guard handles auth */ }
+      const admin = !!me && ((me.role ?? me.data?.role) === "admin" || (me.access ?? me.data?.access) === "admin");
+      if (admin) {
+        // Internal sections live server-side (sitemapIntel) and are fetched only
+        // for admins — they no longer ship in the client bundle. Fails closed.
+        setIntelLoading(true);
+        try {
+          const res = await base44.functions.invoke("sitemapIntel");
+          const d = res?.data ?? res;
+          if (d?.ok) setIntel({ access_ladder: d.access_ladder || [], architecture: d.architecture || [], loose_ends: d.loose_ends || [] });
+        } catch { /* fail closed — sections stay empty */ }
+        finally { setIntelLoading(false); }
+      }
+    })();
   }, []);
 
   const isAdmin = roleOf(user) === "admin" || accessOf(user) === "admin";
@@ -84,8 +107,8 @@ export default function Sitemap() {
   const totalRoutes = visibleRoutes.filter((r) => !r.planned && r.path.startsWith("/")).length;
   const plannedCount = visibleRoutes.filter((r) => r.planned).length;
 
-  const archRows = ARCHITECTURE.filter((a) => canSee(a.vis));
-  const looseRows = LOOSE_ENDS.filter((e) => canSee(e.vis));
+  const archRows = intel.architecture.filter((a) => canSee(a.vis));
+  const looseRows = intel.loose_ends.filter((e) => canSee(e.vis));
 
   return (
     <div className="relative min-h-screen bg-void page-top">
@@ -166,7 +189,10 @@ export default function Sitemap() {
                 <VisBadge vis="internal" />
               </div>
               <div className="mt-5 space-y-2">
-                {ACCESS_LADDER.map((t) => (
+                {intelLoading && intel.access_ladder.length === 0 && (
+                  <div className="font-mono text-[10px] uppercase tracking-[0.2em] text-dim">// loading internal intel…</div>
+                )}
+                {intel.access_ladder.map((t) => (
                   <div key={t.tier} className="flex flex-col gap-2 border border-slate2/50 bg-card p-3 md:flex-row md:items-center">
                     <span className={`w-fit shrink-0 border px-2 py-0.5 font-mono text-[10px] font-bold uppercase tracking-[0.2em] ${t.cls}`}>{t.tier}</span>
                     <code className="shrink-0 font-mono text-[10px] text-dim md:w-56">{t.gate}</code>
