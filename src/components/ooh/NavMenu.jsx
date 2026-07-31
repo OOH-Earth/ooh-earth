@@ -126,10 +126,13 @@ const SITEMAP = [
       { to: "/lab", label: "Hex Engine Lab" },
       { to: "/lab/coin", label: "Genesis Coin" },
       { to: "/lab/simulator", label: "Hex Engine Simulator" },
+      { to: "/lab/device", label: "3D Device" },
+      { to: "/lab/livingcoin", label: "Living Coin" },
       { to: "/lab/spec", label: "Engineering Spec" },
       { to: "/lab/sequencer", label: "I Ching Sequencer" },
       { to: "/lab/companion", label: "Companion App" },
       { to: "/lab/poster", label: "Concept Poster" },
+      { to: "/lab/status", label: "Status Report" },
     ],
   },
   {
