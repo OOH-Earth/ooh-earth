@@ -20,11 +20,10 @@ export default function LeadCapture() {
     setLoading(true);
     setError("");
     try {
-      await base44.entities.FundingLead.create({
+      await base44.functions.invoke("captureLead", {
         name,
         email,
         amount: amount ? Number(amount) : 0,
-        channel: "lead",
         message,
       });
       setDone(true);
