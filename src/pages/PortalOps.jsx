@@ -31,10 +31,7 @@ import { Loader2, Lock, Copy, Check, ArrowUpRight } from "lucide-react";
      · Location    → real moderation queue (filter + update)
 ──────────────────────────────────────────────────────────── */
 
-const roleOf = (u) => (u && (u.role ?? u.data?.role)) || "user";
-const accessOf = (u) => (u && (u.access ?? u.data?.access)) || "member";
-const agencyOf = (u) => !!(u && (u.agency ?? u.data?.agency));
-const payload = (res) => (res && typeof res === "object" && "data" in res ? res.data : res);
+import { roleOf, accessOf, agencyOf, payload } from "@/lib/clearance";
 const fmt = (n) => (typeof n === "number" && Number.isFinite(n) ? n.toLocaleString() : "—");
 const num = (v) => { const n = Number(v); return Number.isFinite(n) ? n : 0; };
 const short = (h) => (h ? `${h.slice(0, 6)}…${h.slice(-6)}` : "");
