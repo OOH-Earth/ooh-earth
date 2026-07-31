@@ -23,6 +23,9 @@ import HexSimulator from '@/pages/HexSimulator';
 import HexSpec from '@/pages/HexSpec';
 import HexSequencer from '@/pages/HexSequencer';
 import HexCompanion from '@/pages/HexCompanion';
+import HexDevice3D from '@/pages/HexDevice3D';
+import HexCoinCube from '@/pages/HexCoinCube';
+import LabStatus from '@/pages/LabStatus';
 import Home from '@/pages/Home';
 import Map from '@/pages/Map';
 import Report from '@/pages/Report';
@@ -163,6 +166,9 @@ const AuthenticatedApp = () => {
       <Route path="/lab/spec" element={<HexSpec />} />
       <Route path="/lab/sequencer" element={<HexSequencer />} />
       <Route path="/lab/companion" element={<HexCompanion />} />
+      <Route path="/lab/device" element={<HexDevice3D />} />
+      <Route path="/lab/livingcoin" element={<HexCoinCube />} />
+      <Route path="/lab/status" element={<LabStatus />} />
     </Route>
     <Route element={<InvestorRoute />}>
       <Route path="/investor" element={<InvestorHub />} />
