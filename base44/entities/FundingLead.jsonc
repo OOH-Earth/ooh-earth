@@ -23,6 +23,10 @@
     },
     "message": {
       "type": "string"
+    },
+    "ext_ref": {
+      "type": "string",
+      "description": "External reference (e.g. Stripe session id) \u2014 used for webhook idempotency"
     }
   },
   "required": [
@@ -34,7 +38,11 @@
         "role": "admin"
       }
     },
-    "create": {},
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
     "update": {
       "user_condition": {
         "role": "admin"
