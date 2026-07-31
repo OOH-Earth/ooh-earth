@@ -86,7 +86,7 @@ export default function UiKit() {
         </div>
       </div>
 
-      <div className="mx-auto flex max-w-[1400px] gap-0 px-0 pt-[calc(92px+env(safe-area-inset-top))] md:pt-[calc(104px+env(safe-area-inset-top))]">
+      <div className="mx-auto flex max-w-[1400px] gap-0 px-0 page-top">
         {/* Sidebar rail */}
         <aside className="sticky top-[calc(104px+env(safe-area-inset-top))] hidden h-[calc(100vh-104px-env(safe-area-inset-top))] w-[220px] shrink-0 border-r border-slate2/40 bg-void/60 md:block">
           <div className="flex h-full flex-col">
