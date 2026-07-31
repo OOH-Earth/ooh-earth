@@ -1,4 +1,4 @@
-// Live nomad-density data captured from nomads.com frontpage (2026-07-24).
+// Static snapshot of nomad-density data from nomads.com frontpage (captured 2026-07-24).
 // Counts = nomads registered as "going" / present per city. Used by NomadPulse
 // as a mobility-intel overlay — mapping operative reach to nomad density.
 export const NOMAD_CITIES = [
