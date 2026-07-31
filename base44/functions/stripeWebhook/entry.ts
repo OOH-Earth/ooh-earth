@@ -65,6 +65,18 @@ Deno.serve(async (req) => {
 
       console.log(`Stripe webhook: session ${session.id} · $${amountUsd} · ${email || "no email"}`);
 
+      // Idempotency — Stripe guarantees at-least-once delivery, so a timeout or
+      // retry can re-deliver this event. Skip if this session is already recorded.
+      try {
+        const dup = await base44.asServiceRole.entities.FundingLead.filter({ ext_ref: session.id }, "-created_date", 1);
+        if (dup && dup.length) {
+          console.log(`Stripe webhook: duplicate session ${session.id} — already recorded, skipping`);
+          return Response.json({ received: true, duplicate: true });
+        }
+      } catch (err) {
+        console.error("Stripe webhook: idempotency check failed, proceeding:", err?.message);
+      }
+
       // Product purchase — increment edition_sold
       if (metadata.item_id) {
         try {
@@ -90,6 +102,7 @@ Deno.serve(async (req) => {
           message: metadata.item_id
             ? `Purchase: ${metadata.item_title || metadata.item_id}`
             : "Donation — Field Offensive",
+          ext_ref: session.id,
         });
         console.log("Stripe webhook: FundingLead created");
       } catch (err) {
