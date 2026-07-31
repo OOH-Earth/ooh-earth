@@ -7,10 +7,12 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
 // subscription mode; the webhook records the grant on completion.
 
 const CURRENCY = "usd";
+// Server-authoritative supporter tiers. Three tiers × two billing periods.
+// Annual = 10× monthly (two months free). Amounts in cents.
 const PLANS = {
-  monthly:   { amount: 2500,  interval: "month", interval_count: 1, label: "Monthly" },
-  quarterly: { amount: 6000,  interval: "month", interval_count: 3, label: "Quarterly" },
-  yearly:    { amount: 20000, interval: "year",  interval_count: 1, label: "Yearly" },
+  accomplice: { label: "Accomplice", month: 500,  year: 5000 },
+  sustainer:  { label: "Sustainer",  month: 1500, year: 15000 },
+  patron:     { label: "Patron",     month: 5000, year: 50000 },
 };
 
 const ALLOWED_ORIGINS = new Set([
@@ -26,9 +28,11 @@ Deno.serve(async (req) => {
     if (!caller?.id) return Response.json({ error: "login_required" }, { status: 401 });
 
     const body = await req.json().catch(() => ({}));
-    const cycle = String(body?.cycle || "");
-    const plan = PLANS[cycle];
+    const tier = String(body?.tier || "");
+    const period = body?.period === "year" ? "year" : "month";
+    const plan = PLANS[tier];
     if (!plan) return Response.json({ error: "Invalid plan" }, { status: 400 });
+    const amount = plan[period];
 
     const rawOrigin = req.headers.get("origin");
     const origin = rawOrigin && ALLOWED_ORIGINS.has(rawOrigin) ? rawOrigin : "https://oohearth.app";
@@ -40,18 +44,20 @@ Deno.serve(async (req) => {
     params.set("payment_method_types[0]", "card");
     params.set("line_items[0][quantity]", "1");
     params.set("line_items[0][price_data][currency]", CURRENCY);
-    params.set("line_items[0][price_data][unit_amount]", String(plan.amount));
-    params.set("line_items[0][price_data][recurring][interval]", plan.interval);
-    params.set("line_items[0][price_data][recurring][interval_count]", String(plan.interval_count));
-    params.set("line_items[0][price_data][product_data][name]", `OOH Earth Supporter — ${plan.label}`);
+    params.set("line_items[0][price_data][unit_amount]", String(amount));
+    params.set("line_items[0][price_data][recurring][interval]", period);
+    params.set("line_items[0][price_data][recurring][interval_count]", "1");
+    params.set("line_items[0][price_data][product_data][name]", `OOH Earth · ${plan.label} (${period === "year" ? "annual" : "monthly"})`);
     if (caller.email) params.set("customer_email", caller.email);
     params.set("client_reference_id", caller.id);
     params.set("metadata[base44_app_id]", Deno.env.get("BASE44_APP_ID") || "");
     params.set("metadata[user_id]", caller.id);
-    params.set("metadata[plan_cycle]", cycle);
+    params.set("metadata[plan_tier]", tier);
+    params.set("metadata[plan_period]", period);
     // propagate to the subscription object so lifecycle events carry the user
     params.set("subscription_data[metadata][user_id]", caller.id);
-    params.set("subscription_data[metadata][plan_cycle]", cycle);
+    params.set("subscription_data[metadata][plan_tier]", tier);
+    params.set("subscription_data[metadata][plan_period]", period);
 
     const res = await fetch("https://api.stripe.com/v1/checkout/sessions", {
       method: "POST",
