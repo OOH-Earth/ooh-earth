@@ -24,7 +24,7 @@ export default function GlobeSection() {
     <section
       data-tour="globe"
       onClick={handleClick}
-      className="group relative h-[58dvh] min-h-[360px] w-full cursor-pointer overflow-hidden border-b border-slate2/60 bg-void transition-all duration-500 hover:border-ozone/40 hover:shadow-[inset_0_0_90px_-24px_rgba(237,255,0,0.2)]"
+      className="group relative isolate h-[58dvh] min-h-[360px] w-full cursor-pointer overflow-hidden border-b border-slate2/60 bg-void transition-all duration-500 hover:border-ozone/40 hover:shadow-[inset_0_0_90px_-24px_rgba(237,255,0,0.2)]"
     >
       <Globe3D markers={markers} activeLayers={["ads"]} scrollZoom={false} />
 
