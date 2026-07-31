@@ -14,9 +14,7 @@ import { User as UserIcon, LogOut, LogIn, UserPlus, LayoutDashboard, Zap, Cpu, S
    the rest of the app uses. Never writes anything.
 ──────────────────────────────────────────────────────────── */
 
-const roleOf = (u) => (u && (u.role ?? u.data?.role)) || "user";
-const accessOf = (u) => (u && (u.access ?? u.data?.access)) || "member";
-const agencyOf = (u) => !!(u && (u.agency ?? u.data?.agency));
+import { roleOf, accessOf, agencyOf } from "@/lib/clearance";
 
 const ACCESS_BADGE = {
   admin: "border-ozone/50 text-ozone",
