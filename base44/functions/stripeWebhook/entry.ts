@@ -75,12 +75,14 @@ async function getStripeSub(id: string) {
 }
 
 // Upsert a Subscription record from a full Stripe subscription object.
-function subRecord(userId: string, email: string, cycle: string, sub: any) {
-  const tier = cycle || sub.metadata?.plan_cycle || "";
+function subRecord(userId: string, email: string, tier: string, period: string, sub: any) {
+  const planTier = tier || sub.metadata?.plan_tier || undefined;
+  const planPeriod = period || sub.metadata?.plan_period || undefined;
   return {
     user_id: userId,
     email: email || undefined,
-    plan_tier: tier || undefined, // omit if unknown (enum-safe)
+    plan_tier: planTier, // omit if unknown (enum-safe)
+    plan_period: planPeriod,
     status: sub.status,
     current_period_end: sub.current_period_end ? sub.current_period_end * 1000 : undefined,
     cancel_at_period_end: !!sub.cancel_at_period_end,
@@ -92,8 +94,8 @@ function subRecord(userId: string, email: string, cycle: string, sub: any) {
   };
 }
 
-async function grantSubscription(base44: any, userId: string, email: string, cycle: string, sub: any) {
-  const rec = subRecord(userId, email, cycle, sub);
+async function grantSubscription(base44: any, userId: string, email: string, tier: string, period: string, sub: any) {
+  const rec = subRecord(userId, email, tier, period, sub);
   const existing = await base44.asServiceRole.entities.Subscription.filter({ stripe_subscription_id: sub.id }, "-created_date", 1);
   if (existing && existing.length) await base44.asServiceRole.entities.Subscription.update(existing[0].id, rec);
   else await base44.asServiceRole.entities.Subscription.create(rec);
@@ -110,7 +112,7 @@ async function syncSubscription(base44: any, sub: any) {
       cancel_at_period_end: !!sub.cancel_at_period_end,
     });
   } else if (sub.metadata?.user_id) {
-    await grantSubscription(base44, sub.metadata.user_id, "", sub.metadata.plan_cycle || "", sub);
+    await grantSubscription(base44, sub.metadata.user_id, "", sub.metadata.plan_tier || "", sub.metadata.plan_period || "", sub);
   }
 }
 
@@ -145,16 +147,16 @@ Deno.serve(async (req) => {
       const metadata = session.metadata || {};
 
       // ── supporter subscription → record/grant the plan ──
-      if (session.mode === "subscription" || metadata.plan_cycle) {
+      if (session.mode === "subscription" || metadata.plan_tier) {
         try {
           const subId = typeof session.subscription === "string" ? session.subscription : session.subscription?.id;
           const userId = metadata.user_id || session.client_reference_id || "";
           const email = session.customer_details?.email || session.customer_email || "";
           if (subId && userId) {
             const sub = await getStripeSub(subId);
-            await grantSubscription(base44, userId, email, metadata.plan_cycle || "", sub);
-            console.log(`Stripe webhook: subscription granted → user ${userId} (${metadata.plan_cycle || sub.status})`);
-            await forwardToN8n({ source: "base44", app: "main", event: "subscription.started", user_id: userId, cycle: metadata.plan_cycle || null, sessionId: session.id, ts: Date.now() });
+            await grantSubscription(base44, userId, email, metadata.plan_tier || "", metadata.plan_period || "", sub);
+            console.log(`Stripe webhook: subscription granted → user ${userId} (${metadata.plan_tier || sub.status})`);
+            await forwardToN8n({ source: "base44", app: "main", event: "subscription.started", user_id: userId, tier: metadata.plan_tier || null, period: metadata.plan_period || null, sessionId: session.id, ts: Date.now() });
           } else {
             console.error("Stripe webhook: subscription checkout missing subId/userId");
           }
