@@ -6,10 +6,7 @@ import HorizonProgress from "@/components/ooh/HorizonProgress";
 import Breadcrumbs from "@/components/ooh/Breadcrumbs";
 import { Loader2, ArrowUpRight, Lock, Newspaper, Radio, Pin } from "lucide-react";
 
-const payload = (res) => (res && typeof res === "object" && "data" in res ? res.data : res);
-const agencyOf = (u) => !!(u && (u.agency ?? u.data?.agency));
-const roleOf = (u) => (u && (u.role ?? u.data?.role)) || "user";
-const accessOf = (u) => (u && (u.access ?? u.data?.access)) || "member";
+import { payload, agencyOf, roleOf, accessOf } from "@/lib/clearance";
 
 const fmtDate = (s) => {
   if (!s) return "";
