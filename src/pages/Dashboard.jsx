@@ -2,7 +2,7 @@ import { useEffect, useState, useCallback } from "react";
 import { base44 } from "@/api/base44Client";
 import Nav from "@/components/ooh/Nav";
 import HorizonProgress from "@/components/ooh/HorizonProgress";
-import { Loader2, LogOut, Check, X, ShieldCheck, ArrowUpRight, RefreshCw, Trash2, AlertTriangle, Eye, FileText, Clock, Inbox, Flame, Search, ChevronDown } from "lucide-react";
+import { Loader2, LogOut, Check, X, ShieldCheck, ArrowUpRight, RefreshCw, Trash2, AlertTriangle, Eye, FileText, Clock, Inbox, Flame, Search, ChevronDown, Activity, Route } from "lucide-react";
 import { Link } from "react-router-dom";
 import LocationThumb from "@/components/ooh/map/LocationThumb";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
@@ -22,10 +22,29 @@ const ACCESS_BADGE = {
 };
 const MINE_FILTERS = [["all", "All"], ["pending", "Pending"], ["verified", "Verified"], ["rejected", "Rejected"]];
 
-// unwrap base44.functions.invoke result (SDK returns { data })
 const payload = (res) => (res && typeof res === "object" && "data" in res ? res.data : res);
 const accessOf = (u) => (u && (u.access ?? u.data?.access)) || "member";
 const roleOf = (u) => (u && (u.role ?? u.data?.role)) || "user";
+
+// normalise the two moderatable entities into one row shape
+const normLoc = (r) => ({
+  ...r, _entity: "Location", _title: r.title || "Untitled capture",
+  _sub: r.address || (r.lat != null ? `${r.lat.toFixed(4)}, ${r.lng?.toFixed?.(4)}` : ""), _type: r.type,
+});
+const normBust = (b) => ({
+  ...b, _entity: "DigitalBust", _title: b.target_brand || b.platform_name || b.surface || "Digital bust",
+  _sub: [b.platform, b.region].filter(Boolean).join(" · ") || b.surface || "", _type: b.platform,
+  image_url: b.image_url || null, source_link: b.proof_url || null,
+});
+
+const timeAgo = (iso) => {
+  if (!iso) return "";
+  const s = Math.floor((Date.now() - new Date(iso).getTime()) / 1000);
+  if (s < 60) return "now";
+  if (s < 3600) return `${Math.floor(s / 60)}m`;
+  if (s < 86400) return `${Math.floor(s / 3600)}h`;
+  return `${Math.floor(s / 86400)}d`;
+};
 
 function StatCard({ label, value, Icon, tone = "text-silver" }) {
   return (
@@ -47,24 +66,28 @@ function Chip({ active, onClick, children }) {
   );
 }
 
-function Row({ r, onVerify, busy, triage }) {
+function Row({ n, onVerify, busy, triage, selectable, selected, onToggle }) {
   return (
-    <div className="flex items-center gap-3 border border-slate2/50 bg-card p-3">
-      <LocationThumb m={{ image: r.image_url, type: r.type, title: r.title }} className="h-14 w-14 border border-slate2/50" />
+    <div className={`flex items-center gap-3 border bg-card p-3 ${selected ? "border-ozone/60" : "border-slate2/50"}`}>
+      {selectable && (
+        <button onClick={onToggle} aria-pressed={selected} aria-label="Select capture" className={`flex h-5 w-5 shrink-0 items-center justify-center border transition-colors ${selected ? "border-ozone bg-ozone text-void" : "border-slate2 text-transparent hover:border-ozone/60"}`}>
+          <Check className="h-3 w-3" />
+        </button>
+      )}
+      <LocationThumb m={{ image: n.image_url, type: n._type, title: n._title }} className="h-14 w-14 border border-slate2/50" />
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-2">
-          <span className="truncate font-display text-sm font-bold text-silver">{r.title}</span>
-          <span className={`shrink-0 border px-1.5 py-0.5 font-mono text-[8px] uppercase tracking-[0.2em] ${STATUS_BADGE[r.status] || ""}`}>{r.status}</span>
+          <span className="truncate font-display text-sm font-bold text-silver">{n._title}</span>
+          <span className={`shrink-0 border px-1.5 py-0.5 font-mono text-[8px] uppercase tracking-[0.2em] ${STATUS_BADGE[n.status] || ""}`}>{n.status}</span>
+          {n._entity === "DigitalBust" && <span className="shrink-0 border border-silver/30 px-1.5 py-0.5 font-mono text-[8px] uppercase tracking-[0.2em] text-silver/70">bust</span>}
           {triage && <span className="shrink-0 border border-flare/60 px-1.5 py-0.5 font-mono text-[8px] uppercase tracking-[0.2em] text-flare">Triage</span>}
         </div>
-        <p className="truncate font-mono text-[9px] uppercase tracking-[0.15em] text-dim">
-          {r.type && <span className="text-darkgray">{r.type} · </span>}{r.address || `${r.lat?.toFixed(4)}, ${r.lng?.toFixed(4)}`}
-        </p>
+        <p className="truncate font-mono text-[9px] uppercase tracking-[0.15em] text-dim">{n._type && <span className="text-darkgray">{n._type} · </span>}{n._sub}</p>
       </div>
       {onVerify && (
         <div className="flex shrink-0 gap-1">
-          <button onClick={() => onVerify(r.id, "verified")} disabled={busy} aria-label="Approve" className="flex h-7 w-7 items-center justify-center border border-ozone/50 text-ozone transition-colors hover:bg-ozone hover:text-void disabled:opacity-40"><Check className="h-3.5 w-3.5" /></button>
-          <button onClick={() => onVerify(r.id, "rejected")} disabled={busy} aria-label="Reject" className="flex h-7 w-7 items-center justify-center border border-flare/50 text-flare transition-colors hover:bg-flare hover:text-void disabled:opacity-40"><X className="h-3.5 w-3.5" /></button>
+          <button onClick={() => onVerify(n.id, "verified", n._entity)} disabled={busy} aria-label="Approve" className="flex h-7 w-7 items-center justify-center border border-ozone/50 text-ozone transition-colors hover:bg-ozone hover:text-void disabled:opacity-40"><Check className="h-3.5 w-3.5" /></button>
+          <button onClick={() => onVerify(n.id, "rejected", n._entity)} disabled={busy} aria-label="Reject" className="flex h-7 w-7 items-center justify-center border border-flare/50 text-flare transition-colors hover:bg-flare hover:text-void disabled:opacity-40"><X className="h-3.5 w-3.5" /></button>
         </div>
       )}
     </div>
@@ -87,6 +110,8 @@ export default function Dashboard() {
   const [qSearch, setQSearch] = useState("");
   const [qTriageOnly, setQTriageOnly] = useState(false);
   const [qType, setQType] = useState("all");
+  const [selected, setSelected] = useState(new Set());
+  const [bulkBusy, setBulkBusy] = useState(false);
 
   const deleteAccount = async () => {
     setDeleting(true);
@@ -96,19 +121,15 @@ export default function Dashboard() {
   const load = useCallback(async () => {
     const u = await base44.auth.me();
     setUser(u);
-    const elevated = roleOf(u) === "admin" || accessOf(u) === "admin";
-    const canViewQueue = elevated || accessOf(u) === "moderator" || accessOf(u) === "operative";
+    const canViewQueue = roleOf(u) === "admin" || accessOf(u) === "admin" || accessOf(u) === "moderator" || accessOf(u) === "operative";
     const myTask = base44.entities.Location.filter({ created_by_id: u.id }, "-created_date", 100);
-    let pendTask;
-    if (elevated) {
-      pendTask = base44.entities.Location.filter({ status: "pending" }, "-created_date", 100);
-    } else if (canViewQueue) {
-      pendTask = base44.functions.invoke("moderate", { action: "queue" }).then((res) => payload(res)?.locations || []).catch(() => []);
-    } else {
-      pendTask = Promise.resolve([]);
-    }
+    const pendTask = canViewQueue
+      ? base44.functions.invoke("moderate", { action: "queue" })
+          .then((res) => { const d = payload(res) || {}; return [...(d.locations || []).map(normLoc), ...(d.digital_busts || []).map(normBust)]; })
+          .catch(() => [])
+      : Promise.resolve([]);
     const [myList, pendList] = await Promise.all([myTask, pendTask]);
-    setMine(myList || []);
+    setMine((myList || []).map(normLoc));
     setPending(pendList || []);
   }, []);
 
@@ -117,19 +138,19 @@ export default function Dashboard() {
   }, [load]);
 
   useEffect(() => {
-    const unsub = base44.entities.Location.subscribe(() => { load(); });
-    return () => { if (unsub) unsub(); };
+    const u1 = base44.entities.Location.subscribe(() => { load(); });
+    let u2; try { u2 = base44.entities.DigitalBust?.subscribe?.(() => { load(); }); } catch { u2 = null; }
+    return () => { if (u1) u1(); if (u2) u2(); };
   }, [load]);
 
   const refresh = async () => { setRefreshing(true); try { await load(); } finally { setRefreshing(false); } };
 
-  const verify = async (id, status) => {
+  const verify = async (id, status, entity = "Location") => {
     setBusy((b) => ({ ...b, [id]: true }));
     try {
-      const adminNow = roleOf(user) === "admin" || accessOf(user) === "admin";
-      if (adminNow) { await base44.entities.Location.update(id, { status }); }
-      else { await base44.functions.invoke("moderate", { action: "verify", entity: "Location", id, status }); }
-      setPending((p) => p.filter((r) => r.id !== id));
+      await base44.functions.invoke("moderate", { action: "verify", entity, id, status });
+      setPending((p) => p.filter((r) => !(r.id === id && r._entity === entity)));
+      setSelected((s) => { const ns = new Set(s); ns.delete(`${entity}:${id}`); return ns; });
     } catch { /* bubbles */ }
     finally { setBusy((b) => ({ ...b, [id]: false })); }
   };
@@ -152,14 +173,31 @@ export default function Dashboard() {
 
   const myVerified = mine.filter((r) => r.status === "verified").length;
   const myPending = mine.filter((r) => r.status === "pending").length;
-  const queueTypes = [...new Set(sortedPending.map((r) => r.type).filter(Boolean))].sort();
+  const queueTypes = [...new Set(sortedPending.map((r) => r._type).filter(Boolean))].sort();
   const filteredQueue = sortedPending.filter((r) => {
     if (qTriageOnly && triageScore(r) < 2) return false;
-    if (qType !== "all" && r.type !== qType) return false;
-    if (qSearch.trim()) { const s = qSearch.trim().toLowerCase(); if (!((r.title || "").toLowerCase().includes(s) || (r.address || "").toLowerCase().includes(s))) return false; }
+    if (qType !== "all" && r._type !== qType) return false;
+    if (qSearch.trim()) { const s = qSearch.trim().toLowerCase(); if (!((r._title || "").toLowerCase().includes(s) || (r._sub || "").toLowerCase().includes(s))) return false; }
     return true;
   });
   const filteredMine = mineFilter === "all" ? mine : mine.filter((r) => r.status === mineFilter);
+
+  const keyOf = (n) => `${n._entity}:${n.id}`;
+  const toggleSel = (n) => setSelected((s) => { const k = keyOf(n); const ns = new Set(s); if (ns.has(k)) ns.delete(k); else ns.add(k); return ns; });
+  const allFilteredSelected = filteredQueue.length > 0 && filteredQueue.every((n) => selected.has(keyOf(n)));
+  const toggleAll = () => setSelected((s) => {
+    const ns = new Set(s);
+    if (allFilteredSelected) filteredQueue.forEach((n) => ns.delete(keyOf(n)));
+    else filteredQueue.forEach((n) => ns.add(keyOf(n)));
+    return ns;
+  });
+  const bulkVerify = async (status) => {
+    const items = pending.filter((n) => selected.has(keyOf(n)));
+    if (!items.length) return;
+    setBulkBusy(true);
+    try { for (const n of items) { await verify(n.id, status, n._entity); } }
+    finally { setBulkBusy(false); setSelected(new Set()); }
+  };
 
   const cards = [
     { label: "Filed", value: mine.length, Icon: FileText, tone: "text-silver" },
@@ -217,6 +255,30 @@ export default function Dashboard() {
             {cards.map((c) => <StatCard key={c.label} {...c} />)}
           </div>
 
+          {/* activity + roadmap */}
+          <div className="mt-4 grid grid-cols-1 gap-4 lg:grid-cols-[1.4fr_1fr]">
+            <div className="border border-slate2/60 bg-card p-4">
+              <div className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.2em] text-ozone"><Activity className="h-3.5 w-3.5" /> Recent activity</div>
+              <div className="mt-3 space-y-2">
+                {mine.length ? mine.slice(0, 5).map((n) => (
+                  <div key={n.id} className="flex items-center gap-2 border-b border-slate2/30 pb-2 last:border-0 last:pb-0">
+                    <span className={`h-1.5 w-1.5 shrink-0 rounded-full ${n.status === "verified" ? "bg-brand-green" : n.status === "rejected" ? "bg-flare" : "bg-ozone"}`} />
+                    <span className="min-w-0 flex-1 truncate font-mono text-[10px] text-silver/80">{n._title}</span>
+                    <span className="shrink-0 font-mono text-[9px] uppercase tracking-[0.15em] text-dim">{n.status}</span>
+                    <span className="shrink-0 font-mono text-[9px] text-darkgray">{timeAgo(n.created_date)}</span>
+                  </div>
+                )) : <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-dim">// No activity yet</p>}
+              </div>
+            </div>
+            <Link to="/plans" className="group flex flex-col justify-between border border-slate2/60 bg-card p-4 transition-colors hover:border-ozone/50">
+              <div>
+                <div className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.2em] text-ozone"><Route className="h-3.5 w-3.5" /> Roadmap</div>
+                <p className="mt-2 font-mono text-[11px] leading-relaxed text-silver/60">Where the movement is headed — plans, milestones, and how to plug in.</p>
+              </div>
+              <span className="mt-3 inline-flex items-center gap-1.5 font-mono text-[10px] font-bold uppercase tracking-[0.2em] text-ozone">View plans <ArrowUpRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" /></span>
+            </Link>
+          </div>
+
           {/* ── PRIMARY: my captures + status filter ── */}
           <section className="mt-10">
             <div className="flex flex-wrap items-center justify-between gap-3">
@@ -231,7 +293,7 @@ export default function Dashboard() {
             </div>
             <PullToRefresh onRefresh={refresh} className="mt-4 max-h-[55vh] min-h-0 lg:max-h-none">
               <div className="space-y-2">
-                {filteredMine.length ? filteredMine.map((r) => <Row key={r.id} r={r} />) : (
+                {filteredMine.length ? filteredMine.map((n) => <Row key={n.id} n={n} />) : (
                   <div className="border border-slate2/40 bg-card p-6 text-center">
                     <p className="font-mono text-[10px] uppercase tracking-[0.25em] text-dim">// {mine.length ? "No captures match this filter" : "No captures filed yet"}</p>
                     {!mine.length && (
@@ -245,7 +307,7 @@ export default function Dashboard() {
             </PullToRefresh>
           </section>
 
-          {/* ── SECONDARY: verification queue — collapsible + filters ── */}
+          {/* ── SECONDARY: verification queue — collapsible + filters + bulk ── */}
           {canView && (
             <section className="mt-10">
               <button onClick={() => setQueueOpen((o) => !o)} aria-expanded={queueOpen} className="flex w-full items-center justify-between gap-3 border border-slate2/50 bg-card/40 px-4 py-3 text-left transition-colors hover:border-ozone/40">
@@ -273,11 +335,34 @@ export default function Dashboard() {
                         {queueTypes.map((t) => <option key={t} value={t}>{t}</option>)}
                       </select>
                     )}
+                    {canAct && filteredQueue.length > 0 && (
+                      <button onClick={toggleAll} className="border border-slate2/60 px-2.5 py-1.5 font-mono text-[9px] font-bold uppercase tracking-[0.15em] text-dim transition-colors hover:border-ozone/40 hover:text-silver">
+                        {allFilteredSelected ? "Deselect all" : "Select all"}
+                      </button>
+                    )}
                     <span className="ml-auto font-mono text-[9px] uppercase tracking-[0.2em] text-dim">{filteredQueue.length} shown</span>
                   </div>
+
+                  {/* bulk action bar */}
+                  {canAct && selected.size > 0 && (
+                    <div className="mt-2 flex flex-wrap items-center gap-2 border border-ozone/40 bg-ozone/[0.05] px-3 py-2">
+                      <span className="font-mono text-[10px] font-bold uppercase tracking-[0.2em] text-ozone">{selected.size} selected</span>
+                      <button onClick={() => bulkVerify("verified")} disabled={bulkBusy} className="flex items-center gap-1.5 border border-ozone bg-ozone px-3 py-1.5 font-mono text-[9px] font-bold uppercase tracking-[0.15em] text-void transition-colors hover:bg-flare hover:border-flare disabled:opacity-50">
+                        <Check className="h-3 w-3" /> Approve
+                      </button>
+                      <button onClick={() => bulkVerify("rejected")} disabled={bulkBusy} className="flex items-center gap-1.5 border border-flare px-3 py-1.5 font-mono text-[9px] font-bold uppercase tracking-[0.15em] text-flare transition-colors hover:bg-flare hover:text-void disabled:opacity-50">
+                        <X className="h-3 w-3" /> Reject
+                      </button>
+                      <button onClick={() => setSelected(new Set())} className="font-mono text-[9px] uppercase tracking-[0.15em] text-dim transition-colors hover:text-silver">Clear</button>
+                      {bulkBusy && <Loader2 className="h-3.5 w-3.5 animate-spin text-ozone" />}
+                    </div>
+                  )}
+
                   {/* scrollable list */}
                   <div className="mt-2 max-h-[60vh] space-y-2 overflow-y-auto pr-1">
-                    {filteredQueue.length ? filteredQueue.map((r) => <Row key={r.id} r={r} onVerify={canAct ? verify : undefined} busy={busy[r.id]} triage={triageScore(r) >= 2} />) : (
+                    {filteredQueue.length ? filteredQueue.map((n) => (
+                      <Row key={keyOf(n)} n={n} onVerify={canAct ? verify : undefined} busy={busy[n.id]} triage={triageScore(n) >= 2} selectable={canAct} selected={selected.has(keyOf(n))} onToggle={() => toggleSel(n)} />
+                    )) : (
                       <div className="border border-slate2/40 bg-card p-6 text-center font-mono text-[10px] uppercase tracking-[0.25em] text-dim">
                         // {pending.length ? "No captures match these filters" : "Queue clear — no pending captures"}
                       </div>
