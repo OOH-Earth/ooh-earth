@@ -1,19 +1,19 @@
 // investorAccess — server-side gate for the investor area.
 //
-// The access code and the signing secret live only here (Base44 Secrets),
-// never in the browser bundle. On a correct code this mints a short-lived
-// signed token (HMAC-SHA256). The browser stores only that token; it can't be
-// forged without the server secret, so setting a sessionStorage flag by hand
-// no longer opens the gate.
+// The access code and the signing secret live only in Base44 Secrets, never in
+// the browser bundle. On a correct code this mints a short-lived signed token
+// (HMAC-SHA256). The browser stores only that token; it can't be forged without
+// the server secret, so setting a sessionStorage flag by hand can't open the gate.
 //
 //   POST { code }                    -> { ok, token?, exp? }
 //   POST { action: "verify", token } -> { ok }
 //
-// Secrets (set these in Base44; sensible fallbacks keep it working meanwhile):
+// REQUIRED secrets (set in Base44 — there are NO fallbacks; the gate fails
+// closed if either is missing, rather than accepting a source-derivable
+// default). If the investor area returns "unavailable", set these:
 //   INVESTOR_ACCESS_CODE   — the shared code funders type
-//   INVESTOR_TOKEN_SECRET  — HMAC signing key (change this before sharing)
+//   INVESTOR_TOKEN_SECRET  — HMAC signing key
 
-const DEFAULT_CODE = "OOH-INVEST-2026";
 const TTL_MS = 7 * 24 * 60 * 60 * 1000;
 const enc = new TextEncoder();
 
@@ -24,9 +24,16 @@ const fromB64urlStr = (s: string) => atob(s.replace(/-/g, "+").replace(/_/g, "/"
 const norm = (s: unknown) => String(s ?? "").trim().toUpperCase();
 function safeEqual(a: string, b: string) { if (a.length !== b.length) return false; let d = 0; for (let i = 0; i < a.length; i++) d |= a.charCodeAt(i) ^ b.charCodeAt(i); return d === 0; }
 
+// Signing secret is REQUIRED — no derivation from the access code, no default.
+// A missing secret throws, which the handler turns into a fail-closed response.
+function tokenSecret(): string {
+  const s = Deno.env.get("INVESTOR_TOKEN_SECRET");
+  if (!s) throw new Error("investorAccess not configured: INVESTOR_TOKEN_SECRET is unset");
+  return s;
+}
+
 async function hmac(msg: string): Promise<string> {
-  const secret = Deno.env.get("INVESTOR_TOKEN_SECRET") || `${Deno.env.get("INVESTOR_ACCESS_CODE") || DEFAULT_CODE}::ooh-token-v1`;
-  const key = await crypto.subtle.importKey("raw", enc.encode(secret), { name: "HMAC", hash: "SHA-256" }, false, ["sign"]);
+  const key = await crypto.subtle.importKey("raw", enc.encode(tokenSecret()), { name: "HMAC", hash: "SHA-256" }, false, ["sign"]);
   const sig = await crypto.subtle.sign("HMAC", key, enc.encode(msg));
   return b64url(new Uint8Array(sig));
 }
@@ -52,13 +59,26 @@ Deno.serve(async (req) => {
   let body: Record<string, unknown> = {};
   try { body = await req.json(); } catch { /* empty body */ }
 
-  if (body?.action === "verify") {
-    return Response.json({ ok: await verify(String(body?.token || "")) }, { status: 200 });
-  }
+  try {
+    if (body?.action === "verify") {
+      // hmac() throws if the signing secret is unset → caught below (fail closed).
+      return Response.json({ ok: await verify(String(body?.token || "")) }, { status: 200 });
+    }
 
-  const expected = norm(Deno.env.get("INVESTOR_ACCESS_CODE") || DEFAULT_CODE);
-  const ok = expected.length > 0 && safeEqual(norm(body?.code), expected);
-  if (!ok) return Response.json({ ok: false, ts: Date.now() }, { status: 200 });
-  const { token, exp } = await mint();
-  return Response.json({ ok: true, token, exp, ts: Date.now() }, { status: 200 });
+    // Access code is REQUIRED — no default. If unset, the gate stays shut.
+    const expected = norm(Deno.env.get("INVESTOR_ACCESS_CODE"));
+    if (!expected) {
+      console.error("investorAccess: INVESTOR_ACCESS_CODE is unset — failing closed");
+      return Response.json({ ok: false, reason: "gate_unconfigured", ts: Date.now() }, { status: 200 });
+    }
+    const ok = safeEqual(norm(body?.code), expected);
+    if (!ok) return Response.json({ ok: false, ts: Date.now() }, { status: 200 });
+
+    // mint() → hmac() throws if INVESTOR_TOKEN_SECRET is unset → caught below.
+    const { token, exp } = await mint();
+    return Response.json({ ok: true, token, exp, ts: Date.now() }, { status: 200 });
+  } catch (err) {
+    console.error("investorAccess error (failing closed):", (err as Error)?.message);
+    return Response.json({ ok: false, reason: "gate_unconfigured", ts: Date.now() }, { status: 200 });
+  }
 });
