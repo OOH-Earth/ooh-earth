@@ -110,11 +110,7 @@ export function useGamification() {
 
     setClaiming(questId);
     try {
-      await base44.entities.QuestCompletion.create({
-        quest_id: questId,
-        period_key: period,
-        xp_awarded: quest.reward_xp,
-      });
+      await base44.functions.invoke("claimQuest", { quest_id: questId });
       await loadData();
     } catch {
       /* error */
