@@ -1,7 +1,9 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
 
 // Stripe webhook — verifies signature via Web Crypto HMAC-SHA256 (no SDK needed).
-// Handles checkout.session.completed: records donations + product purchases.
+// Handles: checkout.session.completed (one-time donations/purchases AND supporter
+// subscriptions), and customer.subscription.updated/deleted (lifecycle → grant
+// state on the Subscription entity).
 
 async function verifyStripeSignature(rawBody: string, signatureHeader: string, secret: string) {
   if (!signatureHeader || !secret) return null;
@@ -41,6 +43,77 @@ async function verifyStripeSignature(rawBody: string, signatureHeader: string, s
   return diff === 0 ? parseInt(ts, 10) : null;
 }
 
+// Forward a confirmed funding event to the n8n automation hub.
+// Non-fatal by design: the donation/purchase must still succeed if n8n is down,
+// so every error is swallowed and a 5s timeout prevents holding up Stripe's ack.
+async function forwardToN8n(payload: unknown) {
+  const url = Deno.env.get("N8N_WEBHOOK_URL") || "";
+  if (!url) return; // bridge not configured — skip silently
+  try {
+    const ctrl = new AbortController();
+    const timer = setTimeout(() => ctrl.abort(), 5000);
+    const res = await fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+      signal: ctrl.signal,
+    });
+    clearTimeout(timer);
+    console.log(`n8n forward: ${res.status}`);
+  } catch (err) {
+    console.error("n8n forward failed (non-fatal):", (err as Error)?.message);
+  }
+}
+
+// ── subscription helpers ──────────────────────────────────────
+async function getStripeSub(id: string) {
+  const r = await fetch(`https://api.stripe.com/v1/subscriptions/${id}`, {
+    headers: { Authorization: `Bearer ${Deno.env.get("STRIPE_SECRET_KEY")}` },
+  });
+  if (!r.ok) throw new Error(`Stripe subscription fetch ${r.status}`);
+  return await r.json();
+}
+
+// Upsert a Subscription record from a full Stripe subscription object.
+function subRecord(userId: string, email: string, cycle: string, sub: any) {
+  const tier = cycle || sub.metadata?.plan_cycle || "";
+  return {
+    user_id: userId,
+    email: email || undefined,
+    plan_tier: tier || undefined, // omit if unknown (enum-safe)
+    status: sub.status,
+    current_period_end: sub.current_period_end ? sub.current_period_end * 1000 : undefined,
+    cancel_at_period_end: !!sub.cancel_at_period_end,
+    amount: sub.items?.data?.[0]?.price?.unit_amount ?? undefined,
+    currency: sub.currency || "usd",
+    stripe_customer_id: typeof sub.customer === "string" ? sub.customer : (sub.customer?.id || ""),
+    stripe_subscription_id: sub.id,
+    created_by_id: userId,
+  };
+}
+
+async function grantSubscription(base44: any, userId: string, email: string, cycle: string, sub: any) {
+  const rec = subRecord(userId, email, cycle, sub);
+  const existing = await base44.asServiceRole.entities.Subscription.filter({ stripe_subscription_id: sub.id }, "-created_date", 1);
+  if (existing && existing.length) await base44.asServiceRole.entities.Subscription.update(existing[0].id, rec);
+  else await base44.asServiceRole.entities.Subscription.create(rec);
+}
+
+// Lifecycle event → patch status/period on the existing record (never clobber
+// user_id/email); create from metadata only if we somehow never saw it.
+async function syncSubscription(base44: any, sub: any) {
+  const existing = await base44.asServiceRole.entities.Subscription.filter({ stripe_subscription_id: sub.id }, "-created_date", 1);
+  if (existing && existing.length) {
+    await base44.asServiceRole.entities.Subscription.update(existing[0].id, {
+      status: sub.status,
+      current_period_end: sub.current_period_end ? sub.current_period_end * 1000 : undefined,
+      cancel_at_period_end: !!sub.cancel_at_period_end,
+    });
+  } else if (sub.metadata?.user_id) {
+    await grantSubscription(base44, sub.metadata.user_id, "", sub.metadata.plan_cycle || "", sub);
+  }
+}
+
 Deno.serve(async (req) => {
   try {
     const rawBody = await req.text();
@@ -56,9 +129,42 @@ Deno.serve(async (req) => {
     const event = JSON.parse(rawBody);
     const base44 = createClientFromRequest(req);
 
+    // ── subscription lifecycle ──
+    if (event.type === "customer.subscription.updated" || event.type === "customer.subscription.deleted") {
+      try {
+        const sub = event.data?.object || {};
+        if (sub?.id) { await syncSubscription(base44, sub); console.log(`Stripe webhook: ${event.type} → sub ${sub.id} status ${sub.status}`); }
+      } catch (err) {
+        console.error(`Stripe webhook: ${event.type} failed:`, err?.message);
+      }
+      return Response.json({ received: true });
+    }
+
     if (event.type === "checkout.session.completed") {
       const session = event.data?.object || {};
       const metadata = session.metadata || {};
+
+      // ── supporter subscription → record/grant the plan ──
+      if (session.mode === "subscription" || metadata.plan_cycle) {
+        try {
+          const subId = typeof session.subscription === "string" ? session.subscription : session.subscription?.id;
+          const userId = metadata.user_id || session.client_reference_id || "";
+          const email = session.customer_details?.email || session.customer_email || "";
+          if (subId && userId) {
+            const sub = await getStripeSub(subId);
+            await grantSubscription(base44, userId, email, metadata.plan_cycle || "", sub);
+            console.log(`Stripe webhook: subscription granted → user ${userId} (${metadata.plan_cycle || sub.status})`);
+            await forwardToN8n({ source: "base44", app: "main", event: "subscription.started", user_id: userId, cycle: metadata.plan_cycle || null, sessionId: session.id, ts: Date.now() });
+          } else {
+            console.error("Stripe webhook: subscription checkout missing subId/userId");
+          }
+        } catch (err) {
+          console.error("Stripe webhook: subscription grant failed:", err?.message);
+        }
+        return Response.json({ received: true });
+      }
+
+      // ── one-time donation / purchase ──
       const amountTotal = session.amount_total || 0;
       const amountUsd = amountTotal / 100;
       const email = session.customer_details?.email || session.customer_email || "";
@@ -108,6 +214,20 @@ Deno.serve(async (req) => {
       } catch (err) {
         console.error("Stripe webhook: failed to create FundingLead:", err?.message);
       }
+
+      // Fire the automation bridge — confirmed funding event → n8n hub.
+      await forwardToN8n({
+        source: "base44",
+        app: "main",
+        event: metadata.item_id ? "purchase.completed" : "donation.completed",
+        amountUsd,
+        email: email || "unknown",
+        item: metadata.item_id
+          ? { id: metadata.item_id, title: metadata.item_title || null }
+          : null,
+        sessionId: session.id,
+        ts: Date.now(),
+      });
     }
 
     return Response.json({ received: true });
