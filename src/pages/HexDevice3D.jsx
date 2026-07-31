@@ -254,8 +254,9 @@ export default function HexDevice3D() {
         </header>
 
         <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-[1.55fr_1fr]">
-          <div className="relative overflow-hidden border border-slate2 bg-card">
-            <div ref={mountRef} className="h-[560px] w-full" style={{ touchAction: "none", cursor: "grab" }} />
+          <div className="border border-slate2 bg-card">
+            <div className="relative overflow-hidden">
+              <div ref={mountRef} className="h-[560px] w-full" style={{ touchAction: "none", cursor: "grab" }} />
             {labels && (
               <div className="pointer-events-none absolute inset-0">
                 <Br c="left-3 top-3 border-l-2 border-t-2" /><Br c="right-3 top-3 border-r-2 border-t-2" /><Br c="left-3 bottom-3 border-l-2 border-b-2" /><Br c="right-3 bottom-3 border-r-2 border-b-2" />
@@ -268,6 +269,7 @@ export default function HexDevice3D() {
               <span className="text-flare" style={{ animation: "blink 1.4s infinite" }}>● REC</span>
               <span className="text-ozone/70">{h.char} H{h.kw} {h.pinyin}</span><span>{h.lower.verb}×{h.upper.layer}</span>
               <span className="ml-auto">{ORDER_NAMES[ordering].toUpperCase()} · {h.binary} · SEQ {seqOn ? "RUN" : "HOLD"}</span>
+            </div>
             </div>
             <div className="flex flex-wrap items-center gap-2 border-t border-slate2 p-3">
               <button onClick={() => { S.current?.ensure(); setSeqOn((v) => !v); }} className={`border-2 px-4 py-2 font-mono text-[10px] font-bold uppercase tracking-[0.2em] ${seqOn ? "border-brand-green bg-brand-green/10 text-brand-green" : "border-slate2 text-silver/60"}`}>{seqOn ? "Run ▮▮" : "Run ▶"}</button>
