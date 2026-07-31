@@ -2,7 +2,7 @@ import { useEffect, useState, useCallback } from "react";
 import { base44 } from "@/api/base44Client";
 import Nav from "@/components/ooh/Nav";
 import HorizonProgress from "@/components/ooh/HorizonProgress";
-import { Loader2, LogOut, Check, X, MapPin, ShieldCheck, ArrowUpRight, RefreshCw, Trash2, AlertTriangle, Eye } from "lucide-react";
+import { Loader2, LogOut, Check, X, ShieldCheck, ArrowUpRight, RefreshCw, Trash2, AlertTriangle, Eye } from "lucide-react";
 import { Link } from "react-router-dom";
 import LocationThumb from "@/components/ooh/map/LocationThumb";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
@@ -70,13 +70,13 @@ export default function Dashboard() {
     const u = await base44.auth.me();
     setUser(u);
     const elevated = roleOf(u) === "admin" || accessOf(u) === "admin";
-    const canView = elevated || accessOf(u) === "moderator" || accessOf(u) === "operative";
+    const canViewQueue = elevated || accessOf(u) === "moderator" || accessOf(u) === "operative";
 
     const myTask = base44.entities.Location.filter({ created_by_id: u.id }, "-created_date", 100);
     let pendTask;
     if (elevated) {
       pendTask = base44.entities.Location.filter({ status: "pending" }, "-created_date", 100);
-    } else if (canView) {
+    } else if (canViewQueue) {
       // moderators + operatives read the queue via the server-gated function
       pendTask = base44.functions
         .invoke("moderate", { action: "queue" })
@@ -160,7 +160,26 @@ export default function Dashboard() {
                 </span>
               </p>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2">
+              {/* persona preview — compact dropdown, real admins only */}
+              {realIsAdmin && (
+                <div className="flex items-center gap-1.5 border border-ozone/30 bg-ozone/[0.03] pl-2.5">
+                  <Eye className="h-3 w-3 text-dim" />
+                  <span className="font-mono text-[9px] uppercase tracking-[0.2em] text-dim">Preview</span>
+                  <select
+                    value={previewAs ?? ""}
+                    onChange={(e) => setPreviewAs(e.target.value || null)}
+                    aria-label="Preview as role"
+                    className="cursor-pointer border-0 bg-transparent py-2 pr-2 font-mono text-[10px] font-bold uppercase tracking-[0.15em] text-ozone outline-none"
+                  >
+                    <option value="">live</option>
+                    <option value="member">member</option>
+                    <option value="operative">operative</option>
+                    <option value="moderator">moderator</option>
+                    <option value="admin">admin</option>
+                  </select>
+                </div>
+              )}
               <button onClick={refresh} aria-label="Refresh" className="flex items-center gap-1.5 border border-slate2 px-3 py-2 font-mono text-[10px] font-bold uppercase tracking-[0.2em] text-darkgray transition-colors hover:border-ozone hover:text-ozone">
                 <RefreshCw className={`h-3.5 w-3.5 ${refreshing ? "animate-spin" : ""}`} />
               </button>
@@ -170,18 +189,34 @@ export default function Dashboard() {
             </div>
           </div>
 
-          {/* persona preview strip — real admins only, UI gating test */}
-          {realIsAdmin && (
-            <div className="mt-4 flex flex-wrap items-center gap-2 border border-ozone/20 bg-ozone/[0.03] px-3 py-2">
-              <span className="flex items-center gap-1.5 font-mono text-[9px] uppercase tracking-[0.2em] text-dim"><Eye className="h-3 w-3" /> Preview as</span>
-              {[["live", null], ["member", "member"], ["operative", "operative"], ["moderator", "moderator"], ["admin", "admin"]].map(([label, val]) => (
-                <button key={label} onClick={() => setPreviewAs(val)} className={`border px-2 py-0.5 font-mono text-[9px] uppercase tracking-[0.2em] transition-colors ${(previewAs ?? null) === val ? "border-ozone bg-ozone text-void" : "border-slate2/60 text-darkgray hover:border-ozone hover:text-ozone"}`}>{label}</button>
-              ))}
-              {previewAs && <span className="font-mono text-[9px] uppercase tracking-[0.2em] text-flare/80">UI preview only · data + permissions unchanged</span>}
+          {/* preview-active notice */}
+          {previewAs && (
+            <div className="mt-3 flex items-center gap-2 border border-flare/30 bg-flare/[0.04] px-3 py-1.5 font-mono text-[9px] uppercase tracking-[0.2em] text-flare/90">
+              <Eye className="h-3 w-3" /> Previewing as {previewAs} · UI only — data &amp; permissions unchanged
             </div>
           )}
 
-          {/* verification queue — operatives view (read-only), moderators + admins act */}
+          {/* ── PRIMARY: my captures ── */}
+          <section className="mt-8">
+            <div className="flex items-center justify-between">
+              <h2 className="font-display text-lg font-bold uppercase tracking-[-0.01em] text-silver">My field captures</h2>
+              <span className="font-mono text-[10px] uppercase tracking-[0.25em] text-dim">// {mine.length} filed</span>
+            </div>
+            <PullToRefresh onRefresh={refresh} className="mt-4 max-h-[55vh] min-h-0 lg:max-h-none">
+              <div className="space-y-2">
+                {mine.length ? mine.map((r) => <Row key={r.id} r={r} />) : (
+                  <div className="border border-slate2/40 bg-card p-6 text-center">
+                    <p className="font-mono text-[10px] uppercase tracking-[0.25em] text-dim">// No captures filed yet</p>
+                    <Link to="/map" className="mt-3 inline-flex items-center gap-2 font-mono text-[10px] font-bold uppercase tracking-[0.25em] text-ozone">
+                      Open the map <ArrowUpRight className="h-3.5 w-3.5" />
+                    </Link>
+                  </div>
+                )}
+              </div>
+            </PullToRefresh>
+          </section>
+
+          {/* ── SECONDARY: verification queue (operatives read-only, mods + admins act) ── */}
           {canView && (
             <section className="mt-10">
               <div className="flex items-center justify-between">
@@ -201,30 +236,10 @@ export default function Dashboard() {
             </section>
           )}
 
-          {/* my captures */}
-          <section className="mt-10">
-            <div className="flex items-center justify-between">
-              <h2 className="font-display text-lg font-bold uppercase tracking-[-0.01em] text-silver">My field captures</h2>
-              <span className="font-mono text-[10px] uppercase tracking-[0.25em] text-dim">// {mine.length} filed</span>
-            </div>
-            <PullToRefresh onRefresh={refresh} className="mt-4 max-h-[55vh] min-h-0 lg:max-h-none">
-              <div className="space-y-2">
-                {mine.length ? mine.map((r) => <Row key={r.id} r={r} />) : (
-                  <div className="border border-slate2/40 bg-card p-6 text-center">
-                    <p className="font-mono text-[10px] uppercase tracking-[0.25em] text-dim">// No captures filed yet</p>
-                    <Link to="/map" className="mt-3 inline-flex items-center gap-2 font-mono text-[10px] font-bold uppercase tracking-[0.25em] text-ozone">
-                      Open the map <ArrowUpRight className="h-3.5 w-3.5" />
-                    </Link>
-                  </div>
-                )}
-              </div>
-            </PullToRefresh>
-          </section>
-
-          {/* persona control — admins only */}
+          {/* ── ADMIN TOOLS: persona control (collapsible) ── */}
           {isAdmin && <PersonaControl meId={user?.id} />}
 
-          {/* danger zone */}
+          {/* ── danger zone ── */}
           <section className="mt-10">
             <div className="border border-flare/40">
               <div className="border-b border-flare/30 px-4 py-3">
