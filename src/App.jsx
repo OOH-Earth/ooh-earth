@@ -12,6 +12,7 @@ import TvStatic from '@/components/ooh/TvStatic';
 import CognitiveLayer from '@/components/ooh/cognitive/CognitiveLayer';
 import MobileBottomTabs from '@/components/ooh/MobileBottomTabs';
 import ProtectedRoute from '@/components/ProtectedRoute';
+import Account from '@/pages/Account';
 import StageBanner from '@/components/ooh/StageBanner';
 import { WalkthroughProvider } from '@/lib/walkthroughContext';
 import { RadioProvider } from '@/lib/radioContext';
@@ -150,6 +151,7 @@ const AuthenticatedApp = () => {
     <Route path="/investor-access" element={<InvestorAccess />} />
     <Route path="/capital/:slug" element={<CapitalLead />} />
     <Route element={<ProtectedRoute unauthenticatedElement={<Navigate to="/login" replace />} />}>
+      <Route path="/account" element={<Account />} />
       <Route path="/dashboard" element={<Dashboard />} />
       <Route path="/fde" element={<FdePortal />} />
       <Route path="/portal/ops" element={<PortalOps />} />
