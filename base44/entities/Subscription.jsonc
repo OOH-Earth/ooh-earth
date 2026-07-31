@@ -1,0 +1,90 @@
+{
+  "name": "Subscription",
+  "type": "object",
+  "properties": {
+    "user_id": {
+      "type": "string",
+      "description": "Base44 user id the subscription belongs to"
+    },
+    "email": {
+      "type": "string"
+    },
+    "plan_tier": {
+      "type": "string",
+      "enum": [
+        "monthly",
+        "quarterly",
+        "yearly"
+      ],
+      "description": "Supporter cadence"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "incomplete",
+        "trialing",
+        "active",
+        "past_due",
+        "canceled",
+        "unpaid"
+      ],
+      "default": "incomplete",
+      "description": "Stripe subscription status"
+    },
+    "current_period_end": {
+      "type": "number",
+      "description": "Unix ms when the current period ends / next renewal"
+    },
+    "cancel_at_period_end": {
+      "type": "boolean",
+      "default": false
+    },
+    "amount": {
+      "type": "number",
+      "description": "Amount per cycle, in cents"
+    },
+    "currency": {
+      "type": "string",
+      "default": "usd"
+    },
+    "stripe_customer_id": {
+      "type": "string"
+    },
+    "stripe_subscription_id": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "user_id",
+    "stripe_subscription_id"
+  ],
+  "rls": {
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "read": {
+      "$or": [
+        {
+          "data.user_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}
