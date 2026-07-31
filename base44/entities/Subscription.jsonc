@@ -12,11 +12,19 @@
     "plan_tier": {
       "type": "string",
       "enum": [
-        "monthly",
-        "quarterly",
-        "yearly"
+        "accomplice",
+        "sustainer",
+        "patron"
       ],
-      "description": "Supporter cadence"
+      "description": "Supporter tier"
+    },
+    "plan_period": {
+      "type": "string",
+      "enum": [
+        "month",
+        "year"
+      ],
+      "description": "Billing period"
     },
     "status": {
       "type": "string",
