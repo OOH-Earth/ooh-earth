@@ -13,25 +13,30 @@ import { Loader2, Lock, Copy, Check, ArrowUpRight } from "lucide-react";
    where verified — explicit "Planned" labels everywhere infra
    doesn't exist yet.
 
-   Access: route sits under ProtectedRoute (auth); this page opens
-   for agency members (user.agency, or admin) — same predicate as
-   AgencyNewsroom. Treasury / Security / Deploy / Ops Console tabs
-   stay admin-only via the clearance gate. The clearance selector
-   is a UI-only "preview as" for admins — never changes real perms.
+   Admin-only: route sits under ProtectedRoute (auth); this page
+   enforces agency membership. The clearance selector is a UI-only
+   demo of the access matrix — like Dashboard's "Preview as" — it
+   never changes real permissions.
 
-   LIVE wiring (all defensive — a failed call falls back to the
-   static placeholder, never breaks the page):
-     · fieldStats   → executive stats + client-latency readout
-     · cryptoWatch  → live Polygon balances + recent SOL/ETH tx
-     · Location     → real moderation queue (filter + update)
-   opsHealth is still PROPOSED (doesn't exist) → stays a stub.
+   SENSITIVE METADATA (secret names/purposes + risk register) is
+   NOT in this bundle. It's fetched at runtime from opsIntel, an
+   agency-gated function that only returns secrets to admins. The
+   bundle carries no secret names, purposes, or risk text.
+
+   LIVE wiring (all defensive — a failed call falls back to a
+   placeholder, never breaks the page):
+     · opsIntel    → risk register + (admin) secrets inventory
+     · fieldStats  → executive stats + client-latency readout
+     · cryptoWatch → live Polygon balances + recent SOL/ETH tx
+     · Location    → real moderation queue (filter + update)
 ──────────────────────────────────────────────────────────── */
 
 const roleOf = (u) => (u && (u.role ?? u.data?.role)) || "user";
 const accessOf = (u) => (u && (u.access ?? u.data?.access)) || "member";
 const agencyOf = (u) => !!(u && (u.agency ?? u.data?.agency));
 const payload = (res) => (res && typeof res === "object" && "data" in res ? res.data : res);
-const fmt = (n) => (typeof n === "number" ? n.toLocaleString() : "—");
+const fmt = (n) => (typeof n === "number" && Number.isFinite(n) ? n.toLocaleString() : "—");
+const num = (v) => { const n = Number(v); return Number.isFinite(n) ? n : 0; };
 const short = (h) => (h ? `${h.slice(0, 6)}…${h.slice(-6)}` : "");
 
 const CLR_NAMES = ["Member", "Operative", "Moderator", "Admin"];
@@ -53,7 +58,7 @@ const SECTIONS = [
   { id: "roster", label: "Access Roster", min: 2, isNew: true },
 ];
 
-/* ── data ─────────────────────────────────────────────────── */
+/* ── data (non-sensitive; sensitive metadata lives in opsIntel) ─ */
 const PROTOCOLS = [
   ["Bitcoin", "Treasury donation wallet", "impl", "Treasury", "Display only — no tx watcher."],
   ["Ethereum", "Treasury wallet + live tx watcher", "impl", "Treasury", "cryptoWatch via Blockchair."],
@@ -77,27 +82,29 @@ const COINS = [
   ["FLORES", "Base", "0x9f0649369fb58f521722c1b78dc867283a603acf", "Sample feed."],
   ["CAMERA", "Base", "0xcdcb1c89b8bee6255b69fe7a3500bf26470b5413", "Sample feed."],
 ];
+// Function inventory — notes for secret-gated fns are generic here; the
+// real per-function secret mapping is served (admin-only) via opsIntel.
 const FNS = [
   ["blog", "Gated read/write for BlogPost (public vs agency).", "pub", "scoped by audience server-side"],
   ["cachedIntel", "Daily-cached LLM endpoint (skyIntel).", "pub", "read-only, cached in IntelCache"],
-  ["createDonationCheckout", "Stripe Checkout for a free-form donation.", "secret", "STRIPE_SECRET_KEY, BASE44_APP_ID"],
-  ["createProductCheckout", "Stripe Checkout for a StoreItem.", "secret", "STRIPE_SECRET_KEY, BASE44_APP_ID"],
+  ["createDonationCheckout", "Stripe Checkout for a free-form donation.", "secret", "Stripe Checkout · secrets server-side"],
+  ["createProductCheckout", "Stripe Checkout for a StoreItem.", "secret", "Stripe Checkout · secrets server-side"],
   ["cryptoWatch", "Live on-chain treasury watcher: SOL/ETH/Polygon.", "pub", "no auth, read-only"],
   ["fetchMapLocations", "Live location markers from a published feed.", "pub", "no auth, read-only"],
   ["fieldStats", "PII-free aggregate stats for the orbital HUD.", "pub", "no auth, read-only"],
   ["importKmlLocations", "Admin-only bulk KML importer, SSRF-hardened.", "admin", "role/access admin check"],
-  ["investorAccess", "Server-side gate for the investor area.", "secret", "INVESTOR_ACCESS_CODE, INVESTOR_TOKEN_SECRET"],
+  ["investorAccess", "Server-side gate for the investor area.", "secret", "investor gate · secrets server-side"],
   ["moderate", "Verification gate for Location and DigitalBust.", "admin", "queue: admin/mod/operative · verify: admin/mod"],
-  ["n8nPing", "Base44 → n8n bridge health/ping test.", "secret", "N8N_WEBHOOK_URL — test action only"],
-  ["personaCtl", "Admin/key-gated clearance controller. Writes AccessLog.", "admin", "admin OR PERSONA_KEY header"],
-  ["stripeWebhook", "Verifies Stripe signature; updates StoreItem, FundingLead.", "secret", "STRIPE_WEBHOOK_SECRET"],
+  ["n8nPing", "Base44 → n8n bridge health/ping test.", "secret", "bridge test · secret server-side"],
+  ["personaCtl", "Admin/key-gated clearance controller. Writes AccessLog.", "admin", "admin OR key-gated"],
+  ["stripeWebhook", "Verifies Stripe signature; updates StoreItem, FundingLead.", "secret", "signature verify · secret server-side"],
 ];
 const PROPOSED = [
   ["opsHealth", "Aggregate probe: Base44, n8n, Stripe, last cryptoWatch.", "Monitoring gaps"],
   ["incidentLog", "Minimal incident entity + writer. Replaces manual process.", "R-04"],
   ["secretsAudit", "Reports secret age vs a rotation cadence.", "R-06"],
   ["promoteBackup", "Guarded release: records CHANGELOG + tags a version.", "R-03"],
-  ["riskRegister", "CRUD for the 8 risk items so the count is live.", "Risk Register"],
+  ["riskRegister", "CRUD for the risk items so the count is live-editable.", "Risk Register"],
   ["rateLimit", "Per-IP throttle for public read functions.", "R-05"],
 ];
 const EXT = [
@@ -114,30 +121,11 @@ const ENTITIES = [
   ["Operative", "READ OPEN · WRITE ADMIN"], ["QuestCompletion", "READ/CREATE OPEN"],
   ["StoreItem", "ADMIN-ONLY"], ["User", "ADMIN-ONLY"],
 ];
-const SECRETS = [
-  ["PERSONA_KEY", "personaCtl", "Alternate admin auth for the clearance controller."],
-  ["N8N_WEBHOOK_URL", "n8nPing", "Target webhook URL for the Base44 → n8n bridge."],
-  ["BASE44_APP_ID", "n8nPing, checkout fns", "App id on outbound payloads / Stripe metadata."],
-  ["INVESTOR_TOKEN_SECRET", "investorAccess", "HMAC secret for signing investor session tokens."],
-  ["INVESTOR_ACCESS_CODE", "investorAccess", "Shared access code gating the investor area."],
-  ["STRIPE_SECRET_KEY", "checkout fns", "Stripe API key for Checkout sessions."],
-  ["STRIPE_WEBHOOK_SECRET", "stripeWebhook", "Verifies the Stripe webhook signature."],
-];
 const ROLES = [
   ["MEMBER", "Default", "File reports, browse the verified atlas, manage own captures."],
   ["OPERATIVE", "Access: operative", "Read-only field intel — sees the queue. No approve/reject."],
   ["MODERATOR", "Access: moderator", "Approve/reject via moderate. No funding, store, persona control."],
   ["ADMIN", "Role/access: admin", "Everything — plus Persona Control and the audit log."],
-];
-const RISKS = [
-  ["R-01", "Polygon vs Base chain mismatch in CryptoDonations.jsx; wallets pending.", "high", "Treasury / Web3", "Reconcile target chain; resolve pending wallets."],
-  ["R-02", "Naming drift: $OUTOFHELL (zoraConfig) vs hardcoded $OOHEX.", "med", "Coin Registry", "Make zoraConfig the single source; strip hardcoded strings."],
-  ["R-03", "No CI/CD or release-tagging pipeline.", "med", "Infra / Deploy", "GitHub Actions build-verify; release tags via promoteBackup."],
-  ["R-04", "No incident-tracking system.", "med", "Security", "Ship incidentLog; retire the manual SECURITY.md process."],
-  ["R-05", "No rate limiting on public read functions.", "med", "Security", "Per-IP throttle on fieldStats / cryptoWatch / fetchMapLocations."],
-  ["R-06", "No secrets rotation cadence or scanning.", "med", "Security", "Define rotation; add secret-scanning; ship secretsAudit."],
-  ["R-07", "No dependency scanning / SBOM.", "low", "Security", "Add SCA to CI; publish SBOM."],
-  ["R-08", "pump.fun community coin is a placeholder.", "low", "Coin Registry", "Swap placeholder before any launch-ready treatment."],
 ];
 const DOCS = [
   ["README", "README.md"], ["CLAUDE.md", "CLAUDE.md"], ["AGENTS.md", "AGENTS.md"], ["SECURITY.md", "SECURITY.md"],
@@ -217,27 +205,33 @@ const Th = ({ children, right }) => <th className={`border-b border-slate2/60 pb
 const Td = ({ children, name, right, mono }) => <td className={`border-b border-slate2/30 py-3.5 pr-4 align-top text-[13px] leading-snug ${right ? "text-right" : ""} ${mono ? "font-mono text-[11.5px]" : ""} ${name ? "font-bold text-silver" : "text-dim"}`}>{children}</td>;
 
 /* ── section renderers ────────────────────────────────────── */
-function ExecView({ stats }) {
+function ExecView({ stats, intel }) {
+  const risks = intel?.risks || null;
+  const riskCount = risks ? risks.length : null;
+  const highCount = risks ? risks.filter((r) => r[2] === "high").length : null;
   const KEYS = [
     ["Reports", stats?.reports], ["Verified", stats?.verified], ["Operatives", stats?.operatives], ["Cities", stats?.cities],
     ["Raised", stats?.raised], ["Donors", stats?.donors], ["Digital Busts", stats?.digital_busts], ["Points", stats?.points],
   ];
+  const healthTone = highCount == null ? "mute" : highCount > 0 ? "warn" : "ok";
+  const healthText = highCount == null ? "Assessing posture…" : highCount > 0 ? `Needs attention · ${highCount} high-severity gap${highCount > 1 ? "s" : ""}` : "Nominal · no high-severity gaps";
+  const healthBadge = highCount == null ? "Checking" : highCount > 0 ? "In progress" : "Healthy";
   return (
     <>
       <div className="grid grid-cols-2 gap-2.5 md:grid-cols-4">
         <div className="border border-slate2/60 bg-card p-4">
           <div className="font-mono text-[9px] uppercase tracking-[0.22em] text-dim">System health</div>
-          <div className="mt-3 font-display text-sm font-bold leading-tight text-silver">Needs attention · 1 high-severity gap</div>
-          <div className="mt-3"><Badge tone="warn">In progress</Badge></div>
+          <div className="mt-3 font-display text-sm font-bold leading-tight text-silver">{healthText}</div>
+          <div className="mt-3"><Badge tone={healthTone}>{healthBadge}</Badge></div>
         </div>
-        <Stat k="Services (functions)" v="13" />
-        <Stat k="Entities" v="12" />
-        <Stat k="Open risk items" v="8" sub="see Risk Register" />
+        <Stat k="Services (functions)" v={String(FNS.length)} />
+        <Stat k="Entities" v={String(ENTITIES.length)} />
+        <Stat k="Open risk items" v={riskCount == null ? "—" : String(riskCount)} sub="see Risk Register" />
       </div>
       <div className="mt-5">
         <Block title="Field Stats" desc={stats ? "Live via fieldStats() — a PII-free aggregate." : `Live via base44.functions.invoke("fieldStats"). Loading, or unavailable in this context.`}>
           <div className="grid grid-cols-2 gap-2.5 md:grid-cols-4">
-            {KEYS.map(([k, v]) => <div key={k} className="border border-slate2/50 bg-card p-4"><div className="font-mono text-[9px] uppercase tracking-[0.22em] text-dim">{k}</div><div className={`mt-3 font-display text-lg font-bold ${v == null ? "text-dim" : "text-ozone"}`}>{v == null ? "—" : fmt(v)}</div><div className="mt-2 font-mono text-[9px] uppercase tracking-[0.12em] text-dim">{v == null ? "via fieldStats()" : "live"}</div></div>)}
+            {KEYS.map(([k, v]) => <div key={k} className="border border-slate2/50 bg-card p-4"><div className="font-mono text-[9px] uppercase tracking-[0.22em] text-dim">{k}</div><div className={`mt-3 font-display text-lg font-bold ${v == null ? "text-dim" : "text-ozone"}`}>{v == null ? "—" : fmt(num(v))}</div><div className="mt-2 font-mono text-[9px] uppercase tracking-[0.12em] text-dim">{v == null ? "via fieldStats()" : "live"}</div></div>)}
           </div>
         </Block>
       </div>
@@ -250,8 +244,8 @@ function ExecView({ stats }) {
         </table>
       </Block>
       <div className="grid gap-2.5 md:grid-cols-2">
-        <Gap n="Deployment version">No CI/CD or release-tagging pipeline yet. See Deploy &amp; Releases.</Gap>
-        <Gap n="Incident status">No incident-tracking system. See SECURITY.md — incidentLog proposed in API Inventory.</Gap>
+        <Gap n="Release tagging">CI build-verify runs via GitHub Actions; a release-tagging / CHANGELOG pipeline is still proposed. See Deploy &amp; Releases.</Gap>
+        <Gap n="Incident status">Handled manually via SECURITY.md today; incidentLog is proposed in API Inventory to formalise it.</Gap>
       </div>
     </>
   );
@@ -307,6 +301,7 @@ function ProtocolView() {
 function TreasuryView({ crypto }) {
   const p = crypto?.polygon;
   const recent = [...(crypto?.sol || []), ...(crypto?.eth || [])].slice(0, 8);
+  const usdc = num(p?.usdc), usdce = num(p?.usdce), matic = num(p?.matic), totalUsd = num(p?.totalUsd);
   return (
     <>
       <Block title="Wallet Addresses" desc="Real treasury wallets from fundConfig.js — already public in the client bundle. Click any address to copy.">
@@ -315,10 +310,10 @@ function TreasuryView({ crypto }) {
       <Block title="Live Polygon Balances" desc="Live via cryptoWatch — USDC (native) + USDC.e + POL, valued through CoinGecko. Refreshes on page load.">
         {p ? (
           <div className="grid grid-cols-2 gap-2.5 md:grid-cols-4">
-            <Stat k="USDC" v={fmt(Number(p.usdc?.toFixed?.(2) ?? p.usdc))} accent="text-ozone" />
-            <Stat k="USDC.e" v={fmt(Number(p.usdce?.toFixed?.(2) ?? p.usdce))} accent="text-ozone" />
-            <Stat k="POL" v={fmt(Number(p.matic?.toFixed?.(3) ?? p.matic))} sub={p.maticUsd ? `@ $${p.maticUsd}` : undefined} />
-            <Stat k="Total USD" v={`$${fmt(Number((p.totalUsd || 0).toFixed(2)))}`} accent="text-[#39FF14]" />
+            <Stat k="USDC" v={fmt(num(usdc.toFixed(2)))} accent="text-ozone" />
+            <Stat k="USDC.e" v={fmt(num(usdce.toFixed(2)))} accent="text-ozone" />
+            <Stat k="POL" v={fmt(num(matic.toFixed(3)))} sub={p.maticUsd ? `@ $${p.maticUsd}` : undefined} />
+            <Stat k="Total USD" v={`$${fmt(num(totalUsd.toFixed(2)))}`} accent="text-[#39FF14]" />
           </div>
         ) : <p className="font-mono text-[11px] text-dim">— loading live balances, or watcher unavailable in this context.</p>}
       </Block>
@@ -348,14 +343,14 @@ function CoinsView() {
   );
 }
 
-function ApiView() {
+function ApiView({ fnSecrets }) {
   const authBadge = (a) => a === "pub" ? <Badge tone="pub">Public</Badge> : a === "admin" ? <Badge tone="warn">Admin-gated</Badge> : <Badge>Secret-gated</Badge>;
   return (
     <>
-      <Block title="Internal Functions" desc="13 base44/functions, tagged by actual auth posture.">
+      <Block title="Internal Functions" desc={`${FNS.length} base44/functions, tagged by actual auth posture. Secret names shown to admins only — served via opsIntel, not bundled.`}>
         <table className="w-full border-collapse">
           <thead><tr><Th>Function</Th><Th>Purpose</Th><Th>Auth</Th><Th>Note</Th></tr></thead>
-          <tbody>{FNS.map(([f, p, a, n]) => <tr key={f}><Td name mono>{f}</Td><Td>{p}</Td><Td>{authBadge(a)}</Td><Td mono>{n}</Td></tr>)}</tbody>
+          <tbody>{FNS.map(([f, p, a, n]) => { const note = (fnSecrets && fnSecrets[f]) ? fnSecrets[f] : n; return <tr key={f}><Td name mono>{f}</Td><Td>{p}</Td><Td>{authBadge(a)}</Td><Td mono>{note}</Td></tr>; })}</tbody>
         </table>
       </Block>
       <Block title="Proposed Functions — planned" desc="New functions to close the open gaps. None exist yet — listed so the roadmap stays visible and honest.">
@@ -381,11 +376,11 @@ function InfraView() {
   return (
     <>
       <div className="grid grid-cols-1 gap-2.5 md:grid-cols-3">
-        {[["Hosting", "Base44 is the runtime source of truth. GitHub is a live two-way mirror."], ["Environment variables", "7 secrets via Deno.env.get() — see Security Center."], ["Storage", "12 Base44 entities."]].map(([k, v]) => <div key={k} className="border border-slate2/60 bg-card p-4"><div className="font-mono text-[9px] uppercase tracking-[0.22em] text-dim">{k}</div><div className="mt-3 text-[13px] leading-snug text-silver">{v}</div><div className="mt-3"><Badge tone="ok">Implemented</Badge></div></div>)}
+        {[["Hosting", "Base44 is the runtime source of truth. GitHub is a live two-way mirror."], ["Environment variables", "7 secrets via Deno.env.get() — inventory in Security Center (admin, server-served)."], ["Storage", "12 Base44 entities."]].map(([k, v]) => <div key={k} className="border border-slate2/60 bg-card p-4"><div className="font-mono text-[9px] uppercase tracking-[0.22em] text-dim">{k}</div><div className="mt-3 text-[13px] leading-snug text-silver">{v}</div><div className="mt-3"><Badge tone="ok">Implemented</Badge></div></div>)}
       </div>
       <div className="mt-5"><Block title="Data Storage — Entities" desc="Row-security posture per entity."><EntityGrid /></Block></div>
       <div className="grid gap-2.5 md:grid-cols-2">
-        <Gap n="Build pipeline / CI-CD">No workflow config. lint / typecheck / build run manually. Build-verify command in Deploy &amp; Releases.</Gap>
+        <Gap n="Release tagging / CI-CD">GitHub Actions build-verify runs on push (lint · build). A release-tagging / CHANGELOG pipeline via promoteBackup is still proposed.</Gap>
         <Gap n="Cron jobs">No scheduled task runner configured.</Gap>
         <Gap n="Logs">No centralized log aggregation. AccessLog is the one structured audit trail.</Gap>
         <Gap n="Secrets rotation">Pattern documented; no cadence or scanning. secretsAudit proposed.</Gap>
@@ -394,15 +389,21 @@ function InfraView() {
   );
 }
 
-function SecurityView() {
+function SecurityView({ secrets }) {
   const notImpl = ["Dependency scanning", "SBOM", "Contract audit tracker", "Key rotation", "Backup & disaster recovery", "Rate limiting", "OWASP checklist", "Compliance checklist"];
   return (
     <>
-      <Block title="Secrets Inventory" desc="Exact names only — values always via Deno.env.get(), never in code.">
-        <table className="w-full border-collapse">
-          <thead><tr><Th>Secret</Th><Th>Used by</Th><Th>Purpose</Th></tr></thead>
-          <tbody>{SECRETS.map(([s, u, p]) => <tr key={s}><Td name mono>{s}</Td><Td mono>{u}</Td><Td>{p}</Td></tr>)}</tbody>
-        </table>
+      <Block title="Secrets Inventory" desc="Names + purpose served from an admin-gated endpoint (opsIntel), never shipped in the client bundle. Values are only ever read server-side via Deno.env.get().">
+        {secrets == null ? (
+          <p className="font-mono text-[11px] text-dim">— loading from opsIntel, or unavailable in this context.</p>
+        ) : secrets.length === 0 ? (
+          <p className="font-mono text-[11px] text-dim">— no secrets returned.</p>
+        ) : (
+          <table className="w-full border-collapse">
+            <thead><tr><Th>Secret</Th><Th>Used by</Th><Th>Purpose</Th></tr></thead>
+            <tbody>{secrets.map(([s, u, p]) => <tr key={s}><Td name mono>{s}</Td><Td mono>{u}</Td><Td>{p}</Td></tr>)}</tbody>
+          </table>
+        )}
       </Block>
       <Block title="Access Matrix" desc="member → operative → moderator → admin">
         {ROLES.map(([r, l, d]) => <div key={r} className="flex flex-wrap items-start justify-between gap-5 border-b border-slate2/30 py-4 last:border-0"><Badge tone="ok">{r}</Badge><div className="flex-1 text-right"><div className="font-mono text-[9px] uppercase tracking-[0.11em] text-dim">{l}</div><div className="mt-1 text-[13px] text-dim">{d}</div></div></div>)}
@@ -437,7 +438,7 @@ function MonitorView({ lat }) {
       <div className="grid gap-2.5 md:grid-cols-2">
         <Gap n="RPC latency">No server-side probing of Solana/Polygon RPC endpoints. opsHealth would add this.</Gap>
         <Gap n="Wallet watcher status">cryptoWatch has no uptime/health tracking beyond on-demand calls.</Gap>
-        <Gap n="Build status">No CI pipeline to report status from.</Gap>
+        <Gap n="Build status">CI build-verify runs on GitHub Actions; an in-portal status readout isn't wired yet (opsHealth would pull it).</Gap>
         <Gap n="Background jobs">No scheduled job runner configured.</Gap>
         <Gap n="Errors / warnings feed">No centralized error tracking (e.g. Sentry) wired.</Gap>
       </div>
@@ -445,22 +446,25 @@ function MonitorView({ lat }) {
   );
 }
 
-function RiskView() {
+function RiskView({ risks }) {
   const sevBadge = (s) => s === "high" ? <Badge tone="high">High</Badge> : s === "med" ? <Badge tone="warn">Med</Badge> : <Badge>Low</Badge>;
-  const c = { high: RISKS.filter((r) => r[2] === "high").length, med: RISKS.filter((r) => r[2] === "med").length, low: RISKS.filter((r) => r[2] === "low").length };
+  if (risks == null) {
+    return <Block title="Risk Register" desc="Served live from opsIntel (agency-gated) — not shipped in the client bundle."><p className="font-mono text-[11px] text-dim">— loading risk register, or unavailable in this context.</p></Block>;
+  }
+  const c = { high: risks.filter((r) => r[2] === "high").length, med: risks.filter((r) => r[2] === "med").length, low: risks.filter((r) => r[2] === "low").length };
   return (
     <>
       <div className="grid grid-cols-2 gap-2.5 md:grid-cols-4">
-        <Stat k="Open risks" v={String(RISKS.length)} />
+        <Stat k="Open risks" v={String(risks.length)} />
         <Stat k="High severity" v={String(c.high)} accent="text-[#FF0040]" />
         <Stat k="Medium" v={String(c.med)} accent="text-flare" />
         <Stat k="Low" v={String(c.low)} accent="text-dim" />
       </div>
       <div className="mt-5">
-        <Block title="Risk Register" desc="The 8 items behind “open risk items” on the overview. Live-editable via the proposed riskRegister function; static here.">
+        <Block title="Risk Register" desc="The items behind “open risk items” on the overview. Served live from opsIntel (agency-gated); the proposed riskRegister function will make them editable.">
           <table className="w-full border-collapse">
             <thead><tr><Th>ID</Th><Th>Risk</Th><Th>Sev</Th><Th>Area</Th><Th>Status</Th><Th>Mitigation</Th></tr></thead>
-            <tbody>{RISKS.map(([id, r, s, a, m]) => <tr key={id}><Td name mono>{id}</Td><Td>{r}</Td><Td>{sevBadge(s)}</Td><Td>{a}</Td><Td><Badge tone="warn">Open</Badge></Td><Td>{m}</Td></tr>)}</tbody>
+            <tbody>{risks.map(([id, r, s, a, m]) => <tr key={id}><Td name mono>{id}</Td><Td>{r}</Td><Td>{sevBadge(s)}</Td><Td>{a}</Td><Td><Badge tone="warn">Open</Badge></Td><Td>{m}</Td></tr>)}</tbody>
           </table>
         </Block>
       </div>
@@ -478,7 +482,7 @@ function DeployView() {
       <div className="grid grid-cols-1 gap-2.5 md:grid-cols-3">
         <div className="border border-slate2/60 bg-card p-4"><div className="font-mono text-[9px] uppercase tracking-[0.22em] text-dim">STAGE / BACKUP</div><div className="mt-3 font-display text-sm font-bold text-silver">Internal review</div><div className="mt-2 font-mono text-[9px] uppercase tracking-[0.12em] text-dim">appId 6a6748e0…591871</div></div>
         <div className="border border-slate2/60 bg-card p-4"><div className="font-mono text-[9px] uppercase tracking-[0.22em] text-dim">LIVE / main</div><div className="mt-3 font-display text-sm font-bold text-silver">Production</div><div className="mt-2 font-mono text-[9px] uppercase tracking-[0.12em] text-dim">appId 6a62213c…04ff5</div></div>
-        <div className="border border-slate2/60 bg-card p-4"><div className="font-mono text-[9px] uppercase tracking-[0.22em] text-dim">GitHub mirror</div><div className="mt-3 text-[13px] text-silver">Two-way · S3 canonical</div><div className="mt-3"><Badge tone="ok">Implemented</Badge></div></div>
+        <div className="border border-slate2/60 bg-card p-4"><div className="font-mono text-[9px] uppercase tracking-[0.22em] text-dim">CI · GitHub Actions</div><div className="mt-3 text-[13px] text-silver">Build-verify on push (lint · build)</div><div className="mt-3"><Badge tone="ok">Implemented</Badge></div></div>
       </div>
       <div className="mt-5">
         <Block title="GitHub Mirror" desc="Non-destructive bidirectional mirror. S3 stays the source of truth (git_remote_source = s3); code mirrors to GitHub as commits automatically; GitHub-side edits sync back. No manual commit step.">
@@ -489,7 +493,7 @@ function DeployView() {
           <p className="mt-4 text-[12.5px] leading-relaxed text-dim"><span className="text-flare">Caveat:</span> very large single files (e.g. the 34KB AGPL LICENSE) can abort the Base44-side write before it reaches the mirror — add those via GitHub's own UI.</p>
         </Block>
       </div>
-      <Block title="Build Verify" desc="Run locally before any promotion. No CI pipeline yet (R-03) — proposed promoteBackup would tag releases and write CHANGELOG.">
+      <Block title="Build Verify" desc="Runs on every push via GitHub Actions build-verify, and locally before promotion. Release tagging + CHANGELOG automation (promoteBackup) still proposed — R-03.">
         <pre className="overflow-x-auto border border-slate2/50 bg-black p-3 font-mono text-[11px] leading-relaxed text-dim"><span className="text-[#39FF14]">$</span> npm run build {'>'} /tmp/b.log 2{'>'}&amp;1; echo "BUILD EXIT: $?"{"\n"}<span className="text-ozone">BUILD EXIT: 0</span>{"\n"}<span className="text-[#39FF14]">$</span> tail -3 /tmp/b.log</pre>
       </Block>
       <Block title="Promotion Gate — BACKUP → main" desc="The standing rule made mechanical. Every box must be checked before promotion unlocks.">
@@ -560,7 +564,7 @@ function ConsoleView({ queue, onVerify, busy }) {
           })}
         </div>
       </Block>
-      <Block title="Moderation Queue" desc="Live pending captures (Location, status=pending). Approve/reject writes through immediately via Location.update.">
+      <Block title="Moderation Queue" desc="Live pending captures (Location, status=pending). Approve/reject writes through the moderate function immediately.">
         {queue == null ? (
           <p className="font-mono text-[11px] text-dim">— loading queue…</p>
         ) : queue.length === 0 ? (
@@ -615,6 +619,7 @@ export default function PortalOps() {
   const { user, isLoadingAuth, authChecked } = useAuth();
   const [active, setActive] = useState("exec");
   const [clr, setClr] = useState(3); // UI-only demo of the access matrix
+  const [intel, setIntel] = useState(null); // { risks, secrets, fn_secrets } from opsIntel
   const [stats, setStats] = useState(null);
   const [crypto, setCrypto] = useState(null);
   const [lat, setLat] = useState({});
@@ -629,6 +634,10 @@ export default function PortalOps() {
     if (!isAgency) return;
     let alive = true;
     (async () => {
+      try {
+        const r = await base44.functions.invoke("opsIntel");
+        if (alive) setIntel(payload(r));
+      } catch { /* sensitive metadata stays server-side; sections show a loading/unavailable note */ }
       try {
         const t0 = performance.now();
         const r = await base44.functions.invoke("fieldStats");
@@ -652,13 +661,10 @@ export default function PortalOps() {
   const verify = useCallback(async (id, status) => {
     setBusy((b) => ({ ...b, [id]: true }));
     try {
-      await base44.entities.Location.update(id, { status });
+      await base44.functions.invoke("moderate", { action: "verify", entity: "Location", id, status });
       setQueue((q) => (q || []).filter((r) => r.id !== id));
-    } catch {
-      try { await base44.functions.invoke("moderate", { action: "verify", entity: "Location", id, status }); setQueue((q) => (q || []).filter((r) => r.id !== id)); } catch { /* surfaced via disabled state */ }
-    } finally {
-      setBusy((b) => ({ ...b, [id]: false }));
-    }
+    } catch { /* surfaced via disabled state */ }
+    finally { setBusy((b) => ({ ...b, [id]: false })); }
   }, []);
 
   if (isLoadingAuth || !authChecked) {
@@ -686,17 +692,17 @@ export default function PortalOps() {
 
   const renderView = () => {
     switch (active) {
-      case "exec": return <ExecView stats={stats} />;
+      case "exec": return <ExecView stats={stats} intel={intel} />;
       case "map": return <MapView />;
       case "protocol": return <ProtocolView />;
       case "treasury": return <TreasuryView crypto={crypto} />;
       case "coins": return <CoinsView />;
-      case "api": return <ApiView />;
+      case "api": return <ApiView fnSecrets={intel?.fn_secrets} />;
       case "infra": return <InfraView />;
-      case "security": return <SecurityView />;
+      case "security": return <SecurityView secrets={intel?.secrets} />;
       case "docs": return <DocsView />;
       case "monitor": return <MonitorView lat={lat} />;
-      case "risk": return <RiskView />;
+      case "risk": return <RiskView risks={intel?.risks} />;
       case "deploy": return <DeployView />;
       case "console": return <ConsoleView queue={queue} onVerify={verify} busy={busy} />;
       case "roster": return <RosterView />;
@@ -714,7 +720,7 @@ export default function PortalOps() {
           <div className="border-b border-slate2/50 pb-6 pt-4">
             <span className="font-mono text-[10px] font-bold uppercase tracking-[0.3em] text-ozone">// Internal · Agency · /portal/ops</span>
             <h1 className="mt-3 font-display text-4xl font-bold leading-[0.98] tracking-[-0.03em] text-silver md:text-5xl">Architecture Operations Portal</h1>
-            <p className="mt-4 max-w-[74ch] text-[14.5px] leading-relaxed text-dim">Single source of truth for system architecture, protocol stack, treasury and security posture. Real repo state where verified — <span className="text-ozone">explicit "Planned" labels</span> everywhere infra doesn't exist yet. Treasury, Security, Deploy and Ops Console stay admin-only; admins can preview lower clearances to watch the matrix gate these panels — it never changes real permissions.</p>
+            <p className="mt-4 max-w-[74ch] text-[14.5px] leading-relaxed text-dim">Single source of truth for system architecture, protocol stack, treasury and security posture. Real repo state where verified — <span className="text-ozone">explicit "Planned" labels</span> everywhere infra doesn't exist yet. Sensitive metadata (secret names, risk register) is served at runtime from an agency-gated endpoint — never bundled. Admins can preview lower clearances to watch the matrix gate these panels — it never changes real permissions.</p>
           </div>
 
           {/* clearance strip — admins only (preview-as demo) */}
@@ -757,7 +763,7 @@ export default function PortalOps() {
           {/* footer */}
           <div className="mt-14 border-t border-slate2/40 pt-6 font-mono text-[10px] leading-relaxed tracking-[0.05em] text-dim">
             OOH EARTH · ARCHITECTURE OPERATIONS PORTAL · v2 · Orbital Perspective<br />
-            Live data via fieldStats · cryptoWatch · Location. Git commits mirror automatically (no manual step).
+            Live data via opsIntel · fieldStats · cryptoWatch · Location. Git commits mirror automatically (no manual step).
           </div>
         </div>
       </main>
