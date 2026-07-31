@@ -187,9 +187,9 @@ export default function UiKit() {
               <ThemeModeMatrix />
             </Panel>
 
-            <Panel id="mobility" idx="07" title="Mobility intel · nomads.com" status="live · Web7">
+            <Panel id="mobility" idx="07" title="Mobility intel · nomads.com" status="snapshot · Web7">
               <p className="mb-3 max-w-2xl font-body text-sm leading-[1.6] text-darkgray">
-                Live external-data module — nomad-density counts pulled from nomads.com, rendered through the field design system. Demonstrates ambient, composable, sovereign-data card patterns.
+                External-data module — a static snapshot of nomad-density counts from nomads.com, rendered through the field design system. Demonstrates ambient, composable, sovereign-data card patterns.
               </p>
               <NomadPulse compact />
             </Panel>
