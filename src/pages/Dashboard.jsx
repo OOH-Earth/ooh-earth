@@ -2,7 +2,7 @@ import { useEffect, useState, useCallback } from "react";
 import { base44 } from "@/api/base44Client";
 import Nav from "@/components/ooh/Nav";
 import HorizonProgress from "@/components/ooh/HorizonProgress";
-import { Loader2, LogOut, Check, X, ShieldCheck, ArrowUpRight, RefreshCw, Trash2, AlertTriangle, Eye } from "lucide-react";
+import { Loader2, LogOut, Check, X, ShieldCheck, ArrowUpRight, RefreshCw, Trash2, AlertTriangle, Eye, FileText, Clock, Inbox, Flame, Search, ChevronDown } from "lucide-react";
 import { Link } from "react-router-dom";
 import LocationThumb from "@/components/ooh/map/LocationThumb";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
@@ -14,19 +14,38 @@ const STATUS_BADGE = {
   verified: "border-silver/30 text-silver",
   rejected: "border-flare/50 text-flare",
 };
-
 const ACCESS_BADGE = {
   admin: "border-ozone/50 text-ozone",
   moderator: "border-flare/50 text-flare",
   operative: "border-silver/40 text-silver",
   member: "border-slate2/60 text-darkgray",
 };
+const MINE_FILTERS = [["all", "All"], ["pending", "Pending"], ["verified", "Verified"], ["rejected", "Rejected"]];
 
 // unwrap base44.functions.invoke result (SDK returns { data })
 const payload = (res) => (res && typeof res === "object" && "data" in res ? res.data : res);
-// read clearance regardless of whether the SDK returns it flat or under .data
 const accessOf = (u) => (u && (u.access ?? u.data?.access)) || "member";
 const roleOf = (u) => (u && (u.role ?? u.data?.role)) || "user";
+
+function StatCard({ label, value, Icon, tone = "text-silver" }) {
+  return (
+    <div className="min-w-[128px] flex-1 border border-slate2/60 bg-card p-4">
+      <div className="flex items-center justify-between">
+        <span className="font-mono text-[9px] uppercase tracking-[0.2em] text-dim">{label}</span>
+        <Icon className={`h-3.5 w-3.5 ${tone}`} />
+      </div>
+      <div className={`mt-2 font-mono text-3xl font-bold tabular ${tone}`}>{value}</div>
+    </div>
+  );
+}
+
+function Chip({ active, onClick, children }) {
+  return (
+    <button onClick={onClick} className={`border px-2.5 py-1.5 font-mono text-[9px] font-bold uppercase tracking-[0.15em] transition-colors ${active ? "border-ozone bg-ozone/[0.08] text-ozone" : "border-slate2/60 text-dim hover:border-ozone/40 hover:text-silver"}`}>
+      {children}
+    </button>
+  );
+}
 
 function Row({ r, onVerify, busy, triage }) {
   return (
@@ -38,7 +57,9 @@ function Row({ r, onVerify, busy, triage }) {
           <span className={`shrink-0 border px-1.5 py-0.5 font-mono text-[8px] uppercase tracking-[0.2em] ${STATUS_BADGE[r.status] || ""}`}>{r.status}</span>
           {triage && <span className="shrink-0 border border-flare/60 px-1.5 py-0.5 font-mono text-[8px] uppercase tracking-[0.2em] text-flare">Triage</span>}
         </div>
-        <p className="truncate font-mono text-[9px] uppercase tracking-[0.15em] text-dim">{r.address || `${r.lat?.toFixed(4)}, ${r.lng?.toFixed(4)}`}</p>
+        <p className="truncate font-mono text-[9px] uppercase tracking-[0.15em] text-dim">
+          {r.type && <span className="text-darkgray">{r.type} · </span>}{r.address || `${r.lat?.toFixed(4)}, ${r.lng?.toFixed(4)}`}
+        </p>
       </div>
       {onVerify && (
         <div className="flex shrink-0 gap-1">
@@ -59,7 +80,13 @@ export default function Dashboard() {
   const [refreshing, setRefreshing] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
-  const [previewAs, setPreviewAs] = useState(null); // UI-only persona preview
+  const [previewAs, setPreviewAs] = useState(null);
+  // ui
+  const [mineFilter, setMineFilter] = useState("all");
+  const [queueOpen, setQueueOpen] = useState(true);
+  const [qSearch, setQSearch] = useState("");
+  const [qTriageOnly, setQTriageOnly] = useState(false);
+  const [qType, setQType] = useState("all");
 
   const deleteAccount = async () => {
     setDeleting(true);
@@ -71,31 +98,22 @@ export default function Dashboard() {
     setUser(u);
     const elevated = roleOf(u) === "admin" || accessOf(u) === "admin";
     const canViewQueue = elevated || accessOf(u) === "moderator" || accessOf(u) === "operative";
-
     const myTask = base44.entities.Location.filter({ created_by_id: u.id }, "-created_date", 100);
     let pendTask;
     if (elevated) {
       pendTask = base44.entities.Location.filter({ status: "pending" }, "-created_date", 100);
     } else if (canViewQueue) {
-      // moderators + operatives read the queue via the server-gated function
-      pendTask = base44.functions
-        .invoke("moderate", { action: "queue" })
-        .then((res) => payload(res)?.locations || [])
-        .catch(() => []);
+      pendTask = base44.functions.invoke("moderate", { action: "queue" }).then((res) => payload(res)?.locations || []).catch(() => []);
     } else {
       pendTask = Promise.resolve([]);
     }
-
     const [myList, pendList] = await Promise.all([myTask, pendTask]);
     setMine(myList || []);
     setPending(pendList || []);
   }, []);
 
   useEffect(() => {
-    (async () => {
-      try { await load(); } catch { /* auth handled by route guard */ }
-      finally { setLoading(false); }
-    })();
+    (async () => { try { await load(); } catch { /* route guard */ } finally { setLoading(false); } })();
   }, [load]);
 
   useEffect(() => {
@@ -103,31 +121,21 @@ export default function Dashboard() {
     return () => { if (unsub) unsub(); };
   }, [load]);
 
-  const refresh = async () => {
-    setRefreshing(true);
-    try { await load(); } finally { setRefreshing(false); }
-  };
+  const refresh = async () => { setRefreshing(true); try { await load(); } finally { setRefreshing(false); } };
 
   const verify = async (id, status) => {
     setBusy((b) => ({ ...b, [id]: true }));
     try {
       const adminNow = roleOf(user) === "admin" || accessOf(user) === "admin";
-      if (adminNow) {
-        await base44.entities.Location.update(id, { status });
-      } else {
-        await base44.functions.invoke("moderate", { action: "verify", entity: "Location", id, status });
-      }
+      if (adminNow) { await base44.entities.Location.update(id, { status }); }
+      else { await base44.functions.invoke("moderate", { action: "verify", entity: "Location", id, status }); }
       setPending((p) => p.filter((r) => r.id !== id));
-    } catch { /* error bubbles */ }
+    } catch { /* bubbles */ }
     finally { setBusy((b) => ({ ...b, [id]: false })); }
   };
 
   if (loading) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-void">
-        <Loader2 className="h-6 w-6 animate-spin text-ozone" />
-      </div>
-    );
+    return <div className="flex min-h-screen items-center justify-center bg-void"><Loader2 className="h-6 w-6 animate-spin text-ozone" /></div>;
   }
 
   const realIsAdmin = roleOf(user) === "admin" || accessOf(user) === "admin";
@@ -142,12 +150,31 @@ export default function Dashboard() {
   const sortedPending = [...pending].sort((a, b) => triageScore(b) - triageScore(a));
   const triageCount = sortedPending.filter((r) => triageScore(r) >= 2).length;
 
+  const myVerified = mine.filter((r) => r.status === "verified").length;
+  const myPending = mine.filter((r) => r.status === "pending").length;
+  const queueTypes = [...new Set(sortedPending.map((r) => r.type).filter(Boolean))].sort();
+  const filteredQueue = sortedPending.filter((r) => {
+    if (qTriageOnly && triageScore(r) < 2) return false;
+    if (qType !== "all" && r.type !== qType) return false;
+    if (qSearch.trim()) { const s = qSearch.trim().toLowerCase(); if (!((r.title || "").toLowerCase().includes(s) || (r.address || "").toLowerCase().includes(s))) return false; }
+    return true;
+  });
+  const filteredMine = mineFilter === "all" ? mine : mine.filter((r) => r.status === mineFilter);
+
+  const cards = [
+    { label: "Filed", value: mine.length, Icon: FileText, tone: "text-silver" },
+    { label: "Verified", value: myVerified, Icon: ShieldCheck, tone: "text-brand-green" },
+    { label: "In review", value: myPending, Icon: Clock, tone: "text-ozone" },
+    ...(canView ? [{ label: "In queue", value: pending.length, Icon: Inbox, tone: "text-ozone" }] : []),
+    ...(canAct ? [{ label: "Triage", value: triageCount, Icon: Flame, tone: "text-flare" }] : []),
+  ];
+
   return (
     <div className="relative min-h-screen bg-void">
       <HorizonProgress />
       <Nav />
       <main className="page-top px-5 pb-24 md:px-8">
-        <div className="mx-auto max-w-4xl">
+        <div className="mx-auto max-w-5xl">
           {/* header */}
           <div className="flex flex-wrap items-end justify-between gap-4 border-b border-slate2/50 pb-6">
             <div>
@@ -161,22 +188,12 @@ export default function Dashboard() {
               </p>
             </div>
             <div className="flex flex-wrap items-center gap-2">
-              {/* persona preview — compact dropdown, real admins only */}
               {realIsAdmin && (
                 <div className="flex items-center gap-1.5 border border-ozone/30 bg-ozone/[0.03] pl-2.5">
                   <Eye className="h-3 w-3 text-dim" />
                   <span className="font-mono text-[9px] uppercase tracking-[0.2em] text-dim">Preview</span>
-                  <select
-                    value={previewAs ?? ""}
-                    onChange={(e) => setPreviewAs(e.target.value || null)}
-                    aria-label="Preview as role"
-                    className="cursor-pointer border-0 bg-transparent py-2 pr-2 font-mono text-[10px] font-bold uppercase tracking-[0.15em] text-ozone outline-none"
-                  >
-                    <option value="">live</option>
-                    <option value="member">member</option>
-                    <option value="operative">operative</option>
-                    <option value="moderator">moderator</option>
-                    <option value="admin">admin</option>
+                  <select value={previewAs ?? ""} onChange={(e) => setPreviewAs(e.target.value || null)} aria-label="Preview as role" className="cursor-pointer border-0 bg-transparent py-2 pr-2 font-mono text-[10px] font-bold uppercase tracking-[0.15em] text-ozone outline-none">
+                    <option value="">live</option><option value="member">member</option><option value="operative">operative</option><option value="moderator">moderator</option><option value="admin">admin</option>
                   </select>
                 </div>
               )}
@@ -189,50 +206,85 @@ export default function Dashboard() {
             </div>
           </div>
 
-          {/* preview-active notice */}
           {previewAs && (
             <div className="mt-3 flex items-center gap-2 border border-flare/30 bg-flare/[0.04] px-3 py-1.5 font-mono text-[9px] uppercase tracking-[0.2em] text-flare/90">
               <Eye className="h-3 w-3" /> Previewing as {previewAs} · UI only — data &amp; permissions unchanged
             </div>
           )}
 
-          {/* ── PRIMARY: my captures ── */}
-          <section className="mt-8">
-            <div className="flex items-center justify-between">
+          {/* KPI cards */}
+          <div className="mt-6 flex flex-wrap gap-3">
+            {cards.map((c) => <StatCard key={c.label} {...c} />)}
+          </div>
+
+          {/* ── PRIMARY: my captures + status filter ── */}
+          <section className="mt-10">
+            <div className="flex flex-wrap items-center justify-between gap-3">
               <h2 className="font-display text-lg font-bold uppercase tracking-[-0.01em] text-silver">My field captures</h2>
-              <span className="font-mono text-[10px] uppercase tracking-[0.25em] text-dim">// {mine.length} filed</span>
+              <div className="flex flex-wrap items-center gap-1.5">
+                {MINE_FILTERS.map(([key, label]) => (
+                  <Chip key={key} active={mineFilter === key} onClick={() => setMineFilter(key)}>
+                    {label} {key === "all" ? mine.length : mine.filter((r) => r.status === key).length}
+                  </Chip>
+                ))}
+              </div>
             </div>
             <PullToRefresh onRefresh={refresh} className="mt-4 max-h-[55vh] min-h-0 lg:max-h-none">
               <div className="space-y-2">
-                {mine.length ? mine.map((r) => <Row key={r.id} r={r} />) : (
+                {filteredMine.length ? filteredMine.map((r) => <Row key={r.id} r={r} />) : (
                   <div className="border border-slate2/40 bg-card p-6 text-center">
-                    <p className="font-mono text-[10px] uppercase tracking-[0.25em] text-dim">// No captures filed yet</p>
-                    <Link to="/map" className="mt-3 inline-flex items-center gap-2 font-mono text-[10px] font-bold uppercase tracking-[0.25em] text-ozone">
-                      Open the map <ArrowUpRight className="h-3.5 w-3.5" />
-                    </Link>
+                    <p className="font-mono text-[10px] uppercase tracking-[0.25em] text-dim">// {mine.length ? "No captures match this filter" : "No captures filed yet"}</p>
+                    {!mine.length && (
+                      <Link to="/map" className="mt-3 inline-flex items-center gap-2 font-mono text-[10px] font-bold uppercase tracking-[0.25em] text-ozone">
+                        Open the map <ArrowUpRight className="h-3.5 w-3.5" />
+                      </Link>
+                    )}
                   </div>
                 )}
               </div>
             </PullToRefresh>
           </section>
 
-          {/* ── SECONDARY: verification queue (operatives read-only, mods + admins act) ── */}
+          {/* ── SECONDARY: verification queue — collapsible + filters ── */}
           {canView && (
             <section className="mt-10">
-              <div className="flex items-center justify-between">
-                <h2 className="font-display text-lg font-bold uppercase tracking-[-0.01em] text-silver">
-                  {canAct ? "Verification queue" : "Incoming — field intel"}
-                </h2>
-                <span className="font-mono text-[10px] uppercase tracking-[0.25em] text-dim">
-                  // {pending.length} pending {triageCount > 0 && <span className="text-flare/80">· {triageCount} triage</span>}
-                  {!canAct && <span className="text-silver/60"> · read-only</span>}
+              <button onClick={() => setQueueOpen((o) => !o)} aria-expanded={queueOpen} className="flex w-full items-center justify-between gap-3 border border-slate2/50 bg-card/40 px-4 py-3 text-left transition-colors hover:border-ozone/40">
+                <span className="flex flex-wrap items-center gap-2 font-display text-lg font-bold uppercase tracking-[-0.01em] text-silver">
+                  <Inbox className="h-4 w-4 text-ozone" /> {canAct ? "Verification queue" : "Incoming intel"}
+                  <span className="font-mono text-[9px] uppercase tracking-[0.2em] text-dim">
+                    // {pending.length} pending{triageCount > 0 && <span className="text-flare/80"> · {triageCount} triage</span>}{!canAct && " · read-only"}
+                  </span>
                 </span>
-              </div>
-              <div className="mt-4 space-y-2">
-                {sortedPending.length ? sortedPending.map((r) => <Row key={r.id} r={r} onVerify={canAct ? verify : undefined} busy={busy[r.id]} triage={triageScore(r) >= 2} />) : (
-                  <div className="border border-slate2/40 bg-card p-6 text-center font-mono text-[10px] uppercase tracking-[0.25em] text-dim">// Queue clear — no pending captures</div>
-                )}
-              </div>
+                <ChevronDown className={`h-4 w-4 shrink-0 text-dim transition-transform ${queueOpen ? "rotate-180" : ""}`} />
+              </button>
+
+              {queueOpen && (
+                <div className="mt-3">
+                  {/* filter bar */}
+                  <div className="flex flex-wrap items-center gap-2 border border-slate2/40 bg-card/30 p-2">
+                    <div className="relative min-w-[160px] flex-1">
+                      <Search className="absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-darkgray" />
+                      <input value={qSearch} onChange={(e) => setQSearch(e.target.value)} placeholder="Search title or location" className="w-full border border-slate2 bg-void py-1.5 pl-8 pr-2 font-mono text-[10px] text-silver outline-none transition-colors placeholder:text-darkgray focus:border-ozone" />
+                    </div>
+                    <Chip active={qTriageOnly} onClick={() => setQTriageOnly((v) => !v)}>Triage only</Chip>
+                    {queueTypes.length > 0 && (
+                      <select value={qType} onChange={(e) => setQType(e.target.value)} className="border border-slate2 bg-void px-2 py-1.5 font-mono text-[10px] uppercase tracking-[0.1em] text-silver">
+                        <option value="all">all types</option>
+                        {queueTypes.map((t) => <option key={t} value={t}>{t}</option>)}
+                      </select>
+                    )}
+                    <span className="ml-auto font-mono text-[9px] uppercase tracking-[0.2em] text-dim">{filteredQueue.length} shown</span>
+                  </div>
+                  {/* scrollable list */}
+                  <div className="mt-2 max-h-[60vh] space-y-2 overflow-y-auto pr-1">
+                    {filteredQueue.length ? filteredQueue.map((r) => <Row key={r.id} r={r} onVerify={canAct ? verify : undefined} busy={busy[r.id]} triage={triageScore(r) >= 2} />) : (
+                      <div className="border border-slate2/40 bg-card p-6 text-center font-mono text-[10px] uppercase tracking-[0.25em] text-dim">
+                        // {pending.length ? "No captures match these filters" : "Queue clear — no pending captures"}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
             </section>
           )}
 
@@ -243,9 +295,7 @@ export default function Dashboard() {
           <section className="mt-10">
             <div className="border border-flare/40">
               <div className="border-b border-flare/30 px-4 py-3">
-                <h2 className="flex items-center gap-2 font-display text-lg font-bold text-flare">
-                  <AlertTriangle className="h-4 w-4" /> Danger zone
-                </h2>
+                <h2 className="flex items-center gap-2 font-display text-lg font-bold text-flare"><AlertTriangle className="h-4 w-4" /> Danger zone</h2>
                 <p className="mt-1 font-mono text-[10px] uppercase tracking-[0.2em] text-dim">// irreversible account actions</p>
               </div>
               <div className="flex flex-wrap items-center justify-between gap-3 px-4 py-4">
