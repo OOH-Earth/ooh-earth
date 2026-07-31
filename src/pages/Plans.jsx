@@ -1,7 +1,8 @@
-import { useState } from "react";
-import { Link } from "react-router-dom";
+import { useState, useEffect } from "react";
 import { Image } from "@/components/ui/image";
-import { Check, ArrowUpRight, Globe2 } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
+import { base44 } from "@/api/base44Client";
+import { Check, ArrowUpRight, Globe2, Loader2, Settings2, Sparkles } from "lucide-react";
 import {
   Accordion,
   AccordionContent,
@@ -39,10 +40,12 @@ const FREE_PLANS = [
   },
 ];
 
+// Cadence → matches the server-authoritative PLANS table in createPlanCheckout.
+// Charged in USD (per the checkout stack); display mirrors those amounts.
 const TIERS = [
-  { cycle: "monthly", price: "£25", period: "/ monthly", old: null },
-  { cycle: "quarterly", price: "£60", period: "/ every 3 months", old: "£75" },
-  { cycle: "yearly", price: "£200", period: "/ yearly", old: "£240" },
+  { cycle: "monthly", price: "$25", period: "/ monthly", old: null },
+  { cycle: "quarterly", price: "$60", period: "/ every 3 months", old: "$75" },
+  { cycle: "yearly", price: "$200", period: "/ yearly", old: "$240" },
 ];
 
 const TIER_FEATURES = [
@@ -57,15 +60,68 @@ const FAQ = [
   { q: "Do I need to pay to use the platform?", a: "No, you don't need to pay to help us out. You can choose a free plan to get started and see what we can do together. Maybe you'll start something amazing." },
   { q: "Are my activities on the platform private?", a: "Yes. We believe privacy is a basic human right. All new sign-ups are completely anonymous, and we ensure all user information is 100% secure. When you create an account, all of your activity remains completely private." },
   { q: "What is the difference between an Anon Spotter and a Spotter?", a: "Anon Spotter (Free) provides anonymous access to basic site tools — operate anonymously, add locations to the map, report advertising, and access member-only content. Spotter (Free) lets you create a public profile to join discussions and climb the leaderboards, connect your bank to receive donations, and bookmark collections." },
+  { q: "How do supporter plans work?", a: "Supporter plans are recurring subscriptions billed monthly, quarterly, or yearly. They renew automatically until you cancel, and you can manage or cancel anytime from the billing portal — no need to email us. Cancelling stops future renewals; you keep access until the end of the period you've paid for." },
   { q: "How is my personal data handled?", a: "All your data is stored securely. Public profiles will never show any of your personal information by default, and users have full control over what others can see on their profile." },
   { q: "What is the goal of the OOH Earth platform?", a: "It is a radical platform designed for mapping, resisting, and replacing corporate outdoor advertising with public art, culture, and truth." },
-  { q: "How can I contribute to the movement?", a: "You can contribute by adding locations to the map, reporting advertising locations, and contributing to the community leaderboard. You can also support the movement through the Support Us portal." },
 ];
+
+const fmtDate = (ms) => { if (!ms) return ""; try { return new Date(ms).toLocaleDateString(undefined, { day: "numeric", month: "short", year: "numeric" }); } catch { return ""; } };
+const unwrap = (res) => (res && typeof res === "object" && "data" in res ? res.data : res);
 
 export default function Plans() {
   const [commandOpen, setCommandOpen] = useState(false);
   const openCommand = () => setCommandOpen(true);
-  const JOIN_URL = "https://oohearth.app/login-registration/";
+
+  const [user, setUser] = useState(null);
+  const [sub, setSub] = useState(null);        // active-ish subscription, or null
+  const [loadingUser, setLoadingUser] = useState(true);
+  const [busy, setBusy] = useState(null);      // cycle id or "portal"
+  const [notice, setNotice] = useState("");
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const st = params.get("status");
+    if (st === "subscribed") setNotice("You're now an OOH supporter — welcome aboard. Your plan may take a few seconds to appear here.");
+    else if (st === "cancelled") setNotice("Checkout cancelled — no charge was made.");
+
+    (async () => {
+      try {
+        const me = await base44.auth.me();
+        setUser(me);
+        if (me?.id) {
+          const subs = await base44.entities.Subscription.filter({ user_id: me.id }, "-created_date", 1).catch(() => []);
+          const s = subs?.[0];
+          setSub(s && ["active", "trialing", "past_due"].includes(s.status) ? s : null);
+        }
+      } catch { /* logged out — fine */ }
+      finally { setLoadingUser(false); }
+    })();
+  }, []);
+
+  const startCheckout = async (cycle) => {
+    if (!user?.id) { navigate("/login"); return; }
+    setBusy(cycle);
+    try {
+      const data = unwrap(await base44.functions.invoke("createPlanCheckout", { cycle }));
+      if (data?.url) { window.location.href = data.url; return; }
+      setNotice("Couldn't start checkout — please try again."); setBusy(null);
+    } catch (e) {
+      setNotice(e?.message === "login_required" ? "Please log in to subscribe." : "Couldn't start checkout — please try again.");
+      setBusy(null);
+    }
+  };
+
+  const openPortal = async () => {
+    setBusy("portal");
+    try {
+      const data = unwrap(await base44.functions.invoke("createBillingPortal", {}));
+      if (data?.url) { window.location.href = data.url; return; }
+      setNotice("Couldn't open the billing portal — please try again."); setBusy(null);
+    } catch { setNotice("Couldn't open the billing portal — please try again."); setBusy(null); }
+  };
+
+  const JOIN_URL = "/register"; // in-app registration (AuthShell)
 
   return (
     <div className="relative bg-void">
@@ -143,9 +199,9 @@ export default function Plans() {
                       </li>
                     ))}
                   </ul>
-                  <a href={JOIN_URL} target="_blank" rel="noreferrer" className="mt-6 inline-flex items-center gap-1.5 border border-slate2 px-4 py-3 font-mono text-[10px] font-bold uppercase tracking-[0.25em] text-darkgray transition-colors hover:border-ozone hover:text-ozone">
-                    Get started <ArrowUpRight className="h-3.5 w-3.5" />
-                  </a>
+                  <Link to={user ? "/dashboard" : JOIN_URL} className="mt-6 inline-flex items-center gap-1.5 border border-slate2 px-4 py-3 font-mono text-[10px] font-bold uppercase tracking-[0.25em] text-darkgray transition-colors hover:border-ozone hover:text-ozone">
+                    {user ? "Go to dashboard" : "Get started"} <ArrowUpRight className="h-3.5 w-3.5" />
+                  </Link>
                 </div>
               ))}
             </div>
@@ -157,28 +213,69 @@ export default function Plans() {
           <div className="px-5 py-16 md:px-8 md:py-24">
             <span className="font-mono text-[10px] uppercase tracking-[0.3em] text-ozone">// Supporter · Fuel the build</span>
             <h2 className="mt-3 font-display text-4xl font-bold leading-[1.05] tracking-[-0.02em] text-silver md:text-6xl">Choose your cadence</h2>
-            <div className="mt-10 grid gap-px border border-slate2/60 bg-slate2/40 md:grid-cols-3">
-              {TIERS.map((t) => (
-                <div key={t.cycle} className="flex flex-col bg-void p-6 md:p-8">
-                  <div className="font-mono text-[10px] uppercase tracking-[0.25em] text-ozone">{t.cycle}</div>
-                  <div className="mt-4 flex items-baseline gap-2">
-                    <span className="font-display text-5xl font-black tracking-[-0.02em] text-silver">{t.price}</span>
-                    {t.old && <span className="font-display text-lg text-dim line-through">{t.old}</span>}
+            <p className="mt-3 max-w-xl font-mono text-[11px] uppercase tracking-[0.2em] text-dim">// Recurring · cancel anytime from the billing portal</p>
+
+            {notice && (
+              <div className="mt-6 flex items-start gap-3 border border-ozone/40 bg-ozone/[0.05] px-4 py-3">
+                <Sparkles className="mt-0.5 h-4 w-4 shrink-0 text-ozone" />
+                <p className="font-mono text-[11px] leading-relaxed tracking-[0.05em] text-silver/80">{notice}</p>
+              </div>
+            )}
+
+            {sub && (
+              <div className="mt-6 flex flex-wrap items-center justify-between gap-3 border border-brand-green/40 bg-brand-green/[0.04] px-4 py-3">
+                <p className="font-mono text-[11px] uppercase tracking-[0.15em] text-brand-green">
+                  Active supporter · {sub.plan_tier || "plan"}{sub.cancel_at_period_end ? ` · ends ${fmtDate(sub.current_period_end)}` : sub.current_period_end ? ` · renews ${fmtDate(sub.current_period_end)}` : ""}
+                </p>
+                <button onClick={openPortal} disabled={busy === "portal"} className="inline-flex items-center gap-1.5 border border-slate2 px-3 py-2 font-mono text-[10px] font-bold uppercase tracking-[0.2em] text-darkgray transition-colors hover:border-ozone hover:text-ozone disabled:opacity-50">
+                  {busy === "portal" ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Settings2 className="h-3.5 w-3.5" />} Manage / cancel
+                </button>
+              </div>
+            )}
+
+            <div className="mt-8 grid gap-px border border-slate2/60 bg-slate2/40 md:grid-cols-3">
+              {TIERS.map((t) => {
+                const isCurrent = sub && sub.plan_tier === t.cycle;
+                const hasPlan = !!sub;
+                return (
+                  <div key={t.cycle} className={`flex flex-col bg-void p-6 md:p-8 ${isCurrent ? "ring-1 ring-inset ring-brand-green/50" : ""}`}>
+                    <div className="flex items-center justify-between">
+                      <div className="font-mono text-[10px] uppercase tracking-[0.25em] text-ozone">{t.cycle}</div>
+                      {isCurrent && <span className="border border-brand-green/50 px-1.5 py-0.5 font-mono text-[8px] uppercase tracking-[0.2em] text-brand-green">Current</span>}
+                    </div>
+                    <div className="mt-4 flex items-baseline gap-2">
+                      <span className="font-display text-5xl font-black tracking-[-0.02em] text-silver">{t.price}</span>
+                      {t.old && <span className="font-display text-lg text-dim line-through">{t.old}</span>}
+                    </div>
+                    <div className="mt-1 font-mono text-[10px] uppercase tracking-[0.25em] text-darkgray">{t.period}</div>
+                    <ul className="mt-6 flex-1 space-y-2.5">
+                      {TIER_FEATURES.map((f) => (
+                        <li key={f} className="flex items-start gap-2 font-display text-[13px] text-silver/80">
+                          <Check className="mt-0.5 h-3 w-3 shrink-0 text-ozone" /> {f}
+                        </li>
+                      ))}
+                    </ul>
+
+                    {loadingUser ? (
+                      <div className="mt-6 flex items-center justify-center border border-slate2 py-3"><Loader2 className="h-4 w-4 animate-spin text-dim" /></div>
+                    ) : isCurrent ? (
+                      <button onClick={openPortal} disabled={busy === "portal"} className="mt-6 inline-flex items-center justify-center gap-1.5 border border-brand-green/60 px-4 py-3 font-mono text-[10px] font-bold uppercase tracking-[0.25em] text-brand-green transition-colors hover:bg-brand-green hover:text-void disabled:opacity-50">
+                        {busy === "portal" ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Settings2 className="h-3.5 w-3.5" />} Manage / cancel
+                      </button>
+                    ) : hasPlan ? (
+                      <button onClick={openPortal} disabled={busy === "portal"} className="mt-6 inline-flex items-center justify-center gap-1.5 border border-slate2 px-4 py-3 font-mono text-[10px] font-bold uppercase tracking-[0.25em] text-silver transition-colors hover:border-ozone hover:text-ozone disabled:opacity-50">
+                        {busy === "portal" ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : "Switch plan"}
+                      </button>
+                    ) : (
+                      <button onClick={() => startCheckout(t.cycle)} disabled={busy === t.cycle} className="mt-6 inline-flex items-center justify-center gap-1.5 bg-ozone px-4 py-3 font-mono text-[10px] font-bold uppercase tracking-[0.25em] text-void transition-colors hover:bg-flare disabled:opacity-50">
+                        {busy === t.cycle ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <>{user ? "Subscribe" : "Log in to subscribe"} <ArrowUpRight className="h-3.5 w-3.5" /></>}
+                      </button>
+                    )}
                   </div>
-                  <div className="mt-1 font-mono text-[10px] uppercase tracking-[0.25em] text-darkgray">{t.period}</div>
-                  <ul className="mt-6 flex-1 space-y-2.5">
-                    {TIER_FEATURES.map((f) => (
-                      <li key={f} className="flex items-start gap-2 font-display text-[13px] text-silver/80">
-                        <Check className="mt-0.5 h-3 w-3 shrink-0 text-ozone" /> {f}
-                      </li>
-                    ))}
-                  </ul>
-                  <a href={JOIN_URL} target="_blank" rel="noreferrer" className="mt-6 inline-flex items-center justify-center gap-1.5 bg-ozone px-4 py-3 font-mono text-[10px] font-bold uppercase tracking-[0.25em] text-void transition-colors hover:bg-flare">
-                    Switch plan <ArrowUpRight className="h-3.5 w-3.5" />
-                  </a>
-                </div>
-              ))}
+                );
+              })}
             </div>
+            <p className="mt-4 font-mono text-[10px] leading-relaxed tracking-[0.05em] text-dim">Secure checkout by Stripe. Recurring until cancelled. Cancelling stops future renewals — you keep access to the end of the paid period.</p>
           </div>
         </section>
 
