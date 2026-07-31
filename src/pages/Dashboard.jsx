@@ -1,5 +1,6 @@
 import { useEffect, useState, useCallback } from "react";
 import { base44 } from "@/api/base44Client";
+import { roleOf, accessOf, payload } from "@/lib/clearance";
 import Nav from "@/components/ooh/Nav";
 import HorizonProgress from "@/components/ooh/HorizonProgress";
 import { Loader2, LogOut, Check, X, ShieldCheck, ArrowUpRight, RefreshCw, Trash2, AlertTriangle, Eye, FileText, Clock, Inbox, Flame, Search, ChevronDown, Activity, Route } from "lucide-react";
@@ -22,9 +23,6 @@ const ACCESS_BADGE = {
 };
 const MINE_FILTERS = [["all", "All"], ["pending", "Pending"], ["verified", "Verified"], ["rejected", "Rejected"]];
 
-const payload = (res) => (res && typeof res === "object" && "data" in res ? res.data : res);
-const accessOf = (u) => (u && (u.access ?? u.data?.access)) || "member";
-const roleOf = (u) => (u && (u.role ?? u.data?.role)) || "user";
 
 // normalise the two moderatable entities into one row shape
 const normLoc = (r) => ({
