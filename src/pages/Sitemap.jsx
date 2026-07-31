@@ -12,8 +12,7 @@ import { IS_STAGE, APP_ENV } from "@/lib/appEnv";
 import Breadcrumbs from "@/components/ooh/Breadcrumbs";
 
 // clearance readers — tolerate flat or nested SDK shapes
-const accessOf = (u) => (u && (u.access ?? u.data?.access)) || "member";
-const roleOf = (u) => (u && (u.role ?? u.data?.role)) || "user";
+import { accessOf, roleOf } from "@/lib/clearance";
 
 function VisBadge({ vis }) {
   const v = VISIBILITY[vis] || VISIBILITY.public;
