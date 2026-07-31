@@ -15,9 +15,7 @@ import { Loader2, Check, User as UserIcon, SlidersHorizontal, ShieldCheck, Datab
    localStorage for instant apply. Tabs adapt to clearance.
 ──────────────────────────────────────────────────────────── */
 
-const roleOf = (u) => (u && (u.role ?? u.data?.role)) || "user";
-const accessOf = (u) => (u && (u.access ?? u.data?.access)) || "member";
-const agencyOf = (u) => !!(u && (u.agency ?? u.data?.agency));
+import { roleOf, accessOf, agencyOf } from "@/lib/clearance";
 
 const ACCESS_BADGE = {
   admin: "border-ozone/50 text-ozone",
