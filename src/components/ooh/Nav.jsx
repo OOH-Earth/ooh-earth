@@ -9,6 +9,7 @@ import TelemetryBar from "@/components/ooh/TelemetryBar";
 import TypeEnhancer from "@/components/ooh/TypeEnhancer";
 import DashboardDropdown from "@/components/ooh/DashboardDropdown";
 import NavMenu from "@/components/ooh/NavMenu";
+import AccountMenu from "@/components/ooh/AccountMenu";
 import OfflineSyncBadge from "@/components/ooh/OfflineSyncBadge";
 import RadioMiniPlayer from "@/components/ooh/radio/RadioMiniPlayer";
 import { useWalkthrough } from "@/lib/walkthroughContext";
@@ -45,6 +46,7 @@ export default function Nav({ onCommand }) {
           <Link to="/channel" aria-label="OOH·TV channel" title="OOH·TV" className="hidden h-8 w-8 items-center justify-center border border-slate2 text-silver transition-colors hover:border-ozone hover:text-ozone md:flex">
             <Tv className="h-3.5 w-3.5" />
           </Link>
+          <AccountMenu />
           <button
             onClick={() => setMenuOpen(true)}
             aria-label="Open menu"
