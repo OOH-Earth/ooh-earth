@@ -33,7 +33,7 @@ export default function OperativeProfile() {
   return (
     <div className="min-h-screen bg-void">
       <Nav />
-      <main className="mx-auto max-w-5xl px-5 pb-24 pt-24 md:px-8">
+      <main className="mx-auto max-w-5xl px-5 pb-24 page-top md:px-8">
         <Link to="/" className="mb-6 flex items-center gap-1.5 font-mono text-[9px] uppercase tracking-[0.2em] text-darkgray transition-colors hover:text-ozone">
           <ArrowLeft className="h-3.5 w-3.5" /> Back to base
         </Link>
