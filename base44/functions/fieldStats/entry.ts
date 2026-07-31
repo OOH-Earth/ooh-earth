@@ -25,7 +25,11 @@ Deno.serve(async (req) => {
       const parts = String(r.address || '').split(',').map((s) => s.trim()).filter(Boolean);
       if (parts.length) cities.add(parts[parts.length - 1]);
     }
-    const raised = (leads || []).reduce((s, l) => s + (Number(l.amount) || 0), 0);
+    // Public "raised"/"donors" count CONFIRMED donations only (stripe/crypto).
+    // Lead-channel pledges are captured but never counted as raised, so neither
+    // pledges nor any fabricated record can inflate the public trust metric.
+    const confirmed = (leads || []).filter((l) => l.channel === 'stripe' || l.channel === 'crypto');
+    const raised = confirmed.reduce((s, l) => s + (Number(l.amount) || 0), 0);
     const digitalBusts = (busts || []).filter((r) => r.status !== 'rejected').length;
 
     return Response.json({
@@ -35,7 +39,7 @@ Deno.serve(async (req) => {
       cities: cities.size,
       points,
       raised,
-      donors: (leads || []).length,
+      donors: confirmed.length,
       digital_busts: digitalBusts,
     });
   } catch (error) {
