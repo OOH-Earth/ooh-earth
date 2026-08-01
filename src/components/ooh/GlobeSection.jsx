@@ -47,22 +47,23 @@ export default function GlobeSection() {
         />
       )}
 
-      <div className="pointer-events-none absolute inset-x-0 top-0 z-[1003] flex items-center justify-between px-5 py-4">
-        <span className="flex items-center gap-2">
-          <Globe className="h-3.5 w-3.5 text-ozone" />
-          <span className="font-mono text-[9px] uppercase tracking-[0.3em] text-ozone">// orbital atlas</span>
-        </span>
-        <span className="flex items-center gap-4">
-          <span className="hidden font-mono text-[9px] uppercase tracking-[0.2em] text-dim/70 sm:inline">
-            {markers.length} spots · {live ? "live sync" : "live spin"}
+      <div className="pointer-events-none absolute inset-x-0 top-0 z-[1003] flex items-start justify-between gap-3 px-4 py-3 md:px-5 md:py-4">
+        <div className="flex flex-col gap-0.5">
+          <span className="flex items-center gap-2">
+            <Globe className="h-3.5 w-3.5 shrink-0 text-ozone" />
+            <span className="font-mono text-[10px] uppercase tracking-[0.28em] text-ozone">// orbital atlas</span>
+            <span className="hidden font-mono text-[9px] uppercase tracking-[0.28em] text-dim/45 sm:inline">· global surveillance grid</span>
           </span>
-          <Link
-            to="/map"
-            className="pointer-events-auto flex items-center gap-1.5 border border-ozone/60 px-3 py-1.5 font-mono text-[10px] font-bold uppercase tracking-[0.2em] text-ozone transition-all hover:bg-ozone hover:text-void active:scale-[0.97]"
-          >
-            Open field map
-          </Link>
-        </span>
+          <span className="pl-[22px] font-mono text-[8px] uppercase tracking-[0.22em] text-dim/70">
+            {markers.length} spots · {live ? "live sync" : "live spin"}<span className="hidden sm:inline"> · cluster intel</span>
+          </span>
+        </div>
+        <Link
+          to="/map"
+          className="pointer-events-auto flex shrink-0 items-center gap-1.5 border border-ozone/60 bg-void/50 px-3 py-1.5 font-mono text-[10px] font-bold uppercase tracking-[0.2em] text-ozone backdrop-blur-sm transition-all hover:bg-ozone hover:text-void active:scale-[0.97]"
+        >
+          Open field map
+        </Link>
       </div>
     </section>
   );
