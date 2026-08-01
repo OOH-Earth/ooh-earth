@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { Coins, Grid3x3, Music, Smartphone, FileText, Box, Ruler, Activity, Image as ImageIcon, UserPlus, Layers, Watch, ShieldCheck, Loader2 } from "lucide-react";
+import { Coins, Grid3x3, Music, Smartphone, FileText, Box, Ruler, Activity, Image as ImageIcon, UserPlus, Layers, Watch, ShieldCheck, Loader2, Bike } from "lucide-react";
 import Nav from "@/components/ooh/Nav";
 import Breadcrumbs from "@/components/ooh/Breadcrumbs";
 import SiteFooter from "@/components/ooh/SiteFooter";
@@ -25,6 +25,7 @@ const META = {
   "/lab/devices": { icon: Watch, title: "Devices", desc: "Wearables & desktop apps — OOH Watch, NFC field tag, desktop console." },
   "/lab/spec": { icon: FileText, title: "Engineering Spec", desc: "State machine, BLE GATT, frame format, screen inventory." },
   "/lab/status": { icon: Activity, title: "Status Report", desc: "Lab engineering log — build register, revisions, pipeline, roadmap." },
+  "/lab/streetrunner": { icon: Bike, title: "Streetrunner", desc: "OE-1K/66 — Akira-class field-bike concept. Vector → blueprint → 3D concept art." },
 };
 
 function Card({ rec }) {
