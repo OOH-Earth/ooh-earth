@@ -58,7 +58,7 @@ const TIERS = [
       "Your name on the public Supporters wall",
       "The monthly field dispatch — the supporter briefing, before it goes public",
       "A vote in the quarterly roadmap poll — one supporter, one voice",
-      "Every cent funds the commons: no VC, no ads, copyleft forever",
+      "Every cent funds the commons: no ads, copyleft forever",
     ],
   },
   {
