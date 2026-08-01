@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { Coins, Grid3x3, Music, Smartphone, FileText, Box, Ruler, Activity, Image as ImageIcon, UserPlus } from "lucide-react";
+import { Coins, Grid3x3, Music, Smartphone, FileText, Box, Ruler, Activity, Image as ImageIcon, UserPlus, Layers } from "lucide-react";
 import Nav from "@/components/ooh/Nav";
 import Breadcrumbs from "@/components/ooh/Breadcrumbs";
 import SiteFooter from "@/components/ooh/SiteFooter";
@@ -10,7 +10,8 @@ import { useLabGate } from "@/components/ooh/LabGate";
 // Coin prototype area; pieces graduate into the main app once proven.
 
 const CARDS = [
-  { to: "/lab/coin", icon: Coins, title: "Genesis Coin", desc: "The meme coin you can hold — obverse, reverse, edge, tokenomics.", live: true },
+  { to: "/lab/coin", icon: Coins, title: "Genesis Chip", desc: "The crypto chip you can hold — physical artifact, 64mm Ø, 1:1 on-chain twin.", live: true },
+  { to: "/lab/token", icon: Layers, title: "Genesis Token", desc: "$OOHEX fungible token — community currency, rewards, governance, burn.", live: true },
   { to: "/lab/simulator", icon: Grid3x3, title: "Hex Engine Simulator", desc: "Working 64-state device — rings, Ba Gua dial, BLE frame log.", live: true },
   { to: "/lab/device", icon: Box, title: "3D Device", desc: "Interactive brass coin-cube — six rotating faces, spin, explode, HUD.", live: true },
   { to: "/lab/livingcoin", icon: Ruler, title: "Living Coin", desc: "Coin-cube production spec — technical drawings, six rotating brass faces.", live: true },

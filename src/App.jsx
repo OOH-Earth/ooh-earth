@@ -22,6 +22,7 @@ import { LabGateProvider } from '@/components/ooh/LabGate';
 // Add page imports here
 import LabHub from '@/pages/LabHub';
 import GenesisCoin from '@/pages/GenesisCoin';
+import GenesisToken from '@/pages/GenesisToken';
 import HexPoster from '@/pages/HexPoster';
 import HexSimulator from '@/pages/HexSimulator';
 import HexSpec from '@/pages/HexSpec';
@@ -196,6 +197,7 @@ const AuthenticatedApp = () => {
     {/* Lab — publicly viewable; create/act actions gated by LabGate */}
     <Route path="/lab" element={<LabHub />} />
     <Route path="/lab/coin" element={<GenesisCoin />} />
+    <Route path="/lab/token" element={<GenesisToken />} />
     <Route path="/lab/poster" element={<HexPoster />} />
     <Route path="/lab/simulator" element={<HexSimulator />} />
     <Route path="/lab/spec" element={<HexSpec />} />
