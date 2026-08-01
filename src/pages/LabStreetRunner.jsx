@@ -208,6 +208,31 @@ export default function LabStreetRunner() {
           ))}
         </section>
 
+        {/* roadmap — set up for further design work */}
+        <section className="mt-8">
+          <div className="flex items-baseline gap-3 border-b border-slate2 pb-2">
+            <h2 className="text-base font-bold uppercase tracking-[0.14em]">Roadmap</h2>
+            <span className="font-mono text-[11px] uppercase tracking-[0.18em] text-silver/45">design pipeline · next passes</span>
+          </div>
+          <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
+            {[
+              ["04 · Hero render", "3/4 view — the money shot for the deck and the hub tile."],
+              ["05 · Livery variants", "Stealth black vs a hi-vis ‘adbuster’ colourway; operative-tier keying."],
+              ["06 · Exploded view", "Frame, cell, hub motor and body panels pulled apart, callout-labelled."],
+              ["07 · Poster / one-pager", "Spec poster for print and the fundraising deck."],
+            ].map(([t, d]) => (
+              <div key={t} className="flex items-start gap-3 border border-dashed border-slate2 bg-void/40 p-4">
+                <span className="mt-1 h-2 w-2 shrink-0 rounded-full bg-flare/70" />
+                <div>
+                  <div className="font-mono text-[11px] font-bold uppercase tracking-[0.16em] text-silver/80">{t}</div>
+                  <p className="mt-1 font-mono text-[11px] leading-relaxed text-silver/45">{d}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+          <p className="mt-3 font-mono text-[10px] uppercase tracking-[0.2em] text-silver/35">// planned · design thinking continues here</p>
+        </section>
+
         <div className="mt-8 border-t border-slate2 pt-4 font-mono text-[10px] uppercase tracking-widest text-silver/40">
           OOH Earth Lab · OE-1K/66 Streetrunner · original concept · vector → blueprint → 3D · not for production
         </div>
