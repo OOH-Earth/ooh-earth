@@ -88,12 +88,13 @@ export default function HeroConsole({ onCommand }) {
     let cancelled = false;
     const load = async () => {
       try {
-        const [locs, ops, leads] = await Promise.all([
+        const [statsRes, locs, leads] = await Promise.all([
+          base44.functions.invoke("fieldStats", {}).catch(() => null),
           base44.listAllLocations().catch(() => []),
-          base44.entities.Operative.list("-created_date", 500).catch(() => []),
           base44.entities.LeadClaim.list("-created_date", 200).catch(() => []),
         ]);
         if (cancelled) return;
+        const stats = statsRes?.data ?? statsRes ?? {};
         const live = (locs || []).filter((x) => x.status !== "rejected");
         const verified = live.filter((x) => x.status === "verified").length;
 
@@ -109,12 +110,16 @@ export default function HeroConsole({ onCommand }) {
         const prev = series.slice(0, 7).reduce((a, b) => a + b, 0);
         const delta = prev > 0 ? Math.round(((recent - prev) / prev) * 100) : (recent > 0 ? 100 : 0);
 
+        // Prefer server-computed, RLS-immune aggregates (fieldStats) so the public
+        // HUD shows real numbers; fall back to direct counts if the call is down.
+        const spots = Number(stats.reports) || live.length;
+        const ver = (stats.verified != null && Number.isFinite(Number(stats.verified))) ? Number(stats.verified) : verified;
         setD({
-          spots: live.length,
-          verified,
+          spots,
+          verified: ver,
           leads: (leads || []).filter((x) => x.status === "pending").length,
-          ops: (ops || []).length,
-          rate: live.length ? Math.round((verified / live.length) * 100) : 0,
+          ops: Number(stats.operatives) || 0,
+          rate: spots ? Math.round((ver / spots) * 100) : 0,
           feed: (locs || []).slice(0, 10),
           series,
           delta,
