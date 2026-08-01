@@ -1,8 +1,9 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { useAuth } from "@/lib/AuthContext";
+import { base44 } from "@/api/base44Client";
 import {
   X, Compass,
   Home, Map as MapIcon, Megaphone, Scan, Tv, LayoutDashboard,
@@ -180,6 +181,36 @@ const list = {
   exit: { transition: { staggerChildren: 0.02, staggerDirection: -1 } },
 };
 
+// Lab nav items — pulled live from LabPrototype records so the admin's
+// `visible` toggle in /lab/admin controls which lab routes surface in the
+// sitemap menu. Hidden prototypes stay live (LabAccessRoute ignores
+// `visible` and only checks `access`), so direct links still resolve.
+function useLabNavItems() {
+  const [items, setItems] = useState([{ to: "/lab", label: "Hex Engine Lab" }]);
+  useEffect(() => {
+    let active = true;
+    const fetch = () =>
+      base44.entities.LabPrototype.list("sort_order", 100)
+        .then((rows) => {
+          if (!active) return;
+          const vis = (rows || []).filter((r) => r.visible !== false);
+          setItems([
+            { to: "/lab", label: "Hex Engine Lab" },
+            ...vis.map((r) => ({ to: r.path, label: r.title })),
+          ]);
+        })
+        .catch(() => {});
+    fetch();
+    let unsub;
+    try { unsub = base44.entities.LabPrototype?.subscribe?.(fetch); } catch { unsub = null; }
+    return () => { active = false; if (unsub) unsub(); };
+  }, []);
+  return items;
+}
+
+const withLabItems = (groups, labItems) =>
+  groups.map((g) => (g.group === "Lab" ? { ...g, items: labItems } : g));
+
 const groupV = {
   hidden: { opacity: 0, y: 14 },
   show: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 260, damping: 22 } },
@@ -196,6 +227,7 @@ const isAgencyMember = (u) => {
 function MobileLauncher({ onClose, onTour }) {
   const { user } = useAuth();
   const agency = isAgencyMember(user);
+  const groups = withLabItems(SITEMAP, useLabNavItems());
   let n = 0;
   return (
     <motion.div
@@ -231,7 +263,7 @@ function MobileLauncher({ onClose, onTour }) {
 
       <div className="min-h-0 flex-1 overflow-y-auto px-4 py-4 pb-10">
         <motion.div variants={list} initial="hidden" animate="show" exit="exit" className="space-y-5">
-          {SITEMAP.filter((g) => !g.agencyOnly || agency).map((g) => (
+          {groups.filter((g) => !g.agencyOnly || agency).map((g) => (
             <motion.div key={g.group} variants={groupV}>
               <div className="mb-2 flex items-center gap-2">
                 <span className="font-mono text-[9px] uppercase tracking-[0.3em] text-ozone">// {g.group}</span>
@@ -278,10 +310,11 @@ function MobileLauncher({ onClose, onTour }) {
 function PopoverLinks({ onClose }) {
   const { user } = useAuth();
   const agency = isAgencyMember(user);
+  const groups = withLabItems(SITEMAP, useLabNavItems());
   let n = 0;
   return (
     <motion.div variants={list} initial="hidden" animate="show" exit="exit" className="grid grid-cols-2 gap-x-5 gap-y-4 px-2 py-2">
-      {SITEMAP.filter((g) => !g.agencyOnly || agency).map((g) => (
+      {groups.filter((g) => !g.agencyOnly || agency).map((g) => (
         <motion.div key={g.group} variants={groupV}>
           <div className="mb-1 flex items-center gap-2 border-b border-slate2/40 pb-1">
             <span className="font-mono text-[9px] uppercase tracking-[0.3em] text-ozone">// {g.group}</span>
