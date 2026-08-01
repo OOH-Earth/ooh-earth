@@ -35,7 +35,6 @@ export default function FieldStatsHud() {
         if (s.verified != null) out.push({ icon: BadgeCheck, label: "VERIFIED", value: s.verified, accent: "text-[#39FF14]" });
         if (s.operatives != null) out.push({ icon: Users, label: "OPERATIVES", value: s.operatives });
         if (s.cities != null) out.push({ icon: Building2, label: "CITIES", value: s.cities, accent: "text-flare" });
-        if (s.raised != null) out.push({ icon: DollarSign, label: "FUNDED", value: `$${Number(s.raised).toLocaleString(undefined, { maximumFractionDigits: 0 })}`, accent: "text-flare" });
       } catch (e) {
         out.push({ icon: MapPin, label: "PLATFORM", value: "SYNCING…" });
       }
