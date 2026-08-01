@@ -19,6 +19,8 @@ import StageBanner from '@/components/ooh/StageBanner';
 import { WalkthroughProvider } from '@/lib/walkthroughContext';
 import { RadioProvider } from '@/lib/radioContext';
 import { LabGateProvider } from '@/components/ooh/LabGate';
+import LabAccessRoute from '@/components/ooh/lab/LabAccessRoute';
+import LabAdmin from '@/pages/LabAdmin';
 // Add page imports here
 import LabHub from '@/pages/LabHub';
 import GenesisCoin from '@/pages/GenesisCoin';
@@ -198,16 +200,15 @@ const AuthenticatedApp = () => {
       <Route path="/agency" element={<AgencyNewsroom />} />
       <Route path="/agency/blog" element={<Blog scope="agency" />} />
       <Route path="/agency/blog/:slug" element={<BlogArticle scope="agency" />} />
+      <Route path="/lab/admin" element={<LabAdmin />} />
     </Route>
-    {/* Lab — hub + public prototypes */}
-    <Route path="/lab" element={<LabHub />} />
-    <Route path="/lab/poster" element={<HexPoster />} />
-    <Route path="/lab/coin-poster" element={<CoinPoster />} />
-    <Route path="/lab/sequencer" element={<HexSequencer />} />
-    <Route path="/lab/nft" element={<NftCreator />} />
-
-    {/* Lab — agency / investor-only prototypes (token OR authenticated account) */}
-    <Route element={<InvestorRoute />}>
+    {/* Lab — dynamic access guard (public/agency toggled per prototype via /lab/admin) */}
+    <Route element={<LabAccessRoute />}>
+      <Route path="/lab" element={<LabHub />} />
+      <Route path="/lab/poster" element={<HexPoster />} />
+      <Route path="/lab/coin-poster" element={<CoinPoster />} />
+      <Route path="/lab/sequencer" element={<HexSequencer />} />
+      <Route path="/lab/nft" element={<NftCreator />} />
       <Route path="/lab/coin" element={<GenesisCoin />} />
       <Route path="/lab/token" element={<GenesisToken />} />
       <Route path="/lab/simulator" element={<HexSimulator />} />
