@@ -1,161 +1,206 @@
-import { useMemo, useState } from "react";
+import { useRef, useState } from "react";
 import { Link } from "react-router-dom";
+import { Download, Box, Coins, ArrowRight, ShieldCheck, Globe2, Award } from "lucide-react";
 import Nav from "@/components/ooh/Nav";
 import Breadcrumbs from "@/components/ooh/Breadcrumbs";
 import SiteFooter from "@/components/ooh/SiteFooter";
+import CoinViewer3D from "@/components/ooh/lab/CoinViewer3D";
+import CoinMatrixStrip from "@/components/ooh/lab/CoinMatrixStrip";
+import { useLabGate } from "@/components/ooh/LabGate";
+import { COIN_MATERIALS, COIN_EDITIONS, COIN_SPECS, COIN_TOKENOMICS, SDG_ALIGNMENTS } from "@/components/ooh/lab/coinPresets";
 
 // OOH Earth — Genesis Coin (Hex Engine Lab)
-// Built on the OOH Earth design system: void base + grid, ozone accent,
-// Inter Tight display / IBM Plex Mono data, sharp corners. The brass coin
-// artifact keeps its own material rendering (it's a brass object).
-
-const TRIGRAM_TICKS = ["☲", "☷", "☱", "☰", "☵", "☴", "☶", "☳"];
-const EDITIONS = ["FOUNDING EDITION", "CITY EDITION", "ARTIST PROOF"];
-const TOKENOMICS = [
-  ["Supply", "6,400 physical · 1:1 onchain twin"],
-  ["Editions", "64 series × 100 (one per hexagram)"],
-  ["Chain", "Base · ERC-721 + NFC claim"],
-  ["Claim", "Tap coin → sign → twin binds to wallet"],
-  ["Material", "CNC brass, PVD antique finish"],
-  ["Utility", "DAO weight ×1 · event proof-of-presence"],
-];
-
-// Deterministic pseudo-city network (LCG), ported verbatim from the handoff.
-function seededNetwork(num) {
-  const rand = (seed) => { let x = seed; return () => (x = (x * 16807) % 2147483647) / 2147483647; };
-  const r = rand(num + 7);
-  const nodes = Array.from({ length: 22 }, () => {
-    const a = r() * Math.PI * 2, d = 12 + r() * 30;
-    return { x: Math.round(50 + d * Math.cos(a)), y: Math.round(50 + d * Math.sin(a)), s: r() > 0.75 ? 9 : 6 };
-  });
-  const edges = [];
-  for (let i = 0; i < nodes.length; i++) {
-    const j = (i + 1 + Math.floor(r() * 4)) % nodes.length;
-    const dx = (nodes[j].x - nodes[i].x) * 3.4, dy = (nodes[j].y - nodes[i].y) * 3.4;
-    const len = Math.round(Math.sqrt(dx * dx + dy * dy));
-    if (len < 20 || len > 150) continue;
-    edges.push({ x: nodes[i].x, y: nodes[i].y, len, ang: Math.round((Math.atan2(dy, dx) * 180) / Math.PI) });
-  }
-  return { nodes, edges };
-}
-
-// Brass material — intrinsic to the artifact, kept as inline style.
-const BRASS_OBV = "radial-gradient(circle at 38% 30%, #e0c184, #a5824a 45%, #6e5530 78%, #8f6f3d)";
-const BRASS_REV = "radial-gradient(circle at 62% 30%, #d8b876, #9c7a42 48%, #6e5530 80%, #8f6f3d)";
-const BRASS_INNER = "radial-gradient(circle at 40% 32%, #c9a860, #93733f 60%, #6e5530)";
-const COIN_SHADOW = "inset 0 3px 6px rgba(255,255,255,.4), inset 0 -6px 12px rgba(0,0,0,.55), 0 18px 44px rgba(0,0,0,.6)";
-const REEDING = "repeating-conic-gradient(rgba(0,0,0,.14) 0deg .8deg, transparent .8deg 5.625deg)";
-
-function SectionLabel({ children }) {
-  return <div className="font-mono text-xs uppercase tracking-[0.22em] text-ozone">{children}</div>;
-}
+// Cultural artifact · Founding Edition · 64mm Ø
+// Evolved to NFT-grade 3D viewing standard with UN SDG alignment.
 
 export default function GenesisCoin() {
-  const [genesisNumber, setGenesisNumber] = useState(45);
-  const [editionLabel, setEditionLabel] = useState("FOUNDING EDITION");
-  const num = Math.min(6400, Math.max(1, Number(genesisNumber) || 1));
-  const { nodes, edges } = useMemo(() => seededNetwork(num), [num]);
-  const numLabel = String(num).padStart(4, "0");
+  const viewerRef = useRef(null);
+  const { gate } = useLabGate();
+  const [serial, setSerial] = useState(45);
+  const [edition, setEdition] = useState("FOUNDING EDITION");
+  const [materialId, setMaterialId] = useState("brass");
+
+  const num = Math.min(6400, Math.max(1, Number(serial) || 1));
+  const serialLabel = String(num).padStart(4, "0");
+  const config = { serial: serialLabel, edition };
+  const material = COIN_MATERIALS.find((m) => m.id === materialId) || COIN_MATERIALS[0];
+  const editionInfo = COIN_EDITIONS.find((e) => e.id === edition) || COIN_EDITIONS[0];
+
+  const handleExport = () => {
+    if (!gate("Export artifact PNG")) return;
+    viewerRef.current?.exportPNG();
+  };
 
   return (
     <div className="min-h-screen bg-void grid-bg text-silver">
       <Nav />
       <div className="mx-auto max-w-6xl page-top px-6 pb-12">
         <Breadcrumbs items={[{ label: "Lab", to: "/lab" }, { label: "Genesis Coin" }]} className="mb-4" />
+
         <header className="flex flex-wrap items-baseline gap-x-5 gap-y-2 border-b border-slate2 pb-4">
           <h1 className="text-2xl font-bold uppercase tracking-[0.14em]">Genesis <span className="text-ozone">Coin</span></h1>
-          <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-silver/50">Cultural artifact · Founding edition · 64mm Ø</p>
+          <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-silver/50">Cultural artifact · {editionInfo.name} · 64mm Ø</p>
           <div className="ml-auto flex items-center gap-4 font-mono text-xs uppercase tracking-[0.1em]">
-            <Link to="/lab" className="text-ozone transition-colors hover:text-ozone/70">← Lab</Link>
+            <Link to="/lab" className="text-silver/40 transition-colors hover:text-ozone">← Lab</Link>
             <span className="border border-flare/40 px-2 py-0.5 text-flare">Working copy</span>
           </div>
         </header>
 
+        {/* Cultural artifact designation */}
+        <div className="mt-5 flex items-start gap-3 border border-ozone/25 bg-ozone/[0.04] px-4 py-3">
+          <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-ozone" />
+          <p className="font-mono text-[11px] leading-relaxed text-silver/60">
+            <span className="text-ozone">CULTURAL ARTIFACT DESIGNATION</span> — The Genesis Coin is registered as a non-monetary cultural artifact under OOH Earth's UN-aligned protocol. It documents participation in the visual commons, not financial value. Aligned to UN SDGs 11, 16, 17.
+          </p>
+        </div>
+
+        {/* Controls */}
         <div className="mt-5 flex flex-wrap items-center gap-5 font-mono text-[11px] uppercase tracking-[0.14em] text-silver/50">
           <label className="flex items-center gap-2">
             Genesis №
-            <input type="number" min={1} max={6400} value={genesisNumber} onChange={(e) => setGenesisNumber(e.target.value)}
+            <input type="number" min={1} max={6400} value={serial} onChange={(e) => setSerial(e.target.value)}
               className="w-24 border border-slate2 bg-card px-2 py-1.5 font-mono text-xs tracking-normal text-silver outline-none focus:border-ozone" />
           </label>
           <label className="flex items-center gap-2">
             Edition
-            <select value={editionLabel} onChange={(e) => setEditionLabel(e.target.value)}
+            <select value={edition} onChange={(e) => setEdition(e.target.value)}
               className="border border-slate2 bg-card px-2 py-1.5 font-mono text-xs tracking-normal text-silver outline-none focus:border-ozone">
-              {EDITIONS.map((o) => <option key={o} value={o}>{o}</option>)}
+              {COIN_EDITIONS.map((o) => <option key={o.id} value={o.id}>{o.name}</option>)}
             </select>
           </label>
         </div>
 
-        <main className="mt-8 flex flex-wrap justify-center gap-10">
-          {/* OBVERSE */}
-          <section className="flex flex-col items-center gap-4">
-            <SectionLabel>Obverse · Identity</SectionLabel>
-            <div className="relative h-[340px] w-[340px] rounded-full" style={{ background: BRASS_OBV, boxShadow: COIN_SHADOW }}>
-              <div className="absolute inset-0 rounded-full" style={{ background: REEDING }} />
-              {TRIGRAM_TICKS.map((sym, i) => (
-                <div key={i} className="absolute left-1/2 top-1/2 h-4 w-4 text-center text-xs leading-4 text-[#4a3a1e]"
-                  style={{ margin: -8, transform: `rotate(${i * 45}deg) translateY(-146px) rotate(${-i * 45}deg)` }}>{sym}</div>
-              ))}
-              <div className="absolute inset-11 flex flex-col items-center justify-center gap-1 rounded-full border-2 border-[#6e5530]"
-                style={{ background: BRASS_INNER, boxShadow: "inset 0 2px 5px rgba(255,255,255,.3), inset 0 -4px 8px rgba(0,0,0,.5)" }}>
-                <div className="relative h-[54px] w-[54px] rounded-full border-[2.5px] border-[#4a3a1e]">
-                  <div className="absolute left-1/2 top-0 bottom-0 -ml-px w-[2.5px] bg-[#4a3a1e]" />
-                  <div className="absolute top-1/2 left-0 right-0 -mt-px h-[2.5px] bg-[#4a3a1e]" />
-                  <div className="absolute inset-1.5 rounded-full border-[1.5px] border-[#4a3a1e]" />
+        {/* Main grid: 3D viewer + material panel */}
+        <div className="mt-8 grid grid-cols-1 items-start gap-6 lg:grid-cols-[1.5fr_1fr]">
+          <div className="flex flex-col gap-3">
+            <CoinViewer3D ref={viewerRef} config={config} materialId={materialId} />
+            <CoinMatrixStrip config={config} material={material} />
+          </div>
+
+          {/* Material selector + specs */}
+          <div className="flex flex-col gap-4">
+            <div className="border border-slate2 bg-card p-5">
+              <div className="font-mono text-[11px] uppercase tracking-[0.2em] text-ozone">Material</div>
+              <div className="mt-3 grid grid-cols-2 gap-2">
+                {COIN_MATERIALS.map((m) => (
+                  <button key={m.id} onClick={() => setMaterialId(m.id)}
+                    className={`flex flex-col gap-1.5 border p-3 text-left transition-colors ${materialId === m.id ? "border-ozone bg-ozone/5" : "border-slate2 hover:border-ozone/40"}`}>
+                    <span className="h-4 w-full border border-slate2/50" style={{ background: m.hex }} />
+                    <span className="text-[11px] font-bold text-silver">{m.name}</span>
+                    <span className="font-mono text-[9px] text-silver/45">{m.desc}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="border border-slate2 bg-card p-5">
+              <div className="font-mono text-[11px] uppercase tracking-[0.2em] text-ozone">Physical specs · 64mm Ø</div>
+              <div className="mt-3 grid grid-cols-2 gap-x-6 gap-y-2.5 font-mono text-[11px]">
+                {COIN_SPECS.map(([k, v]) => (
+                  <div key={k}>
+                    <div className="text-[9px] uppercase tracking-widest text-silver/40">{k}</div>
+                    <div className="mt-0.5 text-silver/80">{v}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <button onClick={handleExport}
+              className="flex items-center justify-center gap-2 border-2 border-ozone bg-ozone px-4 py-2.5 font-mono text-[10px] font-bold uppercase tracking-[0.2em] text-void transition-colors hover:bg-flare hover:border-flare">
+              <Download className="h-3.5 w-3.5" /> Export artifact PNG
+            </button>
+          </div>
+        </div>
+
+        {/* UN SDG alignment */}
+        <div className="mt-8 border border-slate2 bg-card p-5">
+          <div className="flex items-center gap-2">
+            <Globe2 className="h-4 w-4 text-ozone" />
+            <div className="font-mono text-[11px] uppercase tracking-[0.2em] text-ozone">UN SDG alignment</div>
+          </div>
+          <div className="mt-4 grid grid-cols-1 gap-3 md:grid-cols-3">
+            {SDG_ALIGNMENTS.map((s) => (
+              <div key={s.num} className="border border-slate2 p-4">
+                <div className="flex items-baseline gap-2">
+                  <span className="font-display text-2xl font-bold text-ozone">{String(s.num).padStart(2, "0")}</span>
+                  <span className="text-sm font-bold text-silver">{s.name}</span>
                 </div>
-                <div className="mt-1.5 text-3xl font-bold tracking-[0.2em] text-[#3d2f16]">OOH</div>
-                <div className="ml-[0.5em] text-[13px] font-semibold tracking-[0.5em] text-[#4a3a1e]">EARTH</div>
-                <div className="mt-2 font-mono text-[10px] tracking-[0.14em] text-[#4a3a1e]">GENESIS · {editionLabel}</div>
-                <div className="font-mono text-[11px] tracking-[0.1em] text-[#3d2f16]">№ {numLabel}</div>
+                <p className="mt-2 font-mono text-[10px] leading-relaxed text-silver/50">{s.desc}</p>
               </div>
-            </div>
-            <p className="max-w-[320px] text-center font-mono text-[11px] leading-relaxed text-silver/50">64-state protocol ring (one detent per hexagram) · Ba Gua cardinal marks · engraved genesis number</p>
-          </section>
+            ))}
+          </div>
+        </div>
 
-          {/* REVERSE */}
-          <section className="flex flex-col items-center gap-4">
-            <SectionLabel>Reverse · The city as network</SectionLabel>
-            <div className="relative h-[340px] w-[340px] overflow-hidden rounded-full" style={{ background: BRASS_REV, boxShadow: COIN_SHADOW }}>
-              <div className="absolute inset-0 rounded-full" style={{ background: REEDING }} />
-              {edges.map((e, i) => (
-                <div key={"e" + i} className="absolute h-0.5 bg-[#4a3a1e]"
-                  style={{ left: `${e.x}%`, top: `${e.y}%`, width: e.len, transform: `rotate(${e.ang}deg)`, transformOrigin: "0 50%", opacity: 0.75, boxShadow: "0 1px 0 rgba(255,255,255,.18)" }} />
-              ))}
-              {nodes.map((n, i) => (
-                <div key={"n" + i} className="absolute rounded-full bg-[#3d2f16]"
-                  style={{ left: `${n.x}%`, top: `${n.y}%`, width: n.s, height: n.s, margin: -3, boxShadow: "inset 0 1px 2px rgba(0,0,0,.8), 0 1px 0 rgba(255,255,255,.25)" }} />
-              ))}
-              <div className="absolute inset-0 flex items-end justify-center pb-[34px]">
-                <div className="font-mono text-[11px] tracking-[0.3em] text-[#3d2f16]">NO BORDERS · ONLY NETWORKS</div>
+        {/* Tokenomics */}
+        <div className="mt-6 border border-slate2 bg-card p-5">
+          <div className="flex items-center gap-2">
+            <Coins className="h-4 w-4 text-ozone" />
+            <div className="font-mono text-[11px] uppercase tracking-[0.2em] text-ozone">Artifact + on-chain twin</div>
+          </div>
+          <div className="mt-3 border border-slate2/40 font-mono text-xs text-silver/60">
+            {COIN_TOKENOMICS.map(([k, v]) => (
+              <div key={k} className="flex justify-between gap-3 px-4 py-2 border-b border-slate2/30 last:border-0">
+                <span className="uppercase tracking-wider text-silver/50">{k}</span>
+                <span className="text-right text-silver">{v}</span>
               </div>
-            </div>
-            <p className="max-w-[320px] text-center font-mono text-[11px] leading-relaxed text-silver/50">The city engraved as nodes &amp; connections — infrastructure, movement, creativity — not political borders</p>
-          </section>
+            ))}
+          </div>
+          <p className="mt-3 font-mono text-[11px] leading-relaxed text-silver/40">Not primarily a currency. An artifact of participation — the meme coin you can hold. 1:1 on-chain twin binds the physical coin to a wallet via NFC tap-to-claim.</p>
+        </div>
 
-          {/* EDGE + TOKENOMICS */}
-          <section className="min-w-[300px] max-w-[420px] flex-1 basis-[320px]">
-            <SectionLabel>Edge · Protocol verbs</SectionLabel>
-            <div className="mt-3 overflow-hidden border border-[#6e5530]" style={{ boxShadow: "0 10px 30px rgba(0,0,0,.5)" }}>
-              <div className="relative flex justify-center py-3.5" style={{ background: "linear-gradient(180deg, #dcbb7c, #a5824a 40%, #6e5530 60%, #c3a05e)" }}>
-                <div className="absolute inset-0" style={{ background: "repeating-linear-gradient(90deg, rgba(0,0,0,.18) 0 2px, transparent 2px 7px)" }} />
-                <div className="relative font-mono text-[13px] tracking-[0.42em] text-[#3d2f16]">MOVE · MAP · DISCOVER · CREATE</div>
-              </div>
-              <div className="relative flex justify-center py-3.5" style={{ background: "linear-gradient(180deg, #c3a05e, #6e5530 40%, #a5824a 60%, #dcbb7c)" }}>
-                <div className="absolute inset-0" style={{ background: "repeating-linear-gradient(90deg, rgba(0,0,0,.18) 0 2px, transparent 2px 7px)" }} />
-                <div className="relative font-mono text-[13px] tracking-[0.42em] text-[#3d2f16]">BUILD · VERIFY · SIGN · CONNECT</div>
-              </div>
+        {/* Provenance certificate */}
+        <div className="mt-6 border border-ozone/30 bg-card p-5">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Award className="h-4 w-4 text-ozone" />
+              <div className="font-mono text-[11px] uppercase tracking-[0.2em] text-ozone">Provenance · cultural artifact certificate</div>
             </div>
-            <p className="mb-6 mt-2.5 font-mono text-[11px] leading-relaxed text-silver/50">Laser-engraved reeded edge, 8 verbs × 8 repetitions = 64 engravings. Each coin's edge sequence starts at its genesis hexagram.</p>
+            <span className="border border-flare/40 px-2 py-0.5 font-mono text-[9px] uppercase tracking-[0.1em] text-flare">{editionInfo.rarity}</span>
+          </div>
+          <div className="mt-4 grid grid-cols-2 gap-x-6 gap-y-2.5 md:grid-cols-3 font-mono text-[11px]">
+            {[
+              ["Artifact ID", `OOH-GC-${serialLabel}`],
+              ["Designation", "Cultural Artifact"],
+              ["Edition", editionInfo.name],
+              ["Material", material.name],
+              ["Diameter", "64mm Ø"],
+              ["SDG Class", "11 · 16 · 17"],
+              ["Chain Twin", "Base · ERC-721"],
+              ["Custodian", "Unclaimed"],
+              ["Origin", "OOH Earth Union"],
+            ].map(([k, v]) => (
+              <div key={k}>
+                <div className="text-[9px] uppercase tracking-widest text-silver/40">{k}</div>
+                <div className="mt-0.5 text-silver/80">{v}</div>
+              </div>
+            ))}
+          </div>
+          <p className="mt-4 border-t border-slate2/40 pt-3 font-mono text-[10px] leading-relaxed text-silver/45">
+            This certificate registers the artifact under OOH Earth's open provenance ledger. The physical coin and its on-chain twin are inseparable — claim the twin by tapping the embedded NFC to a wallet. Transfer of the physical coin transfers the twin.
+          </p>
+        </div>
 
-            <SectionLabel>Artifact + token</SectionLabel>
-            <div className="mt-3 border border-slate2 bg-card px-4 py-4 font-mono text-xs text-silver/60">
-              {TOKENOMICS.map(([k, v]) => (
-                <div key={k} className="flex justify-between gap-3 py-1"><span className="uppercase tracking-wider">{k}</span><span className="text-right text-silver">{v}</span></div>
-              ))}
-            </div>
-            <p className="mt-3 font-mono text-[11px] leading-relaxed text-silver/40">Not primarily a currency. An artifact of participation — the meme coin you can hold.</p>
-          </section>
-        </main>
+        {/* Lab integration */}
+        <div className="mt-6 border border-slate2 bg-card p-5">
+          <div className="font-mono text-[11px] uppercase tracking-[0.2em] text-ozone">Lab integration</div>
+          <div className="mt-4 grid grid-cols-1 gap-3 md:grid-cols-3">
+            <Link to="/lab/device" className="group flex items-center gap-3 border border-slate2 p-4 transition-colors hover:border-ozone/50">
+              <Box className="h-5 w-5 text-ozone" />
+              <div><div className="text-sm font-bold">3D Device</div><div className="font-mono text-[10px] text-silver/50">Coin-cube geometry</div></div>
+              <ArrowRight className="ml-auto h-4 w-4 text-silver/30 group-hover:text-ozone" />
+            </Link>
+            <Link to="/lab/livingcoin" className="group flex items-center gap-3 border border-slate2 p-4 transition-colors hover:border-ozone/50">
+              <Coins className="h-5 w-5 text-ozone" />
+              <div><div className="text-sm font-bold">Living Coin</div><div className="font-mono text-[10px] text-silver/50">Production spec</div></div>
+              <ArrowRight className="ml-auto h-4 w-4 text-silver/30 group-hover:text-ozone" />
+            </Link>
+            <Link to="/lab/nft" className="group flex items-center gap-3 border border-slate2 p-4 transition-colors hover:border-ozone/50">
+              <ShieldCheck className="h-5 w-5 text-ozone" />
+              <div><div className="text-sm font-bold">NFT Creator</div><div className="font-mono text-[10px] text-silver/50">Slab grading studio</div></div>
+              <ArrowRight className="ml-auto h-4 w-4 text-silver/30 group-hover:text-ozone" />
+            </Link>
+          </div>
+        </div>
       </div>
       <SiteFooter />
     </div>
