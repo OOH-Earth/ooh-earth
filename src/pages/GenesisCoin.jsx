@@ -9,9 +9,9 @@ import CoinMatrixStrip from "@/components/ooh/lab/CoinMatrixStrip";
 import { useLabGate } from "@/components/ooh/LabGate";
 import { COIN_MATERIALS, COIN_EDITIONS, COIN_SPECS, COIN_TOKENOMICS, SDG_ALIGNMENTS, EDGE_TYPES, ENAMEL_ACCENTS } from "@/components/ooh/lab/coinPresets";
 
-// OOH Earth — Genesis Coin (Hex Engine Lab)
-// Cultural artifact · Founding Edition · 64mm Ø
-// Evolved to NFT-grade 3D viewing standard with UN SDG alignment.
+// OOH Earth — Genesis Chip (Hex Engine Lab)
+// A physical crypto chip · cultural artifact · 64mm Ø · 1:1 on-chain twin
+// Built to 2025 challenge-chip standard with UN SDG alignment.
 
 export default function GenesisCoin() {
   const viewerRef = useRef(null);
@@ -38,11 +38,11 @@ export default function GenesisCoin() {
     <div className="min-h-screen bg-void grid-bg text-silver">
       <Nav />
       <div className="mx-auto max-w-6xl page-top px-6 pb-12">
-        <Breadcrumbs items={[{ label: "Lab", to: "/lab" }, { label: "Genesis Coin" }]} className="mb-4" />
+        <Breadcrumbs items={[{ label: "Lab", to: "/lab" }, { label: "Genesis Chip" }]} className="mb-4" />
 
         <header className="flex flex-wrap items-baseline gap-x-5 gap-y-2 border-b border-slate2 pb-4">
-          <h1 className="text-2xl font-bold uppercase tracking-[0.14em]">Genesis <span className="text-ozone">Coin</span></h1>
-          <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-silver/50">Cultural artifact · {editionInfo.name} · 64mm Ø</p>
+          <h1 className="text-2xl font-bold uppercase tracking-[0.14em]">Genesis <span className="text-ozone">Chip</span></h1>
+          <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-silver/50">Crypto chip · coin · cultural artifact · {editionInfo.name} · 64mm Ø</p>
           <div className="ml-auto flex items-center gap-4 font-mono text-xs uppercase tracking-[0.1em]">
             <Link to="/lab" className="text-silver/40 transition-colors hover:text-ozone">← Lab</Link>
             <span className="border border-flare/40 px-2 py-0.5 text-flare">Working copy</span>
@@ -53,7 +53,7 @@ export default function GenesisCoin() {
         <div className="mt-5 flex items-start gap-3 border border-ozone/25 bg-ozone/[0.04] px-4 py-3">
           <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-ozone" />
           <p className="font-mono text-[11px] leading-relaxed text-silver/60">
-            <span className="text-ozone">CULTURAL ARTIFACT DESIGNATION</span> — The Genesis Coin is registered as a non-monetary cultural artifact under OOH Earth's UN-aligned protocol. It documents participation in the visual commons, not financial value. Aligned to UN SDGs 11, 16, 17.
+            <span className="text-ozone">CRYPTO CHIP · CULTURAL ARTIFACT</span> — The Genesis Chip is a physical crypto chip: a 64mm precision-minted metal artifact paired 1:1 with an on-chain twin. It is not currency. It documents participation in the visual commons, bound cryptographically to a wallet via embedded NFC. Aligned to UN SDGs 11, 16, 17.
           </p>
         </div>
 
@@ -61,15 +61,15 @@ export default function GenesisCoin() {
         <div className="mt-3 grid grid-cols-1 gap-3 md:grid-cols-3">
           <div className="border border-slate2 bg-card p-4">
             <div className="font-mono text-[9px] uppercase tracking-widest text-ozone">01 · Prototype</div>
-            <p className="mt-2 font-mono text-[11px] leading-relaxed text-silver/55">The Lab is prototyping a physical-digital cultural artifact — a 64mm challenge coin with a 1:1 on-chain twin. This page is the live spec viewer.</p>
+            <p className="mt-2 font-mono text-[11px] leading-relaxed text-silver/55">The Lab is prototyping a physical crypto chip — a 64mm precision-minted artifact with a 1:1 on-chain twin. This page is the live spec viewer.</p>
           </div>
           <div className="border border-slate2 bg-card p-4">
             <div className="font-mono text-[9px] uppercase tracking-widest text-ozone">02 · Standard</div>
-            <p className="mt-2 font-mono text-[11px] leading-relaxed text-silver/55">Built to 2025 challenge-coin standards: deep 3D relief, hard-enamel color, premium materials, reeded/rope/lettered edges, and 4.5mm heft.</p>
+            <p className="mt-2 font-mono text-[11px] leading-relaxed text-silver/55">Built to 2025 crypto-chip standards: deep 3D relief, hard-enamel color, premium materials, reeded/rope/lettered edges, and 4.5mm heft.</p>
           </div>
           <div className="border border-slate2 bg-card p-4">
             <div className="font-mono text-[9px] uppercase tracking-widest text-ozone">03 · Mission</div>
-            <p className="mt-2 font-mono text-[11px] leading-relaxed text-silver/55">Not currency. An artifact of participation in the visual commons — documenting public-space reclamation, aligned to UN SDGs, minted union-made.</p>
+            <p className="mt-2 font-mono text-[11px] leading-relaxed text-silver/55">Not currency. A crypto chip — an artifact of participation in the visual commons, documenting public-space reclamation, aligned to UN SDGs, minted union-made.</p>
           </div>
         </div>
 
@@ -181,7 +181,7 @@ export default function GenesisCoin() {
         <div className="mt-6 border border-slate2 bg-card p-5">
           <div className="flex items-center gap-2">
             <Coins className="h-4 w-4 text-ozone" />
-            <div className="font-mono text-[11px] uppercase tracking-[0.2em] text-ozone">Artifact + on-chain twin</div>
+            <div className="font-mono text-[11px] uppercase tracking-[0.2em] text-ozone">Chip + on-chain twin</div>
           </div>
           <div className="mt-3 border border-slate2/40 font-mono text-xs text-silver/60">
             {COIN_TOKENOMICS.map(([k, v]) => (
@@ -192,6 +192,77 @@ export default function GenesisCoin() {
             ))}
           </div>
           <p className="mt-3 font-mono text-[11px] leading-relaxed text-silver/40">Not primarily a currency. An artifact of participation — the meme coin you can hold. 1:1 on-chain twin binds the physical coin to a wallet via NFC tap-to-claim.</p>
+        </div>
+
+        {/* Economics — how the chip sustains the commons */}
+        <div className="mt-6 border border-ozone/30 bg-card p-5">
+          <div className="flex items-center gap-2">
+            <Coins className="h-4 w-4 text-ozone" />
+            <div className="font-mono text-[11px] uppercase tracking-[0.2em] text-ozone">Economics · how the chip funds the commons</div>
+          </div>
+
+          <div className="mt-4 grid grid-cols-1 gap-3 md:grid-cols-2">
+            <div className="border border-slate2 p-4">
+              <div className="font-mono text-[9px] uppercase tracking-widest text-ozone">Production cost</div>
+              <p className="mt-1.5 font-mono text-[11px] leading-relaxed text-silver/55">Each chip costs ≈ $18–28 to CNC-mint depending on material (brass, titanium, gold plate) and enamel fills. This is the floor — the chip is never sold below production cost.</p>
+            </div>
+            <div className="border border-slate2 p-4">
+              <div className="font-mono text-[9px] uppercase tracking-widest text-ozone">Sale price</div>
+              <p className="mt-1.5 font-mono text-[11px] leading-relaxed text-silver/55">Founding Edition chips sell at $60–120 depending on tier. The margin above production is not profit — it funds the OOH Earth treasury (field mapping, legal defense, open-source tooling).</p>
+            </div>
+            <div className="border border-slate2 p-4">
+              <div className="font-mono text-[9px] uppercase tracking-widest text-ozone">On-chain twin</div>
+              <p className="mt-1.5 font-mono text-[11px] leading-relaxed text-silver/55">Each physical chip has a 1:1 ERC-721 twin on Base. The twin is claimable by tapping the embedded NFC to a wallet — the chip signs its own identity. The twin carries DAO voting weight (×1 proof-of-presence).</p>
+            </div>
+            <div className="border border-slate2 p-4">
+              <div className="font-mono text-[9px] uppercase tracking-widest text-ozone">Secondary royalty</div>
+              <p className="mt-1.5 font-mono text-[11px] leading-relaxed text-silver/55">If the on-chain twin is resold, a 2.5% creator royalty routes back to the treasury. This creates a recurring revenue stream from the secondary market — the commons earns every time a chip changes hands.</p>
+            </div>
+          </div>
+
+          <div className="mt-4 border border-slate2 bg-void p-4">
+            <div className="font-mono text-[9px] uppercase tracking-widest text-flare">The flow</div>
+            <div className="mt-3 flex flex-wrap items-center gap-2 font-mono text-[10px] uppercase tracking-wider text-silver/65">
+              <span className="border border-slate2 px-2 py-1">Buyer pays $80</span>
+              <ArrowRight className="h-3 w-3 text-ozone" />
+              <span className="border border-slate2 px-2 py-1">−$22 production</span>
+              <ArrowRight className="h-3 w-3 text-ozone" />
+              <span className="border border-ozone/40 bg-ozone/5 px-2 py-1 text-ozone">$58 to treasury</span>
+            </div>
+            <div className="mt-3 flex flex-wrap items-center gap-2 font-mono text-[10px] uppercase tracking-wider text-silver/65">
+              <span className="border border-slate2 px-2 py-1">NFC tap → claim twin</span>
+              <ArrowRight className="h-3 w-3 text-ozone" />
+              <span className="border border-slate2 px-2 py-1">Wallet holds ERC-721</span>
+              <ArrowRight className="h-3 w-3 text-ozone" />
+              <span className="border border-slate2 px-2 py-1">DAO weight ×1</span>
+            </div>
+            <div className="mt-3 flex flex-wrap items-center gap-2 font-mono text-[10px] uppercase tracking-wider text-silver/65">
+              <span className="border border-slate2 px-2 py-1">Resell twin on-chain</span>
+              <ArrowRight className="h-3 w-3 text-ozone" />
+              <span className="border border-flare/40 bg-flare/5 px-2 py-1 text-flare">2.5% royalty → treasury</span>
+              <ArrowRight className="h-3 w-3 text-ozone" />
+              <span className="border border-slate2 px-2 py-1">Recurring forever</span>
+            </div>
+          </div>
+
+          <div className="mt-4 grid grid-cols-3 gap-3">
+            <div className="border border-slate2 p-3 text-center">
+              <div className="font-display text-2xl font-bold text-ozone">6,400</div>
+              <div className="mt-1 font-mono text-[9px] uppercase tracking-widest text-silver/40">Physical chips · hard cap</div>
+            </div>
+            <div className="border border-slate2 p-3 text-center">
+              <div className="font-display text-2xl font-bold text-ozone">1:1</div>
+              <div className="mt-1 font-mono text-[9px] uppercase tracking-widest text-silver/40">On-chain twin ratio</div>
+            </div>
+            <div className="border border-slate2 p-3 text-center">
+              <div className="font-display text-2xl font-bold text-ozone">2.5%</div>
+              <div className="mt-1 font-mono text-[9px] uppercase tracking-widest text-silver/40">Secondary royalty</div>
+            </div>
+          </div>
+
+          <p className="mt-4 font-mono text-[11px] leading-relaxed text-silver/45">
+            <span className="text-silver/70">Why this works:</span> the chip is scarce (6,400 hard cap), utility-bearing (DAO weight + NFC claim), and self-funding (margin + royalty). It is not a security — it grants no financial return, no dividend, no equity. It is a cultural artifact whose production margin and secondary royalty sustain a public-interest mapping project. The economics are transparent: every dollar above production cost goes to the commons treasury, on the public record.
+          </p>
         </div>
 
         {/* Provenance certificate */}
@@ -205,8 +276,8 @@ export default function GenesisCoin() {
           </div>
           <div className="mt-4 grid grid-cols-2 gap-x-6 gap-y-2.5 md:grid-cols-3 font-mono text-[11px]">
             {[
-              ["Artifact ID", `OOH-GC-${serialLabel}`],
-              ["Designation", "Cultural Artifact"],
+              ["Chip ID", `OOH-GC-${serialLabel}`],
+              ["Designation", "Crypto Chip · Cultural Artifact"],
               ["Edition", editionInfo.name],
               ["Material", material.name],
               ["Diameter", "64mm Ø"],
@@ -225,7 +296,7 @@ export default function GenesisCoin() {
             ))}
           </div>
           <p className="mt-4 border-t border-slate2/40 pt-3 font-mono text-[10px] leading-relaxed text-silver/45">
-            This certificate registers the artifact under OOH Earth's open provenance ledger. The physical coin and its on-chain twin are inseparable — claim the twin by tapping the embedded NFC to a wallet. Transfer of the physical coin transfers the twin.
+            This certificate registers the chip under OOH Earth's open provenance ledger. The physical chip and its on-chain twin are inseparable — claim the twin by tapping the embedded NFC to a wallet. Transfer of the physical chip transfers the twin.
           </p>
         </div>
 

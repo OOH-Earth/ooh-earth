@@ -305,70 +305,89 @@ function makeEdgeTexture(matColor, edgeType) {
   return tex;
 }
 
-// ── Build the 3D coin with raised relief + rounded edge profile ──
+// ── Build the 3D crypto chip: single LatheGeometry body (rim + bevel minted
+//    as one solid piece — no floating rings) + reeded edge sleeve + recessed
+//    face texture discs. Matches the Casascius / Cryptochips reference profile.
 function buildCoin(matKey, edgeType, obvTex, revTex, edgeTex, obvBump, revBump) {
   const mat = COIN_MATERIALS.find((m) => m.id === matKey) || COIN_MATERIALS[0];
   const metalMat = (extra = {}) => new THREE.MeshPhysicalMaterial({
     color: mat.color,
     metalness: mat.metalness,
     roughness: mat.roughness,
-    clearcoat: 0.65,
-    clearcoatRoughness: 0.18,
-    envMapIntensity: 1.9,
+    clearcoat: 0.7,
+    clearcoatRoughness: 0.14,
+    envMapIntensity: 2.0,
     ...extra,
   });
 
-  // Outer group (auto-rotated) → inner group (tilts faces toward camera)
   const outer = new THREE.Group();
   const inner = new THREE.Group();
   inner.rotation.x = Math.PI / 2;
   outer.add(inner);
 
   // Dimensions (64mm Ø × 4.5mm heft → scaled units)
-  const R = 1.5;            // outer radius (rim outer edge)
-  const halfH = 0.14;       // half thickness (0.28 total ≈ 4.5mm)
-  const bevel = 0.06;       // rounding radius at face↔edge transition
-  const bodyR = R - bevel;  // 1.44 — cylinder inset so bevel torus forms outer corner
+  const R = 1.5;              // outer radius (widest at edge midline)
+  const halfH = 0.14;        // half thickness = rim top height
+  const fieldH = 0.115;      // recessed field height (rim raised 0.025 above field)
+  const bevel = 0.05;        // rounding radius at rim↔edge transition
+  const bodyR = R - bevel;   // 1.45 — rim outer / bevel start
+  const rimR = bodyR - 0.12; // 1.33 — rim inner / field outer
 
-  // Main body — straight cylindrical edge carries the reeding/rope/lettered texture
-  const geo = new THREE.CylinderGeometry(bodyR, bodyR, halfH * 2, 160, 1, false);
+  // ── Lathe profile: recessed field → raised rim → rounded bevel → straight
+  //    edge → rounded bevel → raised rim → recessed field. One solid revolution. ──
+  const segs = 8;
+  const bBev = [], tBev = [];
+  for (let i = 0; i <= segs; i++) {
+    const t = (i / segs) * (Math.PI / 2);
+    bBev.push(new THREE.Vector2(bodyR + bevel * Math.sin(t), -halfH + bevel - bevel * Math.cos(t)));
+  }
+  for (let i = 0; i <= segs; i++) {
+    const t = ((segs - i) / segs) * (Math.PI / 2);
+    tBev.push(new THREE.Vector2(bodyR + bevel * Math.sin(t), halfH - bevel + bevel * Math.cos(t)));
+  }
+  const profile = [
+    new THREE.Vector2(0, -fieldH),
+    new THREE.Vector2(rimR, -fieldH),
+    new THREE.Vector2(rimR, -halfH),
+    new THREE.Vector2(bodyR, -halfH),
+    ...bBev.slice(1),
+    new THREE.Vector2(R, halfH - bevel),
+    ...tBev.slice(1),
+    new THREE.Vector2(rimR, halfH),
+    new THREE.Vector2(rimR, fieldH),
+    new THREE.Vector2(0, fieldH),
+  ];
+  const bodyGeo = new THREE.LatheGeometry(profile, 128);
+  const bodyMat = metalMat({ roughness: mat.roughness * 0.82 });
+  const body = new THREE.Mesh(bodyGeo, bodyMat);
+  body.castShadow = true; body.receiveShadow = true;
+  inner.add(body);
+
+  // ── Edge texture sleeve — reeded/rope/lettered on the straight side ──
+  const edgeH = 2 * (halfH - bevel);
+  const edgeGeo = new THREE.CylinderGeometry(R + 0.003, R + 0.003, edgeH, 160, 1, true);
   const edgeMat = metalMat({ map: edgeTex, roughness: mat.roughness * 1.1 });
-  const obvMat = metalMat({ map: obvTex, bumpMap: obvBump, bumpScale: 0.08 });
-  const revMat = metalMat({ map: revTex, bumpMap: revBump, bumpScale: 0.08 });
-  const coin = new THREE.Mesh(geo, [edgeMat, obvMat, revMat]);
-  coin.castShadow = true; coin.receiveShadow = true;
-  inner.add(coin);
+  const edge = new THREE.Mesh(edgeGeo, edgeMat);
+  edge.castShadow = true;
+  inner.add(edge);
 
-  // Rounded bevel at both face↔edge corners — "rounding type" (Casascius profile)
-  const bevelGeo = new THREE.TorusGeometry(bodyR, bevel, 24, 160);
-  const bevelMat = metalMat({ roughness: mat.roughness * 0.8 });
-  const bevelTop = new THREE.Mesh(bevelGeo, bevelMat);
-  bevelTop.position.y = halfH; bevelTop.castShadow = true;
-  const bevelBot = new THREE.Mesh(bevelGeo, bevelMat);
-  bevelBot.position.y = -halfH; bevelBot.castShadow = true;
-  inner.add(bevelTop, bevelBot);
-
-  // Raised rim — sits cleanly ON the face (Casascius-style trough boundary)
-  const rimR = R - 0.13;       // 1.37 — just inside the bevel
-  const rimTube = 0.055;
-  const rimGeo = new THREE.TorusGeometry(rimR, rimTube, 18, 160);
-  const rimMat = metalMat({ roughness: mat.roughness * 0.65 });
-  const rimTop = new THREE.Mesh(rimGeo, rimMat);
-  rimTop.position.y = halfH + rimTube * 0.6;   // raised above face, slight minted embed
-  rimTop.castShadow = true;
-  const rimBot = new THREE.Mesh(rimGeo, rimMat);
-  rimBot.position.y = -(halfH + rimTube * 0.6);
-  rimBot.castShadow = true;
-  inner.add(rimTop, rimBot);
-
-  // Inner medallion ring — raised border on obverse only
-  const medR = 0.82;
-  const medTube = 0.032;
-  const medGeo = new THREE.TorusGeometry(medR, medTube, 14, 128);
-  const medTop = new THREE.Mesh(medGeo, rimMat);
-  medTop.position.y = halfH + medTube * 0.65;
-  medTop.castShadow = true;
-  inner.add(medTop);
+  // ── Face texture discs — sit in the recessed field, inside the raised rim ──
+  const faceGeo = new THREE.CircleGeometry(rimR, 128);
+  const obvMat = metalMat({ map: obvTex, bumpMap: obvBump, bumpScale: 0.09 });
+  const revMat = metalMat({ map: revTex, bumpMap: revBump, bumpScale: 0.09 });
+  const faceTop = new THREE.Mesh(faceGeo, obvMat);
+  faceTop.name = "faceTop";
+  faceTop.rotation.x = -Math.PI / 2;
+  faceTop.position.y = fieldH + 0.004;
+  faceTop.receiveShadow = true;
+  inner.add(faceTop);
+  const faceBot = new THREE.Mesh(faceGeo.clone(), revMat);
+  faceBot.name = "faceBot";
+  faceBot.rotation.x = Math.PI / 2;
+  faceBot.rotation.z = Math.PI;
+  faceBot.position.y = -(fieldH + 0.004);
+  faceBot.receiveShadow = true;
+  inner.add(faceBot);
 
   return outer;
 }
@@ -519,19 +538,29 @@ const CoinViewer3D = forwardRef(function CoinViewer3D({ config, materialId, edge
     st.fitDist = dist; st.fitCenter = center;
   }, [materialId, edgeType]);
 
-  // ── Update face textures on serial/edition/enamel change ──
+  // ── Update face textures + bump maps on serial/edition/enamel change ──
   useEffect(() => {
     const st = S.current; if (!st || !st.coin) return;
     const mat = COIN_MATERIALS.find((m) => m.id === materialId) || COIN_MATERIALS[0];
     const enamelHex = getEnamelHex(enamelId);
     const obvTex = makeObverseTexture(config, mat.color, enamelHex);
     const revTex = makeReverseTexture(Number(config.serial) || 1, mat.color, enamelHex);
-    // Walk the outer→inner→coin mesh to find the cylinder
+    const obvBump = makeObverseBump(config);
+    const revBump = makeReverseBump(Number(config.serial) || 1);
     const inner = st.coin.children[0];
-    const coinMesh = inner?.children?.find((o) => o.geometry?.type === "CylinderGeometry");
-    if (coinMesh && coinMesh.material) {
-      if (coinMesh.material[1]?.map) { coinMesh.material[1].map.dispose(); coinMesh.material[1].map = obvTex; coinMesh.material[1].needsUpdate = true; }
-      if (coinMesh.material[2]?.map) { coinMesh.material[2].map.dispose(); coinMesh.material[2].map = revTex; coinMesh.material[2].needsUpdate = true; }
+    const faceTop = inner?.children?.find((o) => o.name === "faceTop");
+    const faceBot = inner?.children?.find((o) => o.name === "faceBot");
+    if (faceTop?.material) {
+      if (faceTop.material.map) faceTop.material.map.dispose();
+      if (faceTop.material.bumpMap) faceTop.material.bumpMap.dispose();
+      faceTop.material.map = obvTex; faceTop.material.bumpMap = obvBump;
+      faceTop.material.needsUpdate = true;
+    }
+    if (faceBot?.material) {
+      if (faceBot.material.map) faceBot.material.map.dispose();
+      if (faceBot.material.bumpMap) faceBot.material.bumpMap.dispose();
+      faceBot.material.map = revTex; faceBot.material.bumpMap = revBump;
+      faceBot.material.needsUpdate = true;
     }
   }, [config.serial, config.edition, enamelId]);
 
