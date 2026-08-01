@@ -137,10 +137,10 @@ function buildSlab(config, cardTexture, st) {
     right.position.x = cardW / 2 + t / 2; grp.add(right);
     // Inner well — thin dark bars around card edges, creating recessed look
     const wT = 0.012, wD = 0.1;
-    grp.add(Object.assign(new THREE.Mesh(rbox(cardW, wT, wD, 0.005), wellMat), { position: new THREE.Vector3(0, cardH / 2 - wT / 2, 0.03) }));
-    grp.add(Object.assign(new THREE.Mesh(rbox(cardW, wT, wD, 0.005), wellMat), { position: new THREE.Vector3(0, -cardH / 2 + wT / 2, 0.03) }));
-    grp.add(Object.assign(new THREE.Mesh(rbox(wT, cardH - wT * 2, wD, 0.005), wellMat), { position: new THREE.Vector3(-cardW / 2 + wT / 2, 0, 0.03) }));
-    grp.add(Object.assign(new THREE.Mesh(rbox(wT, cardH - wT * 2, wD, 0.005), wellMat), { position: new THREE.Vector3(cardW / 2 - wT / 2, 0, 0.03) }));
+    const wTop = new THREE.Mesh(rbox(cardW, wT, wD, 0.005), wellMat); wTop.position.set(0, cardH / 2 - wT / 2, 0.03); grp.add(wTop);
+    const wBot = new THREE.Mesh(rbox(cardW, wT, wD, 0.005), wellMat); wBot.position.set(0, -cardH / 2 + wT / 2, 0.03); grp.add(wBot);
+    const wLeft = new THREE.Mesh(rbox(wT, cardH - wT * 2, wD, 0.005), wellMat); wLeft.position.set(-cardW / 2 + wT / 2, 0, 0.03); grp.add(wLeft);
+    const wRight = new THREE.Mesh(rbox(wT, cardH - wT * 2, wD, 0.005), wellMat); wRight.position.set(cardW / 2 - wT / 2, 0, 0.03); grp.add(wRight);
     // Front + back glass
     const winF = new THREE.Mesh(new THREE.PlaneGeometry(fW - 0.02, cardH + topH + 0.02), glassMat);
     winF.position.set(0, topH / 2 - 0.01, d / 2 + 0.001); grp.add(winF);
