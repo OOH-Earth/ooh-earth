@@ -14,6 +14,8 @@ _Last updated: 2026-08-01_
 - **Platform honesty preserved** — our live counts still come from the audited `fieldStats` (confirmed-only, no inflation), now under an `OOH EARTH · LIVE PLATFORM` divider followed by an `EARLY ACCESS · FOUNDING BACKERS SOUGHT` status chip, so day-one platform scale is never mistaken for movement scale.
 - **`movementEstimate.js`** — single documented source of truth for the estimate (method + provenance in-file: Brandalism 2012, Subvertisers Intl, Adfree Cities, Les Déboulonneurs, Adbusters, independents). Tune the numbers in one place.
 - **Operative Network** section gained an honest movement-context caption beneath the live tally (“day-one platform … the wider resistance is not new”).
+- **Estimate tuned & sourced** — figures dialled to conservative, verifiable numbers after checking anchors (Brandalism 2012 first drop 30+ boards/5 cities; COP21 2015 = 82 artists, 19 countries, ~600 subverts; Adfree Cities founded 2017). Now ~3K+ subverters, ~25K+ interventions, 30+ collectives, 20+ countries. Added `MOVEMENT_ANCHORS` (sourced milestones).
+- **Investor + Campaign context** — `MovementContext` (Tailwind) added to `/campaign`; a matching `inv-`styled “Not starting from zero” section added to `/investor`. Both restate the day-one / founding-backers status beside the sourced movement estimate, driven by the one shared module.
 
 ## 2026-08-01 — Y2K logo system wired in (live)
 
