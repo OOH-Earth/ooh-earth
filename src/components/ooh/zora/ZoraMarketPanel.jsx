@@ -1,10 +1,20 @@
-import { TrendingUp, TrendingDown, Activity } from "lucide-react";
+import { TrendingUp, TrendingDown, Activity, AlertTriangle } from "lucide-react";
 import { LineChart, Line, ResponsiveContainer, YAxis, Tooltip } from "recharts";
 import useCoinData from "@/components/ooh/zora/useCoinData";
 import { PRIMARY_COIN, fmtPrice, fmtCompact } from "@/components/ooh/zora/zoraConfig";
 
 export default function ZoraMarketPanel() {
-  const d = useCoinData(PRIMARY_COIN.addr, 20000);
+  const { data: d, error } = useCoinData(PRIMARY_COIN.addr, 20000);
+
+  if (error && !d) {
+    return (
+      <div className="flex h-48 flex-col items-center justify-center gap-2 border border-flare/40 bg-card">
+        <AlertTriangle className="h-4 w-4 text-flare" />
+        <span className="font-mono text-[10px] uppercase tracking-[0.3em] text-flare">// market signal lost</span>
+        <span className="font-mono text-[9px] uppercase tracking-[0.2em] text-dim">dexscreener unreachable · retrying</span>
+      </div>
+    );
+  }
 
   if (!d) {
     return (
@@ -72,7 +82,18 @@ export default function ZoraMarketPanel() {
         <a href={PRIMARY_COIN.chartUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 bg-ozone px-4 py-2 font-mono text-[10px] font-bold uppercase tracking-[0.2em] text-void transition-colors hover:bg-flare">Trade ↗</a>
         <a href={PRIMARY_COIN.chartUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 border border-slate2 px-4 py-2 font-mono text-[10px] font-bold uppercase tracking-[0.2em] text-darkgray transition-colors hover:border-ozone hover:text-ozone">Chart ↗</a>
       </div>
-      <p className="mt-3 font-mono text-[9px] uppercase tracking-[0.2em] text-dim">sparkline = live session feed · stats via dexscreener · not financial advice</p>
+      {error && (
+        <div className="mt-3 flex items-center gap-2 border border-flare/30 bg-flare/[0.06] px-3 py-2">
+          <AlertTriangle className="h-3.5 w-3.5 shrink-0 text-flare" />
+          <span className="font-mono text-[9px] uppercase tracking-[0.15em] text-flare/80">// stale data — last fetch failed, retrying</span>
+        </div>
+      )}
+      <div className="mt-4 flex items-start gap-2 border border-slate2/60 bg-void/50 px-3 py-2.5">
+        <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0 text-dim" />
+        <p className="font-mono text-[10px] leading-relaxed text-darkgray">
+          <span className="font-bold text-silver">Not financial advice.</span> Market data streamed from DexScreener — verify independently before any transaction. OOH Earth does not provide investment recommendations.
+        </p>
+      </div>
     </div>
   );
 }

@@ -3,7 +3,7 @@ import useCoinData from "@/components/ooh/zora/useCoinData";
 import { ZORA_COINS, fmtPrice, fmtCompact } from "@/components/ooh/zora/zoraConfig";
 
 function CoinTile({ coin }) {
-  const d = useCoinData(coin.addr, 45000);
+  const { data: d } = useCoinData(coin.addr, 45000);
   const up = (d?.change ?? 0) >= 0;
 
   return (

@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
+import { base44 } from "@/api/base44Client";
 
 const short = (a) => (a ? `${a.slice(0, 4)}…${a.slice(-4)}` : "");
 
@@ -13,38 +14,50 @@ function getEvmProvider() {
   return window.ethereum || null;
 }
 
+// Solana signMessage returns a Uint8Array — convert to base64 for HTTP transport
+function uint8ToBase64(bytes) {
+  let bin = "";
+  for (let i = 0; i < bytes.length; i++) bin += String.fromCharCode(bytes[i]);
+  return btoa(bin);
+}
+
 export function useWallet(chain) {
   const key = `ooh_wallet_${chain}`;
-  const vkey = `ooh_wallet_verified_${chain}`;
-  const [address, setAddress] = useState(() => {
-    try { return localStorage.getItem(key) || null; } catch { return null; }
-  });
-  const [verified, setVerified] = useState(() => {
-    try { return localStorage.getItem(vkey) === "true"; } catch { return false; }
-  });
+  // Do NOT restore address or verified from localStorage on mount.
+  // Address: wait for the provider to confirm the account is still connected.
+  // Verified: must be freshly confirmed by the server each session — never trusted from storage.
+  const [address, setAddress] = useState(null);
+  const [verified, setVerified] = useState(false);
   const [connecting, setConnecting] = useState(false);
   const [verifying, setVerifying] = useState(false);
+  const [reconnecting, setReconnecting] = useState(true);
   const [available, setAvailable] = useState(true);
+  const [verifyError, setVerifyError] = useState(null);
 
   useEffect(() => {
     const provider = chain === "solana" ? getSolanaProvider() : getEvmProvider();
     setAvailable(!!provider);
-    if (!provider) return;
+    if (!provider) { setReconnecting(false); return; }
 
     const tryReconnect = async () => {
       try {
+        let a = null;
         if (chain === "solana") {
           if (provider.isConnected && provider.publicKey) {
-            const pk = provider.publicKey.toString();
-            setAddress(pk); localStorage.setItem(key, pk);
+            a = provider.publicKey.toString();
           }
         } else {
           const accounts = await provider.request({ method: "eth_accounts" });
-          if (accounts && accounts.length) {
-            setAddress(accounts[0]); localStorage.setItem(key, accounts[0]);
-          }
+          if (accounts && accounts.length) a = accounts[0];
         }
-      } catch {}
+        // Only set address if the provider confirms the account is still connected
+        if (a) { setAddress(a); localStorage.setItem(key, a); }
+        else { localStorage.removeItem(key); }
+      } catch {
+        localStorage.removeItem(key);
+      } finally {
+        setReconnecting(false);
+      }
     };
     tryReconnect();
 
@@ -55,12 +68,13 @@ export function useWallet(chain) {
       if (a) { setAddress(a); localStorage.setItem(key, a); }
       else { setAddress(null); localStorage.removeItem(key); }
       // Verification is voided on any account change
-      setVerified(false); localStorage.removeItem(vkey);
+      setVerified(false);
+      setVerifyError(null);
     };
 
     if (chain === "solana") {
       provider.on?.("accountChanged", onAccountChanged);
-      provider.on?.("disconnect", () => { setAddress(null); localStorage.removeItem(key); setVerified(false); localStorage.removeItem(vkey); });
+      provider.on?.("disconnect", () => { setAddress(null); localStorage.removeItem(key); setVerified(false); setVerifyError(null); });
     } else {
       provider.on?.("accountsChanged", onAccountChanged);
     }
@@ -96,8 +110,8 @@ export function useWallet(chain) {
   const disconnect = useCallback(() => {
     setAddress(null);
     setVerified(false);
+    setVerifyError(null);
     localStorage.removeItem(key);
-    localStorage.removeItem(vkey);
     const provider = chain === "solana" ? getSolanaProvider() : getEvmProvider();
     provider?.disconnect?.();
   }, [chain]);
@@ -108,29 +122,46 @@ export function useWallet(chain) {
     if (!provider) return false;
 
     setVerifying(true);
+    setVerifyError(null);
     try {
       const ts = Date.now();
       const message = `OOH Earth wallet verification\nAddress: ${address}\nTime: ${ts}\n\nSigning this message proves you own this wallet. No transaction is made.`;
 
+      let signature;
       if (chain === "solana") {
         const encoded = new TextEncoder().encode(message);
-        await provider.signMessage(encoded, "utf8");
+        const sigResult = await provider.signMessage(encoded, "utf8");
+        signature = uint8ToBase64(sigResult);
       } else {
-        await provider.request({
+        signature = await provider.request({
           method: "personal_sign",
           params: [message, address],
         });
       }
 
-      setVerified(true);
-      localStorage.setItem(vkey, "true");
-      return true;
-    } catch {
+      // Server-side cryptographic verification — the signature is validated
+      // against the claimed address. Only the server response is trusted.
+      const res = await base44.functions.invoke("verifyWallet", {
+        address, signature, message, chain, ts: String(ts),
+      });
+
+      if (res?.data?.verified) {
+        setVerified(true);
+        return true;
+      }
+      setVerifyError(res?.data?.error || "Signature verification failed");
+      return false;
+    } catch (e) {
+      setVerifyError(e?.message || "Verification failed");
       return false;
     } finally {
       setVerifying(false);
     }
   }, [chain, address]);
 
-  return { address, shortAddress: short(address), connecting, verifying, verified, available, connect, disconnect, verifyOwnership };
+  return {
+    address, shortAddress: short(address),
+    connecting, reconnecting, verifying, verified, verifyError,
+    available, connect, disconnect, verifyOwnership,
+  };
 }

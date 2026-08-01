@@ -3,11 +3,11 @@ import { Copy, Check } from "lucide-react";
 import { CAMPAIGN } from "@/components/ooh/fundConfig";
 
 const CHAINS = [
-  { key: "btc", label: "Bitcoin", ticker: "BTC" },
-  { key: "eth", label: "Ethereum", ticker: "ETH" },
-  { key: "sol", label: "Solana", ticker: "SOL" },
-  { key: "usdc", label: "USDC", ticker: "USDC", note: "Accepts native USDC + USDC.e (ERC-20). Same address on Ethereum & Polygon." },
-  { key: "polygon", label: "Polygon", ticker: "POL", note: "Send POL, USDC, or USDC.e to the Ethereum address above." },
+  { key: "btc", label: "Bitcoin", ticker: "BTC", network: "Bitcoin Network" },
+  { key: "eth", label: "Ethereum", ticker: "ETH", network: "Ethereum Mainnet" },
+  { key: "sol", label: "Solana", ticker: "SOL", network: "Solana" },
+  { key: "usdc", label: "USDC", ticker: "USDC", network: "Ethereum & Polygon", note: "Accepts native USDC + USDC.e (ERC-20). Same address on both chains." },
+  { key: "polygon", label: "Polygon", ticker: "POL", network: "Polygon PoS", sharedWith: "eth", note: "Same wallet as Ethereum (ETH). Send POL, USDC, or USDC.e to the ETH address above." },
 ];
 
 export default function CryptoDonations() {
@@ -33,7 +33,11 @@ export default function CryptoDonations() {
                 {copied === c.key ? <Check className="h-3.5 w-3.5 text-ozone" /> : <Copy className="h-3.5 w-3.5" />}
               </button>
             </div>
-            {c.note && <p className="mt-1.5 font-mono text-[9px] leading-relaxed text-dim">{c.note}</p>}
+            <div className="mt-1.5 flex items-center gap-2">
+              <span className="font-mono text-[8px] uppercase tracking-[0.2em] text-silver/50">{c.network}</span>
+              {c.sharedWith && <span className="font-mono text-[8px] uppercase tracking-[0.15em] text-flare/60">// shared with {c.sharedWith.toUpperCase()}</span>}
+            </div>
+            {c.note && <p className="mt-1 font-mono text-[9px] leading-relaxed text-dim">{c.note}</p>}
           </div>
         )) : (
           <div className="border border-slate2/40 bg-void p-4 text-center font-mono text-[10px] uppercase tracking-[0.2em] text-dim">

@@ -23,7 +23,7 @@ function phaseLabel(p) {
 // Moon-phase timeline × live market readout.
 // (True price×moon correlation needs historical OHLC across lunar cycles — not available here.)
 export default function LunarMarketOverlay() {
-  const d = useCoinData(PRIMARY_COIN.addr, 30000);
+  const { data: d } = useCoinData(PRIMARY_COIN.addr, 30000);
   const today = new Date();
   const days = Array.from({ length: 30 }, (_, i) => {
     const dt = new Date(today.getTime() + i * 86400000);

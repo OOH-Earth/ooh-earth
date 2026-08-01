@@ -16,7 +16,7 @@ function nodePositions(count, side, w, h) {
 }
 
 export default function ZoraHolderConstellation() {
-  const d = useCoinData(PRIMARY_COIN.addr, 30000);
+  const { data: d } = useCoinData(PRIMARY_COIN.addr, 30000);
   const W = 520, H = 220;
   const buys = d?.buys || 0;
   const sells = d?.sells || 0;

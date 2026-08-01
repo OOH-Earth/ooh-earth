@@ -156,6 +156,9 @@ export default function MintLocationPanel({ loc }) {
           {evm.address && !evm.verified && (
             <p className="font-mono text-[9px] uppercase tracking-[0.2em] text-flare/80">// verify wallet ownership to unlock minting — signs a message, no transaction</p>
           )}
+          {evm.verifyError && (
+            <p className="font-mono text-[9px] uppercase tracking-[0.2em] text-flare">// verification failed: {evm.verifyError}</p>
+          )}
         </div>
       ) : phase === "preparing" ? (
         <div className="mt-3 flex items-center gap-2">
