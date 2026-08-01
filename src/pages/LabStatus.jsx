@@ -54,6 +54,8 @@ const TODAY = [
   ["Naming disambiguation", "Added 'What's in a name' section to Genesis Token — separates $OOHEX from Metaplex Genesis (launchpad tool), Solana Seeker Genesis Token (NFT pass), and GXN altcoin. 'Genesis' = first supply bootstrapping the treasury."],
   ["Shadow grounding fix", "Coin + token viewers: contact-shadow + ShadowMaterial ground planes repositioned from y=-1.0/-0.9 to y=-1.55 (flush below the 1.5-radius disc). Previous offset left the shadow detached / cutting through the artifact. Grounded + contact shadow widened to 4.5×3."],
   ["Lighting", "Both viewers: 3-point + PMREM RoomEnvironment, PCFSoftShadowMap, ACESFilmic tone mapping retained. Shadow opacity tuned 0.35 → 0.4 for firmer grounding."],
+  ["Cinematic shadows", "Coin + token viewers: 2K shadow map, blur radius 14, normalBias 0.04 (kills acne), softer contact-shadow falloff (0.34→0.12→0), real-shadow opacity 0.26. Cinema-grade soft penumbra."],
+  ["Chip exploded view", "Built ChipExplodedView — 4-layer SVG exploded diagram (Finished Face → Web7 PVD Coating → 10% Copper Bond → 90% Steel Core) matched to reference spec. Added Web7 material spec strip + open/verifiable/circular/SDG principles. Wired into Genesis Chip page."],
 ];
 
 const dot = (c) => (c === "green" ? "bg-brand-green" : "bg-flare");

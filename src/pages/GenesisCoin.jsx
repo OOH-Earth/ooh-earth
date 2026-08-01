@@ -6,6 +6,7 @@ import Breadcrumbs from "@/components/ooh/Breadcrumbs";
 import SiteFooter from "@/components/ooh/SiteFooter";
 import CoinViewer3D from "@/components/ooh/lab/CoinViewer3D";
 import CoinMatrixStrip from "@/components/ooh/lab/CoinMatrixStrip";
+import ChipExplodedView from "@/components/ooh/lab/ChipExplodedView";
 import { useLabGate } from "@/components/ooh/LabGate";
 import { COIN_MATERIALS, COIN_EDITIONS, COIN_SPECS, COIN_TOKENOMICS, SDG_ALIGNMENTS, EDGE_TYPES, ENAMEL_ACCENTS } from "@/components/ooh/lab/coinPresets";
 
@@ -298,6 +299,11 @@ export default function GenesisCoin() {
           <p className="mt-4 border-t border-slate2/40 pt-3 font-mono text-[10px] leading-relaxed text-silver/45">
             This certificate registers the chip under OOH Earth's open provenance ledger. The physical chip and its on-chain twin are inseparable — claim the twin by tapping the embedded NFC to a wallet. Transfer of the physical chip transfers the twin.
           </p>
+        </div>
+
+        {/* Construction — exploded view + Web7 material spec */}
+        <div className="mt-6">
+          <ChipExplodedView />
         </div>
 
         {/* Lab integration */}
