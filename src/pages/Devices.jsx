@@ -7,7 +7,7 @@ import CompanionWatch from "@/components/ooh/lab/CompanionWatch";
 
 // Devices hub — wearables, companions, and desktop apps for the Hex Engine.
 const WEARABLES = [
-  { to: "/lab/companion", icon: Watch, title: "OOH Watch", status: "Prototype", desc: "Wrist companion — UWB proximity, secure element, two faces (Field + Hex)." },
+  { to: "/lab/devices/watch", icon: Watch, title: "OOH Watch", status: "Prototype", desc: "Wrist companion — UWB proximity, secure element, two faces (Field + Hex)." },
   { to: "/lab/devices/field-tag", icon: Tag, title: "NFC Field Tag", status: "Prototype", desc: "Pendant NFC tag — tap-to-claim, tamper-evident, IP68, binds a spot to a wallet." },
   { to: null, icon: Glasses, title: "AR Glasses", status: "Concept", desc: "Heads-up offense overlay — paints the billboard layer onto the field of view." },
   { to: "/lab/companion", icon: Smartphone, title: "Phone Companion", status: "Live", desc: "Five mobile screens — pair, city map, hex state, wallet, DAO." },
@@ -73,7 +73,7 @@ export default function Devices() {
                 <div className="border border-slate2 p-2"><div className="text-silver/40">SE</div><div className="text-ozone">EAL6+</div></div>
                 <div className="border border-slate2 p-2"><div className="text-silver/40">FACES</div><div className="text-silver">2</div></div>
               </div>
-              <Link to="/lab/companion" className="mt-4 inline-flex items-center gap-2 border border-ozone px-3 py-1.5 font-mono text-[10px] font-bold uppercase tracking-[0.2em] text-ozone transition-colors hover:bg-ozone hover:text-void">Open companion app <ArrowRight className="h-3 w-3" /></Link>
+              <Link to="/lab/devices/watch" className="mt-4 inline-flex items-center gap-2 border border-ozone px-3 py-1.5 font-mono text-[10px] font-bold uppercase tracking-[0.2em] text-ozone transition-colors hover:bg-ozone hover:text-void">Open watch page <ArrowRight className="h-3 w-3" /></Link>
             </div>
           </div>
         </div>

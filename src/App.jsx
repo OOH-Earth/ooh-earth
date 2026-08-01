@@ -32,6 +32,7 @@ import HexDevice3D from '@/pages/HexDevice3D';
 import Devices from '@/pages/Devices';
 import NfcFieldTag from '@/pages/NfcFieldTag';
 import DesktopConsole from '@/pages/DesktopConsole';
+import OohWatch from '@/pages/OohWatch';
 import HexCoinCube from '@/pages/HexCoinCube';
 import LabStatus from '@/pages/LabStatus';
 import NftCreator from '@/pages/NftCreator';
@@ -209,6 +210,7 @@ const AuthenticatedApp = () => {
     <Route path="/lab/devices" element={<Devices />} />
     <Route path="/lab/devices/field-tag" element={<NfcFieldTag />} />
     <Route path="/lab/devices/desktop" element={<DesktopConsole />} />
+    <Route path="/lab/devices/watch" element={<OohWatch />} />
     <Route path="/lab/device" element={<HexDevice3D />} />
     <Route path="/lab/livingcoin" element={<HexCoinCube />} />
     <Route path="/lab/status" element={<LabStatus />} />

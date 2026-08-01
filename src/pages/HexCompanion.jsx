@@ -1,10 +1,9 @@
 import { useState } from "react";
-import { Smartphone, MapPin, Grid3x3, Wallet, Vote, Radio, ShieldCheck, Watch } from "lucide-react";
+import { Smartphone, MapPin, Grid3x3, Wallet, Vote, Radio, ShieldCheck } from "lucide-react";
 import Nav from "@/components/ooh/Nav";
 import Breadcrumbs from "@/components/ooh/Breadcrumbs";
 import SiteFooter from "@/components/ooh/SiteFooter";
 import { fromLines, TRI, DIAL } from "@/lib/hexagrams";
-import CompanionWatch from "@/components/ooh/lab/CompanionWatch";
 
 // OOH Earth — Companion App (Lab)
 // Five mobile screens (S-01…S-05) for the Hex Engine, on the OOH design
@@ -47,22 +46,44 @@ const Row = ({ k, v, c }) => (
 const Label = ({ children }) => <div className="mb-2 font-mono text-[9px] uppercase tracking-[0.2em] text-ozone">{children}</div>;
 
 function ScreenPair() {
+  const steps = ["discover", "shake", "attest", "bind"];
+  const devices = [
+    { n: "Hex Engine", s: "BLE · discovered" },
+    { n: "OOH Watch", s: "BLE · discovered" },
+  ];
   return (
     <>
-      <Label>Pair device</Label>
-      <div className="my-6 flex flex-col items-center">
-        <div className="flex h-28 w-28 items-center justify-center rounded-full border-2 border-ozone/60" style={{ boxShadow: "0 0 30px rgba(237,255,0,.15)" }}>
-          <Radio className="h-10 w-10 text-ozone" strokeWidth={1.2} />
-        </div>
-        <div className="mt-4 font-mono text-[11px] uppercase tracking-[0.2em] text-silver">Shake to bond</div>
-        <div className="mt-1 font-mono text-[9px] text-silver/40">hold the engine · shake twice</div>
+      <Label>Pair device · onboarding</Label>
+      <div className="flex items-center justify-between font-mono text-[7px] uppercase tracking-wider text-silver/30">
+        {steps.map((s, i) => (
+          <span key={s} className={i === 1 ? "text-ozone" : ""}>{i + 1} {s}</span>
+        ))}
       </div>
-      <div className="border border-slate2 bg-void p-3">
+      <div className="my-4 flex flex-col items-center">
+        <div className="flex h-20 w-20 items-center justify-center rounded-full border-2 border-ozone/60" style={{ boxShadow: "0 0 24px rgba(237,255,0,.18)" }}>
+          <Radio className="h-8 w-8 text-ozone" strokeWidth={1.2} />
+        </div>
+        <div className="mt-2 font-mono text-[10px] uppercase tracking-[0.2em] text-silver">Shake to bond</div>
+        <div className="mt-0.5 font-mono text-[8px] text-silver/40">hold the engine · shake twice</div>
+      </div>
+      <div className="font-mono text-[8px] uppercase tracking-widest text-silver/40">Available devices</div>
+      <div className="mt-1.5 space-y-1.5">
+        {devices.map((d) => (
+          <div key={d.n} className="flex items-center justify-between border border-slate2 bg-void px-2 py-1.5">
+            <div>
+              <div className="font-mono text-[10px] text-silver">{d.n}</div>
+              <div className="font-mono text-[7px] text-silver/40">{d.s}</div>
+            </div>
+            <span className="border border-ozone/50 px-2 py-0.5 font-mono text-[7px] uppercase tracking-wide text-ozone">pair</span>
+          </div>
+        ))}
+      </div>
+      <div className="mt-3 border border-slate2 bg-void p-3">
         <Row k="LINK" v="BLE 5.3 · paired" c="#39FF14" />
         <Row k="ATTEST" v="SE EAL6+ ✓" c="#39FF14" />
         <Row k="BINDS TO" v="0x7A3…f19" />
       </div>
-      <div className="mt-3 flex items-center gap-2 font-mono text-[9px] text-silver/50"><ShieldCheck className="h-3.5 w-3.5 text-brand-green" /> On-device secure element attestation</div>
+      <div className="mt-2 flex items-center gap-2 font-mono text-[9px] text-silver/50"><ShieldCheck className="h-3.5 w-3.5 text-brand-green" /> On-device secure element attestation</div>
     </>
   );
 }
@@ -166,9 +187,9 @@ export default function HexCompanion() {
     <div className="min-h-screen bg-void grid-bg text-silver">
       <Nav />
       <div className="mx-auto max-w-6xl page-top px-6 pb-12">
-        <Breadcrumbs items={[{ label: "Lab", to: "/lab" }, { label: "Companion App" }]} className="mb-4" />
+        <Breadcrumbs items={[{ label: "Lab", to: "/lab" }, { label: "Phone Companion" }]} className="mb-4" />
         <header className="flex flex-wrap items-baseline gap-x-5 gap-y-2 border-b border-slate2 pb-4">
-          <h1 className="text-2xl font-bold uppercase tracking-[0.14em]">Companion <span className="text-ozone">App</span></h1>
+          <h1 className="text-2xl font-bold uppercase tracking-[0.14em]">Phone <span className="text-ozone">Companion</span></h1>
           <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-silver/50">Five screens · the phone half of the engine</p>
           <span className="ml-auto border border-flare/40 px-2 py-0.5 font-mono text-[11px] uppercase tracking-[0.1em] text-flare">Working copy</span>
         </header>
@@ -176,20 +197,6 @@ export default function HexCompanion() {
         <p className="my-6 max-w-3xl font-mono text-xs leading-loose text-silver/50">
           The engine composes intent physically; the app is the window into it. Every screen maps to a live oohearth.app surface — the map is the offense record, the wallet holds the Genesis twin, the DAO tab is real governance. The secure element always signs on-device after a physical PRESS.
         </p>
-
-        {/* Wearable prototype — OOH Watch */}
-        <div className="mt-8 border border-slate2 bg-card p-5">
-          <div className="flex items-center gap-2">
-            <Watch className="h-4 w-4 text-ozone" />
-            <div className="font-mono text-[11px] uppercase tracking-[0.2em] text-ozone">Wearable · OOH Watch prototype</div>
-          </div>
-          <div className="mt-4 grid grid-cols-1 items-center gap-6 md:grid-cols-[auto_1fr]">
-            <CompanionWatch />
-            <p className="font-mono text-xs leading-loose text-silver/50">
-              The wrist companion mirrors the engine on the body. UWB proximity rings locate the nearest offense, the secure element signs on a PRESS of the crown, and the hex face reads live state at a glance. Field-ready, sunlight-legible, always paired.
-            </p>
-          </div>
-        </div>
 
         <div className="grid grid-cols-1 justify-items-center gap-8 sm:grid-cols-2 lg:grid-cols-3">
           <Phone code="S-01" name="Pair" tab="PAIR"><ScreenPair /></Phone>

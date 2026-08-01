@@ -16,7 +16,7 @@ const CARDS = [
   { to: "/lab/device", icon: Box, title: "3D Device", desc: "Interactive brass coin-cube — six rotating faces, spin, explode, HUD.", live: true },
   { to: "/lab/livingcoin", icon: Ruler, title: "Living Coin", desc: "Coin-cube production spec — technical drawings, six rotating brass faces.", live: true },
   { to: "/lab/sequencer", icon: Music, title: "I Ching Sequencer", desc: "64-step sequencer across King Wen, Fuxi & protocol orderings.", live: true },
-  { to: "/lab/companion", icon: Smartphone, title: "Companion App", desc: "Five mobile screens: pair, map, hex, wallet, DAO.", live: true },
+  { to: "/lab/companion", icon: Smartphone, title: "Phone Companion", desc: "Five mobile screens: pair, map, hex, wallet, DAO.", live: true },
   { to: "/lab/devices", icon: Watch, title: "Devices", desc: "Wearables & desktop apps — OOH Watch, NFC field tag, desktop console.", live: true },
   { to: "/lab/spec", icon: FileText, title: "Engineering Spec", desc: "State machine, BLE GATT, frame format, screen inventory.", live: true },
   { to: "/lab/poster", icon: ImageIcon, title: "Concept Poster", desc: "2400px infographic — concept art pending media upload.", live: true },
