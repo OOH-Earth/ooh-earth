@@ -64,10 +64,11 @@ export default function LabHub() {
       try {
         const recs = await base44.entities.LabPrototype.list("sort_order");
         const list = recs.filter((r) => r.visible !== false);
-        // Surface registry projects that don't yet have a DB record (the console
-        // provisions real rows on first load, which then take precedence).
+        // Surface a registry project ONLY when it has no record yet. Once the console
+        // has provisioned a row, respect it fully — including visible:false. (Checking
+        // the filtered `list` here would re-add hidden projects and defeat the toggle.)
         LAB_PROJECTS.forEach((p) => {
-          if (!list.some((r) => r.path === p.path)) {
+          if (!recs.some((r) => r.path === p.path)) {
             list.unshift({ path: p.path, title: p.title, status: p.status || "in_build", access: p.access || "restricted", sort_order: -1 });
           }
         });
