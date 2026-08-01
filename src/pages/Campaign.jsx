@@ -7,16 +7,32 @@ import LeadCapture from "@/components/ooh/campaign/LeadCapture";
 import WalletButton from "@/components/ooh/WalletButton";
 import DonationWatcher from "@/components/ooh/campaign/DonationWatcher";
 import { CAMPAIGN } from "@/components/ooh/fundConfig";
+import { base44 } from "@/api/base44Client";
 import { Megaphone, CheckCircle2 } from "lucide-react";
 
 export default function Campaign() {
   const [thanks, setThanks] = useState(false);
+  const [raised, setRaised] = useState(CAMPAIGN.raisedUsd);
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
     if (urlParams.get("status") === "thanks") setThanks(true);
   }, []);
 
-  const pct = Math.min(100, Math.round((CAMPAIGN.raisedUsd / CAMPAIGN.goalUsd) * 100));
+  // Live raised total — same confirmed-funds source (fieldStats) the rest of the
+  // app uses; falls back to the configured figure if the call fails.
+  useEffect(() => {
+    let cancelled = false;
+    base44.functions.invoke("fieldStats", {})
+      .then((res) => {
+        const s = res?.data ?? res;
+        const r = Number(s?.raised);
+        if (!cancelled && Number.isFinite(r) && r >= 0) setRaised(r);
+      })
+      .catch(() => { /* keep configured fallback */ });
+    return () => { cancelled = true; };
+  }, []);
+
+  const pct = Math.min(100, Math.round((raised / CAMPAIGN.goalUsd) * 100));
 
   return (
     <div className="relative min-h-screen bg-void">
@@ -43,7 +59,7 @@ export default function Campaign() {
 
           <div className="mt-8 border border-slate2/60 bg-card p-5">
             <div className="flex items-end justify-between font-mono text-[10px] uppercase tracking-[0.25em]">
-              <span className="text-ozone">${CAMPAIGN.raisedUsd.toLocaleString()} raised</span>
+              <span className="text-ozone">${raised.toLocaleString()} raised</span>
               <span className="text-dim">goal ${CAMPAIGN.goalUsd.toLocaleString()}</span>
             </div>
             <div className="mt-2 h-1.5 w-full bg-slate2/40">
