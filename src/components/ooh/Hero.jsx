@@ -94,9 +94,12 @@ export default function Hero({ onCommand }) {
         </div>
       </div>
 
-      <div className="absolute bottom-4 left-6 z-20 max-w-[240px] md:left-10 md:max-w-none">
-        <div className="font-mono text-[9px] uppercase tracking-[0.25em] text-silver/70">// Field dispatch · subvertising reel</div>
-        <LicenseMark className="mt-1.5 block" />
+      <div className="pointer-events-none absolute bottom-14 left-6 z-20 hidden md:left-10 md:block">
+        <div className="inline-block border border-ozone/20 bg-void/70 px-3.5 py-2.5 backdrop-blur-sm">
+          <div className="font-mono text-[9px] uppercase leading-[1.5] tracking-[0.25em] text-silver/70"><span className="text-ozone/70">// </span>Field dispatch · subvertising reel</div>
+          <div className="my-1.5 h-px w-full bg-ozone/15" />
+          <LicenseMark />
+        </div>
       </div>
 
       {/* High-vis baseline strip */}
