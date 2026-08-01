@@ -8,6 +8,11 @@ Deno.serve(async (req) => {
 
     // Server-authoritative lookup: never trust a client-sent price.
     const base44 = createClientFromRequest(req);
+    // Durable entitlement: a paid purchase must be tied to an account so the
+    // buyer gets lasting access to what they bought.
+    let caller = null;
+    try { caller = await base44.auth.me(); } catch { caller = null; }
+    if (!caller?.id) return Response.json({ error: "login_required" }, { status: 401 });
     const item = await base44.asServiceRole.entities.StoreItem.get(itemId);
     if (!item) return Response.json({ error: "Item not found" }, { status: 404 });
     if (item.status !== "available") return Response.json({ error: "Item not available for purchase" }, { status: 400 });
@@ -37,6 +42,7 @@ Deno.serve(async (req) => {
     params.set("metadata[base44_app_id]", Deno.env.get("BASE44_APP_ID") || "");
     params.set("metadata[item_id]", itemId);
     params.set("metadata[item_title]", item.title);
+    params.set("metadata[user_id]", caller.id);
 
     const res = await fetch("https://api.stripe.com/v1/checkout/sessions", {
       method: "POST",
