@@ -1,4 +1,4 @@
-import { useEffect, useRef, useImperativeHandle, forwardRef } from "react";
+import { useEffect, useRef, useImperativeHandle, forwardRef, useState } from "react";
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import { RoomEnvironment } from "three/examples/jsm/environments/RoomEnvironment.js";
@@ -97,12 +97,12 @@ function buildSlab(config, cardTexture, st) {
     clearcoat: 0.9, clearcoatRoughness: 0.12, envMapIntensity: 1.2,
   });
   const glassMat = new THREE.MeshPhysicalMaterial({
-    color: 0xffffff, transmission: frosted ? 0.35 : 0.95,
-    transparent: true, opacity: 1,
-    roughness: frosted ? 0.7 : 0.02, metalness: 0,
-    clearcoat: 1, clearcoatRoughness: frosted ? 0.5 : 0.01,
-    ior: 1.52, thickness: 0.08, envMapIntensity: 1.5,
-    side: THREE.DoubleSide,
+    color: 0xffffff,
+    transparent: true, opacity: frosted ? 0.22 : 0.06,
+    roughness: frosted ? 0.55 : 0.04, metalness: 0,
+    clearcoat: 1, clearcoatRoughness: frosted ? 0.35 : 0.01,
+    ior: 1.5, envMapIntensity: 1.3,
+    side: THREE.DoubleSide, depthWrite: false,
   });
   const wellMat = new THREE.MeshStandardMaterial({ color: WELL, roughness: 0.45, metalness: 0.2 });
   const goldMat = new THREE.MeshPhysicalMaterial({
@@ -179,15 +179,16 @@ function buildSlab(config, cardTexture, st) {
 function fitCamera(camera, controls, slab) {
   slab.rotation.y = 0; slab.updateMatrixWorld();
   const box = new THREE.Box3().setFromObject(slab);
-  const size = box.getSize(new THREE.Vector3());
-  const center = box.getCenter(new THREE.Vector3());
-  const diag = Math.sqrt(size.x * size.x + size.y * size.y);
+  const sphere = new THREE.Sphere();
+  box.getBoundingSphere(sphere);
+  const center = sphere.center;
   const fov = camera.fov * Math.PI / 180;
-  const dist = (diag / 2) / Math.tan(fov / 2) * 1.35;
+  // Bounding sphere fit — guarantees full object visibility at any rotation
+  const dist = sphere.radius / Math.sin(fov / 2) * 1.6;
   camera.position.set(center.x, center.y, center.z + dist);
   controls.target.copy(center);
-  controls.minDistance = dist * 0.35;
-  controls.maxDistance = dist * 3;
+  controls.minDistance = dist * 0.3;
+  controls.maxDistance = dist * 4;
   controls.update();
   return { dist, center };
 }
@@ -195,6 +196,7 @@ function fitCamera(camera, controls, slab) {
 const SlabViewer3D = forwardRef(function SlabViewer3D({ config, artworkUrl }, ref) {
   const mountRef = useRef(null);
   const S = useRef(null);
+  const [bgColor, setBgColor] = useState("void");
 
   useImperativeHandle(ref, () => ({
     exportPNG: () => {
@@ -328,6 +330,20 @@ const SlabViewer3D = forwardRef(function SlabViewer3D({ config, artworkUrl }, re
     return () => { cancelled = true; };
   }, [config.title, config.grade, config.serial, config.labelColor, artworkUrl]);
 
+  // ── Background color ──
+  useEffect(() => {
+    const st = S.current; if (!st) return;
+    const opts = {
+      void:  { c: 0x000000, a: 0 },
+      dark:  { c: 0x1a1a1a, a: 1 },
+      grey:  { c: 0x2a2a2a, a: 1 },
+      light: { c: 0x444444, a: 1 },
+      white: { c: 0xe8e8e8, a: 1 },
+    };
+    const o = opts[bgColor] || opts.void;
+    st.renderer.setClearColor(o.c, o.a);
+  }, [bgColor]);
+
   const zoomIn = () => {
     const st = S.current; if (!st) return;
     const dist = st.camera.position.distanceTo(st.controls.target);
@@ -361,6 +377,19 @@ const SlabViewer3D = forwardRef(function SlabViewer3D({ config, artworkUrl }, re
         <span className="absolute left-3 bottom-3 h-4 w-4 border-l-2 border-b-2 border-ozone/60" />
         <span className="absolute right-3 bottom-3 h-4 w-4 border-r-2 border-b-2 border-ozone/60" />
         <div className="absolute inset-x-6" style={{ height: 1, background: "linear-gradient(90deg,transparent,rgba(237,255,0,.4),transparent)", animation: "nft-scan 5s linear infinite" }} />
+      </div>
+      <div className="absolute left-3 top-12 flex flex-col gap-1.5">
+        {[
+          { id: "void", bg: "#0a0a0a", label: "Void" },
+          { id: "dark", bg: "#1a1a1a", label: "Dark" },
+          { id: "grey", bg: "#2a2a2a", label: "Grey" },
+          { id: "light", bg: "#444444", label: "Light" },
+          { id: "white", bg: "#e8e8e8", label: "White" },
+        ].map((bg) => (
+          <button key={bg.id} onClick={() => setBgColor(bg.id)} aria-label={`Background: ${bg.label}`}
+            className={`h-7 w-7 border ${bgColor === bg.id ? "border-ozone ring-1 ring-ozone" : "border-slate2"}`}
+            style={{ backgroundColor: bg.bg }} />
+        ))}
       </div>
       <div className="absolute right-3 top-12 flex flex-col gap-1.5">
         <button onClick={zoomIn} aria-label="Zoom in" className="flex h-8 w-8 items-center justify-center border border-slate2 bg-void/80 text-silver/70 backdrop-blur transition-colors hover:border-ozone hover:text-ozone"><ZoomIn className="h-3.5 w-3.5" /></button>
