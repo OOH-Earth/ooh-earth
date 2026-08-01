@@ -141,7 +141,10 @@ export default function Account() {
 
   const deleteAccount = async () => {
     setDeleting(true);
-    try { await base44.auth.logout("/"); } catch { setDeleting(false); }
+    try {
+      try { await base44.functions.invoke("deleteMyAccount", { confirm: true }); } catch { /* fall back to plain sign-out */ }
+      await base44.auth.logout("/");
+    } catch { setDeleting(false); }
   };
 
   if (loading) {
