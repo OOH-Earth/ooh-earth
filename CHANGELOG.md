@@ -13,6 +13,7 @@ _Last updated: 2026-08-01_
 - New Lab project at `/lab/streetrunner` (`LabStreetRunner.jsx`): an **original** Akira-class field-bike concept in our Orbital Perspective palette (genre references only: Katalis × Machine56 EV-1K/56, Akira — not reproduced). One SVG geometry, three treatments via an interactive build-up stepper — **01 vector → 02 blueprint → 03 3D concept render** — plus a rebranded concept spec sheet. Route + `LabHub` tile (`Bike` icon) wired.
 - Hub tile now **self-surfaces on main** via a built-in default in `LabHub` (no DB record needed); a real `LabPrototype` row via `/lab/admin` still takes precedence.
 - Added a **Roadmap** section (hero render, livery variants, exploded view, poster) as scaffolding for the next design passes.
+- **Lab project registry + auto-provisioning** — new `labProjects.js` is the single source of truth for code-defined Lab projects. The **Control Console (`/lab/admin`) auto-provisions** a `LabPrototype` record for any registry project missing one on load, so new Lab pages appear in the control panel automatically and stay togglable (access / status / visible). The hub reads the same registry. Adding a project is now: page + route + one registry line.
 
 ## 2026-08-01 — Hero dispatch panel + licence placement
 
