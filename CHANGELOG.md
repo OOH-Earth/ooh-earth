@@ -8,6 +8,11 @@ _Last updated: 2026-08-01_
 - **Mobile menu clipping** — `NavMenu` now portals to `document.body`, escaping the backdrop-blur containing block so the full-screen launcher fills the viewport on mobile.
 - **Header hidden under nav on notched devices** — the fixed nav inflates by `env(safe-area-inset-top)` on iPhones with notches/dynamic islands, but page top padding was a fixed `pt-24/pt-28`, causing masthead H1s to slip underneath. Added a `.page-top` utility (`calc(6rem + env(safe-area-inset-top))`, `7rem` on md) and applied it to `Channel.jsx`.
 
+## 2026-08-01 — Lab: OE-1K/66 Streetrunner (Akira-class concept bike)
+
+- New Lab project at `/lab/streetrunner` (`LabStreetRunner.jsx`): an **original** Akira-class field-bike concept in our Orbital Perspective palette (genre references only: Katalis × Machine56 EV-1K/56, Akira — not reproduced). One SVG geometry, three treatments via an interactive build-up stepper — **01 vector → 02 blueprint → 03 3D concept render** — plus a rebranded concept spec sheet. Route + `LabHub` tile (`Bike` icon) wired.
+- *main note:* the hub reads tiles from the `LabPrototype` entity — add a record for `/lab/streetrunner` via `/lab/admin` to surface the tile (the page itself is already live at the route).
+
 ## 2026-08-01 — Hero dispatch panel + licence placement
 
 - **Hero dispatch reworked** — the `// Field dispatch` + open-source/copyleft/licence lines were overlapping the corner reticle (desktop) and the console card + “Descend” cue (mobile). Rebuilt as a bordered HUD panel (backdrop-blur), lifted clear of the bracket, **desktop-only**. `LicenseMark` simplified to a clean block (ethos line + micro licence line — no superscript collision).
