@@ -6,6 +6,7 @@ import Nav from "@/components/ooh/Nav";
 import Breadcrumbs from "@/components/ooh/Breadcrumbs";
 import SiteFooter from "@/components/ooh/SiteFooter";
 import SlabViewer3D from "@/components/ooh/nft/SlabViewer3D";
+import NftMatrixStrip from "@/components/ooh/nft/NftMatrixStrip";
 import NftStudioPanel from "@/components/ooh/nft/NftStudioPanel";
 import { CASING_TYPES, LABEL_COLORS, PREMADE_DESIGNS } from "@/components/ooh/nft/nftPresets";
 
@@ -64,8 +65,11 @@ export default function NftCreator() {
           The OOH Earth subvertising NFT studio — slab, grade and mint adbusting interventions as collectible cards. Choose a casing, finish and label, upload or generate artwork, then export or mint on Zora. Integrates with the Lab ecosystem and agency ops.
         </p>
 
-        <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1.5fr_1fr]">
-          <SlabViewer3D ref={viewerRef} config={config} artworkUrl={artworkUrl} />
+        <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-[1.5fr_1fr]">
+          <div className="flex flex-col gap-3">
+            <SlabViewer3D ref={viewerRef} config={config} artworkUrl={artworkUrl} />
+            <NftMatrixStrip config={config} />
+          </div>
           <NftStudioPanel
             config={config} onConfig={onConfig} artworkUrl={artworkUrl} onArtwork={setArtworkUrl}
             onExport={() => viewerRef.current?.exportPNG()} onGenerate={generateArt} generating={generating} onRandomize={randomize}

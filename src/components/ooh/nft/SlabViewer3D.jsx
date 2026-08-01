@@ -3,7 +3,7 @@ import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import { RoomEnvironment } from "three/examples/jsm/environments/RoomEnvironment.js";
 import { RoundedBoxGeometry } from "three/examples/jsm/geometries/RoundedBoxGeometry.js";
-import { ZoomIn, ZoomOut, Maximize2 } from "lucide-react";
+import { ZoomIn, ZoomOut, Maximize2, Play, Pause } from "lucide-react";
 import { LABEL_COLORS } from "./nftPresets";
 
 const GOLD = 0xd4af37, FRAME = 0x141414, WELL = 0x0e0e0e, OZONE = 0xedff00;
@@ -197,6 +197,8 @@ const SlabViewer3D = forwardRef(function SlabViewer3D({ config, artworkUrl }, re
   const mountRef = useRef(null);
   const S = useRef(null);
   const [bgColor, setBgColor] = useState("void");
+  const [playing, setPlaying] = useState(true);
+  const [speed, setSpeed] = useState(1);
 
   useImperativeHandle(ref, () => ({
     exportPNG: () => {
@@ -239,7 +241,7 @@ const SlabViewer3D = forwardRef(function SlabViewer3D({ config, artworkUrl }, re
     const fill = new THREE.DirectionalLight(0x6fd6ff, 0.5); fill.position.set(-5, -1, 3); scene.add(fill);
     const rim = new THREE.DirectionalLight(0xedff00, 0.4); rim.position.set(0, 3, -6); scene.add(rim);
 
-    S.current = { renderer, scene, camera, controls, slab: null, raf: 0, cardFaceMat: null, fitDist: 7, fitCenter: new THREE.Vector3(0, 0, 0) };
+    S.current = { renderer, scene, camera, controls, slab: null, raf: 0, cardFaceMat: null, fitDist: 7, fitCenter: new THREE.Vector3(0, 0, 0), playing: true, speed: 0.0025 };
 
     const onResize = () => {
       const nw = mount.clientWidth, nh = mount.clientHeight || 560;
@@ -250,8 +252,8 @@ const SlabViewer3D = forwardRef(function SlabViewer3D({ config, artworkUrl }, re
     const animate = () => {
       const st = S.current; if (!st) return;
       st.raf = requestAnimationFrame(animate);
-      if (st.slab) {
-        st.slab.rotation.y += 0.0025;
+      if (st.slab && st.playing) {
+        st.slab.rotation.y += st.speed;
         st.slab.position.y = Math.sin(performance.now() * 0.0008) * 0.03;
       }
       controls.update(); renderer.render(scene, camera);
@@ -366,6 +368,14 @@ const SlabViewer3D = forwardRef(function SlabViewer3D({ config, artworkUrl }, re
     st.controls.target.copy(st.fitCenter);
     st.controls.update();
   };
+  const togglePlay = () => {
+    const np = !playing; setPlaying(np);
+    if (S.current) S.current.playing = np;
+  };
+  const setSpeedVal = (v) => {
+    setSpeed(v);
+    if (S.current) S.current.speed = 0.0025 * v;
+  };
 
   return (
     <div className="relative overflow-hidden border border-slate2 bg-card">
@@ -396,9 +406,18 @@ const SlabViewer3D = forwardRef(function SlabViewer3D({ config, artworkUrl }, re
         <button onClick={zoomOut} aria-label="Zoom out" className="flex h-8 w-8 items-center justify-center border border-slate2 bg-void/80 text-silver/70 backdrop-blur transition-colors hover:border-ozone hover:text-ozone"><ZoomOut className="h-3.5 w-3.5" /></button>
         <button onClick={resetView} aria-label="Reset view" className="flex h-8 w-8 items-center justify-center border border-slate2 bg-void/80 text-silver/70 backdrop-blur transition-colors hover:border-ozone hover:text-ozone"><Maximize2 className="h-3.5 w-3.5" /></button>
       </div>
-      <div className="pointer-events-none absolute inset-x-0 bottom-0 flex items-center gap-3 border-t border-slate2/60 bg-void/70 px-4 py-1.5 font-mono text-[9px] uppercase tracking-widest text-silver/50 backdrop-blur">
+      <div className="absolute inset-x-0 bottom-0 flex items-center gap-2 border-t border-slate2/60 bg-void/70 px-4 py-1.5 font-mono text-[9px] uppercase tracking-widest text-silver/50 backdrop-blur">
         <span className="text-ozone">{(config.casing || "slab").toUpperCase()}</span>
         <span>{(config.finish || "clear").toUpperCase()}</span>
+        <button onClick={togglePlay} className="ml-2 flex items-center gap-1 border border-slate2 px-1.5 py-0.5 text-silver/70 transition-colors hover:border-ozone hover:text-ozone">
+          {playing ? <Pause className="h-2.5 w-2.5" /> : <Play className="h-2.5 w-2.5" />}
+          {playing ? "PAUSE" : "PLAY"}
+        </button>
+        <div className="flex items-center gap-0.5">
+          {[0.5, 1, 2].map((v) => (
+            <button key={v} onClick={() => setSpeedVal(v)} className={`px-1.5 py-0.5 ${speed === v ? "bg-ozone font-bold text-void" : "border border-slate2 text-silver/50 hover:text-ozone"}`}>×{v}</button>
+          ))}
+        </div>
         <span className="ml-auto">DRAG TO ROTATE · SCROLL TO ZOOM</span>
       </div>
     </div>
