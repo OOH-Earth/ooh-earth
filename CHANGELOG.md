@@ -14,6 +14,7 @@ _Last updated: 2026-08-01_
 - Hub tile now **self-surfaces on main** via a built-in default in `LabHub` (no DB record needed); a real `LabPrototype` row via `/lab/admin` still takes precedence.
 - Added a **Roadmap** section (hero render, livery variants, exploded view, poster) as scaffolding for the next design passes.
 - **Lab project registry + auto-provisioning** — new `labProjects.js` is the single source of truth for code-defined Lab projects. The **Control Console (`/lab/admin`) auto-provisions** a `LabPrototype` record for any registry project missing one on load, so new Lab pages appear in the control panel automatically and stay togglable (access / status / visible). The hub reads the same registry. Adding a project is now: page + route + one registry line.
+- **Fix (visible toggle):** the hub's registry fallback checked the *visible-filtered* list, so a project set to `visible: off` in the console got re-added from the registry and stayed on the hub. It now falls back only when **no record exists at all** — so access / status / visible from the console sync correctly for every registry project, current and future.
 
 ## 2026-08-01 — Hero dispatch panel + licence placement
 
