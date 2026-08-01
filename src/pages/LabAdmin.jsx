@@ -7,7 +7,7 @@ import Nav from "@/components/ooh/Nav";
 import Breadcrumbs from "@/components/ooh/Breadcrumbs";
 import SiteFooter from "@/components/ooh/SiteFooter";
 import { useToast } from "@/components/ui/use-toast";
-import { Loader2, Lock, ExternalLink, Radio, Power, Eye, EyeOff, Gauge } from "lucide-react";
+import { Loader2, Lock, ExternalLink, Radio, Power, Eye, EyeOff, Gauge, Map as MapIcon, ArrowUpRight } from "lucide-react";
 
 // Toggle button — active state fills with the channel tone. tones:
 //   ozone (yellow)  — public / live / visible
@@ -138,6 +138,28 @@ export default function LabAdmin() {
           Each channel toggles access (public ↔ agency/investor), build status, and hub visibility. Changes propagate to the live stack and route gating on save.
         </p>
 
+        {/* sitemap extension — jump grid */}
+        <section className="mt-6 border border-slate2 bg-card">
+          <div className="flex items-center gap-2 border-b border-slate2 px-4 py-2.5 font-mono text-[10px] uppercase tracking-[0.2em] text-silver/55">
+            <MapIcon className="h-3.5 w-3.5 text-ozone" /> Sitemap · jump to
+          </div>
+          <div className="flex flex-wrap gap-1.5 p-3">
+            <SiteLink to="/lab" label="Hub" led="ozone" />
+            {(items || []).map((r) => (
+              <SiteLink
+                key={r.id}
+                to={r.path}
+                label={r.title}
+                led={r.visible === false ? "red" : r.access === "public" ? "ozone" : "flare"}
+              />
+            ))}
+            <SiteLink to="/lab/devices/watch" label="Watch" led="flare" />
+            <SiteLink to="/lab/devices/field-tag" label="Field Tag" led="flare" />
+            <SiteLink to="/lab/devices/desktop" label="Desktop" led="flare" />
+            <SiteLink to="/lab/admin" label="Console" led="ozone" />
+          </div>
+        </section>
+
         {items === null ? (
           <div className="flex justify-center py-20">
             <Loader2 className="h-6 w-6 animate-spin text-ozone" />
@@ -202,5 +224,19 @@ function Ctrl({ label, icon, children }) {
       </div>
       <div className="flex gap-1.5">{children}</div>
     </div>
+  );
+}
+
+const LED = { ozone: "bg-ozone", flare: "bg-flare", red: "bg-destructive" };
+function SiteLink({ to, label, led = "ozone" }) {
+  return (
+    <Link
+      to={to}
+      className="group flex items-center gap-1.5 border border-slate2 px-2.5 py-1.5 font-mono text-[9px] font-bold uppercase tracking-[0.15em] text-silver/70 transition-colors hover:border-ozone/60 hover:text-silver"
+    >
+      <span className={`h-1.5 w-1.5 rounded-full ${LED[led]}`} />
+      {label}
+      <ArrowUpRight className="h-3 w-3 text-silver/30 transition-transform group-hover:translate-x-0.5 group-hover:text-ozone" />
+    </Link>
   );
 }
