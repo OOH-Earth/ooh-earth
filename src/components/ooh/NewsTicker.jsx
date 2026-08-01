@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Radio, Loader2 } from "lucide-react";
 import { useNewsHeadlines } from "@/hooks/useNewsHeadlines";
 
@@ -24,6 +25,10 @@ function Row({ items }) {
 
 export default function NewsTicker() {
   const { items, loading } = useNewsHeadlines();
+  const [slow, setSlow] = useState(false);
+  // Calm base pace (~3.5s per item); on hover it crawls almost to a stop so you
+  // can read a headline and click through to the source.
+  const baseDur = Math.max(70, Math.round((items?.length || 15) * 3.5));
 
   if (loading || !items.length) {
     return (
@@ -40,8 +45,15 @@ export default function NewsTicker() {
         <Radio className="h-3 w-3 animate-pulse text-ozone" />
         <span className="font-mono text-[9px] font-bold uppercase tracking-[0.25em] text-ozone">Intel</span>
       </span>
-      <div className="relative flex flex-1 items-center overflow-hidden">
-        <div className="flex w-max animate-marquee items-center">
+      <div
+        className="relative flex flex-1 items-center overflow-hidden"
+        onMouseEnter={() => setSlow(true)}
+        onMouseLeave={() => setSlow(false)}
+      >
+        <div
+          className="flex w-max animate-marquee items-center"
+          style={{ animationDuration: `${slow ? baseDur * 10 : baseDur}s` }}
+        >
           <Row items={items} />
           <Row items={items} />
         </div>
