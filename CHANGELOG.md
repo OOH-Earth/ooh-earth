@@ -11,7 +11,9 @@ _Last updated: 2026-08-01_
 ## 2026-08-01 — Hero dispatch panel + licence placement
 
 - **Hero dispatch reworked** — the `// Field dispatch` + open-source/copyleft/licence lines were overlapping the corner reticle (desktop) and the console card + “Descend” cue (mobile). Rebuilt as a bordered HUD panel (backdrop-blur), lifted clear of the bracket, **desktop-only**. `LicenseMark` simplified to a clean block (ethos line + micro licence line — no superscript collision).
-- **Licence in the footer** — added `AGPL-3.0 · CC BY-SA 4.0` to the footer © line, so mobile keeps the licence (where the desktop-only hero panel is hidden) and it sits in the natural place.
+- **Licence in the footer** — added `AGPL-3.0 · CC BY-SA 4.0` to the footer © line, so mobile keeps the licence and it sits in the natural place.
+- **Mobile dispatch restored** — the desktop-only panel left mobile with nothing; added an in-flow mobile version (below the console, above “Descend”) that shows on mobile without overlapping.
+- **Globe header (orbital atlas) reworked** — stacked the title + `global surveillance grid` / spots / `cluster intel` sublabels vertically so they no longer collide, and gave the “Open field map” button a backdrop. (BACKUP also: dropped the redundant standalone surveillance-grid label from `Globe3D`.)
 
 ## 2026-08-01 — Removed “No VC” credential copy
 
