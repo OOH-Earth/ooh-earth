@@ -10,8 +10,10 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
 // (3) Bluesky post search (best-effort, live). Any source that fails is skipped.
 
 const CACHE_KEY = "fieldNews";
+const FEED_VERSION = "resist-1"; // bump to force a same-day rebuild when this logic changes
 const POOL = 60;         // endless-stream pool size
 const PER_FEED = 40;     // items parsed per source
+const MAX_AGE_MS = 150 * 24 * 60 * 60 * 1000; // only surface items from the last ~5 months
 
 // Movement / resistance feeds — the orgs' own words, real article links.
 const RSS_FEEDS = [
@@ -153,7 +155,7 @@ function diversify(list: any[]) {
 function periodKey() {
   const d = new Date();
   const p = (n: number) => String(n).padStart(2, "0");
-  return `${d.getUTCFullYear()}-${p(d.getUTCMonth() + 1)}-${p(d.getUTCDate())}`;
+  return `${FEED_VERSION}-${d.getUTCFullYear()}-${p(d.getUTCMonth() + 1)}-${p(d.getUTCDate())}`;
 }
 
 Deno.serve(async (req) => {
@@ -177,7 +179,8 @@ Deno.serve(async (req) => {
     let all: any[] = [];
     for (const r of settled) if (r.status === "fulfilled") all = all.concat(r.value);
 
-    all = all.filter((x) => x && x.title && /^https?:\/\//.test(x.url || ""));
+    const now = Date.now();
+    all = all.filter((x) => x && x.title && /^https?:\/\//.test(x.url || "") && x.published && (now - x.published) < MAX_AGE_MS);
     const seen = new Set<string>();
     const dedup: any[] = [];
     for (const it of all) {
