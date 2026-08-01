@@ -117,8 +117,8 @@ export default function HeroConsole({ onCommand }) {
         setD({
           spots,
           verified: ver,
-          leads: (leads || []).filter((x) => x.status === "pending").length,
-          ops: Number(stats.operatives) || 0,
+          leads: Number.isFinite(Number(stats.leads)) ? Number(stats.leads) : (leads || []).filter((x) => x.status === "pending").length,
+          ops: (Number(stats.operatives) || 0) + (Number(stats.ai_agents) || 0),
           rate: spots ? Math.round((ver / spots) * 100) : 0,
           feed: (locs || []).slice(0, 10),
           series,
