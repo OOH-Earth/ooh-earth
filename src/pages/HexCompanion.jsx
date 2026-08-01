@@ -1,9 +1,10 @@
 import { useState } from "react";
-import { Smartphone, MapPin, Grid3x3, Wallet, Vote, Radio, ShieldCheck } from "lucide-react";
+import { Smartphone, MapPin, Grid3x3, Wallet, Vote, Radio, ShieldCheck, Watch } from "lucide-react";
 import Nav from "@/components/ooh/Nav";
 import Breadcrumbs from "@/components/ooh/Breadcrumbs";
 import SiteFooter from "@/components/ooh/SiteFooter";
 import { fromLines, TRI, DIAL } from "@/lib/hexagrams";
+import CompanionWatch from "@/components/ooh/lab/CompanionWatch";
 
 // OOH Earth — Companion App (Lab)
 // Five mobile screens (S-01…S-05) for the Hex Engine, on the OOH design
@@ -176,7 +177,21 @@ export default function HexCompanion() {
           The engine composes intent physically; the app is the window into it. Every screen maps to a live oohearth.app surface — the map is the offense record, the wallet holds the Genesis twin, the DAO tab is real governance. The secure element always signs on-device after a physical PRESS.
         </p>
 
-        <div className="grid grid-cols-1 justify-items-center gap-8 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
+        {/* Wearable prototype — OOH Watch */}
+        <div className="mt-8 border border-slate2 bg-card p-5">
+          <div className="flex items-center gap-2">
+            <Watch className="h-4 w-4 text-ozone" />
+            <div className="font-mono text-[11px] uppercase tracking-[0.2em] text-ozone">Wearable · OOH Watch prototype</div>
+          </div>
+          <div className="mt-4 grid grid-cols-1 items-center gap-6 md:grid-cols-[auto_1fr]">
+            <CompanionWatch />
+            <p className="font-mono text-xs leading-loose text-silver/50">
+              The wrist companion mirrors the engine on the body. UWB proximity rings locate the nearest offense, the secure element signs on a PRESS of the crown, and the hex face reads live state at a glance. Field-ready, sunlight-legible, always paired.
+            </p>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 justify-items-center gap-8 sm:grid-cols-2 lg:grid-cols-3">
           <Phone code="S-01" name="Pair" tab="PAIR"><ScreenPair /></Phone>
           <Phone code="S-02" name="City Map" tab="MAP"><ScreenMap /></Phone>
           <Phone code="S-03" name="Hex State" tab="HEX"><ScreenHex /></Phone>
