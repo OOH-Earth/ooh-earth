@@ -13,6 +13,7 @@ import {
   HeartHandshake, Recycle, Cpu,
   ShieldCheck, Gauge, Users, Milestone, Radio, Workflow, FileText, Newspaper,
   BusFront, RectangleHorizontal, MonitorPlay, Paintbrush2, Shapes, Globe,
+  Image as ImageIcon,
 } from "lucide-react";
 
 // Navigation hierarchy — audience-ordered. Keep in step with
@@ -133,6 +134,7 @@ const SITEMAP = [
       { to: "/lab/companion", label: "Companion App" },
       { to: "/lab/poster", label: "Concept Poster" },
       { to: "/lab/status", label: "Status Report" },
+      { to: "/lab/nft", label: "NFT Creator" },
     ],
   },
   {
@@ -163,6 +165,7 @@ const ICON = {
   "Agency HQ": Compass, "Agency Newsroom": Newspaper, "FDE Portal": Compass, "Architecture Ops": Cpu, "Treasury Console": Coins,
   "Radio Ops": Radio, "Automation · n8n": Workflow,
   "Journey Map": Milestone, Sitemap: Network, "Brand Guide": Palette,
+  "NFT Creator": ImageIcon,
 };
 
 // Build-status semaphore for not-yet-live items (kept in step with the Journey Map + /sitemap).

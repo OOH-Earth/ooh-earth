@@ -18,6 +18,7 @@ const CARDS = [
   { to: "/lab/spec", icon: FileText, title: "Engineering Spec", desc: "State machine, BLE GATT, frame format, screen inventory.", live: true },
   { to: "/lab/poster", icon: ImageIcon, title: "Concept Poster", desc: "2400px infographic — concept art pending media upload.", live: true },
   { to: "/lab/status", icon: Activity, title: "Status Report", desc: "Lab engineering log — build register, revisions, pipeline, roadmap.", live: true },
+  { to: "/lab/nft", icon: ImageIcon, title: "NFT Creator", desc: "3D subvertising card studio — slab casing, grading labels, artwork mint.", live: true },
 ];
 
 function Card({ item }) {

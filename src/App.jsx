@@ -28,6 +28,7 @@ import HexCompanion from '@/pages/HexCompanion';
 import HexDevice3D from '@/pages/HexDevice3D';
 import HexCoinCube from '@/pages/HexCoinCube';
 import LabStatus from '@/pages/LabStatus';
+import NftCreator from '@/pages/NftCreator';
 import Home from '@/pages/Home';
 import Map from '@/pages/Map';
 import Report from '@/pages/Report';
@@ -187,6 +188,7 @@ const AuthenticatedApp = () => {
       <Route path="/lab/device" element={<HexDevice3D />} />
       <Route path="/lab/livingcoin" element={<HexCoinCube />} />
       <Route path="/lab/status" element={<LabStatus />} />
+      <Route path="/lab/nft" element={<NftCreator />} />
     </Route>
     <Route element={<InvestorRoute />}>
       <Route path="/investor" element={<InvestorHub />} />
