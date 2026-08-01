@@ -357,7 +357,6 @@ export default function Globe3D({ markers, selectedId, hoverId, onSelect, userLo
         <div className="absolute right-3 top-3 h-4 w-4 border-r border-t border-ozone/40" />
         <div className="absolute bottom-3 left-3 h-4 w-4 border-b border-l border-ozone/40" />
         <div className="absolute bottom-3 right-3 h-4 w-4 border-b border-r border-ozone/40" />
-        <span className="absolute left-3 top-3 pl-6 font-mono text-[8px] uppercase tracking-[0.3em] text-ozone/40">// global surveillance grid · cluster intel</span>
       </div>
 
       {/* live cluster + spot counters — right on mobile, below telemetry on desktop */}

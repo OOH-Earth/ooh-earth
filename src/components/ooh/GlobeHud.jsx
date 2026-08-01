@@ -159,7 +159,7 @@ export default function GlobeHud({ map }) {
       </div>
 
       {/* TC: telemetry strip */}
-      <div data-tour="hud-tel" className="absolute left-1/2 top-3 hidden -translate-x-1/2 md:block">
+      <div data-tour="hud-tel" className="absolute left-1/2 top-12 hidden -translate-x-1/2 lg:block">
         <div className="flex gap-4 border border-slate2/70 bg-void/70 px-3 py-1.5 backdrop-blur-md">
           <span className="text-dim">CENTER <span className="text-silver">{fmt(tel.lng)},{fmt(tel.lat)}</span></span>
           <span className="text-dim">BRG <span className="text-ozone">{fmt(tel.bearing, 0)}°</span></span>

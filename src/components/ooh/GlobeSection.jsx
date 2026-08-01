@@ -52,8 +52,8 @@ export default function GlobeSection() {
           <Globe className="h-3.5 w-3.5 text-ozone" />
           <span className="font-mono text-[9px] uppercase tracking-[0.3em] text-ozone">// orbital atlas</span>
         </span>
-        <span className="flex items-center gap-3">
-          <span className="font-mono text-[9px] uppercase tracking-[0.2em] text-dim/70">
+        <span className="flex items-center gap-4">
+          <span className="hidden font-mono text-[9px] uppercase tracking-[0.2em] text-dim/70 sm:inline">
             {markers.length} spots · {live ? "live sync" : "live spin"}
           </span>
           <Link
