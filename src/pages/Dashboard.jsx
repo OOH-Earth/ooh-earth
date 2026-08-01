@@ -104,6 +104,7 @@ export default function Dashboard() {
   const [previewAs, setPreviewAs] = useState(null);
   // ui
   const [mineFilter, setMineFilter] = useState("all");
+  const [mineOpen, setMineOpen] = useState(true);
   const [queueOpen, setQueueOpen] = useState(true);
   const [qSearch, setQSearch] = useState("");
   const [qTriageOnly, setQTriageOnly] = useState(false);
@@ -277,32 +278,44 @@ export default function Dashboard() {
             </Link>
           </div>
 
-          {/* ── PRIMARY: my captures + status filter ── */}
+          {/* ── PRIMARY: my captures — collapsible dropdown ── */}
           <section className="mt-10">
-            <div className="flex flex-wrap items-center justify-between gap-3">
-              <h2 className="font-display text-lg font-bold uppercase tracking-[-0.01em] text-silver">My field captures</h2>
-              <div className="flex flex-wrap items-center gap-1.5">
-                {MINE_FILTERS.map(([key, label]) => (
-                  <Chip key={key} active={mineFilter === key} onClick={() => setMineFilter(key)}>
-                    {label} {key === "all" ? mine.length : mine.filter((r) => r.status === key).length}
-                  </Chip>
-                ))}
-              </div>
-            </div>
-            <PullToRefresh onRefresh={refresh} className="mt-4 max-h-[55vh] min-h-0 lg:max-h-none">
-              <div className="space-y-2">
-                {filteredMine.length ? filteredMine.map((n) => <Row key={n.id} n={n} />) : (
-                  <div className="border border-slate2/40 bg-card p-6 text-center">
-                    <p className="font-mono text-[10px] uppercase tracking-[0.25em] text-dim">// {mine.length ? "No captures match this filter" : "No captures filed yet"}</p>
-                    {!mine.length && (
-                      <Link to="/map" className="mt-3 inline-flex items-center gap-2 font-mono text-[10px] font-bold uppercase tracking-[0.25em] text-ozone">
-                        Open the map <ArrowUpRight className="h-3.5 w-3.5" />
-                      </Link>
+            <button onClick={() => setMineOpen((o) => !o)} aria-expanded={mineOpen} className="flex w-full items-center justify-between gap-3 border border-slate2/50 bg-card/40 px-4 py-3 text-left transition-colors hover:border-ozone/40">
+              <span className="flex flex-wrap items-center gap-2 font-display text-lg font-bold uppercase tracking-[-0.01em] text-silver">
+                <FileText className="h-4 w-4 text-ozone" /> My field captures
+                <span className="font-mono text-[9px] uppercase tracking-[0.2em] text-dim">
+                  // {mine.length} filed{myVerified > 0 && <span className="text-brand-green"> · {myVerified} verified</span>}{myPending > 0 && <span className="text-ozone"> · {myPending} in review</span>}
+                </span>
+              </span>
+              <ChevronDown className={`h-4 w-4 shrink-0 text-dim transition-transform ${mineOpen ? "rotate-180" : ""}`} />
+            </button>
+
+            {mineOpen && (
+              <div className="mt-3">
+                <div className="flex flex-wrap items-center gap-1.5 border border-slate2/40 bg-card/30 p-2">
+                  {MINE_FILTERS.map(([key, label]) => (
+                    <Chip key={key} active={mineFilter === key} onClick={() => setMineFilter(key)}>
+                      {label} {key === "all" ? mine.length : mine.filter((r) => r.status === key).length}
+                    </Chip>
+                  ))}
+                  <span className="ml-auto font-mono text-[9px] uppercase tracking-[0.2em] text-dim">{filteredMine.length} shown</span>
+                </div>
+                <PullToRefresh onRefresh={refresh} className="mt-2 max-h-[55vh] min-h-0 lg:max-h-none">
+                  <div className="space-y-2">
+                    {filteredMine.length ? filteredMine.map((n) => <Row key={n.id} n={n} />) : (
+                      <div className="border border-slate2/40 bg-card p-6 text-center">
+                        <p className="font-mono text-[10px] uppercase tracking-[0.25em] text-dim">// {mine.length ? "No captures match this filter" : "No captures filed yet"}</p>
+                        {!mine.length && (
+                          <Link to="/map" className="mt-3 inline-flex items-center gap-2 font-mono text-[10px] font-bold uppercase tracking-[0.25em] text-ozone">
+                            Open the map <ArrowUpRight className="h-3.5 w-3.5" />
+                          </Link>
+                        )}
+                      </div>
                     )}
                   </div>
-                )}
+                </PullToRefresh>
               </div>
-            </PullToRefresh>
+            )}
           </section>
 
           {/* ── SECONDARY: verification queue — collapsible + filters + bulk ── */}
