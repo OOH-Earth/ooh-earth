@@ -4,6 +4,7 @@ import HorizonProgress from "@/components/ooh/HorizonProgress";
 import CryptoDonations from "@/components/ooh/campaign/CryptoDonations";
 import StripeDonate from "@/components/ooh/campaign/StripeDonate";
 import LeadCapture from "@/components/ooh/campaign/LeadCapture";
+import MovementContext from "@/components/ooh/MovementContext";
 import WalletButton from "@/components/ooh/WalletButton";
 import DonationWatcher from "@/components/ooh/campaign/DonationWatcher";
 import { CAMPAIGN } from "@/components/ooh/fundConfig";
@@ -76,6 +77,8 @@ export default function Campaign() {
           <div className="mt-10">
             <DonationWatcher />
           </div>
+
+          <MovementContext className="mt-12" />
 
           <div className="mt-10 flex items-start gap-3 border-t border-slate2/40 pt-6">
             <Megaphone className="mt-0.5 h-5 w-5 shrink-0 text-ozone" />
