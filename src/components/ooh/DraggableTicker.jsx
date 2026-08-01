@@ -81,9 +81,9 @@ export default function DraggableTicker({ children, speed = 0.4, className = "" 
       onPointerUp={onPointerUp}
       onPointerCancel={onPointerUp}
     >
-      <div ref={trackRef} className="flex w-max items-center" style={{ willChange: "transform" }}>
-        <div className="flex items-center">{children}</div>
-        <div className="flex items-center">{children}</div>
+      <div ref={trackRef} className="flex w-max shrink-0 items-center" style={{ willChange: "transform" }}>
+        <div className="flex shrink-0 items-center">{children}</div>
+        <div className="flex shrink-0 items-center">{children}</div>
       </div>
     </div>
   );
