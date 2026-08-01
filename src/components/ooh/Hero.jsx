@@ -4,6 +4,7 @@ import { ArrowDown, Radio, ArrowUpRight } from "lucide-react";
 import HeroConsole from "@/components/ooh/HeroConsole";
 import BrandMark from "@/components/ooh/BrandMark";
 import BetaTag from "@/components/ooh/BetaTag";
+import LicenseMark from "@/components/ooh/LicenseMark";
 
 const WORD = "oohearth.app";
 
@@ -93,8 +94,9 @@ export default function Hero({ onCommand }) {
         </div>
       </div>
 
-      <div className="absolute bottom-4 left-6 z-20 font-mono text-[9px] uppercase tracking-[0.25em] text-silver/70 md:left-10">
-        // Field dispatch · subvertising reel
+      <div className="absolute bottom-4 left-6 z-20 max-w-[240px] md:left-10 md:max-w-none">
+        <div className="font-mono text-[9px] uppercase tracking-[0.25em] text-silver/70">// Field dispatch · subvertising reel</div>
+        <LicenseMark className="mt-1.5 block" />
       </div>
 
       {/* High-vis baseline strip */}
