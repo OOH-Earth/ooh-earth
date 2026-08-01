@@ -8,6 +8,11 @@ _Last updated: 2026-08-01_
 - **Mobile menu clipping** — `NavMenu` now portals to `document.body`, escaping the backdrop-blur containing block so the full-screen launcher fills the viewport on mobile.
 - **Header hidden under nav on notched devices** — the fixed nav inflates by `env(safe-area-inset-top)` on iPhones with notches/dynamic islands, but page top padding was a fixed `pt-24/pt-28`, causing masthead H1s to slip underneath. Added a `.page-top` utility (`calc(6rem + env(safe-area-inset-top))`, `7rem` on md) and applied it to `Channel.jsx`.
 
+## 2026-08-01 — Hero dispatch panel + licence placement
+
+- **Hero dispatch reworked** — the `// Field dispatch` + open-source/copyleft/licence lines were overlapping the corner reticle (desktop) and the console card + “Descend” cue (mobile). Rebuilt as a bordered HUD panel (backdrop-blur), lifted clear of the bracket, **desktop-only**. `LicenseMark` simplified to a clean block (ethos line + micro licence line — no superscript collision).
+- **Licence in the footer** — added `AGPL-3.0 · CC BY-SA 4.0` to the footer © line, so mobile keeps the licence (where the desktop-only hero panel is hidden) and it sits in the natural place.
+
 ## 2026-08-01 — Removed “No VC” credential copy
 
 - Stripped the “No VC” / “zero VC” / “Zero VC by design” lines from `LicenseMark`, `AuthShell` (trust list), `Plans`, `Store`, and the gated-page footers (`CapitalLead`, `Console`, `InvestorHub`). Separators cleaned — no dangling middots.
