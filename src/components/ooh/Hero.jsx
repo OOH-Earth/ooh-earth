@@ -86,6 +86,14 @@ export default function Hero({ onCommand }) {
           <HeroConsole onCommand={onCommand} />
         </div>
 
+        <div className="mt-4 md:hidden">
+          <div className="border border-ozone/20 bg-void/60 px-3.5 py-2.5 backdrop-blur-sm">
+            <div className="font-mono text-[9px] uppercase leading-[1.5] tracking-[0.25em] text-silver/70"><span className="text-ozone/70">// </span>Field dispatch · subvertising reel</div>
+            <div className="my-1.5 h-px w-full bg-ozone/15" />
+            <LicenseMark />
+          </div>
+        </div>
+
         <div className="flex justify-center pt-4">
           <a href="#atlas" className="flex flex-col items-center gap-2 font-mono text-[10px] uppercase tracking-[0.3em] text-silver/50 transition-colors hover:text-ozone">
             <span>Descend</span>
