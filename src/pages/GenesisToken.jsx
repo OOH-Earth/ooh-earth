@@ -1,8 +1,11 @@
+import { useRef } from "react";
 import { Link } from "react-router-dom";
-import { Coins, Layers, ArrowRight, ShieldCheck, Flame, Vote, Award, Sparkles, Zap } from "lucide-react";
+import { Coins, Layers, ArrowRight, ShieldCheck, Flame, Vote, Award, Sparkles, Zap, Download } from "lucide-react";
 import Nav from "@/components/ooh/Nav";
 import Breadcrumbs from "@/components/ooh/Breadcrumbs";
 import SiteFooter from "@/components/ooh/SiteFooter";
+import { useLabGate } from "@/components/ooh/LabGate";
+import TokenIconStudio from "@/components/ooh/lab/TokenIconStudio";
 import { TOKEN_SPECS, TOKEN_DISTRIBUTION, TOKEN_UTILITY, TOKEN_VS_CHIP, TOKEN_FLOW, REWARD_TIERS } from "@/components/ooh/lab/tokenPresets";
 
 const UTILITY_ICONS = { Reward: Zap, Vote: Vote, Stake: ShieldCheck, Bounty: Coins, Access: Sparkles, Tip: ArrowRight };
@@ -13,6 +16,14 @@ const UTILITY_ICONS = { Reward: Zap, Vote: Vote, Stake: ShieldCheck, Bounty: Coi
 // Token = liquid currency + rewards; Chip = cultural artifact + provenance.
 
 export default function GenesisToken() {
+  const studioRef = useRef(null);
+  const { gate } = useLabGate();
+
+  const handleExport = () => {
+    if (!gate("Export token mark PNG")) return;
+    studioRef.current?.exportPNG();
+  };
+
   return (
     <div className="min-h-screen bg-void grid-bg text-silver">
       <Nav />
@@ -35,6 +46,40 @@ export default function GenesisToken() {
           <p className="font-mono text-[11px] leading-relaxed text-silver/60">
             <span className="text-ozone">$OOHEX · FUNGIBLE COMMUNITY TOKEN</span> — The Genesis Token is the liquid, on-chain currency of the OOH Earth commons. Unlike the Genesis Chip (a physical, non-fungible cultural artifact you hold), the token is divisible, tradeable, and earned. It funds field work, rewards operatives, and governs the treasury. Burned on every transfer, governed by those who hold it.
           </p>
+        </div>
+
+        {/* Visual creator — token mark studio */}
+        <div className="mt-6 grid grid-cols-1 items-start gap-6 lg:grid-cols-[1.3fr_1fr]">
+          <TokenIconStudio ref={studioRef} config={{ serial: "OOHEX" }} />
+          <div className="flex flex-col gap-4">
+            <div className="border border-slate2 bg-card p-5">
+              <div className="font-mono text-[11px] uppercase tracking-[0.2em] text-ozone">Token mark studio</div>
+              <p className="mt-3 font-mono text-[11px] leading-relaxed text-silver/55">
+                A fungible token has no physical form — so its mark is its identity. Customize the field, ring, security pattern, and glyph, then export a 1024px PNG brand asset for DEX listings, social, and wallet displays.
+              </p>
+              <div className="mt-4 grid grid-cols-2 gap-x-4 gap-y-2 font-mono text-[10px]">
+                {[["Resolution", "1024 × 1024"], ["Format", "PNG · alpha"], ["Pattern", "Guilloché / concentric / radial"], ["Glyph", "1–3 characters"], ["Export", "Free / gated"]].map(([k, v]) => (
+                  <div key={k}>
+                    <div className="text-[9px] uppercase tracking-widest text-silver/40">{k}</div>
+                    <div className="text-silver/80">{v}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+            <button onClick={handleExport}
+              className="flex items-center justify-center gap-2 border-2 border-ozone bg-ozone px-4 py-2.5 font-mono text-[10px] font-bold uppercase tracking-[0.2em] text-void transition-colors hover:bg-flare hover:border-flare">
+              <Download className="h-3.5 w-3.5" /> Export token mark PNG
+            </button>
+            <div className="border border-slate2 bg-card p-4">
+              <div className="font-mono text-[9px] uppercase tracking-widest text-ozone">Where it's used</div>
+              <ul className="mt-2 space-y-1.5 font-mono text-[10px] leading-relaxed text-silver/50">
+                <li>· DEX listing thumbnail (Uniswap, Raydium)</li>
+                <li>· Wallet token icon (MetaMask, Phantom)</li>
+                <li>· Block explorer contract page</li>
+                <li>· Social previews + marketing</li>
+              </ul>
+            </div>
+          </div>
         </div>
 
         {/* Chip vs Token — the core distinction */}
