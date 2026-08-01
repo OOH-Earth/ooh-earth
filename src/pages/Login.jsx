@@ -12,6 +12,7 @@ export default function Login() {
   const [showPw, setShowPw] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const returnTo = new URLSearchParams(window.location.search).get("returnTo") || "/";
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -19,14 +20,14 @@ export default function Login() {
     setLoading(true);
     try {
       await base44.auth.loginViaEmailPassword(email, password);
-      window.location.href = "/";
+      window.location.href = returnTo;
     } catch (err) {
       setError(err.message || "Invalid email or password");
     } finally {
       setLoading(false);
     }
   };
-  const handleGoogle = () => base44.auth.loginWithProvider("google", "/");
+  const handleGoogle = () => base44.auth.loginWithProvider("google", returnTo);
 
   return (
     <AuthShell>

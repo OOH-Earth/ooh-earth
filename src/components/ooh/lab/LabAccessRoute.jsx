@@ -69,6 +69,9 @@ export default function LabAccessRoute() {
   if (tok === "ok") return <Outlet />;
   if (tok === "checking") return <Fallback />;
   if (isLoadingAuth || !authChecked) return <Fallback />;
-  if (!isAuthenticated) return <Navigate to="/investor-access" replace state={{ from: location.pathname }} />;
+  if (!isAuthenticated) {
+    const r = encodeURIComponent(location.pathname + location.search);
+    return <Navigate to={`/login?returnTo=${r}`} replace />;
+  }
   return <Outlet />;
 }
