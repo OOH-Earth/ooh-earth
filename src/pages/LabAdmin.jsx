@@ -8,6 +8,7 @@ import Breadcrumbs from "@/components/ooh/Breadcrumbs";
 import SiteFooter from "@/components/ooh/SiteFooter";
 import { useToast } from "@/components/ui/use-toast";
 import { Loader2, Lock, ExternalLink, Radio, Power, Eye, EyeOff, Gauge, Map as MapIcon, ArrowUpRight } from "lucide-react";
+import { LAB_PROJECTS } from "@/components/ooh/labProjects";
 
 // Toggle button — active state fills with the channel tone. tones:
 //   ozone (yellow)  — public / live / visible
@@ -49,7 +50,27 @@ export default function LabAdmin() {
 
   const load = useCallback(async () => {
     try {
-      setItems(await base44.entities.LabPrototype.list("sort_order"));
+      let recs = await base44.entities.LabPrototype.list("sort_order");
+      // Auto-provision code-defined projects (LAB_PROJECTS) that have no record yet,
+      // so any new Lab page added to the registry shows up in the console automatically
+      // and stays fully togglable. Idempotent — keyed on path.
+      const missing = LAB_PROJECTS.filter((p) => !recs.some((r) => r.path === p.path));
+      if (missing.length) {
+        await Promise.all(
+          missing.map((p) =>
+            base44.entities.LabPrototype.create({
+              path: p.path,
+              title: p.title,
+              access: p.access || "restricted",
+              status: p.status || "in_build",
+              visible: true,
+              sort_order: p.sort_order ?? 0,
+            }).catch(() => null)
+          )
+        );
+        recs = await base44.entities.LabPrototype.list("sort_order");
+      }
+      setItems(recs);
     } catch {
       setItems([]);
     }
