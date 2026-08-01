@@ -19,7 +19,8 @@ const CARDS = [
   { to: "/lab/companion", icon: Smartphone, title: "Phone Companion", desc: "Five mobile screens: pair, map, hex, wallet, DAO.", live: true },
   { to: "/lab/devices", icon: Watch, title: "Devices", desc: "Wearables & desktop apps — OOH Watch, NFC field tag, desktop console.", live: true },
   { to: "/lab/spec", icon: FileText, title: "Engineering Spec", desc: "State machine, BLE GATT, frame format, screen inventory.", live: true },
-  { to: "/lab/poster", icon: ImageIcon, title: "Concept Poster", desc: "2400px infographic — concept art pending media upload.", live: true },
+  { to: "/lab/poster", icon: ImageIcon, title: "Hex Engine Poster", desc: "Concept art — the 3D Ba Gua sphere, mechanics of the hand, 64 states.", live: true },
+  { to: "/lab/coin-poster", icon: Coins, title: "Genesis Coin Poster", desc: "Concept art — three faces, I Ching wheel, action-verb edge, the set.", live: true },
   { to: "/lab/status", icon: Activity, title: "Status Report", desc: "Lab engineering log — build register, revisions, pipeline, roadmap.", live: true },
   { to: "/lab/nft", icon: ImageIcon, title: "NFT Creator", desc: "3D subvertising card studio — slab casing, grading labels, artwork mint.", live: true },
 ];

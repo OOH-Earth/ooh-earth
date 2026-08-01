@@ -68,12 +68,6 @@ export default function EcosystemSet() {
           </div>
         </div>
       </section>
-
-      <section className="border border-ozone/30 bg-card p-6 text-center">
-        <div className="font-mono text-[11px] uppercase tracking-[0.2em] text-ozone">The set</div>
-        <div className="mt-3 text-lg font-bold uppercase tracking-[0.14em] text-silver">Ancient systems · future networks · one interface</div>
-        <p className="mx-auto mt-3 max-w-2xl font-mono text-[11px] leading-relaxed text-silver/55">The OOH Earth Hex Engine and Genesis Coin, paired in a limited set — the complexity of the city and the blockchain turned into something you can hold, feel and understand.</p>
-      </section>
     </>
   );
 }

@@ -1,5 +1,7 @@
 import { RotateCw, Hexagon, Vibrate, Move, Nfc, ShieldCheck, Lightbulb, Usb } from "lucide-react";
+import { Image } from "@/components/ui/image";
 
+const SPHERE = "https://media.base44.com/images/public/6a62213cff3ccbca88c04ff5/1e2306297_Screenshot2026-08-01at202127.png";
 const MATERIALS = ["Brass / Sandblasted Titanium", "Sapphire Glass", "Ceramic Core", "Neodymium Magnets"];
 const FEATURES = [
   { icon: RotateCw, t: "6 Rotating Rings", d: "Build any of the 64 hexagrams" },
@@ -12,37 +14,10 @@ const FEATURES = [
   { icon: Usb, t: "USB-C / Wireless Charge", d: "Long life battery" },
 ];
 
-function EngineOrb() {
-  return (
-    <svg viewBox="0 0 240 240" className="w-60 max-w-full" role="img" aria-label="Hex Engine sphere">
-      <defs>
-        <radialGradient id="brassOrb" cx="38%" cy="34%" r="72%">
-          <stop offset="0%" stopColor="#E8C879" />
-          <stop offset="45%" stopColor="#B8860B" />
-          <stop offset="100%" stopColor="#5A430A" />
-        </radialGradient>
-        <radialGradient id="coreGlow" cx="50%" cy="50%" r="50%">
-          <stop offset="0%" stopColor="#E0F7FA" />
-          <stop offset="100%" stopColor="#E0F7FA" stopOpacity="0" />
-        </radialGradient>
-      </defs>
-      <circle cx="120" cy="120" r="108" fill="url(#brassOrb)" stroke="#3E3220" strokeWidth="2" />
-      {[92, 72, 52, 32].map((r) => <circle key={r} cx="120" cy="120" r={r} fill="none" stroke="#6B5533" strokeWidth="2" opacity="0.7" />)}
-      <circle cx="120" cy="120" r="26" fill="url(#coreGlow)" />
-      <circle cx="120" cy="120" r="14" fill="#1a1a1a" stroke="#E0F7FA" strokeWidth="1.5" />
-      {Array.from({ length: 48 }).map((_, i) => {
-        const a = (i / 48) * Math.PI * 2;
-        return <line key={i} x1={120 + Math.cos(a) * 106} y1={120 + Math.sin(a) * 106} x2={120 + Math.cos(a) * 112} y2={120 + Math.sin(a) * 112} stroke="#3E3220" strokeWidth="1" />;
-      })}
-    </svg>
-  );
-}
-
 export default function EngineHero() {
   return (
     <section className="border border-slate2 bg-card p-6">
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1.1fr_1fr] lg:items-center">
-        <div className="flex justify-center"><EngineOrb /></div>
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2 lg:items-center">
         <div>
           <div className="font-mono text-[11px] uppercase tracking-[0.2em] text-silver/50">OOH Earth</div>
           <h2 className="text-3xl font-bold uppercase tracking-[0.06em] md:text-4xl">Hex <span className="text-ozone">Engine</span></h2>
@@ -54,6 +29,9 @@ export default function EngineHero() {
               {MATERIALS.map((m) => <span key={m} className="border border-slate2 px-2.5 py-1 font-mono text-[10px] uppercase tracking-wide text-silver/70">{m}</span>)}
             </div>
           </div>
+        </div>
+        <div className="border border-slate2 bg-void">
+          <Image src={SPHERE} alt="OOH Earth Hex Engine — the 3D Ba Gua sphere" fittingType="fit" className="block aspect-square w-full" />
         </div>
       </div>
       <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4">

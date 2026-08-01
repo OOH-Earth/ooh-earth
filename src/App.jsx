@@ -24,6 +24,7 @@ import LabHub from '@/pages/LabHub';
 import GenesisCoin from '@/pages/GenesisCoin';
 import GenesisToken from '@/pages/GenesisToken';
 import HexPoster from '@/pages/HexPoster';
+import CoinPoster from '@/pages/CoinPoster';
 import HexSimulator from '@/pages/HexSimulator';
 import HexSpec from '@/pages/HexSpec';
 import HexSequencer from '@/pages/HexSequencer';
@@ -203,6 +204,7 @@ const AuthenticatedApp = () => {
     <Route path="/lab/coin" element={<GenesisCoin />} />
     <Route path="/lab/token" element={<GenesisToken />} />
     <Route path="/lab/poster" element={<HexPoster />} />
+    <Route path="/lab/coin-poster" element={<CoinPoster />} />
     <Route path="/lab/simulator" element={<HexSimulator />} />
     <Route path="/lab/spec" element={<HexSpec />} />
     <Route path="/lab/sequencer" element={<HexSequencer />} />
