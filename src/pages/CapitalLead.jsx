@@ -115,7 +115,7 @@ export default function CapitalLead() {
           </div>
 
           <div className="cl-foot">
-            <div><div className="fb">ooh<span>.</span>earth</div><p>Capital pathway · {lead.tag}<br/>Community-funded · zero VC · copyleft<br/>hello@outofhell.org</p></div>
+            <div><div className="fb">ooh<span>.</span>earth</div><p>Capital pathway · {lead.tag}<br/>Community-funded · copyleft<br/>hello@outofhell.org</p></div>
             <div className="right"><span className="cls">Not investment or valuation advice</span><p>Framing tool · figures verified on diligence<br/>Instrument: {lead.instrument}</p></div>
           </div>
         </section>
