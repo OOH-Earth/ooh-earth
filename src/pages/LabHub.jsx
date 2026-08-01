@@ -10,26 +10,32 @@ import { useLabGate } from "@/components/ooh/LabGate";
 // Coin prototype area; pieces graduate into the main app once proven.
 
 const CARDS = [
-  { to: "/lab/coin", icon: Coins, title: "Genesis Chip", desc: "The crypto chip you can hold — physical artifact, 64mm Ø, 1:1 on-chain twin.", live: true },
-  { to: "/lab/token", icon: Layers, title: "Genesis Token", desc: "$OOHEX fungible token — community currency, rewards, governance, burn.", live: true },
-  { to: "/lab/simulator", icon: Grid3x3, title: "Hex Engine Simulator", desc: "Working 64-state device — rings, Ba Gua dial, BLE frame log.", live: true },
-  { to: "/lab/device", icon: Box, title: "3D Device", desc: "Interactive brass coin-cube — six rotating faces, spin, explode, HUD.", live: true },
-  { to: "/lab/livingcoin", icon: Ruler, title: "Living Coin", desc: "Coin-cube production spec — technical drawings, six rotating brass faces.", live: true },
-  { to: "/lab/sequencer", icon: Music, title: "I Ching Sequencer", desc: "64-step sequencer across King Wen, Fuxi & protocol orderings.", live: true },
-  { to: "/lab/companion", icon: Smartphone, title: "Phone Companion", desc: "Five mobile screens: pair, map, hex, wallet, DAO.", live: true },
-  { to: "/lab/devices", icon: Watch, title: "Devices", desc: "Wearables & desktop apps — OOH Watch, NFC field tag, desktop console.", live: true },
-  { to: "/lab/spec", icon: FileText, title: "Engineering Spec", desc: "State machine, BLE GATT, frame format, screen inventory.", live: true },
-  { to: "/lab/poster", icon: ImageIcon, title: "Hex Engine Poster", desc: "Concept art — the 3D Ba Gua sphere, mechanics of the hand, 64 states.", live: true },
-  { to: "/lab/coin-poster", icon: Coins, title: "Genesis Coin Poster", desc: "Concept art — three faces, I Ching wheel, action-verb edge, the set.", live: true },
-  { to: "/lab/status", icon: Activity, title: "Status Report", desc: "Lab engineering log — build register, revisions, pipeline, roadmap.", live: true },
-  { to: "/lab/nft", icon: ImageIcon, title: "NFT Creator", desc: "3D subvertising card studio — slab casing, grading labels, artwork mint.", live: true },
+  // Public prototypes — priority
+  { to: "/lab/nft", icon: ImageIcon, title: "NFT Creator", desc: "3D subvertising card studio — slab casing, grading labels, artwork mint.", live: true, access: "public" },
+  { to: "/lab/sequencer", icon: Music, title: "I Ching Sequencer", desc: "64-step sequencer across King Wen, Fuxi & protocol orderings.", live: true, access: "public" },
+  { to: "/lab/poster", icon: ImageIcon, title: "Hex Engine Poster", desc: "Concept art — the 3D Ba Gua sphere, mechanics of the hand, 64 states.", live: true, access: "public" },
+  { to: "/lab/coin-poster", icon: Coins, title: "Genesis Coin Poster", desc: "Concept art — three faces, I Ching wheel, action-verb edge, the set.", live: true, access: "public" },
+  // Agency / investor-only prototypes
+  { to: "/lab/coin", icon: Coins, title: "Genesis Chip", desc: "The crypto chip you can hold — physical artifact, 64mm Ø, 1:1 on-chain twin.", live: true, access: "restricted" },
+  { to: "/lab/token", icon: Layers, title: "Genesis Token", desc: "$OOHEX fungible token — community currency, rewards, governance, burn.", live: true, access: "restricted" },
+  { to: "/lab/simulator", icon: Grid3x3, title: "Hex Engine Simulator", desc: "Working 64-state device — rings, Ba Gua dial, BLE frame log.", live: true, access: "restricted" },
+  { to: "/lab/device", icon: Box, title: "3D Device", desc: "Interactive brass coin-cube — six rotating faces, spin, explode, HUD.", live: true, access: "restricted" },
+  { to: "/lab/livingcoin", icon: Ruler, title: "Living Coin", desc: "Coin-cube production spec — technical drawings, six rotating brass faces.", live: true, access: "restricted" },
+  { to: "/lab/companion", icon: Smartphone, title: "Phone Companion", desc: "Five mobile screens: pair, map, hex, wallet, DAO.", live: true, access: "restricted" },
+  { to: "/lab/devices", icon: Watch, title: "Devices", desc: "Wearables & desktop apps — OOH Watch, NFC field tag, desktop console.", live: true, access: "restricted" },
+  { to: "/lab/spec", icon: FileText, title: "Engineering Spec", desc: "State machine, BLE GATT, frame format, screen inventory.", live: true, access: "restricted" },
+  { to: "/lab/status", icon: Activity, title: "Status Report", desc: "Lab engineering log — build register, revisions, pipeline, roadmap.", live: true, access: "restricted" },
 ];
 
 function Card({ item }) {
   const Icon = item.icon;
+  const publicAccess = item.access === "public";
   return (
     <div className={`flex h-full flex-col border border-slate2 bg-card p-5 transition-colors ${item.live ? "hover:border-ozone/50" : "opacity-60"}`}>
-      <Icon className={`h-9 w-9 ${item.live ? "text-ozone" : "text-silver/40"}`} strokeWidth={1.5} />
+      <div className="flex items-center justify-between">
+        <Icon className={`h-9 w-9 ${item.live ? "text-ozone" : "text-silver/40"}`} strokeWidth={1.5} />
+        <span className={`border px-2 py-0.5 font-mono text-[8px] uppercase tracking-[0.15em] ${publicAccess ? "border-ozone/50 text-ozone" : "border-flare/40 text-flare"}`}>{publicAccess ? "Public" : "Agency / Investor"}</span>
+      </div>
       <div className="mt-3 text-lg font-bold">{item.title}</div>
       <p className="mt-2 flex-1 font-mono text-[11px] leading-relaxed text-silver/50">{item.desc}</p>
       <div className={`mt-4 font-mono text-[11px] uppercase tracking-[0.12em] ${item.live ? "text-ozone" : "text-silver/40"}`}>

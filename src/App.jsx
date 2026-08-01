@@ -199,24 +199,28 @@ const AuthenticatedApp = () => {
       <Route path="/agency/blog" element={<Blog scope="agency" />} />
       <Route path="/agency/blog/:slug" element={<BlogArticle scope="agency" />} />
     </Route>
-    {/* Lab — publicly viewable; create/act actions gated by LabGate */}
+    {/* Lab — hub + public prototypes */}
     <Route path="/lab" element={<LabHub />} />
-    <Route path="/lab/coin" element={<GenesisCoin />} />
-    <Route path="/lab/token" element={<GenesisToken />} />
     <Route path="/lab/poster" element={<HexPoster />} />
     <Route path="/lab/coin-poster" element={<CoinPoster />} />
-    <Route path="/lab/simulator" element={<HexSimulator />} />
-    <Route path="/lab/spec" element={<HexSpec />} />
     <Route path="/lab/sequencer" element={<HexSequencer />} />
-    <Route path="/lab/companion" element={<HexCompanion />} />
-    <Route path="/lab/devices" element={<Devices />} />
-    <Route path="/lab/devices/field-tag" element={<NfcFieldTag />} />
-    <Route path="/lab/devices/desktop" element={<DesktopConsole />} />
-    <Route path="/lab/devices/watch" element={<OohWatch />} />
-    <Route path="/lab/device" element={<HexDevice3D />} />
-    <Route path="/lab/livingcoin" element={<HexCoinCube />} />
-    <Route path="/lab/status" element={<LabStatus />} />
     <Route path="/lab/nft" element={<NftCreator />} />
+
+    {/* Lab — agency / investor-only prototypes (token OR authenticated account) */}
+    <Route element={<InvestorRoute />}>
+      <Route path="/lab/coin" element={<GenesisCoin />} />
+      <Route path="/lab/token" element={<GenesisToken />} />
+      <Route path="/lab/simulator" element={<HexSimulator />} />
+      <Route path="/lab/spec" element={<HexSpec />} />
+      <Route path="/lab/companion" element={<HexCompanion />} />
+      <Route path="/lab/devices" element={<Devices />} />
+      <Route path="/lab/devices/field-tag" element={<NfcFieldTag />} />
+      <Route path="/lab/devices/desktop" element={<DesktopConsole />} />
+      <Route path="/lab/devices/watch" element={<OohWatch />} />
+      <Route path="/lab/device" element={<HexDevice3D />} />
+      <Route path="/lab/livingcoin" element={<HexCoinCube />} />
+      <Route path="/lab/status" element={<LabStatus />} />
+    </Route>
     <Route element={<InvestorRoute />}>
       <Route path="/investor" element={<InvestorHub />} />
       <Route path="/console" element={<Console />} />
