@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import Nav from "@/components/ooh/Nav";
 import { INVESTOR_CSS } from "@/components/ooh/investorTheme";
 import { clearInvestorSession, hasInvestorToken } from "@/components/ooh/investorAccess";
+import { MOVEMENT, MOVEMENT_ANCHORS, PLATFORM_STATUS, fmtK } from "@/components/ooh/movementEstimate";
 
 /* ────────────────────────────────────────────────────────────
    OOH Earth · Investor Hub (/investor) — GATED (ProtectedRoute)
@@ -47,6 +48,30 @@ export default function InvestorHub() {
             <div className="b"><div className="l">Actual outlay</div><div className="v">low £ thousands</div><div className="s">Capital-efficiency story</div></div>
           </div>
         </header>
+
+        <section className="inv-wrap">
+          <div className="inv-head"><h2>Not starting from zero</h2><span className="m">The movement we&rsquo;re joining</span></div>
+          <p className="inv-lede">OOH Earth is a day-one platform — early access, seeking founding backers. The resistance we&rsquo;re built to unify is not new: organised subvertising has reclaimed public space since {MOVEMENT.since}. The figures below are conservative movement-wide estimates (est.), not our platform metrics.</p>
+
+          <div className="inv-metrics" style={{ marginTop: 24 }}>
+            <div className="inv-metric"><div className="mv">~{fmtK(MOVEMENT.interventions)}+</div><div className="ml">Interventions</div><span className="mf" style={{ color: 'rgb(var(--c-flare))', border: '1px solid rgb(var(--c-flare))' }}>EST</span></div>
+            <div className="inv-metric"><div className="mv">~{fmtK(MOVEMENT.subvertisers)}+</div><div className="ml">Subverters</div><span className="mf" style={{ color: 'rgb(var(--c-flare))', border: '1px solid rgb(var(--c-flare))' }}>EST</span></div>
+            <div className="inv-metric"><div className="mv">{MOVEMENT.collectives}+</div><div className="ml">Collectives</div><span className="mf" style={{ color: 'rgb(var(--c-flare))', border: '1px solid rgb(var(--c-flare))' }}>EST</span></div>
+            <div className="inv-metric"><div className="mv">{MOVEMENT.countries}+</div><div className="ml">Countries</div><span className="mf" style={{ color: 'rgb(var(--c-flare))', border: '1px solid rgb(var(--c-flare))' }}>EST</span></div>
+            <div className="inv-metric"><div className="mv">{MOVEMENT.years}</div><div className="ml">Years active</div><span className="mf" style={{ color: 'rgb(var(--c-silver))', border: '1px solid rgb(var(--c-slate2))' }}>SINCE {MOVEMENT.since}</span></div>
+          </div>
+
+          <div className="inv-rows" style={{ marginTop: 20 }}>
+            {MOVEMENT_ANCHORS.map((a, i) => (
+              <div className="inv-row" key={i}>
+                <span className="chip pending">{a.year}</span>
+                <div className="rmain"><div className="rt">{a.text}</div><div className="rd">Source: {a.source}</div></div>
+              </div>
+            ))}
+          </div>
+
+          <p className="inv-note"><b>OOH Earth · {PLATFORM_STATUS}.</b> Movement figures are order-of-magnitude estimates of the wider subvertising movement (Brandalism, Subvertisers International, Adfree Cities, Les Déboulonneurs, Adbusters, independents) — sourced, and distinct from our own live, audited platform counts.</p>
+        </section>
 
         <section className="inv-wrap">
           <div className="inv-head"><h2>Jump in</h2><span className="m">Gated · investor materials</span></div>
