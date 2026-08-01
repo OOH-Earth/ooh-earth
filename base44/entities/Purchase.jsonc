@@ -1,0 +1,65 @@
+{
+  "name": "Purchase",
+  "type": "object",
+  "properties": {
+    "user_id": {
+      "type": "string",
+      "description": "Base44 user id who bought the item"
+    },
+    "item_id": {
+      "type": "string",
+      "description": "StoreItem id purchased"
+    },
+    "item_title": {
+      "type": "string"
+    },
+    "amount_usd": {
+      "type": "number"
+    },
+    "stripe_session_id": {
+      "type": "string",
+      "description": "Checkout session that granted this entitlement"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "paid",
+        "refunded"
+      ],
+      "default": "paid"
+    }
+  },
+  "required": [
+    "user_id",
+    "item_id"
+  ],
+  "rls": {
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "read": {
+      "$or": [
+        {
+          "data.user_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}
