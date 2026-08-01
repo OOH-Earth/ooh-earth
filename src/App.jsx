@@ -38,6 +38,7 @@ import DesktopConsole from '@/pages/DesktopConsole';
 import OohWatch from '@/pages/OohWatch';
 import HexCoinCube from '@/pages/HexCoinCube';
 import LabStatus from '@/pages/LabStatus';
+import LabStreetRunner from '@/pages/LabStreetRunner';
 import NftCreator from '@/pages/NftCreator';
 import Home from '@/pages/Home';
 import Map from '@/pages/Map';
@@ -221,6 +222,7 @@ const AuthenticatedApp = () => {
       <Route path="/lab/device" element={<HexDevice3D />} />
       <Route path="/lab/livingcoin" element={<HexCoinCube />} />
       <Route path="/lab/status" element={<LabStatus />} />
+      <Route path="/lab/streetrunner" element={<LabStreetRunner />} />
     </Route>
     <Route element={<InvestorRoute />}>
       <Route path="/investor" element={<InvestorHub />} />
