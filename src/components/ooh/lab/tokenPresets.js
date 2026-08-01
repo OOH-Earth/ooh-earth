@@ -59,3 +59,28 @@ export const REWARD_TIERS = [
   { action: "Access-key documentation",    reward: "750 $OOHEX" },
   { action: "Bounty fulfilled",            reward: "Pool amount" },
 ];
+
+// ── 3D chip spinner presets (casino-chip visual reference) ──
+export const CHIP_RING_COLORS = [
+  { id: "casino",  name: "Casino Red", hex: "#D32F2F" },
+  { id: "ozone",   name: "Ozone",      hex: "#EDFF00" },
+  { id: "flare",   name: "Flare",       hex: "#FF5C00" },
+  { id: "signal",  name: "Signal Blue", hex: "#1F51FF" },
+  { id: "black",   name: "Black",       hex: "#0a0a0a" },
+  { id: "white",   name: "White",       hex: "#F1F1F1" },
+];
+
+export const CHIP_SPOT_COLORS = [
+  { id: "bronze", name: "Bronze", hex: "#7D5A46" },
+  { id: "gold",   name: "Gold",   hex: "#D4AF37" },
+  { id: "white",  name: "White",  hex: "#F1F1F1" },
+  { id: "ozone",  name: "Ozone",  hex: "#EDFF00" },
+  { id: "black",  name: "Black",  hex: "#0a0a0a" },
+];
+
+export const CHIP_FIELD_COLORS = [
+  { id: "black", name: "Black", hex: "#000000" },
+  { id: "void",  name: "Void",  hex: "#0a0a0a" },
+  { id: "navy",  name: "Navy",  hex: "#002554" },
+  { id: "white", name: "White", hex: "#F1F1F1" },
+];

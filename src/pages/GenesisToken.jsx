@@ -1,12 +1,12 @@
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import { Link } from "react-router-dom";
-import { Coins, Layers, ArrowRight, ShieldCheck, Flame, Vote, Award, Sparkles, Zap, Download } from "lucide-react";
+import { Coins, Layers, ArrowRight, ShieldCheck, Flame, Vote, Award, Sparkles, Zap, Download, HelpCircle } from "lucide-react";
 import Nav from "@/components/ooh/Nav";
 import Breadcrumbs from "@/components/ooh/Breadcrumbs";
 import SiteFooter from "@/components/ooh/SiteFooter";
 import { useLabGate } from "@/components/ooh/LabGate";
-import TokenIconStudio from "@/components/ooh/lab/TokenIconStudio";
-import { TOKEN_SPECS, TOKEN_DISTRIBUTION, TOKEN_UTILITY, TOKEN_VS_CHIP, TOKEN_FLOW, REWARD_TIERS } from "@/components/ooh/lab/tokenPresets";
+import TokenChip3D from "@/components/ooh/lab/TokenChip3D";
+import { TOKEN_SPECS, TOKEN_DISTRIBUTION, TOKEN_UTILITY, TOKEN_VS_CHIP, TOKEN_FLOW, REWARD_TIERS, CHIP_RING_COLORS, CHIP_SPOT_COLORS, CHIP_FIELD_COLORS } from "@/components/ooh/lab/tokenPresets";
 
 const UTILITY_ICONS = { Reward: Zap, Vote: Vote, Stake: ShieldCheck, Bounty: Coins, Access: Sparkles, Tip: ArrowRight };
 
@@ -16,12 +16,18 @@ const UTILITY_ICONS = { Reward: Zap, Vote: Vote, Stake: ShieldCheck, Bounty: Coi
 // Token = liquid currency + rewards; Chip = cultural artifact + provenance.
 
 export default function GenesisToken() {
-  const studioRef = useRef(null);
+  const chipRef = useRef(null);
   const { gate } = useLabGate();
+  const [ring, setRing] = useState("#D32F2F");
+  const [spot, setSpot] = useState("#7D5A46");
+  const [field, setField] = useState("#000000");
+  const [glyph, setGlyph] = useState("Ø");
+  const [topText, setTopText] = useState("OOH EARTH · VISUAL COMMONS");
+  const [bottomText, setBottomText] = useState("$OOHEX · BASE · ERC-20");
 
   const handleExport = () => {
-    if (!gate("Export token mark PNG")) return;
-    studioRef.current?.exportPNG();
+    if (!gate("Export token chip PNG")) return;
+    chipRef.current?.exportPNG();
   };
 
   return (
@@ -48,27 +54,68 @@ export default function GenesisToken() {
           </p>
         </div>
 
-        {/* Visual creator — token mark studio */}
-        <div className="mt-6 grid grid-cols-1 items-start gap-6 lg:grid-cols-[1.3fr_1fr]">
-          <TokenIconStudio ref={studioRef} config={{ serial: "OOHEX" }} />
+        {/* 3D chip spinner — token mark studio */}
+        <div className="mt-6 grid grid-cols-1 items-start gap-6 lg:grid-cols-[1.5fr_1fr]">
+          <TokenChip3D ref={chipRef} ring={ring} spot={spot} field={field} glyph={glyph} topText={topText} bottomText={bottomText} accent="#D4AF37" />
           <div className="flex flex-col gap-4">
             <div className="border border-slate2 bg-card p-5">
-              <div className="font-mono text-[11px] uppercase tracking-[0.2em] text-ozone">Token mark studio</div>
+              <div className="font-mono text-[11px] uppercase tracking-[0.2em] text-ozone">Chip mark studio</div>
               <p className="mt-3 font-mono text-[11px] leading-relaxed text-silver/55">
-                A fungible token has no physical form — so its mark is its identity. Customize the field, ring, security pattern, and glyph, then export a 1024px PNG brand asset for DEX listings, social, and wallet displays.
+                A fungible token has no physical form — so its mark is minted as a chip. Customize the ring, edge spots, center field, glyph, and arched text, then export the render for DEX listings, wallets, and social.
               </p>
-              <div className="mt-4 grid grid-cols-2 gap-x-4 gap-y-2 font-mono text-[10px]">
-                {[["Resolution", "1024 × 1024"], ["Format", "PNG · alpha"], ["Pattern", "Guilloché / concentric / radial"], ["Glyph", "1–3 characters"], ["Export", "Free / gated"]].map(([k, v]) => (
-                  <div key={k}>
-                    <div className="text-[9px] uppercase tracking-widest text-silver/40">{k}</div>
-                    <div className="text-silver/80">{v}</div>
+              <div className="mt-4 grid grid-cols-2 gap-3">
+                <div>
+                  <div className="font-mono text-[9px] uppercase tracking-widest text-ozone">Ring</div>
+                  <div className="mt-1.5 flex flex-wrap gap-1.5">
+                    {CHIP_RING_COLORS.map((c) => (
+                      <button key={c.id} onClick={() => setRing(c.hex)} title={c.name}
+                        className={`h-6 w-6 border ${ring === c.hex ? "border-ozone ring-1 ring-ozone" : "border-slate2/50 hover:border-ozone/40"}`}
+                        style={{ background: c.hex }} />
+                    ))}
                   </div>
-                ))}
+                </div>
+                <div>
+                  <div className="font-mono text-[9px] uppercase tracking-widest text-ozone">Edge spots</div>
+                  <div className="mt-1.5 flex flex-wrap gap-1.5">
+                    {CHIP_SPOT_COLORS.map((c) => (
+                      <button key={c.id} onClick={() => setSpot(c.hex)} title={c.name}
+                        className={`h-6 w-6 border ${spot === c.hex ? "border-ozone ring-1 ring-ozone" : "border-slate2/50 hover:border-ozone/40"}`}
+                        style={{ background: c.hex }} />
+                    ))}
+                  </div>
+                </div>
+                <div>
+                  <div className="font-mono text-[9px] uppercase tracking-widest text-ozone">Center field</div>
+                  <div className="mt-1.5 flex flex-wrap gap-1.5">
+                    {CHIP_FIELD_COLORS.map((c) => (
+                      <button key={c.id} onClick={() => setField(c.hex)} title={c.name}
+                        className={`h-6 w-6 border ${field === c.hex ? "border-ozone ring-1 ring-ozone" : "border-slate2/50 hover:border-ozone/40"}`}
+                        style={{ background: c.hex }} />
+                    ))}
+                  </div>
+                </div>
+                <div>
+                  <div className="font-mono text-[9px] uppercase tracking-widest text-ozone">Glyph</div>
+                  <input type="text" maxLength={3} value={glyph} onChange={(e) => setGlyph(e.target.value)}
+                    className="mt-1.5 w-full border border-slate2 bg-card px-2 py-1.5 text-center font-display text-lg font-bold text-silver outline-none focus:border-ozone" />
+                </div>
+              </div>
+              <div className="mt-3 space-y-2">
+                <div>
+                  <div className="font-mono text-[9px] uppercase tracking-widest text-ozone">Top text</div>
+                  <input type="text" maxLength={32} value={topText} onChange={(e) => setTopText(e.target.value)}
+                    className="mt-1 w-full border border-slate2 bg-card px-2 py-1.5 font-mono text-[11px] uppercase tracking-wider text-silver outline-none focus:border-ozone" />
+                </div>
+                <div>
+                  <div className="font-mono text-[9px] uppercase tracking-widest text-ozone">Bottom text</div>
+                  <input type="text" maxLength={24} value={bottomText} onChange={(e) => setBottomText(e.target.value)}
+                    className="mt-1 w-full border border-slate2 bg-card px-2 py-1.5 font-mono text-[11px] uppercase tracking-wider text-silver outline-none focus:border-ozone" />
+                </div>
               </div>
             </div>
             <button onClick={handleExport}
               className="flex items-center justify-center gap-2 border-2 border-ozone bg-ozone px-4 py-2.5 font-mono text-[10px] font-bold uppercase tracking-[0.2em] text-void transition-colors hover:bg-flare hover:border-flare">
-              <Download className="h-3.5 w-3.5" /> Export token mark PNG
+              <Download className="h-3.5 w-3.5" /> Export chip render PNG
             </button>
             <div className="border border-slate2 bg-card p-4">
               <div className="font-mono text-[9px] uppercase tracking-widest text-ozone">Where it's used</div>
@@ -78,6 +125,35 @@ export default function GenesisToken() {
                 <li>· Block explorer contract page</li>
                 <li>· Social previews + marketing</li>
               </ul>
+            </div>
+          </div>
+        </div>
+
+        {/* What's in a name — Genesis Token disambiguation */}
+        <div className="mt-6 border border-slate2 bg-card p-5">
+          <div className="flex items-center gap-2">
+            <HelpCircle className="h-4 w-4 text-ozone" />
+            <div className="font-mono text-[11px] uppercase tracking-[0.2em] text-ozone">What's in a name · "Genesis Token" disambiguation</div>
+          </div>
+          <p className="mt-3 font-mono text-[11px] leading-relaxed text-silver/55">
+            "Genesis Token" is a generic crypto term. Several unrelated projects use the word "Genesis." Here's how ours is distinct — and what it means for OOH Earth.
+          </p>
+          <div className="mt-4 grid grid-cols-1 gap-3 md:grid-cols-2">
+            <div className="border border-slate2 p-4">
+              <div className="font-mono text-[9px] uppercase tracking-widest text-flare">Metaplex Genesis (Solana)</div>
+              <p className="mt-2 font-mono text-[11px] leading-relaxed text-silver/55">A launchpad for fair-mint NFT collections on Solana. It's a <span className="text-silver/80">tool</span>, not a token. Our Genesis Token is a standalone fungible ERC-20 — no relation to Metaplex's launchpad.</p>
+            </div>
+            <div className="border border-slate2 p-4">
+              <div className="font-mono text-[9px] uppercase tracking-widest text-flare">Solana Seeker Genesis Token</div>
+              <p className="mt-2 font-mono text-[11px] leading-relaxed text-silver/55">A limited NFT pass for the Seeker hardware device. It's a <span className="text-silver/80">non-fungible pass</span>. Our token is fungible and open-supply — no device gate, no whitelist.</p>
+            </div>
+            <div className="border border-slate2 p-4">
+              <div className="font-mono text-[9px] uppercase tracking-widest text-flare">Genesis (GXN) altcoin</div>
+              <p className="mt-2 font-mono text-[11px] leading-relaxed text-silver/55">A separate L1 blockchain project sharing the name. Entirely different team, chain, and purpose. Not us — no affiliation.</p>
+            </div>
+            <div className="border border-ozone/40 bg-ozone/5 p-4">
+              <div className="font-mono text-[9px] uppercase tracking-widest text-ozone">OOH Earth — $OOHEX (ours)</div>
+              <p className="mt-2 font-mono text-[11px] leading-relaxed text-silver/55">"Genesis" here marks the <span className="text-silver/80">first supply</span> — the genesis allocation that bootstraps the OOH Earth commons treasury. It's a utility + governance ERC-20 on Base, paired with the physical Genesis Chip. Not a launchpad, not a pass, not another chain's coin.</p>
             </div>
           </div>
         </div>
