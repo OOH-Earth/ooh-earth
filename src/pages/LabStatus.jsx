@@ -8,7 +8,9 @@ import SiteFooter from "@/components/ooh/SiteFooter";
 
 const REGISTER = [
   ["Hex Engine Lab", "/lab", "Staged · main", "green"],
-  ["Genesis Coin", "/lab/coin", "Staged · main", "green"],
+  ["Genesis Coin", "/lab/coin", "Staged · main · shadow grounded", "green"],
+  ["Genesis Token", "/lab/token", "Staged · main · 3D chip spinner", "green"],
+  ["NFT Creator", "/lab/nft", "Staged · main", "green"],
   ["Hex Engine Simulator", "/lab/simulator", "Staged · main", "green"],
   ["I Ching Sequencer", "/lab/sequencer", "Staged · main", "green"],
   ["Companion App", "/lab/companion", "Staged · main", "green"],
@@ -43,6 +45,15 @@ const OPEN = [
   "Measure the physical coin (Ø, weight) to lock the spec numbers.",
   "Upload the concept-art webp set and wire the Poster ASSET_BASE.",
   "Build the Earlier ⇄ Later Heaven flip as the first roadmap mechanic.",
+  "On-chain $OOHEX deploy + Zora creator-fee rail (wallet-ownership confirmed).",
+];
+
+// Today's pass — 2026-08-01
+const TODAY = [
+  ["Genesis Token · 3D chip spinner", "Built TokenChip3D — casino-chip geometry (colored ring, 4 edge spots, recessed field, arched text, center glyph). Full viewer parity with CoinViewer3D: auto-rotate, speed ×0.5/1/2, zoom, 5 bg swatches, corner brackets + scan line, gated PNG export. Replaces the 2D TokenIconStudio."],
+  ["Naming disambiguation", "Added 'What's in a name' section to Genesis Token — separates $OOHEX from Metaplex Genesis (launchpad tool), Solana Seeker Genesis Token (NFT pass), and GXN altcoin. 'Genesis' = first supply bootstrapping the treasury."],
+  ["Shadow grounding fix", "Coin + token viewers: contact-shadow + ShadowMaterial ground planes repositioned from y=-1.0/-0.9 to y=-1.55 (flush below the 1.5-radius disc). Previous offset left the shadow detached / cutting through the artifact. Grounded + contact shadow widened to 4.5×3."],
+  ["Lighting", "Both viewers: 3-point + PMREM RoomEnvironment, PCFSoftShadowMap, ACESFilmic tone mapping retained. Shadow opacity tuned 0.35 → 0.4 for firmer grounding."],
 ];
 
 const dot = (c) => (c === "green" ? "bg-brand-green" : "bg-flare");
@@ -64,7 +75,7 @@ export default function LabStatus() {
         <Breadcrumbs items={[{ label: "Lab", to: "/lab" }, { label: "Status Report" }]} className="mb-4" />
         <header className="flex flex-wrap items-baseline gap-x-5 gap-y-2 border-b border-slate2 pb-4">
           <h1 className="text-2xl font-bold uppercase tracking-[0.14em]">Engineering <span className="text-ozone">Status</span></h1>
-          <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-silver/50">Hex Engine Lab · report 001 · 2026-07-31</p>
+          <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-silver/50">Hex Engine Lab · report 002 · 2026-08-01</p>
           <span className="ml-auto border border-flare/40 px-2 py-0.5 font-mono text-[11px] uppercase tracking-[0.1em] text-flare">Working copy</span>
         </header>
 
@@ -120,6 +131,17 @@ export default function LabStatus() {
           <ul className="space-y-2 font-mono text-[11px] leading-relaxed text-silver/60">
             {OPEN.map((o, i) => <li key={i} className="flex gap-2"><span className="text-flare">▸</span> {o}</li>)}
           </ul>
+        </Section>
+
+        <Section n="06" title="Today's pass · 2026-08-01">
+          <div className="space-y-3 font-mono text-[11px] leading-relaxed">
+            {TODAY.map(([k, v]) => (
+              <div key={k} className="border-b border-slate2/40 pb-2.5">
+                <div className="text-ozone">{k}</div>
+                <div className="mt-1 text-silver/60">{v}</div>
+              </div>
+            ))}
+          </div>
         </Section>
 
         <div className="mt-10 border-t border-slate2 pt-4 font-mono text-[10px] uppercase tracking-widest text-silver/40">

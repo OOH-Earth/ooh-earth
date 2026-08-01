@@ -475,10 +475,10 @@ const CoinViewer3D = forwardRef(function CoinViewer3D({ config, materialId, edge
     const sG = sCx.createRadialGradient(128, 128, 0, 128, 128, 128);
     sG.addColorStop(0, "rgba(0,0,0,0.5)"); sG.addColorStop(0.5, "rgba(0,0,0,0.2)"); sG.addColorStop(1, "rgba(0,0,0,0)");
     sCx.fillStyle = sG; sCx.fillRect(0, 0, 256, 256);
-    const contactShadow = new THREE.Mesh(new THREE.PlaneGeometry(4, 2.5), new THREE.MeshBasicMaterial({ map: new THREE.CanvasTexture(sCv), transparent: true, depthWrite: false }));
-    contactShadow.rotation.x = -Math.PI / 2; contactShadow.position.y = -1.0; scene.add(contactShadow);
-    const ground = new THREE.Mesh(new THREE.PlaneGeometry(10, 10), new THREE.ShadowMaterial({ opacity: 0.35 }));
-    ground.rotation.x = -Math.PI / 2; ground.position.y = -1.01; ground.receiveShadow = true; scene.add(ground);
+    const contactShadow = new THREE.Mesh(new THREE.PlaneGeometry(4.5, 3), new THREE.MeshBasicMaterial({ map: new THREE.CanvasTexture(sCv), transparent: true, depthWrite: false }));
+    contactShadow.rotation.x = -Math.PI / 2; contactShadow.position.y = -1.55; scene.add(contactShadow);
+    const ground = new THREE.Mesh(new THREE.PlaneGeometry(10, 10), new THREE.ShadowMaterial({ opacity: 0.4 }));
+    ground.rotation.x = -Math.PI / 2; ground.position.y = -1.56; ground.receiveShadow = true; scene.add(ground);
 
     S.current = { renderer, scene, camera, controls, coin: null, raf: 0, fitDist: 7, fitCenter: new THREE.Vector3(0, 0, 0), playing: true, speed: 0.004 };
 
