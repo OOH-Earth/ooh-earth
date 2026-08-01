@@ -10,6 +10,7 @@ import TypeEnhancer from "@/components/ooh/TypeEnhancer";
 import DashboardDropdown from "@/components/ooh/DashboardDropdown";
 import NavMenu from "@/components/ooh/NavMenu";
 import BrandMark from "@/components/ooh/BrandMark";
+import BetaTag from "@/components/ooh/BetaTag";
 import AccountMenu from "@/components/ooh/AccountMenu";
 import OfflineSyncBadge from "@/components/ooh/OfflineSyncBadge";
 import RadioMiniPlayer from "@/components/ooh/radio/RadioMiniPlayer";
@@ -26,6 +27,7 @@ export default function Nav({ onCommand }) {
           <Link to="/" aria-label="OOH Earth — Home console" title="OOH Earth" className="flex h-8 w-8 items-center justify-center border border-slate2 transition-colors hover:border-ozone">
             <BrandMark className="h-5 w-5" />
           </Link>
+          <BetaTag className="hidden sm:inline-flex" />
           <TypeEnhancer />
           <div className="hidden md:block"><DashboardDropdown /></div>
         </div>
