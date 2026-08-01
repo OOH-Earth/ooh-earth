@@ -1,7 +1,7 @@
 import { useState, useRef } from "react";
 import { Link } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
-import { Box, Coins, ArrowRight, Layers as LayersIcon } from "lucide-react";
+import { Box, Coins, ArrowRight, Layers as LayersIcon, ShoppingBag } from "lucide-react";
 import Nav from "@/components/ooh/Nav";
 import Breadcrumbs from "@/components/ooh/Breadcrumbs";
 import SiteFooter from "@/components/ooh/SiteFooter";
@@ -87,6 +87,39 @@ export default function NftCreator() {
                 </button>
               );
             })}
+          </div>
+        </div>
+
+        {/* Physical production specs */}
+        <div className="mt-6 border border-slate2 bg-card p-5">
+          <div className="flex items-center justify-between">
+            <div className="font-mono text-[11px] uppercase tracking-[0.2em] text-ozone">Physical production specs</div>
+            <span className="border border-flare/40 px-2 py-0.5 font-mono text-[9px] uppercase tracking-[0.1em] text-flare">Made to order</span>
+          </div>
+          <div className="mt-4 grid grid-cols-2 gap-x-6 gap-y-3 md:grid-cols-3 lg:grid-cols-5">
+            {[
+              { label: "Card Size", value: "2.5″ × 3.5″" },
+              { label: "Frame", value: "Molded polystyrene" },
+              { label: "Window", value: "Optical acrylic" },
+              { label: "Screws", value: "M2 brass" },
+              { label: "Thickness", value: "3.5mm" },
+              { label: "Weight", value: "~45g" },
+              { label: "Label", value: "Printed vinyl" },
+              { label: "Production", value: "3D print → mold" },
+              { label: "MOQ", value: "1 / 50 bulk" },
+              { label: "Lead Time", value: "7-10 days" },
+            ].map((s) => (
+              <div key={s.label}>
+                <div className="font-mono text-[9px] uppercase tracking-widest text-silver/40">{s.label}</div>
+                <div className="mt-1 font-mono text-xs text-silver/80">{s.value}</div>
+              </div>
+            ))}
+          </div>
+          <div className="mt-4 flex flex-wrap items-center gap-3 border-t border-slate2 pt-4">
+            <Link to="/store/6a6db7c035818609bdbaffc6" className="flex items-center gap-2 border-2 border-ozone bg-ozone px-4 py-2.5 font-mono text-[10px] font-bold uppercase tracking-[0.2em] text-void hover:bg-flare hover:border-flare">
+              <ShoppingBag className="h-3.5 w-3.5" /> Buy Physical Card · $25
+            </Link>
+            <span className="font-mono text-[10px] text-silver/40">3D-printed prototype · injection-mold production available · custom sizes on request</span>
           </div>
         </div>
 
