@@ -15,7 +15,7 @@ const TIERS = [
   { label: "Operative", pts: "2k" },
   { label: "Vanguard", pts: "5k" },
 ];
-const TRUST = ["Community-funded", "Copyleft", "No VC", "UN SDG 11.7"];
+const TRUST = ["Community-funded", "Copyleft", "UN SDG 11.7"];
 
 export const INPUT = "w-full border border-slate2 bg-void py-3 pl-10 pr-3 font-mono text-sm text-silver outline-none transition-colors placeholder:text-darkgray focus:border-ozone";
 export const LBL = "font-mono text-[10px] uppercase tracking-[0.2em] text-dim";
