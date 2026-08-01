@@ -13,6 +13,8 @@ _Last updated: 2026-08-01_
 - **Footer** (`SiteFooter`, global — 25 pages) now shows the **animated brandmark symbol only** (was a wordmark lockup), h-16→h-20. Symbol spins; tagline line kept below.
 - **Auth screens** (`AuthShell` — login / register / reset / plans) gained the symbol beside the “OOH EARTH” wordmark in the header.
 - **404** (`PageNotFound`) rebranded from the stock light-theme scaffold to Orbital Perspective (void / ozone / flare) — animated symbol as centrepiece, “Signal lost / Off the map”, and “Return to base” + “Open field map” actions. Admin note + auth check preserved.
+- **Hero** — the animated symbol now crowns the `oohearth.app` wordmark (mark-over-wordmark lockup, h-14→h-20 with glow).
+- **Field Pulse** — removed the FUNDED / amount-raised item from the ticker.
 - Symbol-only throughout (`BrandMark`), consistent with the masthead.
 
 ## 2026-08-01 — Field Pulse reweighted to the movement (since 2012)
