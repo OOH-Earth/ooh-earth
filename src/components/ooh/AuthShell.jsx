@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { ArrowRight, MapPin } from "lucide-react";
+import BrandMark from "@/components/ooh/BrandMark";
 
 // OOH Earth — shared auth shell
 // One branded frame for the whole auth flow (login / register / reset):
@@ -22,7 +23,7 @@ export default function AuthShell({ children }) {
   return (
     <div className="min-h-screen bg-void grid-bg text-silver">
       <header className="flex items-center justify-between border-b border-slate2 px-6 py-4">
-        <Link to="/" className="font-brand text-xl tracking-tight text-silver transition-colors hover:text-ozone">OOH EARTH</Link>
+        <Link to="/" className="flex items-center gap-2.5 font-brand text-xl tracking-tight text-silver transition-colors hover:text-ozone"><BrandMark className="h-6 w-6" />OOH EARTH</Link>
         <Link to="/map" className="flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-[0.2em] text-dim transition-colors hover:text-ozone">
           <MapPin className="h-3.5 w-3.5" /> Explore the map
         </Link>
