@@ -95,7 +95,7 @@ export default function Console() {
       <header className="ic-hero ic-wrap">
         <div className="ic-eye"><span className="ic-tick" />Capital &amp; Ops Console · Investor Class · v1</div>
         <h1>Public space isn't <em>blank space.</em></h1>
-        <p className="ic-lede">OOH Earth is a community-funded civic institution documenting the outdoor advertising the public never agreed to — and arming communities with the evidence to push back. A live platform, a 14-entity ecosystem and a full-service agency studio, aligned to UN SDG 11.7, 12.8, 16.7 &amp; 17. Zero VC by design.</p>
+        <p className="ic-lede">OOH Earth is a community-funded civic institution documenting the outdoor advertising the public never agreed to — and arming communities with the evidence to push back. A live platform, a 14-entity ecosystem and a full-service agency studio, aligned to UN SDG 11.7, 12.8, 16.7 &amp; 17.</p>
 
         <div className="ic-askrow">
           <div className="ic-ask big"><div className="l">Pre-seed-equivalent ask</div><div className="v"><span className="cur">£</span>150k–500k+</div><div className="s">Grant / philanthropic · impact &amp; replacement-cost anchored</div></div>
@@ -233,7 +233,7 @@ export default function Console() {
           </ul>
         </div>
         <div className="ic-foot">
-          <div><div className="fb">ooh<span>.</span>earth</div><p>Capital &amp; Ops Console · Orbital Perspective v1<br/>Community-funded · zero VC · copyleft<br/>hello@outofhell.org</p></div>
+          <div><div className="fb">ooh<span>.</span>earth</div><p>Capital &amp; Ops Console · Orbital Perspective v1<br/>Community-funded · copyleft<br/>hello@outofhell.org</p></div>
           <div className="right"><span className="cls">Confidential · Investor Class</span><p>Framing tool · not valuation advice<br/>Figures verified on diligence</p></div>
         </div>
       </section>
