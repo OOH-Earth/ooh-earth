@@ -52,7 +52,7 @@ export default function NewsTicker() {
       >
         <div
           className="flex w-max animate-marquee items-center"
-          style={{ animationDuration: `${slow ? baseDur * 10 : baseDur}s` }}
+          style={{ animationDuration: `${slow ? baseDur * 10 : baseDur}s`, willChange: "transform" }}
         >
           <Row items={items} />
           <Row items={items} />

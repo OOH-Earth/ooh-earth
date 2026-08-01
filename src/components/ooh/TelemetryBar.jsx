@@ -15,6 +15,8 @@ function band(v) {
 
 function LiveFeed() {
   const { items, loading } = useNewsHeadlines();
+  const [slow, setSlow] = useState(false);
+  const baseDur = Math.max(60, Math.round((items?.length || 15) * 4));
 
   if (loading || !items.length) {
     return (
@@ -33,13 +35,21 @@ function LiveFeed() {
         <Radio className="h-3 w-3 animate-pulse text-ozone" />
         <span className="font-mono text-[8px] font-bold uppercase tracking-[0.25em] text-ozone">LIVE</span>
       </span>
-      <div className="relative flex flex-1 items-center overflow-hidden">
-        <div className="flex w-max animate-marquee items-center">
+      <div
+        className="relative flex flex-1 items-center overflow-hidden"
+        onMouseEnter={() => setSlow(true)}
+        onMouseLeave={() => setSlow(false)}
+      >
+        <div
+          className="flex w-max animate-marquee items-center"
+          style={{ animationDuration: `${slow ? baseDur * 10 : baseDur}s`, willChange: "transform" }}
+        >
           {doubled.map((it, i) => (
             <a key={i} href={it.url || "#"} target="_blank" rel="noreferrer" className="flex shrink-0 items-center gap-2 px-4">
               <span className="h-1 w-1 rounded-full bg-ozone" />
               <span className="font-mono text-[10px] uppercase tracking-[0.12em] text-silver/90">{it.title}</span>
               {it.source && <span className="font-mono text-[9px] uppercase tracking-[0.2em] text-dim">· {it.source}</span>}
+              <span className="text-slate2">◆</span>
             </a>
           ))}
         </div>

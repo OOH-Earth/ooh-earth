@@ -13,7 +13,7 @@ import { unlockInvestor, hasInvestorToken } from "@/components/ooh/investorAcces
 export default function InvestorAccess() {
   const navigate = useNavigate();
   const location = useLocation();
-  const auth = (() => { try { return useAuth(); } catch { return {}; } })();
+  const auth = useAuth();
   const dest = location.state?.from || "/investor";
 
   const [code, setCode] = useState("");

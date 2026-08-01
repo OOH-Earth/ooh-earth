@@ -48,6 +48,7 @@ export default function MapAlertTicker({ onClose }) {
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [dismissed, setDismissed] = useState(false);
+  const [slow, setSlow] = useState(false);
   const mounted = useRef(true);
 
   useEffect(() => {
@@ -116,6 +117,7 @@ export default function MapAlertTicker({ onClose }) {
   if (!items.length) return null;
 
   const hasFlash = items.some((it) => it.severity === "flash");
+  const baseDur = Math.max(60, Math.round((items?.length || 6) * 5));
 
   return (
     <div className="pointer-events-auto relative flex h-8 w-full items-center gap-2 border border-slate2/60 bg-void/90 backdrop-blur-md">
@@ -133,8 +135,15 @@ export default function MapAlertTicker({ onClose }) {
           {hasFlash ? "Alert" : "Intel"}
         </span>
       </span>
-      <div className="relative flex flex-1 items-center overflow-hidden">
-        <div className="flex w-max animate-marquee items-center">
+      <div
+        className="relative flex flex-1 items-center overflow-hidden"
+        onMouseEnter={() => setSlow(true)}
+        onMouseLeave={() => setSlow(false)}
+      >
+        <div
+          className="flex w-max animate-marquee items-center"
+          style={{ animationDuration: `${slow ? baseDur * 10 : baseDur}s`, willChange: "transform" }}
+        >
           <Row items={items} />
           <Row items={items} />
         </div>
