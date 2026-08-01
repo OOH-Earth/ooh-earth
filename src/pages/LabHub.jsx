@@ -59,7 +59,13 @@ export default function LabHub() {
     (async () => {
       try {
         const recs = await base44.entities.LabPrototype.list("sort_order");
-        if (alive) setItems(recs.filter((r) => r.visible !== false));
+        const list = recs.filter((r) => r.visible !== false);
+        // Built-in default so the Streetrunner concept surfaces without a DB record;
+        // a real LabPrototype row (via /lab/admin) will naturally take precedence.
+        if (!list.some((r) => r.path === "/lab/streetrunner")) {
+          list.unshift({ path: "/lab/streetrunner", title: "Streetrunner", status: "live", access: "agency", sort_order: -1 });
+        }
+        if (alive) setItems(list);
       } catch {
         if (alive) setItems([]);
       }
