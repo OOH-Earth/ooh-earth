@@ -8,6 +8,13 @@ _Last updated: 2026-08-01_
 - **Mobile menu clipping** — `NavMenu` now portals to `document.body`, escaping the backdrop-blur containing block so the full-screen launcher fills the viewport on mobile.
 - **Header hidden under nav on notched devices** — the fixed nav inflates by `env(safe-area-inset-top)` on iPhones with notches/dynamic islands, but page top padding was a fixed `pt-24/pt-28`, causing masthead H1s to slip underneath. Added a `.page-top` utility (`calc(6rem + env(safe-area-inset-top))`, `7rem` on md) and applied it to `Channel.jsx`.
 
+## 2026-08-01 — Brandmark symbol placed across the site
+
+- **Footer** (`SiteFooter`, global — 25 pages) now shows the **animated brandmark symbol only** (was a wordmark lockup), h-16→h-20. Symbol spins; tagline line kept below.
+- **Auth screens** (`AuthShell` — login / register / reset / plans) gained the symbol beside the “OOH EARTH” wordmark in the header.
+- **404** (`PageNotFound`) rebranded from the stock light-theme scaffold to Orbital Perspective (void / ozone / flare) — animated symbol as centrepiece, “Signal lost / Off the map”, and “Return to base” + “Open field map” actions. Admin note + auth check preserved.
+- Symbol-only throughout (`BrandMark`), consistent with the masthead.
+
 ## 2026-08-01 — Field Pulse reweighted to the movement (since 2012)
 
 - **Orbital-atlas Field Pulse** (`FieldStatsHud`) now opens with a clearly-tagged **movement-wide estimate** of global subvertising since 2012 — ~5K+ subverters, ~50K+ interventions, 40+ collectives, 25+ countries, 14 yrs. Every figure carries an `EST` tag and sits under a `MOVEMENT · EST · SINCE 2012` divider, visually separated from our own numbers.
