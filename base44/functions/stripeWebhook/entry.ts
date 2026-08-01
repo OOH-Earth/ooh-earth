@@ -199,6 +199,23 @@ Deno.serve(async (req) => {
         } catch (err) {
           console.error("Stripe webhook: failed to update StoreItem:", err?.message);
         }
+        // Entitlement — grant the buyer durable access. Idempotent via the outer
+        // FundingLead ext_ref dedupe (this whole branch is skipped on retry).
+        if (metadata.user_id) {
+          try {
+            await base44.asServiceRole.entities.Purchase.create({
+              user_id: metadata.user_id,
+              item_id: metadata.item_id,
+              item_title: metadata.item_title || undefined,
+              amount_usd: amountUsd || undefined,
+              stripe_session_id: session.id,
+              status: "paid",
+            });
+            console.log(`Stripe webhook: Purchase granted → user ${metadata.user_id} · item ${metadata.item_id}`);
+          } catch (err) {
+            console.error("Stripe webhook: failed to create Purchase:", err?.message);
+          }
+        }
       }
 
       // Record the funding lead (donation or purchase)
