@@ -1,9 +1,13 @@
 import { useEffect, useState } from "react";
 import { base44 } from "@/api/base44Client";
-import { Zap, MapPin, BadgeCheck, Users, Building2, DollarSign, Monitor } from "lucide-react";
+import { Zap, MapPin, BadgeCheck, Users, Building2, DollarSign, Monitor, Flag, Globe2 } from "lucide-react";
+import { MOVEMENT, PLATFORM_STATUS, MOVEMENT_NOTE, fmtK } from "@/components/ooh/movementEstimate";
 
-// Live streaming "Field Pulse" strip for the orbital HUD — connects atlas,
-// leaderboard points, operatives, funding and live crypto into one ticker.
+// Live streaming "Field Pulse" strip for the orbital HUD. Two clearly-separated
+// layers: (1) a MOVEMENT-WIDE ESTIMATE of global subvertising since 2012 (tagged
+// "EST", never presented as ours) and (2) OOH Earth's own LIVE platform numbers
+// from the audited fieldStats function — kept honest, with a founding-stage status
+// chip so our day-one scale is never mistaken for the movement's. Plus live markets.
 export default function FieldStatsHud() {
   const [items, setItems] = useState([]);
 
@@ -11,6 +15,17 @@ export default function FieldStatsHud() {
     let active = true;
     const load = async () => {
       const out = [];
+
+      // — Movement-wide estimate (since 2012) — clearly tagged EST, not OOH Earth's —
+      out.push({ divider: true, tone: "flare", label: `MOVEMENT · EST · SINCE ${MOVEMENT.since}`, title: MOVEMENT_NOTE });
+      out.push({ icon: Users, label: "SUBVERTISERS", value: `~${fmtK(MOVEMENT.subvertisers)}+`, est: true });
+      out.push({ icon: Zap, label: "INTERVENTIONS", value: `~${fmtK(MOVEMENT.interventions)}+`, est: true });
+      out.push({ icon: Flag, label: "COLLECTIVES", value: `${MOVEMENT.collectives}+`, est: true });
+      out.push({ icon: Globe2, label: "COUNTRIES", value: `${MOVEMENT.countries}+`, est: true });
+      out.push({ icon: BadgeCheck, label: "YEARS ACTIVE", value: `${MOVEMENT.years} YRS`, est: true });
+
+      // — OOH Earth platform (live, audited, honest) —
+      out.push({ divider: true, tone: "ozone", label: "OOH EARTH · LIVE PLATFORM" });
       try {
         const res = await base44.functions.invoke("fieldStats", {});
         const s = res.data || {};
@@ -22,9 +37,12 @@ export default function FieldStatsHud() {
         if (s.cities != null) out.push({ icon: Building2, label: "CITIES", value: s.cities, accent: "text-flare" });
         if (s.raised != null) out.push({ icon: DollarSign, label: "FUNDED", value: `$${Number(s.raised).toLocaleString(undefined, { maximumFractionDigits: 0 })}`, accent: "text-flare" });
       } catch (e) {
-        /* fieldStats unavailable — crypto still streams */
+        out.push({ icon: MapPin, label: "PLATFORM", value: "SYNCING…" });
       }
+      // Founding-stage status — makes the early-access, seeking-backers reality explicit.
+      out.push({ divider: true, tone: "ozone", pulse: true, label: PLATFORM_STATUS });
 
+      // — Live markets —
       try {
         const r = await fetch("https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum,solana&vs_currencies=usd&include_24hr_change=true");
         const j = await r.json();
@@ -70,19 +88,29 @@ export default function FieldStatsHud() {
 function Row({ items }) {
   return (
     <>
-      {items.map((it, i) => (
-        <span key={i} className="flex shrink-0 items-center gap-1.5 px-4">
-          <it.icon className="h-3 w-3 text-ozone" />
-          <span className="font-mono text-[9px] font-bold uppercase tracking-[0.2em] text-darkgray">{it.label}</span>
-          <span className={`font-mono text-[10px] tabular ${it.accent || "text-silver"}`}>{it.value}</span>
-          {it.delta && (
-            <span className={`font-mono text-[9px] ${it.up ? "text-ozone" : "text-flare"}`}>
-              {it.up ? "▲" : "▼"}{it.delta}
-            </span>
-          )}
-          <span className="text-slate2">◆</span>
-        </span>
-      ))}
+      {items.map((it, i) =>
+        it.divider ? (
+          <span key={i} title={it.title} className="flex shrink-0 items-center gap-1.5 border-l border-r border-slate2/40 bg-background/60 px-3">
+            <span className={`h-1.5 w-1.5 rounded-full ${it.tone === "flare" ? "bg-flare" : "bg-ozone"} ${it.pulse ? "animate-blink" : ""}`} />
+            <span className={`font-mono text-[9px] font-bold uppercase tracking-[0.25em] ${it.tone === "flare" ? "text-flare" : "text-ozone"}`}>{it.label}</span>
+          </span>
+        ) : (
+          <span key={i} className="flex shrink-0 items-center gap-1.5 px-4">
+            <it.icon className={`h-3 w-3 ${it.est ? "text-flare" : "text-ozone"}`} />
+            <span className="font-mono text-[9px] font-bold uppercase tracking-[0.2em] text-darkgray">{it.label}</span>
+            <span className={`font-mono text-[10px] tabular ${it.accent || (it.est ? "text-flare" : "text-silver")}`}>{it.value}</span>
+            {it.est && (
+              <span className="border border-flare/40 px-1 font-mono text-[8px] uppercase leading-tight tracking-[0.15em] text-flare/80">est</span>
+            )}
+            {it.delta && (
+              <span className={`font-mono text-[9px] ${it.up ? "text-ozone" : "text-flare"}`}>
+                {it.up ? "▲" : "▼"}{it.delta}
+              </span>
+            )}
+            <span className="text-slate2">◆</span>
+          </span>
+        )
+      )}
     </>
   );
 }
