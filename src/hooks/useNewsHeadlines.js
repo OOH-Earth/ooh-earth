@@ -8,14 +8,26 @@ import { base44 } from "@/api/base44Client";
 let cache = null;
 let promise = null;
 
+// Fisher-Yates shuffle — returns a new array, does not mutate the input.
+// Used so each consumer gets a fresh random order on every mount/reload.
+export function shuffleArray(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
 export function useNewsHeadlines() {
-  const [items, setItems] = useState(cache || []);
+  // Shuffle on init so the first paint is already randomized
+  const [items, setItems] = useState(() => (cache ? shuffleArray(cache) : []));
   const [loading, setLoading] = useState(!cache);
 
   useEffect(() => {
     let active = true;
     if (cache) {
-      setItems(cache);
+      setItems(shuffleArray(cache));
       setLoading(false);
       return;
     }
@@ -38,7 +50,7 @@ export function useNewsHeadlines() {
     }
     promise.then((result) => {
       if (active) {
-        setItems(result);
+        setItems(shuffleArray(result));
         setLoading(false);
       }
     });
