@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { ArrowDown, Radio, ArrowUpRight } from "lucide-react";
 import HeroConsole from "@/components/ooh/HeroConsole";
 import BrandMark from "@/components/ooh/BrandMark";
+import BetaTag from "@/components/ooh/BetaTag";
 
 const WORD = "oohearth.app";
 
@@ -56,8 +57,11 @@ export default function Hero({ onCommand }) {
         <div className="grid flex-1 grid-cols-1 items-center gap-8 md:grid-cols-12">
           {/* Left · wordmark + tagline */}
           <div className="md:col-span-6">
-            <div className="mb-5 md:mb-6" style={{ filter: "drop-shadow(0 0 16px rgba(237,255,0,0.28))" }}>
-              <BrandMark className="h-14 w-14 md:h-20 md:w-20" />
+            <div className="mb-5 flex items-center gap-3 md:mb-6">
+              <span style={{ filter: "drop-shadow(0 0 16px rgba(237,255,0,0.28))" }}>
+                <BrandMark className="h-14 w-14 md:h-20 md:w-20" />
+              </span>
+              <BetaTag />
             </div>
             <h1 className="whitespace-nowrap font-brand text-[clamp(1.5rem,7vw,4.5vw)] leading-[0.85] tracking-[-0.03em] text-silver">
               {WORD.split("").map((ch, i) =>
