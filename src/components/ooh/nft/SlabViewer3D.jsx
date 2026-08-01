@@ -94,14 +94,14 @@ function buildSlab(config, cardTexture, st) {
 
   const frameMat = new THREE.MeshPhysicalMaterial({
     color: FRAME, roughness: 0.18, metalness: 0.4,
-    clearcoat: 0.9, clearcoatRoughness: 0.12, envMapIntensity: 1.2,
+    clearcoat: 0.95, clearcoatRoughness: 0.1, envMapIntensity: 1.6,
   });
   const glassMat = new THREE.MeshPhysicalMaterial({
     color: 0xffffff,
     transparent: true, opacity: frosted ? 0.22 : 0.06,
     roughness: frosted ? 0.55 : 0.04, metalness: 0,
     clearcoat: 1, clearcoatRoughness: frosted ? 0.35 : 0.01,
-    ior: 1.5, envMapIntensity: 1.3,
+    ior: 1.5, envMapIntensity: 1.8,
     side: THREE.DoubleSide, depthWrite: false,
   });
   const wellMat = new THREE.MeshStandardMaterial({ color: WELL, roughness: 0.45, metalness: 0.2 });
@@ -172,6 +172,7 @@ function buildSlab(config, cardTexture, st) {
     grp.add(new THREE.Mesh(rbox(cardW + 0.04, cardH + 0.04, 0.025, 0.015), glassMat));
   }
 
+  grp.traverse((o) => { if (o.isMesh) o.castShadow = true; });
   return grp;
 }
 
@@ -220,7 +221,9 @@ const SlabViewer3D = forwardRef(function SlabViewer3D({ config, artworkUrl }, re
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     renderer.setSize(w, h);
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    renderer.toneMappingExposure = 1.15;
+    renderer.toneMappingExposure = 1.2;
+    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     mount.appendChild(renderer.domElement);
 
     const scene = new THREE.Scene();
@@ -235,11 +238,35 @@ const SlabViewer3D = forwardRef(function SlabViewer3D({ config, artworkUrl }, re
     controls.enableDamping = true; controls.enablePan = false;
     controls.autoRotate = false;
 
-    // Studio 3-point lighting
-    scene.add(new THREE.AmbientLight(0xffffff, 0.1));
-    const key = new THREE.DirectionalLight(0xfff0d6, 1.3); key.position.set(4, 6, 5); scene.add(key);
+    // Studio 3-point lighting + key shadow caster
+    scene.add(new THREE.AmbientLight(0xffffff, 0.15));
+    const key = new THREE.DirectionalLight(0xfff0d6, 1.5);
+    key.position.set(3, 7, 4);
+    key.castShadow = true;
+    key.shadow.mapSize.set(1024, 1024);
+    key.shadow.camera.near = 0.5;
+    key.shadow.camera.far = 20;
+    key.shadow.camera.left = -2.5; key.shadow.camera.right = 2.5;
+    key.shadow.camera.top = 2.5; key.shadow.camera.bottom = -2.5;
+    key.shadow.bias = -0.0008;
+    key.shadow.radius = 6;
+    scene.add(key);
     const fill = new THREE.DirectionalLight(0x6fd6ff, 0.5); fill.position.set(-5, -1, 3); scene.add(fill);
     const rim = new THREE.DirectionalLight(0xedff00, 0.4); rim.position.set(0, 3, -6); scene.add(rim);
+    // Spotlight for premium specular highlight
+    const spot = new THREE.SpotLight(0xffffff, 0.8, 15, Math.PI / 5, 0.4, 1);
+    spot.position.set(2, 8, 3); scene.add(spot);
+    // Soft contact shadow (radial gradient) beneath slab
+    const sCv = document.createElement("canvas"); sCv.width = 256; sCv.height = 256;
+    const sCx = sCv.getContext("2d");
+    const sG = sCx.createRadialGradient(128, 128, 0, 128, 128, 128);
+    sG.addColorStop(0, "rgba(0,0,0,0.5)"); sG.addColorStop(0.5, "rgba(0,0,0,0.2)"); sG.addColorStop(1, "rgba(0,0,0,0)");
+    sCx.fillStyle = sG; sCx.fillRect(0, 0, 256, 256);
+    const contactShadow = new THREE.Mesh(new THREE.PlaneGeometry(4, 2.5), new THREE.MeshBasicMaterial({ map: new THREE.CanvasTexture(sCv), transparent: true, depthWrite: false }));
+    contactShadow.rotation.x = -Math.PI / 2; contactShadow.position.y = -1.35; scene.add(contactShadow);
+    // Shadow-receiving ground (invisible — only shows cast shadows)
+    const ground = new THREE.Mesh(new THREE.PlaneGeometry(10, 10), new THREE.ShadowMaterial({ opacity: 0.35 }));
+    ground.rotation.x = -Math.PI / 2; ground.position.y = -1.36; ground.receiveShadow = true; scene.add(ground);
 
     S.current = { renderer, scene, camera, controls, slab: null, raf: 0, cardFaceMat: null, fitDist: 7, fitCenter: new THREE.Vector3(0, 0, 0), playing: true, speed: 0.0025 };
 
