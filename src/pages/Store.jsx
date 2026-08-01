@@ -217,7 +217,7 @@ export default function Store() {
               <ShoppingBag className="h-8 w-8 shrink-0 text-ozone" /> Store
             </h1>
             <p className="mt-3 max-w-2xl font-display text-sm leading-[1.6] text-darkgray md:text-base">
-              Field research, digital products, mockups, and drops — sourced from our own data and built on oohearth.app. Every sale funds the Field Offensive: no ads, no VC.
+              Field research, digital products, mockups, and drops — sourced from our own data and built on oohearth.app. Every sale funds the Field Offensive: no ads.
             </p>
           </div>
 
