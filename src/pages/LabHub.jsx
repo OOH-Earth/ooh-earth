@@ -33,14 +33,14 @@ function Card({ rec }) {
   const live = rec.status === "live";
   const publicAccess = rec.access === "public";
   return (
-    <div className={`flex h-full flex-col border border-slate2 bg-card p-5 transition-colors ${live ? "hover:border-ozone/50" : "opacity-60"}`}>
+    <div className="flex h-full flex-col border border-slate2 bg-card p-5 transition-colors hover:border-ozone/50">
       <div className="flex items-center justify-between">
-        <Icon className={`h-9 w-9 ${live ? "text-ozone" : "text-silver/40"}`} strokeWidth={1.5} />
+        <Icon className="h-9 w-9 text-ozone" strokeWidth={1.5} />
         <span className={`border px-2 py-0.5 font-mono text-[8px] uppercase tracking-[0.15em] ${publicAccess ? "border-ozone/50 text-ozone" : "border-flare/40 text-flare"}`}>{publicAccess ? "Public" : "Agency / Investor"}</span>
       </div>
       <div className="mt-3 text-lg font-bold">{rec.title || meta.title}</div>
       <p className="mt-2 flex-1 font-mono text-[11px] leading-relaxed text-silver/50">{meta.desc}</p>
-      <div className={`mt-4 font-mono text-[11px] uppercase tracking-[0.12em] ${live ? "text-ozone" : "text-silver/40"}`}>
+      <div className={`mt-4 font-mono text-[11px] uppercase tracking-[0.12em] ${live ? "text-ozone" : "text-flare"}`}>
         {live ? "Open →" : "In build"}
       </div>
     </div>
