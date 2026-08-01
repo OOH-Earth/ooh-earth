@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Crosshair, Menu, Tv, Map as MapIcon, Compass, Gauge, Zap } from "lucide-react";
+import { Crosshair, Menu, Tv, Map as MapIcon, Compass, Zap } from "lucide-react";
 import { Link } from "react-router-dom";
 import ThemeToggle from "@/components/ooh/ThemeToggle";
 import HapticsToggle from "@/components/ooh/cognitive/HapticsToggle";
@@ -9,6 +9,7 @@ import TelemetryBar from "@/components/ooh/TelemetryBar";
 import TypeEnhancer from "@/components/ooh/TypeEnhancer";
 import DashboardDropdown from "@/components/ooh/DashboardDropdown";
 import NavMenu from "@/components/ooh/NavMenu";
+import BrandMark from "@/components/ooh/BrandMark";
 import AccountMenu from "@/components/ooh/AccountMenu";
 import OfflineSyncBadge from "@/components/ooh/OfflineSyncBadge";
 import RadioMiniPlayer from "@/components/ooh/radio/RadioMiniPlayer";
@@ -22,8 +23,8 @@ export default function Nav({ onCommand }) {
     <header className="fixed inset-x-0 top-0 z-50 border-b border-border bg-background shadow-[0_1px_0_rgba(0,0,0,0.04),0_4px_16px_rgba(0,0,0,0.06)] backdrop-blur-md" style={{ paddingTop: "env(safe-area-inset-top)" }}>
       <div className="flex items-center justify-between gap-2 px-3 py-3 md:px-8 md:py-4">
         <div className="flex items-center gap-2">
-          <Link to="/" aria-label="Home console" title="Home" className="flex h-8 w-8 items-center justify-center border border-slate2 text-silver transition-colors hover:border-ozone hover:text-ozone">
-            <Gauge className="h-3.5 w-3.5" />
+          <Link to="/" aria-label="OOH Earth — Home console" title="OOH Earth" className="flex h-8 w-8 items-center justify-center border border-slate2 transition-colors hover:border-ozone">
+            <BrandMark className="h-5 w-5" />
           </Link>
           <TypeEnhancer />
           <div className="hidden md:block"><DashboardDropdown /></div>
