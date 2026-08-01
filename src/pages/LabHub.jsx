@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { Coins, Grid3x3, Music, Smartphone, FileText, Box, Ruler, Activity, Image as ImageIcon, UserPlus, Layers, Watch, ShieldCheck, Loader2, Bike } from "lucide-react";
+import { Coins, Grid3x3, Music, Smartphone, FileText, Box, Ruler, Activity, Image as ImageIcon, UserPlus, Layers, Watch, ShieldCheck, Loader2 } from "lucide-react";
+import { LAB_PROJECTS } from "@/components/ooh/labProjects";
 import Nav from "@/components/ooh/Nav";
 import Breadcrumbs from "@/components/ooh/Breadcrumbs";
 import SiteFooter from "@/components/ooh/SiteFooter";
@@ -25,8 +26,11 @@ const META = {
   "/lab/devices": { icon: Watch, title: "Devices", desc: "Wearables & desktop apps — OOH Watch, NFC field tag, desktop console." },
   "/lab/spec": { icon: FileText, title: "Engineering Spec", desc: "State machine, BLE GATT, frame format, screen inventory." },
   "/lab/status": { icon: Activity, title: "Status Report", desc: "Lab engineering log — build register, revisions, pipeline, roadmap." },
-  "/lab/streetrunner": { icon: Bike, title: "Streetrunner", desc: "OE-1K/66 — Akira-class field-bike concept. Vector → blueprint → 3D concept art." },
 };
+
+// Registry-defined projects inherit their hub metadata (icon / title / desc) here,
+// so a new entry in LAB_PROJECTS needs no separate META edit.
+LAB_PROJECTS.forEach((p) => { if (!META[p.path]) META[p.path] = { icon: p.icon, title: p.title, desc: p.desc }; });
 
 function Card({ rec }) {
   const meta = META[rec.path] || { icon: Box, title: rec.title, desc: "" };
@@ -60,11 +64,13 @@ export default function LabHub() {
       try {
         const recs = await base44.entities.LabPrototype.list("sort_order");
         const list = recs.filter((r) => r.visible !== false);
-        // Built-in default so the Streetrunner concept surfaces without a DB record;
-        // a real LabPrototype row (via /lab/admin) will naturally take precedence.
-        if (!list.some((r) => r.path === "/lab/streetrunner")) {
-          list.unshift({ path: "/lab/streetrunner", title: "Streetrunner", status: "live", access: "agency", sort_order: -1 });
-        }
+        // Surface registry projects that don't yet have a DB record (the console
+        // provisions real rows on first load, which then take precedence).
+        LAB_PROJECTS.forEach((p) => {
+          if (!list.some((r) => r.path === p.path)) {
+            list.unshift({ path: p.path, title: p.title, status: p.status || "in_build", access: p.access || "restricted", sort_order: -1 });
+          }
+        });
         if (alive) setItems(list);
       } catch {
         if (alive) setItems([]);
