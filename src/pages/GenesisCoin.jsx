@@ -7,7 +7,7 @@ import SiteFooter from "@/components/ooh/SiteFooter";
 import CoinViewer3D from "@/components/ooh/lab/CoinViewer3D";
 import CoinMatrixStrip from "@/components/ooh/lab/CoinMatrixStrip";
 import { useLabGate } from "@/components/ooh/LabGate";
-import { COIN_MATERIALS, COIN_EDITIONS, COIN_SPECS, COIN_TOKENOMICS, SDG_ALIGNMENTS } from "@/components/ooh/lab/coinPresets";
+import { COIN_MATERIALS, COIN_EDITIONS, COIN_SPECS, COIN_TOKENOMICS, SDG_ALIGNMENTS, EDGE_TYPES, ENAMEL_ACCENTS } from "@/components/ooh/lab/coinPresets";
 
 // OOH Earth — Genesis Coin (Hex Engine Lab)
 // Cultural artifact · Founding Edition · 64mm Ø
@@ -19,12 +19,15 @@ export default function GenesisCoin() {
   const [serial, setSerial] = useState(45);
   const [edition, setEdition] = useState("FOUNDING EDITION");
   const [materialId, setMaterialId] = useState("brass");
+  const [edgeType, setEdgeType] = useState("reeded");
+  const [enamelId, setEnamelId] = useState("ozone");
 
   const num = Math.min(6400, Math.max(1, Number(serial) || 1));
   const serialLabel = String(num).padStart(4, "0");
   const config = { serial: serialLabel, edition };
   const material = COIN_MATERIALS.find((m) => m.id === materialId) || COIN_MATERIALS[0];
   const editionInfo = COIN_EDITIONS.find((e) => e.id === edition) || COIN_EDITIONS[0];
+  const enamel = ENAMEL_ACCENTS.find((e) => e.id === enamelId) || ENAMEL_ACCENTS[0];
 
   const handleExport = () => {
     if (!gate("Export artifact PNG")) return;
@@ -54,6 +57,22 @@ export default function GenesisCoin() {
           </p>
         </div>
 
+        {/* Lab concept — what we are doing here */}
+        <div className="mt-3 grid grid-cols-1 gap-3 md:grid-cols-3">
+          <div className="border border-slate2 bg-card p-4">
+            <div className="font-mono text-[9px] uppercase tracking-widest text-ozone">01 · Prototype</div>
+            <p className="mt-2 font-mono text-[11px] leading-relaxed text-silver/55">The Lab is prototyping a physical-digital cultural artifact — a 64mm challenge coin with a 1:1 on-chain twin. This page is the live spec viewer.</p>
+          </div>
+          <div className="border border-slate2 bg-card p-4">
+            <div className="font-mono text-[9px] uppercase tracking-widest text-ozone">02 · Standard</div>
+            <p className="mt-2 font-mono text-[11px] leading-relaxed text-silver/55">Built to 2025 challenge-coin standards: deep 3D relief, hard-enamel color, premium materials, reeded/rope/lettered edges, and 4.5mm heft.</p>
+          </div>
+          <div className="border border-slate2 bg-card p-4">
+            <div className="font-mono text-[9px] uppercase tracking-widest text-ozone">03 · Mission</div>
+            <p className="mt-2 font-mono text-[11px] leading-relaxed text-silver/55">Not currency. An artifact of participation in the visual commons — documenting public-space reclamation, aligned to UN SDGs, minted union-made.</p>
+          </div>
+        </div>
+
         {/* Controls */}
         <div className="mt-5 flex flex-wrap items-center gap-5 font-mono text-[11px] uppercase tracking-[0.14em] text-silver/50">
           <label className="flex items-center gap-2">
@@ -73,7 +92,7 @@ export default function GenesisCoin() {
         {/* Main grid: 3D viewer + material panel */}
         <div className="mt-8 grid grid-cols-1 items-start gap-6 lg:grid-cols-[1.5fr_1fr]">
           <div className="flex flex-col gap-3">
-            <CoinViewer3D ref={viewerRef} config={config} materialId={materialId} />
+            <CoinViewer3D ref={viewerRef} config={config} materialId={materialId} edgeType={edgeType} enamelId={enamelId} />
             <CoinMatrixStrip config={config} material={material} />
           </div>
 
@@ -90,6 +109,33 @@ export default function GenesisCoin() {
                     <span className="font-mono text-[9px] text-silver/45">{m.desc}</span>
                   </button>
                 ))}
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <div className="border border-slate2 bg-card p-4">
+                <div className="font-mono text-[10px] uppercase tracking-[0.2em] text-ozone">Edge</div>
+                <div className="mt-2 space-y-1.5">
+                  {EDGE_TYPES.map((e) => (
+                    <button key={e.id} onClick={() => setEdgeType(e.id)}
+                      className={`flex w-full items-center justify-between border px-2.5 py-1.5 font-mono text-[10px] uppercase tracking-wider transition-colors ${edgeType === e.id ? "border-ozone bg-ozone/5 text-ozone" : "border-slate2 text-silver/50 hover:border-ozone/40"}`}>
+                      <span>{e.name}</span>
+                      <span className="text-[8px] text-silver/30">{e.desc.split("·")[0].trim()}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div className="border border-slate2 bg-card p-4">
+                <div className="font-mono text-[10px] uppercase tracking-[0.2em] text-ozone">Enamel</div>
+                <div className="mt-2 space-y-1.5">
+                  {ENAMEL_ACCENTS.map((e) => (
+                    <button key={e.id} onClick={() => setEnamelId(e.id)}
+                      className={`flex w-full items-center gap-2 border px-2.5 py-1.5 font-mono text-[10px] uppercase tracking-wider transition-colors ${enamelId === e.id ? "border-ozone bg-ozone/5 text-ozone" : "border-slate2 text-silver/50 hover:border-ozone/40"}`}>
+                      <span className="h-3 w-3 border border-slate2/40" style={{ background: e.hex || "transparent" }} />
+                      <span>{e.name}</span>
+                    </button>
+                  ))}
+                </div>
               </div>
             </div>
 
@@ -164,6 +210,9 @@ export default function GenesisCoin() {
               ["Edition", editionInfo.name],
               ["Material", material.name],
               ["Diameter", "64mm Ø"],
+              ["Relief", "Deep 3D · raised rim"],
+              ["Edge", (EDGE_TYPES.find((e) => e.id === edgeType) || {}).name || "Reeded"],
+              ["Enamel", enamel.name],
               ["SDG Class", "11 · 16 · 17"],
               ["Chain Twin", "Base · ERC-721"],
               ["Custodian", "Unclaimed"],

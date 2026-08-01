@@ -9,8 +9,26 @@ export const COIN_MATERIALS = [
   { id: "bronze",   name: "Lost-wax Bronze",   desc: "Sand-cast, hand-finished", color: 0x9c7a42, metalness: 0.88, roughness: 0.34, hex: "#9c7a42" },
   { id: "titanium", name: "Grade-5 Titanium", desc: "Anodized aerospace alloy", color: 0x9a9a9a, metalness: 0.72, roughness: 0.45, hex: "#9a9a9a" },
   { id: "gold",     name: "24k Gold Plated",   desc: "Electroplated over brass", color: 0xd4af37, metalness: 0.98, roughness: 0.12, hex: "#d4af37" },
+  { id: "dual",     name: "Dual Plating",      desc: "Gold + antique nickel",    color: 0xb8943e, metalness: 0.95, roughness: 0.16, hex: "#b8943e" },
   { id: "patina",   name: "Patina Bronze",     desc: "Naturally aged verdigris", color: 0x5a8c6e, metalness: 0.55, roughness: 0.58, hex: "#5a8c6e" },
   { id: "steel",    name: "Blackened Steel",   desc: "Oxide-blued, matte",        color: 0x525252, metalness: 0.85, roughness: 0.30, hex: "#525252" },
+];
+
+// 2025 challenge-coin edge standards — reeded, rope, lettered, smooth.
+export const EDGE_TYPES = [
+  { id: "reeded",  name: "Reeded",  desc: "64 vertical ridges · standard" },
+  { id: "rope",    name: "Rope",    desc: "Twisted rope border · maritime" },
+  { id: "lettered",name:"Lettered",desc: "Engraved protocol verbs · 8×8" },
+  { id: "smooth",  name: "Smooth", desc: "Plain polished edge" },
+];
+
+// Hard-enamel color fills — 2025 color-effect standard.
+export const ENAMEL_ACCENTS = [
+  { id: "none",   name: "None",   hex: null },
+  { id: "ozone",  name: "Ozone",  hex: "#EDFF00" },
+  { id: "flare",  name: "Flare",  hex: "#FF5C00" },
+  { id: "signal", name: "Signal", hex: "#1F51FF" },
+  { id: "alert",  name: "Alert",  hex: "#FF0033" },
 ];
 
 export const COIN_EDITIONS = [
@@ -27,12 +45,12 @@ export const SDG_ALIGNMENTS = [
 
 export const COIN_SPECS = [
   ["Diameter", "64mm Ø"],
-  ["Thickness", "3.2mm"],
-  ["Weight", "68g (brass)"],
-  ["Edge", "Reeded · 64 ridges"],
-  ["Strike", "2-sided · relief engraved"],
+  ["Thickness", "4.5mm · premium heft"],
+  ["Weight", "92g (brass)"],
+  ["Relief", "Deep 3D · raised rim + enamel"],
+  ["Edge", "Reeded · Rope · Lettered · Smooth"],
+  ["Strike", "2-sided · die-struck relief"],
   ["NFC", "Embedded NTAG216"],
-  ["Finish", "PVD antique"],
   ["Tolerance", "±0.05mm CNC"],
 ];
 
