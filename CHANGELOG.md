@@ -1,12 +1,22 @@
 # OOH Earth — Changelog & Pre-Launch Checklist
 
-_Last updated: 2026-07-28_
+_Last updated: 2026-08-01_
 
 ## Recent fixes
 
 - **Map page bottom nav** — Leaflet/MapLibre panes (z-index 200–700) escaped the map container and painted over the `z-50` mobile bottom tabs. Added `isolate` to the map wrapper so its internal stacking context can no longer cover the nav.
 - **Mobile menu clipping** — `NavMenu` now portals to `document.body`, escaping the backdrop-blur containing block so the full-screen launcher fills the viewport on mobile.
 - **Header hidden under nav on notched devices** — the fixed nav inflates by `env(safe-area-inset-top)` on iPhones with notches/dynamic islands, but page top padding was a fixed `pt-24/pt-28`, causing masthead H1s to slip underneath. Added a `.page-top` utility (`calc(6rem + env(safe-area-inset-top))`, `7rem` on md) and applied it to `Channel.jsx`.
+
+## 2026-08-01 — Y2K logo system wired in (live)
+
+- **New brandmark** — `BrandMark.jsx` reworked from the abstract orbit into the Y2K wireframe globe + tilted orbital ring + satellite node (Orbital Perspective). Same `{ className }` / 32-viewBox API, so all four consumers (Nav, Field-ID cards, NFC card, UI kit) render unchanged; keeps the rotating-orbit animation via an `animate` prop (default on).
+- **Header now carries the logo** — the top-left home link was a generic `Gauge` icon; swapped for `<BrandMark/>`. First time the actual mark appears in the masthead.
+- **Favicon + apple-touch** upgraded (inline data-URI, no network cost) from the crosshair-globe to the wireframe globe + orange orbit node; apple-touch gets a rounded tile.
+- **PWA manifest** — added `public/manifest.json` (the `/manifest.json` link was 404ing); icon → `/brand/oohearth-mark.svg` (`any maskable`). `public/` confirmed copied into `dist/`.
+- **Brand component library** (additive) — `src/components/ooh/brand/`: `OohEmblem`, `OohWordmark`, `AdFreeStreetsBadge` — theme-aware (ozone/flare tokens) for hero, share cards, and the `/kit` brand guide.
+- **Orbitron** display face added to the Google-Fonts link (wordmark type).
+- Proven on BACKUP first (vite build exit 0), then promoted to main (vite build exit 0). Full downloadable kit (SVG/PNG/favicon/.ico) is delivered outside the repo.
 
 ## 2026-07-28 — OOH Radio Ops (scaffolding, shipped dark)
 
