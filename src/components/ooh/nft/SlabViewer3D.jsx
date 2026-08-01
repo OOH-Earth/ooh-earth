@@ -2,12 +2,13 @@ import { useEffect, useRef, useImperativeHandle, forwardRef } from "react";
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import { RoomEnvironment } from "three/examples/jsm/environments/RoomEnvironment.js";
+import { RoundedBoxGeometry } from "three/examples/jsm/geometries/RoundedBoxGeometry.js";
 import { ZoomIn, ZoomOut, Maximize2 } from "lucide-react";
 import { LABEL_COLORS } from "./nftPresets";
 
-const GOLD = 0xd4af37, DARK = 0x1a1a1a, OZONE = 0xedff00;
+const GOLD = 0xd4af37, FRAME = 0x141414, WELL = 0x0e0e0e, OZONE = 0xedff00;
 
-// ── Card face texture (canvas) — OOH Earth branded grading label ──
+// ── Card face texture — full grading label with barcode + sub-grades ──
 function makeCardTexture(config, lc, artworkImg) {
   const c = document.createElement("canvas");
   c.width = 600; c.height = 840;
@@ -16,7 +17,8 @@ function makeCardTexture(config, lc, artworkImg) {
   ctx.fillStyle = "#0a0a0a";
   ctx.fillRect(0, 0, 600, 840);
 
-  const aX = 20, aY = 110, aW = 560, aH = 670;
+  // Artwork area
+  const aX = 16, aY = 106, aW = 568, aH = 678;
   if (artworkImg) {
     const ir = artworkImg.width / artworkImg.height, ar = aW / aH;
     let dw, dh, dx, dy;
@@ -25,117 +27,170 @@ function makeCardTexture(config, lc, artworkImg) {
     ctx.drawImage(artworkImg, dx, dy, dw, dh);
   } else {
     ctx.fillStyle = "#111"; ctx.fillRect(aX, aY, aW, aH);
-    ctx.strokeStyle = "rgba(241,241,241,0.05)"; ctx.lineWidth = 1;
+    ctx.strokeStyle = "rgba(241,241,241,0.04)"; ctx.lineWidth = 1;
     for (let i = 40; i < aW; i += 40) { ctx.beginPath(); ctx.moveTo(aX + i, aY); ctx.lineTo(aX + i, aY + aH); ctx.stroke(); }
     for (let i = 40; i < aH; i += 40) { ctx.beginPath(); ctx.moveTo(aX, aY + i); ctx.lineTo(aX + aW, aY + i); ctx.stroke(); }
-    ctx.fillStyle = "rgba(237,255,0,0.22)"; ctx.font = "bold 52px monospace"; ctx.textAlign = "center";
+    ctx.fillStyle = "rgba(237,255,0,0.2)"; ctx.font = "bold 52px monospace"; ctx.textAlign = "center";
     ctx.fillText("ADBUSTING", 300, aY + aH / 2 - 10);
-    ctx.font = "18px monospace"; ctx.fillStyle = "rgba(241,241,241,0.14)";
+    ctx.font = "18px monospace"; ctx.fillStyle = "rgba(241,241,241,0.12)";
     ctx.fillText("// upload or generate artwork", 300, aY + aH / 2 + 30);
   }
 
-  const lY = 12, lH = 82;
-  ctx.fillStyle = "#000"; ctx.fillRect(12, lY, 576, lH);
-  ctx.strokeStyle = lc.bg; ctx.lineWidth = 2; ctx.strokeRect(12, lY, 576, lH);
-  ctx.fillStyle = "#fff"; ctx.font = "bold 17px monospace"; ctx.textAlign = "left";
-  ctx.fillText("OOH EARTH", 28, lY + 30);
-  ctx.font = "11px monospace"; ctx.fillStyle = "rgba(241,241,241,0.5)";
-  ctx.fillText("SUBVERTISING · ADBUSTING NFT", 28, lY + 50);
-  ctx.font = "10px monospace"; ctx.fillStyle = "rgba(241,241,241,0.35)";
-  ctx.fillText(config.title || "Untitled", 28, lY + 68);
+  // Label header — dark bg + colored border
+  const lY = 10, lH = 88;
+  ctx.fillStyle = "#000"; ctx.fillRect(10, lY, 580, lH);
+  ctx.strokeStyle = lc.bg; ctx.lineWidth = 2; ctx.strokeRect(10, lY, 580, lH);
 
-  const bX = 506, bY = lY + 16, bW = 68, bH = 52;
+  // Brand + title
+  ctx.fillStyle = "#fff"; ctx.font = "bold 17px monospace"; ctx.textAlign = "left";
+  ctx.fillText("OOH EARTH", 26, lY + 24);
+  ctx.font = "10px monospace"; ctx.fillStyle = "rgba(241,241,241,0.5)";
+  ctx.fillText("SUBVERTISING · ADBUSTING NFT", 26, lY + 40);
+  ctx.font = "bold 12px monospace"; ctx.fillStyle = "#fff";
+  ctx.fillText(config.title || "Untitled", 26, lY + 58);
+
+  // Barcode
+  ctx.fillStyle = "#fff";
+  let bx = 26;
+  for (let i = 0; i < 48; i++) {
+    const w = (i * 7 + 3) % 5 < 2 ? 1 : 2;
+    if (i % 2 === 0) ctx.fillRect(bx, lY + 64, w, 16);
+    bx += w + 1;
+  }
+  ctx.font = "9px monospace"; ctx.fillStyle = "rgba(241,241,241,0.4)";
+  ctx.fillText(config.serial || "OOH-00000", 240, lY + 78);
+
+  // Grade badge
+  const bX = 504, bY = lY + 12, bW = 72, bH = 58;
   ctx.fillStyle = lc.bg; ctx.fillRect(bX, bY, bW, bH);
   ctx.fillStyle = lc.fg; ctx.font = "bold 30px monospace"; ctx.textAlign = "center";
-  ctx.fillText(String(config.grade || "9.5"), bX + bW / 2, bY + 38);
+  ctx.fillText(String(config.grade || "9.5"), bX + bW / 2, bY + 34);
+  ctx.font = "bold 8px monospace";
+  const g = String(config.grade);
+  ctx.fillText(g === "10" ? "GEM MT" : g === "9.5" ? "MINT" : "GRADE", bX + bW / 2, bY + 50);
 
-  const fY = 795, fH = 42;
-  ctx.fillStyle = lc.bg; ctx.fillRect(12, fY, 576, fH);
+  // Footer bar
+  const fY = 792, fH = 44;
+  ctx.fillStyle = lc.bg; ctx.fillRect(10, fY, 580, fH);
   ctx.fillStyle = lc.fg; ctx.font = "bold 13px monospace"; ctx.textAlign = "center";
-  ctx.fillText(`OOH·EARTH · ${config.serial || "OOH-00000"} · ${(config.casing || "slab").toUpperCase()}`, 300, fY + 27);
+  ctx.fillText(`OOH·EARTH · ${config.serial || "OOH-00000"} · ${(config.casing || "slab").toUpperCase()}`, 300, fY + 28);
 
   const tex = new THREE.CanvasTexture(c);
   tex.needsUpdate = true;
+  tex.anisotropy = 8;
   return tex;
 }
 
-// ── Build the 3D slab group — physical-grade materials ──
-function buildSlab(config, cardTexture) {
+// ── Helpers ──
+function rbox(w, h, d, r = 0.02) {
+  return new RoundedBoxGeometry(w, h, d, 6, r);
+}
+
+// ── Build the 3D slab — rounded frame, inner well, glass layers ──
+function buildSlab(config, cardTexture, st) {
   const grp = new THREE.Group();
   const casing = config.casing, frosted = config.finish === "frosted";
   const cardW = 1.5, cardH = 2.1;
 
   const frameMat = new THREE.MeshPhysicalMaterial({
-    color: DARK, roughness: 0.25, metalness: 0.5,
-    clearcoat: 0.85, clearcoatRoughness: 0.2, envMapIntensity: 1,
+    color: FRAME, roughness: 0.18, metalness: 0.4,
+    clearcoat: 0.9, clearcoatRoughness: 0.12, envMapIntensity: 1.2,
   });
   const glassMat = new THREE.MeshPhysicalMaterial({
-    color: 0xffffff, transmission: frosted ? 0.4 : 0.92,
+    color: 0xffffff, transmission: frosted ? 0.35 : 0.95,
     transparent: true, opacity: 1,
-    roughness: frosted ? 0.75 : 0.03, metalness: 0,
-    clearcoat: 1, clearcoatRoughness: 0.02,
-    ior: 1.5, thickness: 0.06, envMapIntensity: 1.3,
+    roughness: frosted ? 0.7 : 0.02, metalness: 0,
+    clearcoat: 1, clearcoatRoughness: frosted ? 0.5 : 0.01,
+    ior: 1.52, thickness: 0.08, envMapIntensity: 1.5,
     side: THREE.DoubleSide,
   });
+  const wellMat = new THREE.MeshStandardMaterial({ color: WELL, roughness: 0.45, metalness: 0.2 });
   const goldMat = new THREE.MeshPhysicalMaterial({
-    color: GOLD, roughness: 0.12, metalness: 0.95,
-    clearcoat: 0.5, clearcoatRoughness: 0.08, envMapIntensity: 1.5,
+    color: GOLD, roughness: 0.1, metalness: 0.95,
+    clearcoat: 0.6, clearcoatRoughness: 0.05, envMapIntensity: 1.8,
   });
-  const cardBodyMat = new THREE.MeshStandardMaterial({ color: 0x0a0a0a, roughness: 0.6, metalness: 0.1 });
+  const cardBodyMat = new THREE.MeshStandardMaterial({ color: 0x0a0a0a, roughness: 0.5, metalness: 0.1 });
   const cardFaceMat = new THREE.MeshPhysicalMaterial({
-    map: cardTexture, roughness: 0.35, metalness: 0.1,
-    clearcoat: 0.4, clearcoatRoughness: 0.35, envMapIntensity: 0.6,
+    map: cardTexture, roughness: 0.3, metalness: 0.1,
+    clearcoat: 0.5, clearcoatRoughness: 0.3, envMapIntensity: 0.7,
   });
+  if (st) st.cardFaceMat = cardFaceMat;
 
   // Card body + face
-  grp.add(new THREE.Mesh(new THREE.BoxGeometry(cardW, cardH, 0.012), cardBodyMat));
-  const face = new THREE.Mesh(new THREE.PlaneGeometry(cardW, cardH), cardFaceMat);
-  face.position.z = 0.007;
+  const cardBody = new THREE.Mesh(rbox(cardW, cardH, 0.02, 0.03), cardBodyMat);
+  grp.add(cardBody);
+  const face = new THREE.Mesh(new THREE.PlaneGeometry(cardW - 0.04, cardH - 0.04), cardFaceMat);
+  face.position.z = 0.012;
   grp.add(face);
 
   if (casing === "slab" || casing === "magnetic") {
-    const t = 0.07, d = 0.09, topH = 0.14;
-    const top = new THREE.Mesh(new THREE.BoxGeometry(cardW + t * 2, topH, d), frameMat);
+    const t = 0.08, d = 0.14, topH = 0.18;
+    const fW = cardW + t * 2;
+    // Frame bars (rounded)
+    const top = new THREE.Mesh(rbox(fW, topH, d, 0.03), frameMat);
     top.position.y = cardH / 2 + topH / 2; grp.add(top);
-    const bot = new THREE.Mesh(new THREE.BoxGeometry(cardW + t * 2, t, d), frameMat);
+    const bot = new THREE.Mesh(rbox(fW, t, d, 0.025), frameMat);
     bot.position.y = -cardH / 2 - t / 2; grp.add(bot);
-    const left = new THREE.Mesh(new THREE.BoxGeometry(t, cardH, d), frameMat);
+    const left = new THREE.Mesh(rbox(t, cardH, d, 0.025), frameMat);
     left.position.x = -cardW / 2 - t / 2; grp.add(left);
-    const right = new THREE.Mesh(new THREE.BoxGeometry(t, cardH, d), frameMat);
+    const right = new THREE.Mesh(rbox(t, cardH, d, 0.025), frameMat);
     right.position.x = cardW / 2 + t / 2; grp.add(right);
-    // Front + back glass windows
-    const winF = new THREE.Mesh(new THREE.PlaneGeometry(cardW + 0.02, cardH + 0.02), glassMat);
-    winF.position.z = 0.05; grp.add(winF);
-    const winB = new THREE.Mesh(new THREE.PlaneGeometry(cardW + 0.02, cardH + 0.02), glassMat);
-    winB.position.z = -0.05; winB.rotation.y = Math.PI; grp.add(winB);
+    // Inner well — thin dark bars around card edges, creating recessed look
+    const wT = 0.012, wD = 0.1;
+    grp.add(Object.assign(new THREE.Mesh(rbox(cardW, wT, wD, 0.005), wellMat), { position: new THREE.Vector3(0, cardH / 2 - wT / 2, 0.03) }));
+    grp.add(Object.assign(new THREE.Mesh(rbox(cardW, wT, wD, 0.005), wellMat), { position: new THREE.Vector3(0, -cardH / 2 + wT / 2, 0.03) }));
+    grp.add(Object.assign(new THREE.Mesh(rbox(wT, cardH - wT * 2, wD, 0.005), wellMat), { position: new THREE.Vector3(-cardW / 2 + wT / 2, 0, 0.03) }));
+    grp.add(Object.assign(new THREE.Mesh(rbox(wT, cardH - wT * 2, wD, 0.005), wellMat), { position: new THREE.Vector3(cardW / 2 - wT / 2, 0, 0.03) }));
+    // Front + back glass
+    const winF = new THREE.Mesh(new THREE.PlaneGeometry(fW - 0.02, cardH + topH + 0.02), glassMat);
+    winF.position.set(0, topH / 2 - 0.01, d / 2 + 0.001); grp.add(winF);
+    const winB = new THREE.Mesh(new THREE.PlaneGeometry(fW - 0.02, cardH + topH + 0.02), glassMat);
+    winB.position.set(0, topH / 2 - 0.01, -(d / 2 + 0.001)); winB.rotation.y = Math.PI; grp.add(winB);
+    // Magnetic stud
     if (casing === "magnetic") {
       const mag = new THREE.Mesh(
-        new THREE.CylinderGeometry(0.05, 0.05, 0.03, 16),
-        new THREE.MeshPhysicalMaterial({ color: OZONE, roughness: 0.25, metalness: 0.8, clearcoat: 0.6, envMapIntensity: 1.2 }),
+        new THREE.CylinderGeometry(0.055, 0.055, 0.03, 24),
+        new THREE.MeshPhysicalMaterial({ color: OZONE, roughness: 0.2, metalness: 0.8, clearcoat: 0.7, envMapIntensity: 1.3 }),
       );
       mag.rotation.x = Math.PI / 2;
-      mag.position.set(0, cardH / 2 + topH / 2, 0.05);
+      mag.position.set(0, cardH / 2 + topH / 2, d / 2 + 0.02);
       grp.add(mag);
     }
   } else if (casing === "screwdown") {
-    const cW = cardW + 0.14, cH = cardH + 0.14, cD = 0.08;
-    grp.add(new THREE.Mesh(new THREE.BoxGeometry(cW, cH, cD), glassMat));
-    const sg = new THREE.CylinderGeometry(0.04, 0.04, 0.03, 16);
-    const off = 0.08;
+    const cW = cardW + 0.16, cH = cardH + 0.16, cD = 0.1;
+    grp.add(new THREE.Mesh(rbox(cW, cH, cD, 0.03), glassMat));
+    // Gold screws (rounded heads)
+    const sg = new THREE.CylinderGeometry(0.045, 0.045, 0.04, 20);
+    const off = 0.09;
     [[cW/2-off, cH/2-off], [-cW/2+off, cH/2-off], [cW/2-off, -cH/2+off], [-cW/2+off, -cH/2+off]].forEach(([x, y]) => {
-      const s = new THREE.Mesh(sg, goldMat);
-      s.rotation.x = Math.PI / 2; s.position.set(x, y, cD / 2 + 0.01); grp.add(s);
+      const sf = new THREE.Mesh(sg, goldMat); sf.rotation.x = Math.PI / 2; sf.position.set(x, y, cD / 2 + 0.01); grp.add(sf);
+      const sb = new THREE.Mesh(sg, goldMat); sb.rotation.x = Math.PI / 2; sb.position.set(x, y, -(cD / 2 + 0.01)); grp.add(sb);
     });
   } else if (casing === "toploader") {
-    grp.add(new THREE.Mesh(new THREE.BoxGeometry(cardW + 0.06, cardH + 0.06, 0.03), glassMat));
+    grp.add(new THREE.Mesh(rbox(cardW + 0.06, cardH + 0.06, 0.04, 0.02), glassMat));
   } else if (casing === "sleeve") {
-    grp.add(new THREE.Mesh(new THREE.BoxGeometry(cardW + 0.03, cardH + 0.03, 0.02), glassMat));
+    grp.add(new THREE.Mesh(rbox(cardW + 0.04, cardH + 0.04, 0.025, 0.015), glassMat));
   }
 
   return grp;
 }
 
-const DEFAULT_CAM = new THREE.Vector3(0, 0, 6);
+// ── Auto-fit camera to slab bounding box (fixes cropping at any rotation) ──
+function fitCamera(camera, controls, slab) {
+  slab.rotation.y = 0; slab.updateMatrixWorld();
+  const box = new THREE.Box3().setFromObject(slab);
+  const size = box.getSize(new THREE.Vector3());
+  const center = box.getCenter(new THREE.Vector3());
+  const diag = Math.sqrt(size.x * size.x + size.y * size.y);
+  const fov = camera.fov * Math.PI / 180;
+  const dist = (diag / 2) / Math.tan(fov / 2) * 1.35;
+  camera.position.set(center.x, center.y, center.z + dist);
+  controls.target.copy(center);
+  controls.minDistance = dist * 0.35;
+  controls.maxDistance = dist * 3;
+  controls.update();
+  return { dist, center };
+}
 
 const SlabViewer3D = forwardRef(function SlabViewer3D({ config, artworkUrl }, ref) {
   const mountRef = useRef(null);
@@ -152,6 +207,7 @@ const SlabViewer3D = forwardRef(function SlabViewer3D({ config, artworkUrl }, re
     },
   }));
 
+  // ── Scene init (once) ──
   useEffect(() => {
     const mount = mountRef.current;
     if (!mount || S.current) return;
@@ -160,30 +216,28 @@ const SlabViewer3D = forwardRef(function SlabViewer3D({ config, artworkUrl }, re
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     renderer.setSize(w, h);
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    renderer.toneMappingExposure = 1.1;
+    renderer.toneMappingExposure = 1.15;
     mount.appendChild(renderer.domElement);
 
     const scene = new THREE.Scene();
-    const camera = new THREE.PerspectiveCamera(40, w / h, 0.1, 100);
-    camera.position.copy(DEFAULT_CAM);
+    const camera = new THREE.PerspectiveCamera(38, w / h, 0.1, 100);
+    camera.position.set(0, 0, 7);
 
-    // Environment for realistic reflections
     const pmrem = new THREE.PMREMGenerator(renderer);
     scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
     pmrem.dispose();
 
     const controls = new OrbitControls(camera, renderer.domElement);
     controls.enableDamping = true; controls.enablePan = false;
-    controls.minDistance = 3; controls.maxDistance = 14;
     controls.autoRotate = false;
 
-    // 3-point lighting
-    scene.add(new THREE.AmbientLight(0xffffff, 0.12));
-    const key = new THREE.DirectionalLight(0xfff0d6, 1.2); key.position.set(3, 5, 4); scene.add(key);
-    const fill = new THREE.DirectionalLight(0x6fd6ff, 0.45); fill.position.set(-4, -1, 3); scene.add(fill);
-    const rim = new THREE.DirectionalLight(0xedff00, 0.35); rim.position.set(0, 2, -5); scene.add(rim);
+    // Studio 3-point lighting
+    scene.add(new THREE.AmbientLight(0xffffff, 0.1));
+    const key = new THREE.DirectionalLight(0xfff0d6, 1.3); key.position.set(4, 6, 5); scene.add(key);
+    const fill = new THREE.DirectionalLight(0x6fd6ff, 0.5); fill.position.set(-5, -1, 3); scene.add(fill);
+    const rim = new THREE.DirectionalLight(0xedff00, 0.4); rim.position.set(0, 3, -6); scene.add(rim);
 
-    S.current = { renderer, scene, camera, controls, slab: null, raf: 0 };
+    S.current = { renderer, scene, camera, controls, slab: null, raf: 0, cardFaceMat: null, fitDist: 7, fitCenter: new THREE.Vector3(0, 0, 0) };
 
     const onResize = () => {
       const nw = mount.clientWidth, nh = mount.clientHeight || 560;
@@ -196,7 +250,7 @@ const SlabViewer3D = forwardRef(function SlabViewer3D({ config, artworkUrl }, re
       st.raf = requestAnimationFrame(animate);
       if (st.slab) {
         st.slab.rotation.y += 0.0025;
-        st.slab.position.y = Math.sin(performance.now() * 0.0008) * 0.04;
+        st.slab.position.y = Math.sin(performance.now() * 0.0008) * 0.03;
       }
       controls.update(); renderer.render(scene, camera);
     };
@@ -217,6 +271,7 @@ const SlabViewer3D = forwardRef(function SlabViewer3D({ config, artworkUrl }, re
     };
   }, []);
 
+  // ── Phase 1: Geometry rebuild (casing / finish change) + auto-fit ──
   useEffect(() => {
     const st = S.current; if (!st) return;
     let cancelled = false;
@@ -226,14 +281,16 @@ const SlabViewer3D = forwardRef(function SlabViewer3D({ config, artworkUrl }, re
         if (o.geometry) o.geometry.dispose();
         if (o.material) { const m = o.material; (Array.isArray(m) ? m : [m]).forEach((x) => { if (x.map) x.map.dispose(); x.dispose(); }); }
       });
-      st.slab = null;
+      st.slab = null; st.cardFaceMat = null;
     }
     const lc = LABEL_COLORS.find((c) => c.id === config.labelColor) || LABEL_COLORS[0];
     const build = (img) => {
       if (cancelled) return;
       const tex = makeCardTexture(config, lc, img);
-      st.slab = buildSlab(config, tex);
+      st.slab = buildSlab(config, tex, st);
       st.scene.add(st.slab);
+      const { dist, center } = fitCamera(st.camera, st.controls, st.slab);
+      st.fitDist = dist; st.fitCenter = center;
     };
     if (artworkUrl) {
       const img = new Image();
@@ -245,7 +302,31 @@ const SlabViewer3D = forwardRef(function SlabViewer3D({ config, artworkUrl }, re
       build(null);
     }
     return () => { cancelled = true; };
-  }, [config.casing, config.finish, config.title, config.grade, config.serial, config.labelColor, artworkUrl]);
+  }, [config.casing, config.finish]);
+
+  // ── Phase 2: Texture-only update (label / grade / serial / colour / artwork) ──
+  useEffect(() => {
+    const st = S.current; if (!st || !st.cardFaceMat) return;
+    let cancelled = false;
+    const lc = LABEL_COLORS.find((c) => c.id === config.labelColor) || LABEL_COLORS[0];
+    const update = (img) => {
+      if (cancelled) return;
+      const tex = makeCardTexture(config, lc, img);
+      if (st.cardFaceMat.map) st.cardFaceMat.map.dispose();
+      st.cardFaceMat.map = tex;
+      st.cardFaceMat.needsUpdate = true;
+    };
+    if (artworkUrl) {
+      const img = new Image();
+      img.crossOrigin = "anonymous";
+      img.onload = () => update(img);
+      img.onerror = () => update(null);
+      img.src = artworkUrl;
+    } else {
+      update(null);
+    }
+    return () => { cancelled = true; };
+  }, [config.title, config.grade, config.serial, config.labelColor, artworkUrl]);
 
   const zoomIn = () => {
     const st = S.current; if (!st) return;
@@ -265,8 +346,8 @@ const SlabViewer3D = forwardRef(function SlabViewer3D({ config, artworkUrl }, re
   };
   const resetView = () => {
     const st = S.current; if (!st) return;
-    st.camera.position.copy(DEFAULT_CAM);
-    st.controls.target.set(0, 0, 0);
+    st.camera.position.set(st.fitCenter.x, st.fitCenter.y, st.fitCenter.z + st.fitDist);
+    st.controls.target.copy(st.fitCenter);
     st.controls.update();
   };
 
@@ -281,7 +362,6 @@ const SlabViewer3D = forwardRef(function SlabViewer3D({ config, artworkUrl }, re
         <span className="absolute right-3 bottom-3 h-4 w-4 border-r-2 border-b-2 border-ozone/60" />
         <div className="absolute inset-x-6" style={{ height: 1, background: "linear-gradient(90deg,transparent,rgba(237,255,0,.4),transparent)", animation: "nft-scan 5s linear infinite" }} />
       </div>
-      {/* Zoom controls */}
       <div className="absolute right-3 top-12 flex flex-col gap-1.5">
         <button onClick={zoomIn} aria-label="Zoom in" className="flex h-8 w-8 items-center justify-center border border-slate2 bg-void/80 text-silver/70 backdrop-blur transition-colors hover:border-ozone hover:text-ozone"><ZoomIn className="h-3.5 w-3.5" /></button>
         <button onClick={zoomOut} aria-label="Zoom out" className="flex h-8 w-8 items-center justify-center border border-slate2 bg-void/80 text-silver/70 backdrop-blur transition-colors hover:border-ozone hover:text-ozone"><ZoomOut className="h-3.5 w-3.5" /></button>
