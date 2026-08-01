@@ -19,9 +19,10 @@ const Fallback = () => (
   </div>
 );
 
-// Hub + showcase pages that are always public regardless of DB state,
-// so the lab index never locks itself out.
-const ALWAYS_PUBLIC = ["/lab", "/lab/poster", "/lab/coin-poster", "/lab/sequencer", "/lab/nft"];
+// The lab index is always public so it can never lock itself out — every
+// other /lab/* page is governed by its LabPrototype.access record, so the
+// admin panel can flip any prototype (including the showcases) to restricted.
+const ALWAYS_PUBLIC = ["/lab"];
 
 export default function LabAccessRoute() {
   const { isAuthenticated, isLoadingAuth, authChecked, checkUserAuth } = useAuth();
