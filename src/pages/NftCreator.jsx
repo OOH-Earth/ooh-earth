@@ -9,6 +9,7 @@ import SlabViewer3D from "@/components/ooh/nft/SlabViewer3D";
 import NftMatrixStrip from "@/components/ooh/nft/NftMatrixStrip";
 import NftStudioPanel from "@/components/ooh/nft/NftStudioPanel";
 import { CASING_TYPES, LABEL_COLORS, PREMADE_DESIGNS } from "@/components/ooh/nft/nftPresets";
+import { useLabGate } from "@/components/ooh/LabGate";
 
 // OOH Earth — NFT Creator (Lab)
 // Subvertising / Adbusting NFT studio prototype. 3D slab viewer with casing
@@ -23,12 +24,14 @@ export default function NftCreator() {
   const [artworkUrl, setArtworkUrl] = useState(null);
   const [generating, setGenerating] = useState(false);
   const viewerRef = useRef(null);
+  const { gate } = useLabGate();
 
   const onConfig = (patch) => setConfig((c) => ({ ...c, ...patch }));
 
   const applyPreset = (p) => onConfig({ title: p.title, grade: p.grade, labelColor: p.labelColor });
 
   const generateArt = async () => {
+    if (!gate("Generate artwork")) return;
     setGenerating(true);
     try {
       const res = await base44.integrations.Core.GenerateImage({
@@ -40,10 +43,16 @@ export default function NftCreator() {
   };
 
   const randomize = () => {
+    if (!gate("Randomize design")) return;
     const c = CASING_TYPES[Math.floor(Math.random() * CASING_TYPES.length)];
     const lc = LABEL_COLORS[Math.floor(Math.random() * LABEL_COLORS.length)];
     const p = PREMADE_DESIGNS[Math.floor(Math.random() * PREMADE_DESIGNS.length)];
     onConfig({ casing: c.id, labelColor: lc.id, title: p.title, grade: p.grade, serial: `OOH-${String(Math.floor(Math.random() * 99999)).padStart(5, "0")}` });
+  };
+
+  const handleExport = () => {
+    if (!gate("Export PNG")) return;
+    viewerRef.current?.exportPNG();
   };
 
   return (
@@ -72,7 +81,7 @@ export default function NftCreator() {
           </div>
           <NftStudioPanel
             config={config} onConfig={onConfig} artworkUrl={artworkUrl} onArtwork={setArtworkUrl}
-            onExport={() => viewerRef.current?.exportPNG()} onGenerate={generateArt} generating={generating} onRandomize={randomize}
+            onExport={handleExport} onGenerate={generateArt} generating={generating} onRandomize={randomize}
           />
         </div>
 

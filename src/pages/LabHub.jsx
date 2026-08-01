@@ -1,8 +1,9 @@
 import { Link } from "react-router-dom";
-import { Coins, Grid3x3, Music, Smartphone, FileText, Box, Ruler, Activity, Image as ImageIcon } from "lucide-react";
+import { Coins, Grid3x3, Music, Smartphone, FileText, Box, Ruler, Activity, Image as ImageIcon, UserPlus } from "lucide-react";
 import Nav from "@/components/ooh/Nav";
 import Breadcrumbs from "@/components/ooh/Breadcrumbs";
 import SiteFooter from "@/components/ooh/SiteFooter";
+import { useLabGate } from "@/components/ooh/LabGate";
 
 // OOH Earth — Hex Engine Lab (hub)
 // Built on the OOH Earth design system. Landing for the Hex Engine / Genesis
@@ -36,6 +37,7 @@ function Card({ item }) {
 }
 
 export default function LabHub() {
+  const { isAuthenticated } = useLabGate();
   return (
     <div className="min-h-screen bg-void grid-bg text-silver">
       <Nav />
@@ -49,6 +51,14 @@ export default function LabHub() {
         <p className="my-6 max-w-2xl font-mono text-xs leading-loose text-silver/50">
           The tangible I Ching controller and Genesis Coin for the oohearth.app ecosystem — street-art maps, DAO, wallet, proof-of-presence. Prototype area; pieces graduate into the main app once proven.
         </p>
+
+        {!isAuthenticated && (
+          <div className="mb-6 flex flex-wrap items-center gap-3 border border-ozone/30 bg-ozone/5 px-4 py-3">
+            <UserPlus className="h-4 w-4 text-ozone" />
+            <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-silver/70">Browse freely — register an operative handle to generate, export & mint</span>
+            <Link to="/register" className="ml-auto border border-ozone px-3 py-1.5 font-mono text-[10px] font-bold uppercase tracking-[0.2em] text-ozone transition-colors hover:bg-ozone hover:text-void">Register</Link>
+          </div>
+        )}
 
         <div className="grid grid-cols-[repeat(auto-fit,minmax(240px,1fr))] gap-4">
           {CARDS.map((c) => (c.to

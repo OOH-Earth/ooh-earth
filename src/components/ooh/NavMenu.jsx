@@ -122,7 +122,6 @@ const SITEMAP = [
   },
   {
     group: "Lab",
-    agencyOnly: true,
     items: [
       { to: "/lab", label: "Hex Engine Lab" },
       { to: "/lab/coin", label: "Genesis Coin" },
