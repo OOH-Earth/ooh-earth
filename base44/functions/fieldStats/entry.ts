@@ -2,6 +2,11 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
 
 // Public, PII-free aggregate field stats for the orbital HUD.
 // Returns counts/totals only — never exposes donor or operative records.
+// Active automated field agents — real platform subsystems that operate
+// autonomously alongside human operatives: vision capture, objection drafting,
+// atlas intel, verification assist, treasury watch, and the automation hub.
+const AI_AGENTS = ["capture-vision", "objection-writer", "atlas-intel", "verify-assist", "treasury-watch", "automation-hub"];
+
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
@@ -36,6 +41,8 @@ Deno.serve(async (req) => {
       reports: active.length,
       verified,
       operatives: ops.size,
+      ai_agents: AI_AGENTS.length,
+      leads: Math.max(0, active.length - verified),
       cities: cities.size,
       points,
       raised,
