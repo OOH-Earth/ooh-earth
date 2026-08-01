@@ -8,6 +8,11 @@ _Last updated: 2026-08-01_
 - **Mobile menu clipping** — `NavMenu` now portals to `document.body`, escaping the backdrop-blur containing block so the full-screen launcher fills the viewport on mobile.
 - **Header hidden under nav on notched devices** — the fixed nav inflates by `env(safe-area-inset-top)` on iPhones with notches/dynamic islands, but page top padding was a fixed `pt-24/pt-28`, causing masthead H1s to slip underneath. Added a `.page-top` utility (`calc(6rem + env(safe-area-inset-top))`, `7rem` on md) and applied it to `Channel.jsx`.
 
+## 2026-08-01 — Removed “No VC” credential copy
+
+- Stripped the “No VC” / “zero VC” / “Zero VC by design” lines from `LicenseMark`, `AuthShell` (trust list), `Plans`, `Store`, and the gated-page footers (`CapitalLead`, `Console`, `InvestorHub`). Separators cleaned — no dangling middots.
+- Held (flagged for a call): the `anti-VC` ethos statements in `README.md` and the journey personas (`panelsB.js` ×2) — structural-ethos framing, not marketing badges.
+
 ## 2026-08-01 — Brandmark symbol placed across the site
 
 - **Footer** (`SiteFooter`, global — 25 pages) now shows the **animated brandmark symbol only** (was a wordmark lockup), h-16→h-20. Symbol spins; tagline line kept below.
