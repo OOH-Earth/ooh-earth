@@ -2,6 +2,23 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
 
 // Public, PII-free aggregate field stats for the orbital HUD.
 // Returns counts/totals only — never exposes donor or operative records.
+
+// Page through an entity so counts aren't silently capped. The previous
+// version fetched a flat 500, which undercounted once the London import
+// pushed Location past 700 records.
+async function listAll(entity, sort, pageSize = 500, hardCap = 50000) {
+  const out = [];
+  let skip = 0;
+  while (out.length < hardCap) {
+    const page = await entity.list(sort, pageSize, skip);
+    if (!page || page.length === 0) break;
+    out.push(...page);
+    if (page.length < pageSize) break;
+    skip += pageSize;
+  }
+  return out;
+}
+
 // Active automated field agents — real platform subsystems that operate
 // autonomously alongside human operatives: vision capture, objection drafting,
 // atlas intel, verification assist, treasury watch, and the automation hub.
@@ -11,9 +28,9 @@ Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
     const [locs, leads, busts] = await Promise.all([
-      base44.asServiceRole.entities.Location.list('-created_date', 500),
-      base44.asServiceRole.entities.FundingLead.list('-created_date', 200),
-      base44.asServiceRole.entities.DigitalBust.list('-created_date', 200),
+      listAll(base44.asServiceRole.entities.Location, '-created_date'),
+      listAll(base44.asServiceRole.entities.FundingLead, '-created_date'),
+      listAll(base44.asServiceRole.entities.DigitalBust, '-created_date'),
     ]);
 
     const active = (locs || []).filter((r) => r.status !== 'rejected');
