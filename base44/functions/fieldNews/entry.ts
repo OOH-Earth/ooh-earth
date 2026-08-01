@@ -1,40 +1,44 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
 
-// fieldNews — the real, LATEST intel feed for the ticker. Three kinds of source,
-// mixed and sorted newest-first, each item linking to the real article/post:
-//   1. Direct RSS from the actual publications/movement sites (clean article URLs)
-//   2. Google News, recency-forced with when: operators (breadth)
-//   3. Bluesky post search, best-effort (minute-fresh; skipped silently if the
-//      public endpoint requires auth)
-// Cached 15 min in IntelCache so we stay live without hammering sources.
+// fieldNews — the resistance intel stream for the ticker. Weighted toward
+// subvertising, adbusting and reclaim-public-space action (NOT commercial OOH
+// trade press), and deliberately surfacing Global-South-led resistance. Builds a
+// large rolling pool (~60), newest-first, each item linking to the real
+// article/post, and rebuilds once a day (cached in IntelCache by date).
+//
+// Sources: (1) movement RSS, (2) Google News resistance/Global-South queries,
+// (3) Bluesky post search (best-effort, live). Any source that fails is skipped.
 
 const CACHE_KEY = "fieldNews";
+const POOL = 60;         // endless-stream pool size
+const PER_FEED = 40;     // items parsed per source
 
-// Direct source feeds — real article links, chronological.
+// Movement / resistance feeds — the orgs' own words, real article links.
 const RSS_FEEDS = [
-  { url: "https://billboardinsider.com/feed/", source: "Billboard Insider", cat: "ooh" },
-  { url: "https://oohtoday.com/feed/", source: "OOH Today", cat: "ooh" },
-  { url: "https://www.sixteen-nine.net/feed/", source: "Sixteen:Nine", cat: "ooh" },
-  { url: "https://adfreecities.org.uk/feed/", source: "Adfree Cities", cat: "subvert" },
+  { url: "https://adfreecities.org.uk/feed/", source: "Adfree Cities", cat: "resist" },
   { url: "https://brandalism.ch/feed/", source: "Brandalism", cat: "subvert" },
+  { url: "https://badverts.org/feed/", source: "Badvertising", cat: "resist" },
 ];
 
-// Google News, forced recent (subvertising is niche → a wider window).
+// Google News — resistance + Global South, not ad-industry trade news.
 const GNEWS = [
-  { q: '("out of home advertising" OR "OOH advertising" OR "digital out of home" OR billboard advertising) when:7d', cat: "ooh" },
-  { q: '(subvertising OR adbusting OR brandalism OR "adfree cities" OR badvertising OR "subvertisers international") when:21d', cat: "subvert" },
-  { q: '("advertising ban" OR "billboard ban" OR "fossil fuel advertising" OR "ban on advertising") when:10d', cat: "ban" },
+  { q: '(subvertising OR adbusting OR brandalism OR "culture jamming" OR "billboard liberation" OR "ad busting" OR "subvertisers") when:60d', cat: "subvert" },
+  { q: '("anti-advertising" OR "ad free city" OR "ad-free" OR "reclaim public space" OR "advertising ban" OR "billboard ban") (activist OR protest OR campaign OR movement OR community OR resist) when:45d', cat: "resist" },
+  { q: '(billboard OR "outdoor advertising" OR hoarding OR "public space") (ban OR removal OR protest OR reclaim OR activism) ("São Paulo" OR Brazil OR India OR Chennai OR Mumbai OR Tehran OR Nairobi OR Lagos OR Jakarta OR Bogotá OR "Latin America" OR Africa OR "Global South" OR Philippines OR Indonesia) when:120d', cat: "south" },
+  { q: '("fossil fuel advertising" OR greenwashing OR "high-carbon advertising" OR "tobacco advertising") (ban OR protest OR subvertising OR campaign OR activist) when:45d', cat: "climate" },
 ];
 
-// Bluesky live search terms (best-effort).
-const BSKY_TERMS = ["subvertising", "adbusting OR brandalism", "billboard ban"];
+// Bluesky live search (best-effort; silent if the public endpoint needs auth).
+const BSKY_TERMS = ["subvertising", "adbusting OR brandalism", "anti-advertising OR \"ad free\"", "\"reclaim public space\""];
 
-// Real, evergreen fallback (only if every live source fails).
+// Resistance / Global-South framed fallback (only if every live source fails).
 const FALLBACK = [
-  { title: "US cities tighten billboard rules as OOH faces rising regulatory pressure", source: "Billboard Insider", url: "https://billboardinsider.com/", cat: "ooh" },
-  { title: "Brandalism targets ad agencies over fossil-fuel clients in UK-wide subvertising action", source: "The Drum", url: "https://www.thedrum.com/", cat: "subvert" },
-  { title: "Grenoble and Chennai clear streets of billboards to reclaim the visual commons", source: "Rapid Transition Alliance", url: "https://rapidtransition.org/", cat: "ban" },
-  { title: "Adfree Cities challenges bank 'greenwashing' with ASA complaints", source: "The Drum", url: "https://www.thedrum.com/", cat: "subvert" },
+  { title: "São Paulo's Clean City Law: the megacity that banned outdoor advertising", source: "Cidade Limpa", url: "https://en.wikipedia.org/wiki/Clean_City_Law", cat: "south" },
+  { title: "Chennai clears its streets of billboards to reclaim the public realm", source: "Rapid Transition Alliance", url: "https://rapidtransition.org/", cat: "south" },
+  { title: "Brandalism: activists replace bus-stop ads with anti-fossil-fuel artworks across Europe", source: "Brandalism", url: "https://brandalism.ch/", cat: "subvert" },
+  { title: "Adfree Cities: the movement to free public space from corporate advertising", source: "Adfree Cities", url: "https://adfreecities.org.uk/", cat: "resist" },
+  { title: "Subvertisers International: a global network turning ad space into dissent", source: "Subvertisers International", url: "https://brandalism.ch/", cat: "subvert" },
+  { title: "Grenoble replaces street advertising with trees and community noticeboards", source: "Reclaim the City", url: "https://rapidtransition.org/", cat: "resist" },
 ];
 
 function decode(s: string) {
@@ -51,12 +55,10 @@ function pick(block: string, tag: string) {
   return m ? m[1] : "";
 }
 
-// Parse RSS 2.0 (<item>) or Atom (<entry>). For Google News, gnews=true uses the
-// <source> tag and strips the " - Source" title suffix.
 function parseFeed(xml: string, srcName: string, cat: string, gnews = false) {
   const out: any[] = [];
   const items = String(xml).split(/<item\b/i).slice(1);
-  for (const b of items.slice(0, 15)) {
+  for (const b of items.slice(0, PER_FEED)) {
     const rawTitle = decode(pick(b, "title"));
     if (!rawTitle) continue;
     let link = decode(pick(b, "link"));
@@ -75,7 +77,7 @@ function parseFeed(xml: string, srcName: string, cat: string, gnews = false) {
   }
   if (!out.length) {
     const entries = String(xml).split(/<entry\b/i).slice(1);
-    for (const b of entries.slice(0, 15)) {
+    for (const b of entries.slice(0, PER_FEED)) {
       const title = decode(pick(b, "title"));
       const m = b.match(/<link[^>]*href="([^"]+)"/i);
       const link = m ? decode(m[1]) : "";
@@ -88,11 +90,11 @@ function parseFeed(xml: string, srcName: string, cat: string, gnews = false) {
   return out;
 }
 
-async function getText(url: string, headers: Record<string, string> = {}) {
+async function getText(url: string) {
   const ctrl = new AbortController();
-  const timer = setTimeout(() => ctrl.abort(), 6000);
+  const timer = setTimeout(() => ctrl.abort(), 7000);
   try {
-    const res = await fetch(url, { signal: ctrl.signal, headers: { "User-Agent": "Mozilla/5.0 (OOHEarth FieldNews)", ...headers } });
+    const res = await fetch(url, { signal: ctrl.signal, headers: { "User-Agent": "Mozilla/5.0 (OOHEarth FieldNews)" } });
     if (!res.ok) return null;
     return await res.text();
   } catch { return null; } finally { clearTimeout(timer); }
@@ -108,9 +110,9 @@ async function fetchGnews(g: any) {
   return xml ? parseFeed(xml, "", g.cat, true) : [];
 }
 async function fetchBsky(term: string) {
-  const url = `https://public.api.bsky.app/xrpc/app.bsky.feed.searchPosts?q=${encodeURIComponent(term)}&limit=8&sort=latest`;
+  const url = `https://public.api.bsky.app/xrpc/app.bsky.feed.searchPosts?q=${encodeURIComponent(term)}&limit=15&sort=latest`;
   const ctrl = new AbortController();
-  const timer = setTimeout(() => ctrl.abort(), 6000);
+  const timer = setTimeout(() => ctrl.abort(), 7000);
   try {
     const res = await fetch(url, { signal: ctrl.signal, headers: { "User-Agent": "Mozilla/5.0 (OOHEarth FieldNews)" } });
     if (!res.ok) return [];
@@ -121,7 +123,7 @@ async function fetchBsky(term: string) {
       const text = String(p?.record?.text || "").replace(/\s+/g, " ").trim();
       const ts = p?.record?.createdAt ? Date.parse(p.record.createdAt) : (p?.indexedAt ? Date.parse(p.indexedAt) : 0);
       return {
-        title: text.length > 140 ? text.slice(0, 137) + "…" : text,
+        title: text.length > 150 ? text.slice(0, 147) + "…" : text,
         source: handle ? `@${handle} · Bluesky` : "Bluesky",
         url: handle && rkey ? `https://bsky.app/profile/${handle}/post/${rkey}` : "",
         published: Number.isFinite(ts) ? ts : 0,
@@ -131,7 +133,7 @@ async function fetchBsky(term: string) {
   } catch { return []; } finally { clearTimeout(timer); }
 }
 
-// Keep newest-first, but break up runs of 3+ from the same source.
+// Newest-first, but break up runs of 3+ from the same source.
 function diversify(list: any[]) {
   const res: any[] = [];
   const pool = list.slice();
@@ -147,11 +149,11 @@ function diversify(list: any[]) {
   return res;
 }
 
+// Daily rebuild — the stream refreshes once a day, automatically.
 function periodKey() {
   const d = new Date();
   const p = (n: number) => String(n).padStart(2, "0");
-  const bucket = Math.floor(d.getUTCMinutes() / 15);
-  return `${d.getUTCFullYear()}-${p(d.getUTCMonth() + 1)}-${p(d.getUTCDate())}-${p(d.getUTCHours())}-${bucket}`;
+  return `${d.getUTCFullYear()}-${p(d.getUTCMonth() + 1)}-${p(d.getUTCDate())}`;
 }
 
 Deno.serve(async (req) => {
@@ -175,7 +177,6 @@ Deno.serve(async (req) => {
     let all: any[] = [];
     for (const r of settled) if (r.status === "fulfilled") all = all.concat(r.value);
 
-    // valid link + title, dedupe, newest-first, diversify
     all = all.filter((x) => x && x.title && /^https?:\/\//.test(x.url || ""));
     const seen = new Set<string>();
     const dedup: any[] = [];
@@ -186,7 +187,7 @@ Deno.serve(async (req) => {
       dedup.push(it);
     }
     dedup.sort((a, b) => (b.published || 0) - (a.published || 0));
-    let items = diversify(dedup).slice(0, 18);
+    let items = diversify(dedup).slice(0, POOL);
     if (!items.length) items = FALLBACK;
 
     const payload = { items, updated: Date.now() };
