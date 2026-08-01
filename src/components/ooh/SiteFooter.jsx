@@ -1,6 +1,7 @@
 import { Crosshair } from "lucide-react";
 import { Link } from "react-router-dom";
 import BrandMark from "@/components/ooh/BrandMark";
+import BetaTag from "@/components/ooh/BetaTag";
 
 export default function SiteFooter({ onCommand }) {
   return (
@@ -8,9 +9,12 @@ export default function SiteFooter({ onCommand }) {
       <div className="px-5 py-12 md:px-8">
         <div className="grid gap-10 md:grid-cols-[2fr_1fr_1fr_1fr]">
           <div>
-            <Link to="/" className="group inline-block transition-opacity hover:opacity-90" aria-label="OOH Earth — home">
-              <BrandMark className="h-16 w-16 md:h-20 md:w-20" />
-            </Link>
+            <div className="flex items-center gap-3">
+              <Link to="/" className="group inline-block transition-opacity hover:opacity-90" aria-label="OOH Earth — home">
+                <BrandMark className="h-16 w-16 md:h-20 md:w-20" />
+              </Link>
+              <BetaTag />
+            </div>
             <p className="mt-1 pl-1 font-mono text-[10px] uppercase tracking-[0.3em] text-dim">OOH Street Art & Adbusting Maps</p>
             <p className="mt-4 max-w-sm font-display text-sm font-normal leading-[1.4] text-darkgray">
               An open-source, community-funded app reclaiming the visual commons. Union-made and aligned to the UN Sustainable Development Goals — documenting every corporate advertising offense on the public record.
