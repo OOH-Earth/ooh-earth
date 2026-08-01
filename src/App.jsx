@@ -6,6 +6,7 @@ import { BrowserRouter as Router, Route, Routes, Navigate, useLocation } from 'r
 import { AnimatePresence, motion } from 'framer-motion';
 import PageNotFound from './lib/PageNotFound';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
+import { getRouteMeta } from '@/lib/routeMeta';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 import ScrollToTop from './components/ScrollToTop';
 import CrtOverlay from '@/components/ooh/CrtOverlay';
@@ -92,13 +93,25 @@ const AuthenticatedApp = () => {
   // need server prerendering for full per-route OG (platform-level).
   useEffect(() => {
     const url = window.location.origin + location.pathname;
-    const set = (sel, make, attr) => {
+    const meta = getRouteMeta(location.pathname);
+    const mkProp = (p) => () => { const m = document.createElement("meta"); m.setAttribute("property", p); return m; };
+    const mkName = (n) => () => { const m = document.createElement("meta"); m.setAttribute("name", n); return m; };
+    const set = (sel, make, attr, val) => {
       let el = document.head.querySelector(sel);
       if (!el) { el = make(); document.head.appendChild(el); }
-      el.setAttribute(attr, url);
+      el.setAttribute(attr, val);
     };
-    set('link[rel="canonical"]', () => { const l = document.createElement("link"); l.setAttribute("rel", "canonical"); return l; }, "href");
-    set('meta[property="og:url"]', () => { const m = document.createElement("meta"); m.setAttribute("property", "og:url"); return m; }, "content");
+    set('link[rel="canonical"]', () => { const l = document.createElement("link"); l.setAttribute("rel", "canonical"); return l; }, "href", url);
+    set('meta[property="og:url"]', mkProp("og:url"), "content", url);
+    set('meta[property="og:title"]', mkProp("og:title"), "content", meta.title);
+    set('meta[property="og:description"]', mkProp("og:description"), "content", meta.desc);
+    set('meta[property="og:image"]', mkProp("og:image"), "content", meta.image);
+    set('meta[property="og:image:alt"]', mkProp("og:image:alt"), "content", meta.title);
+    set('meta[name="twitter:title"]', mkName("twitter:title"), "content", meta.title);
+    set('meta[name="twitter:description"]', mkName("twitter:description"), "content", meta.desc);
+    set('meta[name="twitter:image"]', mkName("twitter:image"), "content", meta.image);
+    set('meta[name="twitter:image:alt"]', mkName("twitter:image:alt"), "content", meta.title);
+    document.title = meta.title;
   }, [location.pathname]);
 
   // Show loading spinner while checking app public settings or auth
