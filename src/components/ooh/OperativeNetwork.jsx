@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { Users, MapPin, Megaphone, Loader2 } from "lucide-react";
+import { MOVEMENT, fmtK } from "@/components/ooh/movementEstimate";
 
 function cityOf(addr) {
   if (!addr) return null;
@@ -65,6 +66,10 @@ export default function OperativeNetwork() {
 
         <p className="mt-6 font-mono text-[10px] uppercase tracking-[0.25em] text-dim">
           // Live tally derived from documented atlas records · grows with every field submission
+        </p>
+
+        <p className="mt-2 max-w-2xl font-mono text-[10px] leading-relaxed tracking-[0.1em] text-dim">
+          OOH Earth is a day-one platform — early access, seeking founding backers. The counts above are ours and honest. The wider resistance is not new: since ~{MOVEMENT.since} the global subvertising movement has grown to an estimated <span className="text-flare">~{fmtK(MOVEMENT.subvertisers)}+ subverters</span> across <span className="text-flare">{MOVEMENT.collectives}+ collectives</span> in <span className="text-flare">{MOVEMENT.countries}+ countries</span> (est.). We&rsquo;re here to put it on one map.
         </p>
       </div>
     </section>
