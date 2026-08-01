@@ -48,6 +48,7 @@ export const COIN_SPECS = [
   ["Thickness", "4.5mm · premium heft"],
   ["Weight", "92g (brass)"],
   ["Relief", "Deep 3D · raised rim + enamel"],
+  ["Edge profile", "Rounded bevel · raised rim trough"],
   ["Edge", "Reeded · Rope · Lettered · Smooth"],
   ["Strike", "2-sided · die-struck relief"],
   ["NFC", "Embedded NTAG216"],

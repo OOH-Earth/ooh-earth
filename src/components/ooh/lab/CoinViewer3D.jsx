@@ -305,7 +305,7 @@ function makeEdgeTexture(matColor, edgeType) {
   return tex;
 }
 
-// ── Build the 3D coin with raised relief ──
+// ── Build the 3D coin with raised relief + rounded edge profile ──
 function buildCoin(matKey, edgeType, obvTex, revTex, edgeTex, obvBump, revBump) {
   const mat = COIN_MATERIALS.find((m) => m.id === matKey) || COIN_MATERIALS[0];
   const metalMat = (extra = {}) => new THREE.MeshPhysicalMaterial({
@@ -324,31 +324,51 @@ function buildCoin(matKey, edgeType, obvTex, revTex, edgeTex, obvBump, revBump) 
   inner.rotation.x = Math.PI / 2;
   outer.add(inner);
 
-  // Coin body — thicker heft (0.28 units ≈ 4.5mm at 64mm Ø scale)
-  // Cylinder material order: [side, top, bottom]
-  const geo = new THREE.CylinderGeometry(1.5, 1.5, 0.28, 128, 1, false);
-  const edgeMat = metalMat({ map: edgeTex, roughness: mat.roughness * 1.1 });
-  const obvMat = metalMat({ map: obvTex, bumpMap: obvBump, bumpScale: 0.06 });
-  const revMat = metalMat({ map: revTex, bumpMap: revBump, bumpScale: 0.06 });
+  // Dimensions (64mm Ø × 4.5mm heft → scaled units)
+  const R = 1.5;            // outer radius (rim outer edge)
+  const halfH = 0.14;       // half thickness (0.28 total ≈ 4.5mm)
+  const bevel = 0.06;       // rounding radius at face↔edge transition
+  const bodyR = R - bevel;  // 1.44 — cylinder inset so bevel torus forms outer corner
 
+  // Main body — straight cylindrical edge carries the reeding/rope/lettered texture
+  const geo = new THREE.CylinderGeometry(bodyR, bodyR, halfH * 2, 160, 1, false);
+  const edgeMat = metalMat({ map: edgeTex, roughness: mat.roughness * 1.1 });
+  const obvMat = metalMat({ map: obvTex, bumpMap: obvBump, bumpScale: 0.08 });
+  const revMat = metalMat({ map: revTex, bumpMap: revBump, bumpScale: 0.08 });
   const coin = new THREE.Mesh(geo, [edgeMat, obvMat, revMat]);
   coin.castShadow = true; coin.receiveShadow = true;
   inner.add(coin);
 
-  // Raised rims on both faces (real 3D relief)
-  const rimMat = metalMat();
-  const rimGeo = new THREE.TorusGeometry(1.38, 0.05, 16, 128);
+  // Rounded bevel at both face↔edge corners — "rounding type" (Casascius profile)
+  const bevelGeo = new THREE.TorusGeometry(bodyR, bevel, 24, 160);
+  const bevelMat = metalMat({ roughness: mat.roughness * 0.8 });
+  const bevelTop = new THREE.Mesh(bevelGeo, bevelMat);
+  bevelTop.position.y = halfH; bevelTop.castShadow = true;
+  const bevelBot = new THREE.Mesh(bevelGeo, bevelMat);
+  bevelBot.position.y = -halfH; bevelBot.castShadow = true;
+  inner.add(bevelTop, bevelBot);
+
+  // Raised rim — sits cleanly ON the face (Casascius-style trough boundary)
+  const rimR = R - 0.13;       // 1.37 — just inside the bevel
+  const rimTube = 0.055;
+  const rimGeo = new THREE.TorusGeometry(rimR, rimTube, 18, 160);
+  const rimMat = metalMat({ roughness: mat.roughness * 0.65 });
   const rimTop = new THREE.Mesh(rimGeo, rimMat);
-  rimTop.position.y = 0.15; rimTop.castShadow = true;
+  rimTop.position.y = halfH + rimTube * 0.6;   // raised above face, slight minted embed
+  rimTop.castShadow = true;
   const rimBot = new THREE.Mesh(rimGeo, rimMat);
-  rimBot.position.y = -0.15; rimBot.rotation.x = Math.PI; rimBot.castShadow = true;
+  rimBot.position.y = -(halfH + rimTube * 0.6);
+  rimBot.castShadow = true;
   inner.add(rimTop, rimBot);
 
-  // Inner medallion ring (raised) on obverse
-  const innerRingGeo = new THREE.TorusGeometry(0.82, 0.035, 12, 128);
-  const innerRing = new THREE.Mesh(innerRingGeo, rimMat);
-  innerRing.position.y = 0.15; innerRing.castShadow = true;
-  inner.add(innerRing);
+  // Inner medallion ring — raised border on obverse only
+  const medR = 0.82;
+  const medTube = 0.032;
+  const medGeo = new THREE.TorusGeometry(medR, medTube, 14, 128);
+  const medTop = new THREE.Mesh(medGeo, rimMat);
+  medTop.position.y = halfH + medTube * 0.65;
+  medTop.castShadow = true;
+  inner.add(medTop);
 
   return outer;
 }
