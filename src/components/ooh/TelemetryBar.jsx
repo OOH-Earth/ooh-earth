@@ -36,8 +36,8 @@ function LiveFeed() {
         {items.map((it, i) => (
           <a key={i} href={it.url || "#"} target="_blank" rel="noreferrer" className="flex shrink-0 items-center gap-2 px-4">
             <span className="h-1 w-1 rounded-full bg-ozone" />
-            <span className="font-mono text-[10px] uppercase tracking-[0.12em] text-silver/90">{it.title}</span>
-            {it.source && <span className="font-mono text-[9px] uppercase tracking-[0.2em] text-dim">· {it.source}</span>}
+            <span className="font-mono text-[10px] uppercase tracking-[0.12em] text-silver/90 whitespace-nowrap">{it.title}</span>
+            {it.source && <span className="font-mono text-[9px] uppercase tracking-[0.2em] text-dim whitespace-nowrap">· {it.source}</span>}
             <span className="text-slate2">◆</span>
           </a>
         ))}

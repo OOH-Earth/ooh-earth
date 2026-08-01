@@ -1,46 +1,72 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
 
-// fieldNews — the resistance intel stream for the ticker. Weighted toward
-// subvertising, adbusting and reclaim-public-space action (NOT commercial OOH
-// trade press), and deliberately surfacing Global-South-led resistance. Builds a
-// large rolling pool (~60), newest-first, each item linking to the real
-// article/post, and rebuilds once a day (cached in IntelCache by date).
+// fieldNews — the resistance intel stream for the ticker. Rethought to align
+// directly with OOH Earth's protocol objectives:
 //
-// Sources: (1) movement RSS, (2) Google News resistance/Global-South queries,
-// (3) Bluesky post search (best-effort, live). Any source that fails is skipped.
+//   • UN SDGs — especially SDG 11 (Sustainable Cities), SDG 13 (Climate Action),
+//     SDG 16 (Peace, Justice & Strong Institutions).
+//   • The Right to Respond — citizens' right to answer corporate speech in
+//     public space (the visual commons as a democratic surface).
+//   • The OOH revolution — subvertising, adbusting, billboard liberation,
+//     ad-free city laws, greenwashing resistance.
+//   • Open Access — public space as a shared, non-commercial resource.
+//   • Global-South-led resistance — São Paulo, Grenoble, Chennai, and emerging.
+//
+// Builds a large rolling pool (~80), newest-first, every item linking to the
+// real article/post. Refreshes every 6 hours (4×/day) so the stream stays fresh
+// instead of going stale for 24 hours. Cached in IntelCache by 6-hour bucket.
 
 const CACHE_KEY = "fieldNews";
-const FEED_VERSION = "resist-1"; // bump to force a same-day rebuild when this logic changes
-const POOL = 60;         // endless-stream pool size
+const FEED_VERSION = "resist-3"; // bump to force a same-bucket rebuild when logic changes
+const POOL = 80;         // endless-stream pool size
 const PER_FEED = 40;     // items parsed per source
-const MAX_AGE_MS = 150 * 24 * 60 * 60 * 1000; // only surface items from the last ~5 months
+const MAX_AGE_MS = 120 * 24 * 60 * 60 * 1000; // surface items from the last ~4 months
 
-// Movement / resistance feeds — the orgs' own words, real article links.
+// ── Movement / resistance feeds — the orgs' own words, real article links ──
 const RSS_FEEDS = [
   { url: "https://adfreecities.org.uk/feed/", source: "Adfree Cities", cat: "resist" },
   { url: "https://brandalism.ch/feed/", source: "Brandalism", cat: "subvert" },
-  { url: "https://badverts.org/feed/", source: "Badvertising", cat: "resist" },
+  { url: "https://badverts.org/feed/", source: "Badvertising", cat: "climate" },
 ];
 
-// Google News — resistance + Global South, not ad-industry trade news.
+// ── Google News — mission-aligned queries, not ad-industry trade news ──
 const GNEWS = [
-  { q: '(subvertising OR adbusting OR brandalism OR "culture jamming" OR "billboard liberation" OR "ad busting" OR "subvertisers") when:60d', cat: "subvert" },
-  { q: '("anti-advertising" OR "ad free city" OR "ad-free" OR "reclaim public space" OR "advertising ban" OR "billboard ban") (activist OR protest OR campaign OR movement OR community OR resist) when:45d', cat: "resist" },
-  { q: '(billboard OR "outdoor advertising" OR hoarding OR "public space") (ban OR removal OR protest OR reclaim OR activism) ("São Paulo" OR Brazil OR India OR Chennai OR Mumbai OR Tehran OR Nairobi OR Lagos OR Jakarta OR Bogotá OR "Latin America" OR Africa OR "Global South" OR Philippines OR Indonesia) when:120d', cat: "south" },
-  { q: '("fossil fuel advertising" OR greenwashing OR "high-carbon advertising" OR "tobacco advertising") (ban OR protest OR subvertising OR campaign OR activist) when:45d', cat: "climate" },
+  // Direct action: subvertising, adbusting, culture jamming, ad takeovers
+  { q: '(subvertising OR adbusting OR brandalism OR "culture jamming" OR "billboard liberation" OR "ad busting" OR "subvertisers" OR "ad takeover" OR "subvertised") when:60d', cat: "subvert" },
+  // Ad-free cities, billboard bans, visual pollution, clean city laws
+  { q: '("anti-advertising" OR "ad-free city" OR "ad-free" OR "reclaim public space" OR "advertising ban" OR "billboard ban" OR "visual pollution" OR "clean city law" OR "outdoor advertising" ban) (activist OR protest OR campaign OR movement OR community OR resist OR reclaim OR council OR government OR law) when:60d', cat: "resist" },
+  // Global-South leadership — cities removing billboards, reclaiming public space
+  { q: '(billboard OR "outdoor advertising" OR hoarding OR "public space" OR "visual pollution") (ban OR removal OR protest OR reclaim OR activism OR "clean city" OR regulate OR law) ("São Paulo" OR Brazil OR India OR Chennai OR Mumbai OR Tehran OR Nairobi OR Lagos OR Jakarta OR Bogotá OR "Latin America" OR Africa OR "Global South" OR Philippines OR Indonesia OR Grenoble OR Geneva OR Croatia OR Tehran OR Lagos) when:120d', cat: "south" },
+  // Greenwashing, fossil-fuel ad bans, high-carbon advertising, climate justice
+  { q: '("fossil fuel advertising" OR greenwashing OR "high-carbon advertising" OR "tobacco advertising" OR "junk food advertising" OR "suv advertising") (ban OR protest OR subvertising OR campaign OR activist OR climate OR regulation OR law) when:60d', cat: "climate" },
+  // UN SDG 11 / right to the city / public space as a democratic commons
+  { q: '("right to the city" OR "urban commons" OR "visual commons" OR "SDG 11" OR "sustainable cities" OR "public space" OR "civic space") (advertising OR billboard OR corporate OR reclaim OR community OR commons OR democracy) when:90d', cat: "rights" },
+  // Right to respond / free expression in public space / counter-advertising
+  { q: '("right to respond" OR "freedom of expression" OR "counter-advertising" OR "speech rights" OR "public speech" OR "political advertising") (billboard OR advertising OR "public space" OR protest OR corporate OR ban) when:120d', cat: "rights" },
 ];
 
-// Bluesky live search (best-effort; silent if the public endpoint needs auth).
-const BSKY_TERMS = ["subvertising", "adbusting OR brandalism", "anti-advertising OR \"ad free\"", "\"reclaim public space\""];
+// ── Bluesky live search (best-effort; silent if the public endpoint needs auth) ──
+const BSKY_TERMS = [
+  "subvertising",
+  "adbusting OR brandalism",
+  "anti-advertising OR \"ad free cities\"",
+  "\"reclaim public space\" OR \"visual commons\"",
+  "greenwashing advertising ban",
+];
 
-// Resistance / Global-South framed fallback (only if every live source fails).
+// Resistance / rights-framed fallback (only if every live source fails).
+// Every URL is a real, permanently-relevant article or organisation page.
 const FALLBACK = [
-  { title: "São Paulo's Clean City Law: the megacity that banned outdoor advertising", source: "Cidade Limpa", url: "https://en.wikipedia.org/wiki/Clean_City_Law", cat: "south" },
-  { title: "Chennai clears its streets of billboards to reclaim the public realm", source: "Rapid Transition Alliance", url: "https://rapidtransition.org/", cat: "south" },
+  { title: "São Paulo's Clean City Law: the megacity that banned outdoor advertising", source: "Wikipedia", url: "https://en.wikipedia.org/wiki/Clean_City_Law", cat: "south" },
+  { title: "Grenoble replaces street advertising with trees and community noticeboards", source: "Adfree Cities", url: "https://adfreecities.org.uk/", cat: "resist" },
   { title: "Brandalism: activists replace bus-stop ads with anti-fossil-fuel artworks across Europe", source: "Brandalism", url: "https://brandalism.ch/", cat: "subvert" },
   { title: "Adfree Cities: the movement to free public space from corporate advertising", source: "Adfree Cities", url: "https://adfreecities.org.uk/", cat: "resist" },
-  { title: "Subvertisers International: a global network turning ad space into dissent", source: "Subvertisers International", url: "https://brandalism.ch/", cat: "subvert" },
-  { title: "Grenoble replaces street advertising with trees and community noticeboards", source: "Reclaim the City", url: "https://rapidtransition.org/", cat: "resist" },
+  { title: "Badvertising: the campaign to end high-carbon and fossil-fuel advertising", source: "Badvertising", url: "https://badverts.org/", cat: "climate" },
+  { title: "UN SDG 11: make cities inclusive, safe, resilient and sustainable", source: "UN SDGs", url: "https://sdgs.un.org/goals/goal11", cat: "rights" },
+  { title: "UN SDG 13: take urgent action to combat climate change and its impacts", source: "UN SDGs", url: "https://sdgs.un.org/goals/goal13", cat: "rights" },
+  { title: "The right to the city: reclaiming public space as a democratic commons", source: "Right to the City", url: "https://www.righttothecity.org/", cat: "rights" },
+  { title: "Chennai clears its streets of billboards to reclaim the public realm", source: "Rapid Transition", url: "https://rapidtransition.org/", cat: "south" },
+  { title: "Adbusters: the culture-jamming network fighting to reclaim the mental environment", source: "Adbusters", url: "https://adbusters.org/", cat: "subvert" },
 ];
 
 function decode(s: string) {
@@ -151,11 +177,12 @@ function diversify(list: any[]) {
   return res;
 }
 
-// Daily rebuild — the stream refreshes once a day, automatically.
+// 6-hour rebuild — the stream refreshes 4× per day, automatically.
 function periodKey() {
   const d = new Date();
   const p = (n: number) => String(n).padStart(2, "0");
-  return `${FEED_VERSION}-${d.getUTCFullYear()}-${p(d.getUTCMonth() + 1)}-${p(d.getUTCDate())}`;
+  const bucket = Math.floor(d.getUTCHours() / 6); // 0, 1, 2, or 3
+  return `${FEED_VERSION}-${d.getUTCFullYear()}-${p(d.getUTCMonth() + 1)}-${p(d.getUTCDate())}-${bucket}`;
 }
 
 Deno.serve(async (req) => {
