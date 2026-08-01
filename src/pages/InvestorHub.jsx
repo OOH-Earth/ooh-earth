@@ -113,7 +113,7 @@ export default function InvestorHub() {
 
         <section className="inv-wrap" style={{ paddingTop: 0 }}>
           <div className="inv-foot">
-            <div><div className="fb">ooh<span>.</span>earth</div><p>Investor area · gated<br/>Community-funded · zero VC · copyleft<br/>hello@outofhell.org</p></div>
+            <div><div className="fb">ooh<span>.</span>earth</div><p>Investor area · gated<br/>Community-funded · copyleft<br/>hello@outofhell.org</p></div>
             <div className="right"><span className="cls">Confidential · Investor Class</span><p>Access: account or investor code{preview && <><br/><button onClick={exitPreview} style={{ background: "none", border: 0, padding: 0, font: "inherit", color: "inherit", cursor: "pointer", textDecoration: "underline" }}>Exit investor preview →</button></>}</p></div>
           </div>
         </section>
