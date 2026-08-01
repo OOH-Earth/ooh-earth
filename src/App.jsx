@@ -29,6 +29,9 @@ import HexSpec from '@/pages/HexSpec';
 import HexSequencer from '@/pages/HexSequencer';
 import HexCompanion from '@/pages/HexCompanion';
 import HexDevice3D from '@/pages/HexDevice3D';
+import Devices from '@/pages/Devices';
+import NfcFieldTag from '@/pages/NfcFieldTag';
+import DesktopConsole from '@/pages/DesktopConsole';
 import HexCoinCube from '@/pages/HexCoinCube';
 import LabStatus from '@/pages/LabStatus';
 import NftCreator from '@/pages/NftCreator';
@@ -203,6 +206,9 @@ const AuthenticatedApp = () => {
     <Route path="/lab/spec" element={<HexSpec />} />
     <Route path="/lab/sequencer" element={<HexSequencer />} />
     <Route path="/lab/companion" element={<HexCompanion />} />
+    <Route path="/lab/devices" element={<Devices />} />
+    <Route path="/lab/devices/field-tag" element={<NfcFieldTag />} />
+    <Route path="/lab/devices/desktop" element={<DesktopConsole />} />
     <Route path="/lab/device" element={<HexDevice3D />} />
     <Route path="/lab/livingcoin" element={<HexCoinCube />} />
     <Route path="/lab/status" element={<LabStatus />} />
