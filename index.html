@@ -30,8 +30,13 @@
     <script>
       (function () {
         try {
-          var t = localStorage.getItem("ooh-theme") || "dark";
-          if (t === "light") document.documentElement.classList.add("light");
+          var t = localStorage.getItem("ooh-theme") || "matrix";
+          var el = document.documentElement;
+          if (t === "light") el.classList.add("light");
+          else if (t === "matrix") el.classList.add("matrix");
+          else if (t === "beta") el.classList.add("beta");
+          else if (t === "crafty") el.classList.add("crafty");
+          else if (t === "guild") el.classList.add("guild");
         } catch (e) {}
       })();
     </script>

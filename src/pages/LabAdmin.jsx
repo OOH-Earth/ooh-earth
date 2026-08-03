@@ -9,6 +9,7 @@ import SiteFooter from "@/components/ooh/SiteFooter";
 import { useToast } from "@/components/ui/use-toast";
 import { Loader2, Lock, ExternalLink, Radio, Power, Eye, EyeOff, Gauge, Map as MapIcon, ArrowUpRight } from "lucide-react";
 import { LAB_PROJECTS } from "@/components/ooh/labProjects";
+import ThemeModesPanel from "@/components/ooh/lab/ThemeModesPanel";
 
 // Toggle button — active state fills with the channel tone. tones:
 //   ozone (yellow)  — public / live / visible
@@ -179,6 +180,11 @@ export default function LabAdmin() {
             <SiteLink to="/lab/devices/desktop" label="Desktop" led="flare" />
             <SiteLink to="/lab/admin" label="Console" led="ozone" />
           </div>
+        </section>
+
+        {/* Theme modes — site-wide enable/disable */}
+        <section className="mt-6 border border-slate2 bg-card">
+          <ThemeModesPanel />
         </section>
 
         {items === null ? (

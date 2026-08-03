@@ -1,7 +1,9 @@
 import { useState, useEffect } from "react";
 import { Sun, Moon, Terminal, Bug, PenTool, Landmark } from "lucide-react";
-
-const ORDER = ["dark", "light", "matrix", "beta", "crafty", "guild"];
+import {
+  THEME_ORDER, THEME_DEFAULT, applyTheme, fetchEnabledThemes,
+  readCachedThemes, writeThemeCache, resolveDefault,
+} from "@/lib/themes";
 
 const META = {
   dark: { icon: Moon, label: "Dark" },
@@ -12,36 +14,39 @@ const META = {
   guild: { icon: Landmark, label: "Guild" },
 };
 
-function applyTheme(theme) {
-  const root = document.documentElement;
-  root.classList.toggle("light", theme === "light");
-  root.classList.toggle("matrix", theme === "matrix");
-  root.classList.toggle("beta", theme === "beta");
-  root.classList.toggle("crafty", theme === "crafty");
-  root.classList.toggle("guild", theme === "guild");
-}
-
 export default function ThemeToggle() {
-  const [theme, setTheme] = useState("dark");
+  const [theme, setTheme] = useState(THEME_DEFAULT);
+  const [enabled, setEnabled] = useState(THEME_ORDER);
 
   useEffect(() => {
+    let active = true;
     const stored = localStorage.getItem("ooh-theme");
-    const t = ORDER.includes(stored) ? stored : "dark";
-    setTheme(t);
-    applyTheme(t);
+    const cached = readCachedThemes();
+    const initEnabled = cached ? THEME_ORDER.filter((t) => cached.includes(t)) : THEME_ORDER;
+    setEnabled(initEnabled);
+    const initial = stored && initEnabled.includes(stored) ? stored : resolveDefault(initEnabled);
+    setTheme(initial);
+    applyTheme(initial);
+
+    fetchEnabledThemes().then((all) => {
+      if (!active || !all) return;
+      writeThemeCache(all);
+      const list = THEME_ORDER.filter((t) => all.includes(t));
+      setEnabled(list);
+      setTheme((cur) => (list.includes(cur) ? cur : resolveDefault(list)));
+    });
+    return () => { active = false; };
   }, []);
 
   const cycle = () => {
-    const next = ORDER[(ORDER.indexOf(theme) + 1) % ORDER.length];
+    const order = enabled.length ? enabled : THEME_ORDER;
+    const next = order[(order.indexOf(theme) + 1) % order.length];
     setTheme(next);
-    try {
-      localStorage.setItem("ooh-theme", next);
-    } catch (e) {}
+    try { localStorage.setItem("ooh-theme", next); } catch (e) {}
     applyTheme(next);
   };
 
-  const M = META[theme];
-
+  const M = META[theme] || META[THEME_DEFAULT];
   return (
     <button
       onClick={cycle}
