@@ -422,19 +422,15 @@
   .guild .bg-void .text-card-foreground,
   .guild .bg-void .text-primary-foreground,
   .guild .bg-void .text-accent-foreground,
-  .guild .bg-void .text-void,
   .guild .bg-popover .text-card-foreground,
   .guild .bg-popover .text-primary-foreground,
   .guild .bg-popover .text-accent-foreground,
-  .guild .bg-popover .text-void,
   .guild .bg-muted .text-card-foreground,
   .guild .bg-muted .text-primary-foreground,
   .guild .bg-muted .text-accent-foreground,
-  .guild .bg-muted .text-void,
   .guild .bg-secondary .text-card-foreground,
   .guild .bg-secondary .text-primary-foreground,
-  .guild .bg-secondary .text-accent-foreground,
-  .guild .bg-secondary .text-void { color: #FFFFFF !important; }
+  .guild .bg-secondary .text-accent-foreground { color: #FFFFFF !important; }
   /* NOTE: text-void (navy) is designed for light/yellow backgrounds — do NOT
      force it white just because an ancestor has a navy bg, or buttons like
      "EXPLORE THE MAP" (bg-ozone text-void inside a bg-void hero) lose their
