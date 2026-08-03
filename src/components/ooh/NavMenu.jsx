@@ -143,6 +143,7 @@ const SITEMAP = [
       { to: "/journey", label: "Journey Map" },
       { to: "/sitemap", label: "Sitemap" },
       { to: "/kit", label: "Brand Guide" },
+      { to: "/brand", label: "Brand Standards" },
     ],
   },
 ];
@@ -164,7 +165,7 @@ const ICON = {
   Philanthropic: HeartHandshake, "Retro Public Goods": Recycle, "Civic-Tech": Cpu,
   "Agency HQ": Compass, "Agency Newsroom": Newspaper, "FDE Portal": Compass, "Architecture Ops": Cpu, "Treasury Console": Coins,
   "Radio Ops": Radio, "Automation · n8n": Workflow,
-  "Journey Map": Milestone, Sitemap: Network, "Brand Guide": Palette,
+  "Journey Map": Milestone, Sitemap: Network, "Brand Guide": Palette, "Brand Standards": BookOpen,
   "NFT Creator": ImageIcon,
 };
 
