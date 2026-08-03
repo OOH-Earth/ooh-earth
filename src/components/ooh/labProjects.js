@@ -1,4 +1,4 @@
-import { Bike } from "lucide-react";
+import { Bike, BookOpen } from "lucide-react";
 
 // ── Lab project registry ─────────────────────────────────────────────────────
 // Single source of truth for code-defined Lab projects (pages that live in the
@@ -22,6 +22,14 @@ export const LAB_PROJECTS = [
     desc: "OE-1K/66 — Akira-class field-bike concept. Vector → blueprint → 3D concept art.",
     access: "restricted", // "public" | "restricted"
     status: "live",       // "live" | "in_build"
+  },
+  {
+    path: "/lab/book",
+    title: "The Guild · Book",
+    icon: BookOpen,
+    desc: "Subvertising & Brandalism — the field manual as a working-draft reader. Chapters 1–3 open for review.",
+    access: "restricted",
+    status: "live",
   },
 ];
 

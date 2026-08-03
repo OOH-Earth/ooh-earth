@@ -151,6 +151,7 @@ export const SITEMAP_GROUPS = [
       { path: "/portfolio", name: "Treasury Console (Atari Portfolio)", vis: "internal", status: "live", ux: "Treasury console: live on-chain holdings, copy-to-clipboard receive addresses, inbound tx feed, minted coins, fiat pledges. Guided tour + tooltips.", audience: "Admin", auth: "protected", flows: ["/campaign", "/zora"] },
       { path: "/radio-ops", name: "Radio Ops", vis: "internal", status: "live", ux: "Field-radio operations surface — ambient comms / soundscape ops for the operative unit.", audience: "Operatives / Admin", auth: "protected", flows: ["/dashboard"] },
       { path: "n8n › automation", name: "Automation · n8n", vis: "stage", status: "building", ux: "The ops spine (oohearth.app.n8n.cloud). Base44↔n8n webhook bridge proven end-to-end; donation-event triggers, Asana task mirroring, and social routing are being wired. Back-office only — never a client route.", audience: "Admin", auth: "protected", flows: [], planned: true },
+      { path: "/lab/book", name: "The Guild · Book", vis: "internal", status: "live", ux: "Subvertising & Brandalism — the field manual as a working-draft reader. Chapters 1–3 open for review; the rest reveals as it clears. Internal agency draft, surfaced under Lab.", audience: "Agency / Admin", auth: "protected", flows: ["/lab"] },
     ],
   },
   {

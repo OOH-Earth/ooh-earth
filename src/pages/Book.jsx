@@ -10,6 +10,8 @@ import React, { useState, useEffect, useMemo, useRef, useCallback } from "react"
 import { BOOK } from "./guildBookData";
 import Nav from "@/components/ooh/Nav";
 import HorizonProgress from "@/components/ooh/HorizonProgress";
+import Breadcrumbs from "@/components/ooh/Breadcrumbs";
+import SiteFooter from "@/components/ooh/SiteFooter";
 
 /* ---- working-doc config: hide front matter, open Ch 1..MAX_OPEN -------- */
 const HIDE_FRONT = true;
@@ -670,13 +672,17 @@ export default function GuildReader() {
   );
 
   return (
-    <div className="relative min-h-screen bg-void page-top">
+    <div className="min-h-screen bg-void grid-bg text-silver">
       <HorizonProgress />
       <Nav />
-      <div className="guild-root">
-        <style>{CSS}</style>
-        {view === "cover" ? Cover : Reader}
+      <div className="page-top">
+        <Breadcrumbs items={[{ label: "Lab", to: "/lab" }, { label: "The Guild · Book" }]} className="mx-auto mb-4 max-w-[1220px] px-6" />
+        <div className="guild-root">
+          <style>{CSS}</style>
+          {view === "cover" ? Cover : Reader}
+        </div>
       </div>
+      <SiteFooter />
     </div>
   );
 }
@@ -718,7 +724,7 @@ const CSS = `
 
 /* ======================= COVER ======================= */
 .cover-scroll{background-image:linear-gradient(var(--line) 1px,transparent 1px),linear-gradient(90deg,var(--line) 1px,transparent 1px);
-  background-size:44px 44px;padding-top:108px}
+  background-size:44px 44px;padding-top:20px}
 .cover-wrap{max-width:1180px;margin:0 auto;padding:56px 28px 20px;display:grid;grid-template-columns:1.05fr 1fr;gap:44px;align-items:stretch}
 .cover-art{position:relative;background:var(--canvas);border-radius:6px;overflow:hidden;min-height:520px;display:flex;isolation:isolate}
 .ca-grid{position:absolute;inset:0;background-image:linear-gradient(var(--line) 1px,transparent 1px),linear-gradient(90deg,var(--line) 1px,transparent 1px);background-size:34px 34px;-webkit-mask-image:radial-gradient(120% 110% at 50% 26%,#000 42%,transparent 100%);mask-image:radial-gradient(120% 110% at 50% 26%,#000 42%,transparent 100%)}
@@ -787,7 +793,7 @@ const CSS = `
 .cover-foot .dot{color:var(--flare)}
 
 /* ======================= READER ======================= */
-.reader{display:flex;gap:34px;align-items:flex-start;max-width:1220px;margin:0 auto;padding:108px 20px 90px;position:relative}
+.reader{display:flex;gap:34px;align-items:flex-start;max-width:1220px;margin:0 auto;padding:20px 20px 90px;position:relative}
 .sidebar{width:270px;flex-shrink:0;background:transparent;border-right:1px solid var(--line);display:flex;flex-direction:column;position:sticky;top:104px;align-self:flex-start;max-height:calc(100vh - 128px);z-index:30}
 .sb-top{display:flex;align-items:center;justify-content:space-between;padding:16px 16px 12px;border-bottom:1px solid var(--line)}
 .sb-home{font-size:12px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
@@ -883,8 +889,8 @@ const CSS = `
   .sidebar.open{transform:translateX(0)}
   .sb-x{display:block}
   .scrim{display:block;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:65}
-  .reader{padding-top:92px}
-  .cover-scroll{padding-top:92px}
+  .reader{padding-top:16px}
+  .cover-scroll{padding-top:16px}
   .topbar{top:88px}
   .tb-menu{display:block}
   .tb-font{display:none}

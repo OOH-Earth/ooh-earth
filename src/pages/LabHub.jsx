@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { Coins, Grid3x3, Music, Smartphone, FileText, Box, Ruler, Activity, Image as ImageIcon, UserPlus, Layers, Watch, ShieldCheck, Loader2 } from "lucide-react";
+import { Coins, Grid3x3, Music, Smartphone, FileText, Box, Ruler, Activity, Image as ImageIcon, UserPlus, Layers, Watch, ShieldCheck, Loader2, BookOpen } from "lucide-react";
 import { LAB_PROJECTS } from "@/components/ooh/labProjects";
 import Nav from "@/components/ooh/Nav";
 import Breadcrumbs from "@/components/ooh/Breadcrumbs";
@@ -26,6 +26,7 @@ const META = {
   "/lab/devices": { icon: Watch, title: "Devices", desc: "Wearables & desktop apps — OOH Watch, NFC field tag, desktop console." },
   "/lab/spec": { icon: FileText, title: "Engineering Spec", desc: "State machine, BLE GATT, frame format, screen inventory." },
   "/lab/status": { icon: Activity, title: "Status Report", desc: "Lab engineering log — build register, revisions, pipeline, roadmap." },
+  "/lab/book": { icon: BookOpen, title: "The Guild · Book", desc: "Subvertising & Brandalism — the field manual as a working-draft reader. Chapters 1–3 open for review." },
 };
 
 // Registry-defined projects inherit their hub metadata (icon / title / desc) here,

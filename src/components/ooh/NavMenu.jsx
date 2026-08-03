@@ -119,6 +119,7 @@ const SITEMAP = [
       { to: "/portfolio", label: "Treasury Console", status: "live" },
       { to: "/radio-ops", label: "Radio Ops", status: "live" },
       { to: null, label: "Automation · n8n", status: "building" },
+      { to: "/lab/book", label: "The Guild · Book", status: "live" },
     ],
   },
   {
@@ -174,7 +175,7 @@ const ICON = {
   "Investor Dashboard": Gauge, "Client Portal": Users, "Impact Grants": Landmark,
   Philanthropic: HeartHandshake, "Retro Public Goods": Recycle, "Civic-Tech": Cpu,
   "Agency HQ": Compass, "Agency Newsroom": Newspaper, "FDE Portal": Compass, "Architecture Ops": Cpu, "Treasury Console": Coins,
-  "Radio Ops": Radio, "Automation · n8n": Workflow,
+  "Radio Ops": Radio, "Automation · n8n": Workflow, "The Guild · Book": BookOpen,
   "Persona Control": Users, "Moderation Service": ShieldCheck, "Access Audit Log": FileText,
   "Journey Map": Milestone, Sitemap: Network, "Brand Guide": Palette, "Brand Standards": BookOpen,
   "NFT Creator": ImageIcon,
