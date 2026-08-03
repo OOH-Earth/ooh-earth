@@ -3,6 +3,7 @@ import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { Link } from "react-router-dom";
+import { useMapStyle } from "@/lib/mapStyleContext";
 import { base44 } from "@/api/base44Client";
 import { ArrowUpRight, Map as MapIcon, Loader2 } from "lucide-react";
 
@@ -35,6 +36,7 @@ function FitBounds({ markers }) {
 }
 
 export default function MiniMapStack() {
+  const { style } = useMapStyle();
   const [items, setItems] = useState(null);
 
   useEffect(() => {
@@ -89,13 +91,14 @@ export default function MiniMapStack() {
                 zoom={12}
                 zoomControl={false}
                 attributionControl={false}
-                className="h-full w-full"
-                style={{ background: "#000" }}
+                className={`h-full w-full ${style.tint ? "ooh-map-style-matrix" : ""}`}
+                style={{ background: style.bg }}
               >
                 <TileLayer
-                  url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
-                  subdomains="abcd"
-                  maxZoom={20}
+                  attribution={style.attribution}
+                  url={style.url}
+                  subdomains={style.subdomains || "abc"}
+                  maxZoom={style.maxZoom}
                 />
                 <FitBounds markers={markers} />
                 {markers.map((m, i) => (

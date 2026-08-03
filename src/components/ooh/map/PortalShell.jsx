@@ -6,6 +6,8 @@ import Globe3D from "@/components/ooh/Globe3D";
 import LocationMap from "@/components/ooh/LocationMap";
 import PullToRefresh from "@/components/ooh/PullToRefresh";
 import { OOH_FUTURES } from "@/components/ooh/map/futures";
+import MapStyleSwitcher from "@/components/ooh/map/MapStyleSwitcher";
+import { useMapStyle } from "@/lib/mapStyleContext";
 
 // Shared layout for dedicated map portals. Each portal passes its layer config,
 // data results, filter tags, and a renderCard function. PortalShell handles the
@@ -31,6 +33,7 @@ export default function PortalShell({
   const [hoverId, setHoverId] = useState(null);
   const [view, setView] = usePersistentState("ooh-portal-view", "globe");
   const [mode, setMode] = usePersistentState("ooh-portal-mode", "split");
+  const { style: mapStyle } = useMapStyle();
 
   const cardsClass =
     mode === "map" ? "hidden" : mode === "list" ? "flex w-full lg:flex-1" : "hidden lg:flex lg:w-[340px]";
@@ -131,22 +134,25 @@ export default function PortalShell({
 
         {/* Map */}
         <div className={`relative min-h-0 isolate ${mapClass}`}>
-          <div className="absolute left-3 top-3 z-[1000] flex border border-slate2 bg-void/80 backdrop-blur-md">
-            <button
-              onClick={() => setView("flat")}
-              className={`flex items-center gap-1.5 px-2.5 py-2 font-mono text-[10px] font-bold uppercase tracking-[0.25em] ${view === "flat" ? "bg-ozone text-void" : "text-darkgray hover:text-ozone"}`}
-            >
-              <MapIcon className="h-3.5 w-3.5" /> <span className="hidden sm:inline">Flat</span>
-            </button>
-            <button
-              onClick={() => setView("globe")}
-              className={`flex items-center gap-1.5 px-2.5 py-2 font-mono text-[10px] font-bold uppercase tracking-[0.25em] ${view === "globe" ? "bg-ozone text-void" : "text-darkgray hover:text-ozone"}`}
-            >
-              <Globe className="h-3.5 w-3.5" /> <span className="hidden sm:inline">Globe</span>
-            </button>
+          <div className="absolute left-3 top-3 z-[1000] flex items-center gap-1.5">
+            <div className="flex border border-slate2 bg-void/80 backdrop-blur-md">
+              <button
+                onClick={() => setView("flat")}
+                className={`flex items-center gap-1.5 px-2.5 py-2 font-mono text-[10px] font-bold uppercase tracking-[0.25em] ${view === "flat" ? "bg-ozone text-void" : "text-darkgray hover:text-ozone"}`}
+              >
+                <MapIcon className="h-3.5 w-3.5" /> <span className="hidden sm:inline">Flat</span>
+              </button>
+              <button
+                onClick={() => setView("globe")}
+                className={`flex items-center gap-1.5 px-2.5 py-2 font-mono text-[10px] font-bold uppercase tracking-[0.25em] ${view === "globe" ? "bg-ozone text-void" : "text-darkgray hover:text-ozone"}`}
+              >
+                <Globe className="h-3.5 w-3.5" /> <span className="hidden sm:inline">Globe</span>
+              </button>
+            </div>
+            <MapStyleSwitcher />
           </div>
           {view === "globe" ? (
-            <Globe3D markers={markers} selectedId={selectedId} hoverId={hoverId} onSelect={setSelectedId} activeLayers={activeLayers} />
+            <Globe3D key={mapStyle.id} markers={markers} selectedId={selectedId} hoverId={hoverId} onSelect={setSelectedId} activeLayers={activeLayers} />
           ) : (
             <LocationMap markers={markers} selectedId={selectedId} hoverId={hoverId} onSelect={setSelectedId} futures={OOH_FUTURES} activeLayers={activeLayers} />
           )}

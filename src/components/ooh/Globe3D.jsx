@@ -8,6 +8,7 @@ import { motion } from "framer-motion";
 
 import { thumbHTML, metaFor } from "@/components/ooh/map/LocationThumb";
 import GlobeLayerManager from "@/components/ooh/map/layers/GlobeLayerManager";
+import { useMapStyle } from "@/lib/mapStyleContext";
 
 const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 
@@ -109,6 +110,7 @@ function buildFC(markers, selectedId) {
 }
 
 export default function Globe3D({ markers, selectedId, hoverId, onSelect, userLoc, activeLayers = [], interactive = true, spin = false, scrollZoom = true }) {
+  const mapStyle = useMapStyle().style;
   const containerRef = useRef(null);
   const mapRef = useRef(null);
   const popupRef = useRef(null);
@@ -145,7 +147,7 @@ export default function Globe3D({ markers, selectedId, hoverId, onSelect, userLo
     if (!containerRef.current) return;
     const map = new maplibregl.Map({
       container: containerRef.current,
-      style: "https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json",
+      style: mapStyle.glStyle,
       center: [100.55, 13.746],
       zoom: 1.6,
       pitch: 25,
@@ -341,7 +343,7 @@ export default function Globe3D({ markers, selectedId, hoverId, onSelect, userLo
 
   return (
     <div className="absolute inset-0">
-      <div ref={containerRef} className="h-full w-full" style={{ background: "#000" }} />
+      <div ref={containerRef} className={`h-full w-full ${mapStyle.tint ? "ooh-globe-style-matrix" : ""}`} style={{ background: mapStyle.bg }} />
 
       {/* military-grade surveillance grid overlay */}
       <div className="pointer-events-none absolute inset-0 z-[1] overflow-hidden">

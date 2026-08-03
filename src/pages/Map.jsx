@@ -25,6 +25,8 @@ import { useFloraData } from "@/components/ooh/map/layers/useFloraData";
 import { useWarZoneData } from "@/components/ooh/map/layers/useWarZoneData";
 import { RIVER_SOURCES } from "@/components/ooh/map/layers/riverData";
 import LayerResultCard from "@/components/ooh/map/LayerResultCard";
+import MapStyleSwitcher from "@/components/ooh/map/MapStyleSwitcher";
+import { useMapStyle } from "@/lib/mapStyleContext";
 import RadioStationCard from "@/components/ooh/map/RadioStationCard";
 import { RADIO_STATIONS } from "@/components/ooh/radio/radioStations";
 
@@ -59,6 +61,7 @@ export default function Map() {
   const [finderOpen, setFinderOpen] = useState(false);
   const [activeLayers, setActiveLayers] = usePersistentState("ooh-map-layers", ["ads"]);
   const [layerFilter, setLayerFilter] = useState("all");
+  const { style: mapStyle } = useMapStyle();
   const { spots: mushrooms, loading: mushLoading } = useMushroomData();
   const { spots: floraSpots, loading: floraLoading } = useFloraData();
   const { zones: warZones, loading: warLoading } = useWarZoneData();
@@ -338,7 +341,7 @@ export default function Map() {
               </button>
             </div>
             {view === "globe" ? (
-              <Globe3D markers={filtered} selectedId={selectedId} hoverId={hoverId} onSelect={setSelectedId} userLoc={userLoc} activeLayers={activeLayers} />
+              <Globe3D key={mapStyle.id} markers={filtered} selectedId={selectedId} hoverId={hoverId} onSelect={setSelectedId} userLoc={userLoc} activeLayers={activeLayers} />
             ) : (
               <LocationMap markers={filtered} selectedId={selectedId} hoverId={hoverId} onSelect={setSelectedId} userLoc={userLoc} futures={OOH_FUTURES} activeLayers={activeLayers} onBoundsChange={setBounds} />
             )}
@@ -351,6 +354,7 @@ export default function Map() {
               </div>
             )}
             <div className="absolute right-3 top-3 z-[1000] flex gap-1.5">
+              <MapStyleSwitcher />
               <button
                 onClick={() => setFinderOpen(true)}
                 aria-label="Find units"

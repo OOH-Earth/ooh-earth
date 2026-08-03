@@ -36,6 +36,7 @@ const userIcon = L.divIcon({
 import { thumbHTML, metaFor } from "@/components/ooh/map/LocationThumb";
 import FutureLayer from "@/components/ooh/map/FutureLayer";
 import LayerManager from "@/components/ooh/map/layers/LayerManager";
+import { useMapStyle } from "@/lib/mapStyleContext";
 
 // Micro-icon badges — small colored circles with a black category glyph,
 // overlaid on the photo pin (oohearth.app field style).
@@ -255,6 +256,7 @@ function ClusteredMarkers({ pins, selectedId, onSelect }) {
 }
 
 export default function LocationMap({ markers, selectedId, hoverId, onSelect, userLoc, futures, activeLayers = [], onBoundsChange }) {
+  const { style } = useMapStyle();
   const pins = useMemo(() => markers.filter((m) => isFinite(m.lat) && isFinite(m.lng)), [markers]);
 
   return (
@@ -262,14 +264,14 @@ export default function LocationMap({ markers, selectedId, hoverId, onSelect, us
       center={[13.746, 100.55]}
       zoom={13}
       scrollWheelZoom
-      className="h-full w-full"
-      style={{ background: "#000" }}
+      className={`h-full w-full ${style.tint ? "ooh-map-style-matrix" : ""}`}
+      style={{ background: style.bg }}
     >
       <TileLayer
-        attribution='&copy; OpenStreetMap contributors &copy; CARTO'
-        url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
-        subdomains="abcd"
-        maxZoom={20}
+        attribution={style.attribution}
+        url={style.url}
+        subdomains={style.subdomains || "abc"}
+        maxZoom={style.maxZoom}
       />
       <FitBounds markers={pins} />
       <BoundsWatcher onBoundsChange={onBoundsChange} />

@@ -957,6 +957,10 @@
 .light .leaflet-tooltip-left::before { border-left-color: #f7f7f7 !important; }
 .light .leaflet-tooltip-right::before { border-right-color: #f7f7f7 !important; }
 
+/* Matrix map tint — green-on-black via CSS filter (tiles only, pins stay yellow) */
+.ooh-map-style-matrix .leaflet-tile-pane { filter: sepia(1) hue-rotate(60deg) saturate(2.6) brightness(0.92); }
+.ooh-globe-style-matrix .maplibregl-canvas { filter: sepia(1) hue-rotate(60deg) saturate(2.6) brightness(0.92); }
+
 /* MapLibre GL — capture touch so the globe rotates on mobile instead of scrolling the page */
 .maplibregl-canvas-container,
 .maplibregl-canvas { touch-action: none; }

@@ -3,6 +3,7 @@ import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
 import { Link } from "react-router-dom";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
+import { useMapStyle } from "@/lib/mapStyleContext";
 
 const STOP_ICON = L.divIcon({
   className: "ooh-akey-pin",
@@ -25,20 +26,21 @@ function FitBounds({ stops }) {
 }
 
 export default function AccessKeyMap({ stops }) {
+  const { style } = useMapStyle();
   if (!stops.length) return null;
   return (
     <MapContainer
       center={[51.47, -0.1]}
       zoom={12}
       scrollWheelZoom={false}
-      className="h-full w-full"
-      style={{ background: "#000" }}
+      className={`h-full w-full ${style.tint ? "ooh-map-style-matrix" : ""}`}
+      style={{ background: style.bg }}
     >
       <TileLayer
-        attribution='&copy; OpenStreetMap contributors &copy; CARTO'
-        url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
-        subdomains="abcd"
-        maxZoom={20}
+        attribution={style.attribution}
+        url={style.url}
+        subdomains={style.subdomains || "abc"}
+        maxZoom={style.maxZoom}
       />
       <FitBounds stops={stops} />
       {stops.map((s) => (

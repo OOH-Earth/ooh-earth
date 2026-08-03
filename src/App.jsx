@@ -19,6 +19,7 @@ import StageBanner from '@/components/ooh/StageBanner';
 import { WalkthroughProvider } from '@/lib/walkthroughContext';
 import { RadioProvider } from '@/lib/radioContext';
 import { LabGateProvider } from '@/components/ooh/LabGate';
+import { MapStyleProvider } from '@/lib/mapStyleContext';
 import LabAccessRoute from '@/components/ooh/lab/LabAccessRoute';
 import LabAdmin from '@/pages/LabAdmin';
 import StoreAdmin from '@/pages/StoreAdmin';
@@ -254,6 +255,7 @@ function App() {
     <AuthProvider>
       <QueryClientProvider client={queryClientInstance}>
         <Router>
+          <MapStyleProvider>
           <RadioProvider>
             <WalkthroughProvider>
               <LabGateProvider>
@@ -267,6 +269,7 @@ function App() {
               </LabGateProvider>
             </WalkthroughProvider>
           </RadioProvider>
+          </MapStyleProvider>
         </Router>
         <Toaster />
       </QueryClientProvider>
