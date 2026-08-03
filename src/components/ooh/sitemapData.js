@@ -24,6 +24,7 @@ export const AUTH_LABEL = {
 // --- build status (roadmap) — same semaphore as the Journey Map (/journey) ---
 export const STATUS = {
   live:      { text: "Live",      cls: "border-[#39FF14]/50 text-[#39FF14]" },
+  testing:   { text: "Testing",   cls: "border-[#1F51FF]/60 text-[#1F51FF]" },
   building:  { text: "Building",  cls: "border-[#EDFF00]/50 text-[#EDFF00]" },
   planned:   { text: "Planned",   cls: "border-[#FF5C00]/60 text-[#FF5C00]" },
   exploring: { text: "Exploring", cls: "border-white/25 text-silver/60" },
@@ -75,11 +76,11 @@ export const SITEMAP_GROUPS = [
     desc: "Browse openly; contributing data requires an operative session.",
     routes: [
       { path: "/report", name: "Field Report", vis: "public", status: "live", ux: "File a new advertising-offense report: location, type, photo, access key, notes. Saves to Location entity as pending.", audience: "Operatives", auth: "required", flows: ["/dashboard", "/map"] },
-      { path: "/ar", name: "AR Lens", vis: "public", status: "live", ux: "AR overlay tool — visualize adbusts in situ via camera. Field-readiness gated.", audience: "Operatives", auth: "optional", flows: ["/report"] },
-      { path: "/scan", name: "TrueCost", vis: "public", status: "live", ux: "UPC barcode scan → product impact / true-cost analysis. Camera requires HTTPS publish; blocked in preview iframe.", audience: "Operatives", auth: "optional", flows: ["/report"] },
-      { path: "/trash", name: "Trash ID", vis: "public", status: "live", ux: "Waste traceability — scan/ID waste to map corporate polluters. Camera requires HTTPS publish.", audience: "Operatives", auth: "optional", flows: ["/report"] },
+      { path: "/ar", name: "AR Lens", vis: "public", status: "testing", ux: "AR overlay tool — visualize adbusts in situ via camera. Field-readiness gated.", audience: "Operatives", auth: "optional", flows: ["/report"] },
+      { path: "/scan", name: "TrueCost", vis: "public", status: "testing", ux: "UPC barcode scan → product impact / true-cost analysis. Camera requires HTTPS publish; blocked in preview iframe.", audience: "Operatives", auth: "optional", flows: ["/report"] },
+      { path: "/trash", name: "Trash ID", vis: "public", status: "testing", ux: "Waste traceability — scan/ID waste to map corporate polluters. Camera requires HTTPS publish.", audience: "Operatives", auth: "optional", flows: ["/report"] },
       { path: "/inhome", name: "In-Home", vis: "public", status: "live", ux: "In-home / digital-surface busting tools — screen grids and digital scenes.", audience: "Operatives", auth: "optional", flows: ["/report"] },
-      { path: "/zora", name: "Zora Mint", vis: "public", status: "live", ux: "Location-to-NFT minting pipeline (non-custodial, client-side metadata builder). Mints route creator fees to the operative wallet.", audience: "Operatives", auth: "required", flows: ["/portfolio", "/location/:id"] },
+      { path: "/zora", name: "Zora Mint", vis: "public", status: "testing", ux: "Location-to-NFT minting pipeline (non-custodial, client-side metadata builder). Mints route creator fees to the operative wallet.", audience: "Operatives", auth: "required", flows: ["/portfolio", "/location/:id"] },
       { path: "/field-id", name: "Field ID", vis: "public", status: "live", ux: "Operative field ID card generator (printable).", audience: "Operatives", auth: "optional", flows: ["/dashboard"] },
       { path: "/card", name: "Union Card", vis: "public", status: "live", ux: "Digital union membership / credential card.", audience: "Operatives", auth: "optional", flows: ["/dashboard"] },
       { path: "fn › objection", name: "Objection Generator", vis: "public", status: "building", ux: "Generates a formal, citable planning-consent objection for a specific billboard — offense grounds + precedent baked in. Feature exists in the field flow; a standalone route is not built yet.", audience: "Operatives", auth: "optional", flows: ["/report"], planned: true },
@@ -102,7 +103,7 @@ export const SITEMAP_GROUPS = [
     accent: "text-ozone",
     desc: "The revenue funnel: donations, plans, commerce, and support.",
     routes: [
-      { path: "/campaign", name: "Fund the Offensive", vis: "public", status: "live", ux: "Treasury funding hub: crypto receive addresses, Stripe checkout, live donation-momentum meter, and impact ledger. The primary revenue funnel.", audience: "Donors", auth: "none", flows: ["/portfolio", "/support"] },
+      { path: "/campaign", name: "Fund the Offensive", vis: "public", status: "testing", ux: "Treasury funding hub: crypto receive addresses, Stripe checkout, live donation-momentum meter, and impact ledger. The primary revenue funnel.", audience: "Donors", auth: "none", flows: ["/portfolio", "/support"] },
       { path: "campaign › on-chain", name: "On-chain Treasury", vis: "public", status: "building", ux: "Web3 donation path (CryptoDonations). Live in the campaign page but not shippable — Polygon vs Base chain mismatch unresolved, wallet addresses pending confirmation.", audience: "Donors", auth: "none", flows: ["/campaign", "/portfolio"], planned: true },
       { path: "/plans", name: "Plans / Roadmap", vis: "public", status: "live", ux: "Public plan tiers and roadmap — what each funding level unlocks.", audience: "Donors", auth: "none", flows: ["/campaign"] },
       { path: "/store", name: "Store", vis: "public", status: "live", ux: "Two-wing commerce surface: the Library sells field research and docs; the Store fronts digital products built on the app (plugins, UI kits, the Base44 theme), then NFT drops and one-off physical prototypes.", audience: "All visitors", auth: "none", flows: ["/campaign", "/portfolio"] },

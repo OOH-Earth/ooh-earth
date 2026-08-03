@@ -63,11 +63,11 @@ const SITEMAP = [
     group: "Field Ops",
     items: [
       { to: "/report", label: "Field Report", status: "live" },
-      { to: "/ar", label: "AR Lens", status: "live" },
-      { to: "/scan", label: "TrueCost", status: "live" },
-      { to: "/trash", label: "Trash ID", status: "live" },
+      { to: "/ar", label: "AR Lens", status: "testing" },
+      { to: "/scan", label: "TrueCost", status: "testing" },
+      { to: "/trash", label: "Trash ID", status: "testing" },
       { to: "/inhome", label: "In-Home", status: "live" },
-      { to: "/zora", label: "Zora Mint", status: "live" },
+      { to: "/zora", label: "Zora Mint", status: "testing" },
       { to: "/field-id", label: "Field ID", status: "live" },
       { to: "/card", label: "Union Card", status: "live" },
       { to: null, label: "Objection Generator", status: "building" },
@@ -86,7 +86,7 @@ const SITEMAP = [
   {
     group: "Fund & Store",
     items: [
-      { to: "/campaign", label: "Fund the Offensive", status: "live" },
+      { to: "/campaign", label: "Fund the Offensive", status: "testing" },
       { to: "/campaign", label: "On-chain Treasury", status: "building" },
       { to: "/plans", label: "Plans / Roadmap", status: "live" },
       { to: "/store", label: "Store", status: "live" },
@@ -182,6 +182,7 @@ const ICON = {
 // Build-status semaphore for not-yet-live items (kept in step with the Journey Map + /sitemap).
 const STATUS = {
   live:      { text: "Live",      color: "#39FF14" },
+  testing:   { text: "Testing",   color: "#1F51FF" },
   building:  { text: "Building",  color: "#EDFF00" },
   planned:   { text: "Planned",   color: "#FF5C00" },
   exploring: { text: "Exploring", color: "rgba(255,255,255,0.5)" },
