@@ -29,47 +29,47 @@ const SITEMAP = [
   {
     group: "Explore",
     items: [
-      { to: "/", label: "Home" },
-      { to: "/map", label: "Field Atlas" },
-      { to: "/channel", label: "OOH·TV" },
-      { to: "/blog", label: "Blog" },
-      { to: "/about", label: "About" },
+      { to: "/", label: "Home", status: "live" },
+      { to: "/map", label: "Field Atlas", status: "live" },
+      { to: "/channel", label: "OOH·TV", status: "live" },
+      { to: "/blog", label: "Blog", status: "live" },
+      { to: "/about", label: "About", status: "live" },
       { to: null, label: "City Density · OSM", status: "planned" },
     ],
   },
   {
     group: "Categories",
     items: [
-      { to: "/categories", label: "All Categories" },
-      { to: "/regions", label: "Regions" },
-      { to: "/bus-stops", label: "Bus Stops" },
-      { to: "/category/billboard", label: "Billboards" },
-      { to: "/category/digital", label: "Digital" },
-      { to: "/category/transit", label: "Transit" },
-      { to: "/category/painted", label: "Painted" },
+      { to: "/categories", label: "All Categories", status: "live" },
+      { to: "/regions", label: "Regions", status: "live" },
+      { to: "/bus-stops", label: "Bus Stops", status: "live" },
+      { to: "/category/billboard", label: "Billboards", status: "live" },
+      { to: "/category/digital", label: "Digital", status: "live" },
+      { to: "/category/transit", label: "Transit", status: "live" },
+      { to: "/category/painted", label: "Painted", status: "live" },
     ],
   },
   {
     group: "Campaigns",
     items: [
-      { to: "/adbusting", label: "Adbusting" },
-      { to: "/ecology", label: "Ecology" },
-      { to: "/rivers", label: "Rivers" },
-      { to: "/warzones", label: "War Zones" },
+      { to: "/adbusting", label: "Adbusting", status: "live" },
+      { to: "/ecology", label: "Ecology", status: "live" },
+      { to: "/rivers", label: "Rivers", status: "live" },
+      { to: "/warzones", label: "War Zones", status: "live" },
       { to: null, label: "AFC Correspondents", status: "planned" },
     ],
   },
   {
     group: "Field Ops",
     items: [
-      { to: "/report", label: "Field Report" },
-      { to: "/ar", label: "AR Lens" },
-      { to: "/scan", label: "TrueCost" },
-      { to: "/trash", label: "Trash ID" },
-      { to: "/inhome", label: "In-Home" },
-      { to: "/zora", label: "Zora Mint" },
-      { to: "/field-id", label: "Field ID" },
-      { to: "/card", label: "Union Card" },
+      { to: "/report", label: "Field Report", status: "live" },
+      { to: "/ar", label: "AR Lens", status: "live" },
+      { to: "/scan", label: "TrueCost", status: "live" },
+      { to: "/trash", label: "Trash ID", status: "live" },
+      { to: "/inhome", label: "In-Home", status: "live" },
+      { to: "/zora", label: "Zora Mint", status: "live" },
+      { to: "/field-id", label: "Field ID", status: "live" },
+      { to: "/card", label: "Union Card", status: "live" },
       { to: null, label: "Objection Generator", status: "building" },
       { to: null, label: "Precedent Library", status: "exploring" },
     ],
@@ -77,73 +77,82 @@ const SITEMAP = [
   {
     group: "Operate",
     items: [
-      { to: "/operative", label: "Operative Profile" },
-      { to: "/dashboard", label: "Console" },
-      { to: "/guides", label: "Guides" },
+      { to: "/operative", label: "Operative Profile", status: "live" },
+      { to: "/dashboard", label: "Console", status: "live" },
+      { to: "/guides", label: "Guides", status: "live" },
       { to: null, label: "Streaks & Nudges", status: "exploring" },
     ],
   },
   {
     group: "Fund & Store",
     items: [
-      { to: "/campaign", label: "Fund the Offensive" },
+      { to: "/campaign", label: "Fund the Offensive", status: "live" },
       { to: "/campaign", label: "On-chain Treasury", status: "building" },
-      { to: "/plans", label: "Plans / Roadmap" },
-      { to: "/store", label: "Store" },
+      { to: "/plans", label: "Plans / Roadmap", status: "live" },
+      { to: "/store", label: "Store", status: "live" },
       { to: "/store", label: "Field Credentials · CR80", status: "building" },
-      { to: "/support", label: "Support" },
-      { to: "/careers", label: "Careers" },
+      { to: "/support", label: "Support", status: "live" },
+      { to: "/careers", label: "Careers", status: "live" },
     ],
   },
   {
     group: "Capital · Investor",
     items: [
-      { to: "/investor-access", label: "Investor Access" },
-      { to: "/investor", label: "Investor Hub" },
-      { to: "/console", label: "Investor Console" },
-      { to: "/portal/investor", label: "Investor Dashboard" },
+      { to: "/investor-access", label: "Investor Access", status: "live" },
+      { to: "/investor", label: "Investor Hub", status: "live" },
+      { to: "/console", label: "Investor Console", status: "live" },
+      { to: "/portal/investor", label: "Investor Dashboard", status: "live" },
       { to: "/portal/client", label: "Client Portal", status: "building" },
-      { to: "/capital/impact-grants", label: "Impact Grants" },
-      { to: "/capital/philanthropic", label: "Philanthropic" },
-      { to: "/capital/retro-pgf", label: "Retro Public Goods" },
-      { to: "/capital/civic-tech", label: "Civic-Tech" },
+      { to: "/capital/impact-grants", label: "Impact Grants", status: "live" },
+      { to: "/capital/philanthropic", label: "Philanthropic", status: "live" },
+      { to: "/capital/retro-pgf", label: "Retro Public Goods", status: "live" },
+      { to: "/capital/civic-tech", label: "Civic-Tech", status: "live" },
     ],
   },
   {
     group: "Agency · Internal",
     items: [
-      { to: "/agency", label: "Agency HQ" },
-      { to: "/agency/blog", label: "Agency Newsroom" },
-      { to: "/fde", label: "FDE Portal" },
-      { to: "/portal/ops", label: "Architecture Ops", agencyOnly: true },
-      { to: "/portfolio", label: "Treasury Console" },
-      { to: "/radio-ops", label: "Radio Ops" },
+      { to: "/agency", label: "Agency HQ", status: "live" },
+      { to: "/agency/blog", label: "Agency Newsroom", status: "live" },
+      { to: "/fde", label: "FDE Portal", status: "live" },
+      { to: "/portfolio", label: "Treasury Console", status: "live" },
+      { to: "/radio-ops", label: "Radio Ops", status: "live" },
       { to: null, label: "Automation · n8n", status: "building" },
+    ],
+  },
+  {
+    group: "Ops · Access & Moderation",
+    agencyOnly: true,
+    items: [
+      { to: "/portal/ops", label: "Architecture Ops", status: "live" },
+      { to: "/dashboard", label: "Persona Control", status: "live" },
+      { to: "/dashboard", label: "Moderation Service", status: "live" },
+      { to: "/dashboard", label: "Access Audit Log", status: "live" },
     ],
   },
   {
     group: "Lab",
     items: [
-      { to: "/lab", label: "Hex Engine Lab" },
-      { to: "/lab/coin", label: "Genesis Coin" },
-      { to: "/lab/simulator", label: "Hex Engine Simulator" },
-      { to: "/lab/device", label: "3D Device" },
-      { to: "/lab/livingcoin", label: "Living Coin" },
-      { to: "/lab/spec", label: "Engineering Spec" },
-      { to: "/lab/sequencer", label: "I Ching Sequencer" },
-      { to: "/lab/companion", label: "Companion App" },
-      { to: "/lab/poster", label: "Concept Poster" },
-      { to: "/lab/status", label: "Status Report" },
-      { to: "/lab/nft", label: "NFT Creator" },
+      { to: "/lab", label: "Hex Engine Lab", status: "live" },
+      { to: "/lab/coin", label: "Genesis Coin", status: "live" },
+      { to: "/lab/simulator", label: "Hex Engine Simulator", status: "live" },
+      { to: "/lab/device", label: "3D Device", status: "live" },
+      { to: "/lab/livingcoin", label: "Living Coin", status: "live" },
+      { to: "/lab/spec", label: "Engineering Spec", status: "live" },
+      { to: "/lab/sequencer", label: "I Ching Sequencer", status: "live" },
+      { to: "/lab/companion", label: "Companion App", status: "live" },
+      { to: "/lab/poster", label: "Concept Poster", status: "live" },
+      { to: "/lab/status", label: "Status Report", status: "live" },
+      { to: "/lab/nft", label: "NFT Creator", status: "live" },
     ],
   },
   {
     group: "Reference & Docs",
     items: [
-      { to: "/journey", label: "Journey Map" },
-      { to: "/sitemap", label: "Sitemap" },
-      { to: "/kit", label: "Brand Guide" },
-      { to: "/brand", label: "Brand Standards" },
+      { to: "/journey", label: "Journey Map", status: "live" },
+      { to: "/sitemap", label: "Sitemap", status: "live" },
+      { to: "/kit", label: "Brand Guide", status: "live" },
+      { to: "/brand", label: "Brand Standards", status: "live" },
     ],
   },
 ];
@@ -165,12 +174,14 @@ const ICON = {
   Philanthropic: HeartHandshake, "Retro Public Goods": Recycle, "Civic-Tech": Cpu,
   "Agency HQ": Compass, "Agency Newsroom": Newspaper, "FDE Portal": Compass, "Architecture Ops": Cpu, "Treasury Console": Coins,
   "Radio Ops": Radio, "Automation · n8n": Workflow,
+  "Persona Control": Users, "Moderation Service": ShieldCheck, "Access Audit Log": FileText,
   "Journey Map": Milestone, Sitemap: Network, "Brand Guide": Palette, "Brand Standards": BookOpen,
   "NFT Creator": ImageIcon,
 };
 
 // Build-status semaphore for not-yet-live items (kept in step with the Journey Map + /sitemap).
 const STATUS = {
+  live:      { text: "Live",      color: "#39FF14" },
   building:  { text: "Building",  color: "#EDFF00" },
   planned:   { text: "Planned",   color: "#FF5C00" },
   exploring: { text: "Exploring", color: "rgba(255,255,255,0.5)" },
@@ -187,7 +198,7 @@ const list = {
 // sitemap menu. Hidden prototypes stay live (LabAccessRoute ignores
 // `visible` and only checks `access`), so direct links still resolve.
 function useLabNavItems() {
-  const [items, setItems] = useState([{ to: "/lab", label: "Hex Engine Lab" }]);
+  const [items, setItems] = useState([{ to: "/lab", label: "Hex Engine Lab", status: "live" }]);
   useEffect(() => {
     let active = true;
     const fetch = () =>
@@ -196,8 +207,12 @@ function useLabNavItems() {
           if (!active) return;
           const vis = (rows || []).filter((r) => r.visible !== false);
           setItems([
-            { to: "/lab", label: "Hex Engine Lab" },
-            ...vis.map((r) => ({ to: r.path, label: r.title })),
+            { to: "/lab", label: "Hex Engine Lab", status: "live" },
+            ...vis.map((r) => ({
+              to: r.path,
+              label: r.title,
+              status: r.status === "in_build" ? "building" : "live",
+            })),
           ]);
         })
         .catch(() => {});
