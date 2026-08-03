@@ -27,7 +27,6 @@ export default function BusStopDetail() {
   }
 
   const facingColor = stop.facing === "road" ? "#FF5252" : "#880E4F";
-  const guessKeys = LONDON_SHELTER_GUESS.slugs.map((s) => ACCESS_KEYS[s]).filter(Boolean);
   const mapSrc = `https://www.openstreetmap.org/export/embed.html?bbox=${stop.lng - 0.003}%2C${stop.lat - 0.003}%2C${stop.lng + 0.003}%2C${stop.lat + 0.003}&layer=mapnik&marker=${stop.lat}%2C${stop.lng}`;
 
   return (
@@ -90,12 +89,16 @@ export default function BusStopDetail() {
               <div className="mt-4 border-t border-slate2/40 pt-3">
                 <span className="font-mono text-[9px] uppercase tracking-[0.3em] text-ozone/80">// probable guess</span>
                 <div className="mt-2 flex flex-wrap gap-2">
-                  {guessKeys.map((k) => (
-                    <span key={k.label} className="flex items-center gap-1.5 border border-slate2 px-2 py-1">
-                      <KeyGlyph slug={LONDON_SHELTER_GUESS.slugs.find((s) => ACCESS_KEYS[s] === k)} className="h-4 w-4 text-ozone" />
-                      <span className="font-mono text-[10px] text-silver">{k.label}</span>
-                    </span>
-                  ))}
+                  {LONDON_SHELTER_GUESS.slugs.map((gs) => {
+                    const gk = ACCESS_KEYS[gs];
+                    if (!gk) return null;
+                    return (
+                      <Link key={gs} to={`/access-keys/${gs}`} className="flex items-center gap-1.5 border border-slate2 px-2 py-1 transition-colors hover:border-ozone/60 hover:bg-ozone/5">
+                        <KeyGlyph slug={gs} className="h-4 w-4 text-ozone" />
+                        <span className="font-mono text-[10px] text-silver">{gk.label}</span>
+                      </Link>
+                    );
+                  })}
                 </div>
                 <p className="mt-2 text-[11px] leading-relaxed text-darkgray">{LONDON_SHELTER_GUESS.note}</p>
               </div>
@@ -130,7 +133,7 @@ export default function BusStopDetail() {
         <div className="mt-12">
           <div className="mb-3 flex items-center gap-2">
             <Key className="h-3.5 w-3.5 text-ozone" />
-            <span className="font-mono text-[9px] uppercase tracking-[0.3em] text-ozone">// open-access key registry</span>
+            <Link to="/access-keys" className="font-mono text-[9px] uppercase tracking-[0.3em] text-ozone transition-colors hover:text-flare">// open-access key registry ↗</Link>
             <span className="h-px flex-1 bg-slate2/40" />
           </div>
           <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">

@@ -72,6 +72,8 @@ import Channel from '@/pages/Channel';
 import LocationDetail from '@/pages/LocationDetail';
 import BusStops from '@/pages/BusStops';
 import BusStopDetail from '@/pages/BusStopDetail';
+import AccessKeys from '@/pages/AccessKeys';
+import AccessKeyDetail from '@/pages/AccessKeyDetail';
 import JourneyMap from '@/pages/JourneyMap';
 import Categories from '@/pages/Categories';
 import CategoryDirectory from '@/pages/CategoryDirectory';
@@ -183,6 +185,8 @@ const AuthenticatedApp = () => {
     <Route path="/location/:id" element={<LocationDetail />} />
     <Route path="/bus-stops" element={<BusStops />} />
     <Route path="/bus-stop/:id" element={<BusStopDetail />} />
+    <Route path="/access-keys" element={<AccessKeys />} />
+    <Route path="/access-keys/:slug" element={<AccessKeyDetail />} />
     <Route path="/journey" element={<JourneyMap />} />
     <Route path="/categories" element={<Categories />} />
     <Route path="/category/:slug" element={<CategoryDirectory />} />

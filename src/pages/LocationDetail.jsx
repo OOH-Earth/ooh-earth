@@ -216,7 +216,7 @@ export default function LocationDetail() {
         <div className="mt-12">
           <div className="mb-3 flex items-center gap-2">
             <Key className="h-3.5 w-3.5 text-ozone" />
-            <span className="font-mono text-[9px] uppercase tracking-[0.3em] text-ozone">// open-access key registry</span>
+            <Link to="/access-keys" className="font-mono text-[9px] uppercase tracking-[0.3em] text-ozone transition-colors hover:text-flare">// open-access key registry ↗</Link>
             <span className="h-px flex-1 bg-slate2/40" />
           </div>
           <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
