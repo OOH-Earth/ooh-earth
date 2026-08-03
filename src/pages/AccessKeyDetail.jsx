@@ -1,5 +1,5 @@
 import { useParams, Link } from "react-router-dom";
-import { ArrowLeft, Key, ShoppingBag, Wrench, HelpCircle, BusFront } from "lucide-react";
+import { ArrowLeft, Key, ShoppingBag, Wrench, HelpCircle, BusFront, Globe } from "lucide-react";
 import Nav from "@/components/ooh/Nav";
 import Breadcrumbs from "@/components/ooh/Breadcrumbs";
 import MobileHeader from "@/components/ooh/MobileHeader";
@@ -7,6 +7,7 @@ import KeyGlyph from "@/components/ooh/KeyGlyph";
 import { Image } from "@/components/ui/image";
 import { ACCESS_KEYS } from "@/components/ooh/accessKeys";
 import { keyDetail, stopsForKey, ACCESS_KEY_ORDER } from "@/components/ooh/access/accessKeyDetails";
+import AccessKeyIcon from "@/components/ooh/access/AccessKeyIcon";
 import AccessKeyMap from "@/components/ooh/access/AccessKeyMap";
 
 export default function AccessKeyDetail() {
@@ -33,6 +34,7 @@ export default function AccessKeyDetail() {
   const idx = ACCESS_KEY_ORDER.indexOf(slug);
   const next = ACCESS_KEY_ORDER[(idx + 1) % ACCESS_KEY_ORDER.length];
   const prev = ACCESS_KEY_ORDER[(idx - 1 + ACCESS_KEY_ORDER.length) % ACCESS_KEY_ORDER.length];
+  const lookSvg = k.lookImage && k.lookImage.endsWith(".svg");
 
   return (
     <div className="min-h-screen bg-void text-silver">
@@ -100,29 +102,41 @@ export default function AccessKeyDetail() {
           <div className="lg:sticky lg:top-24 lg:self-start">
             <div className="border border-slate2/60 bg-card p-6">
               <div className="flex justify-center">
-                <span className="flex h-16 w-16 items-center justify-center border border-ozone/40 text-ozone">
-                  <KeyGlyph slug={slug} className="h-10 w-10" />
-                </span>
+                <AccessKeyIcon slug={slug} iconSvg={k.iconSvg} chipClassName="h-16 w-16 border border-ozone/40" className="h-11 w-11" />
               </div>
 
               <div className="mt-5">
                 <span className="font-mono text-[9px] uppercase tracking-[0.3em] text-ozone/80">// about</span>
                 <h1 className="mt-1 font-display text-2xl font-bold tracking-[-0.02em] text-silver">{k.label}</h1>
                 <p className="mt-2 text-[13px] leading-relaxed text-darkgray">{k.about || k.blurb}</p>
+                {(k.countries || []).length > 0 && (
+                  <div className="mt-3 flex flex-wrap items-center gap-1.5">
+                    <span className="flex items-center gap-1 font-mono text-[9px] uppercase tracking-[0.25em] text-dim/70">
+                      <Globe className="h-3 w-3" /> used in
+                    </span>
+                    {k.countries.map((c) => (
+                      <span key={c} className="border border-slate2/60 px-1.5 py-0.5 font-mono text-[8px] uppercase tracking-[0.15em] text-silver/70">{c}</span>
+                    ))}
+                  </div>
+                )}
               </div>
 
               <div className="mt-6 border-t border-slate2/40 pt-5">
                 <span className="font-mono text-[9px] uppercase tracking-[0.3em] text-ozone/80">// how does it look?</span>
-                <div className="mt-3 relative aspect-[4/3] overflow-hidden border border-slate2/60 bg-void">
-                  {k.image ? (
-                    <Image src={k.image} alt={`${k.label} key`} className="h-full w-full" fittingType="fit" />
+                <div className="mt-3 relative aspect-[4/3] overflow-hidden border border-slate2/60 bg-brand-smoke">
+                  {k.lookImage ? (
+                    lookSvg ? (
+                      <img src={k.lookImage} alt={`${k.label} key`} className="h-full w-full object-contain p-3" />
+                    ) : (
+                      <Image src={k.lookImage} alt={`${k.label} key`} className="h-full w-full" fittingType="fit" />
+                    )
                   ) : (
-                    <div className="flex h-full items-center justify-center grid-bg">
-                      <KeyGlyph slug={slug} className="h-20 w-20 text-ozone/80" />
+                    <div className="flex h-full items-center justify-center">
+                      <KeyGlyph slug={slug} className="h-20 w-20 text-black" />
                     </div>
                   )}
-                  <span className="pointer-events-none absolute bottom-2 right-2 flex h-7 w-7 items-center justify-center border border-slate2 bg-void/80 text-ozone">
-                    <KeyGlyph slug={slug} className="h-5 w-5" />
+                  <span className="pointer-events-none absolute bottom-2 right-2 flex h-7 w-7 items-center justify-center border border-slate2 bg-brand-smoke/90">
+                    {k.iconSvg ? <img src={k.iconSvg} alt="" className="h-5 w-5 object-contain" /> : <KeyGlyph slug={slug} className="h-5 w-5 text-black" />}
                   </span>
                 </div>
               </div>

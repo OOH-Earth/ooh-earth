@@ -73,6 +73,18 @@ const PATHS = {
       <path d="M9 6h6" />
     </g>
   ),
+  tx30: (
+    <g stroke="currentColor" strokeWidth="1.6" fill="none" strokeLinejoin="round">
+      <path d="M12 3l2.6 3.2 4.1-.5-.5 4.1L21.5 12l-3.2 2.6.5 4.1-4.1-.5L12 21.5l-2.6-3.2-4.1.5.5-4.1L2.5 12l3.2-2.6-.5-4.1 4.1.5z" />
+      <circle cx="12" cy="12" r="2.2" />
+    </g>
+  ),
+  tri38: (
+    <g stroke="currentColor" strokeWidth="1.6" fill="none" strokeLinejoin="round">
+      <path d="M12 4l8 14H4z" />
+      <circle cx="12" cy="13" r="2.2" />
+    </g>
+  ),
   none: (
     <g stroke="currentColor" strokeWidth="1.6" fill="none" strokeLinecap="round">
       <circle cx="12" cy="12" r="8" />

@@ -13,6 +13,8 @@ export const ACCESS_KEYS = {
   "large-square": { label: "Large Square", blurb: "Square socket key for larger shelter housings." },
   "small-square": { label: "Small Square", blurb: "Square socket key for smaller shelter housings." },
   "t-handle": { label: "T-Handle", blurb: "T-handle wrench for rotary cam locks." },
+  tx30: { label: "TX30", blurb: "Torx T30 key with a hole in the end — used on some JCDecaux/Cemusa shelters." },
+  tri38: { label: "TRI38", blurb: "10mm triangular key common on continental European transit shelters and Adshel units." },
   none: { label: "No standardized key", blurb: "Direct access — no keyed housing on this unit." },
   unknown: { label: "Unidentified", blurb: "Access method not yet confirmed in the field." },
 };
