@@ -169,7 +169,7 @@ export const SITEMAP_GROUPS = [
       { path: "/journey", name: "Journey Map", vis: "public", status: "live", ux: "Full UX journey map: every user perspective (Passer-by → Scout → Field Operative → City Ambassador → Supporter → Movement Partner), wireframed low-fi, with a build status on every feature and a master roadmap matrix.", audience: "Team / Partners", auth: "none", flows: ["/sitemap", "/map"] },
       { path: "/sitemap", name: "Sitemap", vis: "internal", status: "live", ux: "This page — every route with UX explainers, audience, auth, visibility tier, build status, and onward flows, plus the access ladder, architecture, and the loose-ends checklist.", audience: "Team / Admin", auth: "protected", flows: ["/journey", "/dashboard"] },
       { path: "/kit", name: "Brand Guide / UI Kit", vis: "internal", status: "live", ux: "Orbital Perspective design system — BrandPalette, TypeScale, PinLab, ComponentShowcase. Dev + brand reference.", audience: "Devs / Partners", auth: "none", flows: ["/"] },
-      { path: "/brand", name: "Brand Guide (standalone)", vis: "internal", status: "planned", ux: "Planned standalone brand route, split out from the /kit UI Kit. Not built.", audience: "Team / Partners", auth: "none", flows: ["/kit"], planned: true },
+      { path: "/brand", name: "Brand Standards", vis: "internal", status: "live", ux: "Ad Free Streets brand standards in the /kit dashboard shell \u2014 Strategy (positioning, vision, mission, audience, values, personality) + Language (tagline, principles, story, headlines, CTAs). Visual system in progress.", audience: "Team / Partners", auth: "none", flows: ["/kit"] },
     ],
   },
 ];
