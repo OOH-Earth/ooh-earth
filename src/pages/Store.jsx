@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
 import { Image } from "@/components/ui/image";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
-import { Loader2, ShoppingBag, BookOpen, Download, ExternalLink, CheckCircle2, Check, ArrowUpRight, Sparkles } from "lucide-react";
+import { Loader2, ShoppingBag, BookOpen, Download, ExternalLink, CheckCircle2, Check, ArrowUpRight, Sparkles, Settings } from "lucide-react";
 import Nav from "@/components/ooh/Nav";
 import HorizonProgress from "@/components/ooh/HorizonProgress";
 import { useWalkthrough } from "@/lib/walkthroughContext";
@@ -219,6 +219,11 @@ export default function Store() {
             <p className="mt-3 max-w-2xl font-display text-sm leading-[1.6] text-darkgray md:text-base">
               Field research, digital products, mockups, and drops — sourced from our own data and built on oohearth.app. Every sale funds the Field Offensive: no ads.
             </p>
+            <div className="mt-4">
+              <Link to="/store/admin" className="inline-flex items-center gap-1.5 border border-slate2 px-3 py-1.5 font-mono text-[9px] font-bold uppercase tracking-[0.2em] text-silver/60 transition-colors hover:border-ozone hover:text-ozone">
+                <Settings className="h-3 w-3" /> Admin console
+              </Link>
+            </div>
           </div>
 
           {thanks &&

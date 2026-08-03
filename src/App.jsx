@@ -21,6 +21,7 @@ import { RadioProvider } from '@/lib/radioContext';
 import { LabGateProvider } from '@/components/ooh/LabGate';
 import LabAccessRoute from '@/components/ooh/lab/LabAccessRoute';
 import LabAdmin from '@/pages/LabAdmin';
+import StoreAdmin from '@/pages/StoreAdmin';
 // Add page imports here
 import LabHub from '@/pages/LabHub';
 import Book from '@/pages/Book';
@@ -209,6 +210,7 @@ const AuthenticatedApp = () => {
       <Route path="/agency/blog" element={<Blog scope="agency" />} />
       <Route path="/agency/blog/:slug" element={<BlogArticle scope="agency" />} />
       <Route path="/lab/admin" element={<LabAdmin />} />
+      <Route path="/store/admin" element={<StoreAdmin />} />
     </Route>
     {/* Lab — dynamic access guard (public/agency toggled per prototype via /lab/admin) */}
     <Route element={<LabAccessRoute />}>
