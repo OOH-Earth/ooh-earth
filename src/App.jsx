@@ -23,6 +23,7 @@ import LabAccessRoute from '@/components/ooh/lab/LabAccessRoute';
 import LabAdmin from '@/pages/LabAdmin';
 // Add page imports here
 import LabHub from '@/pages/LabHub';
+import Book from '@/pages/Book';
 import GenesisCoin from '@/pages/GenesisCoin';
 import GenesisToken from '@/pages/GenesisToken';
 import HexPoster from '@/pages/HexPoster';
@@ -212,6 +213,7 @@ const AuthenticatedApp = () => {
     {/* Lab — dynamic access guard (public/agency toggled per prototype via /lab/admin) */}
     <Route element={<LabAccessRoute />}>
       <Route path="/lab" element={<LabHub />} />
+      <Route path="/lab/book" element={<Book />} />
       <Route path="/lab/poster" element={<HexPoster />} />
       <Route path="/lab/coin-poster" element={<CoinPoster />} />
       <Route path="/lab/sequencer" element={<HexSequencer />} />
