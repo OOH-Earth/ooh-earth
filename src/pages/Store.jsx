@@ -56,7 +56,7 @@ function ProductCard({ item, owned, onAction, busy }) {
     <div className="group flex flex-col overflow-hidden border border-slate2/50 bg-card transition-all duration-300 hover:border-ozone/50 hover:shadow-[0_0_0_1px_rgba(237,255,0,0.15),0_18px_40px_-24px_rgba(237,255,0,0.25)]">
       <div className="relative aspect-[4/3] overflow-hidden border-b border-slate2/50 bg-void">
         {item.image_url ?
-        <Image src="https://media.base44.com/images/public/6a62213cff3ccbca88c04ff5/a2dd6055e_Screenshot_2026-08-03_at_232051.png" alt={item.title} className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.04]" /> :
+        <Image src="https://media.base44.com/images/public/6a62213cff3ccbca88c04ff5/bea0a19dc_Screenshot_2026-08-03_at_232051.jpg" alt={item.title} className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.04]" /> :
 
         <div className="h-full w-full transition-transform duration-500 group-hover:scale-[1.03]"><ProductPreview item={item} /></div>
         }
