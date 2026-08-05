@@ -44,7 +44,7 @@ export default async function (req: Request): Promise<Response> {
         verified = recovered.toLowerCase() === String(address).toLowerCase();
       } else if (chain === "solana") {
         const msgBytes = new TextEncoder().encode(String(message));
-        const sigBytes = base64ToUint8Array(String(signature));
+        const sigBytes = base64ToUint8(String(signature));
         const pubBytes = bs58.decode(String(address));
         verified = nacl.sign.detached.verify(msgBytes, sigBytes, pubBytes);
       } else {
