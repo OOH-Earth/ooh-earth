@@ -432,6 +432,44 @@ export const ROLES = [
   },
 ];
 
+// Status of each role — the single source of truth until the admin panel lands.
+// "live" = open now · "future" = a real need we'll open as we grow/fund ·
+// "filled" = closed · "draft" = hidden from the public page.
+const ROLE_STATUS = {
+  "field-operative": "live",
+  "content-curator": "live",
+  "city-ambassador": "live",
+  "funding-grants": "live",
+  "fundraising": "live",
+  "social-volunteer": "live",
+  "translator": "live",
+  "regional-coordinator": "future",
+  "community-manager": "future",
+  "frontend-engineer": "future",
+  "platform-engineer": "future",
+  "brand-designer": "future",
+  "data-researcher": "future",
+  "partnerships-lead": "future",
+  "legal-observer": "future",
+};
+ROLES.forEach((r) => { r.status = ROLE_STATUS[r.id] || "future"; });
+
+export const STATUS_META = {
+  live: { label: "Live role", cls: "border-[#39FF14]/50 text-[#39FF14]", dot: "bg-[#39FF14]", cta: "Apply" },
+  future: { label: "Future need", cls: "border-flare/50 text-flare", dot: "bg-flare", cta: "Register interest" },
+  filled: { label: "Filled", cls: "border-slate2/60 text-dim", dot: "bg-dim/60", cta: "Filled" },
+  draft: { label: "Draft", cls: "border-slate2/60 text-dim", dot: "bg-dim/60", cta: "" },
+};
+
+// What we genuinely look for in people — traits over credentials. Real, not fluff.
+export const LOOK_FOR = [
+  { title: "You act, not just observe", body: "You'd rather map a billboard than argue about one online. The people who thrive here move — file the report, run the action, ship the fix." },
+  { title: "You work in the open", body: "Our data, methods and code are public and forkable. You're comfortable working transparently, sharing credit, and building things anyone can inspect." },
+  { title: "You're rigorous about the truth", body: "The atlas lives or dies on accuracy. You cite your sources, verify before you claim, and would rather be right than loud." },
+  { title: "You're here for the mission", body: "This is community-funded — no ad money, no investors, no equity windfall. The reward is public space reclaimed and a movement that grows." },
+  { title: "You look out for the many", body: "We centre the Global South, the overlooked and the advertised-at. You bring care for people, not just polish for the product." },
+];
+
 // Honest support offered to volunteers — no false promises of a salary, but real
 // backing so contributing never costs you money.
 export const SUPPORT = [
