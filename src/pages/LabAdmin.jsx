@@ -12,6 +12,7 @@ import { LAB_PROJECTS } from "@/components/ooh/labProjects";
 import ThemeModesPanel from "@/components/ooh/lab/ThemeModesPanel";
 import MapStyleAdminPanel from "@/components/ooh/lab/MapStyleAdminPanel";
 import SeoAdminPanel from "@/components/ooh/lab/SeoAdminPanel";
+import CollapsibleSection from "@/components/ooh/lab/CollapsibleSection";
 
 // Toggle button — active state fills with the channel tone. tones:
 //   ozone (yellow)  — public / live / visible
@@ -163,10 +164,11 @@ export default function LabAdmin() {
         </p>
 
         {/* sitemap extension — jump grid */}
-        <section className="mt-6 border border-slate2 bg-card">
-          <div className="flex items-center gap-2 border-b border-slate2 px-4 py-2.5 font-mono text-[10px] uppercase tracking-[0.2em] text-silver/55">
-            <MapIcon className="h-3.5 w-3.5 text-ozone" /> Sitemap · jump to
-          </div>
+        <CollapsibleSection
+          title="Sitemap · jump to"
+          icon={<MapIcon className="h-3.5 w-3.5 text-ozone" />}
+          right={<span className="font-mono text-[9px] tracking-[0.1em] text-silver/35">{items?.length || 0} links</span>}
+        >
           <div className="flex flex-wrap gap-1.5 p-3">
             <SiteLink to="/lab" label="Hub" led="ozone" />
             {(items || []).map((r) => (
@@ -182,22 +184,34 @@ export default function LabAdmin() {
             <SiteLink to="/lab/devices/desktop" label="Desktop" led="flare" />
             <SiteLink to="/lab/admin" label="Console" led="ozone" />
           </div>
-        </section>
+        </CollapsibleSection>
 
         {/* Theme modes — site-wide enable/disable */}
-        <section className="mt-6 border border-slate2 bg-card">
+        <CollapsibleSection
+          title="Theme modes"
+          icon={<Power className="h-3.5 w-3.5 text-ozone" />}
+          defaultOpen={false}
+        >
           <ThemeModesPanel />
-        </section>
+        </CollapsibleSection>
 
         {/* Map style default — site-wide */}
-        <section className="mt-6 border border-slate2 bg-card">
+        <CollapsibleSection
+          title="Map style default"
+          icon={<MapIcon className="h-3.5 w-3.5 text-ozone" />}
+          defaultOpen={false}
+        >
           <MapStyleAdminPanel />
-        </section>
+        </CollapsibleSection>
 
         {/* SEO · social cards · metadata — per-route */}
-        <section className="mt-6 border border-slate2 bg-card">
+        <CollapsibleSection
+          title="SEO · social cards"
+          icon={<Gauge className="h-3.5 w-3.5 text-ozone" />}
+          defaultOpen={false}
+        >
           <SeoAdminPanel />
-        </section>
+        </CollapsibleSection>
 
         {items === null ? (
           <div className="flex justify-center py-20">
@@ -206,8 +220,17 @@ export default function LabAdmin() {
         ) : items.length === 0 ? (
           <p className="py-20 text-center font-mono text-[11px] text-silver/50">No channels registered.</p>
         ) : (
-          <div className="mt-6 space-y-1.5">
-            {items.map((r, i) => {
+          <CollapsibleSection
+            title="Channels"
+            icon={<Radio className="h-3.5 w-3.5 text-ozone" />}
+            right={
+              <span className="font-mono text-[9px] tracking-[0.1em] text-silver/35">
+                {counts.public} pub · {counts.restricted} rest · {counts.live} live · {counts.hidden} hidden
+              </span>
+            }
+          >
+            <div className="space-y-1.5 p-3">
+              {items.map((r, i) => {
               const hidden = r.visible === false;
               const pub = r.access === "public";
               const live = r.status === "live";
@@ -246,7 +269,8 @@ export default function LabAdmin() {
                 </div>
               );
             })}
-          </div>
+            </div>
+          </CollapsibleSection>
         )}
       </div>
       <SiteFooter />
