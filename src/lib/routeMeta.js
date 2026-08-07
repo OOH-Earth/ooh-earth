@@ -17,7 +17,7 @@ export const OG_IMAGES = {
 
 const D = "An open-source, community-funded app reclaiming the visual commons. Mapping every corporate advertising offense on the public record and coordinating creative resistance worldwide.";
 
-const META = {
+export const META = {
   "/":              { title: "OOH Earth — Street Art & Adbusting Maps", desc: D, image: OG_IMAGES.default },
   "/map":           { title: "Field Atlas — OOH Earth", desc: "Interactive global map of every billboard, digital screen, and advertising surface — logged, verified, and ready for adbusting.", image: OG_IMAGES.map },
   "/adbusting":     { title: "Adbusting Portal — OOH Earth", desc: "Creative resistance against outdoor advertising. Subverting, reclaiming, and replacing corporate messaging in public space.", image: OG_IMAGES.adbusting },

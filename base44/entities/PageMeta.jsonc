@@ -1,0 +1,53 @@
+{
+  "name": "PageMeta",
+  "type": "object",
+  "properties": {
+    "path": {
+      "type": "string",
+      "description": "Route path this metadata applies to, e.g. /, /map, /store"
+    },
+    "title": {
+      "type": "string",
+      "description": "SEO / OG title for the page"
+    },
+    "description": {
+      "type": "string",
+      "description": "Meta description / OG description"
+    },
+    "og_image": {
+      "type": "string",
+      "description": "Social share image URL (1200x630 branded card)"
+    },
+    "og_generated": {
+      "type": "boolean",
+      "default": false,
+      "description": "True if og_image was auto-generated from the brand kit"
+    },
+    "noindex": {
+      "type": "boolean",
+      "default": false,
+      "description": "If true, crawlers are told not to index this route"
+    }
+  },
+  "required": [
+    "path"
+  ],
+  "rls": {
+    "read": {},
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

@@ -11,6 +11,7 @@ import { Loader2, Lock, ExternalLink, Radio, Power, Eye, EyeOff, Gauge, Map as M
 import { LAB_PROJECTS } from "@/components/ooh/labProjects";
 import ThemeModesPanel from "@/components/ooh/lab/ThemeModesPanel";
 import MapStyleAdminPanel from "@/components/ooh/lab/MapStyleAdminPanel";
+import SeoAdminPanel from "@/components/ooh/lab/SeoAdminPanel";
 
 // Toggle button — active state fills with the channel tone. tones:
 //   ozone (yellow)  — public / live / visible
@@ -191,6 +192,11 @@ export default function LabAdmin() {
         {/* Map style default — site-wide */}
         <section className="mt-6 border border-slate2 bg-card">
           <MapStyleAdminPanel />
+        </section>
+
+        {/* SEO · social cards · metadata — per-route */}
+        <section className="mt-6 border border-slate2 bg-card">
+          <SeoAdminPanel />
         </section>
 
         {items === null ? (

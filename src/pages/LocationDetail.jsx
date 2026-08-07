@@ -10,6 +10,7 @@ import Breadcrumbs from "@/components/ooh/Breadcrumbs";
 import MobileHeader from "@/components/ooh/MobileHeader";
 import { Image } from "@/components/ui/image";
 import MintLocationPanel from "@/components/ooh/mint/MintLocationPanel";
+import { useSeo } from "@/lib/seoContext";
 
 function normalizeSeed(rec) {
   return {
@@ -66,6 +67,22 @@ export default function LocationDetail() {
     })();
     return () => { alive = false; };
   }, [id]);
+
+  useSeo(loc ? {
+    title: `${loc.title} — OOH Earth Atlas`,
+    desc: loc.notes || loc.address || `${metaFor(loc.type).label} logged on the public record.`,
+    image: loc.image_url,
+    type: "article",
+    jsonLd: {
+      "@context": "https://schema.org",
+      "@type": "Place",
+      name: loc.title,
+      description: loc.notes || loc.address || "",
+      image: loc.image_url ? [loc.image_url] : undefined,
+      geo: { "@type": "GeoCoordinates", latitude: loc.lat, longitude: loc.lng },
+      address: loc.address ? { "@type": "PostalAddress", streetAddress: loc.address } : undefined
+    }
+  } : null);
 
   if (loading) {
     return (

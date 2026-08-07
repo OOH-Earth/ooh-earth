@@ -7,6 +7,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import PageNotFound from './lib/PageNotFound';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import { getRouteMeta } from '@/lib/routeMeta';
+import { SeoProvider, useSeo } from '@/lib/seoContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 import ScrollToTop from './components/ScrollToTop';
 import CrtOverlay from '@/components/ooh/CrtOverlay';
@@ -104,32 +105,10 @@ const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
   const location = useLocation();
 
-  // Per-route canonical + og:url. Without this, the static homepage canonical in
-  // index.html applies to every route (tells crawlers each page duplicates the
-  // homepage). JS-executing crawlers pick this up; non-JS link-preview bots still
-  // need server prerendering for full per-route OG (platform-level).
-  useEffect(() => {
-    const url = window.location.origin + location.pathname;
-    const meta = getRouteMeta(location.pathname);
-    const mkProp = (p) => () => { const m = document.createElement("meta"); m.setAttribute("property", p); return m; };
-    const mkName = (n) => () => { const m = document.createElement("meta"); m.setAttribute("name", n); return m; };
-    const set = (sel, make, attr, val) => {
-      let el = document.head.querySelector(sel);
-      if (!el) { el = make(); document.head.appendChild(el); }
-      el.setAttribute(attr, val);
-    };
-    set('link[rel="canonical"]', () => { const l = document.createElement("link"); l.setAttribute("rel", "canonical"); return l; }, "href", url);
-    set('meta[property="og:url"]', mkProp("og:url"), "content", url);
-    set('meta[property="og:title"]', mkProp("og:title"), "content", meta.title);
-    set('meta[property="og:description"]', mkProp("og:description"), "content", meta.desc);
-    set('meta[property="og:image"]', mkProp("og:image"), "content", meta.image);
-    set('meta[property="og:image:alt"]', mkProp("og:image:alt"), "content", meta.title);
-    set('meta[name="twitter:title"]', mkName("twitter:title"), "content", meta.title);
-    set('meta[name="twitter:description"]', mkName("twitter:description"), "content", meta.desc);
-    set('meta[name="twitter:image"]', mkName("twitter:image"), "content", meta.image);
-    set('meta[name="twitter:image:alt"]', mkName("twitter:image:alt"), "content", meta.title);
-    document.title = meta.title;
-  }, [location.pathname]);
+  // Per-route SEO metadata — title, description, canonical, Open Graph,
+  // Twitter card, robots, and JSON-LD. Resolves DB PageMeta records (editable
+  // in Lab Admin) with a static fallback. Pages can override via useSeo().
+  useSeo();
 
   // Show loading spinner while checking app public settings or auth
   if (isLoadingPublicSettings || isLoadingAuth) {
@@ -257,6 +236,7 @@ function App() {
     <AuthProvider>
       <QueryClientProvider client={queryClientInstance}>
         <Router>
+          <SeoProvider>
           <MapStyleProvider>
           <RadioProvider>
             <WalkthroughProvider>
@@ -272,6 +252,7 @@ function App() {
             </WalkthroughProvider>
           </RadioProvider>
           </MapStyleProvider>
+          </SeoProvider>
         </Router>
         <Toaster />
       </QueryClientProvider>

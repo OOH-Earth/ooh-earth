@@ -5,6 +5,7 @@ import Nav from "@/components/ooh/Nav";
 import HorizonProgress from "@/components/ooh/HorizonProgress";
 import Breadcrumbs from "@/components/ooh/Breadcrumbs";
 import { Loader2, Lock, ArrowLeft, Copy, Check } from "lucide-react";
+import { useSeo } from "@/lib/seoContext";
 
 const payload = (res) => (res && typeof res === "object" && "data" in res ? res.data : res);
 
@@ -63,6 +64,22 @@ export default function BlogArticle({ scope = "public" }) {
       }
     })();
   }, [slug]);
+
+  useSeo(post && status === "ok" ? {
+    title: `${post.title} — OOH Earth Blog`,
+    desc: post.excerpt || post.title,
+    image: post.cover_image,
+    type: "article",
+    jsonLd: {
+      "@context": "https://schema.org",
+      "@type": "Article",
+      headline: post.title,
+      description: post.excerpt || "",
+      image: post.cover_image ? [post.cover_image] : undefined,
+      author: post.author ? { "@type": "Organization", name: post.author } : undefined,
+      datePublished: post.published_date || undefined
+    }
+  } : null);
 
   const copyBody = async () => {
     try { await navigator.clipboard.writeText(`${post.title}\n\n${post.body || ""}`); setCopied(true); setTimeout(() => setCopied(false), 1600); } catch { /* ignore */ }

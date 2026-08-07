@@ -9,6 +9,7 @@ import HorizonProgress from "@/components/ooh/HorizonProgress";
 import Breadcrumbs from "@/components/ooh/Breadcrumbs";
 import { CAT_META, priceLabel, ProductPreview } from "@/components/ooh/store/catalog";
 import { downloadItemPdf } from "@/components/ooh/store/downloadPdf";
+import { useSeo } from "@/lib/seoContext";
 
 const inIframe = typeof window !== "undefined" && window.self !== window.top;
 
@@ -80,6 +81,27 @@ export default function StoreItemDetail() {
       setError(e?.message || "Checkout failed.");
     } finally { setBusy(false); }
   };
+
+  useSeo(item && item !== false ? {
+    title: `${item.title} — OOH Earth Store`,
+    desc: item.subtitle || item.description || item.title,
+    image: item.image_url,
+    type: "product",
+    jsonLd: {
+      "@context": "https://schema.org",
+      "@type": "Product",
+      name: item.title,
+      description: item.description || item.subtitle || "",
+      image: item.image_url ? [item.image_url] : undefined,
+      category: (CAT_META[item.category] || CAT_META.library).label,
+      offers: {
+        "@type": "Offer",
+        price: String(Number(item.price_usd) || 0),
+        priceCurrency: "USD",
+        availability: item.status === "sold_out" ? "https://schema.org/SoldOut" : "https://schema.org/InStock"
+      }
+    }
+  } : null);
 
   if (item === null) {
     return (
