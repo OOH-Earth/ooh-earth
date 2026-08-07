@@ -3,7 +3,7 @@ import { Mail, ArrowUpRight, ArrowLeft, MapPin, Briefcase, Clock, Coins, Check, 
 import Nav from "@/components/ooh/Nav";
 import Reveal from "@/components/ooh/Reveal";
 import SiteFooter from "@/components/ooh/SiteFooter";
-import { ROLES, SUPPORT, APPLY_EMAIL } from "@/components/ooh/careers/roles";
+import { ROLES, SUPPORT, APPLY_EMAIL, STATUS_META } from "@/components/ooh/careers/roles";
 
 const TYPE_STYLES = {
   Volunteer: "border-ozone/50 text-ozone",
@@ -46,9 +46,14 @@ export default function CareerRole() {
     );
   }
 
-  const mailto = `mailto:${APPLY_EMAIL}?subject=${encodeURIComponent(`Application · ${role.title}`)}`;
-  const related = ROLES.filter((r) => r.category === role.category && r.id !== role.id).slice(0, 3);
+  const st = STATUS_META[role.status] || STATUS_META.future;
   const isVolunteer = role.type === "Volunteer";
+  const isFuture = role.status === "future";
+  const isFilled = role.status === "filled";
+  const applyLabel = isFilled ? "Filled" : isFuture ? "Register interest" : "Apply for this role";
+  const subject = isFuture ? `Interest · ${role.title}` : `Application · ${role.title}`;
+  const mailto = `mailto:${APPLY_EMAIL}?subject=${encodeURIComponent(subject)}`;
+  const related = ROLES.filter((r) => r.category === role.category && r.id !== role.id && r.status !== "draft").slice(0, 3);
 
   return (
     <div className="min-h-screen bg-void">
@@ -61,9 +66,12 @@ export default function CareerRole() {
           <Link to="/careers" className="inline-flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-[0.25em] text-dim transition-colors hover:text-ozone">
             <ArrowLeft className="h-3.5 w-3.5" /> All roles
           </Link>
-          <div className="mt-5 flex items-center gap-3">
+          <div className="mt-5 flex flex-wrap items-center gap-2.5">
             <span className="font-mono text-[10px] uppercase tracking-[0.3em] text-ozone">// {role.category}</span>
             <span className={`border px-2 py-0.5 font-mono text-[9px] uppercase tracking-[0.2em] ${TYPE_STYLES[role.type] || TYPE_STYLES["Part-time"]}`}>{role.type}</span>
+            <span className={`inline-flex items-center gap-1.5 border px-2 py-0.5 font-mono text-[9px] uppercase tracking-[0.2em] ${st.cls}`}>
+              <span className={`h-1 w-1 ${st.dot}`} /> {st.label}
+            </span>
           </div>
           <h1 className="mt-3 font-display text-4xl font-bold leading-[1.05] tracking-[-0.03em] text-silver md:text-6xl">{role.title}</h1>
           <p className="mt-4 max-w-2xl text-base leading-relaxed text-darkgray md:text-lg">{role.summary}</p>
@@ -75,9 +83,26 @@ export default function CareerRole() {
             {role.comp && <span className="flex items-center gap-1.5"><Coins className="h-3.5 w-3.5 text-silver/60" /> {role.comp}</span>}
           </div>
 
-          <a href={mailto} className="mt-7 group inline-flex items-center gap-2 border-2 border-ozone bg-ozone px-5 py-3 font-mono text-[11px] font-bold uppercase tracking-[0.25em] text-void transition-colors hover:bg-flare hover:border-flare">
-            <Mail className="h-4 w-4" /> Apply for this role <ArrowUpRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
-          </a>
+          {isFuture && (
+            <p className="mt-4 max-w-2xl border-l-2 border-flare/50 pl-3 text-[13px] leading-relaxed text-flare/90">
+              This is a <b>future need</b> — we're not actively recruiting it yet, but we want to know you're out there. Register your interest and we'll come to you when it opens.
+            </p>
+          )}
+          {isFilled && (
+            <p className="mt-4 max-w-2xl border-l-2 border-slate2/60 pl-3 text-[13px] leading-relaxed text-dim">
+              This role is currently <b>filled</b>. Worth introducing yourself anyway — things change fast here.
+            </p>
+          )}
+
+          {isFilled ? (
+            <span className="mt-7 inline-flex items-center gap-2 border-2 border-slate2 px-5 py-3 font-mono text-[11px] font-bold uppercase tracking-[0.25em] text-dim">
+              <Mail className="h-4 w-4" /> Filled
+            </span>
+          ) : (
+            <a href={mailto} className="mt-7 group inline-flex items-center gap-2 border-2 border-ozone bg-ozone px-5 py-3 font-mono text-[11px] font-bold uppercase tracking-[0.25em] text-void transition-colors hover:bg-flare hover:border-flare">
+              <Mail className="h-4 w-4" /> {applyLabel} <ArrowUpRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
+            </a>
+          )}
         </div>
       </section>
 
@@ -124,20 +149,24 @@ export default function CareerRole() {
           )}
 
           {/* Apply band */}
-          <Reveal>
-            <div className="relative overflow-hidden border border-slate2/60 bg-card/40 p-6 text-center md:p-8">
-              <div className="grid-bg pointer-events-none absolute inset-0 opacity-50" />
-              <div className="relative">
-                <h2 className="font-display text-2xl font-bold tracking-[-0.02em] text-silver md:text-3xl">Sound like you?</h2>
-                <p className="mx-auto mt-2 max-w-lg text-sm leading-relaxed text-darkgray">
-                  Send a short note — who you are, why this role, and a link or two. No take-homes, no hoops.
-                </p>
-                <a href={mailto} className="mt-5 inline-flex items-center gap-2 border-2 border-ozone bg-ozone px-5 py-3 font-mono text-[11px] font-bold uppercase tracking-[0.25em] text-void transition-colors hover:bg-flare hover:border-flare">
-                  <Mail className="h-4 w-4" /> Apply · {role.title}
-                </a>
+          {!isFilled && (
+            <Reveal>
+              <div className="relative overflow-hidden border border-slate2/60 bg-card/40 p-6 text-center md:p-8">
+                <div className="grid-bg pointer-events-none absolute inset-0 opacity-50" />
+                <div className="relative">
+                  <h2 className="font-display text-2xl font-bold tracking-[-0.02em] text-silver md:text-3xl">{isFuture ? "Want in early?" : "Sound like you?"}</h2>
+                  <p className="mx-auto mt-2 max-w-lg text-sm leading-relaxed text-darkgray">
+                    {isFuture
+                      ? "Register your interest with a short note — who you are and why this. We'll reach out the moment it opens."
+                      : "Send a short note — who you are, why this role, and a link or two. No take-homes, no hoops."}
+                  </p>
+                  <a href={mailto} className="mt-5 inline-flex items-center gap-2 border-2 border-ozone bg-ozone px-5 py-3 font-mono text-[11px] font-bold uppercase tracking-[0.25em] text-void transition-colors hover:bg-flare hover:border-flare">
+                    <Mail className="h-4 w-4" /> {applyLabel} · {role.title}
+                  </a>
+                </div>
               </div>
-            </div>
-          </Reveal>
+            </Reveal>
+          )}
 
           {/* Related */}
           {related.length > 0 && (
@@ -145,15 +174,21 @@ export default function CareerRole() {
               <div>
                 <span className="font-mono text-[10px] uppercase tracking-[0.3em] text-dim">// More in {role.category}</span>
                 <div className="mt-3 flex flex-col divide-y divide-slate2/40 border border-slate2/40">
-                  {related.map((r) => (
-                    <Link key={r.id} to={`/careers/${r.id}`} className="group flex items-center justify-between gap-3 p-4 transition-colors hover:bg-slate2/20">
-                      <div>
-                        <div className="font-display text-base font-semibold text-silver transition-colors group-hover:text-ozone">{r.title}</div>
-                        <div className="mt-0.5 font-mono text-[10px] uppercase tracking-[0.2em] text-dim">{r.type} · {r.location}</div>
-                      </div>
-                      <ArrowUpRight className="h-4 w-4 shrink-0 text-dim transition-colors group-hover:text-ozone" />
-                    </Link>
-                  ))}
+                  {related.map((r) => {
+                    const rst = STATUS_META[r.status] || STATUS_META.future;
+                    return (
+                      <Link key={r.id} to={`/careers/${r.id}`} className="group flex items-center justify-between gap-3 p-4 transition-colors hover:bg-slate2/20">
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <span className={`h-1.5 w-1.5 ${rst.dot}`} />
+                            <span className="font-display text-base font-semibold text-silver transition-colors group-hover:text-ozone">{r.title}</span>
+                          </div>
+                          <div className="mt-0.5 pl-3.5 font-mono text-[10px] uppercase tracking-[0.2em] text-dim">{r.type} · {r.location}</div>
+                        </div>
+                        <ArrowUpRight className="h-4 w-4 shrink-0 text-dim transition-colors group-hover:text-ozone" />
+                      </Link>
+                    );
+                  })}
                 </div>
               </div>
             </Reveal>
