@@ -47,7 +47,7 @@ export default function Careers() {
             <div className="flex items-end justify-between gap-4">
               <div>
                 <span className="font-mono text-[10px] uppercase tracking-[0.3em] text-ozone">// Open roles</span>
-                <h2 className="mt-2 font-display text-2xl font-bold tracking-[-0.02em] text-silver md:text-3xl">Where you come in</h2>
+                <h2 className="mt-2 font-display text-2xl font-bold tracking-[-0.02em] text-silver md:text-3xl">Jobsboard</h2>
               </div>
               <span className="font-mono text-[10px] uppercase tracking-[0.25em] text-dim">{ROLES.length} positions</span>
             </div>
