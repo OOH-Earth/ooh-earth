@@ -29,6 +29,7 @@ export default function SeoAdminPanel() {
   const [query, setQuery] = useState("");
   const [savingPath, setSavingPath] = useState(null);
   const [genPath, setGenPath] = useState(null);
+  const [bulkGen, setBulkGen] = useState({ active: false, done: 0, total: 0, current: "" });
   // Local edit drafts: path -> { title, description, noindex }
   const [drafts, setDrafts] = useState({});
 
@@ -110,6 +111,33 @@ export default function SeoAdminPanel() {
     }
   };
 
+  // Bulk-generate branded social cards for every route that doesn't have one yet.
+  // Runs sequentially (each image takes 5-10s) and updates progress live.
+  const generateAllMissing = async () => {
+    const targets = routes.filter((r) => {
+      const rec = records?.[r.path];
+      return !rec?.og_generated && !r.dynamic;
+    });
+    if (!targets.length) { toast({ title: "All routes already have social cards" }); return; }
+    setBulkGen({ active: true, done: 0, total: targets.length, current: targets[0].path });
+    let done = 0;
+    for (const r of targets) {
+      const d = draft(r.path);
+      setBulkGen({ active: true, done, total: targets.length, current: r.path });
+      try {
+        const res = await base44.functions.invoke("generateOgImage", { path: r.path, title: d.title, subtitle: d.description });
+        const data = res?.data ?? res;
+        if (data?.url) {
+          setRecords((p) => ({ ...p, [r.path]: { ...p[r.path], path: r.path, og_image: data.url, og_generated: true, ...d } }));
+        }
+      } catch { /* skip individual failures, continue */ }
+      done++;
+      setBulkGen({ active: true, done, total: targets.length, current: r.path });
+    }
+    setBulkGen({ active: false, done, total: targets.length, current: "" });
+    toast({ title: `Generated ${done} social cards` });
+  };
+
   const routes = allRoutes();
   const filtered = routes.filter((r) => {
     if (!query) return true;
@@ -149,7 +177,20 @@ export default function SeoAdminPanel() {
         <span className="font-mono text-[9px] uppercase tracking-[0.18em] text-silver/40">
           {records ? `${Object.keys(records).length} customized · ${routes.length} total routes` : "loading…"}
         </span>
+        <button
+          onClick={generateAllMissing}
+          disabled={bulkGen.active || !records}
+          className="ml-auto flex items-center gap-1.5 border border-ozone bg-ozone/10 px-3 py-1.5 font-mono text-[8px] font-bold uppercase tracking-[0.15em] text-ozone transition-colors hover:bg-ozone hover:text-void disabled:opacity-50"
+        >
+          {bulkGen.active ? <Loader2 className="h-3 w-3 animate-spin" /> : <Sparkles className="h-3 w-3" />}
+          {bulkGen.active ? `Generating ${bulkGen.done}/${bulkGen.total}…` : "Generate all missing"}
+        </button>
       </div>
+      {bulkGen.active && (
+        <div className="px-4 pb-2 font-mono text-[9px] uppercase tracking-[0.15em] text-flare">
+          → {bulkGen.current} ({bulkGen.done}/{bulkGen.total})
+        </div>
+      )}
 
       <p className="px-4 pb-3 font-mono text-[10px] leading-relaxed text-silver/45">
         Edit per-route titles, descriptions, and noindex. Generate a branded 1200×630 social-share card from the OOH brand kit — each card is saved to the route and served as its <code className="text-ozone">og:image</code>. Dynamic pages (store items, blog posts, locations) inherit their section fallback and override at render time.
