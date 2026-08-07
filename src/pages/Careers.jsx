@@ -1,9 +1,9 @@
-import { Mail, ArrowUpRight, Users, Sparkles } from "lucide-react";
+import { Mail, ArrowUpRight, Users, Sparkles, Coins } from "lucide-react";
 import Nav from "@/components/ooh/Nav";
 import Reveal from "@/components/ooh/Reveal";
 import SiteFooter from "@/components/ooh/SiteFooter";
 import RoleCard from "@/components/ooh/careers/RoleCard";
-import { ROLES, VALUES, PROCESS, APPLY_EMAIL } from "@/components/ooh/careers/roles";
+import { ROLES, VALUES, PROCESS, APPLY_EMAIL, CATEGORIES, SUPPORT } from "@/components/ooh/careers/roles";
 
 export default function Careers() {
   const mailto = `mailto:${APPLY_EMAIL}?subject=Joining OOH Earth`;
@@ -32,9 +32,9 @@ export default function Careers() {
           </div>
           <div className="mt-8 flex flex-wrap gap-x-6 gap-y-2 font-mono text-[10px] uppercase tracking-[0.25em] text-dim">
             <span>· {ROLES.length} open roles</span>
+            <span>· {ROLES.filter((r) => r.type === "Volunteer").length} volunteer</span>
             <span>· Remote-first</span>
-            <span>· Volunteer + paid contracts</span>
-            <span>· Public beta</span>
+            <span>· Community-funded</span>
           </div>
         </div>
       </section>
@@ -72,10 +72,44 @@ export default function Careers() {
               <span className="font-mono text-[10px] uppercase tracking-[0.25em] text-dim">{ROLES.length} positions</span>
             </div>
           </Reveal>
-          <div className="mt-8 grid grid-cols-1 gap-4 md:grid-cols-2">
-            {ROLES.map((r) => (
-              <Reveal key={r.id}>
-                <RoleCard role={r} />
+          <div className="mt-10 space-y-12">
+            {CATEGORIES.map((cat) => {
+              const inCat = ROLES.filter((r) => r.category === cat);
+              if (!inCat.length) return null;
+              return (
+                <div key={cat}>
+                  <div className="flex items-baseline justify-between gap-3 border-b border-slate2/40 pb-2">
+                    <h3 className="font-display text-lg font-semibold tracking-[-0.01em] text-silver">{cat}</h3>
+                    <span className="font-mono text-[10px] uppercase tracking-[0.25em] text-dim">{inCat.length} roles</span>
+                  </div>
+                  <div className="mt-5 grid grid-cols-1 gap-4 md:grid-cols-2">
+                    {inCat.map((r) => (
+                      <Reveal key={r.id}><RoleCard role={r} /></Reveal>
+                    ))}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
+      {/* Support for volunteers */}
+      <section className="border-b border-slate2/40 px-4 py-16 md:px-8 md:py-24">
+        <div className="mx-auto max-w-5xl">
+          <Reveal>
+            <span className="font-mono text-[10px] uppercase tracking-[0.3em] text-ozone">// Volunteers</span>
+            <h2 className="mt-2 font-display text-2xl font-bold tracking-[-0.02em] text-silver md:text-3xl">Volunteering shouldn't cost you</h2>
+            <p className="mt-2 max-w-2xl text-sm text-darkgray">Most of the network is volunteer-run — but we back our people. Honest support, and no false promises of a salary.</p>
+          </Reveal>
+          <div className="mt-8 grid grid-cols-1 gap-px border border-slate2/40 bg-slate2/40 sm:grid-cols-2 lg:grid-cols-4">
+            {SUPPORT.map((s) => (
+              <Reveal key={s.title}>
+                <div className="flex h-full flex-col gap-3 bg-void p-5">
+                  <Coins className="h-5 w-5 text-ozone" />
+                  <h3 className="font-display text-base font-semibold tracking-[-0.01em] text-silver">{s.title}</h3>
+                  <p className="text-sm leading-relaxed text-darkgray">{s.body}</p>
+                </div>
               </Reveal>
             ))}
           </div>
