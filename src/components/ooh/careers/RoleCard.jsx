@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { ArrowUpRight, MapPin, Briefcase } from "lucide-react";
+import { STATUS_META } from "@/components/ooh/careers/roles";
 
 const TYPE_STYLES = {
   Volunteer: "border-ozone/50 text-ozone",
@@ -8,6 +9,7 @@ const TYPE_STYLES = {
 };
 
 export default function RoleCard({ role }) {
+  const st = STATUS_META[role.status] || STATUS_META.future;
   return (
     <Link
       to={`/careers/${role.id}`}
@@ -15,6 +17,9 @@ export default function RoleCard({ role }) {
     >
       <div className="flex items-start justify-between gap-3">
         <div>
+          <span className={`mb-2 inline-flex items-center gap-1.5 border px-1.5 py-0.5 font-mono text-[8px] uppercase tracking-[0.2em] ${st.cls}`}>
+            <span className={`h-1 w-1 ${st.dot}`} /> {st.label}
+          </span>
           <h3 className="font-display text-lg font-semibold tracking-[-0.02em] text-silver transition-colors group-hover:text-ozone">{role.title}</h3>
           <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 font-mono text-[10px] uppercase tracking-[0.2em] text-dim">
             <span className="flex items-center gap-1"><MapPin className="h-3 w-3" />{role.location}</span>
