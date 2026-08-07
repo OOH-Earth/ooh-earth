@@ -30,14 +30,28 @@ export default function SeoAdminPanel() {
   const [savingPath, setSavingPath] = useState(null);
   const [genPath, setGenPath] = useState(null);
   const [bulkGen, setBulkGen] = useState({ active: false, done: 0, total: 0, current: "" });
+  const [savingAll, setSavingAll] = useState({ active: false, done: 0, total: 0 });
   // Local edit drafts: path -> { title, description, noindex }
   const [drafts, setDrafts] = useState({});
+
+  const routes = allRoutes();
 
   const load = useCallback(async () => {
     try {
       const recs = await base44.entities.PageMeta.list("-updated_date", 300);
+      // Dedup by path — keep the most complete record (og_generated > og_image > newest),
+      // delete the rest. Prevents "stuck on old image" when a save shadows a generated card.
+      const byPath = {};
+      for (const r of recs) { if (r.path) (byPath[r.path] = byPath[r.path] || []).push(r); }
       const map = {};
-      for (const r of recs) { if (r.path) map[r.path] = r; }
+      for (const path of Object.keys(byPath)) {
+        const arr = byPath[path];
+        if (arr.length > 1) {
+          arr.sort((a, b) => (b.og_generated ? 1 : 0) - (a.og_generated ? 1 : 0) || (b.og_image ? 1 : 0) - (a.og_image ? 1 : 0) || new Date(b.updated_date) - new Date(a.updated_date));
+          arr.slice(1).forEach((r) => base44.entities.PageMeta.delete(r.id).catch(() => {}));
+        }
+        map[path] = arr[0];
+      }
       setRecords(map);
       // Seed drafts from existing records / static fallback
       const d = {};
@@ -91,6 +105,42 @@ export default function SeoAdminPanel() {
     }
   };
 
+  // A route is "dirty" if its draft differs from the saved record (or has content with no record).
+  const isDirty = (path) => {
+    const d = draft(path);
+    const rec = records?.[path];
+    if (!rec) return !!(d.title || d.description || d.noindex);
+    return d.title !== (rec.title || "") || d.description !== (rec.description || "") || !!d.noindex !== !!rec.noindex;
+  };
+
+  const dirtyCount = routes.filter((r) => isDirty(r.path)).length;
+
+  // Save every dirty draft in one pass — creates or updates per route, then resyncs
+  // from the server so ids / og_image stay authoritative.
+  const saveAll = async () => {
+    const targets = routes.filter((r) => isDirty(r.path));
+    if (!targets.length) { toast({ title: "No unsaved changes" }); return; }
+    setSavingAll({ active: true, done: 0, total: targets.length });
+    let ok = 0;
+    for (const r of targets) {
+      const d = draft(r.path);
+      const existing = records?.[r.path];
+      try {
+        if (existing?.id) {
+          await base44.entities.PageMeta.update(existing.id, { title: d.title, description: d.description, noindex: d.noindex });
+        } else {
+          const created = await base44.entities.PageMeta.create({ path: r.path, title: d.title, description: d.description, noindex: d.noindex });
+          setRecords((p) => ({ ...p, [r.path]: created }));
+        }
+        ok++;
+      } catch { /* skip individual failures */ }
+      setSavingAll((s) => ({ ...s, done: ok }));
+    }
+    setSavingAll({ active: false, done: ok, total: targets.length });
+    await load();
+    toast({ title: `Saved ${ok}/${targets.length} routes` });
+  };
+
   const generateOg = async (path) => {
     const d = draft(path);
     if (!d.title) { toast({ title: "Add a title first", variant: "destructive" }); return; }
@@ -99,7 +149,9 @@ export default function SeoAdminPanel() {
       const res = await base44.functions.invoke("generateOgImage", { path, title: d.title, subtitle: d.description });
       const data = res?.data ?? res;
       if (data?.url) {
-        setRecords((p) => ({ ...p, [path]: { ...p[path], path, og_image: data.url, og_generated: true, ...d } }));
+        // Merge the server-persisted record (carries id) so a later Save updates
+        // instead of creating a duplicate that would shadow the generated card.
+        setRecords((p) => ({ ...p, [path]: { ...(p[path] || {}), ...(data.saved || {}), path, og_image: data.url, og_generated: true } }));
         toast({ title: "Social card generated" });
       } else {
         toast({ title: data?.error || "Generation failed", variant: "destructive" });
@@ -128,7 +180,7 @@ export default function SeoAdminPanel() {
         const res = await base44.functions.invoke("generateOgImage", { path: r.path, title: d.title, subtitle: d.description });
         const data = res?.data ?? res;
         if (data?.url) {
-          setRecords((p) => ({ ...p, [r.path]: { ...p[r.path], path: r.path, og_image: data.url, og_generated: true, ...d } }));
+          setRecords((p) => ({ ...p, [r.path]: { ...(p[r.path] || {}), ...(data.saved || {}), path: r.path, og_image: data.url, og_generated: true } }));
         }
       } catch { /* skip individual failures, continue */ }
       done++;
@@ -138,7 +190,6 @@ export default function SeoAdminPanel() {
     toast({ title: `Generated ${done} social cards` });
   };
 
-  const routes = allRoutes();
   const filtered = routes.filter((r) => {
     if (!query) return true;
     const q = query.toLowerCase();
@@ -178,9 +229,17 @@ export default function SeoAdminPanel() {
           {records ? `${Object.keys(records).length} customized · ${routes.length} total routes` : "loading…"}
         </span>
         <button
+          onClick={saveAll}
+          disabled={savingAll.active || !records}
+          className="ml-auto flex items-center gap-1.5 border border-silver/60 bg-silver/5 px-3 py-1.5 font-mono text-[8px] font-bold uppercase tracking-[0.15em] text-silver transition-colors hover:bg-silver hover:text-void disabled:opacity-50"
+        >
+          {savingAll.active ? <Loader2 className="h-3 w-3 animate-spin" /> : <CheckCircle2 className="h-3 w-3" />}
+          {savingAll.active ? `Saving ${savingAll.done}/${savingAll.total}…` : `Save all${dirtyCount ? ` (${dirtyCount})` : ""}`}
+        </button>
+        <button
           onClick={generateAllMissing}
           disabled={bulkGen.active || !records}
-          className="ml-auto flex items-center gap-1.5 border border-ozone bg-ozone/10 px-3 py-1.5 font-mono text-[8px] font-bold uppercase tracking-[0.15em] text-ozone transition-colors hover:bg-ozone hover:text-void disabled:opacity-50"
+          className="flex items-center gap-1.5 border border-ozone bg-ozone/10 px-3 py-1.5 font-mono text-[8px] font-bold uppercase tracking-[0.15em] text-ozone transition-colors hover:bg-ozone hover:text-void disabled:opacity-50"
         >
           {bulkGen.active ? <Loader2 className="h-3 w-3 animate-spin" /> : <Sparkles className="h-3 w-3" />}
           {bulkGen.active ? `Generating ${bulkGen.done}/${bulkGen.total}…` : "Generate all missing"}
@@ -205,7 +264,7 @@ export default function SeoAdminPanel() {
           return (
             <div key={route.path} className="px-4 py-3.5">
               <div className="flex items-center gap-2">
-                <span className={`h-1.5 w-1.5 rounded-full ${customized ? "bg-ozone" : "bg-slate2"}`} />
+                <span className={`h-1.5 w-1.5 rounded-full ${isDirty(route.path) ? "bg-flare animate-pulse" : customized ? "bg-ozone" : "bg-slate2"}`} title={isDirty(route.path) ? "Unsaved changes" : customized ? "Customized" : "Default"} />
                 <span className="font-display text-sm font-bold text-silver">{route.label}</span>
                 {route.dynamic && <span className="border border-flare/40 px-1.5 py-0.5 font-mono text-[8px] uppercase tracking-[0.15em] text-flare">dynamic</span>}
                 {customized && <span className="flex items-center gap-1 font-mono text-[8px] uppercase tracking-[0.15em] text-ozone"><CheckCircle2 className="h-2.5 w-2.5" />custom</span>}
