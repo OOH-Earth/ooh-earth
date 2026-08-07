@@ -67,7 +67,7 @@ export default function SeoAdminPanel() {
     setSavingPath(path);
     try {
       const existing = records?.[path];
-      if (existing) {
+      if (existing?.id) {
         await base44.entities.PageMeta.update(existing.id, {
           title: d.title,
           description: d.description,

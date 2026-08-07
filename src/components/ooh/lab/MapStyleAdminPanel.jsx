@@ -17,8 +17,16 @@ export default function MapStyleAdminPanel() {
         const rows = await base44.entities.SiteSetting.filter({ key: MAP_STYLE_DEFAULT_KEY });
         const rec = rows?.[0];
         if (!active) return;
-        if (rec) { setRecId(rec.id); setCurrent(rec.value || "dark"); }
-        else setCurrent("dark");
+        if (rec) {
+          setRecId(rec.id);
+          setCurrent(rec.value || "dark");
+          // Dedup stale duplicate settings rows (keep the first / canonical)
+          if (rows.length > 1) {
+            rows.slice(1).forEach((r) => base44.entities.SiteSetting.delete(r.id).catch(() => {}));
+          }
+        } else {
+          setCurrent("dark");
+        }
       } catch {
         if (active) setCurrent("dark");
       }

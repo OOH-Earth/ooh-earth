@@ -30,6 +30,10 @@ export default function ThemeModesPanel() {
           setRecId(rec.id);
           const list = (rec.value || "").split(",").map((s) => s.trim()).filter(Boolean);
           setEnabled(list.length ? list : THEME_ORDER);
+          // Dedup stale duplicate settings rows (keep the first / canonical)
+          if (rows.length > 1) {
+            rows.slice(1).forEach((r) => base44.entities.SiteSetting.delete(r.id).catch(() => {}));
+          }
         } else {
           setEnabled(THEME_ORDER); // not configured → all on
         }
