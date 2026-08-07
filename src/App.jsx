@@ -86,6 +86,7 @@ import EcologyPortal from '@/pages/portals/EcologyPortal';
 import RiversPortal from '@/pages/portals/RiversPortal';
 import WarZonesPortal from '@/pages/portals/WarZonesPortal';
 import Careers from '@/pages/Careers';
+import CareerRole from '@/pages/CareerRole';
 import RadioOps from '@/pages/RadioOps';
 import Console from '@/pages/Console';
 import InvestorHub from '@/pages/InvestorHub';
@@ -195,6 +196,7 @@ const AuthenticatedApp = () => {
     <Route path="/category/:slug" element={<CategoryDirectory />} />
     <Route path="/regions" element={<Regions />} />
     <Route path="/careers" element={<Careers />} />
+    <Route path="/careers/:id" element={<CareerRole />} />
     <Route path="/blog" element={<Blog scope="public" />} />
     <Route path="/blog/:slug" element={<BlogArticle scope="public" />} />
     <Route path="/investor-access" element={<InvestorAccess />} />
