@@ -463,11 +463,11 @@ export const STATUS_META = {
 
 // What we genuinely look for in people — traits over credentials. Real, not fluff.
 export const LOOK_FOR = [
-  { title: "You act, not just observe", body: "You'd rather map a billboard than argue about one online. The people who thrive here move — file the report, run the action, ship the fix." },
-  { title: "You work in the open", body: "Our data, methods and code are public and forkable. You're comfortable working transparently, sharing credit, and building things anyone can inspect." },
-  { title: "You're rigorous about the truth", body: "The atlas lives or dies on accuracy. You cite your sources, verify before you claim, and would rather be right than loud." },
-  { title: "You're here for the mission", body: "This is community-funded — no ad money, no investors, no equity windfall. The reward is public space reclaimed and a movement that grows." },
-  { title: "You look out for the many", body: "We centre the Global South, the overlooked and the advertised-at. You bring care for people, not just polish for the product." },
+  { title: "You'd rather do than debate", body: "You'd rather map the billboard than argue about it. The people who flourish here move first — file the report, run the action, ship the fix, then talk about it." },
+  { title: "You work like an open book", body: "Our data, code and methods are public and forkable. You're at ease in the open — sharing the credit, leaving the receipts, building things anyone can inspect and borrow." },
+  { title: "You'd rather be right than loud", body: "The atlas lives or dies on accuracy. You cite your sources, check before you claim, and never let a good story outrun the facts." },
+  { title: "You're in it for the right reasons", body: "Community-funded, no ad money, no investors calling the shots. The reward isn't a windfall — it's public space reclaimed and a movement that outgrows you." },
+  { title: "You look out for everyone", body: "We centre the Global South, the overlooked, the advertised-at. You bring real care for people into the work — not just polish for the product." },
 ];
 
 // Honest support offered to volunteers — no false promises of a salary, but real

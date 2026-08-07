@@ -45,8 +45,8 @@ export default function Careers() {
         <div className="mx-auto max-w-5xl">
           <Reveal>
             <span className="font-mono text-[10px] uppercase tracking-[0.3em] text-ozone">// Who thrives here</span>
-            <h2 className="mt-2 font-display text-2xl font-bold tracking-[-0.02em] text-silver md:text-3xl">What we look for</h2>
-            <p className="mt-2 max-w-2xl text-sm text-darkgray">We don't hire for CVs. We've worked with brilliant ones who never shipped a thing, and self-taught operatives who quietly moved a whole city. The traits below aren't a wishlist — they're what actually predicts who does the work here, and who sticks around.</p>
+            <h2 className="mt-2 font-display text-2xl font-bold tracking-[-0.02em] text-silver md:text-3xl">Who thrives here</h2>
+            <p className="mt-2 max-w-2xl text-sm text-darkgray">We've stopped reading CVs too closely. Some of the best operatives we know had never mapped a thing before their first walk; some of the most decorated never shipped at all. The five things below are what really tells us who'll do their best work here — and, honestly, who we'll enjoy the ride with.</p>
           </Reveal>
           <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2">
             {LOOK_FOR.map((v, i) => (
