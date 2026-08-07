@@ -6,7 +6,7 @@ import { Flame, Check, ArrowRight, Building2, Cctv, Zap, MapPin } from "lucide-r
 
 // Metro UI Kit — clean, solid, bordered cards with soft shadows.
 // Pulls live telemetry from the fieldStats function with static fallback.
-const STACK_IMG = "https://ooh.earth/wp-content/uploads/2026/05/1777667192-01-4t5x.webp";
+const STACK_IMG = "https://base44.app/api/apps/6a62213cff3ccbca88c04ff5/files/mp/public/6a62213cff3ccbca88c04ff5/0c368a455_1777667192-01-4t5x.webp";
 
 const WEEK = ["M", "T", "W", "T", "F", "S", "S"];
 const DONE = [true, true, true, true, false, true, false];

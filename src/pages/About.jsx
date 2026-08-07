@@ -9,14 +9,14 @@ import HorizonProgress from "@/components/ooh/HorizonProgress";
 import ViewfinderCursor from "@/components/ooh/ViewfinderCursor";
 
 const GALLERY = [
-  "https://ooh.earth/wp-content/uploads/2024/11/AdidasBillboard30-768x512.jpg",
-  "https://ooh.earth/wp-content/uploads/2024/12/signal-2024-02-05-222059_002-768x576.jpeg",
-  "https://ooh.earth/wp-content/uploads/2024/11/IMG_2919-768x576.jpg",
-  "https://ooh.earth/wp-content/uploads/2024/11/IMG_2899-3-768x576.jpg",
-  "https://ooh.earth/wp-content/uploads/2024/11/IMG_2939-768x1024.jpg",
-  "https://ooh.earth/wp-content/uploads/2024/11/IMG_1557-768x576.jpg",
-  "https://ooh.earth/wp-content/uploads/2024/11/IMG_1555-2-768x1024.jpg",
-  "https://ooh.earth/wp-content/uploads/2024/11/IMG_0709-768x576.jpg",
+  "https://base44.app/api/apps/6a62213cff3ccbca88c04ff5/files/mp/public/6a62213cff3ccbca88c04ff5/7b8f28175_AdidasBillboard30-768x512.jpg",
+  "https://base44.app/api/apps/6a62213cff3ccbca88c04ff5/files/mp/public/6a62213cff3ccbca88c04ff5/2a4a1514d_signal-2024-02-05-222059_002-768x576.jpeg",
+  "https://base44.app/api/apps/6a62213cff3ccbca88c04ff5/files/mp/public/6a62213cff3ccbca88c04ff5/120b92a1b_IMG_2919-768x576.jpg",
+  "https://base44.app/api/apps/6a62213cff3ccbca88c04ff5/files/mp/public/6a62213cff3ccbca88c04ff5/7815fc89e_IMG_2899-3-768x576.jpg",
+  "https://base44.app/api/apps/6a62213cff3ccbca88c04ff5/files/mp/public/6a62213cff3ccbca88c04ff5/ef2dd00dc_IMG_2939-768x1024.jpg",
+  "https://base44.app/api/apps/6a62213cff3ccbca88c04ff5/files/mp/public/6a62213cff3ccbca88c04ff5/e7485b83e_IMG_1557-768x576.jpg",
+  "https://base44.app/api/apps/6a62213cff3ccbca88c04ff5/files/mp/public/6a62213cff3ccbca88c04ff5/e83095747_IMG_1555-2-768x1024.jpg",
+  "https://base44.app/api/apps/6a62213cff3ccbca88c04ff5/files/mp/public/6a62213cff3ccbca88c04ff5/d7d30236e_IMG_0709-768x576.jpg",
 ];
 
 export default function About() {
@@ -33,7 +33,7 @@ export default function About() {
         {/* Hero */}
         <section className="relative flex min-h-[78vh] items-end overflow-hidden">
           <img
-            src="https://ooh.earth/wp-content/uploads/2025/01/517shots_so.jpeg"
+            src="https://base44.app/api/apps/6a62213cff3ccbca88c04ff5/files/mp/public/6a62213cff3ccbca88c04ff5/5400756b4_517shots_so.jpeg"
             alt="OOH field intervention"
             className="absolute inset-0 h-full w-full object-cover opacity-50"
           />

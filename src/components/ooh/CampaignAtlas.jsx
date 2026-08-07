@@ -12,7 +12,7 @@ const PLATES = [
     duration: "30 DAYS",
     sentiment: "+78",
     sdg: "11",
-    img: "https://ooh.earth/wp-content/uploads/2026/05/1777896004-01-d21q.webp",
+    img: "https://base44.app/api/apps/6a62213cff3ccbca88c04ff5/files/mp/public/6a62213cff3ccbca88c04ff5/69f4a35e8_1777896004-01-d21q.webp",
     href: "https://oohearth.app/location/1777896004/",
   },
   {
@@ -25,7 +25,7 @@ const PLATES = [
     duration: "14 DAYS",
     sentiment: "+91",
     sdg: "11",
-    img: "https://ooh.earth/wp-content/uploads/2026/05/1777667192-01-4t5x.webp",
+    img: "https://base44.app/api/apps/6a62213cff3ccbca88c04ff5/files/mp/public/6a62213cff3ccbca88c04ff5/0c368a455_1777667192-01-4t5x.webp",
     href: "https://oohearth.app/location/1777667192/",
   },
   {
@@ -38,7 +38,7 @@ const PLATES = [
     duration: "ONGOING",
     sentiment: "+64",
     sdg: "9 · 17",
-    img: "https://ooh.earth/wp-content/uploads/2026/05/1777649595-01-nw44.webp",
+    img: "https://base44.app/api/apps/6a62213cff3ccbca88c04ff5/files/mp/public/6a62213cff3ccbca88c04ff5/005abf2d7_1777649595-01-nw44.webp",
     href: "https://oohearth.app/location/1777649595/",
   },
   {
@@ -51,7 +51,7 @@ const PLATES = [
     duration: "21 DAYS",
     sentiment: "+72",
     sdg: "11",
-    img: "https://ooh.earth/wp-content/uploads/2026/05/1777635751-01-f5um.webp",
+    img: "https://base44.app/api/apps/6a62213cff3ccbca88c04ff5/files/mp/public/6a62213cff3ccbca88c04ff5/236ce5503_1777635751-01-f5um.webp",
     href: "https://oohearth.app/location/1777635751/",
   },
   {
@@ -64,7 +64,7 @@ const PLATES = [
     duration: "LOGGED",
     sentiment: "+99",
     sdg: "13 · 16",
-    img: "https://ooh.earth/wp-content/uploads/2026/03/04_Lindsay-Grime_Were-Hiring_Shell-AGM-2024_credit-Brandalism_12x9-2.jpeg",
+    img: "https://base44.app/api/apps/6a62213cff3ccbca88c04ff5/files/mp/public/6a62213cff3ccbca88c04ff5/0dff24721_04_Lindsay-Grime_Were-Hiring_Shell-AGM-2024_credit-Brandalism_12x9-2.jpeg",
     href: "https://oohearth.app/location/1773075390/",
   },
 ];
