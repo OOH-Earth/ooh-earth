@@ -46,7 +46,7 @@ export default function Careers() {
           <Reveal>
             <span className="font-mono text-[10px] uppercase tracking-[0.3em] text-ozone">// Who thrives here</span>
             <h2 className="mt-2 font-display text-2xl font-bold tracking-[-0.02em] text-silver md:text-3xl">What we look for</h2>
-            <p className="mt-2 max-w-2xl text-sm text-darkgray">Traits over credentials. We've met brilliant CVs who never shipped, and self-taught operatives who moved a whole city. These are the things that actually predict who does great work here.</p>
+            <p className="mt-2 max-w-2xl text-sm text-darkgray">We don't hire for CVs. We've worked with brilliant ones who never shipped a thing, and self-taught operatives who quietly moved a whole city. The traits below aren't a wishlist — they're what actually predicts who does the work here, and who sticks around.</p>
           </Reveal>
           <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2">
             {LOOK_FOR.map((v, i) => (
@@ -68,9 +68,9 @@ export default function Careers() {
       <section className="border-b border-slate2/40 px-4 py-16 md:px-8 md:py-24">
         <div className="mx-auto max-w-5xl">
           <Reveal>
-            <span className="font-mono text-[10px] uppercase tracking-[0.3em] text-flare">// Non-negotiables</span>
+            <span className="font-mono text-[10px] uppercase tracking-[0.3em] text-flare">// Lines we hold</span>
             <h2 className="mt-2 font-display text-2xl font-bold tracking-[-0.02em] text-silver md:text-3xl">What we stand for</h2>
-            <p className="mt-2 max-w-2xl text-sm text-darkgray">The same whether you're a paid contractor or a first-week volunteer.</p>
+            <p className="mt-2 max-w-2xl text-sm text-darkgray">Same standard for a paid contractor and a first-week volunteer. These don't bend.</p>
           </Reveal>
           <div className="mt-8 grid grid-cols-1 gap-px border border-slate2/40 bg-slate2/40 sm:grid-cols-2 lg:grid-cols-4">
             {VALUES.map((v) => (
@@ -93,7 +93,7 @@ export default function Careers() {
             <div className="flex items-end justify-between gap-4">
               <div>
                 <span className="font-mono text-[10px] uppercase tracking-[0.3em] text-ozone">// Open roles</span>
-                <h2 className="mt-2 font-display text-2xl font-bold tracking-[-0.02em] text-silver md:text-3xl">Where you fit in</h2>
+                <h2 className="mt-2 font-display text-2xl font-bold tracking-[-0.02em] text-silver md:text-3xl">Where you come in</h2>
               </div>
               <span className="font-mono text-[10px] uppercase tracking-[0.25em] text-dim">{ROLES.length} positions</span>
             </div>
