@@ -1,9 +1,10 @@
-import { Mail, ArrowUpRight, Users, Sparkles, Coins } from "lucide-react";
+import { Mail, ArrowUpRight, Users, Coins } from "lucide-react";
+import { Link } from "react-router-dom";
 import Nav from "@/components/ooh/Nav";
 import Reveal from "@/components/ooh/Reveal";
 import SiteFooter from "@/components/ooh/SiteFooter";
 import RoleCard from "@/components/ooh/careers/RoleCard";
-import { ROLES, VALUES, PROCESS, APPLY_EMAIL, CATEGORIES, SUPPORT } from "@/components/ooh/careers/roles";
+import { ROLES, VALUES, PROCESS, APPLY_EMAIL, CATEGORIES, SUPPORT, LOOK_FOR } from "@/components/ooh/careers/roles";
 
 export default function Careers() {
   const mailto = `mailto:${APPLY_EMAIL}?subject=Joining OOH Earth`;
@@ -31,26 +32,51 @@ export default function Careers() {
             </a>
           </div>
           <div className="mt-8 flex flex-wrap gap-x-6 gap-y-2 font-mono text-[10px] uppercase tracking-[0.25em] text-dim">
-            <span>· {ROLES.length} open roles</span>
+            <span>· {ROLES.filter((r) => r.status === "live").length} live roles</span>
+            <span>· {ROLES.filter((r) => r.status === "future").length} future needs</span>
             <span>· {ROLES.filter((r) => r.type === "Volunteer").length} volunteer</span>
-            <span>· Remote-first</span>
             <span>· Community-funded</span>
           </div>
         </div>
       </section>
 
-      {/* Values */}
+      {/* What we look for */}
       <section className="border-b border-slate2/40 px-4 py-16 md:px-8 md:py-24">
         <div className="mx-auto max-w-5xl">
           <Reveal>
-            <h2 className="font-display text-2xl font-bold tracking-[-0.02em] text-silver md:text-3xl">What we look for</h2>
-            <p className="mt-2 max-w-2xl text-sm text-darkgray">Four things that matter more than credentials.</p>
+            <span className="font-mono text-[10px] uppercase tracking-[0.3em] text-ozone">// Who thrives here</span>
+            <h2 className="mt-2 font-display text-2xl font-bold tracking-[-0.02em] text-silver md:text-3xl">What we look for</h2>
+            <p className="mt-2 max-w-2xl text-sm text-darkgray">Traits over credentials. We've met brilliant CVs who never shipped, and self-taught operatives who moved a whole city. These are the things that actually predict who does great work here.</p>
+          </Reveal>
+          <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2">
+            {LOOK_FOR.map((v, i) => (
+              <Reveal key={v.title}>
+                <div className="flex h-full gap-4 border border-slate2/50 bg-card/40 p-5">
+                  <span className="font-mono text-sm font-black text-ozone">{String(i + 1).padStart(2, "0")}</span>
+                  <div>
+                    <h3 className="font-display text-base font-semibold tracking-[-0.01em] text-silver">{v.title}</h3>
+                    <p className="mt-1.5 text-sm leading-relaxed text-darkgray">{v.body}</p>
+                  </div>
+                </div>
+              </Reveal>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* What we stand for */}
+      <section className="border-b border-slate2/40 px-4 py-16 md:px-8 md:py-24">
+        <div className="mx-auto max-w-5xl">
+          <Reveal>
+            <span className="font-mono text-[10px] uppercase tracking-[0.3em] text-flare">// Non-negotiables</span>
+            <h2 className="mt-2 font-display text-2xl font-bold tracking-[-0.02em] text-silver md:text-3xl">What we stand for</h2>
+            <p className="mt-2 max-w-2xl text-sm text-darkgray">The same whether you're a paid contractor or a first-week volunteer.</p>
           </Reveal>
           <div className="mt-8 grid grid-cols-1 gap-px border border-slate2/40 bg-slate2/40 sm:grid-cols-2 lg:grid-cols-4">
             {VALUES.map((v) => (
               <Reveal key={v.title}>
                 <div className="flex h-full flex-col gap-3 bg-void p-5">
-                  <Sparkles className="h-5 w-5 text-ozone" />
+                  <span className="h-1.5 w-1.5 bg-flare" />
                   <h3 className="font-display text-base font-semibold tracking-[-0.01em] text-silver">{v.title}</h3>
                   <p className="text-sm leading-relaxed text-darkgray">{v.body}</p>
                 </div>
@@ -67,14 +93,19 @@ export default function Careers() {
             <div className="flex items-end justify-between gap-4">
               <div>
                 <span className="font-mono text-[10px] uppercase tracking-[0.3em] text-ozone">// Open roles</span>
-                <h2 className="mt-2 font-display text-2xl font-bold tracking-[-0.02em] text-silver md:text-3xl">Looking for</h2>
+                <h2 className="mt-2 font-display text-2xl font-bold tracking-[-0.02em] text-silver md:text-3xl">Where you fit in</h2>
               </div>
               <span className="font-mono text-[10px] uppercase tracking-[0.25em] text-dim">{ROLES.length} positions</span>
+            </div>
+            <div className="mt-3 flex flex-wrap gap-x-5 gap-y-1 font-mono text-[10px] uppercase tracking-[0.2em] text-dim">
+              <span className="flex items-center gap-1.5"><span className="h-1.5 w-1.5 bg-[#39FF14]" /> Live role — apply now</span>
+              <span className="flex items-center gap-1.5"><span className="h-1.5 w-1.5 bg-flare" /> Future need — register interest</span>
             </div>
           </Reveal>
           <div className="mt-10 space-y-12">
             {CATEGORIES.map((cat) => {
-              const inCat = ROLES.filter((r) => r.category === cat);
+              const rank = { live: 0, future: 1, filled: 2, draft: 3 };
+              const inCat = ROLES.filter((r) => r.category === cat && r.status !== "draft").sort((a, b) => (rank[a.status] ?? 9) - (rank[b.status] ?? 9));
               if (!inCat.length) return null;
               return (
                 <div key={cat}>
@@ -144,11 +175,16 @@ export default function Careers() {
           <div className="relative">
             <h2 className="font-display text-3xl font-bold tracking-[-0.02em] text-silver md:text-4xl">Don't see your role?</h2>
             <p className="mx-auto mt-3 max-w-xl text-sm leading-relaxed text-darkgray md:text-base">
-              We're always looking for sharp, principled people. Tell us what you'd build at OOH Earth and we'll find a place for you.
+              You don't need our permission to start. Map an ad near you today — or pitch the role you think we're missing. And if you can't give time, funding the movement is its own kind of joining.
             </p>
-            <a href={mailto} className="mt-6 inline-flex items-center gap-2 border-2 border-ozone bg-ozone px-5 py-3 font-mono text-[11px] font-bold uppercase tracking-[0.25em] text-void transition-colors hover:bg-flare hover:border-flare">
-              <Mail className="h-4 w-4" /> {APPLY_EMAIL}
-            </a>
+            <div className="mt-6 flex flex-wrap justify-center gap-3">
+              <a href={mailto} className="inline-flex items-center gap-2 border-2 border-ozone bg-ozone px-5 py-3 font-mono text-[11px] font-bold uppercase tracking-[0.25em] text-void transition-colors hover:bg-flare hover:border-flare">
+                <Mail className="h-4 w-4" /> Pitch your role
+              </a>
+              <Link to="/campaign" className="inline-flex items-center gap-2 border border-slate2 px-5 py-3 font-mono text-[11px] font-bold uppercase tracking-[0.25em] text-silver transition-colors hover:border-ozone hover:text-ozone">
+                <Coins className="h-4 w-4" /> Fund the movement
+              </Link>
+            </div>
           </div>
         </div>
       </section>
