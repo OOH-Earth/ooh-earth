@@ -47,6 +47,8 @@ export default function SiteFooter({ onCommand }) {
               <li><Link to="/map" className="transition-colors hover:text-ozone">Map</Link></li>
               <li><Link to="/report" className="transition-colors hover:text-ozone">Report</Link></li>
               <li><Link to="/plans" className="transition-colors hover:text-ozone">Plans</Link></li>
+              <li><Link to="/about" className="transition-colors hover:text-ozone">About</Link></li>
+              <li><Link to="/contact" className="transition-colors hover:text-ozone">Contact</Link></li>
               <li><Link to="/support" className="transition-colors hover:text-ozone">Support</Link></li>
             </ul>
           </div>

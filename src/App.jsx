@@ -49,6 +49,7 @@ import Map from '@/pages/Map';
 import Report from '@/pages/Report';
 import About from '@/pages/About';
 import Support from '@/pages/Support';
+import Contact from '@/pages/Contact';
 import Plans from '@/pages/Plans';
 import Dashboard from '@/pages/Dashboard';
 import FdePortal from '@/pages/FdePortal';
@@ -149,6 +150,7 @@ const AuthenticatedApp = () => {
     <Route path="/report" element={<Report />} />
     <Route path="/about" element={<About />} />
     <Route path="/support" element={<Support />} />
+    <Route path="/contact" element={<Contact />} />
     <Route path="/plans" element={<Plans />} />
     <Route path="/campaign" element={<Campaign />} />
     <Route path="/store" element={<Store />} />

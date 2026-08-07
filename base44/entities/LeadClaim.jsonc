@@ -24,6 +24,11 @@
         "released"
       ],
       "default": "pending"
+    },
+    "description": {
+      "type": "string",
+      "description": "Optional description (max 1000 characters)",
+      "maxLength": 1000
     }
   },
   "required": [

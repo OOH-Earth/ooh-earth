@@ -27,6 +27,11 @@
     "ext_ref": {
       "type": "string",
       "description": "External reference (e.g. Stripe session id) \u2014 used for webhook idempotency"
+    },
+    "description": {
+      "type": "string",
+      "description": "Optional description (max 1000 characters)",
+      "maxLength": 1000
     }
   },
   "required": [

@@ -14,6 +14,11 @@
       "type": "number",
       "default": 0,
       "description": "Bonus XP granted on claim"
+    },
+    "description": {
+      "type": "string",
+      "description": "Optional description (max 1000 characters)",
+      "maxLength": 1000
     }
   },
   "required": [

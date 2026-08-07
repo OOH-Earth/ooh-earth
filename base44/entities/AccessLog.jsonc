@@ -42,6 +42,11 @@
         "api"
       ],
       "type": "string"
+    },
+    "description": {
+      "description": "Optional description (max 1000 characters)",
+      "type": "string",
+      "maxLength": 1000
     }
   },
   "required": [

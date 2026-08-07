@@ -60,6 +60,11 @@
     },
     "stripe_subscription_id": {
       "type": "string"
+    },
+    "description": {
+      "type": "string",
+      "description": "Optional description (max 1000 characters)",
+      "maxLength": 1000
     }
   },
   "required": [
