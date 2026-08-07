@@ -40,6 +40,45 @@ export default function Careers() {
         </div>
       </section>
 
+      {/* Open roles */}
+      <section id="roles" className="border-b border-slate2/40 px-4 py-16 md:px-8 md:py-24">
+        <div className="mx-auto max-w-5xl">
+          <Reveal>
+            <div className="flex items-end justify-between gap-4">
+              <div>
+                <span className="font-mono text-[10px] uppercase tracking-[0.3em] text-ozone">// Open roles</span>
+                <h2 className="mt-2 font-display text-2xl font-bold tracking-[-0.02em] text-silver md:text-3xl">Where you come in</h2>
+              </div>
+              <span className="font-mono text-[10px] uppercase tracking-[0.25em] text-dim">{ROLES.length} positions</span>
+            </div>
+            <div className="mt-3 flex flex-wrap gap-x-5 gap-y-1 font-mono text-[10px] uppercase tracking-[0.2em] text-dim">
+              <span className="flex items-center gap-1.5"><span className="h-1.5 w-1.5 bg-[#39FF14]" /> Live role — apply now</span>
+              <span className="flex items-center gap-1.5"><span className="h-1.5 w-1.5 bg-flare" /> Future need — register interest</span>
+            </div>
+          </Reveal>
+          <div className="mt-10 space-y-12">
+            {CATEGORIES.map((cat) => {
+              const rank = { live: 0, future: 1, filled: 2, draft: 3 };
+              const inCat = ROLES.filter((r) => r.category === cat && r.status !== "draft").sort((a, b) => (rank[a.status] ?? 9) - (rank[b.status] ?? 9));
+              if (!inCat.length) return null;
+              return (
+                <div key={cat}>
+                  <div className="flex items-baseline justify-between gap-3 border-b border-slate2/40 pb-2">
+                    <h3 className="font-display text-lg font-semibold tracking-[-0.01em] text-silver">{cat}</h3>
+                    <span className="font-mono text-[10px] uppercase tracking-[0.25em] text-dim">{inCat.length} roles</span>
+                  </div>
+                  <div className="mt-5 grid grid-cols-1 gap-4 md:grid-cols-2">
+                    {inCat.map((r) => (
+                      <Reveal key={r.id}><RoleCard role={r} /></Reveal>
+                    ))}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
       {/* What we look for */}
       <section className="border-b border-slate2/40 px-4 py-16 md:px-8 md:py-24">
         <div className="mx-auto max-w-5xl">
@@ -82,45 +121,6 @@ export default function Careers() {
                 </div>
               </Reveal>
             ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Open roles */}
-      <section id="roles" className="border-b border-slate2/40 px-4 py-16 md:px-8 md:py-24">
-        <div className="mx-auto max-w-5xl">
-          <Reveal>
-            <div className="flex items-end justify-between gap-4">
-              <div>
-                <span className="font-mono text-[10px] uppercase tracking-[0.3em] text-ozone">// Open roles</span>
-                <h2 className="mt-2 font-display text-2xl font-bold tracking-[-0.02em] text-silver md:text-3xl">Where you come in</h2>
-              </div>
-              <span className="font-mono text-[10px] uppercase tracking-[0.25em] text-dim">{ROLES.length} positions</span>
-            </div>
-            <div className="mt-3 flex flex-wrap gap-x-5 gap-y-1 font-mono text-[10px] uppercase tracking-[0.2em] text-dim">
-              <span className="flex items-center gap-1.5"><span className="h-1.5 w-1.5 bg-[#39FF14]" /> Live role — apply now</span>
-              <span className="flex items-center gap-1.5"><span className="h-1.5 w-1.5 bg-flare" /> Future need — register interest</span>
-            </div>
-          </Reveal>
-          <div className="mt-10 space-y-12">
-            {CATEGORIES.map((cat) => {
-              const rank = { live: 0, future: 1, filled: 2, draft: 3 };
-              const inCat = ROLES.filter((r) => r.category === cat && r.status !== "draft").sort((a, b) => (rank[a.status] ?? 9) - (rank[b.status] ?? 9));
-              if (!inCat.length) return null;
-              return (
-                <div key={cat}>
-                  <div className="flex items-baseline justify-between gap-3 border-b border-slate2/40 pb-2">
-                    <h3 className="font-display text-lg font-semibold tracking-[-0.01em] text-silver">{cat}</h3>
-                    <span className="font-mono text-[10px] uppercase tracking-[0.25em] text-dim">{inCat.length} roles</span>
-                  </div>
-                  <div className="mt-5 grid grid-cols-1 gap-4 md:grid-cols-2">
-                    {inCat.map((r) => (
-                      <Reveal key={r.id}><RoleCard role={r} /></Reveal>
-                    ))}
-                  </div>
-                </div>
-              );
-            })}
           </div>
         </div>
       </section>
