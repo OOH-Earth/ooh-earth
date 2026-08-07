@@ -4,6 +4,7 @@ import { base44 } from "@/api/base44Client";
 import { Mail, Lock, Loader2, Eye, EyeOff } from "lucide-react";
 import GoogleIcon from "@/components/GoogleIcon";
 import AuthShell, { INPUT, LBL } from "@/components/ooh/AuthShell";
+import { safeReturnTo } from "@/lib/authReturnTo";
 
 // OOH Earth — Login (branded auth journey, social-first with email fallback).
 export default function Login() {
@@ -12,7 +13,7 @@ export default function Login() {
   const [showPw, setShowPw] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  const returnTo = new URLSearchParams(window.location.search).get("returnTo") || "/";
+  const returnTo = safeReturnTo();
 
   const handleSubmit = async (e) => {
     e.preventDefault();

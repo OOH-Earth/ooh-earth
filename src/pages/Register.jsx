@@ -5,6 +5,7 @@ import { Mail, Lock, Loader2, ArrowLeft, Eye, EyeOff } from "lucide-react";
 import GoogleIcon from "@/components/GoogleIcon";
 import PasswordStrength from "@/components/ooh/PasswordStrength";
 import AuthShell, { INPUT, LBL } from "@/components/ooh/AuthShell";
+import { safeReturnTo } from "@/lib/authReturnTo";
 
 // OOH Earth — Register (branded). Base44 register → email OTP verify flow.
 export default function Register() {
@@ -40,7 +41,7 @@ export default function Register() {
     try {
       const result = await base44.auth.verifyOtp({ email, otpCode });
       if (result?.access_token) base44.auth.setToken(result.access_token);
-      window.location.href = "/";
+      window.location.href = safeReturnTo();
     } catch (err) {
       setError(err.message || "Invalid verification code");
     } finally {
@@ -60,7 +61,7 @@ export default function Register() {
   };
 
   const handleBack = () => { setShowOtp(false); setOtpCode(""); setError(""); };
-  const handleGoogle = () => base44.auth.loginWithProvider("google", "/");
+  const handleGoogle = () => base44.auth.loginWithProvider("google", safeReturnTo());
 
   useEffect(() => { if (showOtp) setResendIn(30); }, [showOtp]);
   useEffect(() => { if (resendIn <= 0) return; const t = setTimeout(() => setResendIn((n) => n - 1), 1000); return () => clearTimeout(t); }, [resendIn]);
