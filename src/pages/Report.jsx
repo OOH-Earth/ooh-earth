@@ -17,7 +17,7 @@ export default function Report() {
           {/* Header */}
           <span className="font-mono text-[10px] uppercase tracking-[0.3em] text-ozone">// Field protocol · 01</span>
           <h1 className="mt-3 font-display text-5xl font-bold leading-[1.02] tracking-[-0.02em] text-silver md:text-7xl">
-            Log an<br />offense
+            Start<br />Adbusting
           </h1>
           <p className="mt-4 max-w-md font-display text-sm leading-[1.4] text-darkgray">
             Document the billboard. Identify the brand, the agency, the operator. Classify the harm. Respond. Every report enters the public archive — no login, no gatekeeper.
