@@ -173,7 +173,7 @@ export default function Map() {
   // Location entity (same markers, narrowed by field conditions).
   const layerFiltered = useMemo(() => {
     if (primaryLayer === "adbusting") return filtered.filter((m) => m.adbust_type && m.adbust_type !== "none");
-    if (primaryLayer === "graffiti") return filtered.filter((m) => m.graffiti_medium || ["painted", "mural", "sticker"].includes(m.type));
+    if (primaryLayer === "graffiti") return filtered.filter((m) => m.graffiti_medium || ["painted", "mural", "sticker"].includes(m.type) || ["painted_over", "wheatpasted"].includes(m.adbust_type));
     return filtered;
   }, [filtered, primaryLayer]);
 

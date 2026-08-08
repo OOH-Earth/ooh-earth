@@ -5,7 +5,7 @@ import { isAdmin, accessOf, agencyOf } from "@/lib/clearance";
 import { PARENT_CORPS, AGENCIES } from "@/components/ooh/report/advertiserRegistry";
 import { ALL_OOH_OPERATORS } from "@/components/ooh/report/oohMediaCorps";
 import { BrandBadge } from "@/components/ooh/BrandBadge";
-import { Tag, Save, X, ChevronDown, ChevronUp, Loader2, AlertTriangle, CheckCircle2, XCircle, ClipboardList } from "lucide-react";
+import { Tag, Save, X, ChevronDown, ChevronUp, Loader2, AlertTriangle, CheckCircle2, XCircle, ClipboardList, Ban, Megaphone, SprayCan } from "lucide-react";
 
 const SURFACE_TYPES = [
   { value: "billboard", label: "Billboard" },
@@ -128,6 +128,34 @@ export default function LocationEditPanel({ loc, onUpdated }) {
     setOpen(true);
   };
 
+  // Quick-classify: sets the fields that make a location appear on the
+  // corresponding map layer. "graffiti" sets graffiti_medium + type so the
+  // graffiti portal/map picks it up; "adbust" sets adbust_type; "ad" clears both.
+  const quickClassify = (category) => {
+    setForm((f) => {
+      const next = { ...f };
+      if (category === "graffiti") {
+        if (!next.graffiti_medium) next.graffiti_medium = "spray_paint";
+        if (!["painted", "mural", "sticker"].includes(next.type)) next.type = "mural";
+      } else if (category === "adbust") {
+        if (next.adbust_type === "none") next.adbust_type = "subverted";
+      } else if (category === "ad") {
+        next.graffiti_medium = "";
+        next.graffiti_style = "";
+        next.graffiti_surface_m2 = "";
+        next.graffiti_coverage_pct = "";
+        if (next.adbust_type !== "none") next.adbust_type = "none";
+      }
+      return next;
+    });
+  };
+
+  const formCategory = form?.graffiti_medium
+    ? "graffiti"
+    : form?.adbust_type && form.adbust_type !== "none"
+    ? "adbust"
+    : "ad";
+
   const quickAction = async (status) => {
     setSaving(true);
     setError(null);
@@ -224,6 +252,29 @@ export default function LocationEditPanel({ loc, onUpdated }) {
         <div className="space-y-5 border-t border-slate2/40 px-4 py-5">
           <div>
             <SectionHeader num="1" label="Surface & Classification" complete={completeness.hasType && completeness.hasSector && completeness.hasCondition} />
+
+            {/* Quick classify — determines which map layer this location appears on */}
+            <div className="mb-3">
+              <span className="mb-1.5 block font-mono text-[9px] uppercase tracking-[0.15em] text-dim">Classify as</span>
+              <div className="flex flex-wrap gap-1.5">
+                <button onClick={() => quickClassify("ad")} className={`flex items-center gap-1.5 border px-3 py-1.5 font-mono text-[9px] font-bold uppercase tracking-[0.12em] transition-colors ${formCategory === "ad" ? "border-ozone bg-ozone text-void" : "border-slate2 text-darkgray hover:border-ozone hover:text-ozone"}`}>
+                  <Megaphone className="h-3 w-3" /> Ad Spot
+                </button>
+                <button onClick={() => quickClassify("adbust")} className={`flex items-center gap-1.5 border px-3 py-1.5 font-mono text-[9px] font-bold uppercase tracking-[0.12em] transition-colors ${formCategory === "adbust" ? "border-flare bg-flare text-void" : "border-slate2 text-darkgray hover:border-flare hover:text-flare"}`}>
+                  <Ban className="h-3 w-3" /> Adbust / Subvertising
+                </button>
+                <button onClick={() => quickClassify("graffiti")} className={`flex items-center gap-1.5 border px-3 py-1.5 font-mono text-[9px] font-bold uppercase tracking-[0.12em] transition-colors ${formCategory === "graffiti" ? "border-flare bg-flare text-void" : "border-slate2 text-darkgray hover:border-flare hover:text-flare"}`}>
+                  <SprayCan className="h-3 w-3" /> Graffiti / Street Art
+                </button>
+              </div>
+              {formCategory === "graffiti" && (
+                <p className="mt-1.5 font-mono text-[9px] text-flare/80">// This location will appear on the Graffiti map layer</p>
+              )}
+              {formCategory === "adbust" && (
+                <p className="mt-1.5 font-mono text-[9px] text-flare/80">// This location will appear on the Adbusting map layer</p>
+              )}
+            </div>
+
             <div className="grid gap-3 sm:grid-cols-3">
               <label className="flex flex-col gap-1">
                 <span className="font-mono text-[9px] uppercase tracking-[0.15em] text-dim">Surface Type</span>
@@ -244,6 +295,47 @@ export default function LocationEditPanel({ loc, onUpdated }) {
                 </select>
               </label>
             </div>
+
+            {/* Graffiti detail — visible inline when classified as graffiti */}
+            {formCategory === "graffiti" && (
+              <div className="mt-3 grid gap-3 border border-flare/30 bg-flare/5 p-3 sm:grid-cols-2 lg:grid-cols-4">
+                <label className="flex flex-col gap-1">
+                  <span className="font-mono text-[9px] uppercase tracking-[0.15em] text-dim">Graffiti Medium</span>
+                  <select value={form.graffiti_medium} onChange={(e) => set("graffiti_medium", e.target.value)} className="border border-slate2 bg-void px-3 py-2 text-sm text-silver outline-none focus:border-flare">
+                    <option value="">— None —</option>
+                    <option value="spray_paint">Spray Paint</option>
+                    <option value="marker">Marker</option>
+                    <option value="sticker">Sticker</option>
+                    <option value="paste_up">Paste-up</option>
+                    <option value="stencil">Stencil</option>
+                    <option value="installation">Installation</option>
+                    <option value="other">Other</option>
+                  </select>
+                </label>
+                <label className="flex flex-col gap-1">
+                  <span className="font-mono text-[9px] uppercase tracking-[0.15em] text-dim">Graffiti Style</span>
+                  <select value={form.graffiti_style} onChange={(e) => set("graffiti_style", e.target.value)} className="border border-slate2 bg-void px-3 py-2 text-sm text-silver outline-none focus:border-flare">
+                    <option value="">— None —</option>
+                    <option value="tag">Tag</option>
+                    <option value="throw_up">Throw-up</option>
+                    <option value="piece">Piece</option>
+                    <option value="mural">Mural</option>
+                    <option value="blockbuster">Blockbuster</option>
+                    <option value="stencil">Stencil</option>
+                    <option value="paste_up">Paste-up</option>
+                    <option value="other">Other</option>
+                  </select>
+                </label>
+                <label className="flex flex-col gap-1">
+                  <span className="font-mono text-[9px] uppercase tracking-[0.15em] text-dim">Surface (m²)</span>
+                  <input type="number" step="0.1" value={form.graffiti_surface_m2 || ""} onChange={(e) => set("graffiti_surface_m2", e.target.value ? parseFloat(e.target.value) : "")} className="border border-slate2 bg-void px-3 py-2 text-sm text-silver outline-none focus:border-flare" placeholder="e.g. 4.5" />
+                </label>
+                <label className="flex flex-col gap-1">
+                  <span className="font-mono text-[9px] uppercase tracking-[0.15em] text-dim">Coverage %</span>
+                  <input type="number" min="0" max="100" value={form.graffiti_coverage_pct || ""} onChange={(e) => set("graffiti_coverage_pct", e.target.value ? parseInt(e.target.value) : "")} className="border border-slate2 bg-void px-3 py-2 text-sm text-silver outline-none focus:border-flare" placeholder="0–100" />
+                </label>
+              </div>
+            )}
           </div>
 
           <div>
@@ -312,50 +404,16 @@ export default function LocationEditPanel({ loc, onUpdated }) {
           </div>
 
           <div>
-            <SectionHeader num="4" label="Intervention State" complete={form.adbust_type !== "none" || !!form.graffiti_medium} />
-            <label className="mb-3 flex flex-col gap-1">
+            <SectionHeader num="4" label="Intervention State" complete={form.adbust_type !== "none"} />
+            <label className="flex flex-col gap-1">
               <span className="font-mono text-[9px] uppercase tracking-[0.15em] text-dim">Adbust / Subvertising Type</span>
               <select value={form.adbust_type} onChange={(e) => set("adbust_type", e.target.value)} className="border border-slate2 bg-void px-3 py-2 text-sm text-silver outline-none focus:border-ozone">
                 {ADBUST_TYPES.map((a) => <option key={a.value} value={a.value}>{a.label}</option>)}
               </select>
             </label>
-            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-              <label className="flex flex-col gap-1">
-                <span className="font-mono text-[9px] uppercase tracking-[0.15em] text-dim">Graffiti Medium</span>
-                <select value={form.graffiti_medium} onChange={(e) => set("graffiti_medium", e.target.value)} className="border border-slate2 bg-void px-3 py-2 text-sm text-silver outline-none focus:border-ozone">
-                  <option value="">— None —</option>
-                  <option value="spray_paint">Spray Paint</option>
-                  <option value="marker">Marker</option>
-                  <option value="sticker">Sticker</option>
-                  <option value="paste_up">Paste-up</option>
-                  <option value="stencil">Stencil</option>
-                  <option value="installation">Installation</option>
-                  <option value="other">Other</option>
-                </select>
-              </label>
-              <label className="flex flex-col gap-1">
-                <span className="font-mono text-[9px] uppercase tracking-[0.15em] text-dim">Graffiti Style</span>
-                <select value={form.graffiti_style} onChange={(e) => set("graffiti_style", e.target.value)} className="border border-slate2 bg-void px-3 py-2 text-sm text-silver outline-none focus:border-ozone">
-                  <option value="">— None —</option>
-                  <option value="tag">Tag</option>
-                  <option value="throw_up">Throw-up</option>
-                  <option value="piece">Piece</option>
-                  <option value="mural">Mural</option>
-                  <option value="blockbuster">Blockbuster</option>
-                  <option value="stencil">Stencil</option>
-                  <option value="paste_up">Paste-up</option>
-                  <option value="other">Other</option>
-                </select>
-              </label>
-              <label className="flex flex-col gap-1">
-                <span className="font-mono text-[9px] uppercase tracking-[0.15em] text-dim">Surface (m²)</span>
-                <input type="number" step="0.1" value={form.graffiti_surface_m2 || ""} onChange={(e) => set("graffiti_surface_m2", e.target.value ? parseFloat(e.target.value) : "")} className="border border-slate2 bg-void px-3 py-2 text-sm text-silver outline-none focus:border-ozone" placeholder="e.g. 4.5" />
-              </label>
-              <label className="flex flex-col gap-1">
-                <span className="font-mono text-[9px] uppercase tracking-[0.15em] text-dim">Coverage %</span>
-                <input type="number" min="0" max="100" value={form.graffiti_coverage_pct || ""} onChange={(e) => set("graffiti_coverage_pct", e.target.value ? parseInt(e.target.value) : "")} className="border border-slate2 bg-void px-3 py-2 text-sm text-silver outline-none focus:border-ozone" placeholder="0–100" />
-              </label>
-            </div>
+            {formCategory === "graffiti" && (
+              <p className="mt-2 font-mono text-[9px] text-flare/70">// Graffiti details are in Section 1 above</p>
+            )}
           </div>
 
           <div>
