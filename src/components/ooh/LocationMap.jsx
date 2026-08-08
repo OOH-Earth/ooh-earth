@@ -296,7 +296,7 @@ export default function LocationMap({ markers, selectedId, hoverId, onSelect, us
           </Popup>
         </Marker>
       )}
-      {activeLayers.includes("ads") && <ClusteredMarkers pins={pins} selectedId={selectedId} onSelect={onSelect} />}
+      {activeLayers.some((l) => l === "ads" || l === "adbusting" || l === "graffiti") && <ClusteredMarkers pins={pins} selectedId={selectedId} onSelect={onSelect} />}
       <FutureLayer futures={futures} />
       <LayerManager activeLayers={activeLayers} />
     </MapContainer>

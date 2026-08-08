@@ -281,7 +281,7 @@ export default function Globe3D({ markers, selectedId, hoverId, onSelect, userLo
   useEffect(() => {
     const map = mapRef.current;
     if (!readyRef.current || !map) return;
-    const vis = activeLayers.includes("ads") ? "visible" : "none";
+    const vis = activeLayers.some((l) => l === "ads" || l === "adbusting" || l === "graffiti") ? "visible" : "none";
     ["ooh-markers", "ooh-clusters", "ooh-cluster-count"].forEach((id) => {
       if (map.getLayer(id)) map.setLayoutProperty(id, "visibility", vis);
     });
