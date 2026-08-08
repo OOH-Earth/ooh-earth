@@ -7,13 +7,9 @@ const TABS = [
   { to: "/map", icon: MapIcon, label: "Map", notify: true },
   { to: "/report", icon: Megaphone, label: "Report", primary: true },
   { to: "/channel", icon: Tv, label: "Channel" },
+  { to: "/lab/scanner", icon: ScanLine, label: "Ad Scanner", accent: "ozone", camera: true },
+  { to: "/lab/graffiti-cam", icon: SprayCan, label: "Graffiti Cam", accent: "flare", camera: true },
   { to: "/dashboard", icon: LayoutDashboard, label: "Console", notify: true },
-];
-
-// Camera shortcuts — compact icon-only buttons for the two field cameras
-const CAMERAS = [
-  { to: "/lab/scanner", icon: ScanLine, label: "Ad Scanner", accent: "ozone" },
-  { to: "/lab/graffiti-cam", icon: SprayCan, label: "Graffiti Cam", accent: "flare" },
 ];
 
 export default function MobileBottomTabs() {
@@ -33,36 +29,32 @@ export default function MobileBottomTabs() {
       aria-label="Mobile navigation"
     >
       <div className="ooh-mobile-nav flex items-center gap-1 rounded-full border border-border bg-card px-2 py-2 shadow-[0_8px_32px_rgba(0,0,0,0.5)] backdrop-blur-xl">
-        {/* Camera shortcuts */}
-        {CAMERAS.map(({ to, icon: Icon, label, accent }) => {
-          const isActive = current === to;
-          return (
-            <button
-              key={to}
-              onClick={() => navigate(to)}
-              aria-label={label}
-              className="relative flex h-11 w-11 items-center justify-center"
-              style={{ WebkitTapHighlightColor: "transparent" }}
-            >
-              <motion.div
-                whileTap={{ scale: 0.85 }}
-                animate={{ scale: isActive ? 1.12 : 1 }}
-                transition={{ type: "spring", stiffness: 400, damping: 17 }}
-                className={`relative z-10 flex h-9 w-9 items-center justify-center rounded-full border ${accent === "flare" ? "border-flare/50" : "border-ozone/50"} ${isActive ? (accent === "flare" ? "bg-flare" : "bg-ozone") : ""}`}
-              >
-                <Icon
-                  className={`h-4 w-4 transition-colors ${isActive ? "text-void" : accent === "flare" ? "text-flare" : "text-ozone"}`}
-                  strokeWidth={2.2}
-                />
-              </motion.div>
-            </button>
-          );
-        })}
-        {/* Divider */}
-        <span className="h-7 w-px bg-border" />
-        {/* Main nav tabs */}
-        {TABS.map(({ to, icon: Icon, label, primary, notify }, i) => {
+        {TABS.map(({ to, icon: Icon, label, primary, notify, camera, accent }, i) => {
           const isActive = i === active;
+
+          if (camera) {
+            return (
+              <button
+                key={to}
+                onClick={() => navigate(to)}
+                aria-label={label}
+                className="relative flex h-11 w-11 items-center justify-center"
+                style={{ WebkitTapHighlightColor: "transparent" }}
+              >
+                <motion.div
+                  whileTap={{ scale: 0.85 }}
+                  animate={{ scale: isActive ? 1.12 : 1 }}
+                  transition={{ type: "spring", stiffness: 400, damping: 17 }}
+                  className={`relative z-10 flex h-9 w-9 items-center justify-center rounded-full border ${accent === "flare" ? "border-flare/50" : "border-ozone/50"} ${isActive ? (accent === "flare" ? "bg-flare" : "bg-ozone") : ""}`}
+                >
+                  <Icon
+                    className={`h-4 w-4 transition-colors ${isActive ? "text-void" : accent === "flare" ? "text-flare" : "text-ozone"}`}
+                    strokeWidth={2.2}
+                  />
+                </motion.div>
+              </button>
+            );
+          }
 
           if (primary) {
             return (
