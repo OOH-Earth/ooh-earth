@@ -178,28 +178,20 @@ function PinMarker({ m, selected, onSelect }) {
             <div style={{ fontSize: 9, color: "hsl(var(--muted-foreground))", marginTop: 4, fontFamily: "monospace", opacity: 0.8 }}>
               {Number(m.lat).toFixed(4)}, {Number(m.lng).toFixed(4)}
             </div>
-            <div style={{ display: "flex", gap: 10, marginTop: 8 }}>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 5, marginTop: 10 }}>
               <a
                 href={`https://www.google.com/maps/dir/?api=1&destination=${m.lat},${m.lng}`}
                 target="_blank"
                 rel="noreferrer"
-                style={{ fontSize: 9, textTransform: "uppercase", letterSpacing: "0.15em", color: "#FF5C00", textDecoration: "none" }}
+                className="ooh-popup-btn ooh-popup-btn--flare"
               >
                 Directions ↗
               </a>
-              <Link
-                to={`/location/${m.id}`}
-                style={{ fontSize: 9, textTransform: "uppercase", letterSpacing: "0.15em", color: "#EDFF00", textDecoration: "none" }}
-              >
+              <Link to={`/location/${m.id}`} className="ooh-popup-btn ooh-popup-btn--ozone">
                 Page ↗
               </Link>
               {m.link && /^https?:\/\//i.test(m.link) && (
-                <a
-                  href={m.link}
-                  target="_blank"
-                  rel="noreferrer"
-                  style={{ fontSize: 9, textTransform: "uppercase", letterSpacing: "0.15em", color: "#EDFF00", textDecoration: "none" }}
-                >
+                <a href={m.link} target="_blank" rel="noreferrer" className="ooh-popup-btn ooh-popup-btn--ghost">
                   OOH.EARTH ↗
                 </a>
               )}

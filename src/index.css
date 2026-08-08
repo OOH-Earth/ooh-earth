@@ -910,6 +910,30 @@
   .ooh-core { animation: none; }
 }
 
+/* Map popup action buttons — terminal-style bordered micro-buttons */
+.ooh-popup-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  border: 1px solid;
+  padding: 3px 7px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 8px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  text-decoration: none;
+  line-height: 1;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+  white-space: nowrap;
+}
+.ooh-popup-btn--flare { border-color: rgba(255, 92, 0, 0.5); color: #FF5C00; }
+.ooh-popup-btn--flare:hover { background: #FF5C00; color: #000; }
+.ooh-popup-btn--ozone { border-color: rgba(237, 255, 0, 0.5); color: #EDFF00; }
+.ooh-popup-btn--ozone:hover { background: #EDFF00; color: #000; }
+.ooh-popup-btn--ghost { border-color: rgba(178, 178, 178, 0.3); color: #B2B2B2; }
+.ooh-popup-btn--ghost:hover { border-color: #EDFF00; color: #EDFF00; }
+
 /* Leaflet popup — theme-aware chrome */
 .leaflet-popup-content-wrapper,
 .leaflet-popup-tip {

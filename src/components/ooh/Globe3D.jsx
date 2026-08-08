@@ -76,10 +76,10 @@ function popupHTML(m) {
         <div style="font-weight:700;font-size:15px;color:hsl(var(--foreground));line-height:1.25">${esc(m.title)}</div>
         <div style="font-size:12px;color:hsl(var(--muted-foreground));margin-top:4px;line-height:1.4">${esc(m.address || "")}</div>
         <div style="font-size:9px;color:hsl(var(--muted-foreground));margin-top:4px;font-family:monospace;opacity:0.8">${Number(m.lat).toFixed(4)}, ${Number(m.lng).toFixed(4)}</div>
-        <div style="display:flex;gap:10px;margin-top:8px">
-          <a href="https://www.google.com/maps/dir/?api=1&destination=${m.lat},${m.lng}" target="_blank" rel="noreferrer" style="font-size:9px;text-transform:uppercase;letter-spacing:0.15em;color:#FF5C00;text-decoration:none">Directions ↗</a>
-          <a href="/location/${esc(m.id)}" style="font-size:9px;text-transform:uppercase;letter-spacing:0.15em;color:#EDFF00;text-decoration:none">Page ↗</a>
-          ${m.link && /^https?:\/\//i.test(m.link) ? `<a href="${esc(m.link)}" target="_blank" rel="noreferrer" style="font-size:9px;text-transform:uppercase;letter-spacing:0.15em;color:#EDFF00;text-decoration:none">OOH.EARTH ↗</a>` : ""}
+        <div style="display:flex;flex-wrap:wrap;gap:5px;margin-top:10px">
+          <a href="https://www.google.com/maps/dir/?api=1&destination=${m.lat},${m.lng}" target="_blank" rel="noreferrer" class="ooh-popup-btn ooh-popup-btn--flare">Directions ↗</a>
+          <a href="/location/${esc(m.id)}" class="ooh-popup-btn ooh-popup-btn--ozone">Page ↗</a>
+          ${m.link && /^https?:\/\//i.test(m.link) ? `<a href="${esc(m.link)}" target="_blank" rel="noreferrer" class="ooh-popup-btn ooh-popup-btn--ghost">OOH.EARTH ↗</a>` : ""}
         </div>
       </div>
     </div>`;
