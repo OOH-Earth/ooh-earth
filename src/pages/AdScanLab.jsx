@@ -219,13 +219,47 @@ export default function AdScanLab() {
               Step 03 — Detection results
             </div>
 
-            {/* ── Detection dossier ── terminal card with reticle corners */}
-            <div className="relative border border-slate2 bg-card">
-              {/* Reticle corners */}
-              <Crosshair className="absolute left-2 top-2 h-3 w-3 text-ozone/50" />
-              <Crosshair className="absolute right-2 top-2 h-3 w-3 text-ozone/50" />
+            {/* ── Detection dossier ── terminal window frame */}
+            <div className="relative border border-slate2 bg-card crt-scanlines">
+              {/* Terminal title bar — traffic lights + command path */}
+              <div className="flex items-center gap-1.5 border-b border-slate2 bg-void/60 px-3 py-1.5">
+                <span className="h-2 w-2 rounded-full bg-flare/70" />
+                <span className="h-2 w-2 rounded-full bg-ozone/70" />
+                <span className="h-2 w-2 rounded-full bg-dim/50" />
+                <span className="ml-2 font-mono text-[9px] uppercase tracking-[0.2em] text-dim">ROOT@OOH:~ - SCAN.SH</span>
+                <span className="ml-auto font-mono text-[8px] uppercase tracking-[0.2em] text-ozone/60">// dossier</span>
+              </div>
 
-              {/* Dossier header — brand logo + status + confidence */}
+              {/* Reticle corners */}
+              <Crosshair className="pointer-events-none absolute left-2 top-8 h-3 w-3 text-ozone/50" />
+              <Crosshair className="pointer-events-none absolute right-2 top-8 h-3 w-3 text-ozone/50" />
+              <Crosshair className="pointer-events-none absolute bottom-2 left-2 h-3 w-3 text-ozone/50" />
+              <Crosshair className="pointer-events-none absolute bottom-2 right-2 h-3 w-3 text-ozone/50" />
+
+              {/* Location tags row — brought in from detail page for consistency */}
+              <div className="flex flex-wrap items-center gap-1.5 border-b border-slate2/60 px-4 py-2 pl-9">
+                {detection.surface_type && (() => {
+                  const tm = metaFor(detection.surface_type);
+                  return (
+                    <span className="flex items-center gap-1 border px-2 py-0.5 font-mono text-[8px] uppercase tracking-[0.2em]" style={{ color: tm.accent, borderColor: `${tm.accent}55` }}>
+                      <tm.Icon className="h-2.5 w-2.5" /> {tm.label}
+                    </span>
+                  );
+                })()}
+                {detection.is_advertising ? (
+                  <span className="border border-ozone/50 px-2 py-0.5 font-mono text-[8px] font-bold uppercase tracking-[0.2em] text-ozone">Ad detected</span>
+                ) : (
+                  <span className="border border-flare/50 px-2 py-0.5 font-mono text-[8px] font-bold uppercase tracking-[0.2em] text-flare">No ad</span>
+                )}
+                <span className="border border-flare/40 px-2 py-0.5 font-mono text-[8px] uppercase tracking-[0.2em] text-flare">pending</span>
+                {detection.industry_sector && (
+                  <span className="border border-slate2/50 px-2 py-0.5 font-mono text-[8px] uppercase tracking-[0.2em] text-darkgray">
+                    {SECTOR_LABELS[detection.industry_sector] || detection.industry_sector}
+                  </span>
+                )}
+              </div>
+
+              {/* Dossier header — brand logo + name + confidence */}
               <div className="flex items-center gap-3 border-b border-slate2 px-4 py-3 pl-9">
                 {detection.is_advertising && detection.brand_name ? (
                   <BrandIcon name={detection.brand_name} size={36} />
@@ -239,30 +273,12 @@ export default function AdScanLab() {
                   </span>
                 )}
                 <div className="min-w-0 flex-1">
-                  <div className="flex items-center gap-2">
-                    {detection.is_advertising ? (
-                      <span className="font-mono text-[10px] font-bold uppercase tracking-[0.2em] text-ozone">// Ad detected</span>
-                    ) : (
-                      <span className="font-mono text-[10px] font-bold uppercase tracking-[0.2em] text-flare">// No ad detected</span>
-                    )}
-                    {detection.surface_type && (() => {
-                      const tm = metaFor(detection.surface_type);
-                      return (
-                        <span className="flex items-center gap-1 border border-slate2/50 px-1.5 py-0.5 font-mono text-[8px] uppercase tracking-[0.15em] text-silver/70">
-                          <tm.Icon className="h-2.5 w-2.5" style={{ color: tm.accent }} />
-                          {tm.label}
-                        </span>
-                      );
-                    })()}
-                  </div>
-                  <div className="mt-0.5 truncate font-mono text-[14px] font-bold text-silver">
+                  <div className="truncate font-mono text-[15px] font-bold text-silver">
                     {detection.brand_name || "Unknown surface"}
                   </div>
-                  {detection.industry_sector && (
-                    <span className="mt-0.5 inline-block font-mono text-[8px] uppercase tracking-[0.15em] text-dim">
-                      {SECTOR_LABELS[detection.industry_sector] || detection.industry_sector}
-                    </span>
-                  )}
+                  <span className="mt-0.5 inline-block font-mono text-[8px] uppercase tracking-[0.15em] text-dim">
+                    {detection.is_advertising ? "// advertising identified" : "// no advertising detected"}
+                  </span>
                 </div>
                 {/* Confidence readout */}
                 <div className="flex flex-col items-end gap-1">
@@ -369,9 +385,10 @@ export default function AdScanLab() {
                 )}
                 <Link
                   to={`/location/${cataloged.id}`}
-                  className="flex items-center gap-1.5 border border-ozone bg-ozone px-4 py-2 font-mono text-[10px] font-bold uppercase tracking-[0.2em] text-void transition-colors hover:bg-flare hover:border-flare"
+                  className="group flex w-full items-center justify-between gap-2 border-2 border-ozone bg-ozone px-5 py-4 font-mono text-[13px] font-bold uppercase tracking-[0.2em] text-void transition-colors hover:bg-flare hover:border-flare"
                 >
-                  View location <ArrowRight className="h-3 w-3" />
+                  <span className="flex items-center gap-2">&gt; page · {cataloged.id?.slice(-8) || "detail"}</span>
+                  <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
                 </Link>
               </div>
             ) : (
