@@ -10,6 +10,7 @@ import Breadcrumbs from "@/components/ooh/Breadcrumbs";
 import MobileHeader from "@/components/ooh/MobileHeader";
 import { Image } from "@/components/ui/image";
 import MintLocationPanel from "@/components/ooh/mint/MintLocationPanel";
+import LocationEditPanel from "@/components/ooh/LocationEditPanel";
 import { useSeo } from "@/lib/seoContext";
 
 function normalizeSeed(rec) {
@@ -225,6 +226,9 @@ export default function LocationDetail() {
             </Link>
           </div>
         </div>
+
+        {/* Expert edit & tag panel */}
+        <LocationEditPanel loc={loc} onUpdated={setLoc} />
 
         {/* On-chain mint */}
         <MintLocationPanel loc={loc} />

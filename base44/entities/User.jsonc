@@ -7,6 +7,21 @@
         "admin",
         "user"
       ]
+    },
+    "access": {
+      "type": "string",
+      "description": "Field-operations access level",
+      "enum": [
+        "admin",
+        "moderator",
+        "member"
+      ],
+      "default": "member"
+    },
+    "agency": {
+      "type": "boolean",
+      "description": "Whether the user is an agency member who can tag and edit locations",
+      "default": false
     }
   },
   "required": [
