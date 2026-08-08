@@ -192,88 +192,82 @@ export default function LocationDetail() {
           )}
         </header>
 
-        {/* ── Hero media ── */}
-        <section className="mb-6">
-          {loc.image_url ? (
-            <div className="relative aspect-[16/10] overflow-hidden border border-slate2">
-              <Image src={loc.image_url} alt={loc.title} className="h-full w-full object-cover" fittingType="fill" />
-            </div>
-          ) : (
-            <div className="flex aspect-[16/10] items-center justify-center border border-slate2 grid-bg">
-              <Icon className="h-12 w-12" style={{ color: meta.accent }} strokeWidth={1.2} />
-            </div>
-          )}
-        </section>
-
-        {/* ── Metadata strip + field map ── */}
-        <section className="mb-8 grid gap-4 lg:grid-cols-[1fr_1fr]">
-          {/* Metadata */}
-          <div className="flex flex-col gap-px border border-slate2/60">
-            <div className="border-b border-slate2/40 bg-card/50 px-4 py-2">
-              <span className="font-mono text-[8px] uppercase tracking-[0.25em] text-dim/60">// record</span>
-            </div>
-            <div className="flex flex-col gap-2 px-4 py-3 font-mono text-[10px] text-darkgray">
-              {loc.lat != null && (
-                <div className="flex justify-between"><span className="uppercase tracking-[0.2em] text-dim/60">coords</span><span className="tabular text-silver">{loc.lat?.toFixed(5)}, {loc.lng?.toFixed(5)}</span></div>
-              )}
-              <div className="flex justify-between"><span className="uppercase tracking-[0.2em] text-dim/60">type</span><span className="text-silver">{meta.label}</span></div>
-              {keyed && (
-                <div className="flex justify-between"><span className="uppercase tracking-[0.2em] text-dim/60">key slug</span><span className="text-silver">{loc.access_key || "none"}</span></div>
-              )}
-              {loc.condition && (
-                <div className="flex justify-between"><span className="uppercase tracking-[0.2em] text-dim/60">condition</span><span className="text-silver capitalize">{loc.condition}</span></div>
-              )}
-              {loc.source_link && /^https?:\/\//i.test(loc.source_link) && (
-                <a href={loc.source_link} target="_blank" rel="noreferrer" className="mt-1 inline-flex items-center gap-1 text-ozone transition-colors hover:text-flare">
-                  oohearth.app record <ExternalLink className="h-3 w-3" />
-                </a>
-              )}
-            </div>
-          </div>
-
-          {/* Field map */}
-          {mapSrc && (
-            <div className="overflow-hidden border border-slate2">
+        {/* ── Half-split: media left, details right ── */}
+        <section className="mb-8 grid gap-4 md:grid-cols-2">
+          {/* Left: photo + field map */}
+          <div className="flex flex-col gap-4">
+            {loc.image_url ? (
+              <div className="relative aspect-[4/3] overflow-hidden border border-slate2">
+                <Image src={loc.image_url} alt={loc.title} className="h-full w-full object-cover" fittingType="fill" />
+              </div>
+            ) : (
+              <div className="flex aspect-[4/3] items-center justify-center border border-slate2 grid-bg">
+                <Icon className="h-10 w-10" style={{ color: meta.accent }} strokeWidth={1.2} />
+              </div>
+            )}
+            {mapSrc && (
               <iframe
                 title="Field map"
                 src={mapSrc}
-                className="h-full min-h-[200px] w-full grayscale-[0.3]"
+                className="aspect-[4/3] w-full border border-slate2 grayscale-[0.3]"
                 loading="lazy"
               />
-            </div>
-          )}
-        </section>
+            )}
+          </div>
 
-        {/* ── Access key (keyed types only) ── */}
-        {keyed && (
-          <section className="mb-8">
-            <div className="border border-ozone/50 p-4">
-              <div className="flex items-center justify-between gap-2">
-                <span className="flex items-center gap-1.5 font-mono text-[9px] uppercase tracking-[0.3em] text-ozone">
-                  <Key className="h-3.5 w-3.5" />
-                  Open-access key
-                </span>
-                <span className="flex items-center gap-1 font-mono text-[8px] uppercase tracking-[0.2em] text-dim">
-                  <BusFront className="h-3 w-3" />
-                  bus-stop spec
-                </span>
+          {/* Right: access key + metadata + field notes */}
+          <div className="flex flex-col gap-4">
+            {keyed && (
+              <div className="border border-ozone/50 p-4">
+                <div className="flex items-center justify-between gap-2">
+                  <span className="flex items-center gap-1.5 font-mono text-[9px] uppercase tracking-[0.3em] text-ozone">
+                    <Key className="h-3.5 w-3.5" />
+                    Open-access key
+                  </span>
+                  <span className="flex items-center gap-1 font-mono text-[8px] uppercase tracking-[0.2em] text-dim">
+                    <BusFront className="h-3 w-3" />
+                    bus-stop spec
+                  </span>
+                </div>
+                <div className="mt-2 font-display text-lg font-semibold text-silver">{k.label}</div>
+                <p className="mt-1 text-[12px] leading-relaxed text-darkgray">{k.blurb}</p>
+                <p className="mt-3 border-t border-slate2/40 pt-2 font-mono text-[10px] leading-relaxed text-ozone/80">
+                  // keyed housing — standard open-access tooling. Log the confirmed key type after a field check.
+                </p>
               </div>
-              <div className="mt-2 font-display text-lg font-semibold text-silver">{k.label}</div>
-              <p className="mt-1 text-[12px] leading-relaxed text-darkgray">{k.blurb}</p>
-              <p className="mt-3 border-t border-slate2/40 pt-2 font-mono text-[10px] leading-relaxed text-ozone/80">
-                // keyed housing — standard open-access tooling. Log the confirmed key type after a field check.
-              </p>
-            </div>
-          </section>
-        )}
+            )}
 
-        {/* ── Field notes ── */}
-        {loc.notes && (
-          <section className="mb-8 border border-slate2/60 p-4">
-            <span className="font-mono text-[9px] uppercase tracking-[0.3em] text-dim/60">// field notes</span>
-            <p className="mt-1 text-[12px] leading-relaxed text-silver/85">{loc.notes}</p>
-          </section>
-        )}
+            <div className="flex flex-col gap-px border border-slate2/60">
+              <div className="border-b border-slate2/40 bg-card/50 px-4 py-2">
+                <span className="font-mono text-[8px] uppercase tracking-[0.25em] text-dim/60">// record</span>
+              </div>
+              <div className="flex flex-col gap-2 px-4 py-3 font-mono text-[10px] text-darkgray">
+                {loc.lat != null && (
+                  <div className="flex justify-between"><span className="uppercase tracking-[0.2em] text-dim/60">coords</span><span className="tabular text-silver">{loc.lat?.toFixed(5)}, {loc.lng?.toFixed(5)}</span></div>
+                )}
+                <div className="flex justify-between"><span className="uppercase tracking-[0.2em] text-dim/60">type</span><span className="text-silver">{meta.label}</span></div>
+                {keyed && (
+                  <div className="flex justify-between"><span className="uppercase tracking-[0.2em] text-dim/60">key slug</span><span className="text-silver">{loc.access_key || "none"}</span></div>
+                )}
+                {loc.condition && (
+                  <div className="flex justify-between"><span className="uppercase tracking-[0.2em] text-dim/60">condition</span><span className="text-silver capitalize">{loc.condition}</span></div>
+                )}
+                {loc.source_link && /^https?:\/\//i.test(loc.source_link) && (
+                  <a href={loc.source_link} target="_blank" rel="noreferrer" className="mt-1 inline-flex items-center gap-1 text-ozone transition-colors hover:text-flare">
+                    oohearth.app record <ExternalLink className="h-3 w-3" />
+                  </a>
+                )}
+              </div>
+            </div>
+
+            {loc.notes && (
+              <div className="border border-slate2/60 p-4">
+                <span className="font-mono text-[9px] uppercase tracking-[0.3em] text-dim/60">// field notes</span>
+                <p className="mt-1 text-[12px] leading-relaxed text-silver/85">{loc.notes}</p>
+              </div>
+            )}
+          </div>
+        </section>
 
         {/* ── Intelligence: graffiti + subvertising ── */}
         {loc.graffiti_medium && (
