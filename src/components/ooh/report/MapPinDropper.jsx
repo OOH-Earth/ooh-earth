@@ -3,6 +3,7 @@ import { MapContainer, TileLayer, Marker, useMap, useMapEvents } from "react-lea
 import { Search, Crosshair, Loader2, MapPin, Check } from "lucide-react";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
+import TerminalTooltip from "@/components/ooh/TerminalTooltip";
 
 // Free OSM tiles — no API key needed, same quality as the main atlas map.
 const NOMINATIM_URL = "https://nominatim.openstreetmap.org/search";
@@ -137,10 +138,29 @@ export default function MapPinDropper({ lat, lng, onPick, placeholder = "Search 
   const pinPos = hasPin ? [parseFloat(lat), parseFloat(lng)] : null;
 
   return (
-    <div className="border border-slate2 bg-card">
-      {/* Search bar overlay */}
-      <div ref={boxRef} className="relative border-b border-slate2">
-        <div className="flex items-center gap-2 bg-void px-3 py-2">
+    <div className="relative border border-slate2 bg-card crt-scanlines">
+      {/* ── Terminal title bar — traffic lights + command path ── */}
+      <div className="flex items-center gap-1.5 border-b border-slate2 bg-void/60 px-3 py-1.5">
+        <span className="h-2 w-2 rounded-full bg-flare/70" />
+        <span className="h-2 w-2 rounded-full bg-ozone/70" />
+        <span className="h-2 w-2 rounded-full bg-dim/50" />
+        <span className="ml-2 font-mono text-[9px] uppercase tracking-[0.2em] text-dim">ROOT@OOH:~ — PIN_DROP.SH</span>
+        <span className="ml-auto flex items-center gap-1.5 font-mono text-[8px] uppercase tracking-[0.2em] text-ozone/60">
+          // live
+          <TerminalTooltip label="pin dropper" text="Search any address worldwide, or tap directly on the map to drop a pin at the exact ad location." />
+        </span>
+      </div>
+
+      {/* ── Reticle corners ── */}
+      <Crosshair className="pointer-events-none absolute left-2 top-8 h-3 w-3 text-ozone/50" />
+      <Crosshair className="pointer-events-none absolute right-2 top-8 h-3 w-3 text-ozone/50" />
+      <Crosshair className="pointer-events-none absolute bottom-2 left-2 h-3 w-3 text-ozone/50" />
+      <Crosshair className="pointer-events-none absolute bottom-2 right-2 h-3 w-3 text-ozone/50" />
+
+      {/* ── Command prompt + search bar ── */}
+      <div ref={boxRef} className="relative border-b border-slate2/60">
+        <div className="flex items-center gap-2 bg-void px-3 py-2 pl-9">
+          <span className="font-mono text-[10px] text-ozone">$</span>
           <Search className="h-3.5 w-3.5 shrink-0 text-dim" />
           <input
             value={query}
@@ -150,6 +170,9 @@ export default function MapPinDropper({ lat, lng, onPick, placeholder = "Search 
             className="w-full bg-transparent font-mono text-[11px] text-silver outline-none placeholder:text-dim"
           />
           {loading && <Loader2 className="h-3.5 w-3.5 shrink-0 animate-spin text-ozone" />}
+          <span className="flex items-center gap-1">
+            <TerminalTooltip label="search" text="Type a street, landmark, or city. Results appear below — click one to fly the map there." side="left" />
+          </span>
           <button
             type="button"
             onClick={recenter}
@@ -175,7 +198,7 @@ export default function MapPinDropper({ lat, lng, onPick, placeholder = "Search 
         )}
       </div>
 
-      {/* Live map */}
+      {/* ── Live map ── */}
       <div className="relative">
         <MapContainer
           center={center}
@@ -193,25 +216,39 @@ export default function MapPinDropper({ lat, lng, onPick, placeholder = "Search 
         </MapContainer>
 
         {/* Hint overlay — shown when no pin */}
-        {!hasPin && (
+        {!hasPin ? (
+          <div className="pointer-events-none absolute left-1/2 top-3 z-[1100] flex -translate-x-1/2 items-center gap-1.5 whitespace-nowrap border border-ozone/40 bg-void/90 px-3 py-1.5 font-mono text-[9px] uppercase tracking-[0.2em] text-ozone backdrop-blur-sm">
+            // tap map to drop pin
+          </div>
+        ) : (
           <div className="pointer-events-none absolute left-1/2 top-3 z-[1100] -translate-x-1/2 whitespace-nowrap border border-ozone/40 bg-void/90 px-3 py-1.5 font-mono text-[9px] uppercase tracking-[0.2em] text-ozone backdrop-blur-sm">
-            Tap the map to drop a pin
+            // pin locked — tap again to adjust
           </div>
         )}
+
+        {/* Tooltip guide — bottom-right of map */}
+        <div className="pointer-events-none absolute bottom-2 right-8 z-[1100] flex items-center gap-1 border border-slate2/50 bg-void/80 px-2 py-1 font-mono text-[8px] uppercase tracking-[0.15em] text-dim backdrop-blur-sm">
+          <TerminalTooltip label="how to pin" text="1. Search the address above, or 2. Tap any spot on the map, or 3. Use the crosshair to jump to your GPS." side="top" />
+          guide
+        </div>
       </div>
 
-      {/* Coordinates readout */}
-      {hasPin && (
-        <div className="flex items-center gap-2 border-t border-slate2 bg-void px-3 py-2">
-          <Check className="h-3 w-3 text-ozone" />
-          <span className="font-mono text-[10px] tabular text-silver">
-            {parseFloat(lat).toFixed(5)}, {parseFloat(lng).toFixed(5)}
-          </span>
-          {reverseLabel && (
-            <span className="ml-auto truncate font-mono text-[9px] text-dim">{reverseLabel.split(",")[0]}</span>
-          )}
-        </div>
-      )}
+      {/* ── Coordinates readout — terminal status line ── */}
+      <div className="flex items-center gap-2 border-t border-slate2 bg-void/60 px-3 py-2 pl-9">
+        {hasPin ? (
+          <>
+            <Check className="h-3 w-3 text-ozone" />
+            <span className="font-mono text-[10px] tabular text-silver">
+              {parseFloat(lat).toFixed(5)}, {parseFloat(lng).toFixed(5)}
+            </span>
+            {reverseLabel && (
+              <span className="ml-auto truncate font-mono text-[9px] text-dim">{reverseLabel.split(",")[0]}</span>
+            )}
+          </>
+        ) : (
+          <span className="font-mono text-[9px] uppercase tracking-[0.2em] text-flare/70">// awaiting coordinates…</span>
+        )}
+      </div>
     </div>
   );
 }
