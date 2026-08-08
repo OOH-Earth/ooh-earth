@@ -14,7 +14,7 @@ import {
   HeartHandshake, Recycle, Cpu,
   ShieldCheck, Gauge, Users, Milestone, Radio, Workflow, FileText, Newspaper,
   BusFront, RectangleHorizontal, MonitorPlay, Paintbrush2, Shapes, Globe,
-  Image as ImageIcon, Building2, FlaskConical, Store,
+  Image as ImageIcon, Building2, FlaskConical, Store, ScanLine,
 } from "lucide-react";
 
 // Navigation hierarchy — audience-ordered. Keep in step with
@@ -68,6 +68,7 @@ const SITEMAP = [
       { to: "/report", label: "Field Report", status: "live" },
       { to: "/ar", label: "AR Lens", status: "testing" },
       { to: "/scan", label: "TrueCost", status: "testing" },
+      { to: "/lab/scanner", label: "Ad Scanner", status: "live" },
       { to: "/trash", label: "Trash ID", status: "testing" },
       { to: "/inhome", label: "In-Home", status: "live" },
       { to: "/zora", label: "Zora Mint", status: "testing" },
@@ -187,6 +188,7 @@ const ICON = {
   "Media Corps Map": Building2,
   "Lab Admin": FlaskConical,
   "Store Admin": Store,
+  "Ad Scanner": ScanLine,
 };
 
 // Build-status semaphore for not-yet-live items (kept in step with the Journey Map + /sitemap).

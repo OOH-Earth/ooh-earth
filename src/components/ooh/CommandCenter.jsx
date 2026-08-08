@@ -8,6 +8,7 @@ import GraffitiCamera from "@/components/ooh/GraffitiCamera";
 const ACTIONS = [
   { name: "Log an Adbust", desc: "Report a billboard, tag the brand & agency.", to: "/report", priority: true },
   { name: "Live Field Map", desc: "Explore all documented OOH locations.", to: "/map" },
+  { name: "Ad Scanner", desc: "Point-and-shoot advertising detection on any surface.", to: "/lab/scanner", priority: true },
   { name: "Graffiti Camera", desc: "Photograph street art & graffiti in the field.", camera: "graffiti", priority: true },
   { name: "In-Home Digital Busts", desc: "Document digital advertising intrusions.", to: "/inhome" },
   { name: "Operative Profile", desc: "Your field ID, points & badges.", to: "/operative" },

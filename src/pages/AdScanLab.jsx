@@ -1,10 +1,12 @@
 import { useState, useCallback } from "react";
 import { Link } from "react-router-dom";
-import { ScanLine, Loader2, Camera, CheckCircle2, AlertTriangle, MapPin, Tag, Building2, FileText, ArrowRight, RotateCcw, Upload } from "lucide-react";
+import { ScanLine, Loader2, Camera, CheckCircle2, AlertTriangle, MapPin, Tag, Building2, FileText, ArrowRight, RotateCcw, Upload, Navigation } from "lucide-react";
+import exifr from "exifr";
 import Nav from "@/components/ooh/Nav";
 import Breadcrumbs from "@/components/ooh/Breadcrumbs";
 import SiteFooter from "@/components/ooh/SiteFooter";
 import CameraViewfinder from "@/components/ooh/CameraViewfinder";
+import PlaceSearch from "@/components/ooh/lab/PlaceSearch";
 import { base44 } from "@/api/base44Client";
 import { useToast } from "@/components/ui/use-toast";
 
@@ -46,9 +48,21 @@ export default function AdScanLab() {
   const [detection, setDetection] = useState(null);
   const [cataloging, setCataloging] = useState(false);
   const [cataloged, setCataloged] = useState(null);
+  const [photoCoords, setPhotoCoords] = useState(null);
+  const [photoSource, setPhotoSource] = useState(null);
 
   const handleCapture = useCallback(async (file) => {
     setUploading(true);
+    setPhotoCoords(null);
+    setPhotoSource(null);
+    // Try to read EXIF GPS from the photo
+    try {
+      const gps = await exifr.gps(file);
+      if (gps && isFinite(gps.latitude) && isFinite(gps.longitude)) {
+        setPhotoCoords({ lat: gps.latitude, lng: gps.longitude });
+        setPhotoSource("exif");
+      }
+    } catch { /* no EXIF or not an image with GPS */ }
     try {
       const { file_url } = await base44.integrations.Core.UploadFile({ file });
       setCapturedUrl(file_url);
@@ -90,6 +104,8 @@ export default function AdScanLab() {
           : `Ad scan · ${new Date().toLocaleDateString()}`,
         type: detection.surface_type || "other",
         image_url: capturedUrl,
+        lat: photoCoords?.lat,
+        lng: photoCoords?.lng,
         brand_name: detection.brand_name || "",
         ad_agency: detection.ad_agency || "",
         parent_corp: detection.parent_corp || "",
@@ -113,6 +129,8 @@ export default function AdScanLab() {
     setCapturedUrl(null);
     setDetection(null);
     setCataloged(null);
+    setPhotoCoords(null);
+    setPhotoSource(null);
   };
 
   const confidencePct = detection ? Math.round((detection.confidence || 0) * 100) : 0;
@@ -229,6 +247,41 @@ export default function AdScanLab() {
               </div>
             )}
 
+            {/* Location step */}
+            <div className="border border-slate2 bg-card">
+              <div className="flex items-center gap-2 border-b border-slate2 px-4 py-2.5">
+                <Navigation className="h-3.5 w-3.5 text-ozone" />
+                <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-silver/60">Step 04 — Confirm location</span>
+              </div>
+              <div className="space-y-3 p-4">
+                {photoSource === "exif" && photoCoords ? (
+                  <div className="flex items-center gap-2 border border-ozone/40 bg-ozone/5 px-3 py-2">
+                    <CheckCircle2 className="h-4 w-4 text-ozone" />
+                    <span className="font-mono text-[11px] text-silver">GPS from photo EXIF</span>
+                    <span className="ml-auto font-mono text-[10px] tabular text-ozone">{photoCoords.lat.toFixed(5)}, {photoCoords.lng.toFixed(5)}</span>
+                  </div>
+                ) : photoCoords ? (
+                  <div className="flex items-center gap-2 border border-ozone/40 bg-ozone/5 px-3 py-2">
+                    <MapPin className="h-4 w-4 text-ozone" />
+                    <span className="font-mono text-[11px] text-silver">{photoSource === "search" ? "Search result" : "Manual"}</span>
+                    <span className="ml-auto font-mono text-[10px] tabular text-ozone">{photoCoords.lat.toFixed(5)}, {photoCoords.lng.toFixed(5)}</span>
+                  </div>
+                ) : (
+                  <div>
+                    <div className="mb-2 font-mono text-[10px] uppercase tracking-[0.15em] text-flare/80">No GPS in photo — search for the place</div>
+                    <PlaceSearch onSelect={(r) => { setPhotoCoords({ lat: r.lat, lng: r.lng }); setPhotoSource("search"); }} />
+                  </div>
+                )}
+                <details className="group">
+                  <summary className="cursor-pointer font-mono text-[9px] uppercase tracking-[0.2em] text-silver/40 transition-colors hover:text-ozone">Enter coordinates manually</summary>
+                  <div className="mt-2 flex gap-2">
+                    <input type="text" inputMode="decimal" placeholder="Latitude" defaultValue={photoCoords?.lat ?? ""} onChange={(e) => { const lat = parseFloat(e.target.value); setPhotoCoords((c) => ({ lat: isNaN(lat) ? (c?.lat ?? 0) : lat, lng: c?.lng ?? 0 })); setPhotoSource("manual"); }} className="w-full border border-slate2 bg-void px-2 py-1.5 font-mono text-[11px] text-silver outline-none focus:border-ozone" />
+                    <input type="text" inputMode="decimal" placeholder="Longitude" defaultValue={photoCoords?.lng ?? ""} onChange={(e) => { const lng = parseFloat(e.target.value); setPhotoCoords((c) => ({ lat: c?.lat ?? 0, lng: isNaN(lng) ? (c?.lng ?? 0) : lng })); setPhotoSource("manual"); }} className="w-full border border-slate2 bg-void px-2 py-1.5 font-mono text-[11px] text-silver outline-none focus:border-ozone" />
+                  </div>
+                </details>
+              </div>
+            </div>
+
             {/* Catalog action */}
             {cataloged ? (
               <div className="flex flex-col items-center gap-3 border border-ozone/40 bg-ozone/5 py-8">
@@ -244,11 +297,13 @@ export default function AdScanLab() {
             ) : (
               <button
                 onClick={catalogLocation}
-                disabled={cataloging}
+                disabled={cataloging || !photoCoords}
                 className="flex w-full items-center justify-center gap-2 border border-slate2 py-3 font-mono text-[11px] font-bold uppercase tracking-[0.2em] text-silver transition-colors hover:border-ozone hover:text-ozone disabled:opacity-40"
               >
                 {cataloging ? (
                   <><Loader2 className="h-4 w-4 animate-spin" /> Cataloging…</>
+                ) : !photoCoords ? (
+                  <><MapPin className="h-4 w-4" /> Set location to catalog</>
                 ) : (
                   <><MapPin className="h-4 w-4" /> Catalog to atlas</>
                 )}
