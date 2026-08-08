@@ -123,7 +123,12 @@ export default function FieldReport() {
           </div>
         )}
         <div className="mt-6 flex flex-wrap gap-3">
-          <Link to="/map" className="inline-flex items-center gap-2 bg-ozone px-5 py-3 font-mono text-[11px] font-bold uppercase tracking-[0.25em] text-void transition-colors hover:bg-flare">
+          {done.id && (
+            <Link to={`/location/${done.id}`} className="inline-flex items-center gap-2 bg-ozone px-5 py-3 font-mono text-[11px] font-bold uppercase tracking-[0.25em] text-void transition-colors hover:bg-flare">
+              View your report <ArrowRight className="h-3.5 w-3.5" />
+            </Link>
+          )}
+          <Link to="/map" className={`inline-flex items-center gap-2 px-5 py-3 font-mono text-[11px] font-bold uppercase tracking-[0.25em] transition-colors ${done.id ? "border border-slate2 text-darkgray hover:border-ozone hover:text-ozone" : "bg-ozone text-void hover:bg-flare"}`}>
             View on map <ArrowRight className="h-3.5 w-3.5" />
           </Link>
           <button onClick={reset} className="border border-slate2 px-5 py-3 font-mono text-[11px] font-bold uppercase tracking-[0.25em] text-darkgray transition-colors hover:border-ozone hover:text-ozone">
