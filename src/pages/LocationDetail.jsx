@@ -294,8 +294,8 @@ export default function LocationDetail() {
           </div>
         </section>
 
-        {/* ── Intelligence: subvertising images + notes ── */}
-        {showSubvertising && <section className="mb-8"><SubvertisingPanel loc={loc} /></section>}
+        {/* ── Intelligence: subvertising images + notes (only for subverted locations) ── */}
+        {((loc.adbust_type && loc.adbust_type !== "none") || loc.adbust_image_url) && <section className="mb-8"><SubvertisingPanel loc={loc} /></section>}
 
         {/* ── Record metadata — improved widget, kept lower ── */}
         <section className="mb-8">
