@@ -1,11 +1,14 @@
-import { useEffect } from "react";
-import { X, ArrowUpRight } from "lucide-react";
+import { useState, useEffect } from "react";
+import { X, ArrowUpRight, SprayCan } from "lucide-react";
 import { Link } from "react-router-dom";
+import GraffitiCamera from "@/components/ooh/GraffitiCamera";
 
-// Internal app routes shown as action cards at the top of the panel
+// Internal app routes shown as action cards at the top of the panel.
+// `camera` actions open a field camera modal instead of navigating.
 const ACTIONS = [
   { name: "Log an Adbust", desc: "Report a billboard, tag the brand & agency.", to: "/report", priority: true },
   { name: "Live Field Map", desc: "Explore all documented OOH locations.", to: "/map" },
+  { name: "Graffiti Camera", desc: "Photograph street art & graffiti in the field.", camera: "graffiti", priority: true },
   { name: "In-Home Digital Busts", desc: "Document digital advertising intrusions.", to: "/inhome" },
   { name: "Operative Profile", desc: "Your field ID, points & badges.", to: "/operative" },
   { name: "Store / Library", desc: "Research docs, tools, digital drops.", to: "/store" },
@@ -63,6 +66,8 @@ const GROUPS = [
 ];
 
 export default function CommandCenter({ open, onClose }) {
+  const [graffitiCam, setGraffitiCam] = useState(false);
+
   useEffect(() => {
     const onKey = (e) => e.key === "Escape" && onClose();
     if (open) {
@@ -74,6 +79,13 @@ export default function CommandCenter({ open, onClose }) {
       document.body.style.overflow = "";
     };
   }, [open, onClose]);
+
+  const handleAction = (a) => {
+    if (a.camera === "graffiti") {
+      onClose();
+      setGraffitiCam(true);
+    }
+  };
 
   return (
     <div
@@ -102,16 +114,23 @@ export default function CommandCenter({ open, onClose }) {
               <span className="h-px flex-1 bg-ozone/20" />
             </div>
             <div className="grid gap-px sm:grid-cols-2">
-              {ACTIONS.map((a) => (
-                <Link key={a.to} to={a.to} onClick={onClose}
-                  className={`group relative flex items-start justify-between gap-3 border p-4 transition-colors ${a.priority ? "border-ozone/30 bg-ozone/[0.04] hover:bg-ozone/10" : "border-white/5 bg-card hover:border-white/15"}`}>
-                  <div>
-                    <div className={`font-display text-base font-bold uppercase tracking-tight ${a.priority ? "text-ozone" : "text-silver"}`}>{a.name}</div>
-                    <div className="mt-1 font-mono text-[10px] leading-relaxed text-silver/45">{a.desc}</div>
-                  </div>
-                  <ArrowUpRight className={`mt-0.5 h-4 w-4 shrink-0 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5 ${a.priority ? "text-ozone" : "text-silver/30"}`} />
-                </Link>
-              ))}
+              {ACTIONS.map((a) => {
+                const Wrap = a.to ? Link : "button";
+                const wrapProps = a.to ? { to: a.to, onClick: onClose } : { onClick: () => handleAction(a) };
+                return (
+                  <Wrap key={a.name} {...wrapProps}
+                    className={`group relative flex items-start justify-between gap-3 border p-4 text-left transition-colors ${a.priority ? "border-ozone/30 bg-ozone/[0.04] hover:bg-ozone/10" : "border-white/5 bg-card hover:border-white/15"}`}>
+                    <div>
+                      <div className="flex items-center gap-2">
+                        {a.camera === "graffiti" && <SprayCan className="h-3.5 w-3.5 text-flare" />}
+                        <div className={`font-display text-base font-bold uppercase tracking-tight ${a.priority ? "text-ozone" : "text-silver"}`}>{a.name}</div>
+                      </div>
+                      <div className="mt-1 font-mono text-[10px] leading-relaxed text-silver/45">{a.desc}</div>
+                    </div>
+                    <ArrowUpRight className={`mt-0.5 h-4 w-4 shrink-0 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5 ${a.priority ? "text-ozone" : "text-silver/30"}`} />
+                  </Wrap>
+                );
+              })}
             </div>
           </div>
 
@@ -150,6 +169,7 @@ export default function CommandCenter({ open, onClose }) {
           </p>
         </div>
       </div>
+      <GraffitiCamera open={graffitiCam} onClose={() => setGraffitiCam(false)} />
     </div>
   );
 }

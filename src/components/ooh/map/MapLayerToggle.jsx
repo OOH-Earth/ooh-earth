@@ -1,11 +1,27 @@
-import { Waves, Leaf, Sprout, AlertTriangle, Palette, Radio } from "lucide-react";
+import { Ban, SprayCan, Palette, Leaf, Sprout, AlertTriangle, Waves, Radio } from "lucide-react";
 
-// Layer groups — four research categories, each with sub-layer toggles.
+// Layer groups — ordered by campaign priority.
+// STREET     → Adbusting, Graffiti, Ad Spots & Art (base marker layer)
 // ECOLOGY    → Mushrooms, Flora
-// VISUAL     → Ad Spots & Art (base marker layer)
-// WAR        → War Zones (conflict alerts)
 // RIVERS     → Hydrology & Pollution tracking
+// WAR        → War Zones (conflict alerts)
+// RADIO      → Live Signals
+//
+// "adbusting" and "graffiti" are filtered views of the Location entity:
+//   adbusting = locations with adbust_type !== "none"
+//   graffiti  = locations with graffiti_medium set, or type painted/mural/sticker
+// They share the same map markers as "ads" but filter the results panel.
 export const LAYER_GROUPS = [
+  {
+    id: "street",
+    label: "Street",
+    color: "#EDFF00",
+    layers: [
+      { id: "adbusting", label: "Adbusting", icon: Ban, color: "#FF5C00" },
+      { id: "graffiti", label: "Graffiti", icon: SprayCan, color: "#FF5C00" },
+      { id: "ads", label: "Ad Spots & Art", icon: Palette, color: "#EDFF00", defaultOn: true },
+    ],
+  },
   {
     id: "ecology",
     label: "Ecology",
@@ -16,11 +32,11 @@ export const LAYER_GROUPS = [
     ],
   },
   {
-    id: "visual",
-    label: "Visual Realm",
-    color: "#EDFF00",
+    id: "rivers",
+    label: "Rivers Spec",
+    color: "#1F51FF",
     layers: [
-      { id: "ads", label: "Ad Spots & Art", icon: Palette, color: "#EDFF00", defaultOn: true },
+      { id: "rivers", label: "Hydrology", icon: Waves, color: "#39FF14" },
     ],
   },
   {
@@ -29,14 +45,6 @@ export const LAYER_GROUPS = [
     color: "#FF0040",
     layers: [
       { id: "war", label: "Conflict Alerts", icon: AlertTriangle, color: "#FF0040" },
-    ],
-  },
-  {
-    id: "rivers",
-    label: "Rivers Spec",
-    color: "#1F51FF",
-    layers: [
-      { id: "rivers", label: "Hydrology", icon: Waves, color: "#39FF14" },
     ],
   },
   {

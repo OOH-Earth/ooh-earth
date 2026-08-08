@@ -9,11 +9,12 @@ import MapSearch from "@/components/ooh/map/MapSearch";
 import LocationCard from "@/components/ooh/map/LocationCard";
 import seedMarkers from "@/components/ooh/mapSeed";
 import { toMarker } from "@/components/ooh/map/markerUtils";
-import { Loader2, FileDown, Megaphone, Map as MapIcon, Globe, ScanSearch, Camera, Key, Crosshair } from "lucide-react";
+import { Loader2, FileDown, Megaphone, Map as MapIcon, Globe, ScanSearch, Camera, Key, Crosshair, SprayCan } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useWalkthrough } from "@/lib/walkthroughContext";
 import UnitFinder from "@/components/ooh/UnitFinder";
 import QuickCapture from "@/components/ooh/QuickCapture";
+import GraffitiCamera from "@/components/ooh/GraffitiCamera";
 import Globe3D from "@/components/ooh/Globe3D";
 import MapAlertTicker from "@/components/ooh/map/MapAlertTicker";
 import MapLayerToggle from "@/components/ooh/map/MapLayerToggle";
@@ -76,6 +77,7 @@ export default function Map() {
 
   useEffect(() => { registerSteps(TOUR); }, [registerSteps]);
   const [captureOpen, setCaptureOpen] = useState(false);
+  const [graffitiCamOpen, setGraffitiCamOpen] = useState(false);
   const [claims, setClaims] = useState([]);
   const [claimTarget, setClaimTarget] = useState(null);
 
@@ -162,21 +164,29 @@ export default function Map() {
       });
   }, [raw, typeFilter, query]);
 
+  // Layer-filtered markers — adbusting/graffiti are filtered views of the
+  // Location entity (same markers, narrowed by field conditions).
+  const layerFiltered = useMemo(() => {
+    if (primaryLayer === "adbusting") return filtered.filter((m) => m.adbust_type && m.adbust_type !== "none");
+    if (primaryLayer === "graffiti") return filtered.filter((m) => m.graffiti_medium || ["painted", "mural", "sticker"].includes(m.type));
+    return filtered;
+  }, [filtered, primaryLayer]);
+
   // Results feed follows the map viewport (flat view): only spots inside the
   // visible bounds, nearest-to-centre first — the "search this area" pattern.
   const adsInView = useMemo(() => {
-    if (view !== "flat" || !followViewport || !bounds) return filtered;
+    if (view !== "flat" || !followViewport || !bounds) return layerFiltered;
     const { n, s, e, w } = bounds;
     const inLng = (lng) => (w <= e ? lng >= w && lng <= e : lng >= w || lng <= e);
     const cLat = (n + s) / 2;
     const cLng = (w + e) / 2;
-    return filtered
+    return layerFiltered
       .filter((m) => isFinite(m.lat) && isFinite(m.lng) && m.lat <= n && m.lat >= s && inLng(m.lng))
       .sort((a, b) => ((a.lat - cLat) ** 2 + (a.lng - cLng) ** 2) - ((b.lat - cLat) ** 2 + (b.lng - cLng) ** 2));
-  }, [filtered, view, followViewport, bounds]);
+  }, [layerFiltered, view, followViewport, bounds]);
 
   const primaryLayer = useMemo(
-    () => ["ads", "rivers", "mushrooms", "flora", "war", "radio"].find((l) => activeLayers.includes(l)) || null,
+    () => ["adbusting", "graffiti", "ads", "rivers", "mushrooms", "flora", "war", "radio"].find((l) => activeLayers.includes(l)) || null,
     [activeLayers]
   );
 
@@ -191,7 +201,7 @@ export default function Map() {
     const q = query.trim().toLowerCase();
     const matches = (text) => !q || text.toLowerCase().includes(q);
     switch (primaryLayer) {
-      case "ads": return adsInView;
+      case "ads": case "adbusting": case "graffiti": return adsInView;
       case "mushrooms": return mushrooms.filter((s) =>
         (layerFilter === "all" || s.region === layerFilter) &&
         matches(`${s.species} ${s.region} ${s.habitat} ${s.note || ""}`));
@@ -353,9 +363,9 @@ export default function Map() {
               </button>
             </div>
             {view === "globe" ? (
-              <Globe3D key={mapStyle.id} markers={filtered} selectedId={selectedId} hoverId={hoverId} onSelect={setSelectedId} userLoc={userLoc} activeLayers={activeLayers} flyTo={flyTo} />
+              <Globe3D key={mapStyle.id} markers={layerFiltered} selectedId={selectedId} hoverId={hoverId} onSelect={setSelectedId} userLoc={userLoc} activeLayers={activeLayers} flyTo={flyTo} />
             ) : (
-              <LocationMap markers={filtered} selectedId={selectedId} hoverId={hoverId} onSelect={setSelectedId} userLoc={userLoc} futures={OOH_FUTURES} activeLayers={activeLayers} onBoundsChange={setBounds} flyTo={flyTo} />
+              <LocationMap markers={layerFiltered} selectedId={selectedId} hoverId={hoverId} onSelect={setSelectedId} userLoc={userLoc} futures={OOH_FUTURES} activeLayers={activeLayers} onBoundsChange={setBounds} flyTo={flyTo} />
             )}
             <div className="pointer-events-none absolute inset-x-0 top-0 z-[900] px-3 pt-16">
               <MapAlertTicker />
@@ -391,6 +401,13 @@ export default function Map() {
                 <Key className="h-3.5 w-3.5" /> <span className="hidden sm:inline">Keys</span>
               </a>
               <button
+                onClick={() => setGraffitiCamOpen(true)}
+                aria-label="Graffiti camera"
+                className="flex items-center gap-1.5 border border-flare bg-flare px-2.5 py-2 font-mono text-[10px] font-bold uppercase tracking-[0.25em] text-void transition-colors hover:bg-ozone hover:border-ozone"
+              >
+                <SprayCan className="h-3.5 w-3.5" /> <span className="hidden sm:inline">Graffiti</span>
+              </button>
+              <button
                 onClick={() => setCaptureOpen(true)}
                 aria-label="Capture photo"
                 className="flex items-center gap-1.5 border border-ozone bg-ozone px-2.5 py-2 font-mono text-[10px] font-bold uppercase tracking-[0.25em] text-void transition-colors hover:bg-flare hover:border-flare"
@@ -413,6 +430,7 @@ export default function Map() {
       <ClaimLeadDialog open={!!claimTarget} onClose={() => setClaimTarget(null)} location={claimTarget} />
       <UnitFinder open={finderOpen} onClose={() => setFinderOpen(false)} />
       <QuickCapture open={captureOpen} onClose={() => setCaptureOpen(false)} />
+      <GraffitiCamera open={graffitiCamOpen} onClose={() => setGraffitiCamOpen(false)} />
     </div>
   );
 }
