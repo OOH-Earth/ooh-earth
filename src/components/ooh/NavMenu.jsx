@@ -42,7 +42,6 @@ const SITEMAP = [
     items: [
       { to: "/categories", label: "All Categories", status: "live" },
       { to: "/regions", label: "Regions", status: "live" },
-      { to: "/media-corps", label: "Media Corps Map", status: "live" },
       { to: "/bus-stops", label: "Bus Stops", status: "live" },
       { to: "/category/billboard", label: "Billboards", status: "live" },
       { to: "/category/digital", label: "Digital", status: "live" },
@@ -58,6 +57,7 @@ const SITEMAP = [
       { to: "/rivers", label: "Rivers", status: "live" },
       { to: "/warzones", label: "War Zones", status: "live" },
       { to: "/campaign", label: "Fund the Offensive", status: "testing" },
+      { to: "/media-corps", label: "Media Corps Map", status: "live" },
       { to: null, label: "AFC Correspondents", status: "planned" },
     ],
   },

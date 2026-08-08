@@ -1,9 +1,9 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import Nav from "@/components/ooh/Nav";
 import MediaCorpsMap from "@/components/ooh/report/MediaCorpsMap";
 import MediaCorpDetail from "@/components/ooh/report/MediaCorpDetail";
-import { OOH_MEDIA_CORPS } from "@/components/ooh/report/oohMediaCorps";
-import { Search, ExternalLink, Megaphone, Globe2 } from "lucide-react";
+import { base44 } from "@/api/base44Client";
+import { Search, ExternalLink, Megaphone, Globe2, Loader2, Database } from "lucide-react";
 import { Link } from "react-router-dom";
 
 const SCOPE_FILTERS = [
@@ -17,20 +17,34 @@ export default function MediaCorps() {
   const [scopeFilter, setScopeFilter] = useState("all");
   const [search, setSearch] = useState("");
   const [selected, setSelected] = useState(null);
+  const [corps, setCorps] = useState(null);
 
-  const filtered = useMemo(() => OOH_MEDIA_CORPS.filter((c) => {
+  useEffect(() => {
+    let alive = true;
+    (async () => {
+      try {
+        const recs = await base44.entities.MediaCorp.list("name");
+        if (alive) setCorps(recs);
+      } catch {
+        if (alive) setCorps([]);
+      }
+    })();
+    return () => { alive = false; };
+  }, []);
+
+  const filtered = useMemo(() => (corps || []).filter((c) => {
     const scopeMatch = scopeFilter === "all" || c.scope === scopeFilter;
     const q = search.trim().toLowerCase();
-    const searchMatch = !q || `${c.name} ${c.hq} ${c.parent} ${c.regions.join(" ")}`.toLowerCase().includes(q);
+    const searchMatch = !q || `${c.name} ${c.hq} ${c.parent || ""} ${(c.regions || []).join(" ")}`.toLowerCase().includes(q);
     return scopeMatch && searchMatch;
-  }), [scopeFilter, search]);
+  }), [corps, scopeFilter, search]);
 
   const stats = useMemo(() => ({
-    total: OOH_MEDIA_CORPS.length,
-    global: OOH_MEDIA_CORPS.filter((c) => c.scope === "global").length,
-    countries: OOH_MEDIA_CORPS.reduce((sum, c) => sum + (c.countries || 0), 0),
-    panels: OOH_MEDIA_CORPS.reduce((sum, c) => sum + (c.panels || 0), 0),
-  }), []);
+    total: (corps || []).length,
+    global: (corps || []).filter((c) => c.scope === "global").length,
+    countries: (corps || []).reduce((sum, c) => sum + (c.countries || 0), 0),
+    panels: (corps || []).reduce((sum, c) => sum + (c.panels || 0), 0),
+  }), [corps]);
 
   return (
     <div className="fixed inset-0 flex flex-col overflow-hidden bg-void pt-[calc(7rem_+_env(safe-area-inset-top))] md:pt-[calc(8rem_+_env(safe-area-inset-top))] pb-[calc(76px_+_env(safe-area-inset-bottom))] lg:pb-0">
@@ -40,15 +54,14 @@ export default function MediaCorps() {
       <div className="flex items-center justify-between gap-2 border-b border-slate2/60 bg-void/90 px-3 py-2 backdrop-blur-md md:px-5">
         <div className="flex items-center gap-2">
           <Globe2 className="h-4 w-4 text-ozone" />
-          <span className="font-mono text-[9px] uppercase tracking-[0.3em] text-ozone">// Media Corps Map</span>
+          <span className="font-mono text-[9px] uppercase tracking-[0.3em] text-ozone">// Media Corps Registry</span>
           <span className="hidden font-mono text-[9px] uppercase tracking-[0.2em] text-dim sm:inline">
             · {stats.total} corps · {stats.countries}+ countries · {(stats.panels / 1000000).toFixed(1)}M+ panels
           </span>
         </div>
-        <a href="https://ooh.earth/media-corps/" target="_blank" rel="noreferrer"
-          className="hidden items-center gap-1 font-mono text-[8px] uppercase tracking-[0.15em] text-dim transition-colors hover:text-ozone sm:flex">
-          <ExternalLink className="h-2.5 w-2.5" /> ooh.earth
-        </a>
+        <span className="flex items-center gap-1.5 font-mono text-[8px] uppercase tracking-[0.15em] text-dim">
+          <Database className="h-2.5 w-2.5" /> DB
+        </span>
       </div>
 
       {/* Scope filter chips */}
@@ -76,18 +89,20 @@ export default function MediaCorps() {
             </span>
           </div>
           <div className="min-h-0 flex-1 overflow-y-auto divide-y divide-slate2/30">
-            {filtered.map((corp) => (
-              <button key={corp.name} onClick={() => setSelected(corp)}
-                className={`flex w-full items-center gap-2.5 px-4 py-2.5 text-left transition-colors hover:bg-ozone/5 ${selected?.name === corp.name ? "bg-ozone/5" : ""}`}>
+            {corps === null ? (
+              <div className="flex justify-center py-8"><Loader2 className="h-4 w-4 animate-spin text-ozone" /></div>
+            ) : filtered.map((corp) => (
+              <button key={corp.id} onClick={() => setSelected(corp)}
+                className={`flex w-full items-center gap-2.5 px-4 py-2.5 text-left transition-colors hover:bg-ozone/5 ${selected?.id === corp.id ? "bg-ozone/5" : ""}`}>
                 <span className={`h-2 w-2 shrink-0 rounded-full ${corp.scope === "global" ? "bg-ozone" : corp.scope === "regional" ? "bg-flare" : "bg-darkgray"}`} />
                 <div className="min-w-0 flex-1">
                   <div className="truncate font-display text-[13px] font-bold text-silver">{corp.name}</div>
                   <div className="truncate font-mono text-[8px] uppercase tracking-[0.1em] text-dim">{corp.hq}</div>
                 </div>
-                {corp.countries > 0 && <span className="shrink-0 font-mono text-[8px] text-dim">{corp.countries}</span>}
+                {corp.panels > 0 && <span className="shrink-0 font-mono text-[8px] text-dim">{corp.panels >= 1000000 ? (corp.panels / 1000000).toFixed(1) + "M" : Math.round(corp.panels / 1000) + "K"}</span>}
               </button>
             ))}
-            {filtered.length === 0 && (
+            {corps !== null && filtered.length === 0 && (
               <div className="px-4 py-8 text-center font-mono text-[10px] uppercase tracking-[0.2em] text-dim">No match</div>
             )}
           </div>
@@ -100,30 +115,39 @@ export default function MediaCorps() {
 
         {/* Map */}
         <div className="relative min-h-0 flex-1">
-          <MediaCorpsMap filterScope={scopeFilter} selected={selected} onSelect={setSelected} />
-
-          {/* Mobile list toggle / count */}
-          <div className="absolute bottom-3 left-3 right-3 z-[1000] lg:hidden">
-            <div className="flex gap-1 overflow-x-auto border border-slate2 bg-void/90 p-1.5 backdrop-blur-md">
-              {filtered.slice(0, 8).map((corp) => (
-                <button key={corp.name} onClick={() => setSelected(corp)}
-                  className={`shrink-0 px-2 py-1 font-mono text-[8px] font-bold uppercase tracking-[0.1em] border transition-colors ${selected?.name === corp.name ? "border-ozone bg-ozone/10 text-ozone" : "border-slate2 text-darkgray"}`}>
-                  {corp.name.split(" ")[0]}
-                </button>
-              ))}
+          {corps === null ? (
+            <div className="flex h-full items-center justify-center">
+              <Loader2 className="h-6 w-6 animate-spin text-ozone" />
             </div>
-          </div>
+          ) : (
+            <>
+              <MediaCorpsMap corps={filtered} selected={selected} onSelect={setSelected} />
 
-          {/* Legend */}
-          <div className="absolute right-3 top-3 z-[1000] hidden flex-col gap-1.5 border border-slate2 bg-void/90 p-2.5 backdrop-blur-md sm:flex">
-            <span className="font-mono text-[8px] uppercase tracking-[0.2em] text-dim">Legend</span>
-            <span className="flex items-center gap-1.5 font-mono text-[8px] uppercase tracking-[0.12em] text-darkgray"><span className="h-2 w-2 rounded-full bg-ozone" /> Global</span>
-            <span className="flex items-center gap-1.5 font-mono text-[8px] uppercase tracking-[0.12em] text-darkgray"><span className="h-2 w-2 rounded-full bg-flare" /> Regional</span>
-            <span className="flex items-center gap-1.5 font-mono text-[8px] uppercase tracking-[0.12em] text-darkgray"><span className="h-2 w-2 rounded-full bg-darkgray" /> Local</span>
-          </div>
+              {/* Mobile list toggle / count */}
+              <div className="absolute bottom-3 left-3 right-3 z-[1000] lg:hidden">
+                <div className="flex gap-1 overflow-x-auto border border-slate2 bg-void/90 p-1.5 backdrop-blur-md">
+                  {filtered.slice(0, 8).map((corp) => (
+                    <button key={corp.id} onClick={() => setSelected(corp)}
+                      className={`shrink-0 px-2 py-1 font-mono text-[8px] font-bold uppercase tracking-[0.1em] border transition-colors ${selected?.id === corp.id ? "border-ozone bg-ozone/10 text-ozone" : "border-slate2 text-darkgray"}`}>
+                      {corp.name.split(" ")[0]}
+                    </button>
+                  ))}
+                </div>
+              </div>
 
-          {/* Detail drawer */}
-          <MediaCorpDetail corp={selected} onClose={() => setSelected(null)} />
+              {/* Legend */}
+              <div className="absolute right-3 top-3 z-[1000] hidden flex-col gap-1.5 border border-slate2 bg-void/90 p-2.5 backdrop-blur-md sm:flex">
+                <span className="font-mono text-[8px] uppercase tracking-[0.2em] text-dim">Scope</span>
+                <span className="flex items-center gap-1.5 font-mono text-[8px] uppercase tracking-[0.12em] text-darkgray"><span className="h-2 w-2 rounded-full bg-ozone" /> Global</span>
+                <span className="flex items-center gap-1.5 font-mono text-[8px] uppercase tracking-[0.12em] text-darkgray"><span className="h-2 w-2 rounded-full bg-flare" /> Regional</span>
+                <span className="flex items-center gap-1.5 font-mono text-[8px] uppercase tracking-[0.12em] text-darkgray"><span className="h-2 w-2 rounded-full bg-darkgray" /> Local</span>
+                <span className="mt-1 font-mono text-[7px] uppercase tracking-[0.15em] text-dim/60">Pin size = panel count</span>
+              </div>
+
+              {/* Detail drawer */}
+              <MediaCorpDetail corp={selected} onClose={() => setSelected(null)} />
+            </>
+          )}
         </div>
       </div>
     </div>

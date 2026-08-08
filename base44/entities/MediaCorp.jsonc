@@ -1,0 +1,123 @@
+{
+  "name": "MediaCorp",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Official company name"
+    },
+    "hq": {
+      "type": "string",
+      "description": "Headquarters city, country"
+    },
+    "lat": {
+      "type": "number"
+    },
+    "lng": {
+      "type": "number"
+    },
+    "regions": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Operating regions, e.g. Europe, Asia-Pacific"
+    },
+    "scope": {
+      "type": "string",
+      "enum": [
+        "global",
+        "regional",
+        "local"
+      ],
+      "default": "regional"
+    },
+    "countries": {
+      "type": "number",
+      "default": 0,
+      "description": "Number of countries operating in"
+    },
+    "panels": {
+      "type": "number",
+      "default": 0,
+      "description": "Total OOH panels/screens under management"
+    },
+    "desc": {
+      "type": "string",
+      "description": "Short description of the company"
+    },
+    "parent": {
+      "type": "string",
+      "description": "Parent company or holding entity"
+    },
+    "url": {
+      "type": "string",
+      "description": "Official website URL"
+    },
+    "image_url": {
+      "type": "string"
+    },
+    "founded_year": {
+      "type": "number",
+      "description": "Year founded"
+    },
+    "revenue_usd_m": {
+      "type": "number",
+      "description": "Annual revenue in millions USD (most recent reported)"
+    },
+    "stock_ticker": {
+      "type": "string",
+      "description": "Stock exchange ticker, e.g. NYSE: CCO"
+    },
+    "employees": {
+      "type": "number",
+      "description": "Approximate number of employees"
+    },
+    "controversy_tags": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Known controversies, e.g. fossil_fuel_clients, surveillance, greenwashing"
+    },
+    "clean_creatives_f_list": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether this corp or its parent appears on the Clean Creatives F-List"
+    },
+    "sustainability_url": {
+      "type": "string",
+      "description": "Link to sustainability/ESG report if available"
+    },
+    "data_sources": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Source URLs for the data in this record"
+    }
+  },
+  "required": [
+    "name",
+    "lat",
+    "lng"
+  ],
+  "rls": {
+    "read": {},
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}
