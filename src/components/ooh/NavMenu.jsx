@@ -14,7 +14,7 @@ import {
   HeartHandshake, Recycle, Cpu,
   ShieldCheck, Gauge, Users, Milestone, Radio, Workflow, FileText, Newspaper,
   BusFront, RectangleHorizontal, MonitorPlay, Paintbrush2, Shapes, Globe,
-  Image as ImageIcon,
+  Image as ImageIcon, Building2, FlaskConical, Store,
 } from "lucide-react";
 
 // Navigation hierarchy — audience-ordered. Keep in step with
@@ -31,6 +31,7 @@ const SITEMAP = [
     items: [
       { to: "/", label: "Home", status: "live" },
       { to: "/map", label: "Field Atlas", status: "live" },
+      { to: "/media-corps", label: "Media Corps Map", status: "live" },
       { to: "/channel", label: "OOH·TV", status: "live" },
       { to: "/blog", label: "Blog", status: "live" },
       { to: "/about", label: "About", status: "live" },
@@ -56,6 +57,7 @@ const SITEMAP = [
       { to: "/ecology", label: "Ecology", status: "live" },
       { to: "/rivers", label: "Rivers", status: "live" },
       { to: "/warzones", label: "War Zones", status: "live" },
+      { to: "/campaign", label: "Fund the Offensive", status: "testing" },
       { to: null, label: "AFC Correspondents", status: "planned" },
     ],
   },
@@ -87,7 +89,6 @@ const SITEMAP = [
   {
     group: "Fund & Store",
     items: [
-      { to: "/campaign", label: "Fund the Offensive", status: "testing" },
       { to: "/campaign", label: "On-chain Treasury", status: "building" },
       { to: "/plans", label: "Plans / Roadmap", status: "live" },
       { to: "/store", label: "Store", status: "live" },
@@ -128,6 +129,8 @@ const SITEMAP = [
     agencyOnly: true,
     items: [
       { to: "/portal/ops", label: "Architecture Ops", status: "live" },
+      { to: "/lab/admin", label: "Lab Admin", status: "live" },
+      { to: "/store/admin", label: "Store Admin", status: "live" },
       { to: "/dashboard", label: "Persona Control", status: "live" },
       { to: "/dashboard", label: "Moderation Service", status: "live" },
       { to: "/dashboard", label: "Access Audit Log", status: "live" },
@@ -180,6 +183,9 @@ const ICON = {
   "Persona Control": Users, "Moderation Service": ShieldCheck, "Access Audit Log": FileText,
   "Journey Map": Milestone, Sitemap: Network, "Brand Guide": Palette, "Brand Standards": BookOpen,
   "NFT Creator": ImageIcon,
+  "Media Corps Map": Building2,
+  "Lab Admin": FlaskConical,
+  "Store Admin": Store,
 };
 
 // Build-status semaphore for not-yet-live items (kept in step with the Journey Map + /sitemap).
