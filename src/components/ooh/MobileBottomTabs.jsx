@@ -116,7 +116,7 @@ export default function MobileBottomTabs() {
 
   return (
     <nav
-      className="fixed inset-x-0 bottom-0 z-50 flex justify-center lg:hidden"
+      className="fixed inset-x-0 bottom-0 z-[1000] flex justify-center lg:hidden"
       style={{ paddingBottom: "calc(env(safe-area-inset-bottom) + 10px)" }}
       aria-label="Mobile navigation"
     >
