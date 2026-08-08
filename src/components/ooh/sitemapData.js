@@ -64,6 +64,7 @@ export const SITEMAP_GROUPS = [
     desc: "Issue-scoped views of the atlas. Public map portals for each front of the offensive.",
     routes: [
       { path: "/adbusting", name: "Adbusting", vis: "public", status: "live", ux: "Portal for the core adbusting campaign — subverted ads, reclaim actions, and the reel.", audience: "All visitors", auth: "none", flows: ["/map", "/report"] },
+      { path: "/graffiti", name: "Graffiti", vis: "public", status: "live", ux: "Graffiti and street-art portal — a Graphotism-style worldwide map of painted, mural, and sticker locations, with medium and style classification. 3D globe + 2D map + list views, same shell as the other campaign portals.", audience: "All visitors", auth: "none", flows: ["/map", "/report", "/location/:id"] },
       { path: "/ecology", name: "Ecology", vis: "public", status: "live", ux: "Environmental front: greenwashing offenses and ecological reclaim of ad space.", audience: "All visitors", auth: "none", flows: ["/map", "/report"] },
       { path: "/rivers", name: "Rivers", vis: "public", status: "live", ux: "Waterways campaign portal — pollution accountability tied to outdoor advertising.", audience: "All visitors", auth: "none", flows: ["/map"] },
       { path: "/warzones", name: "War Zones", vis: "public", status: "live", ux: "Conflict-linked advertising and the campaign against it.", audience: "All visitors", auth: "none", flows: ["/map"] },

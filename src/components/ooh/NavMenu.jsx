@@ -90,10 +90,10 @@ const SITEMAP = [
   {
     group: "Fund & Store",
     items: [
-      { to: "/campaign", label: "On-chain Treasury", status: "building" },
+      { to: null, label: "On-chain Treasury", status: "building" },
       { to: "/plans", label: "Plans / Roadmap", status: "live" },
       { to: "/store", label: "Store", status: "live" },
-      { to: "/store", label: "Field Credentials · CR80", status: "building" },
+      { to: null, label: "Field Credentials · CR80", status: "building" },
       { to: "/support", label: "Support", status: "live" },
       { to: "/contact", label: "Contact", status: "live" },
       { to: "/careers", label: "Careers", status: "live" },

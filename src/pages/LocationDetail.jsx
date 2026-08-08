@@ -117,9 +117,7 @@ export default function LocationDetail() {
   const keyed = isKeyedType(loc.type);
   const k = keyInfo(loc.access_key || (keyed ? "unknown" : "none"));
   const hasAdData = !!(loc.brand_name || loc.ad_agency || loc.parent_corp || loc.campaign_name || loc.ooh_operator || loc.industry_sector || (loc.adbust_type && loc.adbust_type !== "none"));
-  const hasGraffitiData = !!(loc.graffiti_medium || loc.graffiti_style || loc.graffiti_surface_m2);
   const showSubvertising = ["billboard", "digital", "projection", "transit"].includes(loc.type) || hasAdData;
-  const showGraffiti = ["painted", "mural", "sticker"].includes(loc.type) || hasGraffitiData;
   const mapSrc = loc.lat != null && loc.lng != null
     ? `https://www.openstreetmap.org/export/embed.html?bbox=${loc.lng - 0.004}%2C${loc.lat - 0.004}%2C${loc.lng + 0.004}%2C${loc.lat + 0.004}&layer=mapnik&marker=${loc.lat}%2C${loc.lng}`
     : null;
