@@ -178,14 +178,45 @@
       ]
     },
     "update": {
-      "user_condition": {
-        "role": "admin"
-      }
+      "$or": [
+        {
+          "created_by_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        },
+        {
+          "user_condition": {
+            "data.access": "admin"
+          }
+        },
+        {
+          "user_condition": {
+            "data.access": "moderator"
+          }
+        },
+        {
+          "user_condition": {
+            "data.agency": true
+          }
+        }
+      ]
     },
     "delete": {
-      "user_condition": {
-        "role": "admin"
-      }
+      "$or": [
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        },
+        {
+          "user_condition": {
+            "data.access": "admin"
+          }
+        }
+      ]
     }
   }
 }
