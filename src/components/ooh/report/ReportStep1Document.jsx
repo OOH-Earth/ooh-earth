@@ -1,4 +1,4 @@
-import { Camera, Crosshair, Loader2, MapPin, CheckCircle2 } from "lucide-react";
+import { Camera, Crosshair, Loader2, MapPin, CheckCircle2, Upload } from "lucide-react";
 import exifr from "exifr";
 import { base44 } from "@/api/base44Client";
 import { useState } from "react";
@@ -63,18 +63,36 @@ export default function ReportStep1Document({ data, onChange }) {
         </div>
       </div>
 
-      {/* Photo */}
+      {/* Photo — capture or upload */}
       <div>
         <label className="mb-2 block font-mono text-[10px] uppercase tracking-[0.3em] text-dim">Field photograph</label>
-        <label className="flex cursor-pointer items-center gap-3 border border-slate2 bg-card px-4 py-4 transition-colors hover:border-ozone">
-          {uploading ? <Loader2 className="h-4 w-4 animate-spin text-ozone" />
-            : data.image_url ? <img src={data.image_url} alt="" className="h-12 w-12 object-cover" />
-            : <Camera className="h-4 w-4 text-dim" />}
-          <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-darkgray">
-            {uploading ? "Uploading…" : data.image_url ? "Replace photo" : "Tap to capture / upload"}
-          </span>
-          <input type="file" accept="image/*" capture="environment" onChange={onPhoto} className="hidden" />
-        </label>
+        {data.image_url ? (
+          <div className="relative overflow-hidden border border-slate2 bg-card">
+            <img src={data.image_url} alt="capture" className="max-h-48 w-full object-cover" />
+            <button type="button" onClick={() => onChange({ image_url: "" })}
+              className="absolute right-2 top-2 flex items-center gap-1.5 border border-slate2 bg-void/80 px-2.5 py-1.5 font-mono text-[9px] uppercase tracking-[0.2em] text-silver backdrop-blur-sm transition-colors hover:border-flare hover:text-flare">
+              <Camera className="h-3 w-3" /> Replace
+            </button>
+          </div>
+        ) : uploading ? (
+          <div className="flex items-center gap-3 border border-ozone/40 bg-card px-4 py-6">
+            <Loader2 className="h-4 w-4 animate-spin text-ozone" />
+            <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-ozone">Uploading…</span>
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 gap-px border border-slate2/60 bg-slate2/40">
+            <label className="group flex cursor-pointer flex-col items-center gap-2 bg-card px-4 py-6 transition-colors hover:border-ozone">
+              <Camera className="h-5 w-5 text-ozone transition-transform group-hover:scale-110" />
+              <span className="font-mono text-[10px] font-bold uppercase tracking-[0.2em] text-silver">Capture live</span>
+              <input type="file" accept="image/*" capture="environment" onChange={onPhoto} className="hidden" />
+            </label>
+            <label className="group flex cursor-pointer flex-col items-center gap-2 bg-card px-4 py-6 transition-colors hover:border-flare">
+              <Upload className="h-5 w-5 text-flare transition-transform group-hover:scale-110" />
+              <span className="font-mono text-[10px] font-bold uppercase tracking-[0.2em] text-silver">Upload</span>
+              <input type="file" accept="image/*" onChange={onPhoto} className="hidden" />
+            </label>
+          </div>
+        )}
       </div>
 
       {/* AI Ad Scanner — beta */}
