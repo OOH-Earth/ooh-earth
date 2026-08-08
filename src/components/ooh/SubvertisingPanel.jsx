@@ -1,6 +1,7 @@
 import { Image } from "@/components/ui/image";
 import { Ban, Megaphone, ExternalLink, Building2, Flag, AlertTriangle, Tag } from "lucide-react";
 import { Link } from "react-router-dom";
+import { BrandIcon } from "@/components/ooh/BrandBadge";
 
 const SECTOR_LABELS = {
   fossil_fuel: "Fossil Fuel", tobacco: "Tobacco", alcohol: "Alcohol", gambling: "Gambling",
@@ -8,14 +9,17 @@ const SECTOR_LABELS = {
   real_estate: "Real Estate", fashion: "Fashion", automotive: "Automotive", pharma: "Pharma", other: "Other",
 };
 
-function Field({ icon: Icon, label, value }) {
+function Field({ icon: Icon, label, value, brand }) {
   if (!value) return null;
   return (
     <div className="border border-slate2/40 bg-void/50 px-3 py-2">
       <div className="flex items-center gap-1 font-mono text-[8px] uppercase tracking-[0.15em] text-dim">
         {Icon && <Icon className="h-2.5 w-2.5" />} {label}
       </div>
-      <div className="mt-0.5 font-display text-[13px] font-semibold text-silver">{value}</div>
+      <div className="mt-0.5 flex items-center gap-2">
+        {brand && <BrandIcon name={value} size={18} />}
+        <span className="font-display text-[13px] font-semibold text-silver">{value}</span>
+      </div>
     </div>
   );
 }
@@ -76,11 +80,11 @@ export default function SubvertisingPanel({ loc }) {
 
         {/* Advertiser info grid */}
         <div className="mt-4 grid gap-2 sm:grid-cols-3">
-          {loc.brand_name && <Field icon={Tag} label="Brand" value={loc.brand_name} />}
+          {loc.brand_name && <Field icon={Tag} label="Brand" value={loc.brand_name} brand />}
           {loc.campaign_name && <Field label="Campaign" value={loc.campaign_name} />}
-          {loc.ad_agency && <Field label="Agency" value={loc.ad_agency} />}
-          {loc.parent_corp && <Field label="Parent" value={loc.parent_corp} />}
-          {loc.ooh_operator && <Field icon={Building2} label="OOH Operator" value={loc.ooh_operator} />}
+          {loc.ad_agency && <Field label="Agency" value={loc.ad_agency} brand />}
+          {loc.parent_corp && <Field label="Parent" value={loc.parent_corp} brand />}
+          {loc.ooh_operator && <Field icon={Building2} label="OOH Operator" value={loc.ooh_operator} brand />}
           {loc.industry_sector && <Field label="Sector" value={SECTOR_LABELS[loc.industry_sector] || loc.industry_sector} />}
         </div>
 

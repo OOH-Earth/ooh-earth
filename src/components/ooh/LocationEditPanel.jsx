@@ -4,6 +4,7 @@ import { useAuth } from "@/lib/AuthContext";
 import { isAdmin, accessOf, agencyOf } from "@/lib/clearance";
 import { PARENT_CORPS, AGENCIES } from "@/components/ooh/report/advertiserRegistry";
 import { ALL_OOH_OPERATORS } from "@/components/ooh/report/oohMediaCorps";
+import { BrandBadge } from "@/components/ooh/BrandBadge";
 import { Tag, Save, X, ChevronDown, ChevronUp, Loader2, AlertTriangle } from "lucide-react";
 
 const INDUSTRY_SECTORS = [
@@ -81,7 +82,22 @@ export default function LocationEditPanel({ loc, onUpdated }) {
     setSaving(true);
     setError(null);
     try {
-      const updated = await base44.entities.Location.update(loc.id, form);
+      const payload = { ...form };
+      // Numeric fields — API rejects empty strings for number type.
+      // Convert "" / null to undefined so the field is omitted entirely.
+      ["graffiti_surface_m2", "graffiti_coverage_pct"].forEach((f) => {
+        const v = payload[f];
+        if (v === "" || v == null) {
+          delete payload[f];
+        } else {
+          payload[f] = Number(v);
+        }
+      });
+      // Also strip empty-string optionals so they don't overwrite existing values with blanks
+      ["brand_name", "campaign_name", "ad_agency", "parent_corp", "ooh_operator", "graffiti_medium", "graffiti_style"].forEach((f) => {
+        if (payload[f] === "") delete payload[f];
+      });
+      const updated = await base44.entities.Location.update(loc.id, payload);
       onUpdated(updated);
       setOpen(false);
     } catch (e) {
@@ -130,6 +146,7 @@ export default function LocationEditPanel({ loc, onUpdated }) {
                   className="border border-slate2 bg-void px-3 py-2 text-sm text-silver outline-none focus:border-ozone"
                   placeholder="e.g. Shell"
                 />
+                {form.brand_name && <BrandBadge name={form.brand_name} className="mt-1 self-start" />}
               </label>
               <label className="flex flex-col gap-1">
                 <span className="font-mono text-[9px] uppercase tracking-[0.15em] text-dim">Campaign</span>
@@ -149,6 +166,7 @@ export default function LocationEditPanel({ loc, onUpdated }) {
                   className="border border-slate2 bg-void px-3 py-2 text-sm text-silver outline-none focus:border-ozone"
                   placeholder="e.g. Ogilvy"
                 />
+                {form.ad_agency && <BrandBadge name={form.ad_agency} className="mt-1 self-start" />}
               </label>
               <label className="flex flex-col gap-1">
                 <span className="font-mono text-[9px] uppercase tracking-[0.15em] text-dim">Parent Corp</span>
@@ -159,6 +177,7 @@ export default function LocationEditPanel({ loc, onUpdated }) {
                   className="border border-slate2 bg-void px-3 py-2 text-sm text-silver outline-none focus:border-ozone"
                   placeholder="e.g. WPP"
                 />
+                {form.parent_corp && <BrandBadge name={form.parent_corp} className="mt-1 self-start" />}
               </label>
               <label className="flex flex-col gap-1 sm:col-span-2">
                 <span className="font-mono text-[9px] uppercase tracking-[0.15em] text-dim">OOH Operator (structure owner)</span>
@@ -169,6 +188,7 @@ export default function LocationEditPanel({ loc, onUpdated }) {
                   className="border border-slate2 bg-void px-3 py-2 text-sm text-silver outline-none focus:border-ozone"
                   placeholder="e.g. Clear Channel"
                 />
+                {form.ooh_operator && <BrandBadge name={form.ooh_operator} className="mt-1 self-start" />}
               </label>
             </div>
             <datalist id="dl-brands">
