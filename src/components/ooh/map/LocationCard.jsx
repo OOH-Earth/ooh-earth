@@ -97,14 +97,15 @@ export default function LocationCard({ m, selected, onSelect, onHover, onHoverEn
         )}
       </div>
 
-      {/* PAGE → always visible on the right */}
+      {/* PAGE → terminal-style bordered button */}
       <Link
         to={`/location/${m.id}`}
         state={m}
         onClick={(e) => e.stopPropagation()}
-        className="hidden shrink-0 items-center self-center font-mono text-[9px] font-bold uppercase tracking-[0.2em] text-ozone transition-colors hover:text-flare sm:inline-flex"
+        className="group/btn flex shrink-0 items-center gap-1.5 self-center border border-ozone/60 bg-void px-3 py-2 font-mono text-[10px] font-bold uppercase tracking-[0.2em] text-ozone transition-colors hover:border-ozone hover:bg-ozone hover:text-void sm:flex"
       >
-        Page <span className="ml-0.5">→</span>
+        <span>&gt; page</span>
+        <span className="transition-transform group-hover/btn:translate-x-0.5">→</span>
       </Link>
     </div>
   );
