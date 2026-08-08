@@ -1,95 +1,95 @@
 import { useState } from "react";
-import { base44 } from "@/api/base44Client";
-import { Crosshair, Camera, MapPin, Loader2, Check, ArrowUpRight, AlertTriangle, CloudOff } from "lucide-react";
 import { submitCapture } from "@/lib/offlineQueue";
 import { Link } from "react-router-dom";
+import { MapPin, Loader2, Check, CloudOff, AlertTriangle, ArrowRight, ArrowLeft } from "lucide-react";
+import ReportStep1Document from "@/components/ooh/report/ReportStep1Document";
+import ReportStep2Identify from "@/components/ooh/report/ReportStep2Identify";
+import ReportStep3Classify from "@/components/ooh/report/ReportStep3Classify";
+import ReportStep4Adbust from "@/components/ooh/report/ReportStep4Adbust";
 
-const TYPES = [
-  { value: "billboard", label: "Billboard" },
-  { value: "painted", label: "Painted" },
-  { value: "digital", label: "Digital" },
-  { value: "projection", label: "Projection" },
-  { value: "sticker", label: "Sticker / Paste" },
-  { value: "mural", label: "Mural" },
-  { value: "other", label: "Other" },
+const STEPS = [
+  { id: 1, label: "Document", desc: "Pin it, photograph it" },
+  { id: 2, label: "Identify", desc: "Brand, operator, agency" },
+  { id: 3, label: "Classify", desc: "Harm type, violation" },
+  { id: 4, label: "Respond", desc: "Adbust, actions" },
 ];
 
-const inputCls =
-  "w-full bg-void border border-slate2 px-4 py-3 font-display text-sm text-silver outline-none transition-colors placeholder:text-dim focus:border-ozone";
+const EMPTY = {
+  type: "billboard",
+  address: "",
+  lat: "",
+  lng: "",
+  title: "",
+  image_url: "",
+  brand_name: "",
+  campaign_name: "",
+  ooh_operator: "",
+  ad_agency: "",
+  parent_corp: "",
+  industry_sector: "",
+  harm_tags: [],
+  harm_statement: "",
+  condition: "functional",
+  notes: "",
+  adbust_type: "none",
+  adbust_image_url: "",
+  action_flags: [],
+};
 
 export default function FieldReport() {
-  const [type, setType] = useState("billboard");
-  const [address, setAddress] = useState("");
-  const [lat, setLat] = useState("");
-  const [lng, setLng] = useState("");
-  const [title, setTitle] = useState("");
-  const [notes, setNotes] = useState("");
-  const [image_url, setImageUrl] = useState("");
-  const [locating, setLocating] = useState(false);
-  const [uploading, setUploading] = useState(false);
+  const [step, setStep] = useState(1);
+  const [data, setData] = useState({ ...EMPTY });
   const [submitting, setSubmitting] = useState(false);
   const [done, setDone] = useState(null);
   const [error, setError] = useState("");
 
-  const locate = () => {
-    if (!navigator.geolocation) {
-      setError("Geolocation unavailable on this device.");
-      return;
-    }
-    setLocating(true);
-    setError("");
-    navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        setLat(pos.coords.latitude.toFixed(5));
-        setLng(pos.coords.longitude.toFixed(5));
-        setLocating(false);
-      },
-      (e) => {
-        setError(e.message || "Location permission denied.");
-        setLocating(false);
-      },
-      { enableHighAccuracy: true, timeout: 10000 }
-    );
-  };
+  const onChange = (patch) => setData((d) => ({ ...d, ...patch }));
 
-  const onPhoto = async (e) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    setUploading(true);
-    setError("");
-    try {
-      const res = await base44.integrations.Core.UploadFile({ file });
-      setImageUrl(res.file_url);
-    } catch (err) {
-      setError("Photo upload failed.");
-    } finally {
-      setUploading(false);
-    }
-  };
+  const next = () => setStep((s) => Math.min(s + 1, 4));
+  const prev = () => setStep((s) => Math.max(s - 1, 1));
 
   const submit = async (e) => {
-    e.preventDefault();
+    e?.preventDefault();
     setError("");
-    const latN = parseFloat(lat);
-    const lngN = parseFloat(lng);
+    const latN = parseFloat(data.lat);
+    const lngN = parseFloat(data.lng);
     if (!isFinite(latN) || !isFinite(lngN)) {
-      setError("Coordinates required — locate or enter manually.");
+      setStep(1);
+      setError("GPS coordinates required — use Locate me or enter manually.");
       return;
     }
     setSubmitting(true);
-    const label = TYPES.find((t) => t.value === type)?.label || type;
-    const finalTitle = title.trim() || `${label} · ${address.split(",")[0].trim() || "Field report"}`;
+    const label = data.type.charAt(0).toUpperCase() + data.type.slice(1);
+    const finalTitle = data.title.trim() || `${label} · ${data.address.split(",")[0].trim() || "Field report"}`;
+    const notesBlob = [
+      data.notes,
+      data.harm_statement ? `Harm statement: ${data.harm_statement}` : "",
+      data.harm_tags?.length ? `Violations: ${data.harm_tags.join(", ")}` : "",
+      data.action_flags?.length ? `Actions: ${data.action_flags.join(", ")}` : "",
+    ].filter(Boolean).join("\n\n");
     try {
       const res = await submitCapture({
         title: finalTitle,
-        type,
-        address,
+        type: data.type,
+        address: data.address,
         lat: latN,
         lng: lngN,
-        image_url,
-        notes,
+        image_url: data.image_url,
+        notes: notesBlob,
         source_link: "",
         status: "pending",
+        brand_name: data.brand_name,
+        campaign_name: data.campaign_name,
+        ooh_operator: data.ooh_operator,
+        ad_agency: data.ad_agency,
+        parent_corp: data.parent_corp,
+        industry_sector: data.industry_sector,
+        harm_tags: data.harm_tags,
+        harm_statement: data.harm_statement,
+        condition: data.condition,
+        adbust_type: data.adbust_type,
+        adbust_image_url: data.adbust_image_url,
+        action_flags: data.action_flags,
       });
       if (res.status === "synced") setDone(res.rec);
       else setDone({ queued: true, lat: latN, lng: lngN });
@@ -100,32 +100,33 @@ export default function FieldReport() {
     }
   };
 
+  const reset = () => { setDone(null); setData({ ...EMPTY }); setStep(1); setError(""); };
+
   if (done) {
     return (
       <div className={`border bg-card p-8 ${done.queued ? "border-flare/40" : "border-ozone/40"}`}>
         {done.queued ? <CloudOff className="h-7 w-7 text-flare" /> : <Check className="h-7 w-7 text-ozone" />}
-        <h3 className="mt-4 font-display text-3xl font-bold tracking-[-0.02em] text-silver">{done.queued ? "Queued offline" : "Transmission received"}</h3>
+        <h3 className="mt-4 font-display text-3xl font-bold tracking-[-0.02em] text-silver">
+          {done.queued ? "Queued offline" : "Transmission received"}
+        </h3>
         <p className="mt-2 font-display text-sm leading-[1.4] text-darkgray">
           {done.queued
-            ? `You're offline — the report is saved on this device and will transmit automatically when you reconnect. Position ${done.lat?.toFixed(4)}, ${done.lng?.toFixed(4)}.`
-            : `Field report logged to the public record at ${done.lat?.toFixed(4)}, ${done.lng?.toFixed(4)}. Pending verification by an operative — it renders on the live map immediately.`}
+            ? `Offline — saved on this device, transmits when you reconnect. Position ${done.lat?.toFixed(4)}, ${done.lng?.toFixed(4)}.`
+            : `Field report logged to the public archive. Pending verification — renders on the live map immediately.`}
         </p>
+        {done.brand_name && (
+          <div className="mt-4 border border-slate2/60 bg-void px-4 py-3">
+            <div className="font-mono text-[9px] uppercase tracking-[0.2em] text-dim">Ad chain logged</div>
+            <div className="mt-1 font-display text-sm text-silver">
+              {[done.brand_name, done.ooh_operator, done.ad_agency].filter(Boolean).join(" → ")}
+            </div>
+          </div>
+        )}
         <div className="mt-6 flex flex-wrap gap-3">
           <Link to="/map" className="inline-flex items-center gap-2 bg-ozone px-5 py-3 font-mono text-[11px] font-bold uppercase tracking-[0.25em] text-void transition-colors hover:bg-flare">
-            View on map <ArrowUpRight className="h-3.5 w-3.5" />
+            View on map <ArrowRight className="h-3.5 w-3.5" />
           </Link>
-          <button
-            onClick={() => {
-              setDone(null);
-              setTitle("");
-              setAddress("");
-              setNotes("");
-              setImageUrl("");
-              setLat("");
-              setLng("");
-            }}
-            className="border border-slate2 px-5 py-3 font-mono text-[11px] font-bold uppercase tracking-[0.25em] text-darkgray transition-colors hover:border-ozone hover:text-ozone"
-          >
+          <button onClick={reset} className="border border-slate2 px-5 py-3 font-mono text-[11px] font-bold uppercase tracking-[0.25em] text-darkgray transition-colors hover:border-ozone hover:text-ozone">
             File another
           </button>
         </div>
@@ -134,114 +135,54 @@ export default function FieldReport() {
   }
 
   return (
-    <form onSubmit={submit} className="space-y-7">
-      {/* Type */}
-      <div>
-        <label className="mb-2 block font-mono text-[10px] uppercase tracking-[0.3em] text-dim">Intervention type</label>
-        <div className="grid grid-cols-2 gap-px border border-slate2/60 bg-slate2/40 sm:grid-cols-4">
-          {TYPES.map((t) => (
-            <button
-              key={t.value}
-              type="button"
-              onClick={() => setType(t.value)}
-              className={`px-3 py-3 font-mono text-[10px] font-bold uppercase tracking-[0.2em] transition-colors ${
-                type === t.value ? "bg-ozone text-void" : "bg-card text-darkgray hover:text-silver"
-              }`}
-            >
-              {t.label}
+    <div>
+      {/* Step indicator */}
+      <div className="mb-8 flex gap-px">
+        {STEPS.map((s) => (
+          <button key={s.id} type="button" onClick={() => setStep(s.id)}
+            className={`flex flex-1 flex-col border px-3 py-2.5 text-left transition-colors ${step === s.id ? "border-ozone bg-ozone/5" : step > s.id ? "border-ozone/30 bg-ozone/[0.03]" : "border-slate2/60 bg-card"}`}>
+            <span className={`font-mono text-[8px] uppercase tracking-[0.25em] ${step === s.id ? "text-ozone" : step > s.id ? "text-ozone/50" : "text-dim"}`}>
+              {String(s.id).padStart(2, "0")}
+            </span>
+            <span className={`font-display text-xs font-bold uppercase tracking-tight ${step === s.id ? "text-silver" : step > s.id ? "text-darkgray" : "text-dim"}`}>{s.label}</span>
+          </button>
+        ))}
+      </div>
+
+      {/* Step header */}
+      <div className="mb-6">
+        <div className="font-mono text-[10px] uppercase tracking-[0.3em] text-ozone">// Step {step} of 4</div>
+        <h2 className="mt-1 font-display text-xl font-bold tracking-tight text-silver">{STEPS[step - 1].desc}</h2>
+      </div>
+
+      {/* Step content */}
+      <form onSubmit={(e) => { e.preventDefault(); if (step < 4) next(); else submit(); }}>
+        {step === 1 && <ReportStep1Document data={data} onChange={onChange} />}
+        {step === 2 && <ReportStep2Identify data={data} onChange={onChange} />}
+        {step === 3 && <ReportStep3Classify data={data} onChange={onChange} />}
+        {step === 4 && <ReportStep4Adbust data={data} onChange={onChange} />}
+
+        {error && (
+          <div className="mt-6 flex items-start gap-2 border border-flare/40 bg-flare/5 px-4 py-3">
+            <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0 text-flare" />
+            <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-flare">{error}</span>
+          </div>
+        )}
+
+        <div className="mt-8 flex gap-3">
+          {step > 1 && (
+            <button type="button" onClick={prev}
+              className="flex items-center gap-2 border border-slate2 px-5 py-3.5 font-mono text-[11px] font-bold uppercase tracking-[0.25em] text-darkgray transition-colors hover:border-ozone hover:text-ozone">
+              <ArrowLeft className="h-3.5 w-3.5" /> Back
             </button>
-          ))}
-        </div>
-      </div>
-
-      {/* Address */}
-      <div>
-        <label className="mb-2 block font-mono text-[10px] uppercase tracking-[0.3em] text-dim">Location / address</label>
-        <input
-          value={address}
-          onChange={(e) => setAddress(e.target.value)}
-          placeholder="Street, district, city"
-          className={inputCls}
-        />
-      </div>
-
-      {/* Coordinates */}
-      <div>
-        <div className="mb-2 flex items-center justify-between">
-          <label className="font-mono text-[10px] uppercase tracking-[0.3em] text-dim">Coordinates</label>
-          <button
-            type="button"
-            onClick={locate}
-            disabled={locating}
-            className="inline-flex items-center gap-1.5 font-mono text-[10px] font-bold uppercase tracking-[0.25em] text-ozone transition-opacity hover:opacity-70 disabled:opacity-40"
-          >
-            {locating ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Crosshair className="h-3.5 w-3.5" />}
-            {locating ? "Locating…" : "Locate me"}
+          )}
+          <button type="submit" disabled={submitting}
+            className="flex flex-1 items-center justify-center gap-2 bg-ozone px-6 py-3.5 font-mono text-[11px] font-bold uppercase tracking-[0.3em] text-void transition-colors hover:bg-flare disabled:opacity-40">
+            {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : step < 4 ? <ArrowRight className="h-4 w-4" /> : <MapPin className="h-4 w-4" />}
+            {submitting ? "Transmitting…" : step < 4 ? "Continue" : "Transmit report"}
           </button>
         </div>
-        <div className="grid grid-cols-2 gap-px border border-slate2/60 bg-slate2/40">
-          <input
-            value={lat}
-            onChange={(e) => setLat(e.target.value)}
-            placeholder="Latitude"
-            inputMode="decimal"
-            className={`${inputCls} border-0`}
-          />
-          <input
-            value={lng}
-            onChange={(e) => setLng(e.target.value)}
-            placeholder="Longitude"
-            inputMode="decimal"
-            className={`${inputCls} border-0`}
-          />
-        </div>
-      </div>
-
-      {/* Photo */}
-      <div>
-        <label className="mb-2 block font-mono text-[10px] uppercase tracking-[0.3em] text-dim">Field photograph</label>
-        <label className="flex cursor-pointer items-center gap-3 border border-slate2 bg-card px-4 py-4 transition-colors hover:border-ozone">
-          {uploading ? (
-            <Loader2 className="h-4 w-4 animate-spin text-ozone" />
-          ) : image_url ? (
-            <img src={image_url} alt="field" className="h-12 w-12 object-cover" />
-          ) : (
-            <Camera className="h-4 w-4 text-dim" />
-          )}
-          <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-darkgray">
-            {uploading ? "Uploading…" : image_url ? "Replace photo" : "Tap to capture / upload"}
-          </span>
-          <input type="file" accept="image/*" capture="environment" onChange={onPhoto} className="hidden" />
-        </label>
-      </div>
-
-      {/* Title */}
-      <div>
-        <label className="mb-2 block font-mono text-[10px] uppercase tracking-[0.3em] text-dim">Title <span className="text-dim/60">(optional — auto-generated if blank)</span></label>
-        <input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="e.g. Billboard · 1039 Pleonchit" className={inputCls} />
-      </div>
-
-      {/* Notes */}
-      <div>
-        <label className="mb-2 block font-mono text-[10px] uppercase tracking-[0.3em] text-dim">Field notes <span className="text-dim/60">(optional)</span></label>
-        <textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={3} placeholder="Brand, message, context, counter-narrative…" className={`${inputCls} resize-none`} />
-      </div>
-
-      {error && (
-        <div className="flex items-start gap-2 border border-flare/40 bg-flare/5 px-4 py-3">
-          <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0 text-flare" />
-          <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-flare">{error}</span>
-        </div>
-      )}
-
-      <button
-        type="submit"
-        disabled={submitting}
-        className="flex w-full items-center justify-center gap-2 bg-ozone px-6 py-4 font-mono text-[11px] font-bold uppercase tracking-[0.3em] text-void transition-colors hover:bg-flare disabled:opacity-40"
-      >
-        {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <MapPin className="h-4 w-4" />}
-        {submitting ? "Transmitting…" : "Transmit report"}
-      </button>
-    </form>
+      </form>
+    </div>
   );
 }

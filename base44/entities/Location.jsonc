@@ -34,7 +34,7 @@
     },
     "source_link": {
       "type": "string",
-      "description": "External detail URL (oohearth.app post, news, etc.)"
+      "description": "External detail URL"
     },
     "notes": {
       "type": "string"
@@ -55,8 +55,7 @@
         "t-handle",
         "unknown"
       ],
-      "default": "none",
-      "description": "Physical access key type that opens the unit housing (see oohearth.app/access-keys)"
+      "default": "none"
     },
     "status": {
       "type": "string",
@@ -66,6 +65,94 @@
         "rejected"
       ],
       "default": "pending"
+    },
+    "brand_name": {
+      "type": "string",
+      "description": "Brand / advertiser being promoted, e.g. Shell, McDonald's"
+    },
+    "ooh_operator": {
+      "type": "string",
+      "description": "OOH media company that owns the structure, e.g. Clear Channel, Plan B"
+    },
+    "ad_agency": {
+      "type": "string",
+      "description": "Creative agency that produced the campaign, e.g. Ogilvy, BBDO"
+    },
+    "campaign_name": {
+      "type": "string",
+      "description": "Campaign or tagline name, e.g. 'Drive the Future'"
+    },
+    "parent_corp": {
+      "type": "string",
+      "description": "Parent / holding company, e.g. WPP, Shell plc"
+    },
+    "industry_sector": {
+      "type": "string",
+      "enum": [
+        "fossil_fuel",
+        "tobacco",
+        "alcohol",
+        "gambling",
+        "ultra_processed_food",
+        "surveillance",
+        "finance",
+        "real_estate",
+        "fashion",
+        "automotive",
+        "pharma",
+        "other"
+      ],
+      "description": "Industry sector of the advertiser"
+    },
+    "harm_tags": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Harm classification tags, e.g. greenwashing, child_targeting"
+    },
+    "condition": {
+      "type": "string",
+      "enum": [
+        "functional",
+        "neglected",
+        "damaged",
+        "abandoned",
+        "reclaimed",
+        "upgraded"
+      ],
+      "default": "functional",
+      "description": "Infrastructure condition of the OOH unit"
+    },
+    "adbust_type": {
+      "type": "string",
+      "enum": [
+        "none",
+        "subverted",
+        "painted_over",
+        "stickered",
+        "projected",
+        "wheatpasted",
+        "removed",
+        "other"
+      ],
+      "default": "none",
+      "description": "Type of activist intervention, if any"
+    },
+    "adbust_image_url": {
+      "type": "string",
+      "description": "Photo of the adbust / subvertised state"
+    },
+    "harm_statement": {
+      "type": "string",
+      "description": "Community statement: what this ad is doing to this space / community"
+    },
+    "action_flags": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Action intents: legal_review, council_submission, community_reclaim, petition, archive"
     }
   },
   "required": [

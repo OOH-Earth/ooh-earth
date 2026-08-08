@@ -1,5 +1,16 @@
 import { useEffect } from "react";
 import { X, ArrowUpRight } from "lucide-react";
+import { Link } from "react-router-dom";
+
+// Internal app routes shown as action cards at the top of the panel
+const ACTIONS = [
+  { name: "Log an Adbust", desc: "Report a billboard, tag the brand & agency.", to: "/report", priority: true },
+  { name: "Live Field Map", desc: "Explore all documented OOH locations.", to: "/map" },
+  { name: "In-Home Digital Busts", desc: "Document digital advertising intrusions.", to: "/inhome" },
+  { name: "Operative Profile", desc: "Your field ID, points & badges.", to: "/operative" },
+  { name: "Store / Library", desc: "Research docs, tools, digital drops.", to: "/store" },
+  { name: "Support the mission", desc: "Sponsor community-funded infrastructure.", to: "/support" },
+];
 
 const GROUPS = [
   {
@@ -83,6 +94,27 @@ export default function CommandCenter({ open, onClose }) {
         </div>
 
         <div className="atlas-track flex-1 overflow-y-auto px-6 py-6">
+
+          {/* Internal quick actions */}
+          <div className="mb-8">
+            <div className="mb-3 flex items-center gap-3">
+              <span className="font-mono text-[10px] uppercase tracking-[0.3em] text-ozone">Quick Actions</span>
+              <span className="h-px flex-1 bg-ozone/20" />
+            </div>
+            <div className="grid gap-px sm:grid-cols-2">
+              {ACTIONS.map((a) => (
+                <Link key={a.to} to={a.to} onClick={onClose}
+                  className={`group relative flex items-start justify-between gap-3 border p-4 transition-colors ${a.priority ? "border-ozone/30 bg-ozone/[0.04] hover:bg-ozone/10" : "border-white/5 bg-card hover:border-white/15"}`}>
+                  <div>
+                    <div className={`font-display text-base font-bold uppercase tracking-tight ${a.priority ? "text-ozone" : "text-silver"}`}>{a.name}</div>
+                    <div className="mt-1 font-mono text-[10px] leading-relaxed text-silver/45">{a.desc}</div>
+                  </div>
+                  <ArrowUpRight className={`mt-0.5 h-4 w-4 shrink-0 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5 ${a.priority ? "text-ozone" : "text-silver/30"}`} />
+                </Link>
+              ))}
+            </div>
+          </div>
+
           {GROUPS.map((g) => (
             <div key={g.label} className="mb-8">
               <div className="mb-3 flex items-center gap-3">
