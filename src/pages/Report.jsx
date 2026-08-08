@@ -1,9 +1,10 @@
 import Nav from "@/components/ooh/Nav";
 import FieldReport from "@/components/ooh/FieldReport";
+import FieldProtocolGuide from "@/components/ooh/report/FieldProtocolGuide";
 import HorizonProgress from "@/components/ooh/HorizonProgress";
 import SiteFooter from "@/components/ooh/SiteFooter";
 import { Link } from "react-router-dom";
-import { ArrowRight, Map, FileText, Zap } from "lucide-react";
+import { ArrowRight, Map, Zap } from "lucide-react";
 import { useState } from "react";
 import CommandCenter from "@/components/ooh/CommandCenter";
 
@@ -33,10 +34,11 @@ export default function Report() {
             <Link to="/location/new" className="inline-flex items-center gap-1.5 border border-slate2 px-3 py-1.5 font-mono text-[9px] uppercase tracking-[0.2em] text-darkgray transition-colors hover:border-ozone hover:text-ozone">
               <Zap className="h-3 w-3" /> My reports
             </Link>
-            <a href="https://cleancreatives.org/asia-f-list" target="_blank" rel="noreferrer"
-              className="inline-flex items-center gap-1.5 border border-slate2 px-3 py-1.5 font-mono text-[9px] uppercase tracking-[0.2em] text-darkgray transition-colors hover:border-ozone hover:text-ozone">
-              <FileText className="h-3 w-3" /> F-List Asia
-            </a>
+          </div>
+
+          {/* Interactive protocol guide */}
+          <div className="mt-8">
+            <FieldProtocolGuide />
           </div>
 
           <div className="mt-10">
