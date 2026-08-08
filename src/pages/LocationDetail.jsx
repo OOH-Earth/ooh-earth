@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
-import { ArrowLeft, MapPin, Key, BusFront, ExternalLink, BadgeCheck, Lock, Megaphone, AlertTriangle, Navigation, SprayCan } from "lucide-react";
+import { ArrowLeft, MapPin, Key, BusFront, ExternalLink, BadgeCheck, AlertTriangle, Navigation, SprayCan } from "lucide-react";
 import { metaFor } from "@/components/ooh/map/LocationThumb";
 import { keyInfo, isKeyedType, ACCESS_KEYS } from "@/components/ooh/accessKeys";
 import seed from "@/components/ooh/mapSeed";
@@ -211,29 +211,25 @@ export default function LocationDetail() {
 
           {/* Access key + meta panel */}
           <div className="flex flex-col gap-4">
-            <div className={`border p-4 ${keyed ? "border-ozone/50" : "border-slate2"}`}>
+            {keyed && (
+            <div className="border border-ozone/50 p-4">
               <div className="flex items-center justify-between gap-2">
                 <span className="flex items-center gap-1.5 font-mono text-[9px] uppercase tracking-[0.3em] text-ozone">
-                  {keyed ? <Key className="h-3.5 w-3.5" /> : <Lock className="h-3.5 w-3.5" />}
-                  {keyed ? "Open-access key" : "Access method"}
+                  <Key className="h-3.5 w-3.5" />
+                  Open-access key
                 </span>
                 <span className="flex items-center gap-1 font-mono text-[8px] uppercase tracking-[0.2em] text-dim">
-                  {keyed ? <BusFront className="h-3 w-3" /> : <Megaphone className="h-3 w-3" />}
-                  {keyed ? "bus-stop spec" : "non-keyed unit"}
+                  <BusFront className="h-3 w-3" />
+                  bus-stop spec
                 </span>
               </div>
               <div className="mt-2 font-display text-lg font-semibold text-silver">{k.label}</div>
               <p className="mt-1 text-[12px] leading-relaxed text-darkgray">{k.blurb}</p>
-              {keyed ? (
-                <p className="mt-3 border-t border-slate2/40 pt-2 font-mono text-[10px] leading-relaxed text-ozone/80">
-                  // keyed housing — standard open-access tooling. Log the confirmed key type after a field check.
-                </p>
-              ) : (
-                <p className="mt-3 border-t border-slate2/40 pt-2 font-mono text-[10px] leading-relaxed text-dim">
-                  // billboard / non-shelter units use direct physical access — no standardized keyed housing.
-                </p>
-              )}
+              <p className="mt-3 border-t border-slate2/40 pt-2 font-mono text-[10px] leading-relaxed text-ozone/80">
+                // keyed housing — standard open-access tooling. Log the confirmed key type after a field check.
+              </p>
             </div>
+            )}
 
             {/* Source + meta */}
             <div className="flex flex-col gap-2 border border-slate2/60 p-4 font-mono text-[10px] text-darkgray">
@@ -241,7 +237,9 @@ export default function LocationDetail() {
                 <div className="flex justify-between"><span className="uppercase tracking-[0.2em] text-dim/60">coords</span><span className="tabular text-silver">{loc.lat?.toFixed(5)}, {loc.lng?.toFixed(5)}</span></div>
               )}
               <div className="flex justify-between"><span className="uppercase tracking-[0.2em] text-dim/60">type</span><span className="text-silver">{meta.label}</span></div>
-              <div className="flex justify-between"><span className="uppercase tracking-[0.2em] text-dim/60">key slug</span><span className="text-silver">{loc.access_key || "none"}</span></div>
+              {keyed && (
+                <div className="flex justify-between"><span className="uppercase tracking-[0.2em] text-dim/60">key slug</span><span className="text-silver">{loc.access_key || "none"}</span></div>
+              )}
               {loc.condition && (
                 <div className="flex justify-between"><span className="uppercase tracking-[0.2em] text-dim/60">condition</span><span className="text-silver capitalize">{loc.condition}</span></div>
               )}
