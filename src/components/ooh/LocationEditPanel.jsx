@@ -174,14 +174,27 @@ export default function LocationEditPanel({ loc, onUpdated }) {
     setError(null);
     try {
       const payload = { ...form };
+
+      // Numeric fields — convert to Number or drop
       ["graffiti_surface_m2", "graffiti_coverage_pct"].forEach((f) => {
         const v = payload[f];
         if (v === "" || v == null) delete payload[f];
         else payload[f] = Number(v);
       });
-      ["brand_name", "campaign_name", "ad_agency", "parent_corp", "ooh_operator", "graffiti_medium", "graffiti_style"].forEach((f) => {
+
+      // Enum / optional string fields — drop empty strings so they don't
+      // fail schema validation (e.g. industry_sector "" is not in the enum)
+      ["brand_name", "campaign_name", "ad_agency", "parent_corp", "ooh_operator", "industry_sector", "harm_statement"].forEach((f) => {
         if (payload[f] === "") delete payload[f];
       });
+
+      // Graffiti fields — send null to actually clear them when switching
+      // away from graffiti classification (deleting just omits them, leaving
+      // the old value in the DB)
+      ["graffiti_medium", "graffiti_style"].forEach((f) => {
+        if (payload[f] === "") payload[f] = null;
+      });
+
       const updated = await base44.entities.Location.update(loc.id, payload);
       onUpdated(updated);
       setOpen(false);

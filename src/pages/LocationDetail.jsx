@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
-import { ArrowLeft, MapPin, Key, BusFront, ExternalLink, BadgeCheck, Lock, Megaphone, AlertTriangle, Navigation } from "lucide-react";
+import { ArrowLeft, MapPin, Key, BusFront, ExternalLink, BadgeCheck, Lock, Megaphone, AlertTriangle, Navigation, SprayCan } from "lucide-react";
 import { metaFor } from "@/components/ooh/map/LocationThumb";
 import { keyInfo, isKeyedType, ACCESS_KEYS } from "@/components/ooh/accessKeys";
 import seed from "@/components/ooh/mapSeed";
@@ -119,6 +119,15 @@ export default function LocationDetail() {
   const showSubvertising = ["billboard", "digital", "projection", "transit"].includes(loc.type) || hasAdData;
   const isPending = loc.status === "pending";
   const isUnclassified = isPending && !loc.brand_name && !loc.industry_sector;
+
+  // Content classification — derived from graffiti_medium / adbust_type / type
+  const category = loc.graffiti_medium
+    ? { label: "Graffiti", accent: "#FF5C00" }
+    : loc.adbust_type && loc.adbust_type !== "none"
+    ? { label: "Adbust", accent: "#FF5C00" }
+    : loc.type === "transit"
+    ? { label: "Transit", accent: "#EDFF00" }
+    : { label: "Field Report", accent: meta.accent };
   const mapSrc = loc.lat != null && loc.lng != null
     ? `https://www.openstreetmap.org/export/embed.html?bbox=${loc.lng - 0.004}%2C${loc.lat - 0.004}%2C${loc.lng + 0.004}%2C${loc.lat + 0.004}&layer=mapnik&marker=${loc.lat}%2C${loc.lng}`
     : null;
@@ -148,6 +157,9 @@ export default function LocationDetail() {
         <div className="flex flex-wrap items-center gap-2">
           <span className="flex items-center gap-1.5 border border-slate2 px-2.5 py-1 font-mono text-[9px] uppercase tracking-[0.25em]" style={{ color: meta.accent }}>
             <Icon className="h-3.5 w-3.5" /> {meta.label}
+          </span>
+          <span className="flex items-center gap-1.5 border px-2.5 py-1 font-mono text-[9px] font-bold uppercase tracking-[0.25em]" style={{ color: category.accent, borderColor: category.accent }}>
+            {category.label}
           </span>
           <span className={`flex items-center gap-1.5 border px-2.5 py-1 font-mono text-[9px] uppercase tracking-[0.25em] ${isPending ? "border-flare/50 text-flare" : "border-slate2 text-darkgray"}`}>
             {loc.status === "verified" ? <BadgeCheck className="h-3.5 w-3.5 text-ozone" /> : null}
@@ -251,6 +263,41 @@ export default function LocationDetail() {
 
         {/* Field check timeline — the connective tissue between visits */}
         <FieldCheckPanel location={loc} />
+
+        {/* Graffiti / street art details — visible when classified */}
+        {loc.graffiti_medium && (
+          <div className="mt-8 border border-flare/40 bg-flare/5 p-4">
+            <div className="mb-3 flex items-center gap-2">
+              <SprayCan className="h-4 w-4 text-flare" />
+              <span className="font-mono text-[9px] uppercase tracking-[0.3em] text-flare">Graffiti / Street Art</span>
+              <span className="h-px flex-1 bg-flare/20" />
+            </div>
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+              <div>
+                <span className="font-mono text-[8px] uppercase tracking-[0.2em] text-dim">Medium</span>
+                <p className="text-[12px] capitalize text-silver">{loc.graffiti_medium.replace(/_/g, " ")}</p>
+              </div>
+              {loc.graffiti_style && (
+                <div>
+                  <span className="font-mono text-[8px] uppercase tracking-[0.2em] text-dim">Style</span>
+                  <p className="text-[12px] capitalize text-silver">{loc.graffiti_style.replace(/_/g, " ")}</p>
+                </div>
+              )}
+              {loc.graffiti_surface_m2 != null && (
+                <div>
+                  <span className="font-mono text-[8px] uppercase tracking-[0.2em] text-dim">Surface</span>
+                  <p className="text-[12px] tabular text-silver">{loc.graffiti_surface_m2} m²</p>
+                </div>
+              )}
+              {loc.graffiti_coverage_pct != null && (
+                <div>
+                  <span className="font-mono text-[8px] uppercase tracking-[0.2em] text-dim">Coverage</span>
+                  <p className="text-[12px] tabular text-silver">{loc.graffiti_coverage_pct}%</p>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
 
         {/* Subvertising / advertiser panel */}
         {showSubvertising && <SubvertisingPanel loc={loc} />}
