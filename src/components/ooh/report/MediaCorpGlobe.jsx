@@ -1,17 +1,13 @@
 import { useEffect, useRef, useState } from "react";
 import maplibregl from "maplibre-gl";
-import { ZoomIn, ZoomOut, Compass, RotateCw } from "lucide-react";
+import { ZoomIn, ZoomOut, Compass, RotateCw, Maximize2 } from "lucide-react";
 import "maplibre-gl/dist/maplibre-gl.css";
 import { useMapStyle } from "@/lib/mapStyleContext";
 import { motion } from "framer-motion";
 
 const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 
-const SCOPE_COLOR = {
-  global: "#EDFF00",
-  regional: "#FF5C00",
-  local: "#B2B2B2",
-};
+const SCOPE_COLOR = { global: "#EDFF00", regional: "#FF5C00", local: "#B2B2B2" };
 
 function panelLabel(panels) {
   if (!panels || panels <= 0) return "";
@@ -20,8 +16,6 @@ function panelLabel(panels) {
   return String(panels);
 }
 
-// Canvas-drawn teardrop pin: circle body + triangle pointer, scope color,
-// panel count in center, selected state with orange ring + pulse glow.
 function makeCorpPinIcon(scope, selected, panels) {
   const S = 64;
   const canvas = document.createElement("canvas");
@@ -32,20 +26,17 @@ function makeCorpPinIcon(scope, selected, panels) {
   const r = selected ? 20 : 16;
   const color = SCOPE_COLOR[scope] || SCOPE_COLOR.local;
 
-  // Radial glow
   const glow = ctx.createRadialGradient(cx, cy, 2, cx, cy, S / 2);
   glow.addColorStop(0, selected ? "rgba(237,255,0,0.45)" : "rgba(237,255,0,0.12)");
   glow.addColorStop(1, "rgba(237,255,0,0)");
   ctx.fillStyle = glow;
   ctx.fillRect(0, 0, S, S);
 
-  // Pin body: circle
   ctx.beginPath();
   ctx.arc(cx, cy, r, 0, Math.PI * 2);
   ctx.fillStyle = color;
   ctx.fill();
 
-  // Triangle pointer
   ctx.beginPath();
   ctx.moveTo(cx - r * 0.7, cy + r * 0.7);
   ctx.lineTo(cx, cy + r + 12);
@@ -54,7 +45,6 @@ function makeCorpPinIcon(scope, selected, panels) {
   ctx.fillStyle = color;
   ctx.fill();
 
-  // Black outline (circle + triangle sides)
   ctx.lineWidth = 3;
   ctx.strokeStyle = "#000";
   ctx.beginPath();
@@ -74,7 +64,6 @@ function makeCorpPinIcon(scope, selected, panels) {
     ctx.stroke();
   }
 
-  // Panel count text or building glyph
   const label = panelLabel(panels);
   if (label) {
     ctx.fillStyle = "#000";
@@ -83,7 +72,6 @@ function makeCorpPinIcon(scope, selected, panels) {
     ctx.textBaseline = "middle";
     ctx.fillText(label, cx, cy);
   } else {
-    // Building glyph for infra/software corps
     ctx.fillStyle = "#000";
     ctx.fillRect(cx - 6, cy - 5, 12, 10);
     ctx.fillStyle = color;
@@ -124,13 +112,8 @@ function buildFC(corps, selectedId) {
         type: "Feature",
         geometry: { type: "Point", coordinates: [c.lng, c.lat] },
         properties: {
-          id: c.id,
-          name: c.name,
-          hq: c.hq,
-          scope: c.scope,
-          panels: c.panels,
-          countries: c.countries,
-          parent: c.parent,
+          id: c.id, name: c.name, hq: c.hq, scope: c.scope,
+          panels: c.panels, countries: c.countries, parent: c.parent,
           selected: c.id === selectedId,
         },
       })),
@@ -139,7 +122,7 @@ function buildFC(corps, selectedId) {
 
 const SCOPES = ["global", "regional", "local"];
 
-export default function MediaCorpGlobe({ corps, selected, onSelect, onBoundsChange }) {
+export default function MediaCorpGlobe({ corps, selected, onSelect, onBoundsChange, showCoverage, fitAllNonce }) {
   const mapStyle = useMapStyle().style;
   const containerRef = useRef(null);
   const mapRef = useRef(null);
@@ -158,14 +141,12 @@ export default function MediaCorpGlobe({ corps, selected, onSelect, onBoundsChan
   const zoomOut = () => mapRef.current?.zoomOut();
   const resetNorth = () => mapRef.current?.resetNorth();
 
-  // Auto-spin
   useEffect(() => {
     const map = mapRef.current;
     if (!ready || !map || !spinning) return;
     let raf, last = performance.now();
     const tick = (t) => {
-      const dt = t - last;
-      last = t;
+      const dt = t - last; last = t;
       map.setBearing(map.getBearing() + dt * 0.01);
       raf = requestAnimationFrame(tick);
     };
@@ -173,7 +154,6 @@ export default function MediaCorpGlobe({ corps, selected, onSelect, onBoundsChan
     return () => cancelAnimationFrame(raf);
   }, [ready, spinning]);
 
-  // Init
   useEffect(() => {
     if (!containerRef.current) return;
     const map = new maplibregl.Map({
@@ -193,12 +173,8 @@ export default function MediaCorpGlobe({ corps, selected, onSelect, onBoundsChan
       try { map.setProjection({ type: "globe" }); } catch (e) {}
       try {
         map.setFog({
-          range: [1, 10],
-          color: "#0a0a0a",
-          "high-color": "#1a1a1a",
-          "horizon-blend": 0.12,
-          "space-color": "#000000",
-          "star-intensity": 0.4,
+          range: [1, 10], color: "#0a0a0a", "high-color": "#1a1a1a",
+          "horizon-blend": 0.12, "space-color": "#000000", "star-intensity": 0.4,
         });
       } catch (e) {}
     };
@@ -214,15 +190,10 @@ export default function MediaCorpGlobe({ corps, selected, onSelect, onBoundsChan
       applyGlobe();
       map.on("style.load", applyGlobe);
 
-      map.addSource("mc-markers", {
-        type: "geojson",
-        data: dataRef.current,
-        cluster: true,
-        clusterRadius: 50,
-        clusterMaxZoom: 12,
-      });
+      map.addSource("mc-markers", { type: "geojson", data: dataRef.current, cluster: true, clusterRadius: 50, clusterMaxZoom: 12 });
+      // Separate non-clustered source for coverage circles
+      map.addSource("mc-coverage", { type: "geojson", data: dataRef.current });
 
-      // Pin images per scope + selected variant
       SCOPES.forEach((s) => {
         const a = makeCorpPinIcon(s, false, 0);
         map.addImage(`mc-pin-${s}`, a.getContext("2d").getImageData(0, 0, a.width, a.height), { pixelRatio: 1 });
@@ -230,7 +201,23 @@ export default function MediaCorpGlobe({ corps, selected, onSelect, onBoundsChan
         map.addImage(`mc-pin-${s}-sel`, b.getContext("2d").getImageData(0, 0, b.width, b.height), { pixelRatio: 1 });
       });
 
-      // Clusters: black disc with yellow count
+      // Coverage circles (below clusters + pins)
+      map.addLayer({
+        id: "mc-coverage-circles",
+        type: "circle",
+        source: "mc-coverage",
+        layout: { visibility: showCoverage ? "visible" : "none" },
+        paint: {
+          "circle-radius": ["interpolate", ["linear"], ["get", "countries"], 1, 22, 5, 40, 15, 60, 45, 85, 80, 120],
+          "circle-color": ["match", ["get", "scope"], "global", "#EDFF00", "regional", "#FF5C00", "#B2B2B2"],
+          "circle-opacity": 0.04,
+          "circle-stroke-color": ["match", ["get", "scope"], "global", "#EDFF00", "regional", "#FF5C00", "#B2B2B2"],
+          "circle-stroke-width": 1,
+          "circle-stroke-opacity": 0.2,
+        },
+      }, "mc-clusters");
+
+      // Clusters
       map.addLayer({
         id: "mc-clusters",
         type: "circle",
@@ -284,9 +271,7 @@ export default function MediaCorpGlobe({ corps, selected, onSelect, onBoundsChan
         if (src?.getClusterExpansionZoom) {
           src.getClusterExpansionZoom(f.properties.cluster_id).then((z) => {
             map.flyTo({ center: f.geometry.coordinates, zoom: Math.max(z, map.getZoom() + 1), duration: 700 });
-          }).catch(() => {
-            map.flyTo({ center: f.geometry.coordinates, zoom: map.getZoom() + 2, duration: 700 });
-          });
+          }).catch(() => { map.flyTo({ center: f.geometry.coordinates, zoom: map.getZoom() + 2, duration: 700 }); });
         }
       });
       map.on("mouseenter", "mc-clusters", () => { map.getCanvas().style.cursor = "pointer"; });
@@ -295,38 +280,54 @@ export default function MediaCorpGlobe({ corps, selected, onSelect, onBoundsChan
       readyRef.current = true;
       setReady(true);
       map.getSource("mc-markers").setData(dataRef.current);
+      map.getSource("mc-coverage").setData(dataRef.current);
       reportBounds();
     });
 
     map.on("moveend", reportBounds);
     map.on("zoomend", reportBounds);
 
-    return () => {
-      readyRef.current = false;
-      map.remove();
-    };
+    return () => { readyRef.current = false; map.remove(); };
   }, []);
 
-  // Update data when corps/selected changes
+  // Update data
   useEffect(() => {
     dataRef.current = buildFC(corps, selected?.id);
-    if (readyRef.current && mapRef.current?.getSource("mc-markers")) {
-      mapRef.current.getSource("mc-markers").setData(dataRef.current);
+    if (readyRef.current && mapRef.current) {
+      const m = mapRef.current;
+      if (m.getSource("mc-markers")) m.getSource("mc-markers").setData(dataRef.current);
+      if (m.getSource("mc-coverage")) m.getSource("mc-coverage").setData(dataRef.current);
     }
   }, [corps, selected]);
 
-  // Fly to selected corp
+  // Toggle coverage visibility
+  useEffect(() => {
+    if (!readyRef.current || !mapRef.current) return;
+    try {
+      mapRef.current.setLayoutProperty("mc-coverage-circles", "visibility", showCoverage ? "visible" : "none");
+    } catch (e) {}
+  }, [showCoverage, ready]);
+
+  // Fly to selected
   useEffect(() => {
     if (!readyRef.current || !mapRef.current || !selected) return;
     mapRef.current.flyTo({ center: [selected.lng, selected.lat], zoom: Math.max(mapRef.current.getZoom(), 4), duration: 1000 });
     popupRef.current.setLngLat([selected.lng, selected.lat]).setHTML(corpPopupHTML(selected)).addTo(mapRef.current);
   }, [selected, ready]);
 
+  // Fit all
+  useEffect(() => {
+    if (!readyRef.current || !mapRef.current || !fitAllNonce) return;
+    const coords = (corps || []).filter((c) => isFinite(c.lat) && isFinite(c.lng)).map((c) => [c.lng, c.lat]);
+    if (coords.length === 0) return;
+    const bounds = coords.reduce((b, c) => b.extend(c), new maplibregl.LngLatBounds(coords[0], coords[0]));
+    mapRef.current.fitBounds(bounds, { padding: 60 });
+  }, [fitAllNonce, ready]);
+
   return (
     <div className="absolute inset-0">
       <div ref={containerRef} className={`h-full w-full ${mapStyle.tint ? "ooh-globe-style-matrix" : ""}`} style={{ background: mapStyle.bg }} />
 
-      {/* HUD grid overlay */}
       <div className="pointer-events-none absolute inset-0 z-[1] overflow-hidden">
         <div className="absolute left-1/2 top-1/2 h-56 w-56 -translate-x-1/2 -translate-y-1/2 rounded-full border border-ozone/10" />
         <motion.div
@@ -341,7 +342,6 @@ export default function MediaCorpGlobe({ corps, selected, onSelect, onBoundsChan
         <div className="absolute bottom-3 right-3 h-4 w-4 border-b border-r border-ozone/40" />
       </div>
 
-      {/* Controls */}
       <div className="absolute bottom-12 right-3 z-[1000] flex flex-col gap-1.5">
         <button onClick={zoomIn} aria-label="Zoom in" className="flex h-9 w-9 items-center justify-center border border-slate2 bg-void/80 font-mono text-darkgray backdrop-blur-md transition-colors hover:border-ozone hover:text-ozone">
           <ZoomIn className="h-4 w-4" />

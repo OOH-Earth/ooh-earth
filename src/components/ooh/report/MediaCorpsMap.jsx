@@ -1,4 +1,4 @@
-import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
+import { MapContainer, TileLayer, Marker, Popup, Circle, useMap } from "react-leaflet";
 import L from "leaflet";
 import { useEffect } from "react";
 import { useMapStyle } from "@/lib/mapStyleContext";
@@ -20,7 +20,6 @@ function panelLabel(panels) {
   return "";
 }
 
-// Teardrop SVG pin: scope-colored, panel count in center, building glyph fallback
 function corpIcon(corp, isSelected) {
   const color = SCOPE_COLOR[corp.scope] || SCOPE_COLOR.local;
   const size = isSelected ? 34 : 26;
@@ -67,7 +66,17 @@ function BoundsWatcher({ onBoundsChange }) {
   return null;
 }
 
-export default function MediaCorpsMap({ corps, selected, onSelect, onBoundsChange }) {
+function FitAll({ corps, nonce }) {
+  const map = useMap();
+  useEffect(() => {
+    if (!nonce || !corps?.length) return;
+    const pts = corps.filter((c) => isFinite(c.lat) && isFinite(c.lng)).map((c) => [c.lat, c.lng]);
+    if (pts.length > 0) map.fitBounds(pts, { padding: [60, 60] });
+  }, [nonce]);
+  return null;
+}
+
+export default function MediaCorpsMap({ corps, selected, onSelect, onBoundsChange, showCoverage, fitAllNonce }) {
   const { style } = useMapStyle();
   const tile = TILE_LAYERS[style?.id] || TILE_LAYERS.dark;
   const list = corps || [];
@@ -77,6 +86,24 @@ export default function MediaCorpsMap({ corps, selected, onSelect, onBoundsChang
       <TileLayer url={tile.url} attribution={tile.attr} />
       <FlyTo target={selected} />
       <BoundsWatcher onBoundsChange={onBoundsChange} />
+      <FitAll corps={list} nonce={fitAllNonce} />
+
+      {/* Coverage circles */}
+      {showCoverage && list.map((corp) => (
+        <Circle
+          key={`cov-${corp.id}`}
+          center={[corp.lat, corp.lng]}
+          radius={(corp.countries || 1) * 200000}
+          pathOptions={{
+            color: SCOPE_COLOR[corp.scope] || SCOPE_COLOR.local,
+            fillColor: SCOPE_COLOR[corp.scope] || SCOPE_COLOR.local,
+            fillOpacity: 0.05,
+            weight: 1,
+            opacity: 0.25,
+          }}
+        />
+      ))}
+
       {list.map((corp) => (
         <Marker
           key={corp.id || corp.name}
@@ -97,10 +124,15 @@ export default function MediaCorpsMap({ corps, selected, onSelect, onBoundsChang
                 {corp.panels > 0 ? `${panelLabel(corp.panels)} panels` : "Infrastructure / software"}
                 {corp.parent && ` · ${corp.parent}`}
               </div>
-              <button
-                onClick={() => onSelect?.(corp)}
-                className="mt-2 w-full border border-yellow-500/40 px-2 py-1 text-[10px] font-bold uppercase tracking-wide text-yellow-400 hover:bg-yellow-500/10"
-              >
+              {corp.regions?.length > 0 && (
+                <div className="mt-1.5 flex flex-wrap gap-1">
+                  {corp.regions.map((r) => (
+                    <span key={r} className="px-1 py-0.5 font-mono text-[7px] uppercase tracking-[0.1em] border border-gray-600 text-gray-500">{r}</span>
+                  ))}
+                </div>
+              )}
+              <button onClick={() => onSelect?.(corp)}
+                className="mt-2 w-full border border-yellow-500/40 px-2 py-1 text-[10px] font-bold uppercase tracking-wide text-yellow-400 hover:bg-yellow-500/10">
                 View details →
               </button>
             </div>
