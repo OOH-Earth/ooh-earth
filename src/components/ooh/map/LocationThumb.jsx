@@ -51,7 +51,7 @@ export function thumbHTML(m) {
   const accent = meta.accent;
   if (m.image) {
     return `<div style="position:relative;width:100%;height:110px">
-      <img src="${esc(String(m.image).replace(/-\d+x\d+(?=\.\w+$)/, ""))}" alt="${esc(m.title)}" style="width:100%;height:110px;object-fit:cover;display:block;background:#111" />
+      <img src="${esc(m.image)}" alt="${esc(m.title)}" style="width:100%;height:110px;object-fit:cover;display:block;background:#111" />
       <svg viewBox="0 0 24 24" width="14" height="14" style="position:absolute;left:4px;top:4px"><path d="M12 2l2.4 1.8 3 .2.9 2.9 2.2 2-1 2.8 1 2.8-2.2 2-.9 2.9-3 .2L12 22l-2.4-1.8-3-.2-.9-2.9-2.2-2 1-2.8-1-2.8 2.2-2 .9-2.9 3-.2z" fill="#EDFF00"/><path d="M9 12l2 2 4-4" fill="none" stroke="#000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
     </div>`;
   }
