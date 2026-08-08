@@ -109,7 +109,7 @@ function buildFC(markers, selectedId) {
   };
 }
 
-export default function Globe3D({ markers, selectedId, hoverId, onSelect, userLoc, activeLayers = [], interactive = true, spin = false, scrollZoom = true }) {
+export default function Globe3D({ markers, selectedId, hoverId, onSelect, userLoc, activeLayers = [], interactive = true, spin = false, scrollZoom = true, flyTo }) {
   const mapStyle = useMapStyle().style;
   const containerRef = useRef(null);
   const mapRef = useRef(null);
@@ -326,6 +326,13 @@ export default function Globe3D({ markers, selectedId, hoverId, onSelect, userLo
       map.off("sourcedata", recompute);
     };
   }, [ready, markers]);
+
+  // Geocode fly-to from the search bar (nonce re-triggers on re-select)
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!readyRef.current || !map || !flyTo || !flyTo.nonce) return;
+    map.flyTo({ center: [flyTo.lng, flyTo.lat], zoom: Math.max(map.getZoom(), 5), duration: 1200, essential: true });
+  }, [flyTo, ready]);
 
   useEffect(() => {
     const map = mapRef.current;

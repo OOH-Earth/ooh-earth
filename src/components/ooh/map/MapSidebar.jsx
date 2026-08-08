@@ -1,36 +1,24 @@
-import { Search, RotateCcw, LifeBuoy, Play } from "lucide-react";
+import { RotateCcw, LifeBuoy, Play } from "lucide-react";
+import MapSearch from "@/components/ooh/map/MapSearch";
 
-export default function MapSidebar({ query, setQuery, onReset, onBeginTour }) {
+export default function MapSidebar({ query, setQuery, onFlyTo, onReset, onBeginTour }) {
   return (
     <aside data-tour="search" className="hidden w-[300px] shrink-0 flex-col border-r border-slate2/60 bg-void lg:flex">
       <div className="border-b border-slate2/60 p-5">
         <div className="font-mono text-[10px] uppercase tracking-[0.3em] text-ozone">// Search / Map</div>
-        <p className="mt-1 font-display text-sm text-darkgray">Explore the map.</p>
+        <p className="mt-1 font-display text-sm text-darkgray">Find a place or filter pins.</p>
       </div>
       <div className="space-y-4 p-5">
         <div>
           <label className="mb-1.5 block font-mono text-[10px] uppercase tracking-[0.25em] text-dim">Location</label>
-          <div className="flex items-center gap-2 border border-slate2 bg-card px-3 py-2.5">
-            <Search className="h-3.5 w-3.5 text-dim" />
-            <input
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              placeholder="Street, district, city"
-              className="w-full bg-transparent font-display text-sm text-silver outline-none placeholder:text-dim"
-            />
-          </div>
+          <MapSearch query={query} setQuery={setQuery} onFlyTo={onFlyTo} onReset={onReset} />
         </div>
-        <div className="flex gap-2">
-          <button className="flex flex-1 items-center justify-center gap-1.5 bg-ozone px-3 py-2.5 font-mono text-[10px] font-bold uppercase tracking-[0.2em] text-void">
-            <Search className="h-3.5 w-3.5" /> Search
-          </button>
-          <button
-            onClick={onReset}
-            className="flex items-center justify-center gap-1.5 border border-slate2 px-3 py-2.5 font-mono text-[10px] font-bold uppercase tracking-[0.2em] text-darkgray transition-colors hover:border-ozone hover:text-ozone"
-          >
-            <RotateCcw className="h-3.5 w-3.5" /> Reset
-          </button>
-        </div>
+        <button
+          onClick={onReset}
+          className="flex w-full items-center justify-center gap-1.5 border border-slate2 px-3 py-2.5 font-mono text-[10px] font-bold uppercase tracking-[0.2em] text-darkgray transition-colors hover:border-ozone hover:text-ozone"
+        >
+          <RotateCcw className="h-3.5 w-3.5" /> Reset filters
+        </button>
       </div>
       <div className="m-5 mt-auto border border-slate2/60 bg-card p-5">
         <LifeBuoy className="h-5 w-5 text-ozone" />

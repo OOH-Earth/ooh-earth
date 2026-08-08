@@ -5,6 +5,7 @@ import Nav from "@/components/ooh/Nav";
 import LocationMap from "@/components/ooh/LocationMap";
 import MapToolbar from "@/components/ooh/map/MapToolbar";
 import MapSidebar from "@/components/ooh/map/MapSidebar";
+import MapSearch from "@/components/ooh/map/MapSearch";
 import LocationCard from "@/components/ooh/map/LocationCard";
 import seedMarkers from "@/components/ooh/mapSeed";
 import { toMarker } from "@/components/ooh/map/markerUtils";
@@ -59,6 +60,7 @@ export default function Map() {
   const [userLoc, setUserLoc] = useState(null);
   const { startTour, registerSteps } = useWalkthrough();
   const [finderOpen, setFinderOpen] = useState(false);
+  const [flyTo, setFlyTo] = useState(null);
   const [activeLayers, setActiveLayers] = usePersistentState("ooh-map-layers", ["ads"]);
   const [layerFilter, setLayerFilter] = useState("all");
   const { style: mapStyle } = useMapStyle();
@@ -259,6 +261,16 @@ export default function Map() {
       />
       <MapLayerToggle activeLayers={activeLayers} onToggle={toggleLayer} />
 
+      {/* Mobile search bar — visible below lg; desktop uses the sidebar */}
+      <div className="border-b border-slate2/60 bg-void/90 px-3 py-2 backdrop-blur-md lg:hidden">
+        <MapSearch
+          query={query}
+          setQuery={setQuery}
+          onFlyTo={(f) => setFlyTo({ ...f, nonce: Date.now() })}
+          onReset={() => { setQuery(""); setTypeFilter("all"); setLayerFilter("all"); }}
+        />
+      </div>
+
       {!raw ? (
         <div className="flex flex-1 items-center justify-center">
           <div className="flex flex-col items-center gap-3">
@@ -268,7 +280,7 @@ export default function Map() {
         </div>
       ) : (
         <div className="flex min-h-0 flex-1 flex-col lg:flex-row">
-          {mode !== "map" && <MapSidebar query={query} setQuery={setQuery}         onReset={() => { setQuery(""); setTypeFilter("all"); setLayerFilter("all"); }} onBeginTour={startTour} />}
+          {mode !== "map" && <MapSidebar query={query} setQuery={setQuery} onFlyTo={(f) => setFlyTo({ ...f, nonce: Date.now() })} onReset={() => { setQuery(""); setTypeFilter("all"); setLayerFilter("all"); }} onBeginTour={startTour} />}
 
           <div data-tour="cards" className={`min-h-0 flex-col border-r border-slate2/60 ${cardsClass}`}>
             <div className="flex items-center justify-between border-b border-slate2/60 px-4 py-2">
@@ -341,9 +353,9 @@ export default function Map() {
               </button>
             </div>
             {view === "globe" ? (
-              <Globe3D key={mapStyle.id} markers={filtered} selectedId={selectedId} hoverId={hoverId} onSelect={setSelectedId} userLoc={userLoc} activeLayers={activeLayers} />
+              <Globe3D key={mapStyle.id} markers={filtered} selectedId={selectedId} hoverId={hoverId} onSelect={setSelectedId} userLoc={userLoc} activeLayers={activeLayers} flyTo={flyTo} />
             ) : (
-              <LocationMap markers={filtered} selectedId={selectedId} hoverId={hoverId} onSelect={setSelectedId} userLoc={userLoc} futures={OOH_FUTURES} activeLayers={activeLayers} onBoundsChange={setBounds} />
+              <LocationMap markers={filtered} selectedId={selectedId} hoverId={hoverId} onSelect={setSelectedId} userLoc={userLoc} futures={OOH_FUTURES} activeLayers={activeLayers} onBoundsChange={setBounds} flyTo={flyTo} />
             )}
             <div className="pointer-events-none absolute inset-x-0 top-0 z-[900] px-3 pt-16">
               <MapAlertTicker />

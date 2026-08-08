@@ -77,6 +77,17 @@ function FitBounds({ markers }) {
   return null;
 }
 
+// Geocode fly-to — reacts to a {lat,lng,zoom,nonce} object from the search bar.
+// nonce lets re-selecting the same place re-trigger the flight.
+function FlyToGeocode({ flyTo }) {
+  const map = useMap();
+  useEffect(() => {
+    if (!flyTo || !flyTo.nonce) return;
+    map.flyTo([flyTo.lat, flyTo.lng], flyTo.zoom || 13, { duration: 0.8 });
+  }, [flyTo, map]);
+  return null;
+}
+
 function FlyToUser({ userLoc }) {
   const map = useMap();
   const done = useRef(false);
@@ -255,7 +266,7 @@ function ClusteredMarkers({ pins, selectedId, onSelect }) {
   );
 }
 
-export default function LocationMap({ markers, selectedId, hoverId, onSelect, userLoc, futures, activeLayers = [], onBoundsChange }) {
+export default function LocationMap({ markers, selectedId, hoverId, onSelect, userLoc, futures, activeLayers = [], onBoundsChange, flyTo }) {
   const { style } = useMapStyle();
   const pins = useMemo(() => markers.filter((m) => isFinite(m.lat) && isFinite(m.lng)), [markers]);
 
@@ -277,6 +288,7 @@ export default function LocationMap({ markers, selectedId, hoverId, onSelect, us
       <BoundsWatcher onBoundsChange={onBoundsChange} />
       <FlyTo selectedId={selectedId} markers={pins} />
       <FlyToHover hoverId={hoverId} selectedId={selectedId} markers={pins} />
+      <FlyToGeocode flyTo={flyTo} />
       <FlyToUser userLoc={userLoc} />
       {userLoc && (
         <Marker position={[userLoc.lat, userLoc.lng]} icon={userIcon}>
