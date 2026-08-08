@@ -53,6 +53,8 @@
         "large-square",
         "small-square",
         "t-handle",
+        "tx30",
+        "tri38",
         "unknown"
       ],
       "default": "none"
@@ -142,6 +144,41 @@
     "adbust_image_url": {
       "type": "string",
       "description": "Photo of the adbust / subvertised state"
+    },
+    "graffiti_medium": {
+      "type": "string",
+      "enum": [
+        "spray_paint",
+        "marker",
+        "sticker",
+        "paste_up",
+        "stencil",
+        "installation",
+        "other"
+      ],
+      "description": "Primary medium of the graffiti / street art"
+    },
+    "graffiti_style": {
+      "type": "string",
+      "enum": [
+        "tag",
+        "throw_up",
+        "piece",
+        "mural",
+        "blockbuster",
+        "stencil",
+        "paste_up",
+        "other"
+      ],
+      "description": "Style classification of the graffiti"
+    },
+    "graffiti_surface_m2": {
+      "type": "number",
+      "description": "Approximate surface area in square meters"
+    },
+    "graffiti_coverage_pct": {
+      "type": "number",
+      "description": "Percentage of the surface covered (0-100)"
     },
     "harm_statement": {
       "type": "string",

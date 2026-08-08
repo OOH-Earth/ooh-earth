@@ -68,6 +68,10 @@ export default function LocationEditPanel({ loc, onUpdated }) {
       action_flags: loc.action_flags || [],
       harm_statement: loc.harm_statement || "",
       notes: loc.notes || "",
+      graffiti_medium: loc.graffiti_medium || "",
+      graffiti_style: loc.graffiti_style || "",
+      graffiti_surface_m2: loc.graffiti_surface_m2 || "",
+      graffiti_coverage_pct: loc.graffiti_coverage_pct || "",
     });
     setError(null);
     setOpen(true);
@@ -259,6 +263,48 @@ export default function LocationEditPanel({ loc, onUpdated }) {
                   </button>
                 );
               })}
+            </div>
+          </div>
+
+          {/* Graffiti measurement */}
+          <div>
+            <div className="mb-2 font-mono text-[9px] uppercase tracking-[0.3em] text-flare/60">// Graffiti Assessment</div>
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+              <label className="flex flex-col gap-1">
+                <span className="font-mono text-[9px] uppercase tracking-[0.15em] text-dim">Medium</span>
+                <select value={form.graffiti_medium} onChange={(e) => set("graffiti_medium", e.target.value)} className="border border-slate2 bg-void px-3 py-2 text-sm text-silver outline-none focus:border-ozone">
+                  <option value="">— None —</option>
+                  <option value="spray_paint">Spray Paint</option>
+                  <option value="marker">Marker</option>
+                  <option value="sticker">Sticker</option>
+                  <option value="paste_up">Paste-up</option>
+                  <option value="stencil">Stencil</option>
+                  <option value="installation">Installation</option>
+                  <option value="other">Other</option>
+                </select>
+              </label>
+              <label className="flex flex-col gap-1">
+                <span className="font-mono text-[9px] uppercase tracking-[0.15em] text-dim">Style</span>
+                <select value={form.graffiti_style} onChange={(e) => set("graffiti_style", e.target.value)} className="border border-slate2 bg-void px-3 py-2 text-sm text-silver outline-none focus:border-ozone">
+                  <option value="">— None —</option>
+                  <option value="tag">Tag</option>
+                  <option value="throw_up">Throw-up</option>
+                  <option value="piece">Piece</option>
+                  <option value="mural">Mural</option>
+                  <option value="blockbuster">Blockbuster</option>
+                  <option value="stencil">Stencil</option>
+                  <option value="paste_up">Paste-up</option>
+                  <option value="other">Other</option>
+                </select>
+              </label>
+              <label className="flex flex-col gap-1">
+                <span className="font-mono text-[9px] uppercase tracking-[0.15em] text-dim">Surface (m²)</span>
+                <input type="number" step="0.1" value={form.graffiti_surface_m2 || ""} onChange={(e) => set("graffiti_surface_m2", e.target.value ? parseFloat(e.target.value) : "")} className="border border-slate2 bg-void px-3 py-2 text-sm text-silver outline-none focus:border-ozone" placeholder="e.g. 4.5" />
+              </label>
+              <label className="flex flex-col gap-1">
+                <span className="font-mono text-[9px] uppercase tracking-[0.15em] text-dim">Coverage %</span>
+                <input type="number" min="0" max="100" value={form.graffiti_coverage_pct || ""} onChange={(e) => set("graffiti_coverage_pct", e.target.value ? parseInt(e.target.value) : "")} className="border border-slate2 bg-void px-3 py-2 text-sm text-silver outline-none focus:border-ozone" placeholder="0–100" />
+              </label>
             </div>
           </div>
 

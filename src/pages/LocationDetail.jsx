@@ -11,6 +11,8 @@ import MobileHeader from "@/components/ooh/MobileHeader";
 import { Image } from "@/components/ui/image";
 import MintLocationPanel from "@/components/ooh/mint/MintLocationPanel";
 import LocationEditPanel from "@/components/ooh/LocationEditPanel";
+import SubvertisingPanel from "@/components/ooh/SubvertisingPanel";
+import GraffitiPanel from "@/components/ooh/GraffitiPanel";
 import { useSeo } from "@/lib/seoContext";
 
 function normalizeSeed(rec) {
@@ -115,6 +117,10 @@ export default function LocationDetail() {
   const Icon = meta.Icon;
   const keyed = isKeyedType(loc.type);
   const k = keyInfo(loc.access_key || (keyed ? "unknown" : "none"));
+  const hasAdData = !!(loc.brand_name || loc.ad_agency || loc.parent_corp || loc.campaign_name || loc.ooh_operator || loc.industry_sector || (loc.adbust_type && loc.adbust_type !== "none"));
+  const hasGraffitiData = !!(loc.graffiti_medium || loc.graffiti_style || loc.graffiti_surface_m2);
+  const showSubvertising = ["billboard", "digital", "projection", "transit"].includes(loc.type) || hasAdData;
+  const showGraffiti = ["painted", "mural", "sticker"].includes(loc.type) || hasGraffitiData;
   const mapSrc = loc.lat != null && loc.lng != null
     ? `https://www.openstreetmap.org/export/embed.html?bbox=${loc.lng - 0.004}%2C${loc.lat - 0.004}%2C${loc.lng + 0.004}%2C${loc.lat + 0.004}&layer=mapnik&marker=${loc.lat}%2C${loc.lng}`
     : null;
@@ -227,13 +233,20 @@ export default function LocationDetail() {
           </div>
         </div>
 
+        {/* Subvertising / advertiser panel */}
+        {showSubvertising && <SubvertisingPanel loc={loc} />}
+
+        {/* Graffiti assessment panel */}
+        {showGraffiti && <GraffitiPanel loc={loc} />}
+
         {/* Expert edit & tag panel */}
         <LocationEditPanel loc={loc} onUpdated={setLoc} />
 
         {/* On-chain mint */}
         <MintLocationPanel loc={loc} />
 
-        {/* Full key reference */}
+        {/* Full key reference — only for keyed unit types (bus stops / transit shelters) */}
+        {keyed && (
         <div className="mt-12">
           <div className="mb-3 flex items-center gap-2">
             <Key className="h-3.5 w-3.5 text-ozone" />
@@ -251,7 +264,13 @@ export default function LocationDetail() {
               </div>
             ))}
           </div>
+          <div className="mt-3">
+            <a href="https://www.publicadcampaign.com/PublicAccess/participate.html" target="_blank" rel="noreferrer" className="inline-flex items-center gap-1.5 font-mono text-[9px] uppercase tracking-[0.2em] text-dim transition-colors hover:text-ozone">
+              <ExternalLink className="h-3 w-3" /> Public Access Campaign — key participation guide
+            </a>
+          </div>
         </div>
+        )}
       </main>
     </div>
   );
