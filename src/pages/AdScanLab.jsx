@@ -1,12 +1,14 @@
 import { useState, useCallback } from "react";
 import { Link } from "react-router-dom";
-import { ScanLine, Loader2, Camera, CheckCircle2, AlertTriangle, MapPin, Tag, Building2, FileText, ArrowRight, RotateCcw, Upload, Navigation } from "lucide-react";
+import { ScanLine, Loader2, Camera, CheckCircle2, AlertTriangle, MapPin, Tag, Building2, FileText, ArrowRight, RotateCcw, Upload, Navigation, Crosshair, Flag } from "lucide-react";
 import exifr from "exifr";
 import Nav from "@/components/ooh/Nav";
 import Breadcrumbs from "@/components/ooh/Breadcrumbs";
 import SiteFooter from "@/components/ooh/SiteFooter";
 import CameraViewfinder from "@/components/ooh/CameraViewfinder";
 import PlaceSearch from "@/components/ooh/lab/PlaceSearch";
+import { BrandIcon } from "@/components/ooh/BrandBadge";
+import { metaFor } from "@/components/ooh/map/LocationThumb";
 import { base44 } from "@/api/base44Client";
 import { useToast } from "@/components/ui/use-toast";
 
@@ -25,16 +27,20 @@ const SECTOR_LABELS = {
   other: "Other",
 };
 
-function FieldRow({ icon: Icon, label, value }) {
+// Terminal-style field cell — compact bordered unit with mono label + value.
+// If `brand` is true, renders a BrandIcon next to the value (brand/operator/corp).
+function TerminalField({ icon: Icon, label, value, brand }) {
   if (!value || (Array.isArray(value) && value.length === 0)) return null;
   return (
-    <div className="flex gap-3 border-b border-slate2 px-4 py-2.5">
-      <Icon className="mt-0.5 h-3.5 w-3.5 shrink-0 text-ozone/70" />
-      <div className="min-w-0 flex-1">
-        <div className="font-mono text-[8px] uppercase tracking-[0.2em] text-silver/40">{label}</div>
-        <div className="mt-0.5 font-mono text-[12px] text-silver break-words">
+    <div className="border border-slate2/40 bg-void/50 px-3 py-2">
+      <div className="flex items-center gap-1 font-mono text-[8px] uppercase tracking-[0.15em] text-dim">
+        {Icon && <Icon className="h-2.5 w-2.5" />} {label}
+      </div>
+      <div className="mt-1 flex items-center gap-2">
+        {brand && <BrandIcon name={value} size={18} />}
+        <span className="font-mono text-[12px] text-silver break-words">
           {Array.isArray(value) ? value.join(", ") : value}
-        </div>
+        </span>
       </div>
     </div>
   );
@@ -213,39 +219,106 @@ export default function AdScanLab() {
               Step 03 — Detection results
             </div>
 
-            {/* Confidence bar */}
-            <div className="flex items-center gap-3 border border-slate2 bg-card px-4 py-3">
-              {detection.is_advertising ? (
-                <CheckCircle2 className="h-5 w-5 text-ozone" />
-              ) : (
-                <AlertTriangle className="h-5 w-5 text-flare" />
-              )}
-              <div className="flex-1">
-                <div className="font-mono text-[11px] uppercase tracking-[0.15em] text-silver">
-                  {detection.is_advertising ? "Advertising detected" : "No advertising detected"}
-                </div>
-                <div className="mt-1.5 h-1 w-full bg-slate2">
-                  <div className="h-full bg-ozone transition-all" style={{ width: `${confidencePct}%` }} />
-                </div>
-              </div>
-              <span className="font-mono text-sm font-bold tabular text-ozone">{confidencePct}%</span>
-            </div>
+            {/* ── Detection dossier ── terminal card with reticle corners */}
+            <div className="relative border border-slate2 bg-card">
+              {/* Reticle corners */}
+              <Crosshair className="absolute left-2 top-2 h-3 w-3 text-ozone/50" />
+              <Crosshair className="absolute right-2 top-2 h-3 w-3 text-ozone/50" />
 
-            {/* Fields */}
-            {detection.is_advertising && (
-              <div className="border border-slate2 bg-card">
-                <FieldRow icon={Tag} label="Brand" value={detection.brand_name} />
-                <FieldRow icon={FileText} label="Campaign" value={detection.campaign_name} />
-                <FieldRow icon={Building2} label="Agency" value={detection.ad_agency} />
-                <FieldRow icon={Building2} label="Parent Corp" value={detection.parent_corp} />
-                <FieldRow icon={Building2} label="OOH Operator" value={detection.ooh_operator} />
-                <FieldRow icon={MapPin} label="Surface Type" value={detection.surface_type} />
-                <FieldRow icon={Tag} label="Industry Sector" value={SECTOR_LABELS[detection.industry_sector] || detection.industry_sector} />
-                <FieldRow icon={AlertTriangle} label="Harm Tags" value={detection.harm_tags} />
-                <FieldRow icon={FileText} label="Description" value={detection.description} />
-                <FieldRow icon={FileText} label="Visible Text" value={detection.visible_text} />
+              {/* Dossier header — brand logo + status + confidence */}
+              <div className="flex items-center gap-3 border-b border-slate2 px-4 py-3 pl-9">
+                {detection.is_advertising && detection.brand_name ? (
+                  <BrandIcon name={detection.brand_name} size={36} />
+                ) : (
+                  <span className="flex h-9 w-9 items-center justify-center rounded-full border border-slate2/50">
+                    {detection.is_advertising ? (
+                      <CheckCircle2 className="h-5 w-5 text-ozone" />
+                    ) : (
+                      <AlertTriangle className="h-5 w-5 text-flare" />
+                    )}
+                  </span>
+                )}
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-2">
+                    {detection.is_advertising ? (
+                      <span className="font-mono text-[10px] font-bold uppercase tracking-[0.2em] text-ozone">// Ad detected</span>
+                    ) : (
+                      <span className="font-mono text-[10px] font-bold uppercase tracking-[0.2em] text-flare">// No ad detected</span>
+                    )}
+                    {detection.surface_type && (() => {
+                      const tm = metaFor(detection.surface_type);
+                      return (
+                        <span className="flex items-center gap-1 border border-slate2/50 px-1.5 py-0.5 font-mono text-[8px] uppercase tracking-[0.15em] text-silver/70">
+                          <tm.Icon className="h-2.5 w-2.5" style={{ color: tm.accent }} />
+                          {tm.label}
+                        </span>
+                      );
+                    })()}
+                  </div>
+                  <div className="mt-0.5 truncate font-mono text-[14px] font-bold text-silver">
+                    {detection.brand_name || "Unknown surface"}
+                  </div>
+                  {detection.industry_sector && (
+                    <span className="mt-0.5 inline-block font-mono text-[8px] uppercase tracking-[0.15em] text-dim">
+                      {SECTOR_LABELS[detection.industry_sector] || detection.industry_sector}
+                    </span>
+                  )}
+                </div>
+                {/* Confidence readout */}
+                <div className="flex flex-col items-end gap-1">
+                  <span className="font-mono text-lg font-bold tabular text-ozone">{confidencePct}%</span>
+                  <div className="h-1 w-16 bg-slate2">
+                    <div className="h-full bg-ozone transition-all" style={{ width: `${confidencePct}%` }} />
+                  </div>
+                </div>
               </div>
-            )}
+
+              {/* Fields grid */}
+              {detection.is_advertising && (
+                <div className="space-y-3 p-4">
+                  <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                    <TerminalField icon={Tag} label="Brand" value={detection.brand_name} brand />
+                    <TerminalField icon={FileText} label="Campaign" value={detection.campaign_name} />
+                    <TerminalField icon={Building2} label="Agency" value={detection.ad_agency} brand />
+                    <TerminalField icon={Building2} label="Parent Corp" value={detection.parent_corp} brand />
+                    <TerminalField icon={Building2} label="OOH Operator" value={detection.ooh_operator} brand />
+                    <TerminalField icon={MapPin} label="Surface" value={metaFor(detection.surface_type).label} />
+                  </div>
+
+                  {/* Harm tags — terminal chips */}
+                  {detection.harm_tags && detection.harm_tags.length > 0 && (
+                    <div>
+                      <div className="mb-1.5 font-mono text-[9px] uppercase tracking-[0.3em] text-flare/60">// Harm tags</div>
+                      <div className="flex flex-wrap gap-1.5">
+                        {detection.harm_tags.map((tag) => (
+                          <span key={tag} className="flex items-center gap-1 border border-flare/40 px-2 py-1 font-mono text-[9px] uppercase tracking-[0.1em] text-flare">
+                            <Flag className="h-2.5 w-2.5" /> {tag.replace(/_/g, " ")}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Description + visible text — full width */}
+                  {(detection.description || detection.visible_text) && (
+                    <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                      {detection.description && (
+                        <div className="border border-slate2/40 bg-void/50 px-3 py-2">
+                          <div className="font-mono text-[8px] uppercase tracking-[0.15em] text-dim">// Description</div>
+                          <p className="mt-1 text-[12px] leading-relaxed text-silver/85">{detection.description}</p>
+                        </div>
+                      )}
+                      {detection.visible_text && (
+                        <div className="border border-slate2/40 bg-void/50 px-3 py-2">
+                          <div className="font-mono text-[8px] uppercase tracking-[0.15em] text-dim">// Visible text</div>
+                          <p className="mt-1 font-mono text-[11px] leading-relaxed text-silver/85">{detection.visible_text}</p>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
 
             {/* Location step */}
             <div className="border border-slate2 bg-card">
@@ -284,9 +357,16 @@ export default function AdScanLab() {
 
             {/* Catalog action */}
             {cataloged ? (
-              <div className="flex flex-col items-center gap-3 border border-ozone/40 bg-ozone/5 py-8">
+              <div className="relative flex flex-col items-center gap-3 border border-ozone/40 bg-ozone/5 py-8">
+                <Crosshair className="absolute left-2 top-2 h-3 w-3 text-ozone/50" />
+                <Crosshair className="absolute right-2 top-2 h-3 w-3 text-ozone/50" />
+                <Crosshair className="absolute left-2 bottom-2 h-3 w-3 text-ozone/50" />
+                <Crosshair className="absolute right-2 bottom-2 h-3 w-3 text-ozone/50" />
                 <CheckCircle2 className="h-8 w-8 text-ozone" />
                 <span className="font-mono text-[11px] uppercase tracking-[0.2em] text-silver">Cataloged to atlas</span>
+                {cataloged.title && (
+                  <span className="font-mono text-[10px] text-dim">{cataloged.title}</span>
+                )}
                 <Link
                   to={`/location/${cataloged.id}`}
                   className="flex items-center gap-1.5 border border-ozone bg-ozone px-4 py-2 font-mono text-[10px] font-bold uppercase tracking-[0.2em] text-void transition-colors hover:bg-flare hover:border-flare"
