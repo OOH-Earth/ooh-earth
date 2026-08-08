@@ -80,6 +80,8 @@ function warTags(zones) {
 
 const LAYER_ACCENT = {
   ads: "#EDFF00",
+  adbusting: "#FF5C00",
+  graffiti: "#FF5C00",
   rivers: "#39FF14",
   mushrooms: "#FF5C00",
   flora: "#39FF14",
@@ -93,7 +95,7 @@ export default function DynamicFilterBar({ typeFilter, setTypeFilter, counts = {
 
   const tags = useMemo(() => {
     switch (primaryLayer) {
-      case "ads": return adsTags(counts, total);
+      case "ads": case "adbusting": case "graffiti": return adsTags(counts, total);
       case "rivers": return riverTags();
       case "mushrooms": return mushroomTags(mushrooms);
       case "flora": return floraTags(flora);
@@ -102,9 +104,10 @@ export default function DynamicFilterBar({ typeFilter, setTypeFilter, counts = {
     }
   }, [primaryLayer, counts, total, mushrooms, flora, warZones]);
 
+  const isStreet = primaryLayer === "ads" || primaryLayer === "adbusting" || primaryLayer === "graffiti";
   const accent = LAYER_ACCENT[primaryLayer] || "#EDFF00";
-  const selected = primaryLayer === "ads" ? typeFilter : layerFilter;
-  const onSelect = primaryLayer === "ads" ? setTypeFilter : setLayerFilter;
+  const selected = isStreet ? typeFilter : layerFilter;
+  const onSelect = isStreet ? setTypeFilter : setLayerFilter;
 
   if (!tags.length) return null;
 

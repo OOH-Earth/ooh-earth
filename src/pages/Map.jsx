@@ -17,7 +17,7 @@ import QuickCapture from "@/components/ooh/QuickCapture";
 import GraffitiCamera from "@/components/ooh/GraffitiCamera";
 import Globe3D from "@/components/ooh/Globe3D";
 import MapAlertTicker from "@/components/ooh/map/MapAlertTicker";
-import MapLayerToggle from "@/components/ooh/map/MapLayerToggle";
+import MapLayerToggle, { DEFAULT_LAYERS } from "@/components/ooh/map/MapLayerToggle";
 import PullToRefresh from "@/components/ooh/PullToRefresh";
 import ClaimLeadDialog from "@/components/ooh/map/ClaimLeadDialog";
 import SpecsBar from "@/components/ooh/uikit/pinlab/SpecsBar";
@@ -62,7 +62,7 @@ export default function Map() {
   const { startTour, registerSteps } = useWalkthrough();
   const [finderOpen, setFinderOpen] = useState(false);
   const [flyTo, setFlyTo] = useState(null);
-  const [activeLayers, setActiveLayers] = usePersistentState("ooh-map-layers", ["adbusting"]);
+  const [activeLayers, setActiveLayers] = usePersistentState("ooh-map-layers-v2", DEFAULT_LAYERS);
   const [layerFilter, setLayerFilter] = useState("all");
   const { style: mapStyle } = useMapStyle();
   const { spots: mushrooms, loading: mushLoading } = useMushroomData();
@@ -164,14 +164,39 @@ export default function Map() {
       });
   }, [raw, typeFilter, query]);
 
-  // Primary layer + layer-filtered markers computed together to avoid any
-  // temporal-dead-zone risk between interdependent useMemos.
+  // Street layers are overlapping views of the Location entity.
+  // "ads" is the superset (all markers); "adbusting" and "graffiti" are
+  // subsets. When multiple street layers are active we show the union,
+  // with "ads" absorbing the others since it contains every marker.
   const { primaryLayer, layerFiltered } = useMemo(() => {
-    const pl = ["adbusting", "graffiti", "ads", "rivers", "mushrooms", "flora", "war", "radio"].find((l) => activeLayers.includes(l)) || null;
-    let lf = filtered;
-    if (pl === "adbusting") lf = filtered.filter((m) => m.adbust_type && m.adbust_type !== "none");
-    else if (pl === "graffiti") lf = filtered.filter((m) => m.graffiti_medium || ["painted", "mural", "sticker"].includes(m.type) || ["painted_over", "wheatpasted"].includes(m.adbust_type));
-    return { primaryLayer: pl, layerFiltered: lf };
+    const hasAds = activeLayers.includes("ads");
+    const hasAdbust = activeLayers.includes("adbusting");
+    const hasGraffiti = activeLayers.includes("graffiti");
+
+    let streetLayer = null;
+    let lf = [];
+
+    if (hasAds) {
+      streetLayer = "ads";
+      lf = filtered;
+    } else if (hasAdbust || hasGraffiti) {
+      streetLayer = hasAdbust ? "adbusting" : "graffiti";
+      lf = filtered.filter((m) => {
+        const isAdbust = hasAdbust && m.adbust_type && m.adbust_type !== "none";
+        const isGraffiti = hasGraffiti && (m.graffiti_medium || ["painted", "mural", "sticker"].includes(m.type) || ["painted_over", "wheatpasted"].includes(m.adbust_type));
+        return isAdbust || isGraffiti;
+      });
+    }
+
+    // External layers (mushrooms, rivers, etc.) take priority for the sidebar
+    // only when no street layer is active. They render their own map markers
+    // via LayerManager, so Location pins are cleared to avoid clutter.
+    if (!streetLayer) {
+      const ext = ["rivers", "mushrooms", "flora", "war", "radio"].find((l) => activeLayers.includes(l));
+      return { primaryLayer: ext || null, layerFiltered: [] };
+    }
+
+    return { primaryLayer: streetLayer, layerFiltered: lf };
   }, [activeLayers, filtered]);
 
   // Results feed follows the map viewport (flat view): only spots inside the
@@ -244,6 +269,7 @@ export default function Map() {
   };
 
   const leads = adsInView.filter((m) => !m.image && m.status !== "verified").length;
+  const isStreet = primaryLayer === "ads" || primaryLayer === "adbusting" || primaryLayer === "graffiti";
 
   const cardsClass =
     mode === "map" ? "hidden" : mode === "list" ? "flex w-full lg:flex-1" : "hidden lg:flex lg:w-[340px]";
@@ -292,10 +318,10 @@ export default function Map() {
           <div data-tour="cards" className={`min-h-0 flex-col border-r border-slate2/60 ${cardsClass}`}>
             <div className="flex items-center justify-between border-b border-slate2/60 px-4 py-2">
               <span className="font-mono text-[10px] uppercase tracking-[0.25em] text-dim">
-                // {layerResults.length}{primaryLayer === "ads" && followViewport && view === "flat" ? <> in view<span className="text-dim/60"> · {filtered.length} total</span></> : " results"}
-                {primaryLayer === "ads" && leads > 0 && <span className="text-flare/80"> · {leads} leads</span>}
+                // {layerResults.length}{isStreet && followViewport && view === "flat" ? <> in view<span className="text-dim/60"> · {filtered.length} total</span></> : " results"}
+                {isStreet && leads > 0 && <span className="text-flare/80"> · {leads} leads</span>}
               </span>
-              {primaryLayer === "ads" && view === "flat" && (
+              {isStreet && view === "flat" && (
                 <button
                   onClick={() => setFollowViewport((v) => !v)}
                   title="Results feed follows the map view"
@@ -312,7 +338,7 @@ export default function Map() {
                 ) : layerLoading ? (
                   <div className="p-6 text-center font-mono text-[10px] uppercase tracking-[0.25em] text-dim">// Loading {primaryLayer} data…</div>
                 ) : layerResults.length ? (
-                  primaryLayer === "ads" ? (
+                  isStreet ? (
                     layerResults.map((m) => (
                       <LocationCard key={m.id} m={m} selected={selectedId === m.id} onSelect={(x) => setSelectedId(x.id)} onHover={(x) => setHoverId(x.id)} onHoverEnd={() => setHoverId(null)} claim={claimsByLoc[m.id]} onClaim={setClaimTarget} />
                     ))
@@ -325,7 +351,7 @@ export default function Map() {
                       <LayerResultCard key={`${primaryLayer}-${i}`} item={item} layer={primaryLayer} />
                     ))
                   )
-                ) : primaryLayer === "ads" && followViewport && view === "flat" ? (
+                ) : isStreet && followViewport && view === "flat" ? (
                   <div className="p-6 text-center">
                     <div className="font-mono text-[10px] uppercase tracking-[0.25em] text-dim">// No spots in this view</div>
                     <p className="mt-1 font-mono text-[9px] uppercase tracking-[0.2em] text-dim/60">Pan or zoom out to widen the sweep</p>
