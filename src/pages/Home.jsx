@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
 import Nav from "@/components/ooh/Nav";
 import MetroSlider from "@/components/ooh/MetroSlider";
 import Hero from "@/components/ooh/Hero";
@@ -30,7 +30,6 @@ import SkyIntel from "@/components/ooh/SkyIntel";
 import ImpactLedger from "@/components/ooh/ImpactLedger";
 import LiveActivityFeed from "@/components/ooh/LiveActivityFeed";
 import SiteFooter from "@/components/ooh/SiteFooter";
-import CommandCenter from "@/components/ooh/CommandCenter";
 import HorizonProgress from "@/components/ooh/HorizonProgress";
 import ViewfinderCursor from "@/components/ooh/ViewfinderCursor";
 import { useWalkthrough } from "@/lib/walkthroughContext";
@@ -43,8 +42,6 @@ const HOME_TOUR = [
 ];
 
 export default function Home() {
-  const [commandOpen, setCommandOpen] = useState(false);
-  const openCommand = () => setCommandOpen(true);
   const { registerSteps } = useWalkthrough();
   useEffect(() => { registerSteps(HOME_TOUR); }, [registerSteps]);
 
@@ -52,10 +49,10 @@ export default function Home() {
     <div className="relative bg-void">
       <ViewfinderCursor />
       <HorizonProgress />
-      <Nav onCommand={openCommand} />
+      <Nav />
 
       <main>
-        <Hero onCommand={openCommand} />
+        <Hero />
         <MetroSlider />
         <GlobeSection />
         <Reveal><MetroKit /></Reveal>
@@ -85,9 +82,7 @@ export default function Home() {
       </main>
 
       <LiveActivityFeed />
-      <SiteFooter onCommand={openCommand} />
-
-      <CommandCenter open={commandOpen} onClose={() => setCommandOpen(false)} />
+      <SiteFooter />
     </div>
   );
 }

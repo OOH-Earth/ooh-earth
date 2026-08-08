@@ -1,19 +1,15 @@
-import { useState } from "react";
 import Nav from "@/components/ooh/Nav";
 import SiteFooter from "@/components/ooh/SiteFooter";
 import ZoraMarketPanel from "@/components/ooh/zora/ZoraMarketPanel";
 import ZoraCoinGrid from "@/components/ooh/zora/ZoraCoinGrid";
 import ZoraHolderConstellation from "@/components/ooh/zora/ZoraHolderConstellation";
 import LunarMarketOverlay from "@/components/ooh/zora/LunarMarketOverlay";
-import CommandCenter from "@/components/ooh/CommandCenter";
 import WalletButton from "@/components/ooh/WalletButton";
 
 export default function Zora() {
-  const [commandOpen, setCommandOpen] = useState(false);
-
   return (
     <div className="relative min-h-screen bg-void">
-      <Nav onCommand={() => setCommandOpen(true)} />
+      <Nav />
 
       <section className="page-top border-b border-slate2/40 px-5 pb-14 md:px-8 md:pb-20">
         <span className="font-mono text-[10px] uppercase tracking-[0.3em] text-ozone">// On-chain resistance · Zora + Base + Solana</span>
@@ -52,8 +48,7 @@ export default function Zora() {
         </div>
       </section>
 
-      <SiteFooter onCommand={() => setCommandOpen(true)} />
-      <CommandCenter open={commandOpen} onClose={() => setCommandOpen(false)} />
+      <SiteFooter />
     </div>
   );
 }

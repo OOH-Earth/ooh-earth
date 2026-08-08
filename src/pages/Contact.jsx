@@ -1,9 +1,7 @@
-import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Mail, Send, ArrowUpRight, Instagram, Twitch, Radio, Crosshair } from "lucide-react";
 import Nav from "@/components/ooh/Nav";
 import SiteFooter from "@/components/ooh/SiteFooter";
-import CommandCenter from "@/components/ooh/CommandCenter";
 import HorizonProgress from "@/components/ooh/HorizonProgress";
 import ViewfinderCursor from "@/components/ooh/ViewfinderCursor";
 
@@ -14,14 +12,11 @@ const SOCIALS = [
 ];
 
 export default function Contact() {
-  const [commandOpen, setCommandOpen] = useState(false);
-  const openCommand = () => setCommandOpen(true);
-
   return (
     <div className="relative bg-void">
       <ViewfinderCursor />
       <HorizonProgress />
-      <Nav onCommand={openCommand} />
+      <Nav />
 
       <main className="page-top">
         <section className="border-b border-slate2/40 bg-void">
@@ -91,8 +86,7 @@ export default function Contact() {
         </section>
       </main>
 
-      <SiteFooter onCommand={openCommand} />
-      <CommandCenter open={commandOpen} onClose={() => setCommandOpen(false)} />
+      <SiteFooter />
     </div>
   );
 }

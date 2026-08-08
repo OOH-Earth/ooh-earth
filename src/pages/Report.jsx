@@ -5,16 +5,13 @@ import HorizonProgress from "@/components/ooh/HorizonProgress";
 import SiteFooter from "@/components/ooh/SiteFooter";
 import { Link } from "react-router-dom";
 import { ArrowRight, Map, Zap } from "lucide-react";
-import { useState } from "react";
-import CommandCenter from "@/components/ooh/CommandCenter";
+
 
 export default function Report() {
-  const [commandOpen, setCommandOpen] = useState(false);
   return (
     <div className="relative min-h-screen bg-void">
       <HorizonProgress />
-      <Nav onCommand={() => setCommandOpen(true)} />
-      <CommandCenter open={commandOpen} onClose={() => setCommandOpen(false)} />
+      <Nav />
       <main className="page-top px-5 pb-24 md:px-8">
         <div className="mx-auto max-w-2xl">
           {/* Header */}
@@ -52,7 +49,7 @@ export default function Report() {
           </div>
         </div>
       </main>
-      <SiteFooter onCommand={() => setCommandOpen(true)} />
+      <SiteFooter />
     </div>
   );
 }

@@ -15,11 +15,12 @@ import AccountMenu from "@/components/ooh/AccountMenu";
 import OfflineSyncBadge from "@/components/ooh/OfflineSyncBadge";
 import RadioMiniPlayer from "@/components/ooh/radio/RadioMiniPlayer";
 import { useWalkthrough } from "@/lib/walkthroughContext";
+import { useCommandCenter } from "@/lib/commandCenterContext";
 
-
-export default function Nav({ onCommand }) {
+export default function Nav() {
   const [menuOpen, setMenuOpen] = useState(false);
   const { startTour } = useWalkthrough();
+  const { openCommand } = useCommandCenter();
   return (
     <header className="fixed inset-x-0 top-0 z-50 border-b border-border bg-background shadow-[0_1px_0_rgba(0,0,0,0.04),0_4px_16px_rgba(0,0,0,0.06)] backdrop-blur-md" style={{ paddingTop: "env(safe-area-inset-top)" }}>
       <div className="flex items-center justify-between gap-2 px-3 py-3 md:px-8 md:py-4">
@@ -58,7 +59,7 @@ export default function Nav({ onCommand }) {
             <Menu className="h-5 w-5 md:h-4 md:w-4" /> <span className="hidden sm:inline">Menu</span>
           </button>
           <button
-            onClick={onCommand}
+            onClick={openCommand}
             className="group flex h-10 items-center gap-2 border-2 border-ozone bg-ozone px-3 font-mono text-[10px] font-bold uppercase tracking-[0.25em] text-void transition-colors hover:bg-flare hover:border-flare md:h-8"
           >
             <Crosshair className="h-4 w-4 md:h-3.5 md:w-3.5" />

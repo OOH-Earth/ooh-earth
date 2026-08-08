@@ -2,8 +2,10 @@ import { Crosshair } from "lucide-react";
 import { Link } from "react-router-dom";
 import BrandMark from "@/components/ooh/BrandMark";
 import BetaTag from "@/components/ooh/BetaTag";
+import { useCommandCenter } from "@/lib/commandCenterContext";
 
-export default function SiteFooter({ onCommand }) {
+export default function SiteFooter() {
+  const { openCommand } = useCommandCenter();
   return (
     <footer className="border-t border-white/5 bg-void">
       <div className="px-5 py-12 md:px-8">
@@ -56,7 +58,7 @@ export default function SiteFooter({ onCommand }) {
 
         <div className="mt-12 flex flex-col items-start justify-between gap-4 border-t border-white/5 pt-6 md:flex-row md:items-center">
           <span className="font-mono text-[10px] uppercase tracking-[0.25em] text-dim">© {new Date().getFullYear()} OOH Street Art & Adbusting Maps · Aligned to UN SDGs · Union made · <span className="text-flare/70">AGPL-3.0 · CC BY-SA 4.0</span></span>
-          <button onClick={onCommand} className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.25em] text-silver/50 transition-colors hover:text-ozone">
+          <button onClick={openCommand} className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.25em] text-silver/50 transition-colors hover:text-ozone">
             <Crosshair className="h-3.5 w-3.5" /> Open Command Center
           </button>
         </div>

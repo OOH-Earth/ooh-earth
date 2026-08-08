@@ -11,7 +11,6 @@ import {
 } from "@/components/ui/accordion";
 import Nav from "@/components/ooh/Nav";
 import SiteFooter from "@/components/ooh/SiteFooter";
-import CommandCenter from "@/components/ooh/CommandCenter";
 import HorizonProgress from "@/components/ooh/HorizonProgress";
 import ViewfinderCursor from "@/components/ooh/ViewfinderCursor";
 
@@ -106,8 +105,7 @@ const unwrap = (res) => (res && typeof res === "object" && "data" in res ? res.d
 const tierName = (id) => TIERS.find((t) => t.id === id)?.name || id || "plan";
 
 export default function Plans() {
-  const [commandOpen, setCommandOpen] = useState(false);
-  const openCommand = () => setCommandOpen(true);
+
 
   const [user, setUser] = useState(null);
   const [sub, setSub] = useState(null);         // active-ish subscription, or null
@@ -198,7 +196,7 @@ export default function Plans() {
     <div className="relative bg-void">
       <ViewfinderCursor />
       <HorizonProgress />
-      <Nav onCommand={openCommand} />
+      <Nav />
 
       <main>
         {/* Hero */}
@@ -434,8 +432,7 @@ export default function Plans() {
         </section>
       </main>
 
-      <SiteFooter onCommand={openCommand} />
-      <CommandCenter open={commandOpen} onClose={() => setCommandOpen(false)} />
+      <SiteFooter />
     </div>
   );
 }

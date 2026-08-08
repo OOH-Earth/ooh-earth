@@ -1,9 +1,7 @@
-import { useState } from "react";
 import { Link } from "react-router-dom";
 import { HandHeart, ArrowUpRight, LifeBuoy, MessageSquare, Instagram, Twitch, Globe, Send } from "lucide-react";
 import Nav from "@/components/ooh/Nav";
 import SiteFooter from "@/components/ooh/SiteFooter";
-import CommandCenter from "@/components/ooh/CommandCenter";
 import HorizonProgress from "@/components/ooh/HorizonProgress";
 import ViewfinderCursor from "@/components/ooh/ViewfinderCursor";
 import Breadcrumbs from "@/components/ooh/Breadcrumbs";
@@ -21,14 +19,11 @@ const CHANNELS = [
 ];
 
 export default function Support() {
-  const [commandOpen, setCommandOpen] = useState(false);
-  const openCommand = () => setCommandOpen(true);
-
   return (
     <div className="min-h-screen bg-void grid-bg text-silver">
       <ViewfinderCursor />
       <HorizonProgress />
-      <Nav onCommand={openCommand} />
+      <Nav />
 
       <main className="page-top">
         {/* Hero */}
@@ -144,8 +139,7 @@ export default function Support() {
         </section>
       </main>
 
-      <SiteFooter onCommand={openCommand} />
-      <CommandCenter open={commandOpen} onClose={() => setCommandOpen(false)} />
+      <SiteFooter />
     </div>
   );
 }

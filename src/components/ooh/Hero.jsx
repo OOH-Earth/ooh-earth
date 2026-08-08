@@ -5,14 +5,16 @@ import HeroConsole from "@/components/ooh/HeroConsole";
 import BrandMark from "@/components/ooh/BrandMark";
 import BetaTag from "@/components/ooh/BetaTag";
 import LicenseMark from "@/components/ooh/LicenseMark";
+import { useCommandCenter } from "@/lib/commandCenterContext";
 
 const WORD = "oohearth.app";
 
 const VIDEO_SRC = "https://firebasestorage.googleapis.com/v0/b/standards-site-beta.appspot.com/o/documents%2Fusaglsjaht9%2Fa61ac5238ce%2FSubs6.mp4?alt=media&token=fe1621f1-39b5-4f76-b11e-0700ecedcfba";
 
-export default function Hero({ onCommand }) {
+export default function Hero() {
   const [offset, setOffset] = useState(0);
   const [reduced, setReduced] = useState(false);
+  const { openCommand } = useCommandCenter();
 
   useEffect(() => {
     const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
@@ -83,7 +85,7 @@ export default function Hero({ onCommand }) {
           </div>
 
           {/* Right · live console */}
-          <HeroConsole onCommand={onCommand} />
+          <HeroConsole />
         </div>
 
         <div className="mt-4 md:hidden">

@@ -2,7 +2,6 @@ import { useState, useMemo } from "react";
 import Nav from "@/components/ooh/Nav";
 import MediaCorpsMap from "@/components/ooh/report/MediaCorpsMap";
 import MediaCorpDetail from "@/components/ooh/report/MediaCorpDetail";
-import CommandCenter from "@/components/ooh/CommandCenter";
 import { OOH_MEDIA_CORPS } from "@/components/ooh/report/oohMediaCorps";
 import { Search, ExternalLink, Megaphone, Globe2 } from "lucide-react";
 import { Link } from "react-router-dom";
@@ -15,7 +14,6 @@ const SCOPE_FILTERS = [
 ];
 
 export default function MediaCorps() {
-  const [commandOpen, setCommandOpen] = useState(false);
   const [scopeFilter, setScopeFilter] = useState("all");
   const [search, setSearch] = useState("");
   const [selected, setSelected] = useState(null);
@@ -36,8 +34,7 @@ export default function MediaCorps() {
 
   return (
     <div className="fixed inset-0 flex flex-col overflow-hidden bg-void pt-[calc(7rem_+_env(safe-area-inset-top))] md:pt-[calc(8rem_+_env(safe-area-inset-top))] pb-[calc(76px_+_env(safe-area-inset-bottom))] lg:pb-0">
-      <Nav onCommand={() => setCommandOpen(true)} />
-      <CommandCenter open={commandOpen} onClose={() => setCommandOpen(false)} />
+      <Nav />
 
       {/* Toolbar */}
       <div className="flex items-center justify-between gap-2 border-b border-slate2/60 bg-void/90 px-3 py-2 backdrop-blur-md md:px-5">

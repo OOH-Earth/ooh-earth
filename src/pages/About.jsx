@@ -1,10 +1,8 @@
-import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Image } from "@/components/ui/image";
 import { ArrowUpRight, Crosshair, HandHeart } from "lucide-react";
 import Nav from "@/components/ooh/Nav";
 import SiteFooter from "@/components/ooh/SiteFooter";
-import CommandCenter from "@/components/ooh/CommandCenter";
 import HorizonProgress from "@/components/ooh/HorizonProgress";
 import ViewfinderCursor from "@/components/ooh/ViewfinderCursor";
 
@@ -20,14 +18,11 @@ const GALLERY = [
 ];
 
 export default function About() {
-  const [commandOpen, setCommandOpen] = useState(false);
-  const openCommand = () => setCommandOpen(true);
-
   return (
     <div className="relative bg-void">
       <ViewfinderCursor />
       <HorizonProgress />
-      <Nav onCommand={openCommand} />
+      <Nav />
 
       <main>
         {/* Hero */}
@@ -144,8 +139,7 @@ export default function About() {
         </section>
       </main>
 
-      <SiteFooter onCommand={openCommand} />
-      <CommandCenter open={commandOpen} onClose={() => setCommandOpen(false)} />
+      <SiteFooter />
     </div>
   );
 }

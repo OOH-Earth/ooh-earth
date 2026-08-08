@@ -18,6 +18,7 @@ import ProtectedRoute from '@/components/ProtectedRoute';
 import Account from '@/pages/Account';
 import StageBanner from '@/components/ooh/StageBanner';
 import { WalkthroughProvider } from '@/lib/walkthroughContext';
+import { CommandCenterProvider } from '@/lib/commandCenterContext';
 import { RadioProvider } from '@/lib/radioContext';
 import { LabGateProvider } from '@/components/ooh/LabGate';
 import { MapStyleProvider } from '@/lib/mapStyleContext';
@@ -246,6 +247,7 @@ function App() {
           <MapStyleProvider>
           <RadioProvider>
             <WalkthroughProvider>
+              <CommandCenterProvider>
               <LabGateProvider>
                 <ScrollToTop />
                 <StageBanner />
@@ -255,6 +257,7 @@ function App() {
                 <CognitiveLayer />
                 <MobileBottomTabs />
               </LabGateProvider>
+              </CommandCenterProvider>
             </WalkthroughProvider>
           </RadioProvider>
           </MapStyleProvider>

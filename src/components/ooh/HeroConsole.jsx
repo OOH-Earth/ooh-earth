@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Radio, ShieldCheck, Crosshair, Activity, TrendingUp, TrendingDown, ArrowUpRight } from "lucide-react";
 import { base44 } from "@/api/base44Client";
+import { useCommandCenter } from "@/lib/commandCenterContext";
 
 const relTime = (iso) => {
   if (!iso) return "";
@@ -78,7 +79,8 @@ function Stat({ label, value, Icon, colorClass, suffix, to }) {
   );
 }
 
-export default function HeroConsole({ onCommand }) {
+export default function HeroConsole() {
+  const { openCommand } = useCommandCenter();
   const [d, setD] = useState({ spots: 0, verified: 0, leads: 0, ops: 0, rate: 0, feed: [], series: [], delta: 0 });
   const [now, setNow] = useState(() => new Date());
   const [fi, setFi] = useState(0);
@@ -227,7 +229,7 @@ export default function HeroConsole({ onCommand }) {
       <div className="col-span-2 flex items-center justify-between gap-2 border border-border bg-card px-3 py-2 rounded-xl">
         <span className="font-mono text-[9px] leading-[1.3] text-muted-foreground">Union-made by veterans &amp; street artists.</span>
         <div className="flex gap-1.5">
-          <button onClick={onCommand} className="border border-flare/60 px-3 py-2 font-mono text-[9px] font-bold uppercase tracking-[0.2em] text-flare transition-colors hover:bg-flare hover:text-void active:scale-[0.97]">Command</button>
+          <button onClick={openCommand} className="border border-flare/60 px-3 py-2 font-mono text-[9px] font-bold uppercase tracking-[0.2em] text-flare transition-colors hover:bg-flare hover:text-void active:scale-[0.97]">Command</button>
           <Link to="/campaign" className="border border-ozone/60 px-3 py-2 font-mono text-[9px] font-bold uppercase tracking-[0.2em] text-ozone transition-colors hover:bg-ozone hover:text-void active:scale-[0.97]">Fund</Link>
         </div>
       </div>
