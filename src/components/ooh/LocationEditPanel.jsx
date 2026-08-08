@@ -5,7 +5,18 @@ import { isAdmin, accessOf, agencyOf } from "@/lib/clearance";
 import { PARENT_CORPS, AGENCIES } from "@/components/ooh/report/advertiserRegistry";
 import { ALL_OOH_OPERATORS } from "@/components/ooh/report/oohMediaCorps";
 import { BrandBadge } from "@/components/ooh/BrandBadge";
-import { Tag, Save, X, ChevronDown, ChevronUp, Loader2, AlertTriangle } from "lucide-react";
+import { Tag, Save, X, ChevronDown, ChevronUp, Loader2, AlertTriangle, CheckCircle2, XCircle, ClipboardList } from "lucide-react";
+
+const SURFACE_TYPES = [
+  { value: "billboard", label: "Billboard" },
+  { value: "digital", label: "Digital" },
+  { value: "painted", label: "Painted" },
+  { value: "projection", label: "Projection" },
+  { value: "sticker", label: "Sticker" },
+  { value: "mural", label: "Mural" },
+  { value: "transit", label: "Transit" },
+  { value: "other", label: "Other" },
+];
 
 const INDUSTRY_SECTORS = [
   { value: "", label: "— None —" },
@@ -38,12 +49,38 @@ const CONDITIONS = [
   { value: "upgraded", label: "Upgraded" },
 ];
 
+const ADBUST_TYPES = [
+  { value: "none", label: "None" },
+  { value: "subverted", label: "Subverted" },
+  { value: "painted_over", label: "Painted Over" },
+  { value: "stickered", label: "Stickered" },
+  { value: "projected", label: "Projected" },
+  { value: "wheatpasted", label: "Wheatpasted" },
+  { value: "removed", label: "Removed" },
+  { value: "other", label: "Other" },
+];
+
 const ACTION_FLAG_OPTIONS = [
   "legal_review", "council_submission", "community_reclaim", "petition", "archive",
 ];
 
 function canEditLocation(user) {
   return isAdmin(user) || accessOf(user) === "moderator" || agencyOf(user);
+}
+
+function SectionHeader({ num, label, complete }) {
+  return (
+    <div className="mb-2 flex items-center gap-2">
+      <span className="flex h-4 w-4 items-center justify-center border border-slate2 font-mono text-[8px] font-bold text-dim">{num}</span>
+      <span className="font-mono text-[9px] uppercase tracking-[0.25em] text-ozone/70">{label}</span>
+      {complete ? (
+        <CheckCircle2 className="h-3 w-3 text-ozone" />
+      ) : (
+        <span className="h-1 w-1 rounded-full bg-flare/60" />
+      )}
+      <span className="h-px flex-1 bg-slate2/30" />
+    </div>
+  );
 }
 
 export default function LocationEditPanel({ loc, onUpdated }) {
@@ -55,8 +92,20 @@ export default function LocationEditPanel({ loc, onUpdated }) {
 
   if (!canEditLocation(user)) return null;
 
+  const completeness = {
+    hasType: !!loc.type,
+    hasSector: !!loc.industry_sector,
+    hasBrand: !!loc.brand_name,
+    hasCondition: !!loc.condition,
+    hasStatus: loc.status === "verified" || loc.status === "rejected",
+  };
+  const done = Object.values(completeness).filter(Boolean).length;
+  const total = Object.keys(completeness).length;
+  const needsAttention = loc.status === "pending" && (!loc.brand_name || !loc.industry_sector);
+
   const startEdit = () => {
     setForm({
+      type: loc.type || "other",
       brand_name: loc.brand_name || "",
       campaign_name: loc.campaign_name || "",
       ad_agency: loc.ad_agency || "",
@@ -65,6 +114,7 @@ export default function LocationEditPanel({ loc, onUpdated }) {
       industry_sector: loc.industry_sector || "",
       condition: loc.condition || "functional",
       status: loc.status || "pending",
+      adbust_type: loc.adbust_type || "none",
       harm_tags: loc.harm_tags || [],
       action_flags: loc.action_flags || [],
       harm_statement: loc.harm_statement || "",
@@ -78,22 +128,29 @@ export default function LocationEditPanel({ loc, onUpdated }) {
     setOpen(true);
   };
 
+  const quickAction = async (status) => {
+    setSaving(true);
+    setError(null);
+    try {
+      const updated = await base44.entities.Location.update(loc.id, { status });
+      onUpdated(updated);
+    } catch (e) {
+      setError(e.message || "Failed to update status");
+    } finally {
+      setSaving(false);
+    }
+  };
+
   const save = async () => {
     setSaving(true);
     setError(null);
     try {
       const payload = { ...form };
-      // Numeric fields — API rejects empty strings for number type.
-      // Convert "" / null to undefined so the field is omitted entirely.
       ["graffiti_surface_m2", "graffiti_coverage_pct"].forEach((f) => {
         const v = payload[f];
-        if (v === "" || v == null) {
-          delete payload[f];
-        } else {
-          payload[f] = Number(v);
-        }
+        if (v === "" || v == null) delete payload[f];
+        else payload[f] = Number(v);
       });
-      // Also strip empty-string optionals so they don't overwrite existing values with blanks
       ["brand_name", "campaign_name", "ad_agency", "parent_corp", "ooh_operator", "graffiti_medium", "graffiti_style"].forEach((f) => {
         if (payload[f] === "") delete payload[f];
       });
@@ -118,180 +175,153 @@ export default function LocationEditPanel({ loc, onUpdated }) {
 
   return (
     <div className="mt-8 border border-ozone/30 bg-card">
-      {/* Header bar */}
       <button
         onClick={() => (open ? setOpen(false) : startEdit())}
         className="flex w-full items-center justify-between gap-3 px-4 py-3 text-left transition-colors hover:bg-slate2/20"
       >
         <span className="flex items-center gap-2">
           <Tag className="h-4 w-4 text-ozone" />
-          <span className="font-mono text-[10px] font-bold uppercase tracking-[0.25em] text-ozone">Edit & Tag</span>
+          <span className="font-mono text-[10px] font-bold uppercase tracking-[0.25em] text-ozone">Edit & Classify</span>
           <span className="border border-ozone/40 px-1.5 py-0.5 font-mono text-[8px] uppercase tracking-[0.2em] text-ozone/70">{roleLabel}</span>
         </span>
-        {open ? <ChevronUp className="h-4 w-4 text-dim" /> : <ChevronDown className="h-4 w-4 text-dim" />}
+        <span className="flex items-center gap-2">
+          <span className="hidden items-center gap-1.5 sm:flex">
+            <span className="font-mono text-[8px] uppercase tracking-[0.15em] text-dim">{done}/{total}</span>
+            <span className="flex h-1.5 w-16 overflow-hidden bg-slate2/40">
+              <span className="h-full bg-ozone transition-all" style={{ width: `${(done / total) * 100}%` }} />
+            </span>
+          </span>
+          {open ? <ChevronUp className="h-4 w-4 text-dim" /> : <ChevronDown className="h-4 w-4 text-dim" />}
+        </span>
       </button>
+
+      {needsAttention && !open && (
+        <div className="flex items-center gap-2 border-t border-flare/30 bg-flare/5 px-4 py-2">
+          <AlertTriangle className="h-3.5 w-3.5 shrink-0 text-flare" />
+          <span className="font-mono text-[9px] uppercase tracking-[0.15em] text-flare">
+            Needs classification — {!loc.brand_name && "no brand"}{!loc.brand_name && !loc.industry_sector && ", "}{!loc.industry_sector && "no sector"}
+          </span>
+        </div>
+      )}
+
+      {!open && (
+        <div className="flex gap-px border-t border-slate2/40">
+          <button onClick={() => quickAction("verified")} disabled={saving} className="flex flex-1 items-center justify-center gap-1.5 py-2.5 font-mono text-[9px] font-bold uppercase tracking-[0.2em] text-ozone transition-colors hover:bg-ozone/10 disabled:opacity-40">
+            <CheckCircle2 className="h-3.5 w-3.5" /> Verify
+          </button>
+          <span className="w-px bg-slate2/40" />
+          <button onClick={() => quickAction("rejected")} disabled={saving} className="flex flex-1 items-center justify-center gap-1.5 py-2.5 font-mono text-[9px] font-bold uppercase tracking-[0.2em] text-flare transition-colors hover:bg-flare/10 disabled:opacity-40">
+            <XCircle className="h-3.5 w-3.5" /> Reject
+          </button>
+          <span className="w-px bg-slate2/40" />
+          <button onClick={startEdit} className="flex flex-1 items-center justify-center gap-1.5 py-2.5 font-mono text-[9px] font-bold uppercase tracking-[0.2em] text-darkgray transition-colors hover:bg-slate2/20">
+            <ClipboardList className="h-3.5 w-3.5" /> Classify
+          </button>
+        </div>
+      )}
 
       {open && form && (
         <div className="space-y-5 border-t border-slate2/40 px-4 py-5">
-          {/* Identification */}
           <div>
-            <div className="mb-2 font-mono text-[9px] uppercase tracking-[0.3em] text-ozone/60">// Advertiser</div>
-            <div className="grid gap-3 sm:grid-cols-2">
-              <label className="flex flex-col gap-1">
-                <span className="font-mono text-[9px] uppercase tracking-[0.15em] text-dim">Brand</span>
-                <input
-                  list="dl-brands"
-                  value={form.brand_name}
-                  onChange={(e) => set("brand_name", e.target.value)}
-                  className="border border-slate2 bg-void px-3 py-2 text-sm text-silver outline-none focus:border-ozone"
-                  placeholder="e.g. Shell"
-                />
-                {form.brand_name && <BrandBadge name={form.brand_name} className="mt-1 self-start" />}
-              </label>
-              <label className="flex flex-col gap-1">
-                <span className="font-mono text-[9px] uppercase tracking-[0.15em] text-dim">Campaign</span>
-                <input
-                  value={form.campaign_name}
-                  onChange={(e) => set("campaign_name", e.target.value)}
-                  className="border border-slate2 bg-void px-3 py-2 text-sm text-silver outline-none focus:border-ozone"
-                  placeholder="e.g. Drive the Future"
-                />
-              </label>
-              <label className="flex flex-col gap-1">
-                <span className="font-mono text-[9px] uppercase tracking-[0.15em] text-dim">Ad Agency</span>
-                <input
-                  list="dl-agencies"
-                  value={form.ad_agency}
-                  onChange={(e) => set("ad_agency", e.target.value)}
-                  className="border border-slate2 bg-void px-3 py-2 text-sm text-silver outline-none focus:border-ozone"
-                  placeholder="e.g. Ogilvy"
-                />
-                {form.ad_agency && <BrandBadge name={form.ad_agency} className="mt-1 self-start" />}
-              </label>
-              <label className="flex flex-col gap-1">
-                <span className="font-mono text-[9px] uppercase tracking-[0.15em] text-dim">Parent Corp</span>
-                <input
-                  list="dl-corps"
-                  value={form.parent_corp}
-                  onChange={(e) => set("parent_corp", e.target.value)}
-                  className="border border-slate2 bg-void px-3 py-2 text-sm text-silver outline-none focus:border-ozone"
-                  placeholder="e.g. WPP"
-                />
-                {form.parent_corp && <BrandBadge name={form.parent_corp} className="mt-1 self-start" />}
-              </label>
-              <label className="flex flex-col gap-1 sm:col-span-2">
-                <span className="font-mono text-[9px] uppercase tracking-[0.15em] text-dim">OOH Operator (structure owner)</span>
-                <input
-                  list="dl-operators"
-                  value={form.ooh_operator}
-                  onChange={(e) => set("ooh_operator", e.target.value)}
-                  className="border border-slate2 bg-void px-3 py-2 text-sm text-silver outline-none focus:border-ozone"
-                  placeholder="e.g. Clear Channel"
-                />
-                {form.ooh_operator && <BrandBadge name={form.ooh_operator} className="mt-1 self-start" />}
-              </label>
-            </div>
-            <datalist id="dl-brands">
-              {PARENT_CORPS.map((b) => <option key={b} value={b} />)}
-            </datalist>
-            <datalist id="dl-agencies">
-              {AGENCIES.map((a) => <option key={a} value={a} />)}
-            </datalist>
-            <datalist id="dl-corps">
-              {PARENT_CORPS.map((c) => <option key={c} value={c} />)}
-            </datalist>
-            <datalist id="dl-operators">
-              {ALL_OOH_OPERATORS.map((o) => <option key={o} value={o} />)}
-            </datalist>
-          </div>
-
-          {/* Classification */}
-          <div>
-            <div className="mb-2 font-mono text-[9px] uppercase tracking-[0.3em] text-ozone/60">// Classification</div>
+            <SectionHeader num="1" label="Surface & Classification" complete={completeness.hasType && completeness.hasSector && completeness.hasCondition} />
             <div className="grid gap-3 sm:grid-cols-3">
               <label className="flex flex-col gap-1">
+                <span className="font-mono text-[9px] uppercase tracking-[0.15em] text-dim">Surface Type</span>
+                <select value={form.type} onChange={(e) => set("type", e.target.value)} className="border border-slate2 bg-void px-3 py-2 text-sm text-silver outline-none focus:border-ozone">
+                  {SURFACE_TYPES.map((t) => <option key={t.value} value={t.value}>{t.label}</option>)}
+                </select>
+              </label>
+              <label className="flex flex-col gap-1">
                 <span className="font-mono text-[9px] uppercase tracking-[0.15em] text-dim">Industry Sector</span>
-                <select
-                  value={form.industry_sector}
-                  onChange={(e) => set("industry_sector", e.target.value)}
-                  className="border border-slate2 bg-void px-3 py-2 text-sm text-silver outline-none focus:border-ozone"
-                >
+                <select value={form.industry_sector} onChange={(e) => set("industry_sector", e.target.value)} className="border border-slate2 bg-void px-3 py-2 text-sm text-silver outline-none focus:border-ozone">
                   {INDUSTRY_SECTORS.map((s) => <option key={s.value} value={s.value}>{s.label}</option>)}
                 </select>
               </label>
               <label className="flex flex-col gap-1">
                 <span className="font-mono text-[9px] uppercase tracking-[0.15em] text-dim">Condition</span>
-                <select
-                  value={form.condition}
-                  onChange={(e) => set("condition", e.target.value)}
-                  className="border border-slate2 bg-void px-3 py-2 text-sm text-silver outline-none focus:border-ozone"
-                >
+                <select value={form.condition} onChange={(e) => set("condition", e.target.value)} className="border border-slate2 bg-void px-3 py-2 text-sm text-silver outline-none focus:border-ozone">
                   {CONDITIONS.map((c) => <option key={c.value} value={c.value}>{c.label}</option>)}
-                </select>
-              </label>
-              <label className="flex flex-col gap-1">
-                <span className="font-mono text-[9px] uppercase tracking-[0.15em] text-dim">Status</span>
-                <select
-                  value={form.status}
-                  onChange={(e) => set("status", e.target.value)}
-                  className="border border-slate2 bg-void px-3 py-2 text-sm text-silver outline-none focus:border-ozone"
-                >
-                  <option value="pending">Pending</option>
-                  <option value="verified">Verified</option>
-                  <option value="rejected">Rejected</option>
                 </select>
               </label>
             </div>
           </div>
 
-          {/* Harm tags */}
           <div>
-            <div className="mb-2 font-mono text-[9px] uppercase tracking-[0.3em] text-ozone/60">// Harm Tags</div>
-            <div className="flex flex-wrap gap-1.5">
+            <SectionHeader num="2" label="Advertiser Intelligence" complete={!!form.brand_name} />
+            <div className="grid gap-3 sm:grid-cols-2">
+              <label className="flex flex-col gap-1">
+                <span className="font-mono text-[9px] uppercase tracking-[0.15em] text-dim">Brand</span>
+                <input list="dl-brands" value={form.brand_name} onChange={(e) => set("brand_name", e.target.value)} className="border border-slate2 bg-void px-3 py-2 text-sm text-silver outline-none focus:border-ozone" placeholder="e.g. Shell" />
+                {form.brand_name && <BrandBadge name={form.brand_name} className="mt-1 self-start" />}
+              </label>
+              <label className="flex flex-col gap-1">
+                <span className="font-mono text-[9px] uppercase tracking-[0.15em] text-dim">Campaign</span>
+                <input value={form.campaign_name} onChange={(e) => set("campaign_name", e.target.value)} className="border border-slate2 bg-void px-3 py-2 text-sm text-silver outline-none focus:border-ozone" placeholder="e.g. Drive the Future" />
+              </label>
+              <label className="flex flex-col gap-1">
+                <span className="font-mono text-[9px] uppercase tracking-[0.15em] text-dim">Ad Agency</span>
+                <input list="dl-agencies" value={form.ad_agency} onChange={(e) => set("ad_agency", e.target.value)} className="border border-slate2 bg-void px-3 py-2 text-sm text-silver outline-none focus:border-ozone" placeholder="e.g. Ogilvy" />
+                {form.ad_agency && <BrandBadge name={form.ad_agency} className="mt-1 self-start" />}
+              </label>
+              <label className="flex flex-col gap-1">
+                <span className="font-mono text-[9px] uppercase tracking-[0.15em] text-dim">Parent Corp</span>
+                <input list="dl-corps" value={form.parent_corp} onChange={(e) => set("parent_corp", e.target.value)} className="border border-slate2 bg-void px-3 py-2 text-sm text-silver outline-none focus:border-ozone" placeholder="e.g. WPP" />
+                {form.parent_corp && <BrandBadge name={form.parent_corp} className="mt-1 self-start" />}
+              </label>
+              <label className="flex flex-col gap-1 sm:col-span-2">
+                <span className="font-mono text-[9px] uppercase tracking-[0.15em] text-dim">OOH Operator (structure owner)</span>
+                <input list="dl-operators" value={form.ooh_operator} onChange={(e) => set("ooh_operator", e.target.value)} className="border border-slate2 bg-void px-3 py-2 text-sm text-silver outline-none focus:border-ozone" placeholder="e.g. Clear Channel" />
+                {form.ooh_operator && <BrandBadge name={form.ooh_operator} className="mt-1 self-start" />}
+              </label>
+            </div>
+            <datalist id="dl-brands">{PARENT_CORPS.map((b) => <option key={b} value={b} />)}</datalist>
+            <datalist id="dl-agencies">{AGENCIES.map((a) => <option key={a} value={a} />)}</datalist>
+            <datalist id="dl-corps">{PARENT_CORPS.map((c) => <option key={c} value={c} />)}</datalist>
+            <datalist id="dl-operators">{ALL_OOH_OPERATORS.map((o) => <option key={o} value={o} />)}</datalist>
+          </div>
+
+          <div>
+            <SectionHeader num="3" label="Harm Assessment" complete={(form.harm_tags || []).length > 0 || !!form.harm_statement} />
+            <div className="mb-3 flex flex-wrap gap-1.5">
               {HARM_TAG_OPTIONS.map((tag) => {
                 const active = (form.harm_tags || []).includes(tag);
                 return (
-                  <button
-                    key={tag}
-                    onClick={() => toggleArr("harm_tags", tag)}
-                    className={`border px-2.5 py-1 font-mono text-[9px] uppercase tracking-[0.1em] transition-colors ${
-                      active ? "border-flare bg-flare/15 text-flare" : "border-slate2 text-dim hover:border-ozone/50 hover:text-silver"
-                    }`}
-                  >
+                  <button key={tag} onClick={() => toggleArr("harm_tags", tag)} className={`border px-2.5 py-1 font-mono text-[9px] uppercase tracking-[0.1em] transition-colors ${active ? "border-flare bg-flare/15 text-flare" : "border-slate2 text-dim hover:border-ozone/50 hover:text-silver"}`}>
                     {tag.replace(/_/g, " ")}
                   </button>
                 );
               })}
             </div>
-          </div>
-
-          {/* Action flags */}
-          <div>
-            <div className="mb-2 font-mono text-[9px] uppercase tracking-[0.3em] text-ozone/60">// Action Flags</div>
-            <div className="flex flex-wrap gap-1.5">
-              {ACTION_FLAG_OPTIONS.map((flag) => {
-                const active = (form.action_flags || []).includes(flag);
-                return (
-                  <button
-                    key={flag}
-                    onClick={() => toggleArr("action_flags", flag)}
-                    className={`border px-2.5 py-1 font-mono text-[9px] uppercase tracking-[0.1em] transition-colors ${
-                      active ? "border-ozone bg-ozone/15 text-ozone" : "border-slate2 text-dim hover:border-ozone/50 hover:text-silver"
-                    }`}
-                  >
-                    {flag.replace(/_/g, " ")}
-                  </button>
-                );
-              })}
+            <label className="flex flex-col gap-1">
+              <span className="font-mono text-[9px] uppercase tracking-[0.15em] text-dim">Harm Statement</span>
+              <textarea rows={2} value={form.harm_statement} onChange={(e) => set("harm_statement", e.target.value)} className="border border-slate2 bg-void px-3 py-2 text-sm text-silver outline-none focus:border-ozone resize-y" placeholder="What this ad is doing to this space / community" />
+            </label>
+            <div className="mt-3">
+              <span className="mb-1.5 block font-mono text-[9px] uppercase tracking-[0.15em] text-dim">Action Flags</span>
+              <div className="flex flex-wrap gap-1.5">
+                {ACTION_FLAG_OPTIONS.map((flag) => {
+                  const active = (form.action_flags || []).includes(flag);
+                  return (
+                    <button key={flag} onClick={() => toggleArr("action_flags", flag)} className={`border px-2.5 py-1 font-mono text-[9px] uppercase tracking-[0.1em] transition-colors ${active ? "border-ozone bg-ozone/15 text-ozone" : "border-slate2 text-dim hover:border-ozone/50 hover:text-silver"}`}>
+                      {flag.replace(/_/g, " ")}
+                    </button>
+                  );
+                })}
+              </div>
             </div>
           </div>
 
-          {/* Graffiti measurement */}
           <div>
-            <div className="mb-2 font-mono text-[9px] uppercase tracking-[0.3em] text-flare/60">// Graffiti Assessment</div>
+            <SectionHeader num="4" label="Intervention State" complete={form.adbust_type !== "none" || !!form.graffiti_medium} />
+            <label className="mb-3 flex flex-col gap-1">
+              <span className="font-mono text-[9px] uppercase tracking-[0.15em] text-dim">Adbust / Subvertising Type</span>
+              <select value={form.adbust_type} onChange={(e) => set("adbust_type", e.target.value)} className="border border-slate2 bg-void px-3 py-2 text-sm text-silver outline-none focus:border-ozone">
+                {ADBUST_TYPES.map((a) => <option key={a.value} value={a.value}>{a.label}</option>)}
+              </select>
+            </label>
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
               <label className="flex flex-col gap-1">
-                <span className="font-mono text-[9px] uppercase tracking-[0.15em] text-dim">Medium</span>
+                <span className="font-mono text-[9px] uppercase tracking-[0.15em] text-dim">Graffiti Medium</span>
                 <select value={form.graffiti_medium} onChange={(e) => set("graffiti_medium", e.target.value)} className="border border-slate2 bg-void px-3 py-2 text-sm text-silver outline-none focus:border-ozone">
                   <option value="">— None —</option>
                   <option value="spray_paint">Spray Paint</option>
@@ -304,7 +334,7 @@ export default function LocationEditPanel({ loc, onUpdated }) {
                 </select>
               </label>
               <label className="flex flex-col gap-1">
-                <span className="font-mono text-[9px] uppercase tracking-[0.15em] text-dim">Style</span>
+                <span className="font-mono text-[9px] uppercase tracking-[0.15em] text-dim">Graffiti Style</span>
                 <select value={form.graffiti_style} onChange={(e) => set("graffiti_style", e.target.value)} className="border border-slate2 bg-void px-3 py-2 text-sm text-silver outline-none focus:border-ozone">
                   <option value="">— None —</option>
                   <option value="tag">Tag</option>
@@ -328,51 +358,33 @@ export default function LocationEditPanel({ loc, onUpdated }) {
             </div>
           </div>
 
-          {/* Community statement + notes */}
-          <div className="grid gap-3">
-            <label className="flex flex-col gap-1">
-              <span className="font-mono text-[9px] uppercase tracking-[0.15em] text-dim">Harm Statement</span>
-              <textarea
-                rows={2}
-                value={form.harm_statement}
-                onChange={(e) => set("harm_statement", e.target.value)}
-                className="border border-slate2 bg-void px-3 py-2 text-sm text-silver outline-none focus:border-ozone resize-y"
-                placeholder="What this ad is doing to this space / community"
-              />
+          <div>
+            <SectionHeader num="5" label="Moderation & Notes" complete={completeness.hasStatus} />
+            <label className="mb-3 flex flex-col gap-1">
+              <span className="font-mono text-[9px] uppercase tracking-[0.15em] text-dim">Moderation Status</span>
+              <select value={form.status} onChange={(e) => set("status", e.target.value)} className="border border-slate2 bg-void px-3 py-2 text-sm text-silver outline-none focus:border-ozone">
+                <option value="pending">Pending</option>
+                <option value="verified">Verified</option>
+                <option value="rejected">Rejected</option>
+              </select>
             </label>
             <label className="flex flex-col gap-1">
               <span className="font-mono text-[9px] uppercase tracking-[0.15em] text-dim">Field Notes</span>
-              <textarea
-                rows={2}
-                value={form.notes}
-                onChange={(e) => set("notes", e.target.value)}
-                className="border border-slate2 bg-void px-3 py-2 text-sm text-silver outline-none focus:border-ozone resize-y"
-                placeholder="Observations, access details, context"
-              />
+              <textarea rows={2} value={form.notes} onChange={(e) => set("notes", e.target.value)} className="border border-slate2 bg-void px-3 py-2 text-sm text-silver outline-none focus:border-ozone resize-y" placeholder="Observations, access details, context" />
             </label>
           </div>
 
-          {/* Error */}
           {error && (
             <div className="flex items-center gap-2 border border-flare/40 bg-flare/5 px-3 py-2 font-mono text-[10px] text-flare">
               <AlertTriangle className="h-3.5 w-3.5 shrink-0" /> {error}
             </div>
           )}
 
-          {/* Actions */}
           <div className="flex items-center justify-end gap-2 border-t border-slate2/40 pt-4">
-            <button
-              onClick={() => setOpen(false)}
-              disabled={saving}
-              className="flex items-center gap-1.5 border border-slate2 px-4 py-2 font-mono text-[9px] font-bold uppercase tracking-[0.2em] text-dim transition-colors hover:border-flare hover:text-flare disabled:opacity-40"
-            >
+            <button onClick={() => setOpen(false)} disabled={saving} className="flex items-center gap-1.5 border border-slate2 px-4 py-2 font-mono text-[9px] font-bold uppercase tracking-[0.2em] text-dim transition-colors hover:border-flare hover:text-flare disabled:opacity-40">
               <X className="h-3.5 w-3.5" /> Cancel
             </button>
-            <button
-              onClick={save}
-              disabled={saving}
-              className="flex items-center gap-1.5 border border-ozone bg-ozone px-4 py-2 font-mono text-[9px] font-bold uppercase tracking-[0.2em] text-void transition-colors hover:bg-flare hover:border-flare disabled:opacity-40"
-            >
+            <button onClick={save} disabled={saving} className="flex items-center gap-1.5 border border-ozone bg-ozone px-4 py-2 font-mono text-[9px] font-bold uppercase tracking-[0.2em] text-void transition-colors hover:bg-flare hover:border-flare disabled:opacity-40">
               {saving ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Save className="h-3.5 w-3.5" />} Save
             </button>
           </div>

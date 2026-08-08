@@ -1,0 +1,161 @@
+{
+  "name": "FieldCheck",
+  "type": "object",
+  "properties": {
+    "location_id": {
+      "type": "string",
+      "description": "Location record being re-checked"
+    },
+    "location_title": {
+      "type": "string",
+      "description": "Denormalized title of the parent location"
+    },
+    "location_type": {
+      "type": "string",
+      "enum": [
+        "billboard",
+        "painted",
+        "digital",
+        "projection",
+        "sticker",
+        "mural",
+        "transit",
+        "other"
+      ],
+      "default": "other"
+    },
+    "image_url": {
+      "type": "string",
+      "description": "Photo from this field check"
+    },
+    "lat": {
+      "type": "number"
+    },
+    "lng": {
+      "type": "number"
+    },
+    "address": {
+      "type": "string"
+    },
+    "condition": {
+      "type": "string",
+      "enum": [
+        "functional",
+        "neglected",
+        "damaged",
+        "abandoned",
+        "reclaimed",
+        "upgraded"
+      ],
+      "default": "functional",
+      "description": "Infrastructure condition observed during this check"
+    },
+    "access_key": {
+      "type": "string",
+      "enum": [
+        "none",
+        "4-way-utility",
+        "cemusapin",
+        "circle",
+        "circle-set",
+        "circle-wall",
+        "h60",
+        "jcd-superlock",
+        "large-square",
+        "small-square",
+        "t-handle",
+        "tx30",
+        "tri38",
+        "unknown"
+      ],
+      "default": "none",
+      "description": "Confirmed key type (transit/bus shelters only)"
+    },
+    "brand_name": {
+      "type": "string",
+      "description": "Brand being advertised at time of check"
+    },
+    "adbust_type": {
+      "type": "string",
+      "enum": [
+        "none",
+        "subverted",
+        "painted_over",
+        "stickered",
+        "projected",
+        "wheatpasted",
+        "removed",
+        "other"
+      ],
+      "default": "none",
+      "description": "Intervention state observed at time of check"
+    },
+    "notes": {
+      "type": "string",
+      "description": "Field observations from this check"
+    },
+    "checked_by": {
+      "type": "string",
+      "description": "Operative handle or name"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "verified",
+        "rejected"
+      ],
+      "default": "pending"
+    }
+  },
+  "required": [
+    "location_id",
+    "lat",
+    "lng"
+  ],
+  "rls": {
+    "create": null,
+    "read": {
+      "$or": [
+        {
+          "data.status": "verified"
+        },
+        {
+          "created_by_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "update": {
+      "$or": [
+        {
+          "created_by_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        },
+        {
+          "user_condition": {
+            "data.access": "moderator"
+          }
+        },
+        {
+          "user_condition": {
+            "data.agency": true
+          }
+        }
+      ]
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

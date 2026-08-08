@@ -1,15 +1,49 @@
+import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
-import { ArrowLeft, BusFront, Key, MapPin, HelpCircle, ExternalLink } from "lucide-react";
+import { base44 } from "@/api/base44Client";
+import { ArrowLeft, BusFront, Key, MapPin, HelpCircle, ExternalLink, Navigation, AlertTriangle, RefreshCw } from "lucide-react";
 import Nav from "@/components/ooh/Nav";
 import Breadcrumbs from "@/components/ooh/Breadcrumbs";
 import MobileHeader from "@/components/ooh/MobileHeader";
 import { getBusStop, LONDON_SHELTER_GUESS, BUS_STOP_LEGEND } from "@/components/ooh/busStops";
 import { ACCESS_KEYS } from "@/components/ooh/accessKeys";
 import KeyGlyph from "@/components/ooh/KeyGlyph";
+import FieldCheckPanel from "@/components/ooh/FieldCheckPanel";
+import FieldCheckCamera from "@/components/ooh/FieldCheckCamera";
+import LocationEditPanel from "@/components/ooh/LocationEditPanel";
+
+// Haversine distance in meters
+function distM(a, b) {
+  const R = 6371000;
+  const dLat = ((b.lat - a.lat) * Math.PI) / 180;
+  const dLng = ((b.lng - a.lng) * Math.PI) / 180;
+  const s = Math.sin(dLat / 2) ** 2 + Math.cos((a.lat * Math.PI) / 180) * Math.cos((b.lat * Math.PI) / 180) * Math.sin(dLng / 2) ** 2;
+  return R * 2 * Math.atan2(Math.sqrt(s), Math.sqrt(1 - s));
+}
 
 export default function BusStopDetail() {
   const { id } = useParams();
   const stop = getBusStop(id);
+  const [linkedLoc, setLinkedLoc] = useState(null);
+  const [searching, setSearching] = useState(true);
+  const [cameraOpen, setCameraOpen] = useState(false);
+
+  useEffect(() => {
+    if (!stop) return;
+    let active = true;
+    (async () => {
+      setSearching(true);
+      try {
+        // Look for a Location record within ~50m of this bus stop
+        const all = await base44.entities.Location.filter({ status: "verified" }, "-created_date", 500);
+        if (!active) return;
+        const match = (all || []).find((r) => r.lat != null && distM(stop, r) < 50);
+        setLinkedLoc(match || null);
+      } catch { if (active) setLinkedLoc(null); }
+      finally { if (active) setSearching(false); }
+    })();
+    return () => { active = false; };
+  }, [stop]);
 
   if (!stop) {
     return (
@@ -28,6 +62,20 @@ export default function BusStopDetail() {
 
   const facingColor = stop.facing === "road" ? "#FF5252" : "#880E4F";
   const mapSrc = `https://www.openstreetmap.org/export/embed.html?bbox=${stop.lng - 0.003}%2C${stop.lat - 0.003}%2C${stop.lng + 0.003}%2C${stop.lat + 0.003}&layer=mapnik&marker=${stop.lat}%2C${stop.lng}`;
+  const directionsUrl = `https://www.google.com/maps/dir/?api=1&destination=${stop.lat},${stop.lng}`;
+
+  // If we have a linked Location record, use its data for field checks
+  const checkLocation = linkedLoc || {
+    id: `busstop-${stop.id}`,
+    title: stop.name,
+    type: "transit",
+    lat: stop.lat,
+    lng: stop.lng,
+    address: stop.name,
+    condition: "functional",
+    access_key: "unknown",
+    status: "pending",
+  };
 
   return (
     <div className="min-h-screen bg-void text-silver">
@@ -58,8 +106,11 @@ export default function BusStopDetail() {
           <MapPin className="h-3.5 w-3.5 text-ozone" /> London, United Kingdom
         </div>
 
+        <a href={directionsUrl} target="_blank" rel="noreferrer" className="mt-3 inline-flex items-center gap-1.5 border border-ozone/40 px-3 py-1.5 font-mono text-[9px] font-bold uppercase tracking-[0.2em] text-ozone transition-colors hover:bg-ozone hover:text-void">
+          <Navigation className="h-3 w-3" /> Get directions
+        </a>
+
         <div className="mt-8 grid gap-6 md:grid-cols-2">
-          {/* Map */}
           <iframe
             title="Bus stop map"
             src={mapSrc}
@@ -67,7 +118,6 @@ export default function BusStopDetail() {
             loading="lazy"
           />
 
-          {/* Key panel */}
           <div className="flex flex-col gap-4">
             <div className="border border-flare/40 p-4">
               <div className="flex items-center justify-between gap-2">
@@ -104,30 +154,49 @@ export default function BusStopDetail() {
               </div>
             </div>
 
-            {/* Unit meta */}
             <div className="flex flex-col gap-2 border border-slate2/60 p-4 font-mono text-[10px] text-darkgray">
               <div className="flex justify-between"><span className="uppercase tracking-[0.2em] text-dim/60">unit type</span><span className="text-silver">Bus shelter / Transit</span></div>
               <div className="flex justify-between"><span className="uppercase tracking-[0.2em] text-dim/60">facing</span><span className="text-silver capitalize">{stop.facing}</span></div>
               {stop.shape && <div className="flex justify-between"><span className="uppercase tracking-[0.2em] text-dim/60">shape</span><span className="text-silver capitalize">{stop.shape}</span></div>}
               <div className="flex justify-between"><span className="uppercase tracking-[0.2em] text-dim/60">coords</span><span className="tabular text-silver">{stop.lat.toFixed(5)}, {stop.lng.toFixed(5)}</span></div>
-              <a
-                href={`https://www.google.com/maps/dir/?api=1&destination=${stop.lat},${stop.lng}`}
-                target="_blank"
-                rel="noreferrer"
-                className="mt-1 inline-flex items-center gap-1 text-ozone hover:text-flare"
-              >
+              {linkedLoc && (
+                <div className="flex justify-between"><span className="uppercase tracking-[0.2em] text-dim/60">linked record</span><Link to={`/location/${linkedLoc.id}`} className="text-ozone hover:text-flare">View location →</Link></div>
+              )}
+              <a href={directionsUrl} target="_blank" rel="noreferrer" className="mt-1 inline-flex items-center gap-1 text-ozone hover:text-flare">
                 Directions <ExternalLink className="h-3 w-3" />
               </a>
             </div>
 
-            <Link
-              to="/report"
+            <button
+              onClick={() => setCameraOpen(true)}
               className="inline-flex items-center justify-center gap-2 border border-ozone bg-ozone px-4 py-2.5 font-mono text-[10px] font-bold uppercase tracking-[0.25em] text-void transition-colors hover:bg-flare hover:border-flare"
             >
-              <Key className="h-3.5 w-3.5" /> Log a field check
-            </Link>
+              <RefreshCw className="h-3.5 w-3.5" /> Log a field check
+            </button>
           </div>
         </div>
+
+        {/* Field check timeline */}
+        <FieldCheckPanel location={checkLocation} />
+
+        {/* If linked to a Location record, show edit panel */}
+        {linkedLoc && (
+          <LocationEditPanel loc={linkedLoc} onUpdated={setLinkedLoc} />
+        )}
+
+        {/* If no linked record, show CTA */}
+        {!searching && !linkedLoc && (
+          <div className="mt-8 flex items-center gap-3 border border-slate2/40 bg-card px-4 py-4">
+            <AlertTriangle className="h-4 w-4 shrink-0 text-dim" />
+            <div>
+              <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-dim">// No linked location record</span>
+              <p className="mt-1 text-[12px] leading-relaxed text-darkgray">This bus stop hasn't been logged as a Location record yet. Report it to create one with verified coordinates.</p>
+            </div>
+            <Link to="/report" className="ml-auto shrink-0 border border-ozone bg-ozone px-4 py-2 font-mono text-[9px] font-bold uppercase tracking-[0.2em] text-void transition-colors hover:bg-flare hover:border-flare">
+              Report
+            </Link>
+          </div>
+        )}
 
         {/* Key registry */}
         <div className="mt-12">
@@ -157,6 +226,8 @@ export default function BusStopDetail() {
           <p className="mt-4 font-mono text-[10px] leading-relaxed text-dim">// source map legend: {BUS_STOP_LEGEND.map((l) => `${l.label} = ${l.note}`).join(" · ")}</p>
         </div>
       </main>
+
+      <FieldCheckCamera location={checkLocation} open={cameraOpen} onClose={() => setCameraOpen(false)} />
     </div>
   );
 }

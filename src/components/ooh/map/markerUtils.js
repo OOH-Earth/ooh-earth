@@ -22,4 +22,12 @@ export const toMarker = (r) => ({
   graffiti_coverage_pct: r.graffiti_coverage_pct || null,
   adbust_type: r.adbust_type || null,
   brand_name: r.brand_name || null,
+  industry_sector: r.industry_sector || null,
+  harm_tags: r.harm_tags || null,
+  condition: r.condition || null,
+  campaign_name: r.campaign_name || null,
+  ad_agency: r.ad_agency || null,
+  parent_corp: r.parent_corp || null,
+  ooh_operator: r.ooh_operator || null,
+  adbust_image_url: r.adbust_image_url || null,
 });

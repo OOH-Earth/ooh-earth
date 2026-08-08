@@ -18,7 +18,10 @@ export function useOfflineSync() {
     let changed = false;
     for (const item of items) {
       try {
-        await base44.entities.Location.create(item.payload);
+        const entity = item.entityType === "FieldCheck"
+          ? base44.entities.FieldCheck
+          : base44.entities.Location;
+        await entity.create(item.payload);
         await removeCapture(item.id);
         changed = true;
       } catch (err) {

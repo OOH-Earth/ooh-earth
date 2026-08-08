@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
-import { ArrowLeft, MapPin, Key, BusFront, ExternalLink, BadgeCheck, Lock, Megaphone } from "lucide-react";
+import { ArrowLeft, MapPin, Key, BusFront, ExternalLink, BadgeCheck, Lock, Megaphone, AlertTriangle, Navigation } from "lucide-react";
 import { metaFor } from "@/components/ooh/map/LocationThumb";
 import { keyInfo, isKeyedType, ACCESS_KEYS } from "@/components/ooh/accessKeys";
 import seed from "@/components/ooh/mapSeed";
@@ -12,6 +12,8 @@ import { Image } from "@/components/ui/image";
 import MintLocationPanel from "@/components/ooh/mint/MintLocationPanel";
 import LocationEditPanel from "@/components/ooh/LocationEditPanel";
 import SubvertisingPanel from "@/components/ooh/SubvertisingPanel";
+import FieldCheckPanel from "@/components/ooh/FieldCheckPanel";
+import RelatedLocations from "@/components/ooh/RelatedLocations";
 import { useSeo } from "@/lib/seoContext";
 
 function normalizeSeed(rec) {
@@ -44,9 +46,6 @@ export default function LocationDetail() {
         rec = await base44.entities.Location.get(id);
       } catch {}
       if (!rec) {
-        // Legacy ooh.earth / WordPress ids (e.g. "1777896004") and slugs aren't Base44
-        // record ids. The real record stores that id inside its source_link — resolve it
-        // there so the real field photo shows instead of the seed placeholder.
         try {
           const matches = await base44.entities.Location.filter(
             { source_link: `https://ooh.earth/location/${id}/` },
@@ -118,8 +117,13 @@ export default function LocationDetail() {
   const k = keyInfo(loc.access_key || (keyed ? "unknown" : "none"));
   const hasAdData = !!(loc.brand_name || loc.ad_agency || loc.parent_corp || loc.campaign_name || loc.ooh_operator || loc.industry_sector || (loc.adbust_type && loc.adbust_type !== "none"));
   const showSubvertising = ["billboard", "digital", "projection", "transit"].includes(loc.type) || hasAdData;
+  const isPending = loc.status === "pending";
+  const isUnclassified = isPending && !loc.brand_name && !loc.industry_sector;
   const mapSrc = loc.lat != null && loc.lng != null
     ? `https://www.openstreetmap.org/export/embed.html?bbox=${loc.lng - 0.004}%2C${loc.lat - 0.004}%2C${loc.lng + 0.004}%2C${loc.lat + 0.004}&layer=mapnik&marker=${loc.lat}%2C${loc.lng}`
+    : null;
+  const directionsUrl = loc.lat != null && loc.lng != null
+    ? `https://www.google.com/maps/dir/?api=1&destination=${loc.lat},${loc.lng}`
     : null;
 
   return (
@@ -132,15 +136,28 @@ export default function LocationDetail() {
           <ArrowLeft className="h-3.5 w-3.5" /> Atlas
         </Link>
 
+        {/* Unclassified banner */}
+        {isUnclassified && (
+          <div className="mb-4 flex items-center gap-2 border border-flare/40 bg-flare/5 px-4 py-3">
+            <AlertTriangle className="h-4 w-4 shrink-0 text-flare" />
+            <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-flare">Unclassified field report — awaiting moderator classification</span>
+          </div>
+        )}
+
         {/* Header */}
         <div className="flex flex-wrap items-center gap-2">
           <span className="flex items-center gap-1.5 border border-slate2 px-2.5 py-1 font-mono text-[9px] uppercase tracking-[0.25em]" style={{ color: meta.accent }}>
             <Icon className="h-3.5 w-3.5" /> {meta.label}
           </span>
-          <span className="flex items-center gap-1.5 border border-slate2 px-2.5 py-1 font-mono text-[9px] uppercase tracking-[0.25em] text-darkgray">
+          <span className={`flex items-center gap-1.5 border px-2.5 py-1 font-mono text-[9px] uppercase tracking-[0.25em] ${isPending ? "border-flare/50 text-flare" : "border-slate2 text-darkgray"}`}>
             {loc.status === "verified" ? <BadgeCheck className="h-3.5 w-3.5 text-ozone" /> : null}
             {loc.status || "pending"}
           </span>
+          {loc.industry_sector && (
+            <span className="border border-slate2 px-2.5 py-1 font-mono text-[9px] uppercase tracking-[0.25em] text-darkgray">
+              {loc.industry_sector.replace(/_/g, " ")}
+            </span>
+          )}
           <span className="font-mono text-[9px] uppercase tracking-[0.25em] text-dim/60">id · {loc.id}</span>
         </div>
 
@@ -150,6 +167,12 @@ export default function LocationDetail() {
           <div className="mt-2 flex items-center gap-1.5 font-mono text-[11px] text-darkgray">
             <MapPin className="h-3.5 w-3.5 text-ozone" /> {loc.address}
           </div>
+        )}
+
+        {directionsUrl && (
+          <a href={directionsUrl} target="_blank" rel="noreferrer" className="mt-3 inline-flex items-center gap-1.5 border border-ozone/40 px-3 py-1.5 font-mono text-[9px] font-bold uppercase tracking-[0.2em] text-ozone transition-colors hover:bg-ozone hover:text-void">
+            <Navigation className="h-3 w-3" /> Get directions
+          </a>
         )}
 
         <div className="mt-8 grid gap-6 md:grid-cols-2">
@@ -174,7 +197,7 @@ export default function LocationDetail() {
             )}
           </div>
 
-          {/* Access key panel */}
+          {/* Access key + meta panel */}
           <div className="flex flex-col gap-4">
             <div className={`border p-4 ${keyed ? "border-ozone/50" : "border-slate2"}`}>
               <div className="flex items-center justify-between gap-2">
@@ -207,6 +230,9 @@ export default function LocationDetail() {
               )}
               <div className="flex justify-between"><span className="uppercase tracking-[0.2em] text-dim/60">type</span><span className="text-silver">{meta.label}</span></div>
               <div className="flex justify-between"><span className="uppercase tracking-[0.2em] text-dim/60">key slug</span><span className="text-silver">{loc.access_key || "none"}</span></div>
+              {loc.condition && (
+                <div className="flex justify-between"><span className="uppercase tracking-[0.2em] text-dim/60">condition</span><span className="text-silver capitalize">{loc.condition}</span></div>
+              )}
               {loc.source_link && /^https?:\/\//i.test(loc.source_link) && (
                 <a href={loc.source_link} target="_blank" rel="noreferrer" className="mt-1 inline-flex items-center gap-1 text-ozone transition-colors hover:text-flare">
                   oohearth.app record <ExternalLink className="h-3 w-3" />
@@ -220,26 +246,25 @@ export default function LocationDetail() {
                 <p className="mt-1 text-[12px] leading-relaxed text-silver/85">{loc.notes}</p>
               </div>
             )}
-
-            <Link
-              to="/report"
-              className="inline-flex items-center justify-center gap-2 border border-ozone bg-ozone px-4 py-2.5 font-mono text-[10px] font-bold uppercase tracking-[0.25em] text-void transition-colors hover:bg-flare hover:border-flare"
-            >
-              <Key className="h-3.5 w-3.5" /> Log a field check
-            </Link>
           </div>
         </div>
+
+        {/* Field check timeline — the connective tissue between visits */}
+        <FieldCheckPanel location={loc} />
 
         {/* Subvertising / advertiser panel */}
         {showSubvertising && <SubvertisingPanel loc={loc} />}
 
-        {/* Expert edit & tag panel */}
+        {/* Related locations — connect the dots */}
+        <RelatedLocations location={loc} />
+
+        {/* Expert edit & classify panel */}
         <LocationEditPanel loc={loc} onUpdated={setLoc} />
 
         {/* On-chain mint */}
         <MintLocationPanel loc={loc} />
 
-        {/* Full key reference — only for keyed unit types (bus stops / transit shelters) */}
+        {/* Full key reference — only for keyed unit types */}
         {keyed && (
         <div className="mt-12">
           <div className="mb-3 flex items-center gap-2">

@@ -26,11 +26,11 @@ function notify() {
   window.dispatchEvent(new CustomEvent("ooh-queue-changed"));
 }
 
-export async function enqueueCapture(payload) {
+export async function enqueueCapture(payload, entityType = "Location") {
   const db = await openDB();
   await new Promise((resolve, reject) => {
     const tx = db.transaction(STORE, "readwrite");
-    const req = tx.objectStore(STORE).add({ payload, created: Date.now(), retries: 0 });
+    const req = tx.objectStore(STORE).add({ payload, entityType, created: Date.now(), retries: 0 });
     req.onsuccess = () => resolve();
     req.onerror = () => reject(req.error);
   });
@@ -81,16 +81,30 @@ export async function incrementRetries(id) {
 
 export async function submitCapture(payload) {
   if (!navigator.onLine) {
-    await enqueueCapture(payload);
+    await enqueueCapture(payload, "Location");
     return { status: "queued" };
   }
   try {
     const rec = await base44.entities.Location.create(payload);
     return { status: "synced", rec };
   } catch (err) {
-    // Network/server failure — queue for retry
     console.warn("Capture failed, queuing:", err?.message);
-    await enqueueCapture(payload);
+    await enqueueCapture(payload, "Location");
+    return { status: "queued" };
+  }
+}
+
+export async function submitFieldCheck(payload) {
+  if (!navigator.onLine) {
+    await enqueueCapture(payload, "FieldCheck");
+    return { status: "queued" };
+  }
+  try {
+    const rec = await base44.entities.FieldCheck.create(payload);
+    return { status: "synced", rec };
+  } catch (err) {
+    console.warn("Field check failed, queuing:", err?.message);
+    await enqueueCapture(payload, "FieldCheck");
     return { status: "queued" };
   }
 }
