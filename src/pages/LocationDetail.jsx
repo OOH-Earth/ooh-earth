@@ -141,77 +141,112 @@ export default function LocationDetail() {
       <MobileHeader to="/map" label="Atlas" />
       <div className="mx-auto max-w-5xl px-5 pt-4"><Breadcrumbs items={[{ label: "Atlas", to: "/map" }, { label: "Location" }]} /></div>
       <main className="page-top mx-auto max-w-5xl px-5 pb-24">
-        <Link to="/map" className="mb-6 hidden items-center gap-2 font-mono text-[10px] uppercase tracking-[0.25em] text-dim transition-colors hover:text-ozone lg:inline-flex">
+        <Link to="/map" className="mb-4 hidden items-center gap-2 font-mono text-[10px] uppercase tracking-[0.25em] text-dim transition-colors hover:text-ozone lg:inline-flex">
           <ArrowLeft className="h-3.5 w-3.5" /> Atlas
         </Link>
 
-        {/* Unclassified banner */}
+        {/* ── Unclassified banner ── */}
         {isUnclassified && (
-          <div className="mb-4 flex items-center gap-2 border border-flare/40 bg-flare/5 px-4 py-3">
+          <div className="mb-6 flex items-center gap-2 border border-flare/40 bg-flare/5 px-4 py-3">
             <AlertTriangle className="h-4 w-4 shrink-0 text-flare" />
             <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-flare">Unclassified field report — awaiting moderator classification</span>
           </div>
         )}
 
-        {/* Header */}
-        <div className="flex flex-wrap items-center gap-2">
-          <span className="flex items-center gap-1.5 border border-slate2 px-2.5 py-1 font-mono text-[9px] uppercase tracking-[0.25em]" style={{ color: meta.accent }}>
-            <Icon className="h-3.5 w-3.5" /> {meta.label}
-          </span>
-          <span className="flex items-center gap-1.5 border px-2.5 py-1 font-mono text-[9px] font-bold uppercase tracking-[0.25em]" style={{ color: category.accent, borderColor: category.accent }}>
-            {category.label}
-          </span>
-          <span className={`flex items-center gap-1.5 border px-2.5 py-1 font-mono text-[9px] uppercase tracking-[0.25em] ${isPending ? "border-flare/50 text-flare" : "border-slate2 text-darkgray"}`}>
-            {loc.status === "verified" ? <BadgeCheck className="h-3.5 w-3.5 text-ozone" /> : null}
-            {loc.status || "pending"}
-          </span>
-          {loc.industry_sector && (
-            <span className="border border-slate2 px-2.5 py-1 font-mono text-[9px] uppercase tracking-[0.25em] text-darkgray">
-              {loc.industry_sector.replace(/_/g, " ")}
+        {/* ── Header zone ── */}
+        <header className="mb-6">
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="flex items-center gap-1.5 border border-slate2 px-2.5 py-1 font-mono text-[9px] uppercase tracking-[0.25em]" style={{ color: meta.accent }}>
+              <Icon className="h-3.5 w-3.5" /> {meta.label}
             </span>
-          )}
-          <span className="font-mono text-[9px] uppercase tracking-[0.25em] text-dim/60">id · {loc.id}</span>
-        </div>
-
-        <h1 className="mt-3 font-display text-3xl font-bold tracking-[-0.02em] text-silver md:text-4xl">{loc.title}</h1>
-
-        {loc.address && (
-          <div className="mt-2 flex items-center gap-1.5 font-mono text-[11px] text-darkgray">
-            <MapPin className="h-3.5 w-3.5 text-ozone" /> {loc.address}
-          </div>
-        )}
-
-        {directionsUrl && (
-          <a href={directionsUrl} target="_blank" rel="noreferrer" className="mt-3 inline-flex items-center gap-1.5 border border-ozone/40 px-3 py-1.5 font-mono text-[9px] font-bold uppercase tracking-[0.2em] text-ozone transition-colors hover:bg-ozone hover:text-void">
-            <Navigation className="h-3 w-3" /> Get directions
-          </a>
-        )}
-
-        <div className="mt-8 grid gap-6 md:grid-cols-2">
-          {/* Media */}
-          <div className="flex flex-col gap-4">
-            {loc.image_url ? (
-              <div className="relative aspect-[4/3] overflow-hidden border border-slate2">
-                <Image src={loc.image_url} alt={loc.title} className="h-full w-full object-cover" fittingType="fill" />
-              </div>
-            ) : (
-              <div className="flex aspect-[4/3] items-center justify-center border border-slate2 grid-bg">
-                <Icon className="h-10 w-10" style={{ color: meta.accent }} strokeWidth={1.2} />
-              </div>
+            <span className="flex items-center gap-1.5 border px-2.5 py-1 font-mono text-[9px] font-bold uppercase tracking-[0.25em]" style={{ color: category.accent, borderColor: category.accent }}>
+              {category.label}
+            </span>
+            <span className={`flex items-center gap-1.5 border px-2.5 py-1 font-mono text-[9px] uppercase tracking-[0.25em] ${isPending ? "border-flare/50 text-flare" : "border-slate2 text-darkgray"}`}>
+              {loc.status === "verified" ? <BadgeCheck className="h-3.5 w-3.5 text-ozone" /> : null}
+              {loc.status || "pending"}
+            </span>
+            {loc.industry_sector && (
+              <span className="border border-slate2 px-2.5 py-1 font-mono text-[9px] uppercase tracking-[0.25em] text-darkgray">
+                {loc.industry_sector.replace(/_/g, " ")}
+              </span>
             )}
-            {mapSrc && (
+            <span className="font-mono text-[9px] uppercase tracking-[0.25em] text-dim/60">id · {loc.id}</span>
+          </div>
+
+          <h1 className="mt-3 font-display text-3xl font-bold tracking-[-0.02em] text-silver md:text-4xl">{loc.title}</h1>
+
+          {(loc.address || directionsUrl) && (
+            <div className="mt-2 flex flex-wrap items-center gap-3">
+              {loc.address && (
+                <div className="flex items-center gap-1.5 font-mono text-[11px] text-darkgray">
+                  <MapPin className="h-3.5 w-3.5 text-ozone" /> {loc.address}
+                </div>
+              )}
+              {directionsUrl && (
+                <a href={directionsUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1.5 border border-ozone/40 px-3 py-1 font-mono text-[9px] font-bold uppercase tracking-[0.2em] text-ozone transition-colors hover:bg-ozone hover:text-void">
+                  <Navigation className="h-3 w-3" /> Directions
+                </a>
+              )}
+            </div>
+          )}
+        </header>
+
+        {/* ── Hero media ── */}
+        <section className="mb-6">
+          {loc.image_url ? (
+            <div className="relative aspect-[16/10] overflow-hidden border border-slate2">
+              <Image src={loc.image_url} alt={loc.title} className="h-full w-full object-cover" fittingType="fill" />
+            </div>
+          ) : (
+            <div className="flex aspect-[16/10] items-center justify-center border border-slate2 grid-bg">
+              <Icon className="h-12 w-12" style={{ color: meta.accent }} strokeWidth={1.2} />
+            </div>
+          )}
+        </section>
+
+        {/* ── Metadata strip + field map ── */}
+        <section className="mb-8 grid gap-4 lg:grid-cols-[1fr_1fr]">
+          {/* Metadata */}
+          <div className="flex flex-col gap-px border border-slate2/60">
+            <div className="border-b border-slate2/40 bg-card/50 px-4 py-2">
+              <span className="font-mono text-[8px] uppercase tracking-[0.25em] text-dim/60">// record</span>
+            </div>
+            <div className="flex flex-col gap-2 px-4 py-3 font-mono text-[10px] text-darkgray">
+              {loc.lat != null && (
+                <div className="flex justify-between"><span className="uppercase tracking-[0.2em] text-dim/60">coords</span><span className="tabular text-silver">{loc.lat?.toFixed(5)}, {loc.lng?.toFixed(5)}</span></div>
+              )}
+              <div className="flex justify-between"><span className="uppercase tracking-[0.2em] text-dim/60">type</span><span className="text-silver">{meta.label}</span></div>
+              {keyed && (
+                <div className="flex justify-between"><span className="uppercase tracking-[0.2em] text-dim/60">key slug</span><span className="text-silver">{loc.access_key || "none"}</span></div>
+              )}
+              {loc.condition && (
+                <div className="flex justify-between"><span className="uppercase tracking-[0.2em] text-dim/60">condition</span><span className="text-silver capitalize">{loc.condition}</span></div>
+              )}
+              {loc.source_link && /^https?:\/\//i.test(loc.source_link) && (
+                <a href={loc.source_link} target="_blank" rel="noreferrer" className="mt-1 inline-flex items-center gap-1 text-ozone transition-colors hover:text-flare">
+                  oohearth.app record <ExternalLink className="h-3 w-3" />
+                </a>
+              )}
+            </div>
+          </div>
+
+          {/* Field map */}
+          {mapSrc && (
+            <div className="overflow-hidden border border-slate2">
               <iframe
                 title="Field map"
                 src={mapSrc}
-                className="aspect-[4/3] w-full border border-slate2 grayscale-[0.3]"
+                className="h-full min-h-[200px] w-full grayscale-[0.3]"
                 loading="lazy"
               />
-            )}
-          </div>
+            </div>
+          )}
+        </section>
 
-          {/* Access key + meta panel */}
-          <div className="flex flex-col gap-4">
-            {keyed && (
+        {/* ── Access key (keyed types only) ── */}
+        {keyed && (
+          <section className="mb-8">
             <div className="border border-ozone/50 p-4">
               <div className="flex items-center justify-between gap-2">
                 <span className="flex items-center gap-1.5 font-mono text-[9px] uppercase tracking-[0.3em] text-ozone">
@@ -229,42 +264,20 @@ export default function LocationDetail() {
                 // keyed housing — standard open-access tooling. Log the confirmed key type after a field check.
               </p>
             </div>
-            )}
+          </section>
+        )}
 
-            {/* Source + meta */}
-            <div className="flex flex-col gap-2 border border-slate2/60 p-4 font-mono text-[10px] text-darkgray">
-              {loc.lat != null && (
-                <div className="flex justify-between"><span className="uppercase tracking-[0.2em] text-dim/60">coords</span><span className="tabular text-silver">{loc.lat?.toFixed(5)}, {loc.lng?.toFixed(5)}</span></div>
-              )}
-              <div className="flex justify-between"><span className="uppercase tracking-[0.2em] text-dim/60">type</span><span className="text-silver">{meta.label}</span></div>
-              {keyed && (
-                <div className="flex justify-between"><span className="uppercase tracking-[0.2em] text-dim/60">key slug</span><span className="text-silver">{loc.access_key || "none"}</span></div>
-              )}
-              {loc.condition && (
-                <div className="flex justify-between"><span className="uppercase tracking-[0.2em] text-dim/60">condition</span><span className="text-silver capitalize">{loc.condition}</span></div>
-              )}
-              {loc.source_link && /^https?:\/\//i.test(loc.source_link) && (
-                <a href={loc.source_link} target="_blank" rel="noreferrer" className="mt-1 inline-flex items-center gap-1 text-ozone transition-colors hover:text-flare">
-                  oohearth.app record <ExternalLink className="h-3 w-3" />
-                </a>
-              )}
-            </div>
+        {/* ── Field notes ── */}
+        {loc.notes && (
+          <section className="mb-8 border border-slate2/60 p-4">
+            <span className="font-mono text-[9px] uppercase tracking-[0.3em] text-dim/60">// field notes</span>
+            <p className="mt-1 text-[12px] leading-relaxed text-silver/85">{loc.notes}</p>
+          </section>
+        )}
 
-            {loc.notes && (
-              <div className="border border-slate2/60 p-4">
-                <span className="font-mono text-[9px] uppercase tracking-[0.3em] text-dim/60">// field notes</span>
-                <p className="mt-1 text-[12px] leading-relaxed text-silver/85">{loc.notes}</p>
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Field check timeline — the connective tissue between visits */}
-        <FieldCheckPanel location={loc} />
-
-        {/* Graffiti / street art details — visible when classified */}
+        {/* ── Intelligence: graffiti + subvertising ── */}
         {loc.graffiti_medium && (
-          <div className="mt-8 border border-flare/40 bg-flare/5 p-4">
+          <section className="mb-8 border border-flare/40 bg-flare/5 p-4">
             <div className="mb-3 flex items-center gap-2">
               <SprayCan className="h-4 w-4 text-flare" />
               <span className="font-mono text-[9px] uppercase tracking-[0.3em] text-flare">Graffiti / Street Art</span>
@@ -294,46 +307,52 @@ export default function LocationDetail() {
                 </div>
               )}
             </div>
-          </div>
+          </section>
         )}
 
-        {/* Subvertising / advertiser panel */}
-        {showSubvertising && <SubvertisingPanel loc={loc} />}
+        {showSubvertising && <section className="mb-8"><SubvertisingPanel loc={loc} /></section>}
 
-        {/* Related locations — connect the dots */}
-        <RelatedLocations location={loc} />
+        {/* ── Field activity ── */}
+        <section className="mb-8">
+          <FieldCheckPanel location={loc} />
+        </section>
 
-        {/* Expert edit & classify panel */}
-        <LocationEditPanel loc={loc} onUpdated={setLoc} />
+        {/* ── Network ── */}
+        <section className="mb-8">
+          <RelatedLocations location={loc} />
+        </section>
 
-        {/* On-chain mint */}
-        <MintLocationPanel loc={loc} />
+        {/* ── Admin zone ── */}
+        <section className="mb-8 space-y-px">
+          <LocationEditPanel loc={loc} onUpdated={setLoc} />
+          <MintLocationPanel loc={loc} />
+        </section>
 
-        {/* Full key reference — only for keyed unit types */}
+        {/* ── Key reference registry (keyed types only) ── */}
         {keyed && (
-        <div className="mt-12">
-          <div className="mb-3 flex items-center gap-2">
-            <Key className="h-3.5 w-3.5 text-ozone" />
-            <Link to="/access-keys" className="font-mono text-[9px] uppercase tracking-[0.3em] text-ozone transition-colors hover:text-flare">// open-access key registry ↗</Link>
-            <span className="h-px flex-1 bg-slate2/40" />
-          </div>
-          <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
-            {Object.entries(ACCESS_KEYS).filter(([slug]) => slug !== "none" && slug !== "unknown").map(([slug, info]) => (
-              <div key={slug} className={`border p-3 ${slug === loc.access_key ? "border-ozone bg-ozone/5" : "border-slate2/60"}`}>
-                <div className="flex items-center justify-between">
-                  <span className="font-display text-[13px] font-semibold text-silver">{info.label}</span>
-                  <span className="font-mono text-[8px] uppercase tracking-[0.2em] text-dim/60">{slug}</span>
+          <section className="mt-8">
+            <div className="mb-3 flex items-center gap-2">
+              <Key className="h-3.5 w-3.5 text-ozone" />
+              <Link to="/access-keys" className="font-mono text-[9px] uppercase tracking-[0.3em] text-ozone transition-colors hover:text-flare">// open-access key registry ↗</Link>
+              <span className="h-px flex-1 bg-slate2/40" />
+            </div>
+            <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+              {Object.entries(ACCESS_KEYS).filter(([slug]) => slug !== "none" && slug !== "unknown").map(([slug, info]) => (
+                <div key={slug} className={`border p-3 ${slug === loc.access_key ? "border-ozone bg-ozone/5" : "border-slate2/60"}`}>
+                  <div className="flex items-center justify-between">
+                    <span className="font-display text-[13px] font-semibold text-silver">{info.label}</span>
+                    <span className="font-mono text-[8px] uppercase tracking-[0.2em] text-dim/60">{slug}</span>
+                  </div>
+                  <p className="mt-1 text-[10px] leading-relaxed text-darkgray">{info.blurb}</p>
                 </div>
-                <p className="mt-1 text-[10px] leading-relaxed text-darkgray">{info.blurb}</p>
-              </div>
-            ))}
-          </div>
-          <div className="mt-3">
-            <a href="https://www.publicadcampaign.com/PublicAccess/participate.html" target="_blank" rel="noreferrer" className="inline-flex items-center gap-1.5 font-mono text-[9px] uppercase tracking-[0.2em] text-dim transition-colors hover:text-ozone">
-              <ExternalLink className="h-3 w-3" /> Public Access Campaign — key participation guide
-            </a>
-          </div>
-        </div>
+              ))}
+            </div>
+            <div className="mt-3">
+              <a href="https://www.publicadcampaign.com/PublicAccess/participate.html" target="_blank" rel="noreferrer" className="inline-flex items-center gap-1.5 font-mono text-[9px] uppercase tracking-[0.2em] text-dim transition-colors hover:text-ozone">
+                <ExternalLink className="h-3 w-3" /> Public Access Campaign — key participation guide
+              </a>
+            </div>
+          </section>
         )}
       </main>
     </div>
