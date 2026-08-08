@@ -16,4 +16,10 @@ export const toMarker = (r) => ({
   image: r.image_url || null,
   link: r.source_link || "",
   status: r.status || "pending",
+  graffiti_medium: r.graffiti_medium || null,
+  graffiti_style: r.graffiti_style || null,
+  graffiti_surface_m2: r.graffiti_surface_m2 || null,
+  graffiti_coverage_pct: r.graffiti_coverage_pct || null,
+  adbust_type: r.adbust_type || null,
+  brand_name: r.brand_name || null,
 });

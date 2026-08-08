@@ -87,6 +87,7 @@ import Categories from '@/pages/Categories';
 import CategoryDirectory from '@/pages/CategoryDirectory';
 import Regions from '@/pages/Regions';
 import AdbustingPortal from '@/pages/portals/AdbustingPortal';
+import GraffitiPortal from '@/pages/portals/GraffitiPortal';
 import EcologyPortal from '@/pages/portals/EcologyPortal';
 import RiversPortal from '@/pages/portals/RiversPortal';
 import WarZonesPortal from '@/pages/portals/WarZonesPortal';
@@ -149,6 +150,7 @@ const AuthenticatedApp = () => {
     <Route path="/" element={<Home />} />
     <Route path="/map" element={<Map />} />
     <Route path="/adbusting" element={<AdbustingPortal />} />
+    <Route path="/graffiti" element={<GraffitiPortal />} />
     <Route path="/ecology" element={<EcologyPortal />} />
     <Route path="/rivers" element={<RiversPortal />} />
     <Route path="/warzones" element={<WarZonesPortal />} />

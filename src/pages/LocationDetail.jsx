@@ -12,7 +12,6 @@ import { Image } from "@/components/ui/image";
 import MintLocationPanel from "@/components/ooh/mint/MintLocationPanel";
 import LocationEditPanel from "@/components/ooh/LocationEditPanel";
 import SubvertisingPanel from "@/components/ooh/SubvertisingPanel";
-import GraffitiPanel from "@/components/ooh/GraffitiPanel";
 import { useSeo } from "@/lib/seoContext";
 
 function normalizeSeed(rec) {
@@ -235,9 +234,6 @@ export default function LocationDetail() {
 
         {/* Subvertising / advertiser panel */}
         {showSubvertising && <SubvertisingPanel loc={loc} />}
-
-        {/* Graffiti assessment panel */}
-        {showGraffiti && <GraffitiPanel loc={loc} />}
 
         {/* Expert edit & tag panel */}
         <LocationEditPanel loc={loc} onUpdated={setLoc} />
