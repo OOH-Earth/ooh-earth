@@ -47,13 +47,20 @@ export default function ContextualNudge() {
         show ? "translate-y-0 opacity-100" : "pointer-events-none translate-y-4 opacity-0"
       }`}
     >
-      <div className="flex items-center gap-3 rounded-full border border-white/10 bg-[#323637] px-4 py-2.5 shadow-[0_8px_32px_rgba(0,0,0,0.5)] backdrop-blur-xl">
-        <span className="font-mono text-[8px] uppercase tracking-[0.3em] text-white/35">Next</span>
-        <span className="text-xs font-medium text-white">{hint.label}</span>
+      <div className="relative flex items-center gap-3 rounded-full border border-ozone/40 bg-[#323637] px-5 py-2.5 shadow-[0_0_0_1px_rgba(237,255,0,0.08),0_8px_32px_rgba(0,0,0,0.6),0_0_20px_rgba(237,255,0,0.1)] backdrop-blur-xl">
+        {/* Signal dot */}
+        <span className="relative flex h-2 w-2 shrink-0">
+          <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-ozone opacity-60" />
+          <span className="relative inline-flex h-2 w-2 rounded-full bg-ozone" style={{ boxShadow: "0 0 8px rgba(237,255,0,0.8)" }} />
+        </span>
+        {/* Label */}
+        <span className="font-mono text-[8px] uppercase tracking-[0.35em] text-dim">Next</span>
+        <span className="text-xs font-medium tracking-tight text-white">{hint.label}</span>
+        {/* CTA */}
         <Link
           to={hint.to}
           onClick={() => dismiss(hint.id)}
-          className="flex items-center gap-1 font-mono text-[10px] font-bold uppercase tracking-[0.2em] text-ozone transition-colors hover:text-flare"
+          className="flex items-center gap-1 font-mono text-[10px] font-bold uppercase tracking-[0.2em] text-ozone text-glow-ozone transition-colors hover:text-flare hover:text-glow-flare"
         >
           {hint.to.replace("/", "") || "go"}
           <ArrowRight className="h-3 w-3" />
@@ -61,7 +68,7 @@ export default function ContextualNudge() {
         <button
           onClick={() => { dismiss(hint.id); setShow(false); }}
           aria-label="Dismiss"
-          className="text-white/30 transition-colors hover:text-white"
+          className="text-white/25 transition-colors hover:text-ozone"
         >
           <X className="h-3.5 w-3.5" />
         </button>
