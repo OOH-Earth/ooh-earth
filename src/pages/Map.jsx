@@ -62,7 +62,7 @@ export default function Map() {
   const { startTour, registerSteps } = useWalkthrough();
   const [finderOpen, setFinderOpen] = useState(false);
   const [flyTo, setFlyTo] = useState(null);
-  const [activeLayers, setActiveLayers] = usePersistentState("ooh-map-layers", ["ads"]);
+  const [activeLayers, setActiveLayers] = usePersistentState("ooh-map-layers", ["adbusting"]);
   const [layerFilter, setLayerFilter] = useState("all");
   const { style: mapStyle } = useMapStyle();
   const { spots: mushrooms, loading: mushLoading } = useMushroomData();

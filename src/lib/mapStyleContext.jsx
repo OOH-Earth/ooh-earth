@@ -40,7 +40,7 @@ export function MapStyleProvider({ children }) {
       const s = localStorage.getItem(LS_KEY);
       if (s && IDS.includes(s)) return s;
     } catch {}
-    return "dark";
+    return "satellite";
   });
 
   // Only fetch the admin site default when the visitor has no local override.
