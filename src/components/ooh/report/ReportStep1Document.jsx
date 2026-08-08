@@ -3,6 +3,7 @@ import exifr from "exifr";
 import { base44 } from "@/api/base44Client";
 import { useState } from "react";
 import ReportScanner from "@/components/ooh/report/ReportScanner";
+import MapPinDropper from "@/components/ooh/report/MapPinDropper";
 
 const TYPES = [
   { value: "billboard", label: "Billboard" },
@@ -105,7 +106,7 @@ export default function ReportStep1Document({ data, onChange }) {
           placeholder="Street, district, city" className={inp} />
       </div>
 
-      {/* Coordinates */}
+      {/* Coordinates — live map pin dropper + locate me */}
       <div>
         <div className="mb-2 flex items-center justify-between">
           <label className="font-mono text-[10px] uppercase tracking-[0.3em] text-dim">GPS coordinates</label>
@@ -115,10 +116,18 @@ export default function ReportStep1Document({ data, onChange }) {
             {locating ? "Locating…" : "Locate me"}
           </button>
         </div>
-        <div className="grid grid-cols-2 gap-px border border-slate2/60 bg-slate2/40">
-          <input value={data.lat} onChange={(e) => onChange({ lat: e.target.value })} placeholder="Latitude" inputMode="decimal" className={`${inp} border-0`} />
-          <input value={data.lng} onChange={(e) => onChange({ lng: e.target.value })} placeholder="Longitude" inputMode="decimal" className={`${inp} border-0`} />
-        </div>
+        <MapPinDropper
+          lat={data.lat}
+          lng={data.lng}
+          onPick={({ lat, lng }) => onChange({ lat: String(lat), lng: String(lng) })}
+        />
+        <details className="group mt-2">
+          <summary className="cursor-pointer font-mono text-[9px] uppercase tracking-[0.2em] text-dim/60 transition-colors hover:text-ozone">Enter coordinates manually</summary>
+          <div className="mt-2 grid grid-cols-2 gap-px border border-slate2/60 bg-slate2/40">
+            <input value={data.lat} onChange={(e) => onChange({ lat: e.target.value })} placeholder="Latitude" inputMode="decimal" className={`${inp} border-0`} />
+            <input value={data.lng} onChange={(e) => onChange({ lng: e.target.value })} placeholder="Longitude" inputMode="decimal" className={`${inp} border-0`} />
+          </div>
+        </details>
       </div>
 
       {/* Title (optional) */}
