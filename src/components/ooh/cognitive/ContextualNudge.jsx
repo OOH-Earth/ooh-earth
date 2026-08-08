@@ -47,31 +47,46 @@ export default function ContextualNudge() {
         show ? "translate-y-0 opacity-100" : "pointer-events-none translate-y-4 opacity-0"
       }`}
     >
-      <div className="relative flex items-center gap-3 rounded-full border border-ozone/40 bg-[#323637] px-5 py-2.5 shadow-[0_0_0_1px_rgba(237,255,0,0.08),0_8px_32px_rgba(0,0,0,0.6),0_0_20px_rgba(237,255,0,0.1)] backdrop-blur-xl">
-        {/* Signal dot */}
-        <span className="relative flex h-2 w-2 shrink-0">
-          <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-ozone opacity-60" />
-          <span className="relative inline-flex h-2 w-2 rounded-full bg-ozone" style={{ boxShadow: "0 0 8px rgba(237,255,0,0.8)" }} />
-        </span>
-        {/* Label */}
-        <span className="font-mono text-[8px] uppercase tracking-[0.35em] text-dim">Next</span>
-        <span className="text-xs font-medium tracking-tight text-white">{hint.label}</span>
-        {/* CTA */}
-        <Link
-          to={hint.to}
-          onClick={() => dismiss(hint.id)}
-          className="flex items-center gap-1 font-mono text-[10px] font-bold uppercase tracking-[0.2em] text-ozone text-glow-ozone transition-colors hover:text-flare hover:text-glow-flare"
-        >
-          {hint.to.replace("/", "") || "go"}
-          <ArrowRight className="h-3 w-3" />
-        </Link>
-        <button
-          onClick={() => { dismiss(hint.id); setShow(false); }}
-          aria-label="Dismiss"
-          className="text-white/25 transition-colors hover:text-ozone"
-        >
-          <X className="h-3.5 w-3.5" />
-        </button>
+      <div className="relative w-[min(92vw,380px)] border border-ozone/40 bg-[#0d0d0d] shadow-[0_0_0_1px_rgba(237,255,0,0.06),0_8px_32px_rgba(0,0,0,0.7),0_0_24px_rgba(237,255,0,0.08)] backdrop-blur-xl">
+        {/* Scanline overlay */}
+        <div className="crt-scanlines pointer-events-none absolute inset-0 opacity-50" />
+
+        {/* Terminal header */}
+        <div className="flex items-center justify-between border-b border-ozone/15 px-3 py-1.5">
+          <div className="flex items-center gap-1.5">
+            <span className="h-1.5 w-1.5 rounded-full bg-ozone" />
+            <span className="h-1.5 w-1.5 rounded-full bg-ozone" />
+            <span className="h-1.5 w-1.5 rounded-full bg-dim/25" />
+            <span className="ml-1.5 font-mono text-[8px] uppercase tracking-[0.18em] text-dim">root@ooh:~</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-ozone" style={{ boxShadow: "0 0 6px rgba(237,255,0,0.6)" }} />
+            <span className="font-mono text-[8px] uppercase tracking-[0.18em] text-ozone/60">stable</span>
+          </div>
+        </div>
+
+        {/* Command line */}
+        <div className="flex items-center gap-2 px-3 py-2.5">
+          <span className="font-mono text-[11px] text-ozone">{">"}</span>
+          <span className="font-mono text-xs text-white">{hint.label}</span>
+          <span className="font-mono text-xs text-ozone animate-blink">_</span>
+          <div className="ml-auto flex items-center gap-1.5">
+            <Link
+              to={hint.to}
+              onClick={() => dismiss(hint.id)}
+              className="flex items-center gap-1 border border-ozone/50 px-2.5 py-1 font-mono text-[9px] font-bold uppercase tracking-[0.2em] text-ozone text-glow-ozone transition-colors hover:bg-ozone/10 hover:shadow-[0_0_12px_rgba(237,255,0,0.3)]"
+            >
+              Execute <ArrowRight className="h-3 w-3" />
+            </Link>
+            <button
+              onClick={() => { dismiss(hint.id); setShow(false); }}
+              aria-label="Abort"
+              className="flex items-center justify-center border border-flare/30 px-1.5 py-1 font-mono text-[9px] font-bold uppercase tracking-[0.2em] text-flare/60 transition-colors hover:bg-flare/10 hover:text-flare"
+            >
+              <X className="h-3 w-3" />
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   );
