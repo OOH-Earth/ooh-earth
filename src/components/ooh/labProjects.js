@@ -1,4 +1,4 @@
-import { Bike, BookOpen, Coins, Grid3x3, Music, Smartphone, FileText, Box, Ruler, Activity, Image as ImageIcon, Layers, Watch, ScanLine } from "lucide-react";
+import { Bike, BookOpen, Coins, Grid3x3, Music, Smartphone, FileText, Box, Ruler, Activity, Image as ImageIcon, Layers, Watch, ScanLine, SprayCan } from "lucide-react";
 
 // ── Lab project registry ─────────────────────────────────────────────────────
 // Single source of truth for code-defined Lab projects (pages that live in the
@@ -158,6 +158,15 @@ export const LAB_PROJECTS = [
     access: "public",
     status: "live",
     sort_order: 15,
+  },
+  {
+    path: "/lab/graffiti-cam",
+    title: "Graffiti Camera",
+    icon: SprayCan,
+    desc: "Field camera for graffiti and street art — point, shoot, classify medium/style, and log to the graffiti portal and field map.",
+    access: "public",
+    status: "live",
+    sort_order: 16,
   },
 ];
 

@@ -45,6 +45,7 @@ import HexCoinCube from '@/pages/HexCoinCube';
 import LabStatus from '@/pages/LabStatus';
 import LabStreetRunner from '@/pages/LabStreetRunner';
 import AdScanLab from '@/pages/AdScanLab';
+import GraffitiCam from '@/pages/GraffitiCam';
 import NftCreator from '@/pages/NftCreator';
 import Home from '@/pages/Home';
 import Map from '@/pages/Map';
@@ -226,6 +227,7 @@ const AuthenticatedApp = () => {
       <Route path="/lab/status" element={<LabStatus />} />
       <Route path="/lab/streetrunner" element={<LabStreetRunner />} />
       <Route path="/lab/scanner" element={<AdScanLab />} />
+      <Route path="/lab/graffiti-cam" element={<GraffitiCam />} />
     </Route>
     <Route element={<InvestorRoute />}>
       <Route path="/investor" element={<InvestorHub />} />

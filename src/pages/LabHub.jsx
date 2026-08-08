@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { Coins, Grid3x3, Music, Smartphone, FileText, Box, Ruler, Activity, Image as ImageIcon, UserPlus, Layers, Watch, ShieldCheck, Loader2, BookOpen } from "lucide-react";
+import { Coins, Grid3x3, Music, Smartphone, FileText, Box, Ruler, Activity, Image as ImageIcon, UserPlus, Layers, Watch, ShieldCheck, Loader2, BookOpen, SprayCan, ScanLine } from "lucide-react";
 import { LAB_PROJECTS } from "@/components/ooh/labProjects";
 import Nav from "@/components/ooh/Nav";
 import Breadcrumbs from "@/components/ooh/Breadcrumbs";
@@ -27,6 +27,8 @@ const META = {
   "/lab/spec": { icon: FileText, title: "Engineering Spec", desc: "State machine, BLE GATT, frame format, screen inventory." },
   "/lab/status": { icon: Activity, title: "Status Report", desc: "Lab engineering log — build register, revisions, pipeline, roadmap." },
   "/lab/book": { icon: BookOpen, title: "The Guild · Book", desc: "Subvertising & Brandalism — the field manual as a working-draft reader. Chapters 1–3 open for review." },
+  "/lab/scanner": { icon: ScanLine, title: "Ad Scanner", desc: "Advertising detection camera — point, shoot, identify brands/logos/branding on any surface and catalog the hit." },
+  "/lab/graffiti-cam": { icon: SprayCan, title: "Graffiti Camera", desc: "Field camera for graffiti and street art — point, shoot, classify, log to the graffiti portal and field map." },
 };
 
 // Registry-defined projects inherit their hub metadata (icon / title / desc) here,
