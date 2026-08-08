@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { Sparkles, Loader2, ExternalLink } from "lucide-react";
+import { PARENT_CORPS, AGENCIES } from "@/components/ooh/report/advertiserRegistry";
 
 const inp = "w-full bg-void border border-slate2 px-4 py-3 font-display text-sm text-silver outline-none transition-colors placeholder:text-dim focus:border-ozone";
 
@@ -107,7 +108,10 @@ Respond in JSON only.`,
       <div>
         <label className="mb-2 block font-mono text-[10px] uppercase tracking-[0.3em] text-dim">Parent / Holding company <span className="text-dim/50">(optional)</span></label>
         <input value={data.parent_corp} onChange={(e) => onChange({ parent_corp: e.target.value })}
-          placeholder="e.g. Shell plc, Yum! Brands, WPP" className={inp} />
+          list="parent-corps-list" placeholder="e.g. Shell plc, Yum! Brands, WPP" className={inp} />
+        <datalist id="parent-corps-list">
+          {PARENT_CORPS.map((c) => <option key={c} value={c} />)}
+        </datalist>
       </div>
 
       {/* OOH Operator */}
@@ -129,11 +133,20 @@ Respond in JSON only.`,
       <div>
         <label className="mb-2 block font-mono text-[10px] uppercase tracking-[0.3em] text-dim">Ad agency (creative) <span className="text-dim/50">(optional)</span></label>
         <input value={data.ad_agency} onChange={(e) => onChange({ ad_agency: e.target.value })}
-          placeholder="e.g. Ogilvy, McCann, BBDO" className={inp} />
-        <a href="https://cleancreatives.org/asia-f-list" target="_blank" rel="noreferrer"
-          className="mt-1.5 inline-flex items-center gap-1 font-mono text-[9px] uppercase tracking-[0.15em] text-ozone/70 transition-colors hover:text-ozone">
-          <ExternalLink className="h-2.5 w-2.5" /> Clean Creatives F-List (Asia)
-        </a>
+          list="agencies-list" placeholder="e.g. Ogilvy, McCann, BBDO" className={inp} />
+        <datalist id="agencies-list">
+          {AGENCIES.map((a) => <option key={a} value={a} />)}
+        </datalist>
+        <div className="mt-1.5 flex flex-wrap gap-3">
+          <a href="https://cleancreatives.org/f-list" target="_blank" rel="noreferrer"
+            className="inline-flex items-center gap-1 font-mono text-[9px] uppercase tracking-[0.15em] text-ozone/70 transition-colors hover:text-ozone">
+            <ExternalLink className="h-2.5 w-2.5" /> Clean Creatives F-List (Worldwide)
+          </a>
+          <a href="https://cleancreatives.org/asia-f-list" target="_blank" rel="noreferrer"
+            className="inline-flex items-center gap-1 font-mono text-[9px] uppercase tracking-[0.15em] text-ozone/70 transition-colors hover:text-ozone">
+            <ExternalLink className="h-2.5 w-2.5" /> F-List Asia
+          </a>
+        </div>
       </div>
 
       {/* Industry sector */}
