@@ -1,4 +1,4 @@
-import { Bike, BookOpen, Coins, Grid3x3, Music, Smartphone, FileText, Box, Ruler, Activity, Image as ImageIcon, Layers, Watch } from "lucide-react";
+import { Bike, BookOpen, Coins, Grid3x3, Music, Smartphone, FileText, Box, Ruler, Activity, Image as ImageIcon, Layers, Watch, ScanLine } from "lucide-react";
 
 // ── Lab project registry ─────────────────────────────────────────────────────
 // Single source of truth for code-defined Lab projects (pages that live in the
@@ -149,6 +149,15 @@ export const LAB_PROJECTS = [
     access: "restricted",
     status: "live",
     sort_order: 14,
+  },
+  {
+    path: "/lab/scanner",
+    title: "Ad Scanner",
+    icon: ScanLine,
+    desc: "Advertising detection camera — point, shoot, identify brands/logos/branding on any surface and catalog the hit.",
+    access: "public",
+    status: "live",
+    sort_order: 15,
   },
 ];
 
