@@ -1,6 +1,8 @@
-import { Camera, Crosshair, Loader2, MapPin } from "lucide-react";
+import { Camera, Crosshair, Loader2, MapPin, CheckCircle2 } from "lucide-react";
+import exifr from "exifr";
 import { base44 } from "@/api/base44Client";
 import { useState } from "react";
+import ReportScanner from "@/components/ooh/report/ReportScanner";
 
 const TYPES = [
   { value: "billboard", label: "Billboard" },
@@ -33,6 +35,13 @@ export default function ReportStep1Document({ data, onChange }) {
     const file = e.target.files?.[0];
     if (!file) return;
     setUploading(true);
+    // Try EXIF GPS from the photo
+    try {
+      const gps = await exifr.gps(file);
+      if (gps && isFinite(gps.latitude) && isFinite(gps.longitude)) {
+        onChange({ lat: gps.latitude.toFixed(5), lng: gps.longitude.toFixed(5) });
+      }
+    } catch { /* no EXIF GPS */ }
     try {
       const res = await base44.integrations.Core.UploadFile({ file });
       onChange({ image_url: res.file_url });
@@ -67,6 +76,9 @@ export default function ReportStep1Document({ data, onChange }) {
           <input type="file" accept="image/*" capture="environment" onChange={onPhoto} className="hidden" />
         </label>
       </div>
+
+      {/* AI Ad Scanner — beta */}
+      <ReportScanner data={data} onChange={onChange} />
 
       {/* Address */}
       <div>

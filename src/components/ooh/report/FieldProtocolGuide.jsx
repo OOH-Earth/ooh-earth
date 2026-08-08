@@ -10,7 +10,7 @@ const STEPS = [
     color: "ozone",
     title: "Pin it. Photograph it.",
     desc: "Capture the billboard, the painted takeover, the digital screen. Tag the GPS, drop the address. Every spot gets a field photograph and coordinates — the foundation of the public record.",
-    tips: ["Use Locate Me for GPS", "Photo is optional but powerful", "Address helps cluster by area"],
+    tips: ["Use Locate Me for GPS", "Photo auto-reads GPS from EXIF", "AI Scanner fills the whole form from your photo", "Address helps cluster by area"],
     image: "https://media.base44.com/images/public/6a62213cff3ccbca88c04ff5/d9042f3f5_generated_image.png",
   },
   {
@@ -20,7 +20,7 @@ const STEPS = [
     color: "ozone",
     title: "Brand, agency, operator.",
     desc: "Name the advertiser. Chain the brand to its parent corp. Identify the OOH structure owner (Clear Channel, Plan B…). Tag the creative agency. Use the AI scanner to auto-detect from your photo, or pick from the registry.",
-    tips: ["AI scanner auto-identifies the brand", "OOH operators are pre-loaded", "F-List refs link to Clean Creatives"],
+    tips: ["Scanner pre-fills brand, agency, sector & harm tags", "OOH operators are pre-loaded", "F-List refs link to Clean Creatives"],
     image: "https://media.base44.com/images/public/6a62213cff3ccbca88c04ff5/960c08fd0_generated_image.png",
   },
   {
