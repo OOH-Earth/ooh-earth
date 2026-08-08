@@ -12,6 +12,7 @@ import { Image } from "@/components/ui/image";
 import MintLocationPanel from "@/components/ooh/mint/MintLocationPanel";
 import LocationEditPanel from "@/components/ooh/LocationEditPanel";
 import SubvertisingPanel from "@/components/ooh/SubvertisingPanel";
+import AdvertiserInfo from "@/components/ooh/AdvertiserInfo";
 import FieldCheckPanel from "@/components/ooh/FieldCheckPanel";
 import RelatedLocations from "@/components/ooh/RelatedLocations";
 import { useSeo } from "@/lib/seoContext";
@@ -215,8 +216,11 @@ export default function LocationDetail() {
             )}
           </div>
 
-          {/* Right: access key + metadata + field notes */}
+          {/* Right: advertiser info + access key + field notes */}
           <div className="flex flex-col gap-4">
+            {/* Advertiser intelligence — moved up from SubvertisingPanel */}
+            {showSubvertising && <AdvertiserInfo loc={loc} />}
+
             {keyed && (
               <div className="border border-ozone/50 p-4">
                 <div className="flex items-center justify-between gap-2">
@@ -236,29 +240,6 @@ export default function LocationDetail() {
                 </p>
               </div>
             )}
-
-            <div className="flex flex-col gap-px border border-slate2/60">
-              <div className="border-b border-slate2/40 bg-card/50 px-4 py-2">
-                <span className="font-mono text-[8px] uppercase tracking-[0.25em] text-dim/60">// record</span>
-              </div>
-              <div className="flex flex-col gap-2 px-4 py-3 font-mono text-[10px] text-darkgray">
-                {loc.lat != null && (
-                  <div className="flex justify-between"><span className="uppercase tracking-[0.2em] text-dim/60">coords</span><span className="tabular text-silver">{loc.lat?.toFixed(5)}, {loc.lng?.toFixed(5)}</span></div>
-                )}
-                <div className="flex justify-between"><span className="uppercase tracking-[0.2em] text-dim/60">type</span><span className="text-silver">{meta.label}</span></div>
-                {keyed && (
-                  <div className="flex justify-between"><span className="uppercase tracking-[0.2em] text-dim/60">key slug</span><span className="text-silver">{loc.access_key || "none"}</span></div>
-                )}
-                {loc.condition && (
-                  <div className="flex justify-between"><span className="uppercase tracking-[0.2em] text-dim/60">condition</span><span className="text-silver capitalize">{loc.condition}</span></div>
-                )}
-                {loc.source_link && /^https?:\/\//i.test(loc.source_link) && (
-                  <a href={loc.source_link} target="_blank" rel="noreferrer" className="mt-1 inline-flex items-center gap-1 text-ozone transition-colors hover:text-flare">
-                    oohearth.app record <ExternalLink className="h-3 w-3" />
-                  </a>
-                )}
-              </div>
-            </div>
 
             {loc.notes && (
               <div className="border border-slate2/60 p-4">
@@ -305,6 +286,47 @@ export default function LocationDetail() {
         )}
 
         {showSubvertising && <section className="mb-8"><SubvertisingPanel loc={loc} /></section>}
+
+        {/* ── Record metadata — improved widget, kept lower ── */}
+        <section className="mb-8">
+          <div className="mb-3 flex items-center gap-2">
+            <span className="font-mono text-[9px] uppercase tracking-[0.3em] text-dim/60">// record</span>
+            <span className="font-mono text-[8px] uppercase tracking-[0.2em] text-dim/40">id · {loc.id}</span>
+            <span className="h-px flex-1 bg-slate2/40" />
+          </div>
+          <div className="grid grid-cols-2 gap-px border border-slate2/60 sm:grid-cols-3 lg:grid-cols-4">
+            {loc.lat != null && (
+              <div className="bg-card/50 px-4 py-3">
+                <span className="font-mono text-[8px] uppercase tracking-[0.2em] text-dim/60">coords</span>
+                <p className="mt-0.5 font-mono text-[11px] tabular text-silver">{loc.lat?.toFixed(5)}, {loc.lng?.toFixed(5)}</p>
+              </div>
+            )}
+            <div className="bg-card/50 px-4 py-3">
+              <span className="font-mono text-[8px] uppercase tracking-[0.2em] text-dim/60">type</span>
+              <p className="mt-0.5 text-[11px] text-silver">{meta.label}</p>
+            </div>
+            {keyed && (
+              <div className="bg-card/50 px-4 py-3">
+                <span className="font-mono text-[8px] uppercase tracking-[0.2em] text-dim/60">key slug</span>
+                <p className="mt-0.5 font-mono text-[11px] text-silver">{loc.access_key || "none"}</p>
+              </div>
+            )}
+            {loc.condition && (
+              <div className="bg-card/50 px-4 py-3">
+                <span className="font-mono text-[8px] uppercase tracking-[0.2em] text-dim/60">condition</span>
+                <p className="mt-0.5 text-[11px] capitalize text-silver">{loc.condition}</p>
+              </div>
+            )}
+            {loc.source_link && /^https?:\/\//i.test(loc.source_link) && (
+              <div className="bg-card/50 px-4 py-3">
+                <span className="font-mono text-[8px] uppercase tracking-[0.2em] text-dim/60">source</span>
+                <a href={loc.source_link} target="_blank" rel="noreferrer" className="mt-0.5 inline-flex items-center gap-1 font-mono text-[10px] text-ozone transition-colors hover:text-flare">
+                  oohearth.app <ExternalLink className="h-2.5 w-2.5" />
+                </a>
+              </div>
+            )}
+          </div>
+        </section>
 
         {/* ── Field activity ── */}
         <section className="mb-8">

@@ -1,42 +1,31 @@
 import { Image } from "@/components/ui/image";
-import { Ban, Megaphone, ExternalLink, Building2, Flag, AlertTriangle, Tag } from "lucide-react";
+import { Ban, ExternalLink, Building2, AlertTriangle } from "lucide-react";
 import { Link } from "react-router-dom";
-import { BrandIcon } from "@/components/ooh/BrandBadge";
 
-const SECTOR_LABELS = {
-  fossil_fuel: "Fossil Fuel", tobacco: "Tobacco", alcohol: "Alcohol", gambling: "Gambling",
-  ultra_processed_food: "Ultra-processed Food", surveillance: "Surveillance", finance: "Finance",
-  real_estate: "Real Estate", fashion: "Fashion", automotive: "Automotive", pharma: "Pharma", other: "Other",
-};
-
-function Field({ icon: Icon, label, value, brand }) {
-  if (!value) return null;
-  return (
-    <div className="border border-slate2/40 bg-void/50 px-3 py-2">
-      <div className="flex items-center gap-1 font-mono text-[8px] uppercase tracking-[0.15em] text-dim">
-        {Icon && <Icon className="h-2.5 w-2.5" />} {label}
-      </div>
-      <div className="mt-0.5 flex items-center gap-2">
-        {brand && <BrandIcon name={value} size={18} />}
-        <span className="font-display text-[13px] font-semibold text-silver">{value}</span>
-      </div>
-    </div>
-  );
-}
-
+// SubvertisingPanel — renders the visual before/after comparison and contextual
+// notes. The advertiser intelligence fields (brand, agency, harm tags, etc.)
+// live in <AdvertiserInfo /> which is rendered inline in the detail page's
+// right column; this panel only appears when there are images or notes to show.
 export default function SubvertisingPanel({ loc }) {
   const isSubverted = loc.adbust_type && loc.adbust_type !== "none";
   const hasBefore = !!loc.image_url;
   const hasAfter = !!loc.adbust_image_url;
   const showCompare = isSubverted && hasAfter;
+  const showSingleSubvert = isSubverted && !hasBefore && hasAfter;
+  const showParticipation = !isSubverted;
+  const showSubvertedNote = isSubverted;
+  const hasMediaCorps = !!loc.ooh_operator;
+
+  // Nothing visual to render — advertiser info is handled by AdvertiserInfo
+  if (!showCompare && !showSingleSubvert && !showParticipation && !showSubvertedNote && !hasMediaCorps) return null;
 
   return (
-    <div className="mt-8 border border-slate2/60">
+    <div className="border border-slate2/60">
       {/* Header */}
       <div className="flex items-center gap-2 border-b border-slate2/60 px-4 py-3">
-        {isSubverted ? <Ban className="h-4 w-4 text-flare" /> : <Megaphone className="h-4 w-4 text-ozone" />}
+        {isSubverted ? <Ban className="h-4 w-4 text-flare" /> : <Building2 className="h-4 w-4 text-ozone" />}
         <span className={`font-mono text-[10px] font-bold uppercase tracking-[0.25em] ${isSubverted ? "text-flare" : "text-ozone"}`}>
-          {isSubverted ? "// Subverted" : "// Advertiser"}
+          {isSubverted ? "// Subverted" : "// Subvertising"}
         </span>
         {isSubverted && (
           <span className="border border-flare/40 px-1.5 py-0.5 font-mono text-[8px] uppercase tracking-[0.2em] text-flare">
@@ -72,61 +61,15 @@ export default function SubvertisingPanel({ loc }) {
         )}
 
         {/* Single subverted image (no original) */}
-        {isSubverted && !hasBefore && hasAfter && (
+        {showSingleSubvert && (
           <div className="relative aspect-[4/3] overflow-hidden border border-flare/40">
             <Image src={loc.adbust_image_url} alt="Subverted" className="h-full w-full" fittingType="fill" />
           </div>
         )}
 
-        {/* Advertiser info grid */}
-        <div className="mt-4 grid gap-2 sm:grid-cols-3">
-          {loc.brand_name && <Field icon={Tag} label="Brand" value={loc.brand_name} brand />}
-          {loc.campaign_name && <Field label="Campaign" value={loc.campaign_name} />}
-          {loc.ad_agency && <Field label="Agency" value={loc.ad_agency} brand />}
-          {loc.parent_corp && <Field label="Parent" value={loc.parent_corp} brand />}
-          {loc.ooh_operator && <Field icon={Building2} label="OOH Operator" value={loc.ooh_operator} brand />}
-          {loc.industry_sector && <Field label="Sector" value={SECTOR_LABELS[loc.industry_sector] || loc.industry_sector} />}
-        </div>
-
-        {/* Harm tags */}
-        {loc.harm_tags?.length > 0 && (
-          <div className="mt-4">
-            <span className="font-mono text-[9px] uppercase tracking-[0.3em] text-flare/60">// Harm tags</span>
-            <div className="mt-2 flex flex-wrap gap-1.5">
-              {loc.harm_tags.map((tag) => (
-                <span key={tag} className="border border-flare/40 px-2 py-1 font-mono text-[9px] uppercase tracking-[0.1em] text-flare">
-                  {tag.replace(/_/g, " ")}
-                </span>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Harm statement */}
-        {loc.harm_statement && (
-          <div className="mt-4 border-l-2 border-flare/50 pl-3">
-            <span className="font-mono text-[9px] uppercase tracking-[0.25em] text-flare/60">// Community statement</span>
-            <p className="mt-1 text-[13px] leading-relaxed text-silver/85">{loc.harm_statement}</p>
-          </div>
-        )}
-
-        {/* Action flags */}
-        {loc.action_flags?.length > 0 && (
-          <div className="mt-4">
-            <span className="font-mono text-[9px] uppercase tracking-[0.3em] text-ozone/60">// Action flags</span>
-            <div className="mt-2 flex flex-wrap gap-1.5">
-              {loc.action_flags.map((flag) => (
-                <span key={flag} className="flex items-center gap-1 border border-ozone/40 px-2 py-1 font-mono text-[9px] uppercase tracking-[0.1em] text-ozone">
-                  <Flag className="h-2.5 w-2.5" /> {flag.replace(/_/g, " ")}
-                </span>
-              ))}
-            </div>
-          </div>
-        )}
-
         {/* Subvertising participation note */}
-        {!isSubverted && (
-          <div className="mt-4 border-t border-slate2/40 pt-3">
+        {showParticipation && (
+          <div className="border-t border-slate2/40 pt-3">
             <p className="font-mono text-[10px] leading-relaxed text-dim">
               // This ad structure is part of the open-access subvertising network — a worldwide wave of reactionary media reclamation.
               <a href="https://www.publicadcampaign.com/PublicAccess/participate.html" target="_blank" rel="noreferrer" className="ml-1 inline-flex items-center gap-0.5 text-ozone transition-colors hover:text-flare">
@@ -137,8 +80,8 @@ export default function SubvertisingPanel({ loc }) {
         )}
 
         {/* Subverted note */}
-        {isSubverted && (
-          <div className="mt-4 border-t border-slate2/40 pt-3">
+        {showSubvertedNote && (
+          <div className="border-t border-slate2/40 pt-3">
             <p className="flex items-start gap-1.5 font-mono text-[10px] leading-relaxed text-flare/70">
               <AlertTriangle className="mt-0.5 h-3 w-3 shrink-0" />
               This ad has been subverted — the original corporate message has been replaced or modified by an activist intervention. Documented on the public record.
@@ -147,7 +90,7 @@ export default function SubvertisingPanel({ loc }) {
         )}
 
         {/* Link to MediaCorps registry */}
-        {loc.ooh_operator && (
+        {hasMediaCorps && (
           <Link to="/media-corps" className="mt-4 inline-flex items-center gap-1.5 font-mono text-[9px] uppercase tracking-[0.2em] text-dim transition-colors hover:text-ozone">
             <Building2 className="h-3 w-3" /> View Media Corps registry →
           </Link>
