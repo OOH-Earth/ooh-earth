@@ -1,7 +1,9 @@
 import { useState } from "react";
 import { base44 } from "@/api/base44Client";
-import { Sparkles, Loader2, ExternalLink } from "lucide-react";
+import { Sparkles, Loader2, ExternalLink, MapPin } from "lucide-react";
 import { PARENT_CORPS, AGENCIES } from "@/components/ooh/report/advertiserRegistry";
+import { TOP_OOH_OPERATORS, ALL_OOH_OPERATORS } from "@/components/ooh/report/oohMediaCorps";
+import { Link } from "react-router-dom";
 
 const inp = "w-full bg-void border border-slate2 px-4 py-3 font-display text-sm text-silver outline-none transition-colors placeholder:text-dim focus:border-ozone";
 
@@ -20,10 +22,7 @@ const SECTORS = [
   { value: "other", label: "Other" },
 ];
 
-const OOH_OPERATORS = [
-  "Clear Channel", "Plan B Media", "JCDecaux", "Ogilvy", "Publicis", "Havas",
-  "BBDO", "McCann", "TBWA", "DDB", "Grey", "Leo Burnett", "Other",
-];
+
 
 export default function ReportStep2Identify({ data, onChange }) {
   const [detecting, setDetecting] = useState(false);
@@ -117,8 +116,9 @@ Respond in JSON only.`,
       {/* OOH Operator */}
       <div>
         <label className="mb-2 block font-mono text-[10px] uppercase tracking-[0.3em] text-dim">OOH structure owner <span className="text-dim/50">(optional)</span></label>
+        <p className="mb-2 font-mono text-[9px] text-dim/60">The company that owns the physical ad infrastructure — not the ad agency.</p>
         <div className="mb-2 flex flex-wrap gap-1.5">
-          {OOH_OPERATORS.map((op) => (
+          {TOP_OOH_OPERATORS.map((op) => (
             <button key={op} type="button" onClick={() => onChange({ ooh_operator: op })}
               className={`px-2.5 py-1 font-mono text-[9px] font-bold uppercase tracking-[0.15em] transition-colors border ${data.ooh_operator === op ? "border-ozone bg-ozone/10 text-ozone" : "border-slate2 text-darkgray hover:border-ozone/50"}`}>
               {op}
@@ -126,7 +126,13 @@ Respond in JSON only.`,
           ))}
         </div>
         <input value={data.ooh_operator} onChange={(e) => onChange({ ooh_operator: e.target.value })}
-          placeholder="Or type operator name" className={inp} />
+          list="ooh-operators-list" placeholder="Type or select operator…" className={inp} />
+        <datalist id="ooh-operators-list">
+          {ALL_OOH_OPERATORS.map((op) => <option key={op} value={op} />)}
+        </datalist>
+        <Link to="/media-corps" className="mt-1.5 inline-flex items-center gap-1 font-mono text-[9px] uppercase tracking-[0.15em] text-ozone/70 transition-colors hover:text-ozone">
+          <MapPin className="h-2.5 w-2.5" /> View the Media Corps map
+        </Link>
       </div>
 
       {/* Ad Agency */}

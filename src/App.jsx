@@ -47,6 +47,7 @@ import NftCreator from '@/pages/NftCreator';
 import Home from '@/pages/Home';
 import Map from '@/pages/Map';
 import Report from '@/pages/Report';
+import MediaCorps from '@/pages/MediaCorps';
 import About from '@/pages/About';
 import Support from '@/pages/Support';
 import Contact from '@/pages/Contact';
@@ -150,6 +151,7 @@ const AuthenticatedApp = () => {
     <Route path="/rivers" element={<RiversPortal />} />
     <Route path="/warzones" element={<WarZonesPortal />} />
     <Route path="/report" element={<Report />} />
+    <Route path="/media-corps" element={<MediaCorps />} />
     <Route path="/about" element={<About />} />
     <Route path="/support" element={<Support />} />
     <Route path="/contact" element={<Contact />} />
