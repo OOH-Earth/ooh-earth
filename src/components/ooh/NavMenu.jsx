@@ -31,7 +31,6 @@ const SITEMAP = [
     items: [
       { to: "/", label: "Home", status: "live" },
       { to: "/map", label: "Field Atlas", status: "live" },
-      { to: "/media-corps", label: "Media Corps Map", status: "live" },
       { to: "/channel", label: "OOH·TV", status: "live" },
       { to: "/blog", label: "Blog", status: "live" },
       { to: "/about", label: "About", status: "live" },
@@ -43,6 +42,7 @@ const SITEMAP = [
     items: [
       { to: "/categories", label: "All Categories", status: "live" },
       { to: "/regions", label: "Regions", status: "live" },
+      { to: "/media-corps", label: "Media Corps Map", status: "live" },
       { to: "/bus-stops", label: "Bus Stops", status: "live" },
       { to: "/category/billboard", label: "Billboards", status: "live" },
       { to: "/category/digital", label: "Digital", status: "live" },
