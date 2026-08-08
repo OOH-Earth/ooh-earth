@@ -216,10 +216,54 @@ export default function LocationDetail() {
             )}
           </div>
 
-          {/* Right: advertiser info + access key + field notes */}
+          {/* Right: advertiser info + graffiti details + access key + field notes */}
           <div className="flex flex-col gap-4">
             {/* Advertiser intelligence — moved up from SubvertisingPanel */}
             {showSubvertising && <AdvertiserInfo loc={loc} />}
+
+            {/* Graffiti / street art classification — inline so the column is
+                always populated for graffiti-classified locations */}
+            {loc.graffiti_medium && (
+              <div className="border border-flare/40 bg-flare/5 p-4">
+                <div className="mb-3 flex items-center gap-2">
+                  <SprayCan className="h-3.5 w-3.5 text-flare" />
+                  <span className="font-mono text-[9px] uppercase tracking-[0.3em] text-flare">Graffiti / Street Art</span>
+                  <span className="h-px flex-1 bg-flare/20" />
+                </div>
+                <div className="grid gap-3 grid-cols-2">
+                  <div>
+                    <span className="font-mono text-[8px] uppercase tracking-[0.2em] text-dim">Medium</span>
+                    <p className="text-[12px] capitalize text-silver">{loc.graffiti_medium.replace(/_/g, " ")}</p>
+                  </div>
+                  {loc.graffiti_style && (
+                    <div>
+                      <span className="font-mono text-[8px] uppercase tracking-[0.2em] text-dim">Style</span>
+                      <p className="text-[12px] capitalize text-silver">{loc.graffiti_style.replace(/_/g, " ")}</p>
+                    </div>
+                  )}
+                  {loc.graffiti_surface_m2 != null && (
+                    <div>
+                      <span className="font-mono text-[8px] uppercase tracking-[0.2em] text-dim">Surface</span>
+                      <p className="text-[12px] tabular text-silver">{loc.graffiti_surface_m2} m²</p>
+                    </div>
+                  )}
+                  {loc.graffiti_coverage_pct != null && (
+                    <div>
+                      <span className="font-mono text-[8px] uppercase tracking-[0.2em] text-dim">Coverage</span>
+                      <p className="text-[12px] tabular text-silver">{loc.graffiti_coverage_pct}%</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Condition — shown when no graffiti block fills the column context */}
+            {!loc.graffiti_medium && loc.condition && (
+              <div className="border border-slate2/60 p-4">
+                <span className="font-mono text-[9px] uppercase tracking-[0.3em] text-dim/60">// condition</span>
+                <p className="mt-1 text-[13px] capitalize text-silver">{loc.condition}</p>
+              </div>
+            )}
 
             {keyed && (
               <div className="border border-ozone/50 p-4">
@@ -250,41 +294,7 @@ export default function LocationDetail() {
           </div>
         </section>
 
-        {/* ── Intelligence: graffiti + subvertising ── */}
-        {loc.graffiti_medium && (
-          <section className="mb-8 border border-flare/40 bg-flare/5 p-4">
-            <div className="mb-3 flex items-center gap-2">
-              <SprayCan className="h-4 w-4 text-flare" />
-              <span className="font-mono text-[9px] uppercase tracking-[0.3em] text-flare">Graffiti / Street Art</span>
-              <span className="h-px flex-1 bg-flare/20" />
-            </div>
-            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-              <div>
-                <span className="font-mono text-[8px] uppercase tracking-[0.2em] text-dim">Medium</span>
-                <p className="text-[12px] capitalize text-silver">{loc.graffiti_medium.replace(/_/g, " ")}</p>
-              </div>
-              {loc.graffiti_style && (
-                <div>
-                  <span className="font-mono text-[8px] uppercase tracking-[0.2em] text-dim">Style</span>
-                  <p className="text-[12px] capitalize text-silver">{loc.graffiti_style.replace(/_/g, " ")}</p>
-                </div>
-              )}
-              {loc.graffiti_surface_m2 != null && (
-                <div>
-                  <span className="font-mono text-[8px] uppercase tracking-[0.2em] text-dim">Surface</span>
-                  <p className="text-[12px] tabular text-silver">{loc.graffiti_surface_m2} m²</p>
-                </div>
-              )}
-              {loc.graffiti_coverage_pct != null && (
-                <div>
-                  <span className="font-mono text-[8px] uppercase tracking-[0.2em] text-dim">Coverage</span>
-                  <p className="text-[12px] tabular text-silver">{loc.graffiti_coverage_pct}%</p>
-                </div>
-              )}
-            </div>
-          </section>
-        )}
-
+        {/* ── Intelligence: subvertising images + notes ── */}
         {showSubvertising && <section className="mb-8"><SubvertisingPanel loc={loc} /></section>}
 
         {/* ── Record metadata — improved widget, kept lower ── */}
