@@ -164,18 +164,15 @@ export default function Map() {
       });
   }, [raw, typeFilter, query]);
 
-  const primaryLayer = useMemo(
-    () => ["adbusting", "graffiti", "ads", "rivers", "mushrooms", "flora", "war", "radio"].find((l) => activeLayers.includes(l)) || null,
-    [activeLayers]
-  );
-
-  // Layer-filtered markers — adbusting/graffiti are filtered views of the
-  // Location entity (same markers, narrowed by field conditions).
-  const layerFiltered = useMemo(() => {
-    if (primaryLayer === "adbusting") return filtered.filter((m) => m.adbust_type && m.adbust_type !== "none");
-    if (primaryLayer === "graffiti") return filtered.filter((m) => m.graffiti_medium || ["painted", "mural", "sticker"].includes(m.type) || ["painted_over", "wheatpasted"].includes(m.adbust_type));
-    return filtered;
-  }, [filtered, primaryLayer]);
+  // Primary layer + layer-filtered markers computed together to avoid any
+  // temporal-dead-zone risk between interdependent useMemos.
+  const { primaryLayer, layerFiltered } = useMemo(() => {
+    const pl = ["adbusting", "graffiti", "ads", "rivers", "mushrooms", "flora", "war", "radio"].find((l) => activeLayers.includes(l)) || null;
+    let lf = filtered;
+    if (pl === "adbusting") lf = filtered.filter((m) => m.adbust_type && m.adbust_type !== "none");
+    else if (pl === "graffiti") lf = filtered.filter((m) => m.graffiti_medium || ["painted", "mural", "sticker"].includes(m.type) || ["painted_over", "wheatpasted"].includes(m.adbust_type));
+    return { primaryLayer: pl, layerFiltered: lf };
+  }, [activeLayers, filtered]);
 
   // Results feed follows the map viewport (flat view): only spots inside the
   // visible bounds, nearest-to-centre first — the "search this area" pattern.
