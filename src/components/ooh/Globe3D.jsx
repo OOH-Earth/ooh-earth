@@ -7,22 +7,18 @@ import FieldStatsHud from "@/components/ooh/FieldStatsHud";
 import { motion } from "framer-motion";
 
 import { thumbHTML, metaFor } from "@/components/ooh/map/LocationThumb";
+import { drawGlyph, GLYPH_COLORS, PIN_TYPES } from "@/components/ooh/map/pinGlyphs";
 import GlobeLayerManager from "@/components/ooh/map/layers/GlobeLayerManager";
 import { useMapStyle } from "@/lib/mapStyleContext";
 
 const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 
-// Micro-badge colour per category (matches the flat-map MICRO palette).
-const BADGE_COLOR = {
-  billboard: "#EDFF00", digital: "#EDFF00", transit: "#39FF14",
-  painted: "#FF5C00", mural: "#FF5C00", sticker: "#EDFF00",
-  projection: "#FF5C00", other: "#B2B2B2",
-};
-
-// Canvas-drawn field pin for the globe symbol layer — yellow disc, black
-// ad-structure glyph, category micro-badge + status dot, pink radial glow.
-function makePinIcon(badgeColor, selected, verified) {
+// Canvas-drawn field pin for the globe symbol layer — yellow disc,
+// category-specific glyph (from the shared pinGlyphs library), micro-badge +
+// status dot, pink radial glow.
+function makePinIcon(type, selected, verified) {
   const S = 64;
+  const badgeColor = GLYPH_COLORS[type] || GLYPH_COLORS.other;
   const c = document.createElement("canvas");
   c.width = c.height = S;
   const ctx = c.getContext("2d");
@@ -38,14 +34,8 @@ function makePinIcon(badgeColor, selected, verified) {
   ctx.fillStyle = "#EDFF00"; ctx.fill();
   ctx.lineWidth = 3; ctx.strokeStyle = "#000"; ctx.stroke();
   if (selected) { ctx.lineWidth = 2; ctx.strokeStyle = "#FF5C00"; ctx.beginPath(); ctx.arc(cx, cy, 25, 0, Math.PI * 2); ctx.stroke(); }
-  // black ad-panel glyph
-  ctx.fillStyle = "#000";
-  ctx.fillRect(cx - 7, cy - 9, 14, 11);
-  ctx.fillStyle = "rgba(237,255,0,0.9)";
-  ctx.fillRect(cx - 5, cy - 7, 10, 3);
-  ctx.fillStyle = "#000";
-  ctx.fillRect(cx - 5, cy + 2, 3, 6);
-  ctx.fillRect(cx + 2, cy + 2, 3, 6);
+  // category glyph (billboard, digital, transit, mural, etc.)
+  drawGlyph(ctx, type, cx, cy, 16);
   // micro badge bottom-right
   const bx = cx + 14, by = cy + 14;
   ctx.beginPath(); ctx.arc(bx, by, 8.5, 0, Math.PI * 2);
@@ -58,8 +48,6 @@ function makePinIcon(badgeColor, selected, verified) {
   ctx.lineWidth = 1.5; ctx.strokeStyle = "#000"; ctx.stroke();
   return c;
 }
-
-const PIN_TYPES = ["billboard", "digital", "transit", "painted", "mural", "sticker", "projection", "other"];
 
 function popupHTML(m) {
   const type = metaFor(m.type).label;
@@ -202,10 +190,9 @@ export default function Globe3D({ markers, selectedId, hoverId, onSelect, userLo
       map.on("style.load", applyGlobe);
       map.addSource("ooh-markers", { type: "geojson", data: dataRef.current, cluster: true, clusterRadius: 52, clusterMaxZoom: 14 });
       PIN_TYPES.forEach((t) => {
-        const col = BADGE_COLOR[t] || BADGE_COLOR.other;
-        const a = makePinIcon(col, false, false);
+        const a = makePinIcon(t, false, false);
         map.addImage(`ooh-pin-${t}`, a.getContext("2d").getImageData(0, 0, a.width, a.height), { pixelRatio: 1 });
-        const b = makePinIcon(col, true, false);
+        const b = makePinIcon(t, true, false);
         map.addImage(`ooh-pin-${t}-sel`, b.getContext("2d").getImageData(0, 0, b.width, b.height), { pixelRatio: 1 });
       });
       // cluster discs — dark core, ozone ring, live count (military-grade)

@@ -4,26 +4,28 @@ import { Link } from "react-router-dom";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 
-// Evolved V2 pin — high-vis yellow disc + black ad-structure glyph +
-// pink/red radial highlight. Shared HTML fragment keeps default + selected
-// states visually consistent.
-const GLYPH_SVG = `<svg viewBox="0 0 24 24" width="11" height="11" fill="none" aria-hidden="true"><rect x="5" y="3" width="14" height="11" rx="1" fill="#000"/><rect x="7" y="5" width="10" height="2.5" fill="#EDFF00" opacity="0.85"/><rect x="9" y="14" width="2" height="6" fill="#000"/><rect x="13" y="14" width="2" height="6" fill="#000"/></svg>`;
+// Category-specific pin icons — yellow disc + per-type glyph.
+// Each location type (billboard, digital, transit, mural, etc.) gets its
+// own distinct iconography from the shared pinGlyphs library.
+function pinIcon(type) {
+  return L.divIcon({
+    className: "ooh-pin",
+    html: `<div style="position:relative;width:22px;height:22px"><span style="position:absolute;inset:-7px;border-radius:50%;background:radial-gradient(circle,rgba(255,72,118,0.26),transparent 65%)"></span><span style="position:relative;display:flex;width:22px;height:22px;border-radius:50%;background:#EDFF00;border:1.5px solid #000;box-shadow:0 0 0 2px rgba(237,255,0,0.20),0 0 12px rgba(237,255,0,0.5);align-items:center;justify-content:center">${glyphSVG(type, 11)}</span></div>`,
+    iconSize: [22, 22],
+    iconAnchor: [11, 11],
+    popupAnchor: [0, -12],
+  });
+}
 
-const pinIcon = L.divIcon({
-  className: "ooh-pin",
-  html: `<div style="position:relative;width:22px;height:22px"><span style="position:absolute;inset:-7px;border-radius:50%;background:radial-gradient(circle,rgba(255,72,118,0.26),transparent 65%)"></span><span style="position:relative;display:flex;width:22px;height:22px;border-radius:50%;background:#EDFF00;border:1.5px solid #000;box-shadow:0 0 0 2px rgba(237,255,0,0.20),0 0 12px rgba(237,255,0,0.5);align-items:center;justify-content:center">${GLYPH_SVG}</span></div>`,
-  iconSize: [22, 22],
-  iconAnchor: [11, 11],
-  popupAnchor: [0, -12],
-});
-
-const selIcon = L.divIcon({
-  className: "ooh-pin ooh-pin--sel",
-  html: `<div style="position:relative;width:30px;height:30px"><span style="position:absolute;inset:-12px;border-radius:50%;background:radial-gradient(circle,rgba(255,72,118,0.45),transparent 65%)"></span><span style="position:absolute;inset:0;border-radius:50%;border:2px solid #FF5C00;animation:ooh-pinpulse 1.4s ease-out infinite"></span><span style="position:relative;display:flex;width:30px;height:30px;border-radius:50%;background:#EDFF00;border:2px solid #000;box-shadow:0 0 0 3px rgba(255,92,0,0.25),0 0 18px rgba(255,92,0,0.55);align-items:center;justify-content:center">${GLYPH_SVG}</span></div>`,
-  iconSize: [30, 30],
-  iconAnchor: [15, 15],
-  popupAnchor: [0, -16],
-});
+function selIcon(type) {
+  return L.divIcon({
+    className: "ooh-pin ooh-pin--sel",
+    html: `<div style="position:relative;width:30px;height:30px"><span style="position:absolute;inset:-12px;border-radius:50%;background:radial-gradient(circle,rgba(255,72,118,0.45),transparent 65%)"></span><span style="position:absolute;inset:0;border-radius:50%;border:2px solid #FF5C00;animation:ooh-pinpulse 1.4s ease-out infinite"></span><span style="position:relative;display:flex;width:30px;height:30px;border-radius:50%;background:#EDFF00;border:2px solid #000;box-shadow:0 0 0 3px rgba(255,92,0,0.25),0 0 18px rgba(255,92,0,0.55);align-items:center;justify-content:center">${glyphSVG(type, 14)}</span></div>`,
+    iconSize: [30, 30],
+    iconAnchor: [15, 15],
+    popupAnchor: [0, -16],
+  });
+}
 
 const userIcon = L.divIcon({
   className: "ooh-pin ooh-pin--user",
@@ -34,34 +36,24 @@ const userIcon = L.divIcon({
 });
 
 import { thumbHTML, metaFor } from "@/components/ooh/map/LocationThumb";
+import { glyphSVG, GLYPH_COLORS } from "@/components/ooh/map/pinGlyphs";
 import FutureLayer from "@/components/ooh/map/FutureLayer";
 import LayerManager from "@/components/ooh/map/layers/LayerManager";
 import { useMapStyle } from "@/lib/mapStyleContext";
 
-// Micro-icon badges — small colored circles with a black category glyph,
-// overlaid on the photo pin (oohearth.app field style).
-const MICRO = {
-  billboard: { color: "#EDFF00", svg: `<svg viewBox="0 0 24 24" width="10" height="10" fill="none"><rect x="5" y="4" width="14" height="10" rx="1" fill="#000"/><rect x="9" y="14" width="2" height="5" fill="#000"/><rect x="13" y="14" width="2" height="5" fill="#000"/></svg>` },
-  digital: { color: "#EDFF00", svg: `<svg viewBox="0 0 24 24" width="10" height="10" fill="none"><rect x="5" y="4" width="14" height="10" rx="1" fill="#000"/><rect x="7" y="6" width="10" height="2" fill="#EDFF00"/><rect x="7" y="9" width="6" height="1.5" fill="#EDFF00"/></svg>` },
-  transit: { color: "#39FF14", svg: `<svg viewBox="0 0 24 24" width="10" height="10" fill="none"><rect x="5" y="4" width="14" height="11" rx="2" fill="#000"/><rect x="7" y="6" width="10" height="3" fill="#39FF14"/><circle cx="9" cy="17" r="1.4" fill="#000"/><circle cx="15" cy="17" r="1.4" fill="#000"/></svg>` },
-  painted: { color: "#FF5C00", svg: `<svg viewBox="0 0 24 24" width="10" height="10" fill="none"><rect x="4" y="5" width="13" height="6" rx="1" fill="#000"/><rect x="17" y="6" width="4" height="4" fill="#000"/><rect x="9" y="11" width="2" height="5" fill="#000"/><rect x="7" y="16" width="6" height="3" fill="#000"/></svg>` },
-  mural: { color: "#FF5C00", svg: `<svg viewBox="0 0 24 24" width="10" height="10" fill="none"><rect x="4" y="5" width="16" height="10" fill="#000"/><rect x="4" y="5" width="16" height="2.5" fill="#FF5C00"/></svg>` },
-  sticker: { color: "#EDFF00", svg: `<svg viewBox="0 0 24 24" width="10" height="10" fill="none"><circle cx="12" cy="12" r="7" fill="#000"/><path d="M12 5v7l4 4" stroke="#EDFF00" stroke-width="1.6"/></svg>` },
-  projection: { color: "#FF5C00", svg: `<svg viewBox="0 0 24 24" width="10" height="10" fill="none"><rect x="3" y="9" width="6" height="6" fill="#000"/><path d="M9 12L21 6" stroke="#000" stroke-width="2.4"/></svg>` },
-  other: { color: "#B2B2B2", svg: `<svg viewBox="0 0 24 24" width="10" height="10" fill="none"><circle cx="12" cy="12" r="6" fill="#000"/></svg>` },
-};
-
 // Photo-circle pin — white-ringed location photo with a category micro-badge
 // (bottom-right) and a status dot (top-left), plus the pink radial highlight.
-// Matches the oohearth.app field-pin style.
+// Matches the oohearth.app field-pin style. Badge colour + glyph come from
+// the shared pinGlyphs library so every category has its own icon.
 function pinFor(m, selected) {
   const verified = m.status === "verified";
-  const mc = MICRO[m.type] || MICRO.other;
+  const mc_color = GLYPH_COLORS[m.type] || GLYPH_COLORS.other;
+  const mc_svg = glyphSVG(m.type, 10);
   const size = selected ? 62 : 52;
   const badge = selected ? 22 : 18;
   const glow = selected ? "rgba(255,72,118,0.45)" : "rgba(255,72,118,0.20)";
   const img = String(m.image).replace(/-\d+x\d+(?=\.\w+$)/, "");
-  const html = `<div style="position:relative;width:${size}px;height:${size}px"><span style="position:absolute;inset:-${selected ? 12 : 8}px;border-radius:50%;background:radial-gradient(circle,${glow},transparent 65%)"></span><span style="position:relative;display:block;width:${size}px;height:${size}px;border-radius:50%;border:3px solid #fff;overflow:hidden;background:#000;box-shadow:0 2px 6px rgba(0,0,0,0.6)${selected ? ",0 0 0 2px " + mc.color : ""}"><img src="${img}" alt="" style="width:100%;height:100%;object-fit:cover;display:block"/></span><span style="position:absolute;right:-3px;bottom:-3px;width:${badge}px;height:${badge}px;border-radius:50%;background:${mc.color};border:2px solid #000;display:flex;align-items:center;justify-content:center;box-shadow:0 0 6px rgba(0,0,0,0.6)">${mc.svg}</span><span style="position:absolute;left:-2px;top:-2px;width:10px;height:10px;border-radius:50%;background:${verified ? "#39FF14" : "#FF5C00"};border:2px solid #000"></span></div>`;
+  const html = `<div style="position:relative;width:${size}px;height:${size}px"><span style="position:absolute;inset:-${selected ? 12 : 8}px;border-radius:50%;background:radial-gradient(circle,${glow},transparent 65%)"></span><span style="position:relative;display:block;width:${size}px;height:${size}px;border-radius:50%;border:3px solid #fff;overflow:hidden;background:#000;box-shadow:0 2px 6px rgba(0,0,0,0.6)${selected ? ",0 0 0 2px " + mc_color : ""}"><img src="${img}" alt="" style="width:100%;height:100%;object-fit:cover;display:block"/></span><span style="position:absolute;right:-3px;bottom:-3px;width:${badge}px;height:${badge}px;border-radius:50%;background:${mc_color};border:2px solid #000;display:flex;align-items:center;justify-content:center;box-shadow:0 0 6px rgba(0,0,0,0.6)">${mc_svg}</span><span style="position:absolute;left:-2px;top:-2px;width:10px;height:10px;border-radius:50%;background:${verified ? "#39FF14" : "#FF5C00"};border:2px solid #000"></span></div>`;
   return L.divIcon({ className: "ooh-pin ooh-pin--photo", html, iconSize: [size, size], iconAnchor: [size / 2, size / 2], popupAnchor: [0, -(size / 2) - 4] });
 }
 
@@ -157,7 +149,7 @@ function PinMarker({ m, selected, onSelect }) {
   return (
     <Marker
       position={[m.lat, m.lng]}
-      icon={m.image ? pinFor(m, selected) : selected ? selIcon : pinIcon}
+      icon={m.image ? pinFor(m, selected) : selected ? selIcon(m.type) : pinIcon(m.type)}
       eventHandlers={{ click: () => onSelect?.(m.id) }}
     >
       <Popup>
