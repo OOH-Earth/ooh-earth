@@ -164,6 +164,11 @@ export default function Map() {
       });
   }, [raw, typeFilter, query]);
 
+  const primaryLayer = useMemo(
+    () => ["adbusting", "graffiti", "ads", "rivers", "mushrooms", "flora", "war", "radio"].find((l) => activeLayers.includes(l)) || null,
+    [activeLayers]
+  );
+
   // Layer-filtered markers — adbusting/graffiti are filtered views of the
   // Location entity (same markers, narrowed by field conditions).
   const layerFiltered = useMemo(() => {
@@ -184,11 +189,6 @@ export default function Map() {
       .filter((m) => isFinite(m.lat) && isFinite(m.lng) && m.lat <= n && m.lat >= s && inLng(m.lng))
       .sort((a, b) => ((a.lat - cLat) ** 2 + (a.lng - cLng) ** 2) - ((b.lat - cLat) ** 2 + (b.lng - cLng) ** 2));
   }, [layerFiltered, view, followViewport, bounds]);
-
-  const primaryLayer = useMemo(
-    () => ["adbusting", "graffiti", "ads", "rivers", "mushrooms", "flora", "war", "radio"].find((l) => activeLayers.includes(l)) || null,
-    [activeLayers]
-  );
 
   useEffect(() => { setLayerFilter("all"); }, [primaryLayer]);
 
