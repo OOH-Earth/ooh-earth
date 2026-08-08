@@ -43,13 +43,13 @@ export default function ContextualNudge() {
 
   return (
     <div
-      className={`fixed bottom-4 left-1/2 z-[70] -translate-x-1/2 transition-all duration-500 ${
-        show ? "translate-y-0 opacity-100" : "pointer-events-none translate-y-2 opacity-0"
+      className={`fixed left-1/2 z-[70] -translate-x-1/2 transition-all duration-300 bottom-[calc(88px+env(safe-area-inset-bottom))] lg:bottom-6 ${
+        show ? "translate-y-0 opacity-100" : "pointer-events-none translate-y-4 opacity-0"
       }`}
     >
-      <div className="flex items-center gap-3 border border-ozone/40 bg-void/85 px-4 py-2.5 backdrop-blur-md">
-        <span className="font-mono text-[9px] uppercase tracking-[0.3em] text-dim">Next</span>
-        <span className="text-xs text-silver">{hint.label}</span>
+      <div className="flex items-center gap-3 rounded-full border border-white/10 bg-[#323637] px-4 py-2.5 shadow-[0_8px_32px_rgba(0,0,0,0.5)] backdrop-blur-xl">
+        <span className="font-mono text-[8px] uppercase tracking-[0.3em] text-white/35">Next</span>
+        <span className="text-xs font-medium text-white">{hint.label}</span>
         <Link
           to={hint.to}
           onClick={() => dismiss(hint.id)}
@@ -61,7 +61,7 @@ export default function ContextualNudge() {
         <button
           onClick={() => { dismiss(hint.id); setShow(false); }}
           aria-label="Dismiss"
-          className="text-dim transition-colors hover:text-silver"
+          className="text-white/30 transition-colors hover:text-white"
         >
           <X className="h-3.5 w-3.5" />
         </button>
