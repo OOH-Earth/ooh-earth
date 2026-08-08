@@ -957,6 +957,29 @@
 .light .leaflet-tooltip-left::before { border-left-color: #f7f7f7 !important; }
 .light .leaflet-tooltip-right::before { border-right-color: #f7f7f7 !important; }
 
+/* Matrix — mobile bottom nav: phosphor glow + scanline border */
+.matrix .ooh-mobile-nav {
+  border-color: rgba(0, 255, 85, 0.3);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.7), 0 0 24px rgba(0, 255, 85, 0.12);
+}
+.matrix .ooh-mobile-nav::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 9999px;
+  pointer-events: none;
+  background: repeating-linear-gradient(
+    0deg,
+    rgba(0, 255, 85, 0.04) 0,
+    rgba(0, 255, 85, 0.04) 1px,
+    transparent 1px,
+    transparent 3px
+  );
+}
+.matrix .ooh-mobile-nav .text-foreground {
+  text-shadow: 0 0 6px rgba(0, 255, 85, 0.5);
+}
+
 /* Matrix map tint — green-on-black via CSS filter (tiles only, pins stay yellow) */
 .ooh-map-style-matrix .leaflet-tile-pane { filter: sepia(1) hue-rotate(60deg) saturate(2.6) brightness(0.92); }
 .ooh-globe-style-matrix .maplibregl-canvas { filter: sepia(1) hue-rotate(60deg) saturate(2.6) brightness(0.92); }

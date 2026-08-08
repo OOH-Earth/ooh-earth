@@ -26,7 +26,7 @@ export default function MobileBottomTabs() {
       style={{ paddingBottom: "calc(env(safe-area-inset-bottom) + 10px)" }}
       aria-label="Mobile navigation"
     >
-      <div className="flex items-center gap-1 rounded-full border border-white/10 bg-[#323637] px-2 py-2 shadow-[0_8px_32px_rgba(0,0,0,0.5)] backdrop-blur-xl">
+      <div className="ooh-mobile-nav flex items-center gap-1 rounded-full border border-border bg-card px-2 py-2 shadow-[0_8px_32px_rgba(0,0,0,0.5)] backdrop-blur-xl">
         {TABS.map(({ to, icon: Icon, label, primary, notify }, i) => {
           const isActive = i === active;
 
@@ -42,14 +42,14 @@ export default function MobileBottomTabs() {
                 <motion.div
                   whileTap={{ scale: 0.85 }}
                   transition={{ type: "spring", stiffness: 400, damping: 17 }}
-                  className={`flex h-11 w-11 items-center justify-center rounded-full shadow-[0_0_18px_rgba(237,255,0,0.35)] transition-colors duration-300 ${
+                  className={`flex h-11 w-11 items-center justify-center rounded-full shadow-ozone-glow transition-colors duration-300 ${
                     isActive ? "bg-flare" : "bg-ozone"
                   }`}
                 >
-                  <Icon className="h-5 w-5" strokeWidth={2.3} style={{ color: "#000" }} />
+                  <Icon className="h-5 w-5 text-void" strokeWidth={2.3} />
                 </motion.div>
                 {notify && (
-                  <span className="absolute right-2 top-2 h-2 w-2 rounded-full bg-red-500 ring-2 ring-[#323637]" />
+                  <span className="absolute right-2 top-2 h-2 w-2 rounded-full bg-destructive ring-2 ring-card" />
                 )}
               </button>
             );
@@ -67,7 +67,7 @@ export default function MobileBottomTabs() {
                 <motion.div
                   layoutId="mobileTabActive"
                   transition={{ type: "spring", stiffness: 380, damping: 30 }}
-                  className="absolute inset-0 rounded-full bg-[#4a4f51]"
+                  className="absolute inset-0 rounded-full bg-secondary"
                 />
               )}
               <motion.div
@@ -77,16 +77,12 @@ export default function MobileBottomTabs() {
                   className="relative z-10"
                 >
                   <Icon
-                    className="h-5 w-5"
+                    className={`h-5 w-5 transition-colors duration-200 ${isActive ? "text-foreground" : "text-muted-foreground"}`}
                     strokeWidth={isActive ? 2.4 : 1.8}
-                    style={{
-                      color: isActive ? "#ffffff" : "rgba(255,255,255,0.5)",
-                      transition: "color 0.25s ease",
-                    }}
                   />
                 </motion.div>
               {notify && (
-                <span className="absolute right-2 top-2 z-20 h-2 w-2 rounded-full bg-red-500 ring-2 ring-[#323637]" />
+                <span className="absolute right-2 top-2 z-20 h-2 w-2 rounded-full bg-destructive ring-2 ring-card" />
               )}
             </button>
           );
