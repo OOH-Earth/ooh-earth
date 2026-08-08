@@ -109,7 +109,7 @@ function buildFC(markers, selectedId) {
   };
 }
 
-export default function Globe3D({ markers, selectedId, hoverId, onSelect, userLoc, activeLayers = [], interactive = true, spin = false, scrollZoom = true, flyTo }) {
+export default function Globe3D({ markers, selectedId, hoverId, onSelect, userLoc, activeLayers = [], interactive = true, spin = false, scrollZoom = true, flyTo, onError }) {
   const mapStyle = useMapStyle().style;
   const containerRef = useRef(null);
   const mapRef = useRef(null);
@@ -118,7 +118,8 @@ export default function Globe3D({ markers, selectedId, hoverId, onSelect, userLo
   const dataRef = useRef({ type: "FeatureCollection", features: [] });
   const onSelectRef = useRef(onSelect);
   const userCenteredRef = useRef(false);
-  onSelectRef.current = onSelect;
+  const onErrorRef = useRef(onError);
+  onErrorRef.current = onError;
 
   const [ready, setReady] = useState(false);
   const [spinning, setSpinning] = useState(spin);
@@ -163,6 +164,25 @@ export default function Globe3D({ markers, selectedId, hoverId, onSelect, userLo
       map.scrollZoom.disable();
       map.boxZoom.disable();
     }
+
+    // Fail-fast: if the style fails to load (network/CORS), fall back to flat map
+    let styleFailed = false;
+    map.on("error", (e) => {
+      // MapLibre fires error events for non-fatal things too; only bail if the
+      // style itself hasn't loaded within a reasonable window.
+      if (!readyRef.current && !styleFailed && e?.error?.status === 404) {
+        styleFailed = true;
+        onErrorRef.current?.();
+      }
+    });
+
+    // Safety net: if the map hasn't fired "load" after 12s, the style URL is
+    // unreachable — switch to the flat Leaflet map instead of a black void.
+    const loadTimeout = setTimeout(() => {
+      if (!readyRef.current) {
+        onErrorRef.current?.();
+      }
+    }, 12000);
 
     const applyGlobe = () => {
       try { map.setProjection({ type: "globe" }); } catch (e) {}
@@ -264,6 +284,7 @@ export default function Globe3D({ markers, selectedId, hoverId, onSelect, userLo
     });
 
     return () => {
+      clearTimeout(loadTimeout);
       readyRef.current = false;
       map.remove();
     };
@@ -351,6 +372,14 @@ export default function Globe3D({ markers, selectedId, hoverId, onSelect, userLo
   return (
     <div className="absolute inset-0">
       <div ref={containerRef} className={`h-full w-full ${mapStyle.tint ? "ooh-globe-style-matrix" : ""}`} style={{ background: mapStyle.bg }} />
+      {!ready && (
+        <div className="pointer-events-none absolute inset-0 z-[5] flex items-center justify-center" style={{ background: mapStyle.bg }}>
+          <div className="flex flex-col items-center gap-3">
+            <div className="h-6 w-6 animate-spin rounded-full border-2 border-slate2 border-t-ozone" />
+            <span className="font-mono text-[10px] uppercase tracking-[0.3em] text-dim">Initializing globe…</span>
+          </div>
+        </div>
+      )}
 
       {/* military-grade surveillance grid overlay */}
       <div className="pointer-events-none absolute inset-0 z-[1] overflow-hidden">

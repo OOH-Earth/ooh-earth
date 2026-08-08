@@ -363,7 +363,7 @@ export default function Map() {
               </button>
             </div>
             {view === "globe" ? (
-              <Globe3D key={mapStyle.id} markers={layerFiltered} selectedId={selectedId} hoverId={hoverId} onSelect={setSelectedId} userLoc={userLoc} activeLayers={activeLayers} flyTo={flyTo} />
+              <Globe3D key={mapStyle.id} markers={layerFiltered} selectedId={selectedId} hoverId={hoverId} onSelect={setSelectedId} userLoc={userLoc} activeLayers={activeLayers} flyTo={flyTo} onError={() => setView("flat")} />
             ) : (
               <LocationMap markers={layerFiltered} selectedId={selectedId} hoverId={hoverId} onSelect={setSelectedId} userLoc={userLoc} futures={OOH_FUTURES} activeLayers={activeLayers} onBoundsChange={setBounds} flyTo={flyTo} />
             )}
