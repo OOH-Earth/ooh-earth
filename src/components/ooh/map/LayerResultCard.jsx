@@ -38,8 +38,12 @@ export default function LayerResultCard({ item, layer }) {
       className="group flex w-full gap-3 border-b border-slate2/40 p-3 text-left transition-colors hover:bg-card"
       style={{ borderLeft: "2px solid transparent" }}
     >
-      <div className="flex h-14 w-14 shrink-0 items-center justify-center border border-slate2/40 grid-bg" style={{ backgroundColor: "#0a0a0a" }}>
+      <div className="relative flex h-14 w-14 shrink-0 items-center justify-center border border-slate2/40 grid-bg" style={{ backgroundColor: "#0a0a0a" }}>
         <Icon className="h-5 w-5" style={{ color: accent }} strokeWidth={1.5} />
+        <span className="absolute left-0 top-0 h-2 w-2 border-l border-t" style={{ borderColor: `${accent}99` }} />
+        <span className="absolute right-0 top-0 h-2 w-2 border-r border-t" style={{ borderColor: `${accent}99` }} />
+        <span className="absolute bottom-0 left-0 h-2 w-2 border-b border-l" style={{ borderColor: `${accent}99` }} />
+        <span className="absolute bottom-0 right-0 h-2 w-2 border-b border-r" style={{ borderColor: `${accent}99` }} />
       </div>
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-1.5">
