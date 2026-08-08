@@ -79,11 +79,20 @@ function FitBounds({ markers }) {
 
 // Geocode fly-to — reacts to a {lat,lng,zoom,nonce} object from the search bar.
 // nonce lets re-selecting the same place re-trigger the flight.
+// Guard against flyTo with NaN coords or a zero-size (hidden) map container —
+// Leaflet's projection produces NaN LatLngs in both cases.
+function safeFlyTo(map, lat, lng, zoom, opts) {
+  const size = map.getSize();
+  if (!size || size.x === 0 || size.y === 0) return;
+  if (!isFinite(lat) || !isFinite(lng)) return;
+  map.flyTo([lat, lng], zoom, opts);
+}
+
 function FlyToGeocode({ flyTo }) {
   const map = useMap();
   useEffect(() => {
     if (!flyTo || !flyTo.nonce) return;
-    map.flyTo([flyTo.lat, flyTo.lng], flyTo.zoom || 13, { duration: 0.8 });
+    safeFlyTo(map, flyTo.lat, flyTo.lng, flyTo.zoom || 13, { duration: 0.8 });
   }, [flyTo, map]);
   return null;
 }
@@ -94,7 +103,7 @@ function FlyToUser({ userLoc }) {
   useEffect(() => {
     if (!userLoc || done.current) return;
     done.current = true;
-    map.flyTo([userLoc.lat, userLoc.lng], 14, { duration: 0.8 });
+    safeFlyTo(map, userLoc.lat, userLoc.lng, 14, { duration: 0.8 });
   }, [userLoc, map]);
   return null;
 }
@@ -104,7 +113,7 @@ function FlyTo({ selectedId, markers }) {
   useEffect(() => {
     if (!selectedId) return;
     const m = markers.find((x) => x.id === selectedId);
-    if (m) map.flyTo([m.lat, m.lng], Math.max(map.getZoom(), 15), { duration: 0.6 });
+    if (m) safeFlyTo(map, m.lat, m.lng, Math.max(map.getZoom(), 15), { duration: 0.6 });
   }, [selectedId, markers, map]);
   return null;
 }
@@ -114,7 +123,7 @@ function FlyToHover({ hoverId, selectedId, markers }) {
   useEffect(() => {
     if (!hoverId || hoverId === selectedId) return;
     const m = markers.find((x) => x.id === hoverId);
-    if (m) map.flyTo([m.lat, m.lng], Math.max(map.getZoom(), 14), { duration: 0.8 });
+    if (m) safeFlyTo(map, m.lat, m.lng, Math.max(map.getZoom(), 14), { duration: 0.8 });
   }, [hoverId, selectedId, markers, map]);
   return null;
 }
@@ -239,7 +248,7 @@ function ClusteredMarkers({ pins, selectedId, onSelect }) {
         key={"c" + i}
         position={[c.g.lat, c.g.lng]}
         icon={clusterIcon(c.g.items.length)}
-        eventHandlers={{ click: () => map.flyTo([c.g.lat, c.g.lng], Math.min(20, zoom + 2), { duration: 0.6 }) }}
+        eventHandlers={{ click: () => safeFlyTo(map, c.g.lat, c.g.lng, Math.min(20, zoom + 2), { duration: 0.6 }) }}
       >
         <Tooltip direction="top" offset={[0, -18]} opacity={0.96}>
           {(() => {
