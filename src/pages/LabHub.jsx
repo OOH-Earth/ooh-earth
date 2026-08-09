@@ -106,7 +106,7 @@ export default function LabHub() {
         {!isAuthenticated && (
           <div className="mb-6 flex flex-wrap items-center gap-3 border border-ozone/30 bg-ozone/5 px-4 py-3">
             <UserPlus className="h-4 w-4 text-ozone" />
-            <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-silver/70">Browse freely — register an operative handle to generate, export & mint</span>
+            <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-silver/70">Browse freely — register a member handle to generate, export & mint</span>
             <Link to="/register" className="ml-auto border border-ozone px-3 py-1.5 font-mono text-[10px] font-bold uppercase tracking-[0.2em] text-ozone transition-colors hover:bg-ozone hover:text-void">Register</Link>
           </div>
         )}
