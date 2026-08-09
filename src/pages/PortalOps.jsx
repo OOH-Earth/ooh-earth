@@ -597,14 +597,14 @@ function RosterView() {
   const TIERS = [["Scout", "Entry", "Files reports, earns points, browses the verified atlas."], ["Field Reporter", "Trusted", "Sees the moderation queue (read-only field intel)."], ["City Ambassador", "Lead", "Coordinates a city; can be granted moderator access."]];
   return (
     <>
-      <Block title="Back-office Access Roster" desc="Who holds which back-office role. Distinct from the civic operative tiers below. Written to AccessLog via personaCtl on every change.">
+      <Block title="Back-office Access Roster" desc="Who holds which back-office role. Distinct from the civic member tiers below. Written to AccessLog via personaCtl on every change.">
         <table className="w-full border-collapse">
           <thead><tr><Th>Operator</Th><Th>Position</Th><Th>Access</Th><Th>Basis</Th><Th>Scope</Th><Th>Status</Th></tr></thead>
           <tbody>{PEOPLE.map(([n, p, a, b, s, st, k]) => <tr key={p}><Td name>{n}</Td><Td>{p}</Td><Td><Badge tone={a === "ADMIN" ? "ok" : "mute"}>{a}</Badge></Td><Td mono>{b}</Td><Td>{s}</Td><Td><Badge tone={k}>{st}</Badge></Td></tr>)}</tbody>
         </table>
         <p className="mt-4 text-[12.5px] leading-relaxed text-dim"><span className="text-flare">Note:</span> Collaboration Agreement signed by Adil, not yet countersigned; trial-length / payment-timing / licence-name placeholders open. Licence pair (AGPL-3.0 + CC BY-SA 4.0) fills the licence placeholder. Sole ownership retained; no equity.</p>
       </Block>
-      <Block title="Civic Operative Tiers" desc="The public progression in the app — separate from back-office access. Stored on the Operative entity.">
+      <Block title="Civic Member Tiers" desc="The public progression in the app — separate from back-office access. Stored on the Operative entity.">
         {TIERS.map(([t, l, d]) => <div key={t} className="flex flex-wrap items-start justify-between gap-5 border-b border-slate2/30 py-4 last:border-0"><Badge tone="ok">{t}</Badge><div className="flex-1 text-right"><div className="font-mono text-[9px] uppercase tracking-[0.11em] text-dim">{l}</div><div className="mt-1 text-[13px] text-dim">{d}</div></div></div>)}
       </Block>
     </>
