@@ -127,7 +127,7 @@ export const PANELS_B = {
         <div class="jm-screen"><span class="jm-sbk tl"></span><span class="jm-sbk br"></span><div class="jm-row"><span class="jm-sq" style="border-radius:50%;background:var(--lo3)"></span><div class="jm-col"><div class="jm-bar jm-w70"></div><div class="jm-bar jm-w40"></div></div></div><div class="jm-bar jm-w85" style="margin-top:6px"></div><span class="jm-lbl" style="bottom:7px;right:8px;color:var(--live)">AGPL-3.0 &middot; public</span></div>
         <div class="jm-desc">Code is public and copyleft &mdash; <b>oohearth/ooh-earth</b>, AGPL-3.0 + CC BY-SA 4.0, mirrored from Base44. Nothing to buy, nothing locked. The commons is the pitch.</div>
         <div class="jm-feats"><div class="jm-feat live"><span class="d"></span>Public repo / copyleft<span class="st">LIVE</span></div></div>
-        <div class="jm-friction"><b>Non-negotiable:</b> anti-VC, not for sale.</div>
+        <div class="jm-friction"><b>Non-negotiable:</b> not for sale.</div>
       </div></div></div>
       <div class="jm-stage"><div class="jm-connect"><span class="jm-arrow">&rarr;</span><div class="jm-scard">
         <div class="jm-stagetop"><span class="jm-idx">03</span><span class="jm-sname">Wire their campaigns</span></div>
