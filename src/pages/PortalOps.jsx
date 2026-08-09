@@ -594,7 +594,7 @@ function RosterView() {
     ["Adil", "Growth Technical Lead (trial)", "MODERATOR", "proposed", "Growth + build, per Collaboration Agreement", "PENDING COUNTERSIGN", "warn"],
     ["—", "City Ambassador seat", "MODERATOR", "open", "Per-city verification & outreach", "VACANT", "mute"],
   ];
-  const TIERS = [["Scout", "Entry", "Files reports, earns points, browses the verified atlas."], ["Field Operative", "Trusted", "Sees the moderation queue (read-only field intel)."], ["City Ambassador", "Lead", "Coordinates a city; can be granted moderator access."]];
+  const TIERS = [["Scout", "Entry", "Files reports, earns points, browses the verified atlas."], ["Field Reporter", "Trusted", "Sees the moderation queue (read-only field intel)."], ["City Ambassador", "Lead", "Coordinates a city; can be granted moderator access."]];
   return (
     <>
       <Block title="Back-office Access Roster" desc="Who holds which back-office role. Distinct from the civic operative tiers below. Written to AccessLog via personaCtl on every change.">
