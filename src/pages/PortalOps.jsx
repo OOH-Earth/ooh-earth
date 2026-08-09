@@ -207,7 +207,7 @@ function ExecView({ stats, intel }) {
   const riskCount = risks ? risks.length : null;
   const highCount = risks ? risks.filter((r) => r[2] === "high").length : null;
   const KEYS = [
-    ["Reports", stats?.reports], ["Verified", stats?.verified], ["Operatives", stats?.operatives], ["Cities", stats?.cities],
+    ["Reports", stats?.reports], ["Verified", stats?.verified], ["Members", stats?.operatives], ["Cities", stats?.cities],
     ["Raised", stats?.raised], ["Donors", stats?.donors], ["Digital Busts", stats?.digital_busts], ["Points", stats?.points],
   ];
   const healthTone = highCount == null ? "mute" : highCount > 0 ? "warn" : "ok";
