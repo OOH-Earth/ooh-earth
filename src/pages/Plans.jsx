@@ -57,7 +57,7 @@ const TIERS = [
   "Ally badge on your public profile",
   "Your name in the project's open-source supporters credits",
   "The supporter dispatch — what we're building and finding, before it's public",
-  "Every cent funds the commons: no ads, no VC, copyleft forever"]
+  "Every cent funds the commons: no ads, copyleft forever"]
 
 },
 {
@@ -221,7 +221,7 @@ export default function Plans() {
                 </h2>
                 <ul className="mt-6 space-y-3 font-display text-sm leading-[1.4] text-darkgray">
                   <li>For everyone who believes ads shouldn't own the view — document what's out there, share what you find, and support the people reclaiming their streets.</li>
-                  <li>No venture capital. No corporate compromise. Just people who believe public space belongs to the public.</li>
+                  <li>No corporate compromise. Just people who believe public space belongs to the public.</li>
                   <li>Fewer ads make for calmer, happier streets — and a public realm that belongs to the people who live in it.</li>
                   <li>Join a global network documenting corporate visual pollution. Every pin on the map is data the advertising industry doesn't want public.</li>
                 </ul>
