@@ -233,7 +233,7 @@ export default function Console() {
           </ul>
         </div>
         <div className="ic-foot">
-          <div><div className="fb">ooh<span>.</span>earth</div><p>Capital &amp; Ops Console · Orbital Perspective v1<br/>Community-funded · copyleft<br/>hello@outofhell.org</p></div>
+          <div><div className="fb">ooh<span>.</span>earth</div><p>Capital &amp; Ops Console · Orbital Perspective v1<br/>Community-funded · copyleft<br/>hello@ooh.earth</p></div>
           <div className="right"><span className="cls">Confidential · Investor Class</span><p>Framing tool · not valuation advice<br/>Figures verified on diligence</p></div>
         </div>
       </section>
