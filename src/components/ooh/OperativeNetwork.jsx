@@ -41,25 +41,25 @@ export default function OperativeNetwork() {
       <div className="px-5 py-16 md:px-8 md:py-24">
         <div className="flex flex-col gap-4 border-b border-slate2/40 pb-6 md:flex-row md:items-end md:justify-between">
           <div>
-            <span className="font-mono text-[10px] uppercase tracking-[0.3em] text-ozone">// Field operative network</span>
+            <span className="font-mono text-[10px] uppercase tracking-[0.3em] text-ozone">// Member network</span>
             <h2 className="mt-3 font-display text-5xl font-bold leading-[1.05] tracking-[-0.02em] text-silver md:text-7xl">
               The resistance<br />is organized
             </h2>
           </div>
           <p className="max-w-sm font-display text-sm font-normal leading-[1.4] text-darkgray">
-            Every report filed is a person who stopped walking past. This is the live count of field operatives, active cities, and documented interventions — the network grows with every submission.
+            Every report filed is a person who stopped walking past. This is the live count of members, active cities, and documented interventions — the network grows with every submission.
           </p>
         </div>
 
         {!stats ? (
           <div className="flex items-center gap-3 py-16">
             <Loader2 className="h-5 w-5 animate-spin text-ozone" />
-            <span className="font-mono text-[10px] uppercase tracking-[0.3em] text-dim">// tallying field operatives…</span>
+            <span className="font-mono text-[10px] uppercase tracking-[0.3em] text-dim">// tallying members…</span>
           </div>
         ) : (
           <div className="mt-10 grid grid-cols-3 gap-px bg-slate2/40">
             <Stat icon={Megaphone} value={stats.reports} label="Field reports" accent="text-ozone" />
-            <Stat icon={Users} value={stats.operatives} label="Active operatives" accent="text-ozone" />
+            <Stat icon={Users} value={stats.operatives} label="Active members" accent="text-ozone" />
             <Stat icon={MapPin} value={stats.cities} label="Cities active" accent="text-flare" />
           </div>
         )}
