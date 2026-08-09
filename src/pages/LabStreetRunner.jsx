@@ -84,7 +84,7 @@ function bikeMarkup(mode, uid) {
     p.push(call(430, 300, 430, 470, "6061 ALLOY MONOCOQUE", "middle"));
     p.push(call(510, 340, 560, 470, "SWAPPABLE 52V CELL", "start"));
     p.push(call(188, 262, 90, 300, "TAIL / SIGNAL", "end"));
-    p.push(call(430, 190, 300, 110, "OPERATIVE SADDLE", "end"));
+    p.push(call(430, 190, 300, 110, "FIELD SADDLE", "end"));
     p.push(`<line x1="${RCX}" y1="516" x2="${FCX}" y2="516" stroke="${HIVIS}" stroke-width="1" opacity="0.7"/><line x1="${RCX}" y1="508" x2="${RCX}" y2="524" stroke="${HIVIS}" stroke-width="1"/><line x1="${FCX}" y1="508" x2="${FCX}" y2="524" stroke="${HIVIS}" stroke-width="1"/>`);
     p.push(`<text x="${(RCX + FCX) / 2}" y="512" font-size="10" fill="${HIVIS}" font-family="monospace" text-anchor="middle">WHEELBASE 1130</text>`);
     p.push(`<text x="40" y="40" font-size="26" font-weight="900" fill="${HIVIS}" font-family="sans-serif" letter-spacing="2">OE-1K/66</text>`);
