@@ -7,7 +7,7 @@ function LoginPrompt() {
     <div className="border border-slate2/60 bg-card p-6">
       <div className="flex items-center gap-2">
         <Zap className="h-4 w-4 text-ozone" />
-        <span className="font-mono text-[10px] uppercase tracking-[0.25em] text-ozone">// Operative Protocol</span>
+        <span className="font-mono text-[10px] uppercase tracking-[0.25em] text-ozone">// Member Protocol</span>
       </div>
       <p className="mt-3 font-display text-sm leading-relaxed text-darkgray">
         Log in to track your XP, earn merit badges, complete daily quests, and climb the resistance leaderboard.
@@ -30,7 +30,7 @@ export default function GamificationWidget() {
   if (loading) {
     return (
       <div className="flex items-center gap-3 border border-slate2/60 bg-card p-6 font-mono text-[10px] uppercase tracking-[0.3em] text-dim">
-        <span className="h-1.5 w-1.5 animate-flicker rounded-full bg-ozone" /> Compiling operative data…
+        <span className="h-1.5 w-1.5 animate-flicker rounded-full bg-ozone" /> Compiling member data…
       </div>
     );
   }
@@ -44,7 +44,7 @@ export default function GamificationWidget() {
     <div className="border border-ozone/40 bg-card p-5">
       <div className="flex items-center justify-between">
         <span className="flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-[0.25em] text-ozone">
-          <Zap className="h-3.5 w-3.5" /> Operative Console
+          <Zap className="h-3.5 w-3.5" /> Member Console
         </span>
         <Link to="/operative" className="flex items-center gap-1 font-mono text-[9px] uppercase tracking-[0.2em] text-darkgray transition-colors hover:text-ozone">
           Full profile <ArrowUpRight className="h-3 w-3" />
