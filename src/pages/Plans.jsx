@@ -91,10 +91,10 @@ const TIERS = [
 
 const FAQ = [
 { q: "Do I need to pay to use the platform?", a: "No. The map, reporting, and field tools are open to everyone — free, and staying that way. Supporter tiers don't unlock the commons; they fund it and add recognition, access, and a few real perks on top. Start on a free plan and see what we can do together." },
-{ q: "What's the difference between the three tiers?", a: "Accomplice ($5/mo) is how you get in — a badge, your name on the Supporters wall, the monthly dispatch, and a vote in the roadmap poll. Sustainer ($15/mo) is the backbone — everything in Accomplice plus early access to new tools and press, a credit in the open-source repo, and a seat at the monthly briefing. Patron ($50/mo) moves the needle — everything in Sustainer plus the physical field-credential kit shipped to you, the ability to fund a named campaign or build, and a direct line to the founder. Every tier funds the same open, ad-free commons — the higher tiers just move more of it." },
+{ q: "What's the difference between the three tiers?", a: "Accomplice ($5/mo) is how you get in — a badge on your profile, your name in the open-source supporters credits, the supporter dispatch, and the knowledge that every cent funds an ad-free, copyleft commons. Sustainer ($15/mo) is the backbone — everything in Accomplice plus first access to new tools and press before they're public, and a say in what gets built next. Patron ($50/mo) moves the needle — everything in Sustainer plus the chance to underwrite a named campaign or build with your credit on it, and a direct line to the founder to help set priorities. Every tier funds the same open commons — the higher tiers just move more of it." },
 { q: "Monthly or annual — what's the difference?", a: "Same tier, same benefits. Annual is billed once a year and works out at two months free versus paying monthly. Pick whichever suits you with the toggle above the tiers; you can change it later in the billing portal." },
 { q: "Are my activities on the platform private?", a: "Yes. We believe privacy is a basic human right. All new sign-ups are completely anonymous, and we ensure all user information is 100% secure. When you create an account, all of your activity remains completely private." },
-{ q: "How do supporter plans work?", a: "They're recurring subscriptions, billed monthly or annually, that renew automatically until you cancel. Manage or cancel anytime from the billing portal — no need to email us. Cancelling stops future renewals; you keep your tier until the end of the period you've paid for. Some supporter benefits roll out as the movement grows — your support is what builds them." },
+{ q: "How do supporter plans work?", a: "They're recurring subscriptions, billed monthly or annually, that renew automatically until you cancel. Manage or cancel anytime from the billing portal — no need to email us. Cancelling stops future renewals; you keep your tier until the end of the period you've paid for. We only list perks we can actually deliver; where something is still being built, we say so rather than promise it." },
 { q: "What is the goal of the OOH Earth platform?", a: "It is a radical platform designed for mapping, resisting, and replacing corporate outdoor advertising with public art, culture, and truth." }];
 
 
@@ -251,6 +251,8 @@ export default function Plans() {
         <section className="border-t border-slate2/40 bg-void">
           <div className="px-5 py-16 md:px-8 md:py-24">
             <span className="font-mono text-[10px] uppercase tracking-[0.3em] text-ozone">// Free · Start now</span>
+            <h2 className="mt-3 font-display text-4xl font-bold leading-[1.05] tracking-[-0.02em] text-silver md:text-6xl">The whole toolkit. No card. No catch.</h2>
+            <p className="mt-3 max-w-2xl font-display text-sm leading-[1.4] text-darkgray md:text-base">Map it, scan it, report it, reimagine it in AR — free, and free for good. This is the platform, not a trial. Pick how you want to show up.</p>
             <div className="mt-8 grid gap-px border border-slate2/60 bg-slate2/40 md:grid-cols-2">
               {FREE_PLANS.map((p) =>
               <div key={p.name} className="bg-card p-6 md:p-8">
