@@ -8,16 +8,16 @@ export { POINTS, pointsForReport };
 
 // ── Level curve ──────────────────────────────────────────────────────
 export const LEVELS = [
-  { level: 1,  xp: 0,     title: "Recruit" },
+  { level: 1,  xp: 0,     title: "Newcomer" },
   { level: 2,  xp: 100,   title: "Scout" },
   { level: 3,  xp: 250,   title: "Spotter" },
-  { level: 4,  xp: 500,   title: "Field" },
-  { level: 5,  xp: 1000,  title: "Operative" },
-  { level: 6,  xp: 2000,  title: "Agent" },
+  { level: 4,  xp: 500,   title: "Mapper" },
+  { level: 5,  xp: 1000,  title: "Field Reporter" },
+  { level: 6,  xp: 2000,  title: "Chronicler" },
   { level: 7,  xp: 3500,  title: "Veteran" },
   { level: 8,  xp: 5500,  title: "Specialist" },
-  { level: 9,  xp: 8000,  title: "Commander" },
-  { level: 10, xp: 12000, title: "Vanguard" },
+  { level: 9,  xp: 8000,  title: "Organiser" },
+  { level: 10, xp: 12000, title: "Champion" },
   { level: 11, xp: 18000, title: "Legend" },
   { level: 12, xp: 26000, title: "Mythic" },
 ];
@@ -47,7 +47,7 @@ export function levelFromXp(xp) {
 
 // ── Badge definitions ────────────────────────────────────────────────
 export const BADGES = [
-  { id: "first_blood",     label: "First Blood",       desc: "File your first report",        icon: "FileText",    tier: "bronze",  check: s => s.reports >= 1 },
+  { id: "first_blood",     label: "First Report",      desc: "File your first report",        icon: "FileText",    tier: "bronze",  check: s => s.reports >= 1 },
   { id: "spotter",         label: "Spotter",           desc: "File 10 reports",               icon: "Eye",         tier: "bronze",  check: s => s.reports >= 10 },
   { id: "cartographer",    label: "Cartographer",      desc: "File 50 reports",               icon: "MapPin",      tier: "silver",  check: s => s.reports >= 50 },
   { id: "surveyor",        label: "Surveyor",          desc: "File 100 reports",              icon: "Crosshair",   tier: "gold",    check: s => s.reports >= 100 },
@@ -59,7 +59,7 @@ export const BADGES = [
   { id: "lead_hunter",     label: "Lead Hunter",       desc: "Claim 5 funding leads",          icon: "Target",      tier: "silver",  check: s => s.leads >= 5 },
   { id: "week_warrior",    label: "Week Warrior",     desc: "7-day activity streak",          icon: "Flame",       tier: "gold",    check: s => s.streak >= 7 },
   { id: "monthly_devotion",label: "Monthly Devotion",  desc: "30-day activity streak",         icon: "Flame",       tier: "diamond", check: s => s.streak >= 30 },
-  { id: "vanguard",        label: "Vanguard",          desc: "Reach 5,000 XP",                 icon: "Rocket",      tier: "diamond", check: s => s.xp >= 5000 },
+  { id: "vanguard",        label: "Champion",          desc: "Reach 5,000 XP",                 icon: "Rocket",      tier: "diamond", check: s => s.xp >= 5000 },
 ];
 
 export const TIER_STYLES = {
