@@ -47,7 +47,7 @@ export default function ClaimLeadDialog({ open, onClose, location, onClaimed }) 
         </DialogHeader>
         <div className="space-y-4 py-2">
           <div className="space-y-1.5">
-            <Label className="font-mono text-[10px] uppercase tracking-[0.2em] text-darkgray">Operative handle</Label>
+            <Label className="font-mono text-[10px] uppercase tracking-[0.2em] text-darkgray">Member handle</Label>
             <Input value={handle} onChange={(e) => setHandle(e.target.value)} placeholder="@ghostsignal" className="font-mono text-sm" />
           </div>
           <div className="space-y-1.5">
