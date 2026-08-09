@@ -29,7 +29,7 @@ function CityCard({ c, highlighted }) {
   const barW = live ? c.level : 4;
   return (
     <Link
-      to="/map"
+      to={`/map?area=${encodeURIComponent(c.city.toLowerCase())}`}
       className="group relative flex h-44 flex-col justify-end overflow-hidden border border-slate2 p-4 transition-colors hover:border-ozone"
     >
       {c.img ? (
