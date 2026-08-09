@@ -88,13 +88,13 @@ export default function ClientPortal() {
           </div>
           <div className="inv-actions">
             <Link className="inv-btn primary" to="/map">Browse documented sites →</Link>
-            <a className="inv-btn ghost" href="mailto:hello@outofhell.org?subject=OOH%20Earth%20%E2%80%94%20Client%20onboarding">Onboard a client</a>
+            <a className="inv-btn ghost" href="mailto:hello@ooh.earth?subject=OOH%20Earth%20%E2%80%94%20Client%20onboarding">Onboard a client</a>
           </div>
         </section>
 
         <section className="inv-wrap" style={{ paddingTop: 0 }}>
           <div className="inv-foot">
-            <div><div className="fb">ooh<span>.</span>earth</div><p>Client portal · gated<br/>Agency studio · live ops<br/>hello@outofhell.org</p></div>
+            <div><div className="fb">ooh<span>.</span>earth</div><p>Client portal · gated<br/>Agency studio · live ops<br/>hello@ooh.earth</p></div>
             <div className="right"><span className="cls">Client access</span><p>Sample data · live feeds pending</p></div>
           </div>
         </section>
