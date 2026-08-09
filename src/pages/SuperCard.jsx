@@ -5,7 +5,7 @@ import Reveal from "@/components/ooh/Reveal";
 import { Nfc, MapPin, Scale, IdCard, CloudOff, BarChart3, ArrowRight, ShieldCheck } from "lucide-react";
 
 const FEATURES = [
-  { icon: IdCard, title: "Identification", body: "Proves your standing as a registered OOH Earth field operative. Referenced to your operative record at oohearth.app." },
+  { icon: IdCard, title: "Identification", body: "Proves your standing as a registered OOH Earth member. Referenced to your member record at oohearth.app." },
   { icon: Nfc, title: "NFC Site Tagging", body: "Tap your card at any documented billboard or site. The chip logs your visit, timestamps the documentation, and links to the artifact record." },
   { icon: MapPin, title: "Map Integration", body: "Every card tap updates the live map at oohearth.app. Your documentation drives are tracked and your city's evidence base grows with every visit." },
   { icon: Scale, title: "Legal Standing", body: "References UN SDG 11.7 and A/69/286 — internationally recognised frameworks for public space access and cultural rights. You're exercising documented rights." },
@@ -13,12 +13,12 @@ const FEATURES = [
 
 const FIELD = [
   { icon: CloudOff, title: "Works everywhere", body: "Weatherproof PVC with embedded NFC. Functions offline — syncs to oohearth.app when you're back in range. No app required for basic identification." },
-  { icon: BarChart3, title: "Live operative dashboard", body: "Track your documentation history, city contributions, rarity collection and personal impact report — all linked to your card number." },
+  { icon: BarChart3, title: "Live member dashboard", body: "Track your documentation history, city contributions, rarity collection and personal impact report — all linked to your card number." },
 ];
 
 const KEY = [
   { title: "City impact dashboard", body: "Real-time tracking of every billboard documented, offense tagged, QR sticker deployed and community fund contribution in your city." },
-  { title: "One-tap documentation", body: "Arrive at site. Photograph. Tap card. Done. The NFC chip handles location logging, timestamp, operative ID and database update. No forms. No friction." },
+  { title: "One-tap documentation", body: "Arrive at site. Photograph. Tap card. Done. The NFC chip handles location logging, timestamp, member ID and database update. No forms. No friction." },
 ];
 
 const STATS = [
@@ -43,7 +43,7 @@ export default function SuperCard() {
                 ooh earth<br />union card
               </h1>
               <p className="mt-5 max-w-md font-body text-sm leading-[1.6] text-darkgray">
-                The OOH Earth Field Card identifies you as a registered operative in the global network documenting corporate advertising harm. Your access credential, your site-tagging tool, your proof of standing under UN SDG 11.7.
+                The OOH Earth Field Card identifies you as a registered member in the global network documenting corporate advertising harm. Your access credential, your site-tagging tool, your proof of standing under UN SDG 11.7.
               </p>
               <div className="mt-7 flex flex-wrap items-center gap-3">
                 <Link to="/support" className="group flex items-center gap-2 border-2 border-ozone bg-ozone px-5 py-3 font-mono text-[10px] font-bold uppercase tracking-[0.25em] text-void transition-colors hover:bg-flare hover:border-flare">
