@@ -21,7 +21,7 @@ export default function Careers() {
             We're building the world's first open atlas of <span className="text-ozone text-glow-ozone">street-level ad media</span>.
           </h1>
           <p className="mt-5 max-w-2xl text-base leading-relaxed text-darkgray md:text-lg">
-            OOH Earth is in public beta — community-funded, open-source, and run by a lean core team plus a global volunteer network. We're looking for operatives, engineers and organisers who want to make public-space advertising visible, accountable and subvertible.
+            OOH Earth is in public beta — community-funded, open-source, and run by a lean core team plus a global volunteer network. We're looking for members, engineers and organisers who want to make public-space advertising visible, accountable and subvertible.
           </p>
           <div className="mt-7 flex flex-wrap gap-3">
             <a href={mailto} className="group inline-flex items-center gap-2 border-2 border-ozone bg-ozone px-5 py-3 font-mono text-[11px] font-bold uppercase tracking-[0.25em] text-void transition-colors hover:bg-flare hover:border-flare">
