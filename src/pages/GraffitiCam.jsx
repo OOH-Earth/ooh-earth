@@ -1,6 +1,6 @@
 import { useState, useCallback } from "react";
 import { Link } from "react-router-dom";
-import { SprayCan, Loader2, CheckCircle2, MapPin, Upload, RotateCcw, Navigation, Crosshair, Camera } from "lucide-react";
+import { SprayCan, Loader2, CheckCircle2, MapPin, Upload, RotateCcw, Navigation, Crosshair } from "lucide-react";
 import exifr from "exifr";
 import Nav from "@/components/ooh/Nav";
 import Breadcrumbs from "@/components/ooh/Breadcrumbs";

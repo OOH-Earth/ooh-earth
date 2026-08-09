@@ -1,4 +1,4 @@
-import { Camera, Crosshair, Loader2, MapPin, CheckCircle2, Upload } from "lucide-react";
+import { Camera, Crosshair, Loader2, Upload } from "lucide-react";
 import exifr from "exifr";
 import { base44 } from "@/api/base44Client";
 import { useState } from "react";

@@ -3,7 +3,7 @@ import { base44 } from "@/api/base44Client";
 import Nav from "@/components/ooh/Nav";
 import UpcScanner from "@/components/ooh/truecost/UpcScanner";
 import TrueCostResult from "@/components/ooh/truecost/TrueCostResult";
-import { History, Barcode, AlertCircle } from "lucide-react";
+import { History, Barcode } from "lucide-react";
 
 const SCHEMA = {
   type: "object",

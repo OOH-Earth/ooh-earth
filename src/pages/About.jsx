@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { Image } from "@/components/ui/image";
-import { ArrowUpRight, Crosshair, HandHeart } from "lucide-react";
+import { ArrowUpRight, HandHeart } from "lucide-react";
 import Nav from "@/components/ooh/Nav";
 import SiteFooter from "@/components/ooh/SiteFooter";
 import HorizonProgress from "@/components/ooh/HorizonProgress";

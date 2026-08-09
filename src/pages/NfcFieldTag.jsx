@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { Tag, Nfc, ShieldCheck, ArrowRight, Droplet, Weight } from "lucide-react";
+import { Nfc, ShieldCheck, ArrowRight, Droplet, Weight } from "lucide-react";
 import Nav from "@/components/ooh/Nav";
 import Breadcrumbs from "@/components/ooh/Breadcrumbs";
 import SiteFooter from "@/components/ooh/SiteFooter";

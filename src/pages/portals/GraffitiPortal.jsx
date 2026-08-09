@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
 import { base44 } from "@/api/base44Client";
 import { Link } from "react-router-dom";
-import { SprayCan, Camera, Megaphone } from "lucide-react";
+import { Camera, Megaphone } from "lucide-react";
 import PortalShell from "@/components/ooh/map/PortalShell";
 import LocationCard from "@/components/ooh/map/LocationCard";
 import ClaimLeadDialog from "@/components/ooh/map/ClaimLeadDialog";
