@@ -20,10 +20,10 @@ const FREE_PLANS = [
   price: "Free",
   tagline: "Operate anonymously",
   features: [
-  "Anonymous access to basic site tools",
-  "Add locations to the map",
-  "Report advertising offenses",
-  "Access member-only content"]
+  "Browse the live map of documented advertising",
+  "Report offenses across 9 categories — no account needed",
+  "AI-assisted capture: scan a billboard, log it in seconds",
+  "Reimagine any ad in AR — the space returned to art"]
 
 },
 {
@@ -31,10 +31,10 @@ const FREE_PLANS = [
   price: "Free",
   tagline: "Build a public profile",
   features: [
-  "Public profile to join discussions",
-  "Climb the community leaderboards",
-  "Connect your bank to receive donations",
-  "Bookmark collections of locations"]
+  "Everything anonymous — plus a public operative profile",
+  "Earn rank and climb the field leaderboard",
+  "Draft a planning objection in seconds with the Objection Generator",
+  "Save and organise your own map collections"]
 
 }];
 
@@ -43,8 +43,9 @@ const FREE_PLANS = [
 // id matches the server-authoritative PLANS table in createPlanCheckout.
 // Billing period (month | year) is an orthogonal toggle; annual = 2 months free.
 // Benefits are cumulative and never gate the civic commons — the map, reports,
-// and field tools stay open to everyone. Recognition, access, physical goods,
-// and a direct line are what deepen with each tier.
+// and field tools stay open to everyone. Recognition, access, real input,
+// and a direct line are what deepen with each tier. No perk is promised that
+// can't be delivered today: no shipped goods, no mechanisms that don't exist yet.
 const TIERS = [
 {
   id: "accomplice",
@@ -53,11 +54,10 @@ const TIERS = [
   line: "Not a bystander. An accomplice.",
   price: { month: 5, year: 50 },
   features: [
-  "Accomplice badge on your profile",
-  "Your name on the public Supporters wall",
-  "The monthly field dispatch — the supporter briefing, before it goes public",
-  "A vote in the quarterly roadmap poll — one supporter, one voice",
-  "Every cent funds the commons: no ads, copyleft forever"]
+  "Accomplice badge on your public profile",
+  "Your name in the project's open-source supporters credits",
+  "The supporter dispatch — what we're building and finding, before it's public",
+  "Every cent funds the commons: no ads, no VC, copyleft forever"]
 
 },
 {
@@ -70,9 +70,8 @@ const TIERS = [
   features: [
   "Everything in Accomplice",
   "Sustainer badge",
-  "Early access to new field tools + press, before they go public",
-  "Your name in the open-source repo's supporters credits",
-  "A standing seat at the monthly community briefing"]
+  "First access to new field tools and press, before they go public",
+  "A say in what gets built next — supporters help set priorities"]
 
 },
 {
@@ -83,9 +82,8 @@ const TIERS = [
   price: { month: 50, year: 500 },
   features: [
   "Everything in Sustainer",
-  "Patron badge + featured on the Supporters wall",
-  "The physical field-credential kit, shipped to you — CR80 card set, lanyard, tri-fold field map",
-  "Help fund a named campaign or tool build — with your credit on it",
+  "Patron badge",
+  "Underwrite a named campaign or tool build — with your credit on it",
   "A direct line to the founder to help set priorities"]
 
 }];
