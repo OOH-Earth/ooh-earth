@@ -33,7 +33,7 @@ export default function Login() {
   return (
     <AuthShell>
       <h2 className="text-xl font-bold uppercase tracking-[0.1em]">Log in</h2>
-      <p className="mt-1 font-mono text-[11px] uppercase tracking-[0.15em] text-dim">Access your operative profile</p>
+      <p className="mt-1 font-mono text-[11px] uppercase tracking-[0.15em] text-dim">Access your member profile</p>
 
       <button onClick={handleGoogle} className="mt-6 flex w-full items-center justify-center gap-3 border border-slate2 bg-card py-3 font-mono text-xs font-bold uppercase tracking-[0.15em] text-silver transition-colors hover:border-ozone hover:text-ozone">
         <GoogleIcon className="h-4 w-4" /> Continue with Google
