@@ -40,13 +40,6 @@ const GROUPS = [
     ],
   },
   {
-    label: "Broadcast",
-    links: [
-      { name: "Twitch · oohearth", desc: "Live broadcast from the field.", href: "https://twitch.tv/oohearth", priority: true },
-      { name: "Real Roots Radio", desc: "Reggae · Dub · Ska · Roots 24/7.", href: "https://realrootsradio.net/" },
-    ],
-  },
-  {
     label: "Union",
     links: [
       { name: "Advertisers Anonymous", desc: "Detoxifying corporate propaganda.", href: "https://advertisersanonymous.org/" },
