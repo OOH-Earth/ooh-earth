@@ -328,7 +328,7 @@ export const ROLES = [
     comp: "Volunteer — keeps the whole platform free & open",
     summary: "Help the movement fund itself without ad money or investors — find grants, draft applications, keep the pipeline moving.",
     tags: ["Grants", "Funding", "Research"],
-    about: "Everything here is free because the community funds it — no ad money, no investors calling shots. You help keep it that way: hunting down grants and fellowships, drafting applications, and keeping our funding pipeline organised and moving.",
+    about: "Everything here is free because the community funds it — no ad money. You help keep it that way: hunting down grants and fellowships, drafting applications, and keeping our funding pipeline organised and moving.",
     responsibilities: [
       "Research grants, fellowships and funds that fit the mission",
       "Draft and assemble applications with the core team",
@@ -466,7 +466,7 @@ export const LOOK_FOR = [
   { title: "You'd rather do than debate", body: "You'd rather map the billboard than argue about it. The people who flourish here move first — file the report, run the action, ship the fix, then talk about it." },
   { title: "You work like an open book", body: "Our data, code and methods are public and forkable. You're at ease in the open — sharing the credit, leaving the receipts, building things anyone can inspect and borrow." },
   { title: "You'd rather be right than loud", body: "The atlas lives or dies on accuracy. You cite your sources, check before you claim, and never let a good story outrun the facts." },
-  { title: "You're in it for the right reasons", body: "Community-funded, no ad money, no investors calling the shots. The reward isn't a windfall — it's public space reclaimed and a movement that outgrows you." },
+  { title: "You're in it for the right reasons", body: "Community-funded, no ad money. The reward isn't a windfall — it's public space reclaimed and a movement that outgrows you." },
   { title: "You look out for everyone", body: "We centre the Global South, the overlooked, the advertised-at. You bring real care for people into the work — not just polish for the product." },
 ];
 
@@ -481,7 +481,7 @@ export const SUPPORT = [
 
 export const VALUES = [
   { icon: "Eye", title: "See everything", body: "We map what brands pay to hide in plain sight. Visibility is the point." },
-  { icon: "HandHeart", title: "Community-funded", body: "No ad money, no investors calling shots. The treasury and the work answer to members." },
+  { icon: "HandHeart", title: "Community-funded", body: "No ad money. The treasury and the work answer to members." },
   { icon: "Zap", title: "Field-ready", body: "Every tool must work on a phone, in the street, offline, at night, under pressure." },
   { icon: "Globe2", title: "Open by default", body: "Open-source data, open methods. What we build, anyone can fork and field." },
 ];
