@@ -95,7 +95,7 @@ export default function CapitalLead() {
               <p>We'll share the live console, verified metrics, and a build-cost letter tuned to a {lead.instrument.toLowerCase()}.</p>
             </div>
             <div className="cl-cta-actions">
-              <a className="btn primary" href={`mailto:hello@outofhell.org?subject=${encodeURIComponent("OOH Earth — " + lead.tag)}`}>Contact — hello@outofhell.org</a>
+              <a className="btn primary" href={`mailto:hello@ooh.earth?subject=${encodeURIComponent("OOH Earth — " + lead.tag)}`}>Contact — hello@ooh.earth</a>
               <Link className="btn ghost" to="/console">Open investor console →</Link>
             </div>
           </div>
@@ -115,7 +115,7 @@ export default function CapitalLead() {
           </div>
 
           <div className="cl-foot">
-            <div><div className="fb">ooh<span>.</span>earth</div><p>Capital pathway · {lead.tag}<br/>Community-funded · copyleft<br/>hello@outofhell.org</p></div>
+            <div><div className="fb">ooh<span>.</span>earth</div><p>Capital pathway · {lead.tag}<br/>Community-funded · copyleft<br/>hello@ooh.earth</p></div>
             <div className="right"><span className="cls">Not investment or valuation advice</span><p>Framing tool · figures verified on diligence<br/>Instrument: {lead.instrument}</p></div>
           </div>
         </section>
