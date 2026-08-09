@@ -18,9 +18,9 @@ export function pointsForReport(r) {
 
 // Rank tier derived from cumulative operative points.
 export function rankTier(points) {
-  if (points >= 5000) return { label: "Vanguard", accent: "#EDFF00" };
-  if (points >= 2000) return { label: "Operative", accent: "#FF5C00" };
-  if (points >= 500) return { label: "Field", accent: "#39FF14" };
+  if (points >= 5000) return { label: "Champion", accent: "#EDFF00" };
+  if (points >= 2000) return { label: "Field Reporter", accent: "#FF5C00" };
+  if (points >= 500) return { label: "Mapper", accent: "#39FF14" };
   if (points >= 100) return { label: "Scout", accent: "#B2B2B2" };
-  return { label: "Recruit", accent: "#666666" };
+  return { label: "Newcomer", accent: "#666666" };
 }
