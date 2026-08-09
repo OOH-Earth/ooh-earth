@@ -117,13 +117,13 @@ export default function InvestorDashboard() {
             ))}
           </div>
           <div className="inv-actions">
-            <a className="inv-btn primary" href="mailto:hello@outofhell.org?subject=OOH%20Earth%20%E2%80%94%20Data%20room%20request">Request full data room →</a>
+            <a className="inv-btn primary" href="mailto:hello@ooh.earth?subject=OOH%20Earth%20%E2%80%94%20Data%20room%20request">Request full data room →</a>
           </div>
         </section>
 
         <section className="inv-wrap" style={{ paddingTop: 0 }}>
           <div className="inv-foot">
-            <div><div className="fb">ooh<span>.</span>earth</div><p>Investor dashboard · gated<br/>Not investment or valuation advice<br/>hello@outofhell.org</p></div>
+            <div><div className="fb">ooh<span>.</span>earth</div><p>Investor dashboard · gated<br/>Not investment or valuation advice<br/>hello@ooh.earth</p></div>
             <div className="right"><span className="cls">Confidential · Investor Class</span><p>Figures verified on diligence</p></div>
           </div>
         </section>
