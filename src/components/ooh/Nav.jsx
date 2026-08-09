@@ -44,7 +44,7 @@ export default function Nav() {
           <button onClick={startTour} aria-label="Start walkthrough" title="Tour" className="hidden h-8 w-8 items-center justify-center border border-slate2 text-silver transition-colors hover:border-ozone hover:text-ozone md:flex">
             <Compass className="h-3.5 w-3.5" />
           </button>
-          <Link to="/operative" aria-label="Operative profile" title="Operative" className="hidden h-8 w-8 items-center justify-center border border-slate2 text-silver transition-colors hover:border-ozone hover:text-ozone md:flex">
+          <Link to="/operative" aria-label="Member profile" title="Member" className="hidden h-8 w-8 items-center justify-center border border-slate2 text-silver transition-colors hover:border-ozone hover:text-ozone md:flex">
             <Zap className="h-3.5 w-3.5" />
           </Link>
           <Link to="/channel" aria-label="OOH·TV channel" title="OOH·TV" className="hidden h-8 w-8 items-center justify-center border border-slate2 text-silver transition-colors hover:border-ozone hover:text-ozone md:flex">
