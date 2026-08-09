@@ -82,7 +82,7 @@ const SITEMAP = [
   {
     group: "Operate",
     items: [
-      { to: "/operative", label: "Operative Profile", status: "live" },
+      { to: "/operative", label: "Member Profile", status: "live" },
       { to: "/dashboard", label: "Console", status: "live" },
       { to: "/guides", label: "Guides", status: "live" },
       { to: null, label: "Streaks & Nudges", status: "exploring" },
