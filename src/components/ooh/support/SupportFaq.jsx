@@ -2,7 +2,7 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 
 const FAQS = [
   { q: "Is OOH Earth really open-source?", a: "Yes — AGPL-3.0 for code, CC BY-SA 4.0 for content. The platform, maps, and field record are community-owned and aligned to the UN Sustainable Development Goals." },
-  { q: "Do I need an account to use the map?", a: "No. The Field Atlas is public. Register an operative handle only to file reports, mint location NFTs, or claim leads." },
+  { q: "Do I need an account to use the map?", a: "No. The Field Atlas is public. Register a member handle only to file reports, mint location NFTs, or claim leads." },
   { q: "Where does my donation go?", a: "Straight to the OOH Earth treasury — platform development, field tools, and community outreach. Card donations run through Stripe; crypto lands directly on-chain." },
   { q: "How do I report an advertising offense?", a: "Open /report, drop a pin, add a photo and the access key if you know it. It saves to the public record as pending until a moderator verifies it." },
   { q: "What is adbusting?", a: "Subverting, reclaiming, or replacing corporate advertising in public space — documented, non-destructive, and part of the wider subvertising movement." },
