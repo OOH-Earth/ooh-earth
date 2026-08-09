@@ -52,19 +52,19 @@ export default function FieldIdGenerator() {
           <IdCard className="h-7 w-7 text-ozone" /> Generate your field ID
         </h2>
         <p className="mt-3 max-w-2xl font-body text-sm leading-[1.6] text-darkgray">
-          Mint a printable operative credential right here. Enter your details or load from the roster, preview the badge, and print or save as PDF — carry proof of union in the field.
+          Mint a printable member credential right here. Enter your details or load from the roster, preview the badge, and print or save as PDF — carry proof of membership in the field.
         </p>
 
         <div className="mt-8 grid gap-6 md:grid-cols-[1fr_auto]">
           <div className="no-print space-y-3 border border-slate2/60 bg-card p-5">
             <div className="mb-1 font-mono text-[9px] font-bold uppercase tracking-[0.3em] text-silver">Credential builder</div>
-            <Field label="Operative handle">
+            <Field label="Member handle">
               <input className={inputCls} value={op.handle} onChange={(e) => set("handle", e.target.value)} placeholder="ghostsignal" />
             </Field>
             {ops.length > 0 && (
               <Field label="Or load from roster">
                 <select className={inputCls} value="" onChange={(e) => e.target.value && loadFromRoster(e.target.value)}>
-                  <option value="">— select operative —</option>
+                  <option value="">— select member —</option>
                   {ops.map((o) => (
                     <option key={o.id} value={o.handle}>{o.handle} · {o.tier}</option>
                   ))}
@@ -85,7 +85,7 @@ export default function FieldIdGenerator() {
             </div>
             <label className="flex items-center gap-2 pt-1">
               <input type="checkbox" checked={op.verified} onChange={(e) => set("verified", e.target.checked)} className="h-4 w-4 accent-[#EDFF00]" />
-              <span className="font-mono text-[9px] uppercase tracking-[0.2em] text-silver/70">Verified operative</span>
+              <span className="font-mono text-[9px] uppercase tracking-[0.2em] text-silver/70">Verified member</span>
             </label>
             <Link to="/field-id" className="mt-1 inline-block font-mono text-[9px] uppercase tracking-[0.25em] text-ozone transition-colors hover:text-flare">Full credential kit →</Link>
           </div>
