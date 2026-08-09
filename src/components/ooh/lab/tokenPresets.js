@@ -11,25 +11,25 @@ export const TOKEN_SPECS = [
   ["Mint", "No future mint · hard cap"],
   ["Burn", "1% of each transfer → burn"],
   ["Bridge", "Base ↔ Solana (Wormhole)"],
-  ["Treasury", "Multi-sig · 3/5 operatives"],
+  ["Treasury", "Multi-sig · 3/5 signers"],
 ];
 
 export const TOKEN_DISTRIBUTION = [
   { label: "Treasury",       pct: 40, color: "#EDFF00", desc: "Field mapping, legal defense, open-source tooling, grants" },
-  { label: "Field rewards",  pct: 20, color: "#FF5C00", desc: "Proof-of-presence mining — operatives earn for verified busts" },
+  { label: "Field rewards",  pct: 20, color: "#FF5C00", desc: "Proof-of-presence mining — members earn for verified busts" },
   { label: "Liquidity",      pct: 15, color: "#1F51FF", desc: "DEX pools (Uniswap Base, Raydium Solana) — stable trading" },
   { label: "Team / advisors",pct: 10, color: "#888888", desc: "4-year vest, 1-year cliff — locked contract" },
-  { label: "Community drop", pct: 10, color: "#39FF14", desc: "Airdrop to chip holders + early operatives — 1:1 per chip" },
+  { label: "Community drop", pct: 10, color: "#39FF14", desc: "Airdrop to chip holders + early members — 1:1 per chip" },
   { label: "Reserve",        pct: 5,  color: "#B2B2B2", desc: "Emergency DAO buffer — released by vote only" },
 ];
 
 export const TOKEN_UTILITY = [
-  { icon: "Reward",   title: "Field rewards",      desc: "Operatives earn $OOHEX for verified busts, location reports, and map corrections. Proof-of-presence = mining." },
+  { icon: "Reward",   title: "Field rewards",      desc: "Members earn $OOHEX for verified busts, location reports, and map corrections. Proof-of-presence = mining." },
   { icon: "Vote",     title: "Governance",         desc: "1 token = 1 vote in treasury proposals. Quadratic voting caps whale influence; chip holders get a separate proof-of-presence vote." },
   { icon: "Stake",    title: "Staking yields",     desc: "Stake $OOHEX to earn a share of the 2.5% secondary royalty stream from chip resales. Stakers govern the treasury allocation." },
-  { icon: "Bounty",   title: "Bounties",           desc: "Anyone posts a bounty in $OOHEX for a specific location or brand audit. First operative to verify claims the pool." },
+  { icon: "Bounty",   title: "Bounties",           desc: "Anyone posts a bounty in $OOHEX for a specific location or brand audit. First member to verify claims the pool." },
   { icon: "Access",  title: "Lab access",          desc: "Holding a minimum balance unlocks premium Lab tools — AI mint generation, high-res exports, NFC claim priority." },
-  { icon: "Tip",     title: "Tipping",            desc: "Tip operatives directly for high-quality field documentation. Zero-friction, on-chain, public record." },
+  { icon: "Tip",     title: "Tipping",            desc: "Tip members directly for high-quality field documentation. Zero-friction, on-chain, public record." },
 ];
 
 export const TOKEN_VS_CHIP = [
@@ -45,7 +45,7 @@ export const TOKEN_VS_CHIP = [
 ];
 
 export const TOKEN_FLOW = [
-  { step: "01", label: "Earn",   desc: "Operative verifies a bust → smart contract mints $OOHEX reward from the field-rewards pool" },
+  { step: "01", label: "Earn",   desc: "A member verifies a bust → smart contract mints $OOHEX reward from the field-rewards pool" },
   { step: "02", label: "Trade",  desc: "$OOHEX trades on Base/Solana DEXs — 1% burn per transfer makes it deflationary" },
   { step: "03", label: "Govern", desc: "Token holders vote on treasury spending — which cities get mapped, which legal cases funded" },
   { step: "04", label: "Stake",  desc: "Stake $OOHEX → earn from chip resale royalties → fund more field work → more busts → more rewards" },
