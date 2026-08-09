@@ -80,7 +80,7 @@ export default function FieldCheckPanel({ location }) {
           <div className="py-6 text-center">
             <MapPin className="mx-auto h-8 w-8 text-dim/30" strokeWidth={1.2} />
             <p className="mt-2 font-mono text-[10px] uppercase tracking-[0.25em] text-dim">// No field checks yet</p>
-            <p className="mt-1 font-mono text-[9px] leading-relaxed text-dim/60">Be the first to re-photograph this exact location. Your check starts the timeline — every future operative builds on it.</p>
+            <p className="mt-1 font-mono text-[9px] leading-relaxed text-dim/60">Be the first to re-photograph this exact location. Your check starts the timeline — every future member builds on it.</p>
           </div>
         ) : (
           <>
