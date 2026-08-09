@@ -37,7 +37,7 @@ const FN_SECRETS = {
 
 const RISKS = [
   ['R-01', 'Polygon vs Base chain mismatch in CryptoDonations.jsx; wallets pending.', 'high', 'Treasury / Web3', 'Reconcile target chain; resolve pending wallets.'],
-  ['R-02', 'Naming drift: $OUTOFHELL (zoraConfig) vs hardcoded $OOHEX.', 'med', 'Coin Registry', 'Make zoraConfig the single source; strip hardcoded strings.'],
+  ['R-02', 'Naming drift: "$OOHEX" symbol hardcoded across surfaces instead of a single source.', 'med', 'Coin Registry', 'Make zoraConfig the single source; strip hardcoded strings.'],
   ['R-03', 'No release-tagging pipeline. CI build-verify now runs via GitHub Actions.', 'med', 'Infra / Deploy', 'Ship promoteBackup for release tags + CHANGELOG; CI build-verify already live.'],
   ['R-04', 'No incident-tracking system.', 'med', 'Security', 'Ship incidentLog; retire the manual SECURITY.md process.'],
   ['R-05', 'No rate limiting on public read functions.', 'med', 'Security', 'Per-IP throttle on fieldStats / cryptoWatch / fetchMapLocations.'],
