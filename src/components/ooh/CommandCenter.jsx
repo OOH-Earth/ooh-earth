@@ -11,7 +11,7 @@ const ACTIONS = [
   { name: "Ad Scanner", desc: "Point-and-shoot advertising detection on any surface.", to: "/lab/scanner", priority: true },
   { name: "Graffiti Camera", desc: "Photograph street art & graffiti in the field.", camera: "graffiti", priority: true },
   { name: "In-Home Digital Busts", desc: "Document digital advertising intrusions.", to: "/inhome" },
-  { name: "Operative Profile", desc: "Your field ID, points & badges.", to: "/operative" },
+  { name: "Member Profile", desc: "Your field ID, points & badges.", to: "/operative" },
   { name: "Store / Library", desc: "Research docs, tools, digital drops.", to: "/store" },
   { name: "Support the mission", desc: "Sponsor community-funded infrastructure.", to: "/support" },
 ];
