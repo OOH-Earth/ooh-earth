@@ -176,7 +176,7 @@ export const PANELS_A = {
         <div class="jm-screen"><span class="jm-sbk tl"></span><span class="jm-sbk br"></span><div class="jm-split"><div class="jm-before"><span class="jm-sl">Capture</span></div><div class="jm-after"><span class="jm-sl">Art / nature</span></div></div><span class="jm-tagmini" style="top:8px;right:8px">AR</span></div>
         <div class="jm-desc">Field-grade AR Reimagine: take a real sighting and render the alternative &mdash; <b>street art, greenery, blank sky</b> &mdash; then export it as a shareable asset.</div>
         <div class="jm-feats"><div class="jm-feat live"><span class="d"></span>AR Reimagine<span class="st">LIVE</span></div></div>
-        <div class="jm-friction"><b>Moment:</b> the counter-image is the weapon.</div>
+        <div class="jm-friction"><b>Moment:</b> the counter-image is the point.</div>
       </div></div></div>
       <div class="jm-stage"><div class="jm-connect"><span class="jm-arrow">&rarr;</span><div class="jm-scard">
         <div class="jm-stagetop"><span class="jm-idx">03</span><span class="jm-sname">Generate an objection</span></div>
