@@ -53,7 +53,7 @@ const ECO = [
   ["07", "Field Store", "Kit, cards & fulfilment", false],
   ["08", "AdCam", "Documentation camera", false],
   ["09", "OOH Local", "City chapters", false],
-  ["10", "OOH Nomad", "Travelling operatives", false],
+  ["10", "OOH Nomad", "Travelling members", false],
   ["11", "Street Social", "Community platform", false],
   ["12", "Community Hub", "Ambassador onboarding", false],
   ["13", "Billboarding.earth", "Campaign coordination", false],
