@@ -174,7 +174,7 @@ const ICON = {
   "Field Report": Megaphone, "AR Lens": Scan, TrueCost: Scan, "Trash ID": Trash2, "In-Home": Tv,
   "Zora Mint": Coins,   "Field ID": CreditCard, "Union Card": CreditCard, "Access Keys": Key,
   "Objection Generator": FileText, "Precedent Library": BookOpen,
-  "Operative Profile": ShieldCheck, Console: LayoutDashboard, Guides: BookOpen, "Streaks & Nudges": TrendingUp,
+  "Member Profile": ShieldCheck, Console: LayoutDashboard, Guides: BookOpen, "Streaks & Nudges": TrendingUp,
   "Fund the Offensive": Heart, "On-chain Treasury": Coins, "Plans / Roadmap": Layers,
   Store: ShoppingBag, "Field Credentials · CR80": CreditCard, Support: LifeBuoy, Contact: Mail, Careers: Briefcase,
   "Investor Access": ShieldCheck, "Investor Hub": ShieldCheck, "Investor Console": LineChart,
