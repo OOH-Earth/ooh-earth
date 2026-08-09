@@ -59,7 +59,7 @@ export const PANELS_B = {
       <div>
         <div class="jm-pname">The Supporter</div>
         <span class="jm-ptier">Patron &middot; Funder &middot; No app tier</span>
-        <p class="jm-pgoal">Believes, but won't be climbing ladders or shooting billboards. Wants to <b>fund it cleanly</b> and trust that every pound reaches the movement &mdash; copyleft, anti-VC, not for sale.</p>
+        <p class="jm-pgoal">Believes, but won't be climbing ladders or shooting billboards. Wants to <b>fund it cleanly</b> and trust that every pound reaches the movement &mdash; copyleft, not for sale.</p>
         <div class="jm-pfacts"><span>Entry &middot; <b>map / impact / a story</b></span><span>Core act &middot; <b>give</b></span><span>Promise &middot; <b>every pound to the movement</b></span></div>
       </div>
     </div>
