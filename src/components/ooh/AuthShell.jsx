@@ -9,11 +9,11 @@ import BetaTag from "@/components/ooh/BetaTag";
 // On the OOH design system (void / ozone / mono / sharp corners).
 
 const TIERS = [
-  { label: "Recruit", pts: "0" },
+  { label: "Newcomer", pts: "0" },
   { label: "Scout", pts: "100" },
-  { label: "Field", pts: "500" },
-  { label: "Operative", pts: "2k" },
-  { label: "Vanguard", pts: "5k" },
+  { label: "Mapper", pts: "500" },
+  { label: "Field Reporter", pts: "2k" },
+  { label: "Champion", pts: "5k" },
 ];
 const TRUST = ["Community-funded", "Copyleft", "UN SDG 11.7"];
 
