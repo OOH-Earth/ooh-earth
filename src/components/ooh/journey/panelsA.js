@@ -5,7 +5,7 @@ export const TABS = [
   { id: "overview",   n: "00", label: "Overview + Kit" },
   { id: "passerby",   n: "01", label: "The Passer-by" },
   { id: "scout",      n: "02", label: "The Scout" },
-  { id: "operative",  n: "03", label: "Field Operative" },
+  { id: "operative",  n: "03", label: "Field Reporter" },
   { id: "ambassador", n: "04", label: "City Ambassador" },
   { id: "supporter",  n: "05", label: "The Supporter" },
   { id: "partner",    n: "06", label: "Movement Partner" },
@@ -30,7 +30,7 @@ export const PANELS_A = {
         <ul>
           <li><span class="k">01</span><b style="color:var(--jm-ink)">Passer-by</b> &mdash; the curious public. No account, just a link and a question: what's cluttering my city?</li>
           <li><span class="k">02</span><b style="color:var(--jm-ink)">Scout</b> &mdash; signed up. Logs the billboard they just walked past.</li>
-          <li><span class="k">03</span><b style="color:var(--jm-ink)">Field Operative</b> &mdash; regular. Stops documenting and starts responding.</li>
+          <li><span class="k">03</span><b style="color:var(--jm-ink)">Field Reporter</b> &mdash; regular. Stops documenting and starts responding.</li>
           <li><span class="k">04</span><b style="color:var(--jm-ink)">City Ambassador</b> &mdash; coordinates a city. Runs people, not just pins.</li>
           <li><span class="k">05</span><b style="color:var(--jm-ink)">Supporter</b> &mdash; funds it. Every pound to the movement.</li>
           <li><span class="k">06</span><b style="color:var(--jm-ink)">Movement Partner</b> &mdash; Brandalism, Adfree Cities, Adbusters. Plugs in at the org level.</li>
@@ -96,7 +96,7 @@ export const PANELS_A = {
         <div class="jm-stagetop"><span class="jm-idx">05</span><span class="jm-sname">Cross the line</span></div>
         <div class="jm-screen"><span class="jm-sbk tl"></span><span class="jm-sbk tr"></span><div class="jm-bar jm-w70" style="margin-top:6px"></div><div class="jm-bar jm-w40"></div><div style="margin-top:16px"><span class="jm-btn">Become a Scout</span></div><div style="margin-top:8px"><span class="jm-btn ghost">Fund it &rarr;</span></div></div>
         <div class="jm-desc">One fork, two doors: <b>enlist</b> (become a Scout) or <b>fund</b> (Supporter). The passer-by becomes a participant &mdash; or a patron.</div>
-        <div class="jm-feats"><div class="jm-feat live"><span class="d"></span>Operative tiers<span class="st">LIVE</span></div><div class="jm-feat live"><span class="d"></span>DonorBox<span class="st">LIVE</span></div><div class="jm-feat building"><span class="d"></span>Web3 treasury<span class="st">BUILDING</span></div></div>
+        <div class="jm-feats"><div class="jm-feat live"><span class="d"></span>Member tiers<span class="st">LIVE</span></div><div class="jm-feat live"><span class="d"></span>DonorBox<span class="st">LIVE</span></div><div class="jm-feat building"><span class="d"></span>Web3 treasury<span class="st">BUILDING</span></div></div>
         <div class="jm-friction"><b>Handoff &rarr;</b> Scout or Supporter journey.</div>
       </div></div></div>
     </div>
@@ -107,9 +107,9 @@ export const PANELS_A = {
       <div class="jm-badge"><span class="jm-bk tl"></span><span class="jm-bk br"></span>&#128205;</div>
       <div>
         <div class="jm-pname">The Scout</div>
-        <span class="jm-ptier">Tier 1 &middot; Entry operative</span>
+        <span class="jm-ptier">Tier 1 &middot; Entry member</span>
         <p class="jm-pgoal">Signed up in the heat of the moment. Standing in front of a billboard <b>right now</b> and wants to log it before the feeling fades. Needs the capture to be faster than the doubt.</p>
-        <div class="jm-pfacts"><span>Entry &middot; <b>converted from Passer-by</b></span><span>Core act &middot; <b>document</b></span><span>Next tier &middot; <b>Field Operative</b></span></div>
+        <div class="jm-pfacts"><span>Entry &middot; <b>converted from Passer-by</b></span><span>Core act &middot; <b>document</b></span><span>Next tier &middot; <b>Field Reporter</b></span></div>
       </div>
     </div>
     <div class="jm-raillabel">Journey &mdash; onboard to first contribution to habit</div>
@@ -118,7 +118,7 @@ export const PANELS_A = {
         <div class="jm-stagetop"><span class="jm-idx">01</span><span class="jm-sname">Enlist</span></div>
         <div class="jm-screen"><span class="jm-sbk tl"></span><span class="jm-sbk tr"></span><div class="jm-bar tall jm-w70" style="margin-top:4px"></div><div class="jm-bar jm-w100"></div><div class="jm-bar jm-w55"></div><div style="margin-top:14px"><span class="jm-btn">Join as Scout</span></div><span class="jm-lbl" style="bottom:8px;left:8px;color:var(--jm-hivis)">Tier 01</span></div>
         <div class="jm-desc">Lightweight onboard &mdash; enough to attribute contributions, no more. Sets the <b>Scout</b> tier and frames the mission in the campaign voice.</div>
-        <div class="jm-feats"><div class="jm-feat live"><span class="d"></span>Operative tiers<span class="st">LIVE</span></div></div>
+        <div class="jm-feats"><div class="jm-feat live"><span class="d"></span>Member tiers<span class="st">LIVE</span></div></div>
         <div class="jm-friction"><b>Rule:</b> zero friction &mdash; capture must beat doubt.</div>
       </div></div></div>
       <div class="jm-stage"><div class="jm-connect"><span class="jm-arrow">&rarr;</span><div class="jm-scard">
@@ -144,10 +144,10 @@ export const PANELS_A = {
       </div></div></div>
       <div class="jm-stage"><div class="jm-connect"><span class="jm-arrow">&rarr;</span><div class="jm-scard">
         <div class="jm-stagetop"><span class="jm-idx">05</span><span class="jm-sname">Rank up</span></div>
-        <div class="jm-screen"><span class="jm-sbk tl"></span><span class="jm-sbk tr"></span><div class="jm-idcard"><div style="display:flex;gap:7px;align-items:center"><span class="jm-avatar"></span><div class="jm-col"><div class="jm-bar jm-w70"></div><div class="jm-bar accent jm-w40"></div></div></div><div><div style="font-family:var(--font-mono);font-size:8px;color:rgba(255,255,255,.4);letter-spacing:.1em;margin-bottom:4px">SCOUT &rarr; FIELD OPERATIVE</div><div class="jm-tierbar"><span class="jm-seg fill"></span><span class="jm-seg fill"></span><span class="jm-seg fill"></span><span class="jm-seg"></span></div></div></div></div>
-        <div class="jm-desc">Profile shows tier progress toward <b>Field Operative</b>. A nudge points at the next act &mdash; the streak, the gap, the unlock.</div>
-        <div class="jm-feats"><div class="jm-feat live"><span class="d"></span>Operative tiers<span class="st">LIVE</span></div><div class="jm-feat exploring"><span class="d"></span>Streaks / nudges<span class="st">EXPLORING</span></div></div>
-        <div class="jm-friction"><b>Handoff &rarr;</b> promotion opens Operative tools.</div>
+        <div class="jm-screen"><span class="jm-sbk tl"></span><span class="jm-sbk tr"></span><div class="jm-idcard"><div style="display:flex;gap:7px;align-items:center"><span class="jm-avatar"></span><div class="jm-col"><div class="jm-bar jm-w70"></div><div class="jm-bar accent jm-w40"></div></div></div><div><div style="font-family:var(--font-mono);font-size:8px;color:rgba(255,255,255,.4);letter-spacing:.1em;margin-bottom:4px">SCOUT &rarr; FIELD REPORTER</div><div class="jm-tierbar"><span class="jm-seg fill"></span><span class="jm-seg fill"></span><span class="jm-seg fill"></span><span class="jm-seg"></span></div></div></div></div>
+        <div class="jm-desc">Profile shows tier progress toward <b>Field Reporter</b>. A nudge points at the next act &mdash; the streak, the gap, the unlock.</div>
+        <div class="jm-feats"><div class="jm-feat live"><span class="d"></span>Member tiers<span class="st">LIVE</span></div><div class="jm-feat exploring"><span class="d"></span>Streaks / nudges<span class="st">EXPLORING</span></div></div>
+        <div class="jm-friction"><b>Handoff &rarr;</b> promotion opens Member tools.</div>
       </div></div></div>
     </div>
   `,
@@ -156,9 +156,9 @@ export const PANELS_A = {
     <div class="jm-phead">
       <div class="jm-badge"><span class="jm-bk tl"></span><span class="jm-bk br"></span>&#128752;</div>
       <div>
-        <div class="jm-pname">The Field Operative</div>
+        <div class="jm-pname">The Field Reporter</div>
         <span class="jm-ptier">Tier 2 &middot; Active responder</span>
-        <p class="jm-pgoal">Past logging. This operative wants to <b>do something back</b> &mdash; reimagine the space, file a real objection, put it in front of people. Documentation was the warm-up.</p>
+        <p class="jm-pgoal">Past logging. This member wants to <b>do something back</b> &mdash; reimagine the space, file a real objection, put it in front of people. Documentation was the warm-up.</p>
         <div class="jm-pfacts"><span>Entry &middot; <b>promoted Scout</b></span><span>Core act &middot; <b>respond + amplify</b></span><span>Next tier &middot; <b>City Ambassador</b></span></div>
       </div>
     </div>
@@ -194,9 +194,9 @@ export const PANELS_A = {
       </div></div></div>
       <div class="jm-stage"><div class="jm-connect"><span class="jm-arrow">&rarr;</span><div class="jm-scard">
         <div class="jm-stagetop"><span class="jm-idx">05</span><span class="jm-sname">Toward Ambassador</span></div>
-        <div class="jm-screen"><span class="jm-sbk tl"></span><span class="jm-sbk tr"></span><div class="jm-idcard"><div style="font-family:var(--font-mono);font-size:8px;color:rgba(255,255,255,.4);letter-spacing:.1em">FIELD OPERATIVE &rarr; CITY AMBASSADOR</div><div class="jm-tierbar"><span class="jm-seg fill"></span><span class="jm-seg fill"></span><span class="jm-seg fill"></span><span class="jm-seg fill"></span><span class="jm-seg"></span></div><div class="jm-bar jm-w55"></div></div></div>
-        <div class="jm-desc">Sustained output surfaces the <b>City Ambassador</b> path &mdash; the shift from acting solo to coordinating a city's operatives.</div>
-        <div class="jm-feats"><div class="jm-feat live"><span class="d"></span>Operative tiers<span class="st">LIVE</span></div></div>
+        <div class="jm-screen"><span class="jm-sbk tl"></span><span class="jm-sbk tr"></span><div class="jm-idcard"><div style="font-family:var(--font-mono);font-size:8px;color:rgba(255,255,255,.4);letter-spacing:.1em">FIELD REPORTER &rarr; CITY AMBASSADOR</div><div class="jm-tierbar"><span class="jm-seg fill"></span><span class="jm-seg fill"></span><span class="jm-seg fill"></span><span class="jm-seg fill"></span><span class="jm-seg"></span></div><div class="jm-bar jm-w55"></div></div></div>
+        <div class="jm-desc">Sustained output surfaces the <b>City Ambassador</b> path &mdash; the shift from acting solo to coordinating a city's members.</div>
+        <div class="jm-feats"><div class="jm-feat live"><span class="d"></span>Member tiers<span class="st">LIVE</span></div></div>
         <div class="jm-friction"><b>Handoff &rarr;</b> unlocks the city command layer.</div>
       </div></div></div>
     </div>
