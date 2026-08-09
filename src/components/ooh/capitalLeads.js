@@ -35,7 +35,7 @@ export const CAPITAL_LEADS = {
       "Every pound moves reach: waitlist activation, ambassador network, Global South chapters.",
     ],
     unlocks: [
-      { h: "Activate the waitlist", p: "Convert ~2,000 waiting supporters into active operatives with onboarding and field kits." },
+      { h: "Activate the waitlist", p: "Convert ~2,000 waiting supporters into active members with onboarding and field kits." },
       { h: "Global South chapters", p: "Stand up city chapters where public-space enclosure hits hardest — per the SDGs." },
       { h: "Founder runway", p: "Modest runway to run live ops full-time through launch and the first campaigns." },
     ],
@@ -55,7 +55,7 @@ export const CAPITAL_LEADS = {
     unlocks: [
       { h: "Harden the on-chain rails", p: "Finish evidence minting + treasury routing so contributions are transparent and auditable." },
       { h: "Open the dataset", p: "Publish the documented-sites dataset as reusable public infrastructure." },
-      { h: "Reward contributors", p: "Route retro funding to the ambassadors and operatives who built the evidence base." },
+      { h: "Reward contributors", p: "Route retro funding to the ambassadors and members who built the evidence base." },
     ],
     targets: "Retro-PGF rounds · Gitcoin-style ecosystems · Base / on-chain public-goods pools",
   },
