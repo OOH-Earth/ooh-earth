@@ -82,7 +82,7 @@ export default function Campaign() {
 
           <div className="mt-10 flex items-start gap-3 border-t border-slate2/40 pt-6">
             <Megaphone className="mt-0.5 h-5 w-5 shrink-0 text-ozone" />
-            <p className="font-display text-sm leading-[1.6] text-darkgray">Every contribution is logged in the public record. Funding deploys field operatives, cameras, and counter-narrative infrastructure across the global advertising offensive.</p>
+            <p className="font-display text-sm leading-[1.6] text-darkgray">Every contribution is logged in the public record. Funding deploys field teams, cameras, and counter-narrative infrastructure across the global advertising offensive.</p>
           </div>
         </div>
       </main>
