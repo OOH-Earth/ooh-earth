@@ -262,7 +262,7 @@ export default function GenesisToken() {
             <ArrowRight className="h-3 w-3 text-ozone" />
             <span className="border border-slate2 px-2 py-1">+1,000 $OOHEX minted</span>
             <ArrowRight className="h-3 w-3 text-ozone" />
-            <span className="border border-ozone/40 bg-ozone/5 px-2 py-1 text-ozone">Operative wallet</span>
+            <span className="border border-ozone/40 bg-ozone/5 px-2 py-1 text-ozone">Member wallet</span>
             <ArrowRight className="h-3 w-3 text-ozone" />
             <span className="border border-slate2 px-2 py-1">Stake or spend</span>
             <ArrowRight className="h-3 w-3 text-ozone" />
