@@ -26,7 +26,7 @@ export default function ImpactLedger() {
           </div>
 
           <p className="mt-6 max-w-sm font-mono text-[10px] uppercase tracking-[0.25em] text-dim">
-            Opens your mail client · A field operative routes every transmission within 48 hours.
+            Opens your mail client · A field reporter routes every transmission within 48 hours.
           </p>
         </div>
       </div>
