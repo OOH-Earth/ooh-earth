@@ -397,7 +397,7 @@ export default function Dashboard() {
               <div className="flex flex-wrap items-center justify-between gap-3 px-4 py-4">
                 <div>
                   <div className="font-display text-sm font-semibold text-silver">Delete account</div>
-                  <p className="mt-0.5 text-[12px] leading-relaxed text-darkgray">Permanently sign out and remove your operative session. This cannot be undone.</p>
+                  <p className="mt-0.5 text-[12px] leading-relaxed text-darkgray">Permanently sign out and remove your member session. This cannot be undone.</p>
                 </div>
                 <AlertDialog open={deleteOpen} onOpenChange={setDeleteOpen}>
                   <AlertDialogTrigger asChild>
