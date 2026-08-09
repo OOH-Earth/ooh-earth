@@ -104,7 +104,7 @@ export default function InvestorHub() {
           <div className="inv-head"><h2>References</h2><span className="m">Brand · data room · map</span></div>
           <div className="inv-grid">
             <Link className="inv-card" to="/kit"><span className="k">Reference</span><h4>Brand guide</h4><p>Orbital Perspective — palette, Inter Tight, reticle signature, UI kit.</p><span className="go">Open →</span></Link>
-            <a className="inv-card" href="mailto:hello@outofhell.org?subject=OOH%20Earth%20%E2%80%94%20Data%20room%20access"><span className="k">Data room</span><h4>Request access</h4><p>Verified metrics, build-cost letter, and precedent library on request.</p><span className="go">Email →</span></a>
+            <a className="inv-card" href="mailto:hello@ooh.earth?subject=OOH%20Earth%20%E2%80%94%20Data%20room%20access"><span className="k">Data room</span><h4>Request access</h4><p>Verified metrics, build-cost letter, and precedent library on request.</p><span className="go">Email →</span></a>
             <Link className="inv-card" to="/sitemap"><span className="k">Reference</span><h4>Site map</h4><p>Every route, audience, and onward flow — the whole-platform review artifact.</p><span className="go">Open →</span></Link>
           </div>
 
@@ -113,7 +113,7 @@ export default function InvestorHub() {
 
         <section className="inv-wrap" style={{ paddingTop: 0 }}>
           <div className="inv-foot">
-            <div><div className="fb">ooh<span>.</span>earth</div><p>Investor area · gated<br/>Community-funded · copyleft<br/>hello@outofhell.org</p></div>
+            <div><div className="fb">ooh<span>.</span>earth</div><p>Investor area · gated<br/>Community-funded · copyleft<br/>hello@ooh.earth</p></div>
             <div className="right"><span className="cls">Confidential · Investor Class</span><p>Access: account or investor code{preview && <><br/><button onClick={exitPreview} style={{ background: "none", border: 0, padding: 0, font: "inherit", color: "inherit", cursor: "pointer", textDecoration: "underline" }}>Exit investor preview →</button></>}</p></div>
           </div>
         </section>
