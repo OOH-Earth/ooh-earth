@@ -27,7 +27,7 @@ export default function OnChain() {
 
         <div className="mt-8"><TreasuryBalances /></div>
 
-        {/* $OUTOFHELL feature */}
+        {/* $OOHEX feature */}
         <div className="mt-10 grid gap-px border border-slate2/60 bg-slate2/40 lg:grid-cols-[1.4fr_1fr]">
           <div className="relative flex flex-col justify-between overflow-hidden bg-card p-6 md:p-10">
             <div className="pointer-events-none absolute -right-10 -top-10 opacity-[0.07]">
@@ -36,7 +36,7 @@ export default function OnChain() {
             <div>
               <div className="flex items-center gap-3">
                 <span className="inline-flex items-center gap-1.5 bg-ozone px-2.5 py-1 font-mono text-[10px] font-bold uppercase tracking-[0.2em] text-void">
-                  <Flame className="h-3 w-3" /> $OUTOFHELL
+                  <Flame className="h-3 w-3" /> $OOHEX
                 </span>
                 <span className="font-mono text-[10px] uppercase tracking-[0.25em] text-dim">pump.fun · Solana</span>
               </div>
