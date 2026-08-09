@@ -50,7 +50,7 @@ export default function GenesisToken() {
         <div className="mt-5 flex items-start gap-3 border border-ozone/25 bg-ozone/[0.04] px-4 py-3">
           <Coins className="mt-0.5 h-4 w-4 shrink-0 text-ozone" />
           <p className="font-mono text-[11px] leading-relaxed text-silver/60">
-            <span className="text-ozone">$OOHEX · FUNGIBLE COMMUNITY TOKEN</span> — The Genesis Token is the liquid, on-chain currency of the OOH Earth commons. Unlike the Genesis Chip (a physical, non-fungible cultural artifact you hold), the token is divisible, tradeable, and earned. It funds field work, rewards operatives, and governs the treasury. Burned on every transfer, governed by those who hold it.
+            <span className="text-ozone">$OOHEX · FUNGIBLE COMMUNITY TOKEN</span> — The Genesis Token is the liquid, on-chain currency of the OOH Earth commons. Unlike the Genesis Chip (a physical, non-fungible cultural artifact you hold), the token is divisible, tradeable, and earned. It funds field work, rewards members, and governs the treasury. Burned on every transfer, governed by those who hold it.
           </p>
         </div>
 
@@ -302,7 +302,7 @@ export default function GenesisToken() {
             </div>
             <div className="border border-slate2 p-4">
               <div className="font-mono text-[9px] uppercase tracking-widest text-ozone">02 · Incentives</div>
-              <p className="mt-2 font-mono text-[11px] leading-relaxed text-silver/55">Proof-of-presence mining turns documentation into income. Operatives in under-mapped cities earn real value for filling blank spots — the map grows where it's needed most.</p>
+              <p className="mt-2 font-mono text-[11px] leading-relaxed text-silver/55">Proof-of-presence mining turns documentation into income. Members in under-mapped cities earn real value for filling blank spots — the map grows where it's needed most.</p>
             </div>
             <div className="border border-slate2 p-4">
               <div className="font-mono text-[9px] uppercase tracking-widest text-ozone">03 · Governance</div>
