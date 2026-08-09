@@ -3,7 +3,7 @@ import { base44 } from "@/api/base44Client";
 import { Bot, User, BadgeCheck, Loader2 } from "lucide-react";
 
 const TIER_META = {
-  recruit: { label: "Recruit", color: "#B2B2B2" },
+  recruit: { label: "Spotter", color: "#B2B2B2" },
   field: { label: "Field", color: "#EDFF00" },
   veteran: { label: "Veteran", color: "#FF5C00" },
   legend: { label: "Legend", color: "#FF007F" },
