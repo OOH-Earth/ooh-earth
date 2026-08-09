@@ -12,7 +12,7 @@ export default function NfcFieldCard({ handle = "operative", memberId = "OOH-000
       <div className="absolute right-3 top-[34px]"><BrandMark className="h-7 w-7" /></div>
 
       <div className="px-3 pt-3">
-        <div className="font-mono text-[8px] uppercase tracking-[0.25em] text-dim">Registered Operative</div>
+        <div className="font-mono text-[8px] uppercase tracking-[0.25em] text-dim">Registered Member</div>
         <div className="font-display text-xl font-bold leading-tight tracking-[-0.02em] text-silver">{handle}</div>
         <div className="mt-1 inline-block border border-ozone px-1.5 py-0.5 font-mono text-[8px] font-bold uppercase tracking-[0.2em] text-ozone">Field · Verified</div>
       </div>
