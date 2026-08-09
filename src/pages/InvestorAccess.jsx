@@ -76,7 +76,7 @@ export default function InvestorAccess() {
           <button className="alt" onClick={() => (auth?.navigateToLogin ? auth.navigateToLogin() : navigate("/login"))}>
             Sign in with an account →
           </button>
-          <a className="alt" href="mailto:hello@outofhell.org?subject=OOH%20Earth%20%E2%80%94%20Investor%20access%20request">
+          <a className="alt" href="mailto:hello@ooh.earth?subject=OOH%20Earth%20%E2%80%94%20Investor%20access%20request">
             Request access →
           </a>
         </div>
