@@ -128,7 +128,7 @@ export default function FieldCheckCamera({ location, open, onClose }) {
               <Crosshair className="h-3 w-3 text-ozone" />
               {location.lat?.toFixed(5)}, {location.lng?.toFixed(5)}
             </div>
-            <p className="mt-1 font-mono text-[10px] leading-relaxed text-dim">Photograph the exact same spot. This creates a timeline entry — the next operative builds on your check.</p>
+            <p className="mt-1 font-mono text-[10px] leading-relaxed text-dim">Photograph the exact same spot. This creates a timeline entry — the next member builds on your check.</p>
 
             {image_url ? (
               <div className="relative mt-4 aspect-[4/3] overflow-hidden border border-slate2 bg-card">
