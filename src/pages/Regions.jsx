@@ -94,7 +94,7 @@ export default function Regions() {
             registers, OpenStreetMap coverage, planning portals and freedom-of-information let us enumerate unit
             <span className="text-silver"> types</span> authoritatively — open access. In much of the Global South, no such
             register exists: <span className="text-silver">Bangkok</span> is completely uncovered from a unit-type
-            perspective, so the record there is gathered on foot by operatives and every classification is provisional.
+            perspective, so the record there is gathered on foot by members and every classification is provisional.
             We surface that difference rather than flatten it — an open commons in one place and an opaque one in another
             is exactly the inequity the movement exists to name (SDG&nbsp;11.7).
           </p>
