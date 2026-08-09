@@ -31,7 +31,7 @@ export const CAPITAL_LEADS = {
     instrument: "Philanthropic gift / mission-related investment",
     angle: [
       "The hard part is done: a working platform worth £70k–150k to replace, built for low thousands.",
-      "Zero-VC, copyleft, community-governed — mission integrity is structural, not promised.",
+      "Copyleft, community-governed — mission integrity is structural, not promised.",
       "Every pound moves reach: waitlist activation, ambassador network, Global South chapters.",
     ],
     unlocks: [
