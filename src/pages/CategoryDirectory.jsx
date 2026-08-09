@@ -140,7 +140,7 @@ export default function CategoryDirectory() {
             <Info className="mt-0.5 h-3.5 w-3.5 shrink-0 text-flare" />
             <p className="font-display text-[11px] leading-[1.5] text-darkgray">
               <span className="font-mono text-[9px] uppercase tracking-[0.15em] text-flare">Field-only region.</span>{" "}
-              {activeRegion.city} has no open public register of outdoor units — records are operative-gathered and unit-type
+              {activeRegion.city} has no open public register of outdoor units — records are member-gathered and unit-type
               classification here is provisional. Counts are a floor, not a census.
             </p>
           </div>
