@@ -68,15 +68,15 @@ export default function LabSignupModal({ open, action, onClose }) {
 
             {/* body */}
             <div className="px-6 py-7">
-              <div className="font-mono text-[9px] uppercase tracking-[0.3em] text-dim">// operative registration</div>
+              <div className="font-mono text-[9px] uppercase tracking-[0.3em] text-dim">// member registration</div>
               <h2 className="mt-2 font-display text-2xl font-bold uppercase tracking-[0.04em] text-silver">
                 Join the <span className="text-ozone">union</span>
               </h2>
               <p className="mt-3 font-mono text-[11px] leading-relaxed text-silver/60">
-                Browsing the Lab is open. To <span className="text-ozone">{action || "create"}</span>, you need an operative handle — it's free and takes 30 seconds.
+                Browsing the Lab is open. To <span className="text-ozone">{action || "create"}</span>, you need an account — it's free and takes 30 seconds.
               </p>
               <p className="mt-2 font-mono text-[11px] leading-relaxed text-silver/45">
-                Registered operatives can mint, export, claim field leads, and join the DAO. Union-made, aligned to the UN SDGs.
+                Registered members can mint, export, claim field leads, and join the DAO. Union-made, aligned to the UN SDGs.
               </p>
 
               <div className="mt-6 flex flex-col gap-2.5">
@@ -86,7 +86,7 @@ export default function LabSignupModal({ open, action, onClose }) {
                   className="group flex items-center justify-center gap-2 border-2 border-ozone bg-ozone px-4 py-3 font-mono text-[11px] font-bold uppercase tracking-[0.25em] text-void transition-colors hover:bg-flare hover:border-flare"
                 >
                   <UserPlus className="h-4 w-4" />
-                  Register operative
+                  Create account
                 </Link>
                 <Link
                   to="/login"
