@@ -65,7 +65,7 @@ export default function Leaderboard() {
     <section className="relative border-t border-slate2/60 bg-void px-5 py-16 md:px-8 md:py-24">
       <div className="mx-auto max-w-6xl">
         <div className="flex flex-col gap-1">
-          <span className="font-mono text-[10px] uppercase tracking-[0.3em] text-ozone">// Operative Leaderboard</span>
+          <span className="font-mono text-[10px] uppercase tracking-[0.3em] text-ozone">// Member Leaderboard</span>
           <h2 className="font-display text-3xl font-black uppercase tracking-tight2 text-silver md:text-5xl">Resistance Index</h2>
           <p className="mt-2 max-w-2xl font-display text-sm leading-relaxed text-darkgray">
             Field contributions ranked by points. File reports, get verified, add photo evidence to climb. Operative identities masked for security.
