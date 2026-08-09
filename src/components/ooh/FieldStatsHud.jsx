@@ -33,7 +33,7 @@ export default function FieldStatsHud() {
         if (s.reports != null) out.push({ icon: MapPin, label: "LOCATIONS", value: s.reports });
         if (s.digital_busts != null) out.push({ icon: Monitor, label: "DIGITAL", value: s.digital_busts, accent: "text-ozone" });
         if (s.verified != null) out.push({ icon: BadgeCheck, label: "VERIFIED", value: s.verified, accent: "text-[#39FF14]" });
-        if (s.operatives != null) out.push({ icon: Users, label: "OPERATIVES", value: s.operatives });
+        if (s.operatives != null) out.push({ icon: Users, label: "MEMBERS", value: s.operatives });
         if (s.cities != null) out.push({ icon: Building2, label: "CITIES", value: s.cities, accent: "text-flare" });
       } catch (e) {
         out.push({ icon: MapPin, label: "PLATFORM", value: "SYNCING…" });
