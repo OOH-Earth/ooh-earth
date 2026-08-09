@@ -20,7 +20,7 @@ export const REGIONS = [
     note: "Open public data — the accessible bus-stop register, OSM, and planning portals let us enumerate unit types authoritatively. The most complete set on the record." },
   { slug: "bangkok", city: "Bangkok", country: "Thailand", macro: "Southeast Asia",
     status: "partial", access: "field", countryDefault: true,
-    note: "No open public register of outdoor units. Presence is field-gathered by operatives; unit types are provisional and largely uncovered. Classification follows the field, not a database." },
+    note: "No open public register of outdoor units. Presence is field-gathered by members; unit types are provisional and largely uncovered. Classification follows the field, not a database." },
   { slug: "bristol", city: "Bristol", country: "United Kingdom", macro: "UK & Ireland",
     status: "wip", access: "open",
     note: "Adfree Cities' home city. Open data available; mapping underway." },
@@ -55,7 +55,7 @@ export const REGION_ACCESS = {
   partial: { text: "Partial access", short: "Partial", cls: "border-[#EDFF00]/40 text-[#EDFF00]",
              note: "Some open data; the rest is field-gathered." },
   field:   { text: "Field-only",     short: "Field",   cls: "border-[#FF5C00]/50 text-[#FF5C00]",
-             note: "No public register — operative-gathered; unit types provisional." },
+             note: "No public register — member-gathered; unit types provisional." },
 };
 
 export const regionBySlug = (slug) => REGIONS.find((r) => r.slug === slug) || null;
