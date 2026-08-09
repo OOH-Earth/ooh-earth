@@ -75,7 +75,7 @@ export const PANELS_B = {
       <div class="jm-stage"><div class="jm-connect"><span class="jm-arrow">&rarr;</span><div class="jm-scard">
         <div class="jm-stagetop"><span class="jm-idx">02</span><span class="jm-sname">Give &mdash; fiat</span></div>
         <div class="jm-screen"><span class="jm-sbk tl"></span><span class="jm-sbk br"></span><div style="display:flex;gap:5px;margin-top:4px"><span class="jm-sq" style="width:100%;height:16px;background:#C0563B;border-radius:3px"></span></div><div style="display:flex;gap:5px;margin-top:8px"><span class="jm-bar" style="height:16px;flex:1;background:#C0563B"></span><span class="jm-bar" style="height:16px;flex:1;background:var(--lo3)"></span><span class="jm-bar" style="height:16px;flex:1;background:var(--lo3)"></span></div><span class="jm-btn" style="margin-top:12px;background:#C0563B;color:#fff;box-shadow:0 0 18px rgba(192,86,59,.4)">Donate</span></div>
-        <div class="jm-desc">DonorBox, live at <b>donorbox.org/ooh</b>, styled terracotta <b>#C0563B</b> &mdash; the Out of Hell brand. One tap, recurring optional, receipt clean.</div>
+        <div class="jm-desc">DonorBox, live at <b>donorbox.org/ooh</b>, styled terracotta <b>#C0563B</b>. One tap, recurring optional, receipt clean.</div>
         <div class="jm-feats"><div class="jm-feat live"><span class="d"></span>DonorBox<span class="st">LIVE</span></div></div>
         <div class="jm-friction"><b>Decision:</b> terracotta widget vs Orbital neon &mdash; see note.</div>
       </div></div></div>
@@ -183,7 +183,7 @@ export const PANELS_B = {
     <div class="jm-foot">
       OOH Earth &middot; UX Journey Map v1 &middot; Orbital Perspective &middot; Jul 2026<br>
       Status calls are drawn from current build state &mdash; adjust any as the roadmap moves; every label lives in one place (journey/panels).<br>
-      <b>Open design decision:</b> the fiat donate step (Supporter &middot; 02) runs terracotta #C0563B (Out of Hell brand) inside the neon Orbital app. Deliberate cross-brand signal, or unify to hi-vis? Flagged, not resolved.
+      <b>Open design decision:</b> the fiat donate step (Supporter &middot; 02) runs terracotta #C0563B inside the neon Orbital app. Deliberate cross-brand signal, or unify to hi-vis? Flagged, not resolved.
     </div>
   `,
 };
