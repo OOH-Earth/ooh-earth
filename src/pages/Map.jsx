@@ -33,7 +33,7 @@ import RadioStationCard from "@/components/ooh/map/RadioStationCard";
 import { RADIO_STATIONS } from "@/components/ooh/radio/radioStations";
 
 const TOUR = [
-  { title: "Welcome to OOH Map", body: "The live field map of corporate advertising spots — documented by operatives worldwide." },
+  { title: "Welcome to OOH Map", body: "The live field map of corporate advertising spots — documented by members worldwide." },
   { target: "[data-tour=\"layout\"]", title: "Layout modes", body: "Switch between Split, Map-dominant, and List views to control how much of the map you see." },
   { target: "[data-tour=\"filters\"]", title: "Filter by type", body: "Isolate billboards, digital screens, painted takeovers, and more." },
   { target: "[data-tour=\"search\"]", title: "Search & reset", body: "Find a location by street or city, then reset filters in one tap." },
