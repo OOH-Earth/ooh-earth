@@ -8,7 +8,7 @@ export const ROLES = [
   // ─────────── Field & Community ───────────
   {
     id: "field-operative",
-    title: "Field Operative",
+    title: "Field Reporter",
     type: "Volunteer",
     category: "Field & Community",
     location: "Global · your city",
@@ -29,7 +29,7 @@ export const ROLES = [
       "Basic safety sense around traffic and private property",
     ],
     gain: [
-      "Operative credentials and a place in the global network",
+      "Member credentials and a place in the global network",
       "Your reports live on the public atlas",
       "Field costs reimbursed where the treasury allows",
     ],
@@ -42,11 +42,11 @@ export const ROLES = [
     location: "Global · your city",
     commitment: "Flexible — self-directed",
     comp: "Volunteer — expenses + micro-grants for local action",
-    summary: "Be the face of the movement in your city — recruit operatives, run meet-ups and local subvertising campaigns.",
+    summary: "Be the face of the movement in your city — welcome new members, run meet-ups and local subvertising campaigns.",
     tags: ["Organising", "Community", "Local"],
-    about: "Ambassadors turn a scatter of operatives into a local crew. You represent OOH Earth in your city, grow the network, and lead the actions that make the atlas matter on the ground.",
+    about: "Ambassadors turn a scatter of members into a local crew. You represent OOH Earth in your city, grow the network, and lead the actions that make the atlas matter on the ground.",
     responsibilities: [
-      "Recruit, welcome and support operatives in your city",
+      "Welcome and support members in your city",
       "Organise meet-ups, mapping walks and local campaigns",
       "Be a first point of contact for local press and allies",
       "Feed local intel and wins back to the wider network",
@@ -126,13 +126,13 @@ export const ROLES = [
     location: "Remote · any jurisdiction",
     commitment: "Flexible — project-based",
     comp: "Volunteer",
-    summary: "Map the rules — advertising law, planning consent and public-space rights — so operatives act informed and safe.",
+    summary: "Map the rules — advertising law, planning consent and public-space rights — so members act informed and safe.",
     tags: ["Law", "Policy", "Rights"],
-    about: "Knowing the law is a weapon. Observers research how outdoor advertising is regulated where you are, document illegal installs, and help operatives understand their rights before they act.",
+    about: "Knowing the law is power. Observers research how outdoor advertising is regulated where you are, document illegal installs, and help members understand their rights before they act.",
     responsibilities: [
       "Research advertising, planning and public-space law in your jurisdiction",
       "Document unconsented or unlawful installations with the evidence to challenge them",
-      "Write plain-language rights guides for operatives",
+      "Write plain-language rights guides for members",
       "Support objections and complaints with the right references",
     ],
     requirements: [
@@ -154,12 +154,12 @@ export const ROLES = [
     location: "London · Bangkok",
     commitment: "Part-time — regular hours",
     comp: "Part-time — paid where funded, honorarium otherwise",
-    summary: "Lead the operative network in your region — triage reports, verify spots, onboard operatives and run campaigns.",
+    summary: "Lead the member network in your region — triage reports, verify spots, onboard members and run campaigns.",
     tags: ["Operations", "Community", "Logistics"],
-    about: "Coordinators keep a whole region moving — the connective tissue between street operatives and the core team. You run the day-to-day of the network where you are.",
+    about: "Coordinators keep a whole region moving — the connective tissue between members and the core team. You run the day-to-day of the network where you are.",
     responsibilities: [
       "Triage and verify reports across your region",
-      "Onboard and support new operatives and ambassadors",
+      "Onboard and support new members and ambassadors",
       "Plan and run regional campaigns and actions",
       "Report regional health and needs to the core team",
     ],
@@ -182,12 +182,12 @@ export const ROLES = [
     location: "Remote",
     commitment: "Part-time — regular hours",
     comp: "Part-time — paid where funded, honorarium otherwise",
-    summary: "Run the operative community across channels — onboard, motivate, surface wins, keep the network coordinated and safe.",
+    summary: "Run the member community across channels — onboard, motivate, surface wins, keep the network coordinated and safe.",
     tags: ["Community", "Social", "Onboarding"],
-    about: "You hold the community together — the voice that welcomes new operatives, celebrates the wins, defuses the friction and keeps thousands of people pulling the same way, safely.",
+    about: "You hold the community together — the voice that welcomes new members, celebrates the wins, defuses the friction and keeps thousands of people pulling the same way, safely.",
     responsibilities: [
       "Run community channels — welcome, moderate, energise",
-      "Onboard new members and point them to their first mission",
+      "Onboard new members and point them to their first field project",
       "Surface field wins and turn them into shareable stories",
       "Uphold safety and conduct norms across the network",
     ],
@@ -214,7 +214,7 @@ export const ROLES = [
     comp: "Paid contract — rate agreed by scope",
     summary: "Build the field tools in React + Tailwind — maps, AR lens, capture flows, offline-first data entry. Open-source by default.",
     tags: ["React", "Tailwind", "Maps"],
-    about: "The field tools have to work on a cheap phone, in the street, offline, at night. You'll build the interfaces operatives actually rely on — fast, legible and resilient.",
+    about: "The field tools have to work on a cheap phone, in the street, offline, at night. You'll build the interfaces members actually rely on — fast, legible and resilient.",
     responsibilities: [
       "Build capture, map and AR-lens flows in React + Tailwind",
       "Make it work offline-first and sync cleanly",
@@ -270,7 +270,7 @@ export const ROLES = [
     comp: "Paid contract — rate agreed by scope",
     summary: "Steward the platform identity and design field-ready UI that reads in sunlight, at night and under stress.",
     tags: ["Identity", "UX", "Field UI"],
-    about: "The look is a weapon too. You steward the Orbital Perspective identity and design interfaces that stay legible and unmistakable in the hardest conditions operatives face.",
+    about: "The look matters too. You steward the Orbital Perspective identity and design interfaces that stay legible and unmistakable in the hardest conditions members face.",
     responsibilities: [
       "Steward and evolve the brand system across surfaces",
       "Design field-ready, high-contrast UI for real conditions",
@@ -412,7 +412,7 @@ export const ROLES = [
     comp: "Volunteer",
     summary: "Turn field wins into content that travels — posts, threads and short video that grow the network and the funding.",
     tags: ["Social", "Content", "Storytelling"],
-    about: "The best subvertising deserves an audience. You turn operative wins, maps and milestones into content that spreads the movement and pulls new people and funding in.",
+    about: "The best subvertising deserves an audience. You turn member wins, maps and milestones into content that spreads the movement and pulls new people and funding in.",
     responsibilities: [
       "Create posts, threads and short video from field wins",
       "Keep a steady, on-brand publishing rhythm",
@@ -474,14 +474,14 @@ export const LOOK_FOR = [
 // backing so contributing never costs you money.
 export const SUPPORT = [
   { title: "Field costs, not out of pocket", body: "Where the community treasury allows, we reimburse reasonable field costs — transport, printing, access tools — so volunteering never costs you money to do." },
-  { title: "Micro-grants for local action", body: "Small grants for operatives and ambassadors running local campaigns, subvertising actions or city meet-ups. Apply through your coordinator." },
-  { title: "Real credentials & references", body: "Operative credentials, a public record of your contributions, and honest references for jobs, grants or study." },
+  { title: "Micro-grants for local action", body: "Small grants for members and ambassadors running local campaigns, subvertising actions or city meet-ups. Apply through your coordinator." },
+  { title: "Real credentials & references", body: "Member credentials, a public record of your contributions, and honest references for jobs, grants or study." },
   { title: "Skills, not just labour", body: "Hands-on mentoring in mapping, investigation, organising and open-source tools — you leave sharper than you arrived." },
 ];
 
 export const VALUES = [
-  { icon: "Eye", title: "See everything", body: "We map what brands pay to hide in plain sight. Visibility is the weapon." },
-  { icon: "HandHeart", title: "Community-funded", body: "No ad money, no investors calling shots. The treasury and the work answer to operatives." },
+  { icon: "Eye", title: "See everything", body: "We map what brands pay to hide in plain sight. Visibility is the point." },
+  { icon: "HandHeart", title: "Community-funded", body: "No ad money, no investors calling shots. The treasury and the work answer to members." },
   { icon: "Zap", title: "Field-ready", body: "Every tool must work on a phone, in the street, offline, at night, under pressure." },
   { icon: "Globe2", title: "Open by default", body: "Open-source data, open methods. What we build, anyone can fork and field." },
 ];
@@ -490,7 +490,7 @@ export const PROCESS = [
   { step: "01", title: "Apply", body: "Send a short note — who you are, what you'd build, and a link or two." },
   { step: "02", title: "Talk", body: "A 30-minute call with the core team. No take-homes, no whiteboards." },
   { step: "03", title: "Field test", body: "A paid micro-task or a trial shift on a real piece of the atlas." },
-  { step: "04", title: "Onboard", body: "Credentials, comms, and your first operative mission." },
+  { step: "04", title: "Onboard", body: "Credentials, comms, and your first field project." },
 ];
 
 export const APPLY_EMAIL = "hello@oohearth.app";
