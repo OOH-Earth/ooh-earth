@@ -26,7 +26,7 @@ const TOOLS = [
   { to: "/ar", Icon: Camera, label: "AR Lens", desc: "Overlay tool" },
   { to: "/trash", Icon: Trash2, label: "Trash ID", desc: "Waste traceability" },
   { to: "/scan", Icon: ScanLine, label: "TrueCost", desc: "UPC impact scan" },
-  { to: "/field-id", Icon: IdCard, label: "Field ID", desc: "Operative card" },
+  { to: "/field-id", Icon: IdCard, label: "Field ID", desc: "Member card" },
 ];
 
 // Deterministic 0001–0101 node id from a seed string (user id / email)
