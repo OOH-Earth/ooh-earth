@@ -85,7 +85,7 @@ export default function Careers() {
           <Reveal>
             <span className="font-mono text-[10px] uppercase tracking-[0.3em] text-ozone">// Who thrives here</span>
             <h2 className="mt-2 font-display text-2xl font-bold tracking-[-0.02em] text-silver md:text-3xl">Who thrives here</h2>
-            <p className="mt-2 max-w-2xl text-sm text-darkgray">We've stopped reading CVs too closely. Some of the best operatives we know had never mapped a thing before their first walk; some of the most decorated never shipped at all. The five things below are what really tells us who'll do their best work here — and, honestly, who we'll enjoy the ride with.</p>
+            <p className="mt-2 max-w-2xl text-sm text-darkgray">We've stopped reading CVs too closely. Some of the best members we know had never mapped a thing before their first walk; some of the most decorated never shipped at all. The five things below are what really tells us who'll do their best work here — and, honestly, who we'll enjoy the ride with.</p>
           </Reveal>
           <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2">
             {LOOK_FOR.map((v, i) => (
