@@ -45,7 +45,7 @@ const TOUR = [
   { target: "[data-tour=\"hud-pm25\"]", title: "Air Commons intel", body: "Live PM2.5 from global-south monitoring stations, benchmarked against WHO limits." },
   { target: "[data-tour=\"map\"]", title: "OOH Futures — Global South roadmap", body: "Dashed markers scattered among live spots are futures: placeholder expansion pillars across Lagos, Nairobi, Jakarta, São Paulo, Manila, Dhaka and beyond. Hover one to preview its phase." },
   { target: "[data-tour=\"map\"]", title: "Roadmap phases", body: "Each future carries a target quarter — Q3 2026 through 2028. When a phase opens, members can claim a future to seed the local network and convert it into live locations." },
-  { title: "Mission ready", body: "You're cleared for field operations. File your first report.", cta: true },
+  { title: "Ready to go", body: "You're all set. File your first report.", cta: true },
 ];
 
 export default function Map() {
