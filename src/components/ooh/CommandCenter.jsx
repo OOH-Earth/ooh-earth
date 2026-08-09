@@ -22,14 +22,14 @@ const GROUPS = [
     links: [
       { name: "Sign up for Early Access", desc: "Join the global mapping platform.", href: "https://oohearth.app/", priority: true },
       { name: "About OOH Street Maps", desc: "The mission, the union, the method.", href: "https://oohearth.app/about" },
-      { name: "@advertisersanonymous", desc: "Member profile & field log.", href: "https://oohearth.app/profile/advertisersanonymous" },
+      { name: "@advertisersanonymous", desc: "Member profile & field log.", to: "/operative" },
     ],
   },
   {
     label: "Adbusting City Maps",
     links: [
-      { name: "Bangkok", desc: "🗺️📍 Active intervention map.", href: "https://oohearth.app/area/bangkok", priority: true },
-      { name: "London", desc: "🗺️📍 Active intervention map.", href: "https://oohearth.app/area/london", priority: true },
+      { name: "Bangkok", desc: "🗺️📍 Active intervention map.", to: "/map?area=bangkok", priority: true },
+      { name: "London", desc: "🗺️📍 Active intervention map.", to: "/map?area=london", priority: true },
     ],
   },
   {
@@ -135,26 +135,28 @@ export default function CommandCenter({ open, onClose }) {
                 <span className="h-px flex-1 bg-white/5" />
               </div>
               <div className="grid gap-px sm:grid-cols-2">
-                {g.links.map((l) => (
-                  <a
-                    key={l.href}
-                    href={l.href}
-                    target="_blank"
-                    rel="noreferrer"
-                    data-cursor="view"
-                    className={`group relative flex items-start justify-between gap-3 border p-4 transition-colors ${
-                      l.priority
-                        ? "border-ozone/30 bg-ozone/[0.04] hover:bg-ozone/10"
-                        : "border-white/5 bg-card hover:border-white/15"
-                    }`}
-                  >
-                    <div>
-                      <div className={`font-display text-base font-bold uppercase tracking-tight ${l.priority ? "text-ozone" : "text-silver"}`}>{l.name}</div>
-                      <div className="mt-1 font-mono text-[10px] leading-relaxed text-silver/45">{l.desc}</div>
-                    </div>
-                    <ArrowUpRight className={`mt-0.5 h-4 w-4 shrink-0 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5 ${l.priority ? "text-ozone" : "text-silver/30"}`} />
-                  </a>
-                ))}
+                {g.links.map((l) => {
+                  const Wrap = l.to ? Link : "a";
+                  const wrapProps = l.to ? { to: l.to, onClick: onClose } : { href: l.href, target: "_blank", rel: "noreferrer" };
+                  return (
+                    <Wrap
+                      key={l.to || l.href}
+                      {...wrapProps}
+                      data-cursor="view"
+                      className={`group relative flex items-start justify-between gap-3 border p-4 transition-colors ${
+                        l.priority
+                          ? "border-ozone/30 bg-ozone/[0.04] hover:bg-ozone/10"
+                          : "border-white/5 bg-card hover:border-white/15"
+                      }`}
+                    >
+                      <div>
+                        <div className={`font-display text-base font-bold uppercase tracking-tight ${l.priority ? "text-ozone" : "text-silver"}`}>{l.name}</div>
+                        <div className="mt-1 font-mono text-[10px] leading-relaxed text-silver/45">{l.desc}</div>
+                      </div>
+                      <ArrowUpRight className={`mt-0.5 h-4 w-4 shrink-0 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5 ${l.priority ? "text-ozone" : "text-silver/30"}`} />
+                    </Wrap>
+                  );
+                })}
               </div>
             </div>
           ))}

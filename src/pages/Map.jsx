@@ -76,6 +76,12 @@ export default function Map() {
   };
 
   useEffect(() => { registerSteps(TOUR); }, [registerSteps]);
+
+  // City deep-link: /map?area=bangkok pre-fills the search to filter that city.
+  useEffect(() => {
+    const area = new URLSearchParams(window.location.search).get("area");
+    if (area) setQuery(area);
+  }, []);
   const [captureOpen, setCaptureOpen] = useState(false);
   const [graffitiCamOpen, setGraffitiCamOpen] = useState(false);
   const [claims, setClaims] = useState([]);
