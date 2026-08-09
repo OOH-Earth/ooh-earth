@@ -110,7 +110,7 @@ export default function NomadPulse({ compact = false }) {
             <span className="font-mono text-[9px] uppercase tracking-[0.25em] text-ozone">active nomads tracked</span>
           </div>
           <span className="font-mono text-[10px] leading-relaxed text-darkgray">
-            Operative-density overlay — nomad hubs double as field-reporter recruitment zones. Density bar = share of network.
+            Member-density overlay — nomad hubs double as field-reporter zones. Density bar = share of network.
           </span>
         </div>
       </div>
