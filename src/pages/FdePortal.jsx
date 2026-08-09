@@ -143,7 +143,7 @@ export default function FdePortal() {
           <section className="mt-8 grid grid-cols-2 gap-2.5 md:grid-cols-4">
             <Stat Icon={MapPin} label="Active deployments" value={deployments.length} accent="text-ozone" />
             <Stat Icon={AlertTriangle} label="Pending triage" value={pending.length} accent="text-flare" />
-            <Stat Icon={Users} label="Operatives" value={operatives.length} />
+            <Stat Icon={Users} label="Members" value={operatives.length} />
             <Stat Icon={Building2} label="Cities" value={cities} accent="text-flare" />
           </section>
 
