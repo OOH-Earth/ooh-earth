@@ -2,9 +2,9 @@
 // Swap addresses for real oohearth campaign/creator coin addresses when minted.
 
 export const PRIMARY_COIN = {
-  addr: "BwVYGpW3wqe6UZWoLDj4UbxXc94n813MSJcDNePApump", // $OUTOFHELL · pump.fun · Solana
-  symbol: "$OUTOFHELL",
-  name: "Out Of Hell",
+  addr: "BwVYGpW3wqe6UZWoLDj4UbxXc94n813MSJcDNePApump", // $OOHEX · pump.fun · Solana
+  symbol: "$OOHEX",
+  name: "OOH Earth Genesis",
   chartUrl: "https://pump.fun/BwVYGpW3wqe6UZWoLDj4UbxXc94n813MSJcDNePApump",
   note: "pump.fun · Solana",
 };
