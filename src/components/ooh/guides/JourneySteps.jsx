@@ -38,7 +38,7 @@ const STEPS = [
     title: "In-Home digital adbusting",
     to: "/inhome",
     route: "In-Home",
-    body: "Track digital-surface busts across metaverse, browser, social and streaming. Switch between 3D scene, signal constellation and grid views, log a new bust, and watch the operative roster.",
+    body: "Track digital-surface busts across metaverse, browser, social and streaming. Switch between 3D scene, signal constellation and grid views, log a new bust, and watch the member roster.",
     actions: ["Log a bust", "Signal constellation", "3D scene", "Member roster"],
   },
   {
@@ -62,7 +62,7 @@ const STEPS = [
     title: "Operate the dashboard",
     to: "/dashboard",
     route: "Dashboard",
-    body: "Admins log in to triage pending reports by photo/source evidence, manage operatives and lead claims, and read live field stats. The dashboard auto-sorts pending items for fastest verification.",
+    body: "Admins log in to triage pending reports by photo/source evidence, manage members and lead claims, and read live field stats. The dashboard auto-sorts pending items for fastest verification.",
     actions: ["Triage queue", "Member mgmt", "Lead claims", "Field stats"],
   },
   {
