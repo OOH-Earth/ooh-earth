@@ -9,7 +9,7 @@ const TYPES = {
   claim: { icon: Hand, label: "Lead adopted", color: "text-flare", dot: "#FF5C00" },
   bust: { icon: Monitor, label: "Digital bust", color: "text-flare", dot: "#FF5C00" },
   donate: { icon: Coins, label: "Treasury inflow", color: "text-[#39FF14]", dot: "#39FF14" },
-  operative: { icon: UserPlus, label: "Operative onboard", color: "text-[#1F51FF]", dot: "#1F51FF" },
+  operative: { icon: UserPlus, label: "Member onboard", color: "text-[#1F51FF]", dot: "#1F51FF" },
   verify: { icon: BadgeCheck, label: "Site verified", color: "text-ozone", dot: "rgb(var(--c-ozone))" },
 };
 
@@ -25,7 +25,7 @@ function synth() {
   if (r < 0.5) return { type: "claim", title: "Adopted landmark for intervention", meta: "@" + HANDLES[Math.floor(Math.random() * HANDLES.length)] };
   if (r < 0.66) return { type: "bust", title: BUSTS[Math.floor(Math.random() * BUSTS.length)], meta: CITIES[Math.floor(Math.random() * CITIES.length)] };
   if (r < 0.8) return { type: "donate", title: CRYPTO[Math.floor(Math.random() * CRYPTO.length)] + " received", meta: "treasury · public record" };
-  if (r < 0.93) return { type: "operative", title: "Field operative registered", meta: "@" + HANDLES[Math.floor(Math.random() * HANDLES.length)] + " · " + CITIES[Math.floor(Math.random() * CITIES.length)] };
+  if (r < 0.93) return { type: "operative", title: "New member registered", meta: "@" + HANDLES[Math.floor(Math.random() * HANDLES.length)] + " · " + CITIES[Math.floor(Math.random() * CITIES.length)] };
   return { type: "verify", title: "Photo evidence confirmed", meta: CITIES[Math.floor(Math.random() * CITIES.length)] };
 }
 
