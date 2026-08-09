@@ -3,7 +3,7 @@ import TreasuryBalances from "@/components/ooh/TreasuryBalances";
 
 const FUNDS = [
   { label: "Platform development & security", val: "Build the mapping infrastructure end to end." },
-  { label: "Mobile app · Global South access", val: "Field operatives document from anywhere." },
+  { label: "Mobile app · Global South access", val: "Members document from anywhere." },
   { label: "Direct support for organizers", val: "Resources to the people doing the work." },
   { label: "Research, finance & platform ops", val: "Keep the resistance solvent and steady." },
 ];
