@@ -135,7 +135,7 @@ export default function OnChain() {
               icon={<CreditCard className="h-4 w-4" />}
               eyebrow="Field Card"
               title="OOH supercard"
-              desc="Operative ID, access tiers and location tagging for field documentation."
+              desc="Member ID, access tiers and location tagging for field documentation."
               href="https://supercard.framer.ai/"
             />
             <EcoTile
