@@ -326,7 +326,7 @@ export const ROLES = [
     location: "Remote",
     commitment: "Flexible — a few hours a week",
     comp: "Volunteer — keeps the whole platform free & open",
-    summary: "Help the movement fund itself without ad money or investors — find grants, draft applications, keep the pipeline moving.",
+    summary: "Help the movement fund itself without ad money — find grants, draft applications, keep the pipeline moving.",
     tags: ["Grants", "Funding", "Research"],
     about: "Everything here is free because the community funds it — no ad money. You help keep it that way: hunting down grants and fellowships, drafting applications, and keeping our funding pipeline organised and moving.",
     responsibilities: [
