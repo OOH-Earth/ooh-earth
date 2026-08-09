@@ -39,7 +39,7 @@ const STEPS = [
     to: "/inhome",
     route: "In-Home",
     body: "Track digital-surface busts across metaverse, browser, social and streaming. Switch between 3D scene, signal constellation and grid views, log a new bust, and watch the operative roster.",
-    actions: ["Log a bust", "Signal constellation", "3D scene", "Operative roster"],
+    actions: ["Log a bust", "Signal constellation", "3D scene", "Member roster"],
   },
   {
     n: "06",
@@ -63,7 +63,7 @@ const STEPS = [
     to: "/dashboard",
     route: "Dashboard",
     body: "Admins log in to triage pending reports by photo/source evidence, manage operatives and lead claims, and read live field stats. The dashboard auto-sorts pending items for fastest verification.",
-    actions: ["Triage queue", "Operative mgmt", "Lead claims", "Field stats"],
+    actions: ["Triage queue", "Member mgmt", "Lead claims", "Field stats"],
   },
   {
     n: "09",
