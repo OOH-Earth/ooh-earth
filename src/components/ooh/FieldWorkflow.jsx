@@ -8,7 +8,7 @@ const STEPS = [
   { n: "03", t: "Tag the offense category", d: "Classify the harm across the nine categories of corporate advertising.", Icon: Tag },
   { n: "04", t: "Upload to the global map", d: "Drop the pin. The record is public, dated, and geolocated forever.", Icon: Upload },
   { n: "05", t: "Research the corporate owner", d: "Trace the billboard to the operator, the brand, the money behind it.", Icon: Search },
-  { n: "06", t: "Connect with local activists", d: "Find the operatives already working your borough or city.", Icon: Users },
+  { n: "06", t: "Connect with local activists", d: "Find the people already working your borough or city.", Icon: Users },
   { n: "07", t: "File a planning objection", d: "Turn documentation into pressure. Councils respond to records.", Icon: FileText },
   { n: "08", t: "Document the creative resistance", d: "Log the subvertising action. The counter-narrative becomes the archive.", Icon: Brush },
 ];
