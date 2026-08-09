@@ -16,7 +16,7 @@ export const ROLES = [
     comp: "Volunteer — field costs covered where funds allow",
     summary: "Document advertising and subvertising in the wild — photos, GPS and access-key intel, filed from the street.",
     tags: ["Reporting", "Photography", "Field ID"],
-    about: "The eyes of the atlas. Operatives walk their own streets and turn corporate advertising into open, mapped, contestable data — logging billboards, bus-stop screens and illegal hoardings so the whole network can see and act on them.",
+    about: "The eyes of the atlas. Members walk their own streets and turn corporate advertising into open, mapped, contestable data — logging billboards, bus-stop screens and illegal hoardings so the whole network can see and act on them.",
     responsibilities: [
       "Photograph and log outdoor ads and subvertising interventions in your area",
       "Capture GPS, dimensions, operator and access-key details",
