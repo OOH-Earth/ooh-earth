@@ -39,7 +39,7 @@ export default function LeadCapture() {
       <div className="border border-ozone/40 bg-card p-6 text-center">
         <Check className="mx-auto h-7 w-7 text-ozone" />
         <p className="mt-3 font-display text-lg font-bold text-silver">Signal received</p>
-        <p className="mt-1 font-mono text-[10px] uppercase tracking-[0.2em] text-dim">// An operative will reach out</p>
+        <p className="mt-1 font-mono text-[10px] uppercase tracking-[0.2em] text-dim">// A team member will reach out</p>
         <button
           onClick={() => { setDone(false); setName(""); setEmail(""); setAmount(""); setMessage(""); }}
           className="mt-4 font-mono text-[10px] font-bold uppercase tracking-[0.25em] text-ozone transition-opacity hover:opacity-70"
