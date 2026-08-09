@@ -68,7 +68,7 @@ export default function Leaderboard() {
           <span className="font-mono text-[10px] uppercase tracking-[0.3em] text-ozone">// Member Leaderboard</span>
           <h2 className="font-display text-3xl font-black uppercase tracking-tight2 text-silver md:text-5xl">Resistance Index</h2>
           <p className="mt-2 max-w-2xl font-display text-sm leading-relaxed text-darkgray">
-            Field contributions ranked by points. File reports, get verified, add photo evidence to climb. Operative identities masked for security.
+            Field contributions ranked by points. File reports, get verified, add photo evidence to climb. Member identities masked for privacy.
           </p>
         </div>
 
