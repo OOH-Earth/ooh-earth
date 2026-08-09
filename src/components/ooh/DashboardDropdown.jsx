@@ -38,7 +38,7 @@ export default function DashboardDropdown() {
     { k: "Spots", v: stats.spots, Icon: MapPin, c: "rgb(var(--c-ozone))" },
     { k: "Leads", v: stats.leads, Icon: Crosshair, c: "#FF5C00" },
     { k: "Verified", v: stats.verified, Icon: ShieldCheck, c: "#39FF14" },
-    { k: "Operatives", v: stats.ops, Icon: Radio, c: "#1F51FF" },
+    { k: "Members", v: stats.ops, Icon: Radio, c: "#1F51FF" },
   ];
   const shortcuts = [
     { to: "/map", label: "Atlas", Icon: MapPin },
