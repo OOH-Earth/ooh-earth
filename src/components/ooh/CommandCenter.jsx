@@ -22,7 +22,7 @@ const GROUPS = [
     links: [
       { name: "Sign up for Early Access", desc: "Join the global mapping platform.", href: "https://oohearth.app/", priority: true },
       { name: "About OOH Street Maps", desc: "The mission, the union, the method.", href: "https://oohearth.app/about" },
-      { name: "@advertisersanonymous", desc: "Operative profile & field log.", href: "https://oohearth.app/profile/advertisersanonymous" },
+      { name: "@advertisersanonymous", desc: "Member profile & field log.", href: "https://oohearth.app/profile/advertisersanonymous" },
     ],
   },
   {
