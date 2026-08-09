@@ -16,9 +16,9 @@ import ViewfinderCursor from "@/components/ooh/ViewfinderCursor";
 
 const FREE_PLANS = [
 {
-  name: "Anon Spotter",
+  name: "Anonymous",
   price: "Free",
-  tagline: "Operate anonymously",
+  tagline: "Private by default — no account needed",
   features: [
   "Browse the live map of documented advertising",
   "Report offenses across 9 categories — no account needed",
@@ -31,8 +31,8 @@ const FREE_PLANS = [
   price: "Free",
   tagline: "Build a public profile",
   features: [
-  "Everything anonymous — plus a public operative profile",
-  "Earn rank and climb the field leaderboard",
+  "Everything in Anonymous — plus a public profile",
+  "Earn rank and climb the community leaderboard",
   "Draft a planning objection in seconds with the Objection Generator",
   "Save and organise your own map collections"]
 
@@ -49,12 +49,12 @@ const FREE_PLANS = [
 const TIERS = [
 {
   id: "accomplice",
-  name: "Accomplice",
-  who: "For the sympathiser who wants in.",
-  line: "Not a bystander. An accomplice.",
+  name: "Ally",
+  who: "For everyone who wants public space back in public hands.",
+  line: "Put your name to it.",
   price: { month: 5, year: 50 },
   features: [
-  "Accomplice badge on your public profile",
+  "Ally badge on your public profile",
   "Your name in the project's open-source supporters credits",
   "The supporter dispatch — what we're building and finding, before it's public",
   "Every cent funds the commons: no ads, no VC, copyleft forever"]
@@ -63,12 +63,12 @@ const TIERS = [
 {
   id: "sustainer",
   name: "Sustainer",
-  who: "For the regular who wants the tools to thrive.",
-  line: "Keep the lights on. Steer the build.",
+  who: "For the regulars who want these tools to thrive.",
+  line: "Keep it running. Help steer it.",
   featured: true,
   price: { month: 15, year: 150 },
   features: [
-  "Everything in Accomplice",
+  "Everything in Ally",
   "Sustainer badge",
   "First access to new field tools and press, before they go public",
   "A say in what gets built next — supporters help set priorities"]
@@ -77,8 +77,8 @@ const TIERS = [
 {
   id: "patron",
   name: "Patron",
-  who: "For the backer who can move the needle.",
-  line: "Underwrite whole campaigns.",
+  who: "For those who can move the needle.",
+  line: "Back a whole campaign.",
   price: { month: 50, year: 500 },
   features: [
   "Everything in Sustainer",
@@ -91,7 +91,7 @@ const TIERS = [
 
 const FAQ = [
 { q: "Do I need to pay to use the platform?", a: "No. The map, reporting, and field tools are open to everyone — free, and staying that way. Supporter tiers don't unlock the commons; they fund it and add recognition, access, and a few real perks on top. Start on a free plan and see what we can do together." },
-{ q: "What's the difference between the three tiers?", a: "Accomplice ($5/mo) is how you get in — a badge on your profile, your name in the open-source supporters credits, the supporter dispatch, and the knowledge that every cent funds an ad-free, copyleft commons. Sustainer ($15/mo) is the backbone — everything in Accomplice plus first access to new tools and press before they're public, and a say in what gets built next. Patron ($50/mo) moves the needle — everything in Sustainer plus the chance to underwrite a named campaign or build with your credit on it, and a direct line to the founder to help set priorities. Every tier funds the same open commons — the higher tiers just move more of it." },
+{ q: "What's the difference between the three tiers?", a: "Ally ($5/mo) is how you get in — a badge on your profile, your name in the open-source supporters credits, the supporter dispatch, and the knowledge that every cent funds an ad-free, copyleft commons. Sustainer ($15/mo) is the backbone — everything in Ally plus first access to new tools and press before they're public, and a say in what gets built next. Patron ($50/mo) moves the needle — everything in Sustainer plus the chance to underwrite a named campaign or build with your credit on it, and a direct line to the founder to help set priorities. Every tier funds the same open commons — the higher tiers just move more of it." },
 { q: "Monthly or annual — what's the difference?", a: "Same tier, same benefits. Annual is billed once a year and works out at two months free versus paying monthly. Pick whichever suits you with the toggle above the tiers; you can change it later in the billing portal." },
 { q: "Are my activities on the platform private?", a: "Yes. We believe privacy is a basic human right. All new sign-ups are completely anonymous, and we ensure all user information is 100% secure. When you create an account, all of your activity remains completely private." },
 { q: "How do supporter plans work?", a: "They're recurring subscriptions, billed monthly or annually, that renew automatically until you cancel. Manage or cancel anytime from the billing portal — no need to email us. Cancelling stops future renewals; you keep your tier until the end of the period you've paid for. We only list perks we can actually deliver; where something is still being built, we say so rather than promise it." },
@@ -220,9 +220,9 @@ export default function Plans() {
                   For those who believe public space belongs to the public.
                 </h2>
                 <ul className="mt-6 space-y-3 font-display text-sm leading-[1.4] text-darkgray">
-                  <li>For those who take creative direct action against corporate advertising — document interventions, share tactics, inspire others.</li>
+                  <li>For everyone who believes ads shouldn't own the view — document what's out there, share what you find, and support the people reclaiming their streets.</li>
                   <li>No venture capital. No corporate compromise. Just people who believe public space belongs to the public.</li>
-                  <li>Adbusting that keeps your city happier and builds commercial-free public-access OOH communities.</li>
+                  <li>Fewer ads make for calmer, happier streets — and a public realm that belongs to the people who live in it.</li>
                   <li>Join a global network documenting corporate visual pollution. Every pin on the map is data the advertising industry doesn't want public.</li>
                 </ul>
               </div>
@@ -240,7 +240,7 @@ export default function Plans() {
               <div className="flex items-center gap-4">
                 <Globe2 className="h-8 w-8 text-ozone" />
                 <p className="max-w-xl font-display text-base font-medium leading-[1.35] text-silver md:text-lg">
-                  Tools that make documenting corporate advertising simple — exposing offenses across 9 categories, coordinating resistance from São Paulo to Mumbai, Lagos to London.
+                  Tools that make documenting corporate advertising simple — flagging offenses across 9 categories, connecting communities from São Paulo to Mumbai, Lagos to London.
                 </p>
               </div>
             </div>
