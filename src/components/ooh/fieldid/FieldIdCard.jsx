@@ -1,7 +1,7 @@
 import BrandMark from "@/components/ooh/BrandMark";
 
 const TIER = {
-  recruit: { label: "RECRUIT", cls: "border-silver/50 text-silver" },
+  recruit: { label: "SPOTTER", cls: "border-silver/50 text-silver" },
   field: { label: "FIELD", cls: "border-ozone text-ozone" },
   veteran: { label: "VETERAN", cls: "border-flare text-flare" },
   legend: { label: "LEGEND", cls: "border-ozone text-ozone text-glow-ozone" },
@@ -53,7 +53,7 @@ export default function FieldIdCard({ op }) {
     <div className="relative w-[340px] select-none overflow-hidden border border-slate2 bg-void" style={{ height: "214px" }}>
       <div className="hi-vis-stripes flex h-[26px] items-center justify-between px-3">
         <span className="bg-void px-1.5 font-mono text-[9px] font-bold uppercase tracking-[0.25em] text-ozone">OOH·EARTH</span>
-        <span className="bg-void px-1.5 font-mono text-[9px] font-bold uppercase tracking-[0.25em] text-ozone">Field Operative</span>
+        <span className="bg-void px-1.5 font-mono text-[9px] font-bold uppercase tracking-[0.25em] text-ozone">Field Reporter</span>
       </div>
 
       <div className="absolute right-2 top-[30px]"><BrandMark className="h-7 w-7" /></div>
@@ -61,7 +61,7 @@ export default function FieldIdCard({ op }) {
       <div className="flex gap-3 px-3 pt-2">
         <div className="flex h-16 w-14 shrink-0 items-center justify-center border border-slate2 bg-card font-brand text-2xl text-ozone">{initials}</div>
         <div className="min-w-0 flex-1">
-          <div className="font-mono text-[8px] uppercase tracking-[0.25em] text-dim">Operative</div>
+          <div className="font-mono text-[8px] uppercase tracking-[0.25em] text-dim">Member</div>
           <div className="truncate font-display text-xl font-bold leading-tight tracking-[-0.02em] text-silver">{op.handle || "ghost"}</div>
           <div className="mt-0.5 font-body text-[10px] leading-tight text-darkgray">{op.name}</div>
           <div className="mt-1.5 flex items-center gap-1.5">
