@@ -9,8 +9,8 @@ export const PANELS_B = {
       <div>
         <div class="jm-pname">The City Ambassador</div>
         <span class="jm-ptier">Tier 3 &middot; Coordinator</span>
-        <p class="jm-pgoal">Runs a city, not a feed. Needs to see local density, <b>marshal the operatives on the ground</b>, run correspondents, and carry credentials that make the movement real off-screen.</p>
-        <div class="jm-pfacts"><span>Entry &middot; <b>promoted Operative</b></span><span>Core act &middot; <b>coordinate</b></span><span>Scope &middot; <b>one city</b></span></div>
+        <p class="jm-pgoal">Runs a city, not a feed. Needs to see local density, <b>coordinate the members on the ground</b>, run correspondents, and carry credentials that make the movement real off-screen.</p>
+        <div class="jm-pfacts"><span>Entry &middot; <b>promoted Field Reporter</b></span><span>Core act &middot; <b>coordinate</b></span><span>Scope &middot; <b>one city</b></span></div>
       </div>
     </div>
     <div class="jm-raillabel">Journey &mdash; command a city</div>
@@ -23,10 +23,10 @@ export const PANELS_B = {
         <div class="jm-friction"><b>Gap:</b> Overpass ingest is the unlock here.</div>
       </div></div></div>
       <div class="jm-stage"><div class="jm-connect"><span class="jm-arrow">&rarr;</span><div class="jm-scard">
-        <div class="jm-stagetop"><span class="jm-idx">02</span><span class="jm-sname">Marshal operatives</span></div>
+        <div class="jm-stagetop"><span class="jm-idx">02</span><span class="jm-sname">Coordinate members</span></div>
         <div class="jm-screen"><span class="jm-sbk tl"></span><span class="jm-sbk br"></span><div class="jm-row"><span class="jm-sq"></span><div class="jm-col"><div class="jm-bar jm-w70"></div></div><span class="jm-bar accent" style="width:22px"></span></div><div class="jm-row"><span class="jm-sq"></span><div class="jm-col"><div class="jm-bar jm-w85"></div></div><span class="jm-bar" style="width:22px;background:var(--live)"></span></div><div class="jm-row"><span class="jm-sq"></span><div class="jm-col"><div class="jm-bar jm-w55"></div></div><span class="jm-bar" style="width:22px;background:var(--lo4)"></span></div></div>
-        <div class="jm-desc">See the city's Scouts and Operatives, coverage gaps, cold zones. Direct effort where the map is <b>quietest, not loudest</b>.</div>
-        <div class="jm-feats"><div class="jm-feat live"><span class="d"></span>Operative tiers<span class="st">LIVE</span></div><div class="jm-feat exploring"><span class="d"></span>Assignment / tasking<span class="st">EXPLORING</span></div></div>
+        <div class="jm-desc">See the city's Scouts and Field Reporters, coverage gaps, cold zones. Direct effort where the map is <b>quietest, not loudest</b>.</div>
+        <div class="jm-feats"><div class="jm-feat live"><span class="d"></span>Member tiers<span class="st">LIVE</span></div><div class="jm-feat exploring"><span class="d"></span>Assignment / tasking<span class="st">EXPLORING</span></div></div>
         <div class="jm-friction"><b>Note:</b> tasking layer still conceptual.</div>
       </div></div></div>
       <div class="jm-stage"><div class="jm-connect"><span class="jm-arrow">&rarr;</span><div class="jm-scard">
@@ -139,7 +139,7 @@ export const PANELS_B = {
       <div class="jm-stage"><div class="jm-connect"><span class="jm-arrow">&rarr;</span><div class="jm-scard">
         <div class="jm-stagetop"><span class="jm-idx">04</span><span class="jm-sname">Correspondents on the ground</span></div>
         <div class="jm-screen"><div class="jm-map"></div><span class="jm-sbk tl"></span><span class="jm-sbk br"></span><span class="jm-pin g" style="top:34%;left:34%"></span><span class="jm-pin g" style="top:52%;left:60%"></span><span class="jm-pin g" style="top:66%;left:40%"></span><span class="jm-lbl" style="bottom:8px;left:8px;color:var(--live)">correspondents &middot; live</span></div>
-        <div class="jm-desc">The partner's network becomes <b>AFC Correspondents</b> &mdash; local operatives under a shared desk, feeding the same map. Movement + platform, one record.</div>
+        <div class="jm-desc">The partner's network becomes <b>AFC Correspondents</b> &mdash; local members under a shared desk, feeding the same map. Movement + platform, one record.</div>
         <div class="jm-feats"><div class="jm-feat planned"><span class="d"></span>AFC Correspondents<span class="st">PLANNED</span></div></div>
         <div class="jm-friction"><b>Status:</b> concept drafted, awaiting first partner.</div>
       </div></div></div>
@@ -154,27 +154,27 @@ export const PANELS_B = {
         <thead><tr><th>Feature</th><th>Status</th><th>Who touches it</th><th>Journey stage</th><th>Note</th></tr></thead>
         <tbody>
           <tr><td class="fname">Live map</td><td><span class="jm-sbadge live"><span class="d"></span>Live</span></td><td class="who">All personas</td><td>Entry + browse everywhere</td><td>Core surface. Pins by offense category.</td></tr>
-          <tr><td class="fname">AI-assisted capture</td><td><span class="jm-sbadge live"><span class="d"></span>Live</span></td><td class="who">Scout, Operative</td><td>Scout &middot; 02</td><td>Auto-suggests offense category + geotag.</td></tr>
+          <tr><td class="fname">AI-assisted capture</td><td><span class="jm-sbadge live"><span class="d"></span>Live</span></td><td class="who">Scout, Field Reporter</td><td>Scout &middot; 02</td><td>Auto-suggests offense category + geotag.</td></tr>
           <tr><td class="fname">Evidence feed</td><td><span class="jm-sbadge live"><span class="d"></span>Live</span></td><td class="who">Passer-by, Scout</td><td>Passer-by &middot; 02 / Scout &middot; 03</td><td>Pending &rarr; verified trust spine.</td></tr>
           <tr><td class="fname">9 offense categories</td><td><span class="jm-sbadge live"><span class="d"></span>Live</span></td><td class="who">All</td><td>Capture + every sighting</td><td>Classification taxonomy.</td></tr>
           <tr><td class="fname">Impact dashboard</td><td><span class="jm-sbadge live"><span class="d"></span>Live</span></td><td class="who">All</td><td>Passer-by &middot; 03, Ambassador &middot; 05, Supporter &middot; 01/05</td><td>Scales from personal to city to global.</td></tr>
-          <tr><td class="fname">AR Reimagine</td><td><span class="jm-sbadge live"><span class="d"></span>Live</span></td><td class="who">Passer-by, Operative</td><td>Passer-by &middot; 04 / Operative &middot; 02</td><td>Before/after counter-image.</td></tr>
-          <tr><td class="fname">Objection Generator</td><td><span class="jm-sbadge live"><span class="d"></span>Live</span></td><td class="who">Field Operative</td><td>Operative &middot; 03</td><td>Formal complaint, precedent-anchored.</td></tr>
-          <tr><td class="fname">Operative tier system</td><td><span class="jm-sbadge live"><span class="d"></span>Live</span></td><td class="who">Scout &rarr; Operative &rarr; Ambassador</td><td>Enlist + every rank-up</td><td>Scout / Field Operative / City Ambassador.</td></tr>
+          <tr><td class="fname">AR Reimagine</td><td><span class="jm-sbadge live"><span class="d"></span>Live</span></td><td class="who">Passer-by, Field Reporter</td><td>Passer-by &middot; 04 / Field Reporter &middot; 02</td><td>Before/after counter-image.</td></tr>
+          <tr><td class="fname">Objection Generator</td><td><span class="jm-sbadge live"><span class="d"></span>Live</span></td><td class="who">Field Reporter</td><td>Field Reporter &middot; 03</td><td>Formal complaint, precedent-anchored.</td></tr>
+          <tr><td class="fname">Member tier system</td><td><span class="jm-sbadge live"><span class="d"></span>Live</span></td><td class="who">Scout &rarr; Field Reporter &rarr; Ambassador</td><td>Enlist + every rank-up</td><td>Scout / Field Reporter / City Ambassador.</td></tr>
           <tr><td class="fname">DonorBox (fiat)</td><td><span class="jm-sbadge live"><span class="d"></span>Live</span></td><td class="who">Supporter</td><td>Supporter &middot; 02</td><td>donorbox.org/ooh &middot; terracotta #C0563B.</td></tr>
           <tr><td class="fname">Campaign page + outreach</td><td><span class="jm-sbadge live"><span class="d"></span>Live</span></td><td class="who">Partner, Supporter</td><td>Partner &middot; 01</td><td>Canonical voice ref. Tailored letters ready.</td></tr>
           <tr><td class="fname">Public repo / copyleft</td><td><span class="jm-sbadge live"><span class="d"></span>Live</span></td><td class="who">Partner</td><td>Partner &middot; 02</td><td>AGPL-3.0 + CC BY-SA 4.0, GitHub-mirrored.</td></tr>
-          <tr><td class="fname">n8n &harr; Base44 bridge</td><td><span class="jm-sbadge live"><span class="d"></span>Live</span></td><td class="who">Back-office</td><td>Operative &middot; 04, Partner &middot; 03</td><td>Proven end-to-end via base44-bridge.</td></tr>
+          <tr><td class="fname">n8n &harr; Base44 bridge</td><td><span class="jm-sbadge live"><span class="d"></span>Live</span></td><td class="who">Back-office</td><td>Field Reporter &middot; 04, Partner &middot; 03</td><td>Proven end-to-end via base44-bridge.</td></tr>
           <tr><td class="fname">Web3 / crypto treasury</td><td><span class="jm-sbadge building"><span class="d"></span>Building</span></td><td class="who">Supporter</td><td>Supporter &middot; 03</td><td>Polygon vs Base mismatch; wallets pending.</td></tr>
-          <tr><td class="fname">n8n social routing</td><td><span class="jm-sbadge building"><span class="d"></span>Building</span></td><td class="who">Operative, Back-office</td><td>Operative &middot; 04</td><td>Bridge proven; real triggers to wire.</td></tr>
+          <tr><td class="fname">n8n social routing</td><td><span class="jm-sbadge building"><span class="d"></span>Building</span></td><td class="who">Field Reporter, Back-office</td><td>Field Reporter &middot; 04</td><td>Bridge proven; real triggers to wire.</td></tr>
           <tr><td class="fname">Donation &rarr; n8n events</td><td><span class="jm-sbadge building"><span class="d"></span>Building</span></td><td class="who">Supporter, Back-office</td><td>Supporter &middot; 04</td><td>Real donation trigger still to wire.</td></tr>
           <tr><td class="fname">Asana / campaign flows</td><td><span class="jm-sbadge building"><span class="d"></span>Building</span></td><td class="who">Partner, Back-office</td><td>Partner &middot; 03</td><td>Task mirroring on the automation spine.</td></tr>
           <tr><td class="fname">Physical credentials</td><td><span class="jm-sbadge building"><span class="d"></span>Building</span></td><td class="who">City Ambassador</td><td>Ambassador &middot; 04</td><td>CR80 3-tier + field guide; print run pending.</td></tr>
           <tr><td class="fname">City stats (OSM/Overpass)</td><td><span class="jm-sbadge planned"><span class="d"></span>Planned</span></td><td class="who">Passer-by, Ambassador</td><td>Passer-by &middot; 03 / Ambassador &middot; 01</td><td>Density per capita needs Overpass ingest.</td></tr>
           <tr><td class="fname">AFC Correspondents network</td><td><span class="jm-sbadge planned"><span class="d"></span>Planned</span></td><td class="who">Ambassador, Partner</td><td>Ambassador &middot; 03 / Partner &middot; 04</td><td>Concept drafted; awaiting first partner.</td></tr>
-          <tr><td class="fname">Operative tasking / assignment</td><td><span class="jm-sbadge exploring"><span class="d"></span>Exploring</span></td><td class="who">City Ambassador</td><td>Ambassador &middot; 02</td><td>Directing effort to cold zones.</td></tr>
+          <tr><td class="fname">Member tasking / assignment</td><td><span class="jm-sbadge exploring"><span class="d"></span>Exploring</span></td><td class="who">City Ambassador</td><td>Ambassador &middot; 02</td><td>Directing effort to cold zones.</td></tr>
           <tr><td class="fname">Streaks / nudges</td><td><span class="jm-sbadge exploring"><span class="d"></span>Exploring</span></td><td class="who">Scout</td><td>Scout &middot; 05</td><td>Retention loop, not yet built.</td></tr>
-          <tr><td class="fname">Precedent library</td><td><span class="jm-sbadge exploring"><span class="d"></span>Exploring</span></td><td class="who">Field Operative</td><td>Operative &middot; 03</td><td>Citable legal precedent behind objections.</td></tr>
+          <tr><td class="fname">Precedent library</td><td><span class="jm-sbadge exploring"><span class="d"></span>Exploring</span></td><td class="who">Field Reporter</td><td>Field Reporter &middot; 03</td><td>Citable legal precedent behind objections.</td></tr>
           <tr><td class="fname">Export / press pack</td><td><span class="jm-sbadge exploring"><span class="d"></span>Exploring</span></td><td class="who">Ambassador, Partner</td><td>Ambassador &middot; 05</td><td>City impact as council/press artifact.</td></tr>
           <tr><td class="fname">Supporter updates</td><td><span class="jm-sbadge exploring"><span class="d"></span>Exploring</span></td><td class="who">Supporter</td><td>Supporter &middot; 05</td><td>Ongoing impact cadence, n8n-routed.</td></tr>
         </tbody>
