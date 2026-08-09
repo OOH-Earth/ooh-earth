@@ -73,7 +73,7 @@ const WALLETS = [
   ["Polygon", "0xe286EB19b5a64DC41Ca76f58D8fd6d7F114C1c12"],
 ];
 const COINS = [
-  ["$OUTOFHELL", "Solana", "BwVYGpW3wqe6UZWoLDj4UbxXc94n813MSJcDNePApump", "Explicit placeholder — swap before treating as launch-ready."],
+  ["$OOHEX", "Solana", "BwVYGpW3wqe6UZWoLDj4UbxXc94n813MSJcDNePApump", "Explicit placeholder — swap before treating as launch-ready."],
   ["FLOWER", "Base", "0x5b48166eeb1321f6c09ee148b59a1eaede13fc81", "Sample feed."],
   ["PIRULITO", "Base", "0xcac466f9520f87c429fa43676d6f6c8fc94c0f71", "Sample feed."],
   ["FLORES", "Base", "0x9f0649369fb58f521722c1b78dc867283a603acf", "Sample feed."],
@@ -335,7 +335,7 @@ function CoinsView() {
           <tbody>{COINS.map(([s, c, ct, n]) => <tr key={s}><Td name>{s}</Td><Td>{c}</Td><Td mono><Copyable v={ct} /></Td><Td><Badge>Planned</Badge></Td><Td>{n}</Td></tr>)}</tbody>
         </table>
       </Block>
-      <Gap n="Naming drift detected">Same pump.fun contract is labelled "$OUTOFHELL" in zoraConfig.js but hardcoded as "$OOHEX" in SiteFooter.jsx and FieldIdBack.jsx — neither imports the source of truth. Tracked as Risk R-02.</Gap>
+      <Gap n="Naming drift detected">The "$OOHEX" symbol is hardcoded across surfaces (zoraConfig.js, SiteFooter.jsx, FieldIdBack.jsx) rather than imported from a single source of truth. Tracked as Risk R-02.</Gap>
     </>
   );
 }
