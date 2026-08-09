@@ -23,7 +23,7 @@ export default function JourneyMap() {
             <div className="jm-metarow">
               <span>Platform · <b>Base44</b></span>
               <span>Voice ref · <b>/campaign</b></span>
-              <span>Tiers · <b>Scout → Field Operative → City Ambassador</b></span>
+              <span>Tiers · <b>Scout → Field Reporter → City Ambassador</b></span>
               <span>v1 · Jul 2026</span>
             </div>
             <div className="jm-legend">
