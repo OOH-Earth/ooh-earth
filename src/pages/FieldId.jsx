@@ -54,10 +54,10 @@ export default function FieldId() {
         <header className="border-b border-slate2/40 pb-8">
           <span className="font-mono text-[10px] uppercase tracking-[0.4em] text-ozone">// Field id kit</span>
           <h1 className="mt-3 flex items-center gap-3 font-display text-4xl font-bold leading-[1.02] tracking-[-0.02em] text-silver md:text-6xl">
-            <IdCard className="h-8 w-8 text-ozone" /> Operative credential
+            <IdCard className="h-8 w-8 text-ozone" /> Field credential
           </h1>
           <p className="mt-4 max-w-2xl font-body text-sm leading-[1.6] text-darkgray">
-            Generate a printable field-operative ID badge. Enter your details (or load from the roster), review the credential, and print or save as PDF — carry it in the field as proof of union with the resistance.
+            Generate a printable field ID badge. Enter your details (or load from the roster), review the credential, and print or save as PDF — carry it in the field as proof of your place in the movement.
           </p>
         </header>
 
@@ -66,13 +66,13 @@ export default function FieldId() {
           <section className="no-print border border-slate2/60 bg-card p-5">
             <div className="mb-4 font-mono text-[9px] font-bold uppercase tracking-[0.3em] text-silver">Generate credential</div>
             <div className="space-y-3">
-              <Field label="Operative handle">
+              <Field label="Member handle">
                 <input className={inputCls} value={op.handle} onChange={(e) => set("handle", e.target.value)} placeholder="ghostsignal" />
               </Field>
               {ops.length > 0 && (
                 <Field label="Or load from roster">
                   <Select value="" onValueChange={(v) => v && loadFromRoster(v)}>
-                    <SelectTrigger className={inputCls}><SelectValue placeholder="— select operative —" /></SelectTrigger>
+                    <SelectTrigger className={inputCls}><SelectValue placeholder="— select member —" /></SelectTrigger>
                     <SelectContent>
                       {ops.map((o) => (
                         <SelectItem key={o.id} value={o.handle}>{o.handle} · {o.tier}</SelectItem>
@@ -98,7 +98,7 @@ export default function FieldId() {
               </div>
               <label className="flex items-center gap-2 pt-1">
                 <input type="checkbox" checked={op.verified} onChange={(e) => set("verified", e.target.checked)} className="h-4 w-4 accent-[#EDFF00]" />
-                <span className="font-mono text-[9px] uppercase tracking-[0.2em] text-silver/70">Verified operative</span>
+                <span className="font-mono text-[9px] uppercase tracking-[0.2em] text-silver/70">Verified member</span>
               </label>
             </div>
           </section>
