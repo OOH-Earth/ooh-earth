@@ -469,7 +469,6 @@ export default function GuildReader() {
 
       <div className="cover-foot">
         ooh<span className="dot">.</span>earth &nbsp;·&nbsp; @adfreestreets
-        &nbsp;·&nbsp; Out of Hell
       </div>
     </div>
   );
