@@ -39,7 +39,7 @@ export const COIN_EDITIONS = [
 
 export const SDG_ALIGNMENTS = [
   { num: 11, name: "Sustainable Cities",        desc: "Reverse face engraves the city as network — infrastructure over borders." },
-  { num: 16, name: "Peace & Justice",           desc: "Proof-of-presence for field operatives documenting public-space offenses." },
+  { num: 16, name: "Peace & Justice",           desc: "Proof-of-presence for members documenting public-space offenses." },
   { num: 17, name: "Partnerships",             desc: "1:1 on-chain twin binds physical artifact to a wallet-native DAO." },
 ];
 
