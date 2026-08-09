@@ -109,7 +109,7 @@ const STAGES = [
 ];
 
 const SPEC = [
-  ["Class", "Field-operative stealth EV"],
+  ["Class", "Field stealth EV"],
   ["Designation", "OE-1K/66 · Streetrunner"],
   ["Motor", "1.5 kW hub · direct drive"],
   ["Battery", "52 V lithium · swappable"],
@@ -145,7 +145,7 @@ export default function LabStreetRunner() {
         </header>
 
         <p className="mt-6 max-w-3xl font-mono text-xs leading-loose text-silver/60">
-          The operative&rsquo;s bike. Silent, matte, camera-rigged — built for night runs when the billboards come down and the
+          The field rider&rsquo;s bike. Silent, matte, camera-rigged — built for night runs when the billboards come down and the
           walls talk back. An original OOH Earth concept in the Neo-Tokyo lineage, developed in the Lab the way any good machine is:
           flat vector first, then blueprint, then the 3D concept render. <span className="text-silver/40">Genre references (inspiration only): Katalis × Machine56 EV-1K/56 · Akira.</span>
         </p>
@@ -217,7 +217,7 @@ export default function LabStreetRunner() {
           <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
             {[
               ["04 · Hero render", "3/4 view — the money shot for the deck and the hub tile."],
-              ["05 · Livery variants", "Stealth black vs a hi-vis ‘adbuster’ colourway; operative-tier keying."],
+              ["05 · Livery variants", "Stealth black vs a hi-vis ‘adbuster’ colourway; field-tier keying."],
               ["06 · Exploded view", "Frame, cell, hub motor and body panels pulled apart, callout-labelled."],
               ["07 · Poster / one-pager", "Spec poster for print and the fundraising deck."],
             ].map(([t, d]) => (
