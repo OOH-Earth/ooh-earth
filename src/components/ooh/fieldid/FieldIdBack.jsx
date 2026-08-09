@@ -9,7 +9,7 @@ export default function FieldIdBack({ op }) {
   return (
     <div className="relative w-[340px] select-none overflow-hidden border border-slate2 bg-void" style={{ height: "214px" }}>
       <div className="px-3 pt-3">
-        <div className="font-mono text-[8px] uppercase tracking-[0.25em] text-ozone">// Operative code of conduct</div>
+        <div className="font-mono text-[8px] uppercase tracking-[0.25em] text-ozone">// Member code of conduct</div>
         <ol className="mt-1.5 space-y-0.5">
           {CODE.map((c, i) => (
             <li key={i} className="flex gap-1.5 font-body text-[9px] leading-tight text-darkgray">
