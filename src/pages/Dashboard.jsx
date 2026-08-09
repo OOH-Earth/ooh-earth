@@ -215,7 +215,7 @@ export default function Dashboard() {
           {/* header */}
           <div className="flex flex-wrap items-end justify-between gap-4 border-b border-slate2/50 pb-6">
             <div>
-              <span className="font-mono text-[10px] uppercase tracking-[0.3em] text-ozone">// Operative console</span>
+              <span className="font-mono text-[10px] uppercase tracking-[0.3em] text-ozone">// Member console</span>
               <h1 className="mt-2 font-display text-4xl font-bold leading-[1.02] tracking-[-0.02em] text-silver md:text-5xl">Dashboard</h1>
               <p className="mt-2 flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.2em] text-dim">
                 {user?.email}
