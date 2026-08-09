@@ -187,7 +187,7 @@ export default function HeroConsole() {
         </div>
       </Link>
 
-      <Stat label="Operatives" value={d.ops} Icon={Radio} colorClass="text-brand-blue" to="/map" />
+      <Stat label="Members" value={d.ops} Icon={Radio} colorClass="text-brand-blue" to="/map" />
       <Stat label="Verified" value={d.verified} Icon={ShieldCheck} colorClass="text-brand-green" to="/map" />
       <Stat label="Leads" value={d.leads} Icon={Crosshair} colorClass="text-flare" to="/campaign" />
       <Stat label="Verify rate" value={d.rate} Icon={ShieldCheck} colorClass="text-ozone" suffix="%" to="/map" />
