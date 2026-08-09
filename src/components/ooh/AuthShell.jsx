@@ -45,7 +45,7 @@ export default function AuthShell({ children }) {
           </div>
 
           <div>
-            <div className={LBL}>Operative rank</div>
+            <div className={LBL}>Member rank</div>
             <div className="mt-3 flex flex-wrap items-center gap-1">
               {TIERS.map((t, i) => (
                 <div key={t.label} className="flex items-center gap-1">
