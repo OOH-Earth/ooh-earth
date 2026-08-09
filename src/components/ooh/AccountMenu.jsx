@@ -80,7 +80,7 @@ export default function AccountMenu() {
               </Link>
             </div>
             <div className="flex items-center justify-between border-t border-slate2/60 px-4 py-2.5 font-mono text-[9px] uppercase tracking-[0.15em] text-darkgray">
-              <span>Recruit → Vanguard</span>
+              <span>Newcomer → Mythic</span>
               <Link to="/map" onClick={() => setOpen(false)} className="transition-colors hover:text-ozone">Map →</Link>
             </div>
           </div>
