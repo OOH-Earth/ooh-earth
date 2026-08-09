@@ -298,7 +298,7 @@ export default function GenesisToken() {
           <div className="mt-4 grid grid-cols-1 gap-3 md:grid-cols-3">
             <div className="border border-slate2 p-4">
               <div className="font-mono text-[9px] uppercase tracking-widest text-ozone">01 · Funding</div>
-              <p className="mt-2 font-mono text-[11px] leading-relaxed text-silver/55">Token liquidity + treasury allocation funds the field work — maps, legal defense, open-source code — without ads or VC dilution. The commons is self-sustaining.</p>
+              <p className="mt-2 font-mono text-[11px] leading-relaxed text-silver/55">Token liquidity + treasury allocation funds the field work — maps, legal defense, open-source code. The commons is self-sustaining.</p>
             </div>
             <div className="border border-slate2 p-4">
               <div className="font-mono text-[9px] uppercase tracking-widest text-ozone">02 · Incentives</div>
