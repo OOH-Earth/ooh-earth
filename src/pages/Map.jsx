@@ -9,7 +9,7 @@ import MapSearch from "@/components/ooh/map/MapSearch";
 import LocationCard from "@/components/ooh/map/LocationCard";
 import seedMarkers from "@/components/ooh/mapSeed";
 import { toMarker } from "@/components/ooh/map/markerUtils";
-import { Loader2, FileDown, Megaphone, Map as MapIcon, Globe, ScanSearch, Camera, Key, Crosshair, SprayCan, Maximize2, Minimize2, PanelLeftClose, PanelLeftOpen } from "lucide-react";
+import { Loader2, FileDown, Megaphone, Map as MapIcon, Globe, ScanSearch, Camera, Key, Crosshair, SprayCan, Maximize2, Minimize2, ChevronLeft, ChevronRight } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useWalkthrough } from "@/lib/walkthroughContext";
 import UnitFinder from "@/components/ooh/UnitFinder";
@@ -53,7 +53,8 @@ const TOUR = [
 export default function Map() {
   const [raw, setRaw] = useState(null);
   const [mode, setMode] = usePersistentState("ooh-map-mode", "split");
-  const [sidebarCollapsed, setSidebarCollapsed] = usePersistentState("ooh-map-sidebar-collapsed", false);
+  const [searchCollapsed, setSearchCollapsed] = usePersistentState("ooh-map-search-collapsed", false);
+  const [resultsCollapsed, setResultsCollapsed] = usePersistentState("ooh-map-results-collapsed", false);
   const [typeFilter, setTypeFilter] = useState("all");
   const [query, setQuery] = useState("");
   const [selectedId, setSelectedId] = useState(null);
@@ -79,6 +80,13 @@ export default function Map() {
   };
 
   useEffect(() => { registerSteps(TOUR); }, [registerSteps]);
+
+  // Dispatch a resize event after panel transitions so Leaflet/MapLibre
+  // recalculate their container dimensions (fixes gray tiles / misalignment).
+  useEffect(() => {
+    const t = setTimeout(() => window.dispatchEvent(new Event("resize")), 320);
+    return () => clearTimeout(t);
+  }, [searchCollapsed, resultsCollapsed, mode]);
 
   // City deep-link: /map?area=london geocodes the city and flies the map there.
   // Does NOT set the text filter — that would hide every pin for cities with
@@ -327,9 +335,13 @@ export default function Map() {
 
   // Mobile: map always visible, cards always hidden (bottom sheet replaces).
   // Desktop: mode controls split/list/map as before.
-  const sidebarHidden = mode === "map" || (mode === "split" && sidebarCollapsed);
-  const cardsClass =
-    sidebarHidden ? "hidden" : mode === "list" ? "hidden lg:flex lg:flex-1" : "hidden lg:flex lg:w-[340px]";
+  const sidebarHidden = mode === "map";
+  const searchWrapClass = sidebarHidden ? "hidden"
+    : `hidden lg:block shrink-0 overflow-hidden transition-all duration-300 ease-in-out ${searchCollapsed ? "w-0" : "w-[300px]"}`;
+  const cardsWidth = mode === "split" && resultsCollapsed ? "lg:w-0" : "lg:w-[340px]";
+  const cardsClass = sidebarHidden ? "hidden"
+    : mode === "list" ? "hidden lg:flex lg:flex-1"
+    : `hidden lg:flex ${cardsWidth} min-h-0 flex-col overflow-hidden transition-all duration-300 ease-in-out border-r ${resultsCollapsed ? "border-transparent" : "border-slate2/60"}`;
   const mapClass = mode === "list" ? "flex-1 lg:hidden" : "flex-1";
 
   // Shared results list — rendered in the desktop cards panel and the mobile
@@ -421,38 +433,68 @@ export default function Map() {
         </div>
       ) : (
         <div className="flex min-h-0 flex-1 flex-col lg:flex-row">
-          {mode !== "map" && !sidebarCollapsed && <MapSidebar query={query} setQuery={setQuery} onFlyTo={(f) => setFlyTo({ ...f, nonce: Date.now() })} onReset={() => { setQuery(""); setTypeFilter("all"); setLayerFilter("all"); }} onBeginTour={startTour} />}
+          {mode !== "map" && (
+            <div className={searchWrapClass}>
+              <MapSidebar query={query} setQuery={setQuery} onFlyTo={(f) => setFlyTo({ ...f, nonce: Date.now() })} onReset={() => { setQuery(""); setTypeFilter("all"); setLayerFilter("all"); }} onBeginTour={startTour} onCollapse={mode === "split" ? () => setSearchCollapsed(true) : undefined} />
+            </div>
+          )}
 
-          <div data-tour="cards" className={`min-h-0 flex-col border-r border-slate2/60 ${cardsClass}`}>
+          <div data-tour="cards" className={`min-h-0 flex-col ${cardsClass}`}>
             <div className="flex items-center justify-between border-b border-slate2/60 px-4 py-2">
               <span className="font-mono text-[10px] uppercase tracking-[0.25em] text-dim">
                 // {layerResults.length}{isStreet && followViewport && view === "flat" ? <> in view<span className="text-dim/60"> · {filtered.length} total</span></> : " results"}
                 {isStreet && leads > 0 && <span className="text-flare/80"> · {leads} leads</span>}
               </span>
-              {isStreet && view === "flat" && (
-                <button
-                  onClick={() => setFollowViewport((v) => !v)}
-                  title="Results feed follows the map view"
-                  className={`flex items-center gap-1 border px-1.5 py-1 font-mono text-[9px] font-bold uppercase tracking-[0.2em] transition-colors ${followViewport ? "border-ozone/60 bg-ozone/10 text-ozone" : "border-slate2 text-darkgray hover:border-ozone/60 hover:text-ozone"}`}
-                >
-                  <Crosshair className="h-3 w-3" /> Follow map
-                </button>
-              )}
+              <div className="flex items-center gap-2">
+                {isStreet && view === "flat" && (
+                  <button
+                    onClick={() => setFollowViewport((v) => !v)}
+                    title="Results feed follows the map view"
+                    className={`flex items-center gap-1 border px-1.5 py-1 font-mono text-[9px] font-bold uppercase tracking-[0.2em] transition-colors ${followViewport ? "border-ozone/60 bg-ozone/10 text-ozone" : "border-slate2 text-darkgray hover:border-ozone/60 hover:text-ozone"}`}
+                  >
+                    <Crosshair className="h-3 w-3" /> Follow map
+                  </button>
+                )}
+                {mode === "split" && (
+                  <button
+                    onClick={() => setResultsCollapsed(true)}
+                    aria-label="Collapse results panel"
+                    title="Collapse results"
+                    className="flex h-6 w-6 shrink-0 items-center justify-center border border-slate2/60 text-dim transition-colors hover:border-ozone hover:text-ozone"
+                  >
+                    <ChevronLeft className="h-3.5 w-3.5" />
+                  </button>
+                )}
+              </div>
             </div>
             {renderResultsContent()}
           </div>
 
           <div data-tour="map" className={`relative min-h-0 isolate ${mapClass}`}>
-            {/* Sidebar collapse/expand toggle — terminal edge tab */}
-            {mode === "split" && (
-              <button
-                onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
-                aria-label={sidebarCollapsed ? "Expand search panel" : "Collapse search panel"}
-                title={sidebarCollapsed ? "Expand search panel" : "Collapse search panel"}
-                className="absolute left-0 top-1/2 z-[1001] flex h-16 w-5 -translate-y-1/2 items-center justify-center border-y border-r border-slate2 bg-void/90 text-dim backdrop-blur-md transition-colors hover:border-ozone hover:text-ozone"
-              >
-                {sidebarCollapsed ? <PanelLeftOpen className="h-3.5 w-3.5" /> : <PanelLeftClose className="h-3.5 w-3.5" />}
-              </button>
+            {/* Expand tabs — terminal edge tabs for collapsed panels */}
+            {mode === "split" && (searchCollapsed || resultsCollapsed) && (
+              <div className="absolute left-0 top-1/2 z-[1001] flex -translate-y-1/2 flex-col gap-1">
+                {searchCollapsed && (
+                  <button
+                    onClick={() => setSearchCollapsed(false)}
+                    aria-label="Expand search panel"
+                    title="Expand search"
+                    className="flex h-16 w-5 items-center justify-center border-y border-r border-slate2 bg-void/90 text-dim backdrop-blur-md transition-colors hover:border-ozone hover:text-ozone"
+                  >
+                    <ChevronRight className="h-3.5 w-3.5" />
+                  </button>
+                )}
+                {resultsCollapsed && (
+                  <button
+                    onClick={() => setResultsCollapsed(false)}
+                    aria-label="Expand results panel"
+                    title="Expand results"
+                    className="flex h-16 w-5 items-center justify-center border-y border-r border-slate2 bg-void/90 text-dim backdrop-blur-md transition-colors hover:border-ozone hover:text-ozone"
+                  >
+                    <ChevronRight className="h-3.5 w-3.5" />
+                  </button>
+                )}
+              </div>
             )}
             <div className="absolute left-3 top-3 z-[1000] flex border border-slate2 bg-void/80 backdrop-blur-md">
               <button

@@ -11,8 +11,8 @@ import {
   Columns,
   Map as MapIcon,
   List,
-  PanelLeftClose,
-  PanelLeftOpen,
+  ChevronLeft,
+  ChevronRight,
   Plus,
   Minus,
 } from "lucide-react";
@@ -192,18 +192,33 @@ export default function MapWidgetShowcase() {
         </div>
       </div>
 
-      {/* Collapsible sidebar toggle */}
+      {/* Independent collapsible panels — search + results */}
       <div>
-        <div className="mb-2 font-mono text-[9px] uppercase tracking-[0.25em] text-dim">// SidebarCollapse · terminal edge tab</div>
-        <div className="flex items-center gap-4">
-          <button className="flex h-16 w-5 items-center justify-center border-y border-r border-slate2 bg-void/90 text-dim backdrop-blur-md transition-colors hover:border-ozone hover:text-ozone">
-            <PanelLeftClose className="h-3.5 w-3.5" />
-          </button>
-          <span className="font-mono text-[8px] uppercase tracking-[0.2em] text-dim/60">← collapse sidebar (split mode)</span>
-          <button className="flex h-16 w-5 items-center justify-center border-y border-r border-slate2 bg-void/90 text-dim backdrop-blur-md transition-colors hover:border-ozone hover:text-ozone">
-            <PanelLeftOpen className="h-3.5 w-3.5" />
-          </button>
-          <span className="font-mono text-[8px] uppercase tracking-[0.2em] text-dim/60">← expand sidebar</span>
+        <div className="mb-2 font-mono text-[9px] uppercase tracking-[0.25em] text-dim">// CollapsiblePanels · independent search + results</div>
+        <div className="flex flex-wrap items-center gap-4">
+          <div className="flex items-center gap-2">
+            <button className="flex h-6 w-6 shrink-0 items-center justify-center border border-slate2/60 text-dim transition-colors hover:border-ozone hover:text-ozone">
+              <ChevronLeft className="h-3.5 w-3.5" />
+            </button>
+            <span className="font-mono text-[8px] uppercase tracking-[0.2em] text-dim/60">← collapse search (in header)</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <button className="flex h-6 w-6 shrink-0 items-center justify-center border border-slate2/60 text-dim transition-colors hover:border-ozone hover:text-ozone">
+              <ChevronLeft className="h-3.5 w-3.5" />
+            </button>
+            <span className="font-mono text-[8px] uppercase tracking-[0.2em] text-dim/60">← collapse results (in header)</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="flex flex-col gap-1">
+              <button className="flex h-16 w-5 items-center justify-center border-y border-r border-slate2 bg-void/90 text-dim backdrop-blur-md transition-colors hover:border-ozone hover:text-ozone">
+                <ChevronRight className="h-3.5 w-3.5" />
+              </button>
+              <button className="flex h-16 w-5 items-center justify-center border-y border-r border-slate2 bg-void/90 text-dim backdrop-blur-md transition-colors hover:border-ozone hover:text-ozone">
+                <ChevronRight className="h-3.5 w-3.5" />
+              </button>
+            </div>
+            <span className="font-mono text-[8px] uppercase tracking-[0.2em] text-dim/60">← expand tabs (stacked on map edge)</span>
+          </div>
         </div>
       </div>
 

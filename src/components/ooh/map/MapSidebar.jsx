@@ -1,12 +1,24 @@
-import { RotateCcw, LifeBuoy, Play } from "lucide-react";
+import { RotateCcw, LifeBuoy, Play, ChevronLeft } from "lucide-react";
 import MapSearch from "@/components/ooh/map/MapSearch";
 
-export default function MapSidebar({ query, setQuery, onFlyTo, onReset, onBeginTour }) {
+export default function MapSidebar({ query, setQuery, onFlyTo, onReset, onBeginTour, onCollapse }) {
   return (
     <aside data-tour="search" className="hidden w-[300px] shrink-0 flex-col border-r border-slate2/60 bg-void lg:flex">
-      <div className="border-b border-slate2/60 p-5">
-        <div className="font-mono text-[10px] uppercase tracking-[0.3em] text-ozone">// Search / Map</div>
-        <p className="mt-1 font-display text-sm text-darkgray">Find a place or filter pins.</p>
+      <div className="flex items-start justify-between border-b border-slate2/60 p-5">
+        <div>
+          <div className="font-mono text-[10px] uppercase tracking-[0.3em] text-ozone">// Search / Map</div>
+          <p className="mt-1 font-display text-sm text-darkgray">Find a place or filter pins.</p>
+        </div>
+        {onCollapse && (
+          <button
+            onClick={onCollapse}
+            aria-label="Collapse search panel"
+            title="Collapse"
+            className="flex h-6 w-6 shrink-0 items-center justify-center border border-slate2/60 text-dim transition-colors hover:border-ozone hover:text-ozone"
+          >
+            <ChevronLeft className="h-3.5 w-3.5" />
+          </button>
+        )}
       </div>
       <div className="space-y-4 p-5">
         <div>
