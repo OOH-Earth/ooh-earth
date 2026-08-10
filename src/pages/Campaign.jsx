@@ -39,8 +39,8 @@ export default function Campaign() {
     <div className="relative min-h-screen bg-void">
       <HorizonProgress />
       <Nav />
-      <main className="page-top px-5 pb-24 md:px-8">
-        <div className="mx-auto max-w-5xl">
+      <main className="page-top px-4 pb-24 md:px-8">
+        <div className="mx-auto max-w-5xl overflow-hidden">
           <span className="font-mono text-[10px] uppercase tracking-[0.3em] text-flare">// Campaign · live · urgent</span>
           <h1 className="mt-3 font-display text-5xl font-bold leading-[1.02] tracking-[-0.02em] text-silver md:text-7xl">{CAMPAIGN.tagline}</h1>
           <p className="mt-4 max-w-2xl font-display text-sm leading-[1.6] text-darkgray">{CAMPAIGN.urgency}</p>
@@ -58,17 +58,17 @@ export default function Campaign() {
             <span className="font-mono text-[9px] uppercase tracking-[0.25em] text-dim">// connect wallet · Solana · EVM</span>
           </div>
 
-          <div className="mt-8 border border-slate2/60 bg-card p-5">
+          <div className="mt-8 overflow-hidden border border-slate2/60 bg-card p-4 md:p-5">
             <div className="flex items-end justify-between font-mono text-[10px] uppercase tracking-[0.25em]">
               <span className="text-ozone">${raised.toLocaleString()} raised</span>
               <span className="text-dim">goal ${CAMPAIGN.goalUsd.toLocaleString()}</span>
             </div>
-            <div className="mt-2 h-1.5 w-full bg-slate2/40">
-              <div className="h-full bg-ozone transition-all" style={{ width: `${pct}%` }} />
+            <div className="mt-2 h-1.5 w-full overflow-hidden bg-slate2/40">
+              <div className="h-full bg-ozone transition-all duration-500" style={{ width: `${pct}%` }} />
             </div>
           </div>
 
-          <div className="mt-10 grid gap-5 md:grid-cols-3">
+          <div className="mt-8 grid gap-4 md:mt-10 md:grid-cols-3">
             <StripeDonate />
             <CryptoDonations />
             <LeadCapture />
