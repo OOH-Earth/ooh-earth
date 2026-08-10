@@ -9,7 +9,7 @@ import MapSearch from "@/components/ooh/map/MapSearch";
 import LocationCard from "@/components/ooh/map/LocationCard";
 import seedMarkers from "@/components/ooh/mapSeed";
 import { toMarker } from "@/components/ooh/map/markerUtils";
-import { Loader2, FileDown, Megaphone, Map as MapIcon, Globe, ScanSearch, Camera, Key, Crosshair, SprayCan } from "lucide-react";
+import { Loader2, FileDown, Megaphone, Map as MapIcon, Globe, ScanSearch, Camera, Key, Crosshair, SprayCan, Maximize2, Minimize2 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useWalkthrough } from "@/lib/walkthroughContext";
 import UnitFinder from "@/components/ooh/UnitFinder";
@@ -353,32 +353,43 @@ export default function Map() {
     <div className={`fixed inset-0 flex flex-col overflow-hidden bg-void ${fullscreen ? "pt-0 pb-0" : "pt-[calc(7rem_+_env(safe-area-inset-top))] md:pt-[calc(8rem_+_env(safe-area-inset-top))] pb-[calc(76px_+_env(safe-area-inset-bottom))] lg:pb-0"}`}>
       {!fullscreen && <Nav />}
       {!fullscreen && (
-        <MapToolbar
-          typeFilter={typeFilter}
-          setTypeFilter={setTypeFilter}
-          mode={mode}
-          setMode={setMode}
-          count={layerResults.length}
-          live={raw?.live}
-          counts={counts}
-          total={raw?.markers?.length || 0}
-          activeLayers={activeLayers}
-          primaryLayer={primaryLayer}
-          layerFilter={layerFilter}
-          setLayerFilter={setLayerFilter}
-        />
-      )}
-      {!fullscreen && <MapLayerToggle activeLayers={activeLayers} onToggle={toggleLayer} />}
-
-      {/* Mobile search bar — visible below lg; desktop uses the sidebar */}
-      {!fullscreen && (
-        <div className="border-b border-slate2/60 bg-void/90 px-3 py-2 backdrop-blur-md lg:hidden">
-          <MapSearch
-            query={query}
-            setQuery={setQuery}
-            onFlyTo={(f) => setFlyTo({ ...f, nonce: Date.now() })}
-            onReset={() => { setQuery(""); setTypeFilter("all"); setLayerFilter("all"); }}
+        <div className="hidden lg:block">
+          <MapToolbar
+            typeFilter={typeFilter}
+            setTypeFilter={setTypeFilter}
+            mode={mode}
+            setMode={setMode}
+            count={layerResults.length}
+            live={raw?.live}
+            counts={counts}
+            total={raw?.markers?.length || 0}
+            activeLayers={activeLayers}
+            primaryLayer={primaryLayer}
+            layerFilter={layerFilter}
+            setLayerFilter={setLayerFilter}
           />
+        </div>
+      )}
+      {!fullscreen && <div className="hidden lg:block"><MapLayerToggle activeLayers={activeLayers} onToggle={toggleLayer} /></div>}
+
+      {/* Mobile compact bar — search + fullscreen toggle */}
+      {!fullscreen && (
+        <div className="flex items-center gap-1.5 border-b border-slate2/60 bg-void/95 px-2 py-1.5 backdrop-blur-md lg:hidden">
+          <div className="min-w-0 flex-1">
+            <MapSearch
+              query={query}
+              setQuery={setQuery}
+              onFlyTo={(f) => setFlyTo({ ...f, nonce: Date.now() })}
+              onReset={() => { setQuery(""); setTypeFilter("all"); setLayerFilter("all"); }}
+            />
+          </div>
+          <button
+            onClick={() => setFullscreen(true)}
+            aria-label="Fullscreen map"
+            className="flex h-8 w-8 shrink-0 items-center justify-center border border-ozone/60 text-ozone transition-colors hover:bg-ozone hover:text-void"
+          >
+            <Maximize2 className="h-3.5 w-3.5" />
+          </button>
         </div>
       )}
 
@@ -447,14 +458,14 @@ export default function Map() {
               <button
                 onClick={() => setFinderOpen(true)}
                 aria-label="Find units"
-                className="flex items-center gap-1.5 border border-ozone/60 bg-void/80 px-2.5 py-2 font-mono text-[10px] font-bold uppercase tracking-[0.25em] text-ozone backdrop-blur-md transition-colors hover:bg-ozone hover:text-void"
+                className="hidden md:flex items-center gap-1.5 border border-ozone/60 bg-void/80 px-2.5 py-2 font-mono text-[10px] font-bold uppercase tracking-[0.25em] text-ozone backdrop-blur-md transition-colors hover:bg-ozone hover:text-void"
               >
                 <ScanSearch className="h-3.5 w-3.5" /> <span className="hidden sm:inline">Find</span>
               </button>
               <button
                 onClick={exportGeoJSON}
                 aria-label="Export GeoJSON"
-                className="flex items-center gap-1.5 border border-slate2 bg-void/80 px-2.5 py-2 font-mono text-[10px] font-bold uppercase tracking-[0.25em] text-darkgray backdrop-blur-md transition-colors hover:border-ozone hover:text-ozone"
+                className="hidden md:flex items-center gap-1.5 border border-slate2 bg-void/80 px-2.5 py-2 font-mono text-[10px] font-bold uppercase tracking-[0.25em] text-darkgray backdrop-blur-md transition-colors hover:border-ozone hover:text-ozone"
               >
                 <FileDown className="h-3.5 w-3.5" /> <span className="hidden sm:inline">GeoJSON</span>
               </button>
@@ -463,7 +474,7 @@ export default function Map() {
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label="Access keys reference"
-                className="flex items-center gap-1.5 border border-slate2 bg-void/80 px-2.5 py-2 font-mono text-[10px] font-bold uppercase tracking-[0.25em] text-darkgray backdrop-blur-md transition-colors hover:border-ozone hover:text-ozone"
+                className="hidden md:flex items-center gap-1.5 border border-slate2 bg-void/80 px-2.5 py-2 font-mono text-[10px] font-bold uppercase tracking-[0.25em] text-darkgray backdrop-blur-md transition-colors hover:border-ozone hover:text-ozone"
               >
                 <Key className="h-3.5 w-3.5" /> <span className="hidden sm:inline">Keys</span>
               </a>
@@ -490,26 +501,28 @@ export default function Map() {
                 <Megaphone className="h-3.5 w-3.5" /> <span className="hidden sm:inline">Report</span>
               </Link>
             </div>
-
-            {/* Mobile bottom sheet — draggable results list / pin detail */}
-            <MapBottomSheet
-              count={layerResults.length}
-              layerLabel={primaryLayer}
-              detailMode={!!detailItem}
-              onCloseDetail={() => setDetailItem(null)}
-              snap={sheetSnap}
-              onSnapChange={setSheetSnap}
-              fullscreen={fullscreen}
-              onToggleFullscreen={() => setFullscreen((f) => !f)}
-            >
-              {detailItem ? (
-                <div className="p-3">
-                  <LocationCard m={detailItem} selected onSelect={() => {}} onHover={() => {}} onHoverEnd={() => {}} claim={claimsByLoc[detailItem.id]} onClaim={setClaimTarget} />
-                </div>
-              ) : renderResultsContent()}
-            </MapBottomSheet>
           </div>
         </div>
+      )}
+
+      {/* Mobile bottom sheet — outside map isolate so z-index works above bottom nav */}
+      {raw && (
+        <MapBottomSheet
+          count={layerResults.length}
+          layerLabel={primaryLayer}
+          detailMode={!!detailItem}
+          onCloseDetail={() => setDetailItem(null)}
+          snap={sheetSnap}
+          onSnapChange={setSheetSnap}
+          fullscreen={fullscreen}
+          onToggleFullscreen={() => setFullscreen((f) => !f)}
+        >
+          {detailItem ? (
+            <div className="p-3">
+              <LocationCard m={detailItem} selected onSelect={() => {}} onHover={() => {}} onHoverEnd={() => {}} claim={claimsByLoc[detailItem.id]} onClaim={setClaimTarget} />
+            </div>
+          ) : renderResultsContent()}
+        </MapBottomSheet>
       )}
 
       <ClaimLeadDialog open={!!claimTarget} onClose={() => setClaimTarget(null)} location={claimTarget} />

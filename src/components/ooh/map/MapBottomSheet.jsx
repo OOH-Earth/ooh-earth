@@ -68,7 +68,7 @@ export default function MapBottomSheet({ children, count, layerLabel, detailMode
 
   return (
     <div
-      className="ooh-bottom-sheet lg:hidden absolute inset-x-0 bottom-0 z-[950] flex flex-col border-t border-ozone/30 bg-void/95 backdrop-blur-xl shadow-[0_-8px_32px_rgba(0,0,0,0.6)]"
+      className={`ooh-bottom-sheet lg:hidden fixed inset-x-0 z-[1100] flex flex-col border-t border-ozone/30 bg-void/95 backdrop-blur-xl shadow-[0_-8px_32px_rgba(0,0,0,0.6)] ${fullscreen ? "bottom-0" : "bottom-[calc(76px+env(safe-area-inset-bottom))]"}`}
       style={{ height: currentH, transition: liveH !== null ? "none" : "height 0.32s cubic-bezier(0.32,0.72,0,1)" }}
     >
       {/* Drag handle + header */}
