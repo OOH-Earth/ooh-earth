@@ -1,4 +1,5 @@
 import { base44 } from "@/api/base44Client";
+import { compressImage } from "@/lib/imageCompress";
 import { useState } from "react";
 import { Camera, Loader2 } from "lucide-react";
 
@@ -30,7 +31,7 @@ export default function ReportStep4Adbust({ data, onChange }) {
     if (!file) return;
     setUploading(true);
     try {
-      const res = await base44.integrations.Core.UploadFile({ file });
+      const res = await base44.integrations.Core.UploadFile({ file: await compressImage(file) });
       onChange({ adbust_image_url: res.file_url });
     } finally { setUploading(false); }
   };
