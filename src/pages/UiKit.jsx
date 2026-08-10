@@ -8,6 +8,7 @@ import ComponentShowcase from "@/components/ooh/uikit/ComponentShowcase";
 import PinLab from "@/components/ooh/uikit/pinlab/PinLab";
 import ThemeModeMatrix from "@/components/ooh/uikit/ThemeModeMatrix";
 import NomadPulse from "@/components/ooh/NomadPulse";
+import TerminalShowcase from "@/components/ooh/uikit/TerminalShowcase";
 import { Radio } from "lucide-react";
 
 const NAV = [
@@ -18,6 +19,8 @@ const NAV = [
   { id: "pins", label: "Pin system", idx: "04" },
   { id: "foundation", label: "System specs", idx: "05" },
   { id: "modes", label: "Operational modes", idx: "06" },
+  { id: "terminal", label: "Terminal UI", idx: "07" },
+  { id: "mobility", label: "Mobility intel", idx: "08" },
 ];
 
 const STATS = [
@@ -187,7 +190,14 @@ export default function UiKit() {
               <ThemeModeMatrix />
             </Panel>
 
-            <Panel id="mobility" idx="07" title="Mobility intel · nomads.com" status="snapshot · Web7">
+            <Panel id="terminal" idx="07" title="Terminal UI kit" status="live · in-app">
+              <p className="mb-3 max-w-2xl font-body text-sm leading-[1.6] text-darkgray">
+                Terminal-styled components used across the app — map popups, bottom sheets, data displays, and action surfaces. Dark canvas, scanline textures, traffic-light headers, syntax-highlighted code, and neon-bordered buttons. Every map popup on desktop and mobile renders through this kit.
+              </p>
+              <TerminalShowcase />
+            </Panel>
+
+            <Panel id="mobility" idx="08" title="Mobility intel · nomads.com" status="snapshot · Web7">
               <p className="mb-3 max-w-2xl font-body text-sm leading-[1.6] text-darkgray">
                 External-data module — a static snapshot of nomad-density counts from nomads.com, rendered through the field design system. Demonstrates ambient, composable, sovereign-data card patterns.
               </p>

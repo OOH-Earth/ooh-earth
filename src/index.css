@@ -934,43 +934,45 @@
 .ooh-popup-btn--ghost { border-color: rgba(178, 178, 178, 0.3); color: #B2B2B2; }
 .ooh-popup-btn--ghost:hover { border-color: #EDFF00; color: #EDFF00; }
 
-/* Leaflet popup — theme-aware chrome */
-.leaflet-popup-content-wrapper,
-.leaflet-popup-tip {
-  background: #0a0a0a;
-  color: hsl(var(--foreground));
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
-  border: 1px solid rgba(241, 241, 241, 0.08);
+/* Leaflet popup — terminal-styled, theme-aware chrome */
+.leaflet-container .leaflet-popup-content-wrapper,
+.leaflet-container .leaflet-popup-tip {
+  background: #0a0a0a !important;
+  color: hsl(var(--foreground)) !important;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6) !important;
+  border: 1px solid rgba(237, 255, 0, 0.15) !important;
+  border-radius: 0 !important;
 }
-.light .leaflet-popup-content-wrapper,
-.light .leaflet-popup-tip {
-  background: #f7f7f7;
-  color: hsl(var(--foreground));
-  border-color: rgba(0, 0, 0, 0.08);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.18);
+.light .leaflet-container .leaflet-popup-content-wrapper,
+.light .leaflet-container .leaflet-popup-tip {
+  background: #f5f5f5 !important;
+  color: hsl(var(--foreground)) !important;
+  border-color: rgba(0, 0, 0, 0.1) !important;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.18) !important;
 }
-.leaflet-popup-content { margin: 12px 14px; line-height: 1.4; }
-.leaflet-popup-close-button {
+.leaflet-container .leaflet-popup-content { margin: 0 !important; line-height: 1.4; }
+.leaflet-container .leaflet-popup-close-button {
   color: hsl(var(--muted-foreground)) !important;
-  top: 8px !important;
-  right: 8px !important;
+  top: 6px !important;
+  right: 6px !important;
+  z-index: 10;
 }
-.leaflet-popup-close-button:hover { color: #EDFF00 !important; }
+.leaflet-container .leaflet-popup-close-button:hover { color: #EDFF00 !important; }
 .leaflet-container a.leaflet-popup-close-button { width: 20px; height: 20px; }
 
-/* Leaflet tooltip — theme-aware chrome (matches popup) */
-.leaflet-tooltip {
-  background: #0a0a0a;
-  color: hsl(var(--foreground));
-  border: 1px solid rgba(241, 241, 241, 0.08);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
-  font-family: 'Inter Tight', sans-serif;
+/* Leaflet tooltip — terminal-styled (matches popup) */
+.leaflet-container .leaflet-tooltip {
+  background: #0a0a0a !important;
+  color: hsl(var(--foreground)) !important;
+  border: 1px solid rgba(237, 255, 0, 0.15) !important;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6) !important;
+  font-family: 'Inter Tight', sans-serif !important;
 }
-.light .leaflet-tooltip {
-  background: #f7f7f7;
-  color: hsl(var(--foreground));
-  border-color: rgba(0, 0, 0, 0.08);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.18);
+.light .leaflet-container .leaflet-tooltip {
+  background: #f5f5f5 !important;
+  color: hsl(var(--foreground)) !important;
+  border-color: rgba(0, 0, 0, 0.1) !important;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.18) !important;
 }
 .leaflet-tooltip-top::before { border-top-color: #0a0a0a !important; }
 .leaflet-tooltip-bottom::before { border-bottom-color: #0a0a0a !important; }
@@ -1032,19 +1034,20 @@ body.map-fullscreen .ooh-mobile-nav { display: none !important; }
 .maplibregl-canvas-container,
 .maplibregl-canvas { touch-action: none; }
 
-/* MapLibre GL popup — theme-aware chrome */
+/* MapLibre GL popup — terminal-styled chrome */
 .maplibregl-popup { --pp-bg: #0a0a0a; }
-.light .maplibregl-popup { --pp-bg: #f7f7f7; }
+.light .maplibregl-popup { --pp-bg: #f5f5f5; }
 .maplibregl-popup-content {
-  background: var(--pp-bg);
-  color: hsl(var(--foreground));
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
-  border: 1px solid rgba(241, 241, 241, 0.08);
-  padding: 0;
+  background: var(--pp-bg) !important;
+  color: hsl(var(--foreground)) !important;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6) !important;
+  border: 1px solid rgba(237, 255, 0, 0.15) !important;
+  padding: 0 !important;
+  border-radius: 0 !important;
 }
 .light .maplibregl-popup-content {
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.18);
-  border-color: rgba(0, 0, 0, 0.08);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.18) !important;
+  border-color: rgba(0, 0, 0, 0.1) !important;
 }
 .maplibregl-popup-close-button {
   color: hsl(var(--muted-foreground)) !important;

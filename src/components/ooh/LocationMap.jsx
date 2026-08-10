@@ -157,7 +157,15 @@ function PinMarker({ m, selected, onSelect, compactPopup, onExpandPin }) {
         {compactPopup ? (
           <CompactPinPopup m={m} onExpand={() => onExpandPin?.(m)} />
         ) : (
-          <div style={{ width: 220, fontFamily: "Inter Tight, sans-serif" }}>
+          <div style={{ width: 240, fontFamily: "'IBM Plex Mono', monospace" }}>
+            {/* Terminal header — traffic lights + filename */}
+            <div style={{ display: "flex", alignItems: "center", gap: 4, padding: "5px 8px", borderBottom: "1px solid rgba(237,255,0,0.12)", background: "#080808" }}>
+              <span style={{ width: 7, height: 7, borderRadius: "50%", background: "#FF5555" }} />
+              <span style={{ width: 7, height: 7, borderRadius: "50%", background: "#FFB86C" }} />
+              <span style={{ width: 7, height: 7, borderRadius: "50%", background: "#50FA7B" }} />
+              <span style={{ marginLeft: 8, fontSize: 8, textTransform: "uppercase", letterSpacing: "0.2em", color: "#555", fontWeight: 700 }}>{metaFor(m.type).label}.ts</span>
+              <span style={{ marginLeft: "auto", fontSize: 6, textTransform: "uppercase", letterSpacing: "0.15em", color: "#333" }}>DEV</span>
+            </div>
             <div dangerouslySetInnerHTML={{ __html: thumbHTML(m) }} />
             <div style={{ padding: "10px 12px 12px" }}>
               <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 4 }}>
