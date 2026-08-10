@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { base44 } from "@/api/base44Client";
+import { compressImage } from "@/lib/imageCompress";
 import { Camera, Crosshair, Loader2, Check, X, MapPin, CloudOff, RefreshCw } from "lucide-react";
 import { submitFieldCheck } from "@/lib/offlineQueue";
 import CameraViewfinder from "@/components/ooh/CameraViewfinder";
@@ -59,7 +60,7 @@ export default function FieldCheckCamera({ location, open, onClose }) {
     if (!file) return;
     setUploading(true); setError("");
     try {
-      const res = await base44.integrations.Core.UploadFile({ file });
+      const res = await base44.integrations.Core.UploadFile({ file: await compressImage(file) });
       setImageUrl(res.file_url);
     } catch { setError("Photo upload failed."); }
     finally { setUploading(false); }
