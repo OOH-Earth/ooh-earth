@@ -78,10 +78,25 @@ export default function Map() {
 
   useEffect(() => { registerSteps(TOUR); }, [registerSteps]);
 
-  // City deep-link: /map?area=bangkok pre-fills the search to filter that city.
+  // City deep-link: /map?area=london geocodes the city and flies the map there.
+  // Does NOT set the text filter — that would hide every pin for cities with
+  // no field data yet (the map should still show the city location).
   useEffect(() => {
     const area = new URLSearchParams(window.location.search).get("area");
-    if (area) setQuery(area);
+    if (!area) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const url = `https://nominatim.openstreetmap.org/search?format=json&limit=1&accept-language=en&q=${encodeURIComponent(area)}`;
+        const res = await fetch(url, { headers: { Accept: "application/json" } });
+        const results = res.ok ? await res.json() : [];
+        if (!cancelled && results.length) {
+          const r = results[0];
+          setFlyTo({ lat: parseFloat(r.lat), lng: parseFloat(r.lon), zoom: 12, nonce: Date.now() });
+        }
+      } catch {}
+    })();
+    return () => { cancelled = true; };
   }, []);
 
   const [captureOpen, setCaptureOpen] = useState(false);
