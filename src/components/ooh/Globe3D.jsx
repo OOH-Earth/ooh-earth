@@ -97,7 +97,7 @@ function buildFC(markers, selectedId) {
   };
 }
 
-export default function Globe3D({ markers, selectedId, hoverId, onSelect, userLoc, activeLayers = [], interactive = true, spin = false, scrollZoom = true, flyTo, onError }) {
+export default function Globe3D({ markers, selectedId, hoverId, onSelect, userLoc, activeLayers = [], interactive = true, spin = false, scrollZoom = true, flyTo, onError, onCounts }) {
   const mapStyle = useMapStyle().style;
   const containerRef = useRef(null);
   const mapRef = useRef(null);
@@ -108,6 +108,8 @@ export default function Globe3D({ markers, selectedId, hoverId, onSelect, userLo
   const userCenteredRef = useRef(false);
   const onErrorRef = useRef(onError);
   onErrorRef.current = onError;
+  const onCountsRef = useRef(onCounts);
+  onCountsRef.current = onCounts;
 
   const [ready, setReady] = useState(false);
   const [spinning, setSpinning] = useState(spin);
@@ -321,7 +323,9 @@ export default function Globe3D({ markers, selectedId, hoverId, onSelect, userLo
         const all = markers;
         const leads = all.filter((m) => !m.image && m.status !== "verified").length;
         const verified = all.filter((m) => m.status === "verified").length;
-        setCounts({ spots: all.length, clusters: cl.length, leads, verified });
+        const c = { spots: all.length, clusters: cl.length, leads, verified };
+        setCounts(c);
+        onCountsRef.current?.(c);
       } catch (e) {}
     };
     recompute();
@@ -384,26 +388,6 @@ export default function Globe3D({ markers, selectedId, hoverId, onSelect, userLo
         <div className="absolute bottom-3 right-3 h-4 w-4 border-b border-r border-ozone/40" />
       </div>
 
-      {/* live cluster + spot counters — right on mobile, below telemetry on desktop */}
-      <div className="pointer-events-none absolute right-3 top-16 z-[1000] flex flex-col gap-1 border border-slate2/70 bg-void/85 backdrop-blur-md md:left-3 md:right-auto md:top-[188px]">
-        <div className="flex items-center gap-2 border-b border-slate2/60 px-2.5 py-1.5">
-          <span className="h-1.5 w-1.5 rounded-full bg-ozone animate-pulse" />
-          <span className="font-mono text-[8px] uppercase tracking-[0.25em] text-dim">Field tally</span>
-        </div>
-        <div className="grid grid-cols-2 gap-px bg-slate2/40">
-          {[
-            { k: "Spots", v: counts.spots, c: "#EDFF00" },
-            { k: "Clusters", v: counts.clusters, c: "#FF5C00" },
-            { k: "Leads", v: counts.leads, c: "#FF5C00" },
-            { k: "Verified", v: counts.verified, c: "#39FF14" },
-          ].map((x) => (
-            <div key={x.k} className="bg-void px-2.5 py-1.5">
-              <div className="font-mono text-[7px] uppercase tracking-[0.2em] text-dim">{x.k}</div>
-              <div className="font-mono text-sm font-bold tabular" style={{ color: x.c }}>{x.v}</div>
-            </div>
-          ))}
-        </div>
-      </div>
       {interactive && (
         <div className="pointer-events-none absolute bottom-12 left-3 flex flex-col gap-1.5">
           <div className="flex items-center gap-2 border border-slate2/70 bg-void/85 px-2.5 py-1.5 font-mono text-[9px] uppercase tracking-[0.2em] text-darkgray backdrop-blur-sm">

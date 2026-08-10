@@ -29,6 +29,7 @@ import { RIVER_SOURCES } from "@/components/ooh/map/layers/riverData";
 import LayerResultCard from "@/components/ooh/map/LayerResultCard";
 import MapStyleSwitcher from "@/components/ooh/map/MapStyleSwitcher";
 import MapBottomSheet from "@/components/ooh/map/MapBottomSheet";
+import FieldTallyWidget from "@/components/ooh/map/FieldTallyWidget";
 import { useMapStyle } from "@/lib/mapStyleContext";
 import RadioStationCard from "@/components/ooh/map/RadioStationCard";
 import { RADIO_STATIONS } from "@/components/ooh/radio/radioStations";
@@ -107,6 +108,7 @@ export default function Map() {
   const [sheetSnap, setSheetSnap] = useState("peek");
   const [detailItem, setDetailItem] = useState(null);
   const [isMobile, setIsMobile] = useState(false);
+  const [globeClusters, setGlobeClusters] = useState(0);
 
   // Mobile detection — lg breakpoint (1024px) separates the mobile sheet
   // layout from the desktop split layout.
@@ -456,10 +458,11 @@ export default function Map() {
               </button>
             </div>
             {view === "globe" ? (
-              <Globe3D key={mapStyle.id} markers={layerFiltered} selectedId={selectedId} hoverId={hoverId} onSelect={setSelectedId} userLoc={userLoc} activeLayers={activeLayers} flyTo={flyTo} onError={() => setView("flat")} />
+              <Globe3D key={mapStyle.id} markers={layerFiltered} selectedId={selectedId} hoverId={hoverId} onSelect={setSelectedId} userLoc={userLoc} activeLayers={activeLayers} flyTo={flyTo} onError={() => setView("flat")} onCounts={(c) => setGlobeClusters(c.clusters)} />
             ) : (
               <LocationMap markers={layerFiltered} selectedId={selectedId} hoverId={hoverId} onSelect={setSelectedId} userLoc={userLoc} futures={OOH_FUTURES} activeLayers={activeLayers} onBoundsChange={setBounds} flyTo={flyTo} compactPopup={isMobile} onExpandPin={handleExpandPin} />
             )}
+            <FieldTallyWidget markers={layerFiltered} clusters={view === "globe" ? globeClusters : 0} />
             <div className="pointer-events-none absolute inset-x-0 top-0 z-[900] px-3 pt-16">
               <MapAlertTicker />
             </div>
