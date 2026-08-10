@@ -39,6 +39,7 @@ import { thumbHTML, metaFor } from "@/components/ooh/map/LocationThumb";
 import { glyphSVG, GLYPH_COLORS } from "@/components/ooh/map/pinGlyphs";
 import FutureLayer from "@/components/ooh/map/FutureLayer";
 import LayerManager from "@/components/ooh/map/layers/LayerManager";
+import CompactPinPopup from "@/components/ooh/map/CompactPinPopup";
 import { useMapStyle } from "@/lib/mapStyleContext";
 
 // Photo-circle pin — white-ringed location photo with a category micro-badge
@@ -145,7 +146,7 @@ function clusterIcon(count) {
   return L.divIcon({ className: "ooh-pin ooh-pin--cluster", html, iconSize: [size, size], iconAnchor: [size / 2, size / 2] });
 }
 
-function PinMarker({ m, selected, onSelect }) {
+function PinMarker({ m, selected, onSelect, compactPopup, onExpandPin }) {
   return (
     <Marker
       position={[m.lat, m.lng]}
@@ -153,43 +154,47 @@ function PinMarker({ m, selected, onSelect }) {
       eventHandlers={{ click: () => onSelect?.(m.id) }}
     >
       <Popup>
-        <div style={{ width: 220, fontFamily: "Inter Tight, sans-serif" }}>
-          <div dangerouslySetInnerHTML={{ __html: thumbHTML(m) }} />
-          <div style={{ padding: "10px 12px 12px" }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 4 }}>
-              <span style={{ fontSize: 9, textTransform: "uppercase", letterSpacing: "0.2em", fontWeight: 700, color: "#EDFF00" }}>
-                {metaFor(m.type).label}
-              </span>
-              <span
-                style={{ width: 5, height: 5, borderRadius: 999, background: m.status === "verified" ? "#39FF14" : "#FF5C00" }}
-              />
-              <span style={{ fontSize: 9, textTransform: "uppercase", letterSpacing: "0.2em", color: "hsl(var(--muted-foreground))" }}>{m.status}</span>
-            </div>
-            <div style={{ fontWeight: 700, fontSize: 15, color: "hsl(var(--foreground))", lineHeight: 1.25 }}>{m.title}</div>
-            <div style={{ fontSize: 12, color: "hsl(var(--muted-foreground))", marginTop: 4, lineHeight: 1.4 }}>{m.address}</div>
-            <div style={{ fontSize: 9, color: "hsl(var(--muted-foreground))", marginTop: 4, fontFamily: "monospace", opacity: 0.8 }}>
-              {Number(m.lat).toFixed(4)}, {Number(m.lng).toFixed(4)}
-            </div>
-            <div style={{ display: "flex", flexWrap: "wrap", gap: 5, marginTop: 10 }}>
-              <a
-                href={`https://www.google.com/maps/dir/?api=1&destination=${m.lat},${m.lng}`}
-                target="_blank"
-                rel="noreferrer"
-                className="ooh-popup-btn ooh-popup-btn--flare"
-              >
-                Directions ↗
-              </a>
-              <Link to={`/location/${m.id}`} className="ooh-popup-btn ooh-popup-btn--ozone">
-                Page ↗
-              </Link>
-              {m.link && /^https?:\/\//i.test(m.link) && (
-                <a href={m.link} target="_blank" rel="noreferrer" className="ooh-popup-btn ooh-popup-btn--ghost">
-                  OOH.EARTH ↗
+        {compactPopup ? (
+          <CompactPinPopup m={m} onExpand={() => onExpandPin?.(m)} />
+        ) : (
+          <div style={{ width: 220, fontFamily: "Inter Tight, sans-serif" }}>
+            <div dangerouslySetInnerHTML={{ __html: thumbHTML(m) }} />
+            <div style={{ padding: "10px 12px 12px" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 4 }}>
+                <span style={{ fontSize: 9, textTransform: "uppercase", letterSpacing: "0.2em", fontWeight: 700, color: "#EDFF00" }}>
+                  {metaFor(m.type).label}
+                </span>
+                <span
+                  style={{ width: 5, height: 5, borderRadius: 999, background: m.status === "verified" ? "#39FF14" : "#FF5C00" }}
+                />
+                <span style={{ fontSize: 9, textTransform: "uppercase", letterSpacing: "0.2em", color: "hsl(var(--muted-foreground))" }}>{m.status}</span>
+              </div>
+              <div style={{ fontWeight: 700, fontSize: 15, color: "hsl(var(--foreground))", lineHeight: 1.25 }}>{m.title}</div>
+              <div style={{ fontSize: 12, color: "hsl(var(--muted-foreground))", marginTop: 4, lineHeight: 1.4 }}>{m.address}</div>
+              <div style={{ fontSize: 9, color: "hsl(var(--muted-foreground))", marginTop: 4, fontFamily: "monospace", opacity: 0.8 }}>
+                {Number(m.lat).toFixed(4)}, {Number(m.lng).toFixed(4)}
+              </div>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 5, marginTop: 10 }}>
+                <a
+                  href={`https://www.google.com/maps/dir/?api=1&destination=${m.lat},${m.lng}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="ooh-popup-btn ooh-popup-btn--flare"
+                >
+                  Directions ↗
                 </a>
-              )}
+                <Link to={`/location/${m.id}`} className="ooh-popup-btn ooh-popup-btn--ozone">
+                  Page ↗
+                </Link>
+                {m.link && /^https?:\/\//i.test(m.link) && (
+                  <a href={m.link} target="_blank" rel="noreferrer" className="ooh-popup-btn ooh-popup-btn--ghost">
+                    OOH.EARTH ↗
+                  </a>
+                )}
+              </div>
             </div>
           </div>
-        </div>
+        )}
       </Popup>
     </Marker>
   );
@@ -197,7 +202,7 @@ function PinMarker({ m, selected, onSelect }) {
 
 // Grid-based clustering: groups pins by screen cell on each move/zoom.
 // Zoomed out → numbered counters; zoom in (or click a cluster) → expands.
-function ClusteredMarkers({ pins, selectedId, onSelect }) {
+function ClusteredMarkers({ pins, selectedId, onSelect, compactPopup, onExpandPin }) {
   const map = useMap();
   const [, setTick] = useState(0);
   useMapEvents({
@@ -226,7 +231,7 @@ function ClusteredMarkers({ pins, selectedId, onSelect }) {
 
   return clusters.map((c, i) =>
     c.single ? (
-      <PinMarker key={c.m.id || i} m={c.m} selected={selectedId === c.m.id} onSelect={onSelect} />
+      <PinMarker key={c.m.id || i} m={c.m} selected={selectedId === c.m.id} onSelect={onSelect} compactPopup={compactPopup} onExpandPin={onExpandPin} />
     ) : (
       <Marker
         key={"c" + i}
@@ -259,7 +264,7 @@ function ClusteredMarkers({ pins, selectedId, onSelect }) {
   );
 }
 
-export default function LocationMap({ markers, selectedId, hoverId, onSelect, userLoc, futures, activeLayers = [], onBoundsChange, flyTo }) {
+export default function LocationMap({ markers, selectedId, hoverId, onSelect, userLoc, futures, activeLayers = [], onBoundsChange, flyTo, compactPopup, onExpandPin }) {
   const { style } = useMapStyle();
   const pins = useMemo(() => markers.filter((m) => isFinite(m.lat) && isFinite(m.lng)), [markers]);
 
@@ -296,7 +301,7 @@ export default function LocationMap({ markers, selectedId, hoverId, onSelect, us
           </Popup>
         </Marker>
       )}
-      {activeLayers.some((l) => l === "ads" || l === "adbusting" || l === "graffiti") && <ClusteredMarkers pins={pins} selectedId={selectedId} onSelect={onSelect} />}
+      {activeLayers.some((l) => l === "ads" || l === "adbusting" || l === "graffiti") && <ClusteredMarkers pins={pins} selectedId={selectedId} onSelect={onSelect} compactPopup={compactPopup} onExpandPin={onExpandPin} />}
       <FutureLayer futures={futures} />
       <LayerManager activeLayers={activeLayers} />
     </MapContainer>

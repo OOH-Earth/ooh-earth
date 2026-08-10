@@ -1004,6 +1004,26 @@
   text-shadow: 0 0 6px rgba(0, 255, 85, 0.5);
 }
 
+/* Mobile map fullscreen — hide global bottom tab bar */
+body.map-fullscreen .ooh-mobile-nav { display: none !important; }
+
+/* Bottom sheet scanline overlay — subtle CRT layer over the sheet */
+.ooh-bottom-sheet::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    rgba(255, 255, 255, 0.015) 0,
+    rgba(255, 255, 255, 0.015) 1px,
+    transparent 1px,
+    transparent 3px
+  );
+}
+.ooh-bottom-sheet > * { position: relative; z-index: 1; }
+
 /* Matrix map tint — green-on-black via CSS filter (tiles only, pins stay yellow) */
 .ooh-map-style-matrix .leaflet-tile-pane { filter: sepia(1) hue-rotate(60deg) saturate(2.6) brightness(0.92); }
 .ooh-globe-style-matrix .maplibregl-canvas { filter: sepia(1) hue-rotate(60deg) saturate(2.6) brightness(0.92); }

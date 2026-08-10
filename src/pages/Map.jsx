@@ -28,6 +28,7 @@ import { useWarZoneData } from "@/components/ooh/map/layers/useWarZoneData";
 import { RIVER_SOURCES } from "@/components/ooh/map/layers/riverData";
 import LayerResultCard from "@/components/ooh/map/LayerResultCard";
 import MapStyleSwitcher from "@/components/ooh/map/MapStyleSwitcher";
+import MapBottomSheet from "@/components/ooh/map/MapBottomSheet";
 import { useMapStyle } from "@/lib/mapStyleContext";
 import RadioStationCard from "@/components/ooh/map/RadioStationCard";
 import { RADIO_STATIONS } from "@/components/ooh/radio/radioStations";
@@ -82,10 +83,39 @@ export default function Map() {
     const area = new URLSearchParams(window.location.search).get("area");
     if (area) setQuery(area);
   }, []);
+
   const [captureOpen, setCaptureOpen] = useState(false);
   const [graffitiCamOpen, setGraffitiCamOpen] = useState(false);
   const [claims, setClaims] = useState([]);
   const [claimTarget, setClaimTarget] = useState(null);
+  const [fullscreen, setFullscreen] = useState(false);
+  const [sheetSnap, setSheetSnap] = useState("peek");
+  const [detailItem, setDetailItem] = useState(null);
+  const [isMobile, setIsMobile] = useState(false);
+
+  // Mobile detection — lg breakpoint (1024px) separates the mobile sheet
+  // layout from the desktop split layout.
+  useEffect(() => {
+    const mq = window.matchMedia("(max-width: 1023px)");
+    const update = () => setIsMobile(mq.matches);
+    update();
+    mq.addEventListener("change", update);
+    return () => mq.removeEventListener("change", update);
+  }, []);
+
+  // Fullscreen body class — hides the global mobile bottom tabs.
+  useEffect(() => {
+    if (fullscreen) document.body.classList.add("map-fullscreen");
+    else document.body.classList.remove("map-fullscreen");
+    return () => document.body.classList.remove("map-fullscreen");
+  }, [fullscreen]);
+
+  // Expand a pin's compact popup into the full detail in the bottom sheet.
+  const handleExpandPin = useCallback((m) => {
+    setDetailItem(m);
+    setSelectedId(m.id);
+    setSheetSnap("half");
+  }, []);
 
   const reloadLocations = useCallback(async () => {
     try {
@@ -277,38 +307,80 @@ export default function Map() {
   const leads = adsInView.filter((m) => !m.image && m.status !== "verified").length;
   const isStreet = primaryLayer === "ads" || primaryLayer === "adbusting" || primaryLayer === "graffiti";
 
+  // Mobile: map always visible, cards always hidden (bottom sheet replaces).
+  // Desktop: mode controls split/list/map as before.
   const cardsClass =
-    mode === "map" ? "hidden" : mode === "list" ? "flex w-full lg:flex-1" : "hidden lg:flex lg:w-[340px]";
-  const mapClass = mode === "list" ? "hidden" : "flex-1";
+    mode === "map" ? "hidden" : mode === "list" ? "hidden lg:flex lg:flex-1" : "hidden lg:flex lg:w-[340px]";
+  const mapClass = mode === "list" ? "flex-1 lg:hidden" : "flex-1";
+
+  // Shared results list — rendered in the desktop cards panel and the mobile
+  // bottom sheet so both stay in sync from the same state.
+  const renderResultsContent = () => (
+    <PullToRefresh onRefresh={reloadLocations} className="min-h-0 flex-1">
+      <div className="space-y-px">
+        {!primaryLayer ? (
+          <div className="p-6 text-center font-mono text-[10px] uppercase tracking-[0.25em] text-dim">// No active layers — toggle a layer above</div>
+        ) : layerLoading ? (
+          <div className="p-6 text-center font-mono text-[10px] uppercase tracking-[0.25em] text-dim">// Loading {primaryLayer} data…</div>
+        ) : layerResults.length ? (
+          isStreet ? (
+            layerResults.map((m) => (
+              <LocationCard key={m.id} m={m} selected={selectedId === m.id} onSelect={(x) => setSelectedId(x.id)} onHover={(x) => setHoverId(x.id)} onHoverEnd={() => setHoverId(null)} claim={claimsByLoc[m.id]} onClaim={setClaimTarget} />
+            ))
+          ) : primaryLayer === "radio" ? (
+            layerResults.map((s) => <RadioStationCard key={s.id} station={s} />)
+          ) : (
+            layerResults.map((item, i) => <LayerResultCard key={`${primaryLayer}-${i}`} item={item} layer={primaryLayer} />)
+          )
+        ) : isStreet && followViewport && view === "flat" ? (
+          <div className="p-6 text-center">
+            <div className="font-mono text-[10px] uppercase tracking-[0.25em] text-dim">// No spots in this view</div>
+            <p className="mt-1 font-mono text-[9px] uppercase tracking-[0.2em] text-dim/60">Pan or zoom out to widen the sweep</p>
+            {filtered.length > 0 && (
+              <button onClick={() => setFollowViewport(false)} className="mt-3 inline-flex items-center gap-1 border border-slate2 px-3 py-1.5 font-mono text-[9px] font-bold uppercase tracking-[0.2em] text-darkgray transition-colors hover:border-ozone hover:text-ozone">
+                Show all {filtered.length}
+              </button>
+            )}
+          </div>
+        ) : (
+          <div className="p-6 text-center font-mono text-[10px] uppercase tracking-[0.25em] text-dim">// No {primaryLayer} matches{query ? ` for "${query}"` : ""}</div>
+        )}
+      </div>
+    </PullToRefresh>
+  );
 
   return (
-    <div className="fixed inset-0 flex flex-col overflow-hidden bg-void pt-[calc(7rem_+_env(safe-area-inset-top))] md:pt-[calc(8rem_+_env(safe-area-inset-top))] pb-[calc(76px_+_env(safe-area-inset-bottom))] lg:pb-0">
-      <Nav />
-      <MapToolbar
-        typeFilter={typeFilter}
-        setTypeFilter={setTypeFilter}
-        mode={mode}
-        setMode={setMode}
-        count={layerResults.length}
-        live={raw?.live}
-        counts={counts}
-        total={raw?.markers?.length || 0}
-        activeLayers={activeLayers}
-        primaryLayer={primaryLayer}
-        layerFilter={layerFilter}
-        setLayerFilter={setLayerFilter}
-      />
-      <MapLayerToggle activeLayers={activeLayers} onToggle={toggleLayer} />
+    <div className={`fixed inset-0 flex flex-col overflow-hidden bg-void ${fullscreen ? "pt-0 pb-0" : "pt-[calc(7rem_+_env(safe-area-inset-top))] md:pt-[calc(8rem_+_env(safe-area-inset-top))] pb-[calc(76px_+_env(safe-area-inset-bottom))] lg:pb-0"}`}>
+      {!fullscreen && <Nav />}
+      {!fullscreen && (
+        <MapToolbar
+          typeFilter={typeFilter}
+          setTypeFilter={setTypeFilter}
+          mode={mode}
+          setMode={setMode}
+          count={layerResults.length}
+          live={raw?.live}
+          counts={counts}
+          total={raw?.markers?.length || 0}
+          activeLayers={activeLayers}
+          primaryLayer={primaryLayer}
+          layerFilter={layerFilter}
+          setLayerFilter={setLayerFilter}
+        />
+      )}
+      {!fullscreen && <MapLayerToggle activeLayers={activeLayers} onToggle={toggleLayer} />}
 
       {/* Mobile search bar — visible below lg; desktop uses the sidebar */}
-      <div className="border-b border-slate2/60 bg-void/90 px-3 py-2 backdrop-blur-md lg:hidden">
-        <MapSearch
-          query={query}
-          setQuery={setQuery}
-          onFlyTo={(f) => setFlyTo({ ...f, nonce: Date.now() })}
-          onReset={() => { setQuery(""); setTypeFilter("all"); setLayerFilter("all"); }}
-        />
-      </div>
+      {!fullscreen && (
+        <div className="border-b border-slate2/60 bg-void/90 px-3 py-2 backdrop-blur-md lg:hidden">
+          <MapSearch
+            query={query}
+            setQuery={setQuery}
+            onFlyTo={(f) => setFlyTo({ ...f, nonce: Date.now() })}
+            onReset={() => { setQuery(""); setTypeFilter("all"); setLayerFilter("all"); }}
+          />
+        </div>
+      )}
 
       {!raw ? (
         <div className="flex flex-1 items-center justify-center">
@@ -337,41 +409,7 @@ export default function Map() {
                 </button>
               )}
             </div>
-            <PullToRefresh onRefresh={reloadLocations} className="min-h-0 flex-1">
-              <div className="space-y-px">
-                {!primaryLayer ? (
-                  <div className="p-6 text-center font-mono text-[10px] uppercase tracking-[0.25em] text-dim">// No active layers — toggle a layer above</div>
-                ) : layerLoading ? (
-                  <div className="p-6 text-center font-mono text-[10px] uppercase tracking-[0.25em] text-dim">// Loading {primaryLayer} data…</div>
-                ) : layerResults.length ? (
-                  isStreet ? (
-                    layerResults.map((m) => (
-                      <LocationCard key={m.id} m={m} selected={selectedId === m.id} onSelect={(x) => setSelectedId(x.id)} onHover={(x) => setHoverId(x.id)} onHoverEnd={() => setHoverId(null)} claim={claimsByLoc[m.id]} onClaim={setClaimTarget} />
-                    ))
-                  ) : primaryLayer === "radio" ? (
-                    layerResults.map((s) => (
-                      <RadioStationCard key={s.id} station={s} />
-                    ))
-                  ) : (
-                    layerResults.map((item, i) => (
-                      <LayerResultCard key={`${primaryLayer}-${i}`} item={item} layer={primaryLayer} />
-                    ))
-                  )
-                ) : isStreet && followViewport && view === "flat" ? (
-                  <div className="p-6 text-center">
-                    <div className="font-mono text-[10px] uppercase tracking-[0.25em] text-dim">// No spots in this view</div>
-                    <p className="mt-1 font-mono text-[9px] uppercase tracking-[0.2em] text-dim/60">Pan or zoom out to widen the sweep</p>
-                    {filtered.length > 0 && (
-                      <button onClick={() => setFollowViewport(false)} className="mt-3 inline-flex items-center gap-1 border border-slate2 px-3 py-1.5 font-mono text-[9px] font-bold uppercase tracking-[0.2em] text-darkgray transition-colors hover:border-ozone hover:text-ozone">
-                        Show all {filtered.length}
-                      </button>
-                    )}
-                  </div>
-                ) : (
-                  <div className="p-6 text-center font-mono text-[10px] uppercase tracking-[0.25em] text-dim">// No {primaryLayer} matches{query ? ` for "${query}"` : ""}</div>
-                )}
-              </div>
-            </PullToRefresh>
+            {renderResultsContent()}
           </div>
 
           <div data-tour="map" className={`relative min-h-0 isolate ${mapClass}`}>
@@ -394,7 +432,7 @@ export default function Map() {
             {view === "globe" ? (
               <Globe3D key={mapStyle.id} markers={layerFiltered} selectedId={selectedId} hoverId={hoverId} onSelect={setSelectedId} userLoc={userLoc} activeLayers={activeLayers} flyTo={flyTo} onError={() => setView("flat")} />
             ) : (
-              <LocationMap markers={layerFiltered} selectedId={selectedId} hoverId={hoverId} onSelect={setSelectedId} userLoc={userLoc} futures={OOH_FUTURES} activeLayers={activeLayers} onBoundsChange={setBounds} flyTo={flyTo} />
+              <LocationMap markers={layerFiltered} selectedId={selectedId} hoverId={hoverId} onSelect={setSelectedId} userLoc={userLoc} futures={OOH_FUTURES} activeLayers={activeLayers} onBoundsChange={setBounds} flyTo={flyTo} compactPopup={isMobile} onExpandPin={handleExpandPin} />
             )}
             <div className="pointer-events-none absolute inset-x-0 top-0 z-[900] px-3 pt-16">
               <MapAlertTicker />
@@ -452,6 +490,24 @@ export default function Map() {
                 <Megaphone className="h-3.5 w-3.5" /> <span className="hidden sm:inline">Report</span>
               </Link>
             </div>
+
+            {/* Mobile bottom sheet — draggable results list / pin detail */}
+            <MapBottomSheet
+              count={layerResults.length}
+              layerLabel={primaryLayer}
+              detailMode={!!detailItem}
+              onCloseDetail={() => setDetailItem(null)}
+              snap={sheetSnap}
+              onSnapChange={setSheetSnap}
+              fullscreen={fullscreen}
+              onToggleFullscreen={() => setFullscreen((f) => !f)}
+            >
+              {detailItem ? (
+                <div className="p-3">
+                  <LocationCard m={detailItem} selected onSelect={() => {}} onHover={() => {}} onHoverEnd={() => {}} claim={claimsByLoc[detailItem.id]} onClaim={setClaimTarget} />
+                </div>
+              ) : renderResultsContent()}
+            </MapBottomSheet>
           </div>
         </div>
       )}
