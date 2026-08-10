@@ -55,10 +55,10 @@ export default function GlobeSection() {
           <span className="flex items-center gap-2">
             <Globe className="h-3.5 w-3.5 shrink-0 text-ozone" />
             <span className="font-mono text-[10px] uppercase tracking-[0.28em] text-ozone">// orbital atlas</span>
-            <span className="hidden font-mono text-[9px] uppercase tracking-[0.28em] text-dim/45 sm:inline">· global surveillance grid</span>
+            <span className="hidden font-mono text-[9px] uppercase tracking-[0.28em] text-dim/45 sm:inline">· live global atlas</span>
           </span>
           <span className="pl-[22px] font-mono text-[8px] uppercase tracking-[0.22em] text-dim/70">
-            {markers.length} spots · {live ? "live sync" : "live spin"}<span className="hidden sm:inline"> · cluster intel</span>
+            {markers.length} spots · {live ? "live sync" : "live spin"}<span className="hidden sm:inline"> · spot clusters</span>
           </span>
         </div>
         <Link
