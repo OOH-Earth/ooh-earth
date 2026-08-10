@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { base44 } from "@/api/base44Client";
+import { compressImage } from "@/lib/imageCompress";
 import { useWallet } from "@/hooks/useWallet";
 import { Coins, Loader2, Copy, Check, ExternalLink, Wallet, BadgeCheck, Lock } from "lucide-react";
 
@@ -52,7 +53,7 @@ export default function MintLocationPanel({ loc }) {
       const sdg = meta.attributes.find((a) => a.trait_type === "SDG").value;
       const blob = new Blob([JSON.stringify(meta, null, 2)], { type: "application/json" });
       const file = new File([blob], `ooh-${loc.id}-metadata.json`, { type: "application/json" });
-      const { file_url } = await base44.integrations.Core.UploadFile({ file });
+      const { file_url } = await base44.integrations.Core.UploadFile({ file: await compressImage(file) });
       setMetadataUri(file_url);
       const rec = await base44.entities.Mint.create({
         location_id: String(loc.id),
