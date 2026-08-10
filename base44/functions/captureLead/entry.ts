@@ -47,6 +47,25 @@ Deno.serve(async (req) => {
     if (caller?.id) rec.created_by_id = caller.id;
 
     await base44.asServiceRole.entities.FundingLead.create(rec);
+
+    // Notify the team inbox. SendEmail reaches registered app users only —
+    // hello@ooh.earth must be an invited app user for delivery to succeed.
+    try {
+      await base44.asServiceRole.integrations.Core.SendEmail({
+        to: "hello@ooh.earth",
+        subject: `New contact form message from ${name || email}`,
+        body: [
+          `Name: ${name || "—"}`,
+          `Email: ${email}`,
+          ``,
+          `Message:`,
+          message || "(empty)",
+        ].join("\n"),
+      });
+    } catch (emailErr) {
+      console.error("captureLead: SendEmail failed:", emailErr?.message || emailErr);
+    }
+
     return Response.json({ ok: true }, { headers });
   } catch (error) {
     return Response.json({ error: error?.message || String(error) }, { status: 500, headers });
