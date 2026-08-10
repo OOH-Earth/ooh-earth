@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, lazy, Suspense } from "react";
 import { Toaster } from "@/components/ui/toaster"
 import { QueryClientProvider } from '@tanstack/react-query'
 import { queryClientInstance } from '@/lib/query-client'
@@ -15,7 +15,7 @@ import TvStatic from '@/components/ooh/TvStatic';
 import CognitiveLayer from '@/components/ooh/cognitive/CognitiveLayer';
 import MobileBottomTabs from '@/components/ooh/MobileBottomTabs';
 import ProtectedRoute from '@/components/ProtectedRoute';
-import Account from '@/pages/Account';
+const Account = lazy(() => import('@/pages/Account'));
 import StageBanner from '@/components/ooh/StageBanner';
 import { WalkthroughProvider } from '@/lib/walkthroughContext';
 import { CommandCenterProvider } from '@/lib/commandCenterContext';
@@ -23,91 +23,91 @@ import { RadioProvider } from '@/lib/radioContext';
 import { LabGateProvider } from '@/components/ooh/LabGate';
 import { MapStyleProvider } from '@/lib/mapStyleContext';
 import LabAccessRoute from '@/components/ooh/lab/LabAccessRoute';
-import LabAdmin from '@/pages/LabAdmin';
-import StoreAdmin from '@/pages/StoreAdmin';
+const LabAdmin = lazy(() => import('@/pages/LabAdmin'));
+const StoreAdmin = lazy(() => import('@/pages/StoreAdmin'));
 // Add page imports here
-import LabHub from '@/pages/LabHub';
-import Book from '@/pages/Book';
-import GenesisCoin from '@/pages/GenesisCoin';
-import GenesisToken from '@/pages/GenesisToken';
-import HexPoster from '@/pages/HexPoster';
-import CoinPoster from '@/pages/CoinPoster';
-import HexSimulator from '@/pages/HexSimulator';
-import HexSpec from '@/pages/HexSpec';
-import HexSequencer from '@/pages/HexSequencer';
-import HexCompanion from '@/pages/HexCompanion';
-import HexDevice3D from '@/pages/HexDevice3D';
-import Devices from '@/pages/Devices';
-import NfcFieldTag from '@/pages/NfcFieldTag';
-import DesktopConsole from '@/pages/DesktopConsole';
-import OohWatch from '@/pages/OohWatch';
-import HexCoinCube from '@/pages/HexCoinCube';
-import LabStatus from '@/pages/LabStatus';
-import LabStreetRunner from '@/pages/LabStreetRunner';
-import AdScanLab from '@/pages/AdScanLab';
-import GraffitiCam from '@/pages/GraffitiCam';
-import NftCreator from '@/pages/NftCreator';
+const LabHub = lazy(() => import('@/pages/LabHub'));
+const Book = lazy(() => import('@/pages/Book'));
+const GenesisCoin = lazy(() => import('@/pages/GenesisCoin'));
+const GenesisToken = lazy(() => import('@/pages/GenesisToken'));
+const HexPoster = lazy(() => import('@/pages/HexPoster'));
+const CoinPoster = lazy(() => import('@/pages/CoinPoster'));
+const HexSimulator = lazy(() => import('@/pages/HexSimulator'));
+const HexSpec = lazy(() => import('@/pages/HexSpec'));
+const HexSequencer = lazy(() => import('@/pages/HexSequencer'));
+const HexCompanion = lazy(() => import('@/pages/HexCompanion'));
+const HexDevice3D = lazy(() => import('@/pages/HexDevice3D'));
+const Devices = lazy(() => import('@/pages/Devices'));
+const NfcFieldTag = lazy(() => import('@/pages/NfcFieldTag'));
+const DesktopConsole = lazy(() => import('@/pages/DesktopConsole'));
+const OohWatch = lazy(() => import('@/pages/OohWatch'));
+const HexCoinCube = lazy(() => import('@/pages/HexCoinCube'));
+const LabStatus = lazy(() => import('@/pages/LabStatus'));
+const LabStreetRunner = lazy(() => import('@/pages/LabStreetRunner'));
+const AdScanLab = lazy(() => import('@/pages/AdScanLab'));
+const GraffitiCam = lazy(() => import('@/pages/GraffitiCam'));
+const NftCreator = lazy(() => import('@/pages/NftCreator'));
 import Home from '@/pages/Home';
-import Map from '@/pages/Map';
-import Report from '@/pages/Report';
-import MediaCorps from '@/pages/MediaCorps';
-import About from '@/pages/About';
-import Support from '@/pages/Support';
-import Contact from '@/pages/Contact';
-import Plans from '@/pages/Plans';
-import Dashboard from '@/pages/Dashboard';
-import FdePortal from '@/pages/FdePortal';
-import PortalOps from '@/pages/PortalOps';
-import AtariPortfolio from '@/pages/AtariPortfolio';
-import Sitemap from '@/pages/Sitemap';
-import Blog from '@/pages/Blog';
-import BlogArticle from '@/pages/BlogArticle';
-import BlogStudio from '@/pages/BlogStudio';
-import AgencyNewsroom from '@/pages/AgencyNewsroom';
-import Store from '@/pages/Store';
-import StoreItemDetail from '@/pages/StoreItemDetail';
-import Campaign from '@/pages/Campaign';
-import ArLens from '@/pages/ArLens';
-import TrueCost from '@/pages/TrueCost';
-import TrashId from '@/pages/TrashId';
-import InHome from '@/pages/InHome';
-import Zora from '@/pages/Zora';
-import UiKit from '@/pages/UiKit';
-import Brand from '@/pages/Brand';
-import OperativeProfile from '@/pages/OperativeProfile';
-import Guides from '@/pages/Guides';
-import FieldId from '@/pages/FieldId';
-import SuperCard from '@/pages/SuperCard';
-import Channel from '@/pages/Channel';
-import LocationDetail from '@/pages/LocationDetail';
-import BusStops from '@/pages/BusStops';
-import BusStopDetail from '@/pages/BusStopDetail';
-import AccessKeys from '@/pages/AccessKeys';
-import AccessKeyDetail from '@/pages/AccessKeyDetail';
-import JourneyMap from '@/pages/JourneyMap';
-import Categories from '@/pages/Categories';
-import CategoryDirectory from '@/pages/CategoryDirectory';
-import Regions from '@/pages/Regions';
-import AdbustingPortal from '@/pages/portals/AdbustingPortal';
-import GraffitiPortal from '@/pages/portals/GraffitiPortal';
-import EcologyPortal from '@/pages/portals/EcologyPortal';
-import RiversPortal from '@/pages/portals/RiversPortal';
-import WarZonesPortal from '@/pages/portals/WarZonesPortal';
-import Careers from '@/pages/Careers';
-import CareerRole from '@/pages/CareerRole';
-import RadioOps from '@/pages/RadioOps';
-import Console from '@/pages/Console';
-import InvestorHub from '@/pages/InvestorHub';
-import InvestorAccess from '@/pages/InvestorAccess';
-import CapitalLead from '@/pages/CapitalLead';
-import ClientPortal from '@/pages/portals/ClientPortal';
-import InvestorDashboard from '@/pages/portals/InvestorDashboard';
+const Map = lazy(() => import('@/pages/Map'));
+const Report = lazy(() => import('@/pages/Report'));
+const MediaCorps = lazy(() => import('@/pages/MediaCorps'));
+const About = lazy(() => import('@/pages/About'));
+const Support = lazy(() => import('@/pages/Support'));
+const Contact = lazy(() => import('@/pages/Contact'));
+const Plans = lazy(() => import('@/pages/Plans'));
+const Dashboard = lazy(() => import('@/pages/Dashboard'));
+const FdePortal = lazy(() => import('@/pages/FdePortal'));
+const PortalOps = lazy(() => import('@/pages/PortalOps'));
+const AtariPortfolio = lazy(() => import('@/pages/AtariPortfolio'));
+const Sitemap = lazy(() => import('@/pages/Sitemap'));
+const Blog = lazy(() => import('@/pages/Blog'));
+const BlogArticle = lazy(() => import('@/pages/BlogArticle'));
+const BlogStudio = lazy(() => import('@/pages/BlogStudio'));
+const AgencyNewsroom = lazy(() => import('@/pages/AgencyNewsroom'));
+const Store = lazy(() => import('@/pages/Store'));
+const StoreItemDetail = lazy(() => import('@/pages/StoreItemDetail'));
+const Campaign = lazy(() => import('@/pages/Campaign'));
+const ArLens = lazy(() => import('@/pages/ArLens'));
+const TrueCost = lazy(() => import('@/pages/TrueCost'));
+const TrashId = lazy(() => import('@/pages/TrashId'));
+const InHome = lazy(() => import('@/pages/InHome'));
+const Zora = lazy(() => import('@/pages/Zora'));
+const UiKit = lazy(() => import('@/pages/UiKit'));
+const Brand = lazy(() => import('@/pages/Brand'));
+const OperativeProfile = lazy(() => import('@/pages/OperativeProfile'));
+const Guides = lazy(() => import('@/pages/Guides'));
+const FieldId = lazy(() => import('@/pages/FieldId'));
+const SuperCard = lazy(() => import('@/pages/SuperCard'));
+const Channel = lazy(() => import('@/pages/Channel'));
+const LocationDetail = lazy(() => import('@/pages/LocationDetail'));
+const BusStops = lazy(() => import('@/pages/BusStops'));
+const BusStopDetail = lazy(() => import('@/pages/BusStopDetail'));
+const AccessKeys = lazy(() => import('@/pages/AccessKeys'));
+const AccessKeyDetail = lazy(() => import('@/pages/AccessKeyDetail'));
+const JourneyMap = lazy(() => import('@/pages/JourneyMap'));
+const Categories = lazy(() => import('@/pages/Categories'));
+const CategoryDirectory = lazy(() => import('@/pages/CategoryDirectory'));
+const Regions = lazy(() => import('@/pages/Regions'));
+const AdbustingPortal = lazy(() => import('@/pages/portals/AdbustingPortal'));
+const GraffitiPortal = lazy(() => import('@/pages/portals/GraffitiPortal'));
+const EcologyPortal = lazy(() => import('@/pages/portals/EcologyPortal'));
+const RiversPortal = lazy(() => import('@/pages/portals/RiversPortal'));
+const WarZonesPortal = lazy(() => import('@/pages/portals/WarZonesPortal'));
+const Careers = lazy(() => import('@/pages/Careers'));
+const CareerRole = lazy(() => import('@/pages/CareerRole'));
+const RadioOps = lazy(() => import('@/pages/RadioOps'));
+const Console = lazy(() => import('@/pages/Console'));
+const InvestorHub = lazy(() => import('@/pages/InvestorHub'));
+const InvestorAccess = lazy(() => import('@/pages/InvestorAccess'));
+const CapitalLead = lazy(() => import('@/pages/CapitalLead'));
+const ClientPortal = lazy(() => import('@/pages/portals/ClientPortal'));
+const InvestorDashboard = lazy(() => import('@/pages/portals/InvestorDashboard'));
 import InvestorRoute from '@/components/InvestorRoute';
-import Login from '@/pages/Login';
-import Register from '@/pages/Register';
-import ForgotPassword from '@/pages/ForgotPassword';
-import ResetPassword from '@/pages/ResetPassword';
-import OAuthConsent from '@/pages/OAuthConsent';
+const Login = lazy(() => import('@/pages/Login'));
+const Register = lazy(() => import('@/pages/Register'));
+const ForgotPassword = lazy(() => import('@/pages/ForgotPassword'));
+const ResetPassword = lazy(() => import('@/pages/ResetPassword'));
+const OAuthConsent = lazy(() => import('@/pages/OAuthConsent'));
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -142,6 +142,7 @@ const AuthenticatedApp = () => {
   return (
     <AnimatePresence mode="wait">
     <motion.div key={location.pathname} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.18, ease: 'easeOut' }}>
+    <Suspense fallback={<div className="fixed inset-0 flex items-center justify-center"><div className="w-8 h-8 border-4 border-slate-200 border-t-slate-800 rounded-full animate-spin"></div></div>}>
     <Routes location={location}>
     {/* Add your page Route elements here */}
     <Route path="/login" element={<Login />} />
@@ -239,6 +240,7 @@ const AuthenticatedApp = () => {
     </Route>
     <Route path="*" element={<PageNotFound />} />
     </Routes>
+    </Suspense>
     </motion.div>
     </AnimatePresence>
   );
