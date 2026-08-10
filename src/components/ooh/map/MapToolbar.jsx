@@ -1,6 +1,6 @@
-import { Columns, Map as MapIcon, List } from "lucide-react";
 import CryptoTicker from "@/components/ooh/CryptoTicker";
 import DynamicFilterBar from "@/components/ooh/map/DynamicFilterBar";
+import MapModeToggle from "@/components/ooh/map/MapModeToggle";
 
 export const TYPES = [
   { value: "all", label: "All" },
@@ -14,12 +14,6 @@ export const TYPES = [
   { value: "other", label: "Other" },
 ];
 
-const MODES = [
-  { value: "split", label: "Split", icon: Columns },
-  { value: "map", label: "Map", icon: MapIcon },
-  { value: "list", label: "List", icon: List },
-];
-
 export default function MapToolbar({ typeFilter, setTypeFilter, mode, setMode, count, live, counts = {}, total = 0, activeLayers = ["ads"], primaryLayer, layerFilter, setLayerFilter }) {
 
   return (
@@ -31,21 +25,8 @@ export default function MapToolbar({ typeFilter, setTypeFilter, mode, setMode, c
           <span className={`h-1.5 w-1.5 rounded-full ${live ? "bg-ozone animate-flicker" : "bg-dim"}`} />
           {live ? "live" : "snapshot"} · {count}
         </span>
-        <div data-tour="layout" className="ml-auto flex items-center border border-slate2/60">
-          {MODES.map((m) => {
-            const Icon = m.icon;
-            return (
-              <button
-                key={m.value}
-                onClick={() => setMode(m.value)}
-                title={m.label}
-                className={`flex items-center gap-1.5 px-2.5 py-1.5 transition-colors ${mode === m.value ? "bg-ozone text-void" : "text-darkgray hover:text-ozone"}`}
-              >
-                <Icon className="h-3.5 w-3.5" />
-                <span className="hidden font-mono text-[9px] font-bold uppercase tracking-[0.15em] sm:inline">{m.label}</span>
-              </button>
-            );
-          })}
+        <div className="ml-auto">
+          <MapModeToggle mode={mode} setMode={setMode} />
         </div>
       </div>
       <DynamicFilterBar typeFilter={typeFilter} setTypeFilter={setTypeFilter} counts={counts} total={total} primaryLayer={primaryLayer} layerFilter={layerFilter} setLayerFilter={setLayerFilter} />

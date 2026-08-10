@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { MapContainer, TileLayer, Marker, Popup, Tooltip, useMap, useMapEvents } from "react-leaflet";
+import { MapContainer, TileLayer, Marker, Popup, Tooltip, useMap, useMapEvents, ZoomControl } from "react-leaflet";
 import { Link } from "react-router-dom";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
@@ -281,6 +281,7 @@ export default function LocationMap({ markers, selectedId, hoverId, onSelect, us
       center={[13.746, 100.55]}
       zoom={13}
       scrollWheelZoom
+      zoomControl={false}
       className={`h-full w-full ${style.tint ? "ooh-map-style-matrix" : ""}`}
       style={{ background: style.bg }}
     >
@@ -290,6 +291,7 @@ export default function LocationMap({ markers, selectedId, hoverId, onSelect, us
         subdomains={style.subdomains || "abc"}
         maxZoom={style.maxZoom}
       />
+      <ZoomControl position="bottomright" />
       <FitBounds markers={pins} />
       <BoundsWatcher onBoundsChange={onBoundsChange} />
       <FlyTo selectedId={selectedId} markers={pins} />

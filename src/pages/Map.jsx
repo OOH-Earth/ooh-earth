@@ -463,7 +463,7 @@ export default function Map() {
               <LocationMap markers={layerFiltered} selectedId={selectedId} hoverId={hoverId} onSelect={setSelectedId} userLoc={userLoc} futures={OOH_FUTURES} activeLayers={activeLayers} onBoundsChange={setBounds} flyTo={flyTo} compactPopup={isMobile} onExpandPin={handleExpandPin} />
             )}
             <FieldTallyWidget markers={layerFiltered} clusters={view === "globe" ? globeClusters : 0} className={view === "flat" ? "bottom-[60px]" : "bottom-3"} />
-            <div className="pointer-events-none absolute inset-x-0 top-0 z-[900] px-3 pt-14 md:pt-16">
+            <div className="pointer-events-none absolute left-3 right-3 top-12 z-[900] md:top-14">
               <MapAlertTicker />
             </div>
             {view === "flat" && (

@@ -41,7 +41,7 @@ export default function FieldTallyWidget({ markers = [], clusters = 0, className
   }
 
   return (
-    <div className={`pointer-events-auto absolute ${className} left-3 z-[1000] flex flex-col border border-slate2/70 bg-void/85 backdrop-blur-md md:bottom-auto md:left-3 md:top-[188px]`}>
+    <div className={`pointer-events-auto absolute ${className} left-3 z-[1000] flex flex-col border border-slate2/70 bg-void/85 backdrop-blur-md md:bottom-auto md:left-3 md:top-28`}>
       <div className="flex items-center justify-between gap-2 border-b border-slate2/60 px-2.5 py-1.5">
         <div className="flex items-center gap-1.5">
           <span className="h-1.5 w-1.5 rounded-full bg-ozone animate-pulse" />

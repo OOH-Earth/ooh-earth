@@ -8,6 +8,12 @@ import {
   SprayCan,
   Camera,
   Megaphone,
+  Columns,
+  Map as MapIcon,
+  List,
+  ChevronDown,
+  Plus,
+  Minus,
 } from "lucide-react";
 
 const STATS = [
@@ -20,9 +26,10 @@ const STATS = [
 const GRID_LAYOUT = [
   { pos: "top-left", mobile: "View toggle", desktop: "View toggle (Flat / Globe)", z: 1000 },
   { pos: "top-right", mobile: "Graffiti · Capture · Report", desktop: "Style · Find · GeoJSON · Keys │ Graffiti · Capture · Report", z: 1000 },
-  { pos: "bottom-left", mobile: "Field tally (closable)", desktop: "Field tally (left rail)", z: 1000 },
+  { pos: "top-center", mobile: "Alert ticker (below buttons)", desktop: "Alert ticker (left-3 → right-3, below buttons)", z: 900 },
+  { pos: "left-rail", mobile: "Field tally (closable)", desktop: "Field tally (top-28, left rail)", z: 1000 },
   { pos: "bottom", mobile: "SpecsBar (flat only)", desktop: "SpecsBar (flat only)", z: 900 },
-  { pos: "top-center", mobile: "Alert ticker", desktop: "Alert ticker", z: 900 },
+  { pos: "bottom-right", mobile: "Zoom controls", desktop: "Zoom controls (terminal-styled)", z: 1000 },
 ];
 
 const Z_LAYERS = [
@@ -89,9 +96,14 @@ export default function MapWidgetShowcase() {
                 <span className="border border-ozone bg-ozone px-1 py-0.5 font-mono text-[6px] font-bold text-void">Capture</span>
                 <span className="border border-ozone bg-ozone px-1 py-0.5 font-mono text-[6px] font-bold text-void">Report</span>
               </div>
-              <div className="absolute left-2 top-12 w-24 border border-slate2/70 bg-void/85 p-1">
+              <div className="absolute left-2 top-14 right-2 border border-slate2/60 bg-void/90 px-1 py-0.5 font-mono text-[5px] text-silver/80">▸ Alert ticker</div>
+              <div className="absolute left-2 top-20 w-24 border border-slate2/70 bg-void/85 p-1">
                 <div className="font-mono text-[6px] text-dim">● Field tally</div>
                 <div className="font-mono text-[8px] font-bold text-ozone">847 spots</div>
+              </div>
+              <div className="absolute bottom-2 right-2 flex flex-col border border-ozone/15 bg-void/85">
+                <span className="border-b border-slate2/60 px-1 py-0.5 font-mono text-[6px] text-darkgray">+</span>
+                <span className="px-1 py-0.5 font-mono text-[6px] text-darkgray">−</span>
               </div>
               <div className="absolute inset-x-0 bottom-0 border-t border-slate2 bg-[#1a1a1a] px-2 py-0.5 font-mono text-[6px] text-dim">SpecsBar</div>
             </div>
@@ -158,6 +170,50 @@ export default function MapWidgetShowcase() {
           </button>
           <button className="flex items-center gap-1.5 border border-ozone bg-ozone px-2.5 py-2 font-mono text-[10px] font-bold uppercase tracking-[0.25em] text-void">
             <Megaphone className="h-3.5 w-3.5" /> <span>Report</span>
+          </button>
+        </div>
+      </div>
+
+      {/* Collapsible mode toggle */}
+      <div>
+        <div className="mb-2 font-mono text-[9px] uppercase tracking-[0.25em] text-dim">// MapModeToggle · collapsible dropdown</div>
+        <div className="flex flex-wrap items-center gap-3">
+          <div className="flex items-center gap-1.5 border border-slate2/60 px-2.5 py-1.5 font-mono text-[9px] font-bold uppercase tracking-[0.15em] text-silver">
+            <Columns className="h-3.5 w-3.5 text-ozone" />
+            <span>Split</span>
+            <ChevronDown className="h-3 w-3 text-dim" />
+          </div>
+          <div className="relative">
+            <div className="flex items-center gap-1.5 border border-slate2/60 px-2.5 py-1.5 font-mono text-[9px] font-bold uppercase tracking-[0.15em] text-silver">
+              <Columns className="h-3.5 w-3.5 text-ozone" />
+              <span>Split</span>
+              <ChevronDown className="h-3 w-3 text-dim rotate-180" />
+            </div>
+            <div className="absolute right-0 top-full mt-1 min-w-[120px] border border-slate2 bg-void/95 py-1 backdrop-blur-md">
+              {[
+                { label: "Split", icon: Columns, active: true },
+                { label: "Map", icon: MapIcon, active: false },
+                { label: "List", icon: List, active: false },
+              ].map((m) => (
+                <div key={m.label} className={`flex w-full items-center gap-2 px-3 py-1.5 font-mono text-[9px] uppercase tracking-[0.15em] ${m.active ? "text-ozone" : "text-darkgray"}`}>
+                  <m.icon className="h-3 w-3" />
+                  {m.label}
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Terminal zoom controls */}
+      <div>
+        <div className="mb-2 font-mono text-[9px] uppercase tracking-[0.25em] text-dim">// MapZoomControls · terminal-styled (bottom-right)</div>
+        <div className="inline-flex flex-col border border-ozone/15 bg-void/85 backdrop-blur-md">
+          <button className="flex items-center justify-center border-b border-slate2/60 p-2 text-darkgray transition-colors hover:bg-ozone/10 hover:text-ozone">
+            <Plus className="h-3.5 w-3.5" />
+          </button>
+          <button className="flex items-center justify-center p-2 text-darkgray transition-colors hover:bg-ozone/10 hover:text-ozone">
+            <Minus className="h-3.5 w-3.5" />
           </button>
         </div>
       </div>

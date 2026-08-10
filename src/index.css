@@ -960,6 +960,58 @@
 .leaflet-container .leaflet-popup-close-button:hover { color: #EDFF00 !important; }
 .leaflet-container a.leaflet-popup-close-button { width: 20px; height: 20px; }
 
+/* Leaflet zoom control — terminal-styled */
+.leaflet-control-zoom {
+  border: 1px solid rgba(237, 255, 0, 0.15) !important;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6) !important;
+  border-radius: 0 !important;
+  margin: 12px !important;
+}
+.leaflet-control-zoom a {
+  background: rgba(10, 10, 10, 0.85) !important;
+  color: #B2B2B2 !important;
+  border-bottom: 1px solid rgba(237, 255, 0, 0.08) !important;
+  font-family: 'IBM Plex Mono', monospace !important;
+  font-size: 16px !important;
+  font-weight: 700 !important;
+  width: 32px !important;
+  height: 32px !important;
+  line-height: 32px !important;
+  transition: color 0.15s, background 0.15s !important;
+  backdrop-filter: blur(8px);
+}
+.leaflet-control-zoom a:hover {
+  background: rgba(237, 255, 0, 0.1) !important;
+  color: #EDFF00 !important;
+}
+.leaflet-control-zoom a:last-child {
+  border-bottom: none !important;
+}
+.light .leaflet-control-zoom {
+  border-color: rgba(0, 0, 0, 0.1) !important;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.18) !important;
+}
+.light .leaflet-control-zoom a {
+  background: rgba(245, 245, 245, 0.9) !important;
+  color: #333 !important;
+  border-bottom-color: rgba(0, 0, 0, 0.06) !important;
+}
+.light .leaflet-control-zoom a:hover {
+  background: rgba(0, 0, 0, 0.05) !important;
+  color: #000 !important;
+}
+.matrix .leaflet-control-zoom {
+  border-color: rgba(0, 255, 85, 0.2) !important;
+}
+.matrix .leaflet-control-zoom a {
+  background: rgba(2, 17, 10, 0.85) !important;
+  color: rgba(0, 255, 85, 0.7) !important;
+}
+.matrix .leaflet-control-zoom a:hover {
+  background: rgba(0, 255, 85, 0.15) !important;
+  color: #00ff55 !important;
+}
+
 /* Leaflet tooltip — terminal-styled (matches popup) */
 .leaflet-container .leaflet-tooltip {
   background: #0a0a0a !important;
