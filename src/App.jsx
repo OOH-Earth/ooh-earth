@@ -62,6 +62,7 @@ import AtariPortfolio from '@/pages/AtariPortfolio';
 import Sitemap from '@/pages/Sitemap';
 import Blog from '@/pages/Blog';
 import BlogArticle from '@/pages/BlogArticle';
+import BlogStudio from '@/pages/BlogStudio';
 import AgencyNewsroom from '@/pages/AgencyNewsroom';
 import Store from '@/pages/Store';
 import StoreItemDetail from '@/pages/StoreItemDetail';
@@ -202,6 +203,7 @@ const AuthenticatedApp = () => {
       <Route path="/agency" element={<AgencyNewsroom />} />
       <Route path="/agency/blog" element={<Blog scope="agency" />} />
       <Route path="/agency/blog/:slug" element={<BlogArticle scope="agency" />} />
+      <Route path="/blog/studio" element={<BlogStudio />} />
       <Route path="/lab/admin" element={<LabAdmin />} />
       <Route path="/store/admin" element={<StoreAdmin />} />
     </Route>
