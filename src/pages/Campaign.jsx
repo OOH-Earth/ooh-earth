@@ -52,13 +52,7 @@ export default function Campaign() {
             </div>
           )}
 
-          <div className="mt-6 flex flex-wrap items-center gap-3">
-            <WalletButton chain="solana" />
-            <WalletButton chain="evm" />
-            <span className="font-mono text-[9px] uppercase tracking-[0.25em] text-dim">// connect wallet · Solana · EVM</span>
-          </div>
-
-          <div className="mt-8 overflow-hidden border border-slate2/60 bg-card p-4 md:p-5">
+          <div className="mt-6 overflow-hidden border border-slate2/60 bg-card p-4 md:p-5">
             <div className="flex items-end justify-between font-mono text-[10px] uppercase tracking-[0.25em]">
               <span className="text-ozone">${raised.toLocaleString()} raised</span>
               <span className="text-dim">goal ${CAMPAIGN.goalUsd.toLocaleString()}</span>
@@ -72,6 +66,12 @@ export default function Campaign() {
             <StripeDonate />
             <CryptoDonations />
             <LeadCapture />
+          </div>
+
+          <div className="mt-8 flex flex-wrap items-center gap-3 border border-slate2/40 bg-card/50 p-4">
+            <span className="w-full font-mono text-[9px] uppercase tracking-[0.25em] text-dim">// Crypto native? Connect your wallet</span>
+            <WalletButton chain="solana" />
+            <WalletButton chain="evm" />
           </div>
 
           <div className="mt-10">
