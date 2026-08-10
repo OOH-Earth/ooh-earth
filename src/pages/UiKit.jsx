@@ -9,6 +9,7 @@ import PinLab from "@/components/ooh/uikit/pinlab/PinLab";
 import ThemeModeMatrix from "@/components/ooh/uikit/ThemeModeMatrix";
 import NomadPulse from "@/components/ooh/NomadPulse";
 import TerminalShowcase from "@/components/ooh/uikit/TerminalShowcase";
+import MapWidgetShowcase from "@/components/ooh/uikit/MapWidgetShowcase";
 import { Radio } from "lucide-react";
 
 const NAV = [
@@ -21,6 +22,7 @@ const NAV = [
   { id: "modes", label: "Operational modes", idx: "06" },
   { id: "terminal", label: "Terminal UI", idx: "07" },
   { id: "mobility", label: "Mobility intel", idx: "08" },
+  { id: "mapwidgets", label: "Map widgets", idx: "09" },
 ];
 
 const STATS = [
@@ -202,6 +204,10 @@ export default function UiKit() {
                 External-data module — a static snapshot of nomad-density counts from nomads.com, rendered through the field design system. Demonstrates ambient, composable, sovereign-data card patterns.
               </p>
               <NomadPulse compact />
+            </Panel>
+
+            <Panel id="mapwidgets" idx="09" title="Map widget grid" status="live · responsive">
+              <MapWidgetShowcase />
             </Panel>
           </div>
 

@@ -3,9 +3,10 @@ import { X, BarChart3 } from "lucide-react";
 
 // Shared field tally widget — closable, terminal-styled.
 // Renders on both flat (Leaflet) and globe (MapLibre) maps.
-// Mobile: bottom-left. Desktop: left side, below telemetry.
-// Closable like the PM2.5 Air Commons panel — collapses to a small button.
-export default function FieldTallyWidget({ markers = [], clusters = 0 }) {
+// Mobile: bottom-left (above SpecsBar when flat view). Desktop: left rail.
+// Closable — collapses to a small button. State persists via localStorage.
+// `className` controls the mobile bottom position; desktop is always left-rail.
+export default function FieldTallyWidget({ markers = [], clusters = 0, className = "bottom-3" }) {
   const [open, setOpen] = useState(() => {
     try { return localStorage.getItem("ooh-tally-open") !== "false"; } catch { return true; }
   });
@@ -30,7 +31,7 @@ export default function FieldTallyWidget({ markers = [], clusters = 0 }) {
       <button
         onClick={() => setOpen(true)}
         aria-label="Show field tally"
-        className="pointer-events-auto absolute bottom-3 left-3 z-[1000] flex items-center gap-1.5 border border-slate2/70 bg-void/85 px-2.5 py-1.5 font-mono text-[8px] font-bold uppercase tracking-[0.25em] text-ozone backdrop-blur-md transition-colors hover:border-ozone md:bottom-auto md:left-3 md:top-[188px]"
+        className={`pointer-events-auto absolute ${className} left-3 z-[1000] flex items-center gap-1.5 border border-slate2/70 bg-void/85 px-2.5 py-1.5 font-mono text-[8px] font-bold uppercase tracking-[0.25em] text-ozone backdrop-blur-md transition-colors hover:border-ozone md:bottom-auto md:left-3 md:top-[188px]`}
       >
         <BarChart3 className="h-3 w-3" />
         <span>Tally</span>
@@ -40,7 +41,7 @@ export default function FieldTallyWidget({ markers = [], clusters = 0 }) {
   }
 
   return (
-    <div className="pointer-events-auto absolute bottom-3 left-3 z-[1000] flex flex-col border border-slate2/70 bg-void/85 backdrop-blur-md md:bottom-auto md:left-3 md:top-[188px]">
+    <div className={`pointer-events-auto absolute ${className} left-3 z-[1000] flex flex-col border border-slate2/70 bg-void/85 backdrop-blur-md md:bottom-auto md:left-3 md:top-[188px]`}>
       <div className="flex items-center justify-between gap-2 border-b border-slate2/60 px-2.5 py-1.5">
         <div className="flex items-center gap-1.5">
           <span className="h-1.5 w-1.5 rounded-full bg-ozone animate-pulse" />

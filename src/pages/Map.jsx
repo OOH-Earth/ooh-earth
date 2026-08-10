@@ -462,8 +462,8 @@ export default function Map() {
             ) : (
               <LocationMap markers={layerFiltered} selectedId={selectedId} hoverId={hoverId} onSelect={setSelectedId} userLoc={userLoc} futures={OOH_FUTURES} activeLayers={activeLayers} onBoundsChange={setBounds} flyTo={flyTo} compactPopup={isMobile} onExpandPin={handleExpandPin} />
             )}
-            <FieldTallyWidget markers={layerFiltered} clusters={view === "globe" ? globeClusters : 0} />
-            <div className="pointer-events-none absolute inset-x-0 top-0 z-[900] px-3 pt-16">
+            <FieldTallyWidget markers={layerFiltered} clusters={view === "globe" ? globeClusters : 0} className={view === "flat" ? "bottom-[60px]" : "bottom-3"} />
+            <div className="pointer-events-none absolute inset-x-0 top-0 z-[900] px-3 pt-14 md:pt-16">
               <MapAlertTicker />
             </div>
             {view === "flat" && (
@@ -471,7 +471,8 @@ export default function Map() {
                 <SpecsBar counts={counts} total={raw?.markers?.length || 0} />
               </div>
             )}
-            <div className="absolute right-3 top-3 z-[1000] flex gap-1.5">
+            <div className="absolute right-3 top-3 z-[1000] flex items-center gap-1.5">
+              <div className="hidden md:flex items-center gap-1.5">
               <MapStyleSwitcher />
               <button
                 onClick={() => setFinderOpen(true)}
@@ -496,6 +497,8 @@ export default function Map() {
               >
                 <Key className="h-3.5 w-3.5" /> <span className="hidden sm:inline">Keys</span>
               </a>
+              </div>
+              <div className="hidden md:block h-8 w-px bg-slate2/60" />
               <button
                 onClick={() => setGraffitiCamOpen(true)}
                 aria-label="Graffiti camera"
