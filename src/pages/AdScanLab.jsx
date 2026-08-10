@@ -2,6 +2,7 @@ import { useState, useCallback } from "react";
 import { Link } from "react-router-dom";
 import { ScanLine, Loader2, CheckCircle2, AlertTriangle, MapPin, Tag, Building2, FileText, ArrowRight, RotateCcw, Upload, Navigation, Crosshair, Flag } from "lucide-react";
 import exifr from "exifr";
+import { compressImage } from "@/lib/imageCompress";
 import Nav from "@/components/ooh/Nav";
 import Breadcrumbs from "@/components/ooh/Breadcrumbs";
 import SiteFooter from "@/components/ooh/SiteFooter";
@@ -70,7 +71,7 @@ export default function AdScanLab() {
       }
     } catch { /* no EXIF or not an image with GPS */ }
     try {
-      const { file_url } = await base44.integrations.Core.UploadFile({ file });
+      const { file_url } = await base44.integrations.Core.UploadFile({ file: await compressImage(file) });
       setCapturedUrl(file_url);
     } catch {
       toast({ title: "Upload failed", variant: "destructive" });
