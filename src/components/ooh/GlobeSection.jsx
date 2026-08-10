@@ -1,4 +1,5 @@
 import { useState, lazy, Suspense } from "react";
+import MatrixLoader from "@/components/ooh/MatrixLoader";
 import { Link } from "react-router-dom";
 import { Globe } from "lucide-react";
 const Globe3D = lazy(() => import("@/components/ooh/Globe3D"));
@@ -26,7 +27,7 @@ export default function GlobeSection() {
       onClick={handleClick}
       className="group relative isolate h-[58dvh] min-h-[360px] w-full cursor-pointer overflow-hidden border-b border-slate2/60 bg-void transition-all duration-500 hover:border-ozone/40 hover:shadow-[inset_0_0_90px_-24px_rgba(237,255,0,0.2)]"
     >
-      <Suspense fallback={<div className="absolute inset-0 flex items-center justify-center bg-void"><span className="font-mono text-[10px] uppercase tracking-[0.28em] text-dim/50">// loading atlas…</span></div>}>
+      <Suspense fallback={<MatrixLoader label="ATLAS" fullscreen={false} />}>
         <Globe3D markers={markers} activeLayers={["ads"]} scrollZoom={false} />
       </Suspense>
 
