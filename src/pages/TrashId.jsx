@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { base44 } from "@/api/base44Client";
+import { compressImage } from "@/lib/imageCompress";
 import Nav from "@/components/ooh/Nav";
 import TrashResult from "@/components/ooh/trash/TrashResult";
 import { Camera, Loader2, Upload, Trash2, AlertCircle } from "lucide-react";
@@ -47,7 +48,7 @@ export default function TrashId() {
     setPreview(URL.createObjectURL(f));
     setLoading(true);
     try {
-      const up = await base44.integrations.Core.UploadFile({ file: f });
+      const up = await base44.integrations.Core.UploadFile({ file: await compressImage(f) });
       const res = await base44.integrations.Core.InvokeLLM({
         prompt: PROMPT,
         response_json_schema: SCHEMA,
