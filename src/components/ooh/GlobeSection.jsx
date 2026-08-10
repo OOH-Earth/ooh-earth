@@ -1,7 +1,7 @@
-import { useState } from "react";
+import { useState, lazy, Suspense } from "react";
 import { Link } from "react-router-dom";
 import { Globe } from "lucide-react";
-import Globe3D from "@/components/ooh/Globe3D";
+const Globe3D = lazy(() => import("@/components/ooh/Globe3D"));
 import { useLocations } from "@/hooks/useLocations";
 
 const CORNERS = [
@@ -26,7 +26,9 @@ export default function GlobeSection() {
       onClick={handleClick}
       className="group relative isolate h-[58dvh] min-h-[360px] w-full cursor-pointer overflow-hidden border-b border-slate2/60 bg-void transition-all duration-500 hover:border-ozone/40 hover:shadow-[inset_0_0_90px_-24px_rgba(237,255,0,0.2)]"
     >
-      <Globe3D markers={markers} activeLayers={["ads"]} scrollZoom={false} />
+      <Suspense fallback={<div className="absolute inset-0 flex items-center justify-center bg-void"><span className="font-mono text-[10px] uppercase tracking-[0.28em] text-dim/50">// loading atlas…</span></div>}>
+        <Globe3D markers={markers} activeLayers={["ads"]} scrollZoom={false} />
+      </Suspense>
 
       {/* hover scan sweep */}
       <div className="pointer-events-none absolute inset-0 z-[1000] overflow-hidden opacity-0 transition-opacity duration-500 group-hover:opacity-100">
