@@ -4,9 +4,9 @@ import { Link } from "react-router-dom";
 import Nav from "@/components/ooh/Nav";
 import HorizonProgress from "@/components/ooh/HorizonProgress";
 import Breadcrumbs from "@/components/ooh/Breadcrumbs";
-import { Loader2, ArrowUpRight, Lock, Newspaper, Radio, Pin } from "lucide-react";
+import { Loader2, ArrowUpRight, Lock, Newspaper, Radio, Pin, PenLine } from "lucide-react";
 
-import { payload, agencyOf, roleOf, accessOf } from "@/lib/clearance";
+import { payload, agencyOf, roleOf, accessOf, isAdmin } from "@/lib/clearance";
 
 const fmtDate = (s) => {
   if (!s) return "";
@@ -89,6 +89,11 @@ export default function Blog({ scope = "public" }) {
                 ? "Internal desk: strategy, dispatch notes, and the posts queued to go out across the networks. Agency members only."
                 : "Notes from the front line of the fight for public space — launches, evidence drops, and the thinking behind the movement."}
             </p>
+            {isAdmin(user) && (
+              <Link to="/blog/studio" className="mt-4 inline-flex items-center gap-2 border border-ozone/50 px-3 py-1.5 font-mono text-[9px] font-bold uppercase tracking-[0.2em] text-ozone transition-colors hover:bg-ozone hover:text-void">
+                <PenLine className="h-3 w-3" /> Studio — write / edit posts
+              </Link>
+            )}
           </div>
 
           {/* restricted */}
