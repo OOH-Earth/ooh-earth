@@ -1,6 +1,7 @@
 import { Camera, Crosshair, Loader2, Upload } from "lucide-react";
 import exifr from "exifr";
 import { base44 } from "@/api/base44Client";
+import { compressImage } from "@/lib/imageCompress";
 import { useState } from "react";
 import ReportScanner from "@/components/ooh/report/ReportScanner";
 import MapPinDropper from "@/components/ooh/report/MapPinDropper";
@@ -44,7 +45,7 @@ export default function ReportStep1Document({ data, onChange }) {
       }
     } catch { /* no EXIF GPS */ }
     try {
-      const res = await base44.integrations.Core.UploadFile({ file });
+      const res = await base44.integrations.Core.UploadFile({ file: await compressImage(file) });
       onChange({ image_url: res.file_url });
     } finally { setUploading(false); }
   };
