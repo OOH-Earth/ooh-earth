@@ -14,6 +14,7 @@ import CrtOverlay from '@/components/ooh/CrtOverlay';
 import TvStatic from '@/components/ooh/TvStatic';
 import CognitiveLayer from '@/components/ooh/cognitive/CognitiveLayer';
 import MobileBottomTabs from '@/components/ooh/MobileBottomTabs';
+import MatrixLoader from '@/components/ooh/MatrixLoader';
 import ProtectedRoute from '@/components/ProtectedRoute';
 const Account = lazy(() => import('@/pages/Account'));
 import StageBanner from '@/components/ooh/StageBanner';
@@ -120,11 +121,7 @@ const AuthenticatedApp = () => {
 
   // Show loading spinner while checking app public settings or auth
   if (isLoadingPublicSettings || isLoadingAuth) {
-    return (
-      <div className="fixed inset-0 flex items-center justify-center">
-        <div className="w-8 h-8 border-4 border-slate-200 border-t-slate-800 rounded-full animate-spin"></div>
-      </div>
-    );
+    return <MatrixLoader label="BOOTING" />;
   }
 
   // Handle authentication errors
@@ -142,7 +139,7 @@ const AuthenticatedApp = () => {
   return (
     <AnimatePresence mode="wait">
     <motion.div key={location.pathname} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.18, ease: 'easeOut' }}>
-    <Suspense fallback={<div className="fixed inset-0 flex items-center justify-center"><div className="w-8 h-8 border-4 border-slate-200 border-t-slate-800 rounded-full animate-spin"></div></div>}>
+    <Suspense fallback={<MatrixLoader />}>
     <Routes location={location}>
     {/* Add your page Route elements here */}
     <Route path="/login" element={<Login />} />
