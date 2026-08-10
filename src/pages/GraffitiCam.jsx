@@ -2,6 +2,7 @@ import { useState, useCallback } from "react";
 import { Link } from "react-router-dom";
 import { SprayCan, Loader2, CheckCircle2, MapPin, Upload, RotateCcw, Navigation, Crosshair } from "lucide-react";
 import exifr from "exifr";
+import { compressImage } from "@/lib/imageCompress";
 import Nav from "@/components/ooh/Nav";
 import Breadcrumbs from "@/components/ooh/Breadcrumbs";
 import SiteFooter from "@/components/ooh/SiteFooter";
@@ -79,7 +80,7 @@ export default function GraffitiCam() {
       }
     } catch { /* no EXIF GPS */ }
     try {
-      const { file_url } = await base44.integrations.Core.UploadFile({ file });
+      const { file_url } = await base44.integrations.Core.UploadFile({ file: await compressImage(file) });
       setCapturedUrl(file_url);
     } catch {
       toast({ title: "Upload failed", variant: "destructive" });
