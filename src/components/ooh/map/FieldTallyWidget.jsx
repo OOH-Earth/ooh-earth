@@ -31,7 +31,7 @@ export default function FieldTallyWidget({ markers = [], clusters = 0, className
       <button
         onClick={() => setOpen(true)}
         aria-label="Show field tally"
-        className={`pointer-events-auto absolute ${className} left-3 z-[1000] flex items-center gap-1.5 border border-slate2/70 bg-void/85 px-2.5 py-1.5 font-mono text-[8px] font-bold uppercase tracking-[0.25em] text-ozone backdrop-blur-md transition-colors hover:border-ozone md:bottom-auto md:left-3 md:top-[188px]`}
+        className={`pointer-events-auto absolute ${className} left-3 z-[1000] flex items-center gap-1.5 border border-slate2/70 bg-void/85 px-2.5 py-1.5 font-mono text-[8px] font-bold uppercase tracking-[0.25em] text-ozone backdrop-blur-md transition-colors hover:border-ozone md:bottom-auto md:left-3 md:top-28`}
       >
         <BarChart3 className="h-3 w-3" />
         <span>Tally</span>

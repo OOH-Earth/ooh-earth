@@ -9,7 +9,7 @@ import MapSearch from "@/components/ooh/map/MapSearch";
 import LocationCard from "@/components/ooh/map/LocationCard";
 import seedMarkers from "@/components/ooh/mapSeed";
 import { toMarker } from "@/components/ooh/map/markerUtils";
-import { Loader2, FileDown, Megaphone, Map as MapIcon, Globe, ScanSearch, Camera, Key, Crosshair, SprayCan, Maximize2, Minimize2 } from "lucide-react";
+import { Loader2, FileDown, Megaphone, Map as MapIcon, Globe, ScanSearch, Camera, Key, Crosshair, SprayCan, Maximize2, Minimize2, PanelLeftClose, PanelLeftOpen } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useWalkthrough } from "@/lib/walkthroughContext";
 import UnitFinder from "@/components/ooh/UnitFinder";
@@ -53,6 +53,7 @@ const TOUR = [
 export default function Map() {
   const [raw, setRaw] = useState(null);
   const [mode, setMode] = usePersistentState("ooh-map-mode", "split");
+  const [sidebarCollapsed, setSidebarCollapsed] = usePersistentState("ooh-map-sidebar-collapsed", false);
   const [typeFilter, setTypeFilter] = useState("all");
   const [query, setQuery] = useState("");
   const [selectedId, setSelectedId] = useState(null);
@@ -326,8 +327,9 @@ export default function Map() {
 
   // Mobile: map always visible, cards always hidden (bottom sheet replaces).
   // Desktop: mode controls split/list/map as before.
+  const sidebarHidden = mode === "map" || (mode === "split" && sidebarCollapsed);
   const cardsClass =
-    mode === "map" ? "hidden" : mode === "list" ? "hidden lg:flex lg:flex-1" : "hidden lg:flex lg:w-[340px]";
+    sidebarHidden ? "hidden" : mode === "list" ? "hidden lg:flex lg:flex-1" : "hidden lg:flex lg:w-[340px]";
   const mapClass = mode === "list" ? "flex-1 lg:hidden" : "flex-1";
 
   // Shared results list — rendered in the desktop cards panel and the mobile
@@ -419,7 +421,7 @@ export default function Map() {
         </div>
       ) : (
         <div className="flex min-h-0 flex-1 flex-col lg:flex-row">
-          {mode !== "map" && <MapSidebar query={query} setQuery={setQuery} onFlyTo={(f) => setFlyTo({ ...f, nonce: Date.now() })} onReset={() => { setQuery(""); setTypeFilter("all"); setLayerFilter("all"); }} onBeginTour={startTour} />}
+          {mode !== "map" && !sidebarCollapsed && <MapSidebar query={query} setQuery={setQuery} onFlyTo={(f) => setFlyTo({ ...f, nonce: Date.now() })} onReset={() => { setQuery(""); setTypeFilter("all"); setLayerFilter("all"); }} onBeginTour={startTour} />}
 
           <div data-tour="cards" className={`min-h-0 flex-col border-r border-slate2/60 ${cardsClass}`}>
             <div className="flex items-center justify-between border-b border-slate2/60 px-4 py-2">
@@ -441,6 +443,17 @@ export default function Map() {
           </div>
 
           <div data-tour="map" className={`relative min-h-0 isolate ${mapClass}`}>
+            {/* Sidebar collapse/expand toggle — terminal edge tab */}
+            {mode === "split" && (
+              <button
+                onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
+                aria-label={sidebarCollapsed ? "Expand search panel" : "Collapse search panel"}
+                title={sidebarCollapsed ? "Expand search panel" : "Collapse search panel"}
+                className="absolute left-0 top-1/2 z-[1001] flex h-16 w-5 -translate-y-1/2 items-center justify-center border-y border-r border-slate2 bg-void/90 text-dim backdrop-blur-md transition-colors hover:border-ozone hover:text-ozone"
+              >
+                {sidebarCollapsed ? <PanelLeftOpen className="h-3.5 w-3.5" /> : <PanelLeftClose className="h-3.5 w-3.5" />}
+              </button>
+            )}
             <div className="absolute left-3 top-3 z-[1000] flex border border-slate2 bg-void/80 backdrop-blur-md">
               <button
                 onClick={() => setView("flat")}

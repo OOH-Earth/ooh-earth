@@ -11,7 +11,8 @@ import {
   Columns,
   Map as MapIcon,
   List,
-  ChevronDown,
+  PanelLeftClose,
+  PanelLeftOpen,
   Plus,
   Minus,
 } from "lucide-react";
@@ -174,34 +175,35 @@ export default function MapWidgetShowcase() {
         </div>
       </div>
 
-      {/* Collapsible mode toggle */}
+      {/* Inline mode toggle — Split/Map/List */}
       <div>
-        <div className="mb-2 font-mono text-[9px] uppercase tracking-[0.25em] text-dim">// MapModeToggle · collapsible dropdown</div>
-        <div className="flex flex-wrap items-center gap-3">
-          <div className="flex items-center gap-1.5 border border-slate2/60 px-2.5 py-1.5 font-mono text-[9px] font-bold uppercase tracking-[0.15em] text-silver">
-            <Columns className="h-3.5 w-3.5 text-ozone" />
-            <span>Split</span>
-            <ChevronDown className="h-3 w-3 text-dim" />
-          </div>
-          <div className="relative">
-            <div className="flex items-center gap-1.5 border border-slate2/60 px-2.5 py-1.5 font-mono text-[9px] font-bold uppercase tracking-[0.15em] text-silver">
-              <Columns className="h-3.5 w-3.5 text-ozone" />
-              <span>Split</span>
-              <ChevronDown className="h-3 w-3 text-dim rotate-180" />
+        <div className="mb-2 font-mono text-[9px] uppercase tracking-[0.25em] text-dim">// MapModeToggle · inline buttons</div>
+        <div className="flex items-center border border-slate2/60">
+          {[
+            { label: "Split", icon: Columns, active: true },
+            { label: "Map", icon: MapIcon, active: false },
+            { label: "List", icon: List, active: false },
+          ].map((m) => (
+            <div key={m.label} className={`flex items-center gap-1.5 px-2.5 py-1.5 font-mono text-[9px] font-bold uppercase tracking-[0.15em] ${m.active ? "bg-ozone text-void" : "text-darkgray"}`}>
+              <m.icon className="h-3.5 w-3.5" />
+              <span className="hidden sm:inline">{m.label}</span>
             </div>
-            <div className="absolute right-0 top-full mt-1 min-w-[120px] border border-slate2 bg-void/95 py-1 backdrop-blur-md">
-              {[
-                { label: "Split", icon: Columns, active: true },
-                { label: "Map", icon: MapIcon, active: false },
-                { label: "List", icon: List, active: false },
-              ].map((m) => (
-                <div key={m.label} className={`flex w-full items-center gap-2 px-3 py-1.5 font-mono text-[9px] uppercase tracking-[0.15em] ${m.active ? "text-ozone" : "text-darkgray"}`}>
-                  <m.icon className="h-3 w-3" />
-                  {m.label}
-                </div>
-              ))}
-            </div>
-          </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Collapsible sidebar toggle */}
+      <div>
+        <div className="mb-2 font-mono text-[9px] uppercase tracking-[0.25em] text-dim">// SidebarCollapse · terminal edge tab</div>
+        <div className="flex items-center gap-4">
+          <button className="flex h-16 w-5 items-center justify-center border-y border-r border-slate2 bg-void/90 text-dim backdrop-blur-md transition-colors hover:border-ozone hover:text-ozone">
+            <PanelLeftClose className="h-3.5 w-3.5" />
+          </button>
+          <span className="font-mono text-[8px] uppercase tracking-[0.2em] text-dim/60">← collapse sidebar (split mode)</span>
+          <button className="flex h-16 w-5 items-center justify-center border-y border-r border-slate2 bg-void/90 text-dim backdrop-blur-md transition-colors hover:border-ozone hover:text-ozone">
+            <PanelLeftOpen className="h-3.5 w-3.5" />
+          </button>
+          <span className="font-mono text-[8px] uppercase tracking-[0.2em] text-dim/60">← expand sidebar</span>
         </div>
       </div>
 
