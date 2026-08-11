@@ -29,7 +29,7 @@ test.describe('FieldReport (/report) — multi-photo upload', () => {
     await mockBase44(page, { user: null });
 
     await page.goto('/report');
-    await expect(page.getByRole('heading', { name: /Log an/i })).toBeVisible();
+    await expect(page.getByRole('heading', { name: /Adbusting/i })).toBeVisible();
 
     const extraInput = page.locator('input[type="file"][multiple]');
     await extraInput.setInputFiles([IMG1, IMG2]);
@@ -59,21 +59,31 @@ test.describe('FieldReport (/report) — multi-photo upload', () => {
 
     await page.goto('/report');
 
-    // Cover photo — the single, non-multiple file input (existing flow).
-    await page.locator('input[type="file"]:not([multiple])').setInputFiles(IMG1);
-    await expect(page.getByText(/Replace photo/i)).toBeVisible();
+    // Cover photo — "Upload" is the file-picker input; "Capture live" is the
+    // camera-capture one, same non-multiple type, disambiguate by label.
+    await page.getByLabel('Upload').setInputFiles(IMG1);
+    await expect(page.getByText(/Replace/i)).toBeVisible();
 
     // Extra gallery photos.
     await page.locator('input[type="file"][multiple]').setInputFiles([IMG1, IMG2]);
     await expect(page.locator('div:has(> button[aria-label="Remove photo"])')).toHaveCount(2);
 
     await page.getByPlaceholder('Street, district, city').fill('900 Test Ave, Testville');
+    await page.getByText('Enter coordinates manually').click();
     await page.getByPlaceholder('Latitude').fill('13.75');
     await page.getByPlaceholder('Longitude').fill('100.50');
 
     await shot(page, testInfo, 'field-report-filled-form');
 
-    await page.getByRole('button', { name: /Transmit report/i }).click();
+    // 4-step wizard (Document/Identify/Classify/Respond) — only step 1
+    // (Document) needs anything for a valid submit; the rest are optional
+    // brand/harm-tag fields. Click through with defaults.
+    const submitBtn = page.locator('button[type="submit"]');
+    await submitBtn.click(); // -> step 2
+    await submitBtn.click(); // -> step 3
+    await submitBtn.click(); // -> step 4
+    await expect(submitBtn).toHaveText(/Transmit report/i);
+    await submitBtn.click(); // submit
     await expect(page.getByText(/Transmission received/i)).toBeVisible({ timeout: 10_000 });
 
     await shot(page, testInfo, 'field-report-transmission-received');

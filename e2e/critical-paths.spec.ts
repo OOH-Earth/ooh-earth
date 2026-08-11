@@ -28,18 +28,20 @@ test('primary navigation: home -> map -> report all render without crashing', as
   await expect(page.locator('#root')).not.toBeEmpty();
 
   await page.goto('/report');
-  await expect(page.getByRole('heading', { name: /Log an/i })).toBeVisible();
+  await expect(page.getByRole('heading', { name: /Adbusting/i })).toBeVisible();
 
   expect(filterCrashes(consoleErrors), consoleErrors.join('\n')).toEqual([]);
 });
 
-test('donation/support page renders the Donorbox embed', async ({ page }) => {
+test('donation/support page renders the Stripe donate panel', async ({ page }) => {
+  // Support.jsx no longer embeds Donorbox in an iframe — replaced with a
+  // direct Stripe checkout panel (StripeDonate.jsx, confirmed by reading the
+  // current file, not assumed from the old test).
   const consoleErrors = trackConsoleErrors(page);
   await page.goto('/support');
 
-  const iframe = page.locator('iframe[title="OOH Earth donations"]');
-  await expect(iframe).toBeVisible();
-  await expect(iframe).toHaveAttribute('src', /donorbox\.org\/embed\/ooh-donations/);
+  await expect(page.getByRole('heading', { name: 'Card / fiat' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Donate now' })).toBeVisible();
 
   expect(filterCrashes(consoleErrors), consoleErrors.join('\n')).toEqual([]);
 });

@@ -1,17 +1,20 @@
 {
   "_comment": "Known WCAG2A/AA violations as of the day this gate was introduced, captured live with `npx playwright test a11y.spec.ts` against a production build. This is a regression gate, not a pass/fail bar: CI fails only if a route grows a NEW rule ID or an EXISTING rule's node count increases. It does not fail on this pre-existing debt. Fixing these is an app-level design/contrast decision (see Engineering Playbook, Decision Register) — out of scope for the pipeline itself.",
   "_generated": "2026-08-08",
-  "_updated_2026-08-11": "re-scanned all 4 routes live before writing this: /about's aria-hidden-focus is genuinely fixed (fix/phase1-runtime, now merged into this branch) — removed rather than left stale, which would have silently masked the fix instead of ever detecting it.",
+  "_updated_2026-08-11_rebuild": "Re-scanned all 4 routes live against current origin/main (post-rebuild). color-contrast counts dropped substantially (main's independent work improved contrast broadly, not this branch's doing — verified live, not assumed). aria-hidden-focus reappeared on /about, /report, /location/:id (not /) — traced to CommandCenter.jsx's overlay (focusable close button while aria-hidden, present on every route that has opened it at least once) — this is main's own component, already tracked as KNOWN_ISSUES.md #14 (needs a real focus-trap across 3 overlays, judged too large for a scope-locked commit, not a quick patch) — baselined here, not silently patched. button-name (6 nodes, TerminalTooltip.jsx icon-only buttons with no aria-label) was fixed for real, not baselined — see that file's diff.",
   "/": {
-    "color-contrast": 12
+    "color-contrast": 5
   },
   "/about": {
-    "color-contrast": 10
+    "aria-hidden-focus": 1,
+    "color-contrast": 5
   },
   "/location/1777896004": {
-    "color-contrast": 23
+    "aria-hidden-focus": 1,
+    "color-contrast": 9
   },
   "/report": {
-    "color-contrast": 13
+    "aria-hidden-focus": 1,
+    "color-contrast": 6
   }
 }

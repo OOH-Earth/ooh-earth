@@ -45,6 +45,35 @@ export async function mockBase44(page: Page, db: MockDb) {
       });
     }
 
+    // base44.functions.invoke('moderate', body) -> POST /functions/moderate.
+    // Dashboard.jsx now routes ALL verify/reject (and even the pending-queue
+    // read, for every clearance level) through this function — there's no
+    // more direct-entity-update path for admins. Mirrors
+    // base44/functions/moderate/entry.ts's actual logic (status_updated_at +
+    // LocationPhoto cascade) so the mock and the real function can't drift
+    // apart silently.
+    if (url.pathname.includes('/functions/moderate')) {
+      const body = req.postDataJSON() ?? {};
+      const store = db.locations ?? (db.locations = {});
+      const photos = db.locationPhotos ?? (db.locationPhotos = []);
+      if (body.action === 'queue') {
+        const locations = Object.values(store).filter((l: any) => l.status === 'pending');
+        return route.fulfill({ json: { ok: true, locations, digital_busts: [] } });
+      }
+      if (body.action === 'verify') {
+        const { entity = 'Location', id, status } = body;
+        const status_updated_at = new Date().toISOString();
+        if (entity === 'Location' && store[id]) {
+          Object.assign(store[id], { status, status_updated_at });
+          for (const p of photos) {
+            if (p.location_id === String(id) && p.status === 'pending') p.status = status;
+          }
+        }
+        return route.fulfill({ json: { ok: true, action: 'verify', changed: { entity, id, status } } });
+      }
+      return route.fulfill({ json: { ok: true } });
+    }
+
     if (entityIdx === -1) {
       // Non-entity boot-time calls this app fires on every page (analytics
       // batching, public-settings, LLM integrations) — irrelevant to the
