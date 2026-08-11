@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { matrixLoaderEnabled } from "@/lib/loaderSettings";
 
 // Matrix-style digital-rain loading screen. Used as the Suspense fallback while
 // route chunks stream in, and as the app-boot screen. Lightweight canvas loop,
@@ -56,6 +57,15 @@ export default function MatrixLoader({ label = "LOADING", fullscreen = true }) {
     window.addEventListener("resize", setup);
     return () => { cancelAnimationFrame(raf); window.removeEventListener("resize", setup); };
   }, []);
+
+  if (!matrixLoaderEnabled()) {
+    return (
+      <div className={`${fullscreen ? "fixed" : "absolute"} inset-0 z-[9999] flex flex-col items-center justify-center gap-3 bg-void`}>
+        <div className="h-8 w-8 animate-spin rounded-full border-4 border-slate2 border-t-ozone" />
+        <span className="font-mono text-[10px] uppercase tracking-[0.28em] text-ozone/70">// {label}{dots}</span>
+      </div>
+    );
+  }
 
   return (
     <div className={`${fullscreen ? "fixed" : "absolute"} inset-0 z-[9999] overflow-hidden bg-[#020402]`}>
