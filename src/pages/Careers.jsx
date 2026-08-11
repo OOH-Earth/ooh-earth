@@ -1,12 +1,44 @@
-import { Mail, ArrowUpRight, Users, Coins } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Mail, ArrowUpRight, Users, Coins, ShieldCheck } from "lucide-react";
 import { Link } from "react-router-dom";
+import { base44 } from "@/api/base44Client";
+import { useAuth } from "@/lib/AuthContext";
+import { isAdmin } from "@/lib/clearance";
 import Nav from "@/components/ooh/Nav";
 import Reveal from "@/components/ooh/Reveal";
 import SiteFooter from "@/components/ooh/SiteFooter";
 import RoleCard from "@/components/ooh/careers/RoleCard";
-import { ROLES, VALUES, PROCESS, APPLY_EMAIL, CATEGORIES, SUPPORT, LOOK_FOR } from "@/components/ooh/careers/roles";
+import { ROLES as BASE_ROLES, VALUES, PROCESS, APPLY_EMAIL, CATEGORIES, SUPPORT, LOOK_FOR } from "@/components/ooh/careers/roles";
+
+// Merge live status/visibility overrides from the CareerRoleStatus entity (edited
+// at /careers/admin) onto the code-defined role content. Falls back to roles.js
+// defaults until the console has provisioned records, or if the fetch fails.
+function useLiveRoles() {
+  const [roles, setRoles] = useState(BASE_ROLES);
+  useEffect(() => {
+    let alive = true;
+    (async () => {
+      try {
+        const recs = await base44.entities.CareerRoleStatus.list("sort_order");
+        if (!alive || !recs?.length) return;
+        const merged = BASE_ROLES.map((r) => {
+          const rec = recs.find((x) => x.role_id === r.id);
+          return rec ? { ...r, status: rec.status, visible: rec.visible !== false } : r;
+        }).filter((r) => r.visible !== false && r.status !== "draft");
+        setRoles(merged);
+      } catch {
+        // keep static fallback
+      }
+    })();
+    return () => { alive = false; };
+  }, []);
+  return roles;
+}
 
 export default function Careers() {
+  const ROLES = useLiveRoles();
+  const { user } = useAuth();
+  const admin = !!user && isAdmin(user);
   const mailto = `mailto:${APPLY_EMAIL}?subject=Joining OOH Earth`;
   return (
     <div className="min-h-screen bg-void">
@@ -30,6 +62,11 @@ export default function Careers() {
             <a href="#roles" className="inline-flex items-center gap-2 border border-slate2 px-5 py-3 font-mono text-[11px] font-bold uppercase tracking-[0.25em] text-silver transition-colors hover:border-ozone hover:text-ozone">
               <Users className="h-4 w-4" /> Open roles
             </a>
+            {admin && (
+              <Link to="/careers/admin" className="inline-flex items-center gap-2 border border-slate2 px-5 py-3 font-mono text-[11px] font-bold uppercase tracking-[0.25em] text-silver/70 transition-colors hover:border-ozone hover:text-ozone">
+                <ShieldCheck className="h-4 w-4" /> Control Panel
+              </Link>
+            )}
           </div>
           <div className="mt-8 flex flex-wrap gap-x-6 gap-y-2 font-mono text-[10px] uppercase tracking-[0.25em] text-dim">
             <span>· {ROLES.filter((r) => r.status === "live").length} live roles</span>
