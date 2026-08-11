@@ -200,7 +200,7 @@ export default function HexDevice3D() {
       const st = S.current; if (st) cancelAnimationFrame(st.raf);
       window.removeEventListener("resize", onResize);
       renderer.domElement.removeEventListener("pointerdown", onDown); renderer.domElement.removeEventListener("pointerup", onUp);
-      controls.dispose(); scene.traverse((o) => { if (o.geometry) o.geometry.dispose(); if (o.material) { const m = o.material; (Array.isArray(m) ? m : [m]).forEach((x) => x.dispose()); } });
+      controls.dispose(); scene.traverse((/** @type {any} */ o) => { if (o.geometry) o.geometry.dispose(); if (o.material) { const m = o.material; (Array.isArray(m) ? m : [m]).forEach((x) => x.dispose()); } });
       renderer.dispose(); if (renderer.domElement.parentNode) renderer.domElement.parentNode.removeChild(renderer.domElement);
       if (ac) ac.close(); S.current = null;
     };
@@ -274,7 +274,7 @@ export default function HexDevice3D() {
             <div className="flex flex-wrap items-center gap-2 border-t border-slate2 p-3">
               <button onClick={() => { S.current?.ensure(); setSeqOn((v) => !v); }} className={`border-2 px-4 py-2 font-mono text-[10px] font-bold uppercase tracking-[0.2em] ${seqOn ? "border-brand-green bg-brand-green/10 text-brand-green" : "border-slate2 text-silver/60"}`}>{seqOn ? "Run ▮▮" : "Run ▶"}</button>
               <label className="flex items-center gap-2 font-mono text-[9px] uppercase tracking-widest text-silver/50">{bpm} BPM<input type="range" min={40} max={360} value={bpm} onChange={(e) => setBpm(+e.target.value)} className="w-20 accent-ozone" /></label>
-              {[["Sound", sound, () => { S.current?.ensure(); setSound((v) => !v); }], ["Shell", shell, () => setShell((v) => !v)], ["Explode", exploded, () => setExploded((v) => !v)], ["Labels", labels, () => setLabels((v) => !v)]].map(([lab, on, fn]) => (
+              {/** @type {[string, boolean, () => void][]} */ ([["Sound", sound, () => { S.current?.ensure(); setSound((v) => !v); }], ["Shell", shell, () => setShell((v) => !v)], ["Explode", exploded, () => setExploded((v) => !v)], ["Labels", labels, () => setLabels((v) => !v)]]).map(([lab, on, fn]) => (
                 <button key={lab} onClick={fn} className={`border px-3 py-2 font-mono text-[10px] font-bold uppercase tracking-[0.18em] ${on ? "border-ozone text-ozone" : "border-slate2 text-silver/50"}`}>{lab}</button>
               ))}
             </div>
