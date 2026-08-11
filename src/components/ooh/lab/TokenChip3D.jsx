@@ -237,7 +237,9 @@ function fitCamera(camera, controls, obj) {
   return { dist, center };
 }
 
-const TokenChip3D = forwardRef(function TokenChip3D({ ring, spot, field, glyph, topText, bottomText, accent }, ref) {
+const TokenChip3D = forwardRef(
+  /** @param {{ring: string, spot: string, field: string, glyph: string, topText: string, bottomText: string, accent: string}} props */
+  function TokenChip3D({ ring, spot, field, glyph, topText, bottomText, accent }, ref) {
   const mountRef = useRef(null);
   const S = useRef(null);
   const [bgColor, setBgColor] = useState("void");
@@ -326,7 +328,7 @@ const TokenChip3D = forwardRef(function TokenChip3D({ ring, spot, field, glyph, 
       const st = S.current; if (st) cancelAnimationFrame(st.raf);
       window.removeEventListener("resize", onResize);
       controls.dispose();
-      scene.traverse((o) => {
+      scene.traverse((/** @type {any} */ o) => {
         if (o.geometry) o.geometry.dispose();
         if (o.material) { const m = o.material; (Array.isArray(m) ? m : [m]).forEach((x) => { if (x.map) x.map.dispose(); if (x.bumpMap) x.bumpMap.dispose(); x.dispose(); }); }
       });
@@ -342,7 +344,7 @@ const TokenChip3D = forwardRef(function TokenChip3D({ ring, spot, field, glyph, 
     const st = S.current; if (!st) return;
     if (st.chip) {
       st.scene.remove(st.chip);
-      st.chip.traverse((o) => {
+      st.chip.traverse((/** @type {any} */ o) => {
         if (o.geometry) o.geometry.dispose();
         if (o.material) { const m = o.material; (Array.isArray(m) ? m : [m]).forEach((x) => { if (x.map) x.map.dispose(); if (x.bumpMap) x.bumpMap.dispose(); x.dispose(); }); }
       });
