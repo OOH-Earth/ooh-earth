@@ -66,7 +66,10 @@ export default function UnitFinder({ open, onClose }) {
           },
         },
       });
-      const units = (res && res.units) || [];
+      // InvokeLLM's SDK type is `string | object`; response_json_schema
+      // above guarantees an object at runtime.
+      const data = /** @type {{ units?: any[] }} */ (res);
+      const units = (data && data.units) || [];
       const withCoords = await Promise.all(
         units.map(async (u, idx) => {
           const c = await geocode(u.address, query).catch(() => null);

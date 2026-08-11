@@ -1,6 +1,7 @@
 #env
 .env
 .env.*
+!.env.example
 
 # Logs
 /logs
@@ -30,3 +31,13 @@ dist-ssr
 .env
 .vite
 base44/.app.jsonc
+
+# Playwright
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/
+
+# CI local dry-run artifacts (ci.yml's build/dependency-audit jobs)
+/bundle-report/
+/audit-report.json

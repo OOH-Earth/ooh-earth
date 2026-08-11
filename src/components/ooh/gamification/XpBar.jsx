@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 import { Zap } from "lucide-react";
 import { LEVELS, levelFromXp } from "@/components/ooh/gamification/gamification";
 
-export default function XpBar({ xp, compact }) {
+export default function XpBar({ xp, compact = false }) {
   const lvl = levelFromXp(xp || 0);
 
   if (compact) {

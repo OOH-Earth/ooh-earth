@@ -40,7 +40,10 @@ export function useWarZoneData() {
           required: ["zones"],
         },
       });
-      return res?.zones || [];
+      // InvokeLLM's SDK type is `string | object`; response_json_schema
+      // above guarantees an object at runtime.
+      const data = /** @type {{ zones?: any[] }} */ (res);
+      return data?.zones || [];
     })
       .then((data) => { if (mounted.current) { setZones(data); setLoading(false); } })
       .catch(() => { if (mounted.current) { setZones([]); setLoading(false); } });

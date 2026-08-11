@@ -28,7 +28,7 @@ const CHAIN_META = {
 
 const fmtUsd = (n) => "$" + (Math.round((n || 0) * 100) / 100).toLocaleString("en-US");
 
-function Holding({ label, value, sub, accent }) {
+function Holding({ label, value, sub = "", accent = "" }) {
   return (
     <div className="border border-slate2/60 bg-card p-4">
       <div className="font-mono text-[9px] uppercase tracking-[0.25em] text-dim">{label}</div>

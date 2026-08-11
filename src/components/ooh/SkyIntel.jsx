@@ -47,7 +47,7 @@ const toneClass = (tone) =>
 
 function fmtDate(d) {
   const dt = new Date(d);
-  if (isNaN(dt)) return d;
+  if (isNaN(dt.getTime())) return d;
   const today = new Date();
   const isToday = dt.toDateString() === today.toDateString();
   return isToday ? "Tonight" : dt.toLocaleDateString("en-US", { month: "short", day: "numeric" });

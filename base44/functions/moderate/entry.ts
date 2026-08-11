@@ -65,7 +65,16 @@ Deno.serve(async (req) => {
       if (!ENTITIES.has(entity)) return Response.json({ error: `Invalid entity. Use: ${[...ENTITIES].join(', ')}` }, { status: 400, headers });
       if (!id) return Response.json({ error: 'Missing id.' }, { status: 400, headers });
       if (!VERIFY_STATUS.has(status)) return Response.json({ error: `Invalid status. Use: ${[...VERIFY_STATUS].join(', ')}` }, { status: 400, headers });
-      await base44.asServiceRole.entities[entity].update(id, { status });
+      const status_updated_at = new Date().toISOString();
+      await base44.asServiceRole.entities[entity].update(id, { status, status_updated_at });
+      // Cascade to gallery photos so a verified location's uploaded photos become visible
+      // in the same action — there's no separate per-photo moderation UI.
+      if (entity === 'Location') {
+        try {
+          const photos = await base44.asServiceRole.entities.LocationPhoto.filter({ location_id: id, status: 'pending' });
+          await Promise.all((photos || []).map((p) => base44.asServiceRole.entities.LocationPhoto.update(p.id, { status })));
+        } catch { /* gallery cascade is best-effort — location status change still succeeds */ }
+      }
       return Response.json({ ok: true, action, changed: { entity, id, status } }, { headers });
     }
 

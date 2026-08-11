@@ -33,7 +33,10 @@ export default function AdSpendDamage() {
             required: ["brands"],
           },
         });
-        if (active) setRows((res?.brands || []).slice(0, 6));
+        // InvokeLLM's SDK type is `string | object`; response_json_schema
+        // above guarantees an object at runtime.
+        const data = /** @type {{ brands?: any[] }} */ (res);
+        if (active) setRows((data?.brands || []).slice(0, 6));
       } catch {
         if (active) setRows([]);
       }

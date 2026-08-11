@@ -17,7 +17,13 @@ export default function Breadcrumbs({ items = [], className = "" }) {
             {last || !c.to ? (
               <span className={last ? "text-ozone" : "text-dim"} aria-current={last ? "page" : undefined}>{content}</span>
             ) : (
-              <Link to={c.to} className="text-dim transition-colors hover:text-ozone">{content}</Link>
+              <Link
+                to={c.to}
+                aria-label={c.home ? "Home" : undefined}
+                className="text-dim transition-colors hover:text-ozone"
+              >
+                {content}
+              </Link>
             )}
             {!last && <ChevronRight className="h-3 w-3 text-slate2" />}
           </span>

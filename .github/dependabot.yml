@@ -1,0 +1,37 @@
+# Dependabot vs Renovate: we picked Dependabot because it's built into GitHub
+# Free with zero extra setup (no app install, no config beyond this file).
+# Renovate is more configurable (grouped updates, custom schedules, and
+# critically a native `minimumReleaseAge` cooldown) but needs the Renovate
+# GitHub App installed on the org/repo. That last point matters here:
+# Dependabot has NO equivalent to the .npmrc `min-release-age=7` supply-chain
+# cooldown this repo already relies on — a Dependabot PR can propose a
+# version published minutes ago. Until this gap is closed (Renovate, or a
+# manual review habit of checking npm publish dates on Dependabot PRs), don't
+# auto-merge Dependabot PRs. See ENGINEERING.md Decision Register.
+version: 2
+updates:
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    open-pull-requests-limit: 10
+    groups:
+      radix-ui:
+        patterns:
+          - "@radix-ui/*"
+      dev-dependencies:
+        dependency-type: "development"
+    commit-message:
+      prefix: "chore"
+      include: "scope"
+
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    open-pull-requests-limit: 10
+    commit-message:
+      prefix: "chore"
+      include: "scope"

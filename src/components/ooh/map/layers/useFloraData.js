@@ -38,7 +38,10 @@ export function useFloraData() {
           required: ["spots"],
         },
       });
-      return res?.spots || [];
+      // InvokeLLM's SDK type is `string | object`; response_json_schema
+      // above guarantees an object at runtime.
+      const data = /** @type {{ spots?: any[] }} */ (res);
+      return data?.spots || [];
     })
       .then((data) => { if (mounted.current) { setSpots(data); setLoading(false); } })
       .catch(() => { if (mounted.current) { setSpots([]); setLoading(false); } });

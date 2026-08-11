@@ -1,0 +1,17 @@
+{
+  "_comment": "Known WCAG2A/AA violations as of the day this gate was introduced, captured live with `npx playwright test a11y.spec.ts` against a production build. This is a regression gate, not a pass/fail bar: CI fails only if a route grows a NEW rule ID or an EXISTING rule's node count increases. It does not fail on this pre-existing debt. Fixing these is an app-level design/contrast decision (see Engineering Playbook, Decision Register) — out of scope for the pipeline itself.",
+  "_generated": "2026-08-08",
+  "_updated_2026-08-11": "re-scanned all 4 routes live before writing this: /about's aria-hidden-focus is genuinely fixed (fix/phase1-runtime, now merged into this branch) — removed rather than left stale, which would have silently masked the fix instead of ever detecting it.",
+  "/": {
+    "color-contrast": 12
+  },
+  "/about": {
+    "color-contrast": 10
+  },
+  "/location/1777896004": {
+    "color-contrast": 23
+  },
+  "/report": {
+    "color-contrast": 13
+  }
+}

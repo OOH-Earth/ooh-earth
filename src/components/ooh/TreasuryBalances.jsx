@@ -64,7 +64,7 @@ export default function TreasuryBalances() {
   );
 }
 
-function Stat({ label, sub, value, accent }) {
+function Stat({ label, sub, value, accent = false }) {
   return (
     <div className="bg-card p-4">
       <div className="font-mono text-[9px] uppercase tracking-[0.2em] text-dim">{label}</div>

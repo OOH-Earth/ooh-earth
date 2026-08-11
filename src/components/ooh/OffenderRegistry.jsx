@@ -36,7 +36,10 @@ export default function OffenderRegistry() {
             required: ["offenders"],
           },
         });
-        const list = res?.offenders || [];
+        // InvokeLLM's SDK type is `string | object`; response_json_schema
+        // above guarantees an object at runtime.
+        const data = /** @type {{ offenders?: any[] }} */ (res);
+        const list = data?.offenders || [];
         if (!list.length) {
           setSourced(false);
           setOffenders(WATCHLIST.map((w, i) => ({ brand: w.brand, count: 0, note: w.note })));

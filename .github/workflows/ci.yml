@@ -1,0 +1,246 @@
+name: CI
+
+# Single pipeline for every PR and every push to main. Supersedes the old
+# build-verify.yml: that workflow's build step now lives here as the `build`
+# job (same intent — "nothing merges to main unless it builds clean" — just
+# folded into one place instead of running a second, duplicate `npm ci && npm
+# run build` on every PR). See CI_PIPELINE.md for the full job graph and
+# which gates are blocking vs informational.
+#
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch: {}
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  pull-requests: write
+  checks: write
+
+env:
+  NODE_VERSION: "20"
+
+jobs:
+  lint-and-typecheck:
+    name: Lint & Typecheck
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+      - run: npm ci
+      - name: Typecheck
+        run: npm run typecheck
+      - name: Lint
+        run: npm run lint
+
+  format-check:
+    name: Prettier (informational)
+    runs-on: ubuntu-latest
+    # Not a merge gate: the codebase predates Prettier and has a large
+    # existing backlog of unformatted files (516 as of 2026-08-11 — see
+    # CI_PIPELINE.md Decision Register). This reports drift without blocking
+    # until a dedicated one-time formatting PR lands.
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+      - run: npm ci
+      - run: npm run format:check
+
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+      - run: npm ci
+      - name: Production build
+        run: npm run build
+      - name: Record bundle size
+        run: |
+          mkdir -p bundle-report
+          node -e "
+            const fs = require('fs');
+            const path = require('path');
+            const dir = 'dist/assets';
+            const files = fs.readdirSync(dir).filter(f => f.endsWith('.js') || f.endsWith('.css'));
+            const rows = files.map(f => {
+              const p = path.join(dir, f);
+              return { file: f, bytes: fs.statSync(p).size };
+            }).sort((a, b) => b.bytes - a.bytes);
+            const total = rows.reduce((s, r) => s + r.bytes, 0);
+            fs.writeFileSync('bundle-report/sizes.json', JSON.stringify({ total, rows }, null, 2));
+            console.log('Total dist/assets: ' + (total / 1024).toFixed(1) + ' KB across ' + rows.length + ' files');
+          "
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist
+          retention-days: 7
+      - uses: actions/upload-artifact@v4
+        with:
+          name: bundle-report
+          path: bundle-report
+          retention-days: 30
+
+  e2e:
+    name: Playwright (smoke + accessibility)
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+      - run: npm ci
+      - uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist
+      - name: Cache Playwright browsers
+        id: pw-cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
+      - name: Install Playwright browsers
+        if: steps.pw-cache.outputs.cache-hit != 'true'
+        run: npx playwright install --with-deps chromium
+      - name: Install Playwright OS deps (cache hit)
+        if: steps.pw-cache.outputs.cache-hit == 'true'
+        run: npx playwright install-deps chromium
+      - name: Run smoke + accessibility tests
+        run: npx playwright test --project=chromium
+        env:
+          CI: "true"
+      - name: Upload Playwright report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: |
+            playwright-report
+            test-results
+          retention-days: 14
+
+  dependency-audit:
+    name: Dependency audit (fails on high/critical only)
+    runs-on: ubuntu-latest
+    # Moderate/low findings are surfaced via the uploaded report and PR
+    # summary but don't block — a transitive moderate CVE shouldn't stop an
+    # unrelated PR from merging. High/critical does block: as of 2026-08-10
+    # this repo has 0 high/critical (4 moderate), so this gate starts green,
+    # not pre-broken. See GITHUB_ENGINEERING_PIPELINE.md §2.
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+      - run: npm ci
+      - name: npm audit (fail on high/critical only)
+        run: |
+          npm audit --omit=dev --json > audit-report.json || true
+          HIGH=$(node -e "const r=require('./audit-report.json'); const m=r.metadata?.vulnerabilities||{}; console.log((m.high||0)+(m.critical||0))")
+          echo "High/critical vulnerabilities: $HIGH"
+          if [ "$HIGH" -gt 0 ]; then exit 1; fi
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: audit-report
+          path: audit-report.json
+          retention-days: 30
+
+  dependency-review:
+    name: Dependency Review
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/dependency-review-action@v4
+
+  summary:
+    name: PR summary comment
+    needs: [lint-and-typecheck, format-check, build, e2e, dependency-audit, dependency-review]
+    if: always() && github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: bundle-report
+          path: bundle-report
+        continue-on-error: true
+      - name: Build summary body
+        id: body
+        run: |
+          {
+            echo "body<<PIPELINE_SUMMARY_EOF"
+            echo "### CI results"
+            echo ""
+            echo "| Gate | Status |"
+            echo "|---|---|"
+            echo "| Lint & Typecheck | ${{ needs.lint-and-typecheck.result }} |"
+            echo "| Build | ${{ needs.build.result }} |"
+            echo "| Playwright (smoke + a11y) | ${{ needs.e2e.result }} |"
+            echo "| Prettier (informational) | ${{ needs.format-check.result }} |"
+            echo "| Dependency audit (fails on high/critical) | ${{ needs.dependency-audit.result }} |"
+            echo "| Dependency Review | ${{ needs.dependency-review.result }} |"
+            echo ""
+            if [ -f bundle-report/sizes.json ]; then
+              echo "**Bundle size (dist/assets, uncompressed):**"
+              node -e "
+                const r = require('./bundle-report/sizes.json');
+                console.log('Total: ' + (r.total / 1024).toFixed(1) + ' KB');
+                r.rows.slice(0, 5).forEach(row => console.log('- ' + row.file + ': ' + (row.bytes / 1024).toFixed(1) + ' KB'));
+              "
+            fi
+            echo ""
+            echo "_Blocking gates: Lint & Typecheck, Build, Playwright, Dependency audit (high/critical only), Dependency Review. Prettier is informational._"
+            echo "PIPELINE_SUMMARY_EOF"
+          } >> "$GITHUB_OUTPUT"
+      - name: Comment on PR
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const body = ${{ toJSON(steps.body.outputs.body) }};
+            const marker = '<!-- ci-pipeline-summary -->';
+            const full = marker + '\n' + body;
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            });
+            const existing = comments.find(c => c.body.includes(marker));
+            if (existing) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: existing.id,
+                body: full,
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body: full,
+              });
+            }
+      - name: Write step summary
+        run: echo "${{ steps.body.outputs.body }}" >> "$GITHUB_STEP_SUMMARY"

@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Check, Copy } from "lucide-react";
 
-export default function CopyField({ label, value, note, swatch }) {
+export default function CopyField({ label, value, note = "", swatch = "" }) {
   const [copied, setCopied] = useState(false);
   const copy = async () => {
     try {

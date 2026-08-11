@@ -95,7 +95,7 @@ export default function Pin({
   hovered = false,
   stream = null,
   brands = [],
-  onSelect,
+  onSelect = (/** @type {{ type: string }} */ _selection) => {},
 }) {
   const { accent } = metaFor(type);
   const verified = status === "verified";
