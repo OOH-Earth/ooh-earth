@@ -68,6 +68,11 @@
       ],
       "default": "pending"
     },
+    "status_updated_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp of the last verify/reject action — drives the time-since-last-tag counter"
+    },
     "brand_name": {
       "type": "string",
       "description": "Brand / advertiser being promoted, e.g. Shell, McDonald's"

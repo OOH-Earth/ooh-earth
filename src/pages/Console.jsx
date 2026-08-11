@@ -188,7 +188,7 @@ export default function Console() {
         <div className="ic-head"><h2>The 14-entity ecosystem</h2><span className="m">One mission · return public space to the public</span></div>
         <div className="ic-eco">
           {ECO.map(([n, nn, nd, core]) => (
-            <div className={`ic-node ${core ? "core" : ""}`} key={n}>
+            <div className={`ic-node ${core ? "core" : ""}`} key={String(n)}>
               <div className="en">{n}</div><div className="nn">{nn}</div><div className="nd">{nd}</div>
             </div>
           ))}

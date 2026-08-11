@@ -163,7 +163,7 @@ export default function OnChain() {
   );
 }
 
-function SideTile({ icon, eyebrow, title, desc, href, accent }) {
+function SideTile({ icon, eyebrow, title, desc, href, accent = false }) {
   return (
     <a
       href={href}

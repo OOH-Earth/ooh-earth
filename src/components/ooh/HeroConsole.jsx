@@ -57,7 +57,7 @@ function Sparkline({ data, colorClass }) {
   );
 }
 
-function Stat({ label, value, Icon, colorClass, suffix, to }) {
+function Stat({ label, value, Icon, colorClass, suffix = "", to }) {
   const n = useCountUp(value);
   return (
     <Link

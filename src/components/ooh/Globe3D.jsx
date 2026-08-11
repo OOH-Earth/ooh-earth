@@ -143,7 +143,6 @@ export default function Globe3D({ markers, selectedId, hoverId, onSelect, userLo
       zoom: 1.6,
       pitch: 25,
       maxPitch: 85,
-      projection: "globe",
       attributionControl: { compact: true },
       interactive,
     });
@@ -177,6 +176,13 @@ export default function Globe3D({ markers, selectedId, hoverId, onSelect, userLo
     const applyGlobe = () => {
       try { map.setProjection({ type: "globe" }); } catch (e) {}
       try {
+        // setFog() doesn't exist on the installed maplibre-gl (5.24.0) Map
+        // class — only setSky(SkySpecification) does now. This throws and is
+        // caught below, so the space-fog/atmosphere effect is currently
+        // non-functional. Restoring it means porting to setSky() (a
+        // different param shape) and confirming the visual result — a
+        // design call, not a type fix. See KNOWN_ISSUES.md.
+        // @ts-expect-error — see comment above
         map.setFog({
           range: [1, 10],
           color: "#0a0a0a",
@@ -190,7 +196,7 @@ export default function Globe3D({ markers, selectedId, hoverId, onSelect, userLo
     map.on("load", () => {
       applyGlobe();
       map.on("style.load", applyGlobe);
-      map.addSource("ooh-markers", { type: "geojson", data: dataRef.current, cluster: true, clusterRadius: 52, clusterMaxZoom: 14 });
+      map.addSource("ooh-markers", { type: "geojson", data: /** @type {GeoJSON.GeoJSON} */ (dataRef.current), cluster: true, clusterRadius: 52, clusterMaxZoom: 14 });
       PIN_TYPES.forEach((t) => {
         const a = makePinIcon(t, false, false);
         map.addImage(`ooh-pin-${t}`, a.getContext("2d").getImageData(0, 0, a.width, a.height), { pixelRatio: 1 });
@@ -241,7 +247,7 @@ export default function Globe3D({ markers, selectedId, hoverId, onSelect, userLo
         const f = e.features && e.features[0];
         if (!f) return;
         const p = f.properties;
-        const coords = f.geometry.coordinates.slice();
+        const coords = /** @type {GeoJSON.Point} */ (f.geometry).coordinates.slice();
         popupRef.current.setLngLat(coords).setHTML(popupHTML(p)).addTo(map);
         onSelectRef.current?.(p.id);
       });
@@ -253,15 +259,17 @@ export default function Globe3D({ markers, selectedId, hoverId, onSelect, userLo
         const f = e.features && e.features[0];
         if (!f) return;
         const cid = f.properties.cluster_id;
-        const src = map.getSource("ooh-markers");
+        /** @type {import("maplibre-gl").GeoJSONSource} */
+        const src = /** @type {any} */ (map.getSource("ooh-markers"));
+        const coords = /** @type {[number, number]} */ (/** @type {GeoJSON.Point} */ (f.geometry).coordinates);
         if (src && src.getClusterExpansionZoom) {
           src.getClusterExpansionZoom(cid).then((z) => {
-            map.flyTo({ center: f.geometry.coordinates, zoom: Math.max(z, map.getZoom() + 1), duration: 700 });
+            map.flyTo({ center: coords, zoom: Math.max(z, map.getZoom() + 1), duration: 700 });
           }).catch(() => {
-            map.flyTo({ center: f.geometry.coordinates, zoom: map.getZoom() + 2, duration: 700 });
+            map.flyTo({ center: coords, zoom: map.getZoom() + 2, duration: 700 });
           });
         } else {
-          map.flyTo({ center: f.geometry.coordinates, zoom: map.getZoom() + 2, duration: 700 });
+          map.flyTo({ center: coords, zoom: map.getZoom() + 2, duration: 700 });
         }
       });
       map.on("mouseenter", "ooh-clusters", () => { map.getCanvas().style.cursor = "pointer"; });
@@ -269,7 +277,7 @@ export default function Globe3D({ markers, selectedId, hoverId, onSelect, userLo
 
       readyRef.current = true;
       setReady(true);
-      map.getSource("ooh-markers").setData(dataRef.current);
+      /** @type {import("maplibre-gl").GeoJSONSource} */ (map.getSource("ooh-markers")).setData(/** @type {GeoJSON.GeoJSON} */ (dataRef.current));
     });
 
     return () => {
@@ -293,7 +301,7 @@ export default function Globe3D({ markers, selectedId, hoverId, onSelect, userLo
     dataRef.current = buildFC(markers, selectedId);
     const map = mapRef.current;
     if (readyRef.current && map && map.getSource("ooh-markers")) {
-      map.getSource("ooh-markers").setData(dataRef.current);
+      /** @type {import("maplibre-gl").GeoJSONSource} */ (map.getSource("ooh-markers")).setData(/** @type {GeoJSON.GeoJSON} */ (dataRef.current));
     }
     if (selectedId && readyRef.current && map) {
       const m = markers.find((x) => x.id === selectedId);

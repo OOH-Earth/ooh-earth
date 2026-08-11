@@ -71,7 +71,7 @@ export default function InvestorDashboard() {
           <div className="inv-head"><h2>Traction snapshot</h2><span className="m">Self-reported · diligence-ready</span></div>
           <div className="inv-metrics">
             {metrics.map(([v, l, verify]) => (
-              <div className="inv-metric" key={l}>
+              <div className="inv-metric" key={String(l)}>
                 <div className="mv">{v}</div><div className="ml">{l}</div>
                 <span className={`mf ${verify ? "unv" : "live"}`}>{verify ? "Verify" : "Live"}</span>
               </div>

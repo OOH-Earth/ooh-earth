@@ -13,22 +13,6 @@ const TYPES = {
   verify: { icon: BadgeCheck, label: "Site verified", color: "text-ozone", dot: "rgb(var(--c-ozone))" },
 };
 
-const CITIES = ["Bangkok", "São Paulo", "London", "Manila", "Jakarta", "Lagos", "Berlin", "Mexico City", "Mumbai", "Athens", "Seoul", "Cairo"];
-const HANDLES = ["ghostsignal", "neonghost", "subvert", "kilowatt", "nightpaste", "voidwalk", "spraycan", "meridian", "static", "fuse"];
-const OFFENSES = ["Billboard · 48-sheet", "Digital screen · transit", "Painted takeover", "Projection · night raid", "Sticker bomb cluster", "Mural · side wall", "Bus flank · 2-sheet"];
-const BUSTS = ["Metaverse billboard hijack", "Banner ad overlay", "Sponsored post counter", "Pre-roll replace", "AR lens flip"];
-const CRYPTO = ["0.05 ETH", "2.1 SOL", "0.001 BTC", "75 USDC"];
-
-function synth() {
-  const r = Math.random();
-  if (r < 0.32) return { type: "report", title: OFFENSES[Math.floor(Math.random() * OFFENSES.length)], meta: CITIES[Math.floor(Math.random() * CITIES.length)] };
-  if (r < 0.5) return { type: "claim", title: "Adopted landmark for intervention", meta: "@" + HANDLES[Math.floor(Math.random() * HANDLES.length)] };
-  if (r < 0.66) return { type: "bust", title: BUSTS[Math.floor(Math.random() * BUSTS.length)], meta: CITIES[Math.floor(Math.random() * CITIES.length)] };
-  if (r < 0.8) return { type: "donate", title: CRYPTO[Math.floor(Math.random() * CRYPTO.length)] + " received", meta: "treasury · public record" };
-  if (r < 0.93) return { type: "operative", title: "New member registered", meta: "@" + HANDLES[Math.floor(Math.random() * HANDLES.length)] + " · " + CITIES[Math.floor(Math.random() * CITIES.length)] };
-  return { type: "verify", title: "Photo evidence confirmed", meta: CITIES[Math.floor(Math.random() * CITIES.length)] };
-}
-
 const stamp = () => new Date().toLocaleTimeString("en-GB", { hour12: false });
 
 export default function LiveActivityFeed() {
@@ -49,13 +33,6 @@ export default function LiveActivityFeed() {
     }, 7000);
     timers.current.set(id, t);
   };
-
-  useEffect(() => {
-    const pushSynth = () => push(synth());
-    pushSynth();
-    const id = setInterval(pushSynth, 5500);
-    return () => clearInterval(id);
-  }, []);
 
   useEffect(() => {
     const subs = [

@@ -98,7 +98,7 @@ export default function ZoraMarketPanel() {
   );
 }
 
-function Stat({ label, value, tone, icon }) {
+function Stat({ label, value, tone = "", icon = null }) {
   return (
     <div className="text-right">
       <div className="font-mono text-[9px] uppercase tracking-[0.2em] text-dim">{label}</div>

@@ -82,7 +82,8 @@ export default function MapAlertTicker({ onClose }) {
           },
         });
         if (mounted.current) {
-          setItems(shuffleArray(res?.alerts || []));
+          const alerts = /** @type {{ alerts?: any[] }} */ (res)?.alerts;
+          setItems(shuffleArray(alerts || []));
           setLoading(false);
         }
       } catch {

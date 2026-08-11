@@ -100,7 +100,7 @@ export function periodKey(type) {
   if (type === "daily") return now.toISOString().slice(0, 10);
   const year = now.getFullYear();
   const start = new Date(year, 0, 1);
-  const diff = (now - start) / 86400000;
+  const diff = (now.getTime() - start.getTime()) / 86400000;
   const week = Math.ceil((diff + start.getDay() + 1) / 7);
   return `${year}-W${String(week).padStart(2, "0")}`;
 }
