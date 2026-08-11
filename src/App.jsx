@@ -97,6 +97,7 @@ const RiversPortal = lazy(() => import('@/pages/portals/RiversPortal'));
 const WarZonesPortal = lazy(() => import('@/pages/portals/WarZonesPortal'));
 const Careers = lazy(() => import('@/pages/Careers'));
 const CareerRole = lazy(() => import('@/pages/CareerRole'));
+const CareersAdmin = lazy(() => import('@/pages/CareersAdmin'));
 const RadioOps = lazy(() => import('@/pages/RadioOps'));
 const Console = lazy(() => import('@/pages/Console'));
 const InvestorHub = lazy(() => import('@/pages/InvestorHub'));
@@ -209,6 +210,7 @@ const AuthenticatedApp = () => {
       <Route path="/blog/studio" element={<BlogStudio />} />
       <Route path="/lab/admin" element={<LabAdmin />} />
       <Route path="/store/admin" element={<StoreAdmin />} />
+      <Route path="/careers/admin" element={<CareersAdmin />} />
     </Route>
     {/* Lab — dynamic access guard (public/agency toggled per prototype via /lab/admin) */}
     <Route element={<LabAccessRoute />}>
