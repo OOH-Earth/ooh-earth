@@ -158,7 +158,7 @@ function Badge({ children, tone = "mute" }) {
   };
   return <span className={`inline-block whitespace-nowrap border px-1.5 py-0.5 font-mono text-[8px] font-bold uppercase tracking-[0.15em] ${map[tone] || map.mute}`}>{children}</span>;
 }
-function Stat({ k, v, sub, accent }) {
+function Stat({ k, v, sub = "", accent = "" }) {
   return (
     <div className="border border-slate2/60 bg-card p-4">
       <div className="font-mono text-[9px] uppercase tracking-[0.22em] text-dim">{k}</div>
@@ -198,8 +198,8 @@ function Copyable({ v }) {
     </button>
   );
 }
-const Th = ({ children, right }) => <th className={`border-b border-slate2/60 pb-3 pr-4 font-mono text-[9px] font-semibold uppercase tracking-[0.13em] text-dim ${right ? "text-right" : "text-left"}`}>{children}</th>;
-const Td = ({ children, name, right, mono }) => <td className={`border-b border-slate2/30 py-3.5 pr-4 align-top text-[13px] leading-snug ${right ? "text-right" : ""} ${mono ? "font-mono text-[11.5px]" : ""} ${name ? "font-bold text-silver" : "text-dim"}`}>{children}</td>;
+const Th = ({ children, right = false }) => <th className={`border-b border-slate2/60 pb-3 pr-4 font-mono text-[9px] font-semibold uppercase tracking-[0.13em] text-dim ${right ? "text-right" : "text-left"}`}>{children}</th>;
+const Td = ({ children, name = false, right = false, mono = false }) => <td className={`border-b border-slate2/30 py-3.5 pr-4 align-top text-[13px] leading-snug ${right ? "text-right" : ""} ${mono ? "font-mono text-[11.5px]" : ""} ${name ? "font-bold text-silver" : "text-dim"}`}>{children}</td>;
 
 /* ── section renderers ────────────────────────────────────── */
 function ExecView({ stats, intel }) {
