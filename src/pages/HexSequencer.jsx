@@ -20,7 +20,7 @@ const LANE = [
 const FREQS = [110, 130.81, 146.83, 164.81, 196, 220];
 
 // Hexagram drawn as six stacked lines (yang = solid bar, yin = split bar).
-function HexGlyph({ lines, color, big }) {
+function HexGlyph({ lines, color, big = false }) {
   const barH = big ? "h-2" : "h-[3px]";
   const w = big ? "w-16" : "w-[22px]";
   return (

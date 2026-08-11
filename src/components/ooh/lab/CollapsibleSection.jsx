@@ -9,7 +9,7 @@ export default function CollapsibleSection({
   icon,
   led = "ozone",
   defaultOpen = true,
-  right,
+  right = null,
   children,
 }) {
   const [open, setOpen] = useState(defaultOpen);

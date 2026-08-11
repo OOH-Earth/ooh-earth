@@ -60,7 +60,7 @@ export async function compressImage(file, opts = {}) {
     if (!blob) return file;
     if (blob.size >= file.size) return file; // never make the payload bigger
 
-    const base = (file.name || "photo").replace(/\.[^./\\]+$/, "");
+    const base = (/** @type {File} */ (file).name || "photo").replace(/\.[^./\\]+$/, "");
     return new File([blob], `${base}.jpg`, { type: "image/jpeg", lastModified: Date.now() });
   } catch {
     return file; // fail open

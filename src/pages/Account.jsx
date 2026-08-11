@@ -46,7 +46,7 @@ function Toggle({ on, onClick, label, desc }) {
   );
 }
 
-function Field({ label, hint, children }) {
+function Field({ label, hint = "", children }) {
   return (
     <label className="block">
       <span className="font-mono text-[9px] uppercase tracking-[0.2em] text-dim">{label}</span>

@@ -145,7 +145,7 @@ export default function UiKit() {
           <div className="mt-3 space-y-3">
             <Panel id="identity" idx="00" title="Identity" status="live">
               <div className="flex items-center gap-3">
-                <BrandMark className="h-10 w-10" spinning />
+                <BrandMark className="h-10 w-10" animate />
                 <span className="font-brand text-3xl tracking-tight text-silver">ooh<span className="text-ozone">.</span>earth</span>
               </div>
               <span className="mt-3 block font-mono text-[10px] uppercase tracking-[0.4em] text-ozone">OOH Street Art & Adbusting Maps</span>
