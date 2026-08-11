@@ -163,7 +163,6 @@ export default function MediaCorpGlobe({ corps, selected, onSelect, onBoundsChan
       zoom: 1.4,
       pitch: 20,
       maxPitch: 85,
-      projection: "globe",
       attributionControl: { compact: true },
     });
     mapRef.current = map;
@@ -172,6 +171,10 @@ export default function MediaCorpGlobe({ corps, selected, onSelect, onBoundsChan
     const applyGlobe = () => {
       try { map.setProjection({ type: "globe" }); } catch (e) {}
       try {
+        // setFog() doesn't exist on the installed maplibre-gl (5.24.0) Map
+        // class — only setSky() does now. Throws, caught below (same known
+        // gap as Globe3D.jsx — see that file's comment / KNOWN_ISSUES.md).
+        // @ts-expect-error — see comment above
         map.setFog({
           range: [1, 10], color: "#0a0a0a", "high-color": "#1a1a1a",
           "horizon-blend": 0.12, "space-color": "#000000", "star-intensity": 0.4,
@@ -190,9 +193,9 @@ export default function MediaCorpGlobe({ corps, selected, onSelect, onBoundsChan
       applyGlobe();
       map.on("style.load", applyGlobe);
 
-      map.addSource("mc-markers", { type: "geojson", data: dataRef.current, cluster: true, clusterRadius: 50, clusterMaxZoom: 12 });
+      map.addSource("mc-markers", { type: "geojson", data: /** @type {GeoJSON.GeoJSON} */ (dataRef.current), cluster: true, clusterRadius: 50, clusterMaxZoom: 12 });
       // Separate non-clustered source for coverage circles
-      map.addSource("mc-coverage", { type: "geojson", data: dataRef.current });
+      map.addSource("mc-coverage", { type: "geojson", data: /** @type {GeoJSON.GeoJSON} */ (dataRef.current) });
 
       SCOPES.forEach((s) => {
         const a = makeCorpPinIcon(s, false, 0);
@@ -258,7 +261,7 @@ export default function MediaCorpGlobe({ corps, selected, onSelect, onBoundsChan
         const f = e.features?.[0];
         if (!f) return;
         const p = f.properties;
-        popupRef.current.setLngLat(f.geometry.coordinates.slice()).setHTML(corpPopupHTML(p)).addTo(map);
+        popupRef.current.setLngLat(/** @type {GeoJSON.Point} */ (f.geometry).coordinates.slice()).setHTML(corpPopupHTML(p)).addTo(map);
         onSelectRef.current?.(p.id);
       });
       map.on("mouseenter", "mc-pins", () => { map.getCanvas().style.cursor = "pointer"; });
@@ -267,11 +270,13 @@ export default function MediaCorpGlobe({ corps, selected, onSelect, onBoundsChan
       map.on("click", "mc-clusters", (e) => {
         const f = e.features?.[0];
         if (!f) return;
-        const src = map.getSource("mc-markers");
+        /** @type {import("maplibre-gl").GeoJSONSource} */
+        const src = /** @type {any} */ (map.getSource("mc-markers"));
+        const coords = /** @type {[number, number]} */ (/** @type {GeoJSON.Point} */ (f.geometry).coordinates);
         if (src?.getClusterExpansionZoom) {
           src.getClusterExpansionZoom(f.properties.cluster_id).then((z) => {
-            map.flyTo({ center: f.geometry.coordinates, zoom: Math.max(z, map.getZoom() + 1), duration: 700 });
-          }).catch(() => { map.flyTo({ center: f.geometry.coordinates, zoom: map.getZoom() + 2, duration: 700 }); });
+            map.flyTo({ center: coords, zoom: Math.max(z, map.getZoom() + 1), duration: 700 });
+          }).catch(() => { map.flyTo({ center: coords, zoom: map.getZoom() + 2, duration: 700 }); });
         }
       });
       map.on("mouseenter", "mc-clusters", () => { map.getCanvas().style.cursor = "pointer"; });
@@ -279,8 +284,8 @@ export default function MediaCorpGlobe({ corps, selected, onSelect, onBoundsChan
 
       readyRef.current = true;
       setReady(true);
-      map.getSource("mc-markers").setData(dataRef.current);
-      map.getSource("mc-coverage").setData(dataRef.current);
+      /** @type {import("maplibre-gl").GeoJSONSource} */ (map.getSource("mc-markers")).setData(/** @type {GeoJSON.GeoJSON} */ (dataRef.current));
+      /** @type {import("maplibre-gl").GeoJSONSource} */ (map.getSource("mc-coverage")).setData(/** @type {GeoJSON.GeoJSON} */ (dataRef.current));
       reportBounds();
     });
 
