@@ -2,7 +2,7 @@
 // plus a global volunteer network. Volunteering is the backbone; paid contracts
 // exist where the treasury allows. Each role carries full detail for its page.
 
-export const CATEGORIES = ["Field & Community", "Build & Design", "Growth & Funding"];
+export const CATEGORIES = ["Field & Community", "Build & Design", "Advisory & Leadership", "Growth & Funding"];
 
 export const ROLES = [
   // ─────────── Field & Community ───────────
@@ -314,6 +314,95 @@ export const ROLES = [
       "A public dataset with real accountability impact",
       "Named credit as a contributing researcher",
       "Skills in investigation and open data",
+    ],
+  },
+
+  // ─────────── Advisory & Leadership ───────────
+  // Low-commitment, high-leverage seats for senior agency, creative, media and
+  // legal people who don't want a job — they want somewhere to point real
+  // experience without a client on the other end of it.
+  {
+    id: "creative-advisor",
+    title: "Creative Advisor",
+    type: "Advisory",
+    category: "Advisory & Leadership",
+    location: "Remote",
+    commitment: "A few hours a month",
+    comp: "Advisory seat — unpaid, expenses covered for any in-person reviews",
+    summary: "Rotate onto campaign creative a few hours a month — the senior eye without the day job.",
+    tags: ["Creative", "Campaigns", "Advisory"],
+    about: "For creative directors and senior creatives who've spent a career on the client side of outdoor advertising and want a genuine seat on the other side of it — reviewing campaign creative, sense-checking tone, and lending craft to work that's never going to a client for approval.",
+    responsibilities: [
+      "Join a rotating review of campaign and subvertising creative",
+      "Sense-check tone, craft and impact before work goes live",
+      "Mentor volunteer designers on brief-writing and craft",
+      "Weigh in on the visual identity as it evolves",
+    ],
+    requirements: [
+      "Senior creative experience — agency, in-house or freelance",
+      "Comfortable giving direct, useful feedback fast",
+      "No conflicts with active OOH industry clients",
+    ],
+    gain: [
+      "A seat with real creative influence, no client to answer to",
+      "Credited work on a genuinely public-interest campaign",
+      "A standing connection to a global creative-resistance network",
+    ],
+  },
+  {
+    id: "media-planning-advisor",
+    title: "Media & Planning Advisor",
+    type: "Advisory",
+    category: "Advisory & Leadership",
+    location: "Remote",
+    commitment: "A few hours a month",
+    comp: "Advisory seat — unpaid, expenses covered for any in-person reviews",
+    summary: "Bring agency-side media and planning knowledge to bear on where the real pressure points in OOH buying and permitting sit.",
+    tags: ["Media", "Planning", "Advisory"],
+    about: "Nobody understands how outdoor advertising actually gets bought, planned and permitted better than people who've spent a career doing it for agencies and media owners. This is a seat for that knowledge — pointed at accountability instead of sales.",
+    responsibilities: [
+      "Advise on how OOH buys, permits and contracts actually work in practice",
+      "Flag where campaign or evidence work is technically weak",
+      "Help translate industry jargon into plain-language guides for members",
+      "Introduce the platform to trusted contacts where it's a genuine fit",
+    ],
+    requirements: [
+      "Media planning, buying or OOH operations background",
+      "Comfortable being candid about how the industry really works",
+      "No conflicts with active OOH industry clients",
+    ],
+    gain: [
+      "A way to use hard-won industry knowledge for something you believe in",
+      "Direct influence on campaign and evidence strategy",
+      "A clean, low-commitment way back in on your own terms",
+    ],
+  },
+  {
+    id: "legal-advisor",
+    title: "Legal Advisor",
+    type: "Advisory",
+    category: "Advisory & Leadership",
+    location: "Remote · any jurisdiction",
+    commitment: "A few hours a month",
+    comp: "Advisory seat — unpaid, expenses covered for any in-person reviews",
+    summary: "Senior legal counsel on advertising standards, planning law and public-space rights — the seat that keeps the movement lawful and confident.",
+    tags: ["Law", "Advertising Standards", "Advisory"],
+    about: "Distinct from our volunteer Legal & Rights Observers doing ground-level research — this is a senior advisory seat for a lawyer who can sanity-check the platform's public claims, campaign framing and objection tools before they go out.",
+    responsibilities: [
+      "Review campaign, fundraising and objection-tool copy for legal exposure",
+      "Advise on advertising standards, planning consent and public-space rights across jurisdictions",
+      "Support the Legal & Rights Observer network with senior guidance",
+      "Flag risk early, in plain language, before it becomes a problem",
+    ],
+    requirements: [
+      "Qualified lawyer — advertising, planning, media or public-interest law",
+      "Comfortable advising a nonprofit civic platform, not a corporate client",
+      "Precision without slowing the movement down",
+    ],
+    gain: [
+      "A genuinely public-interest use of legal training",
+      "A named advisory credit on a global civic platform",
+      "Direct line to the founder on anything time-sensitive",
     ],
   },
 
