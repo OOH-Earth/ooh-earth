@@ -9,7 +9,7 @@ import MapSearch from "@/components/ooh/map/MapSearch";
 import LocationCard from "@/components/ooh/map/LocationCard";
 import seedMarkers from "@/components/ooh/mapSeed";
 import { toMarker } from "@/components/ooh/map/markerUtils";
-import { Loader2, FileDown, Megaphone, Map as MapIcon, Globe, ScanSearch, Camera, Key, Crosshair, SprayCan, Maximize2, Minimize2, ChevronLeft, ChevronRight } from "lucide-react";
+import { Loader2, FileDown, Megaphone, Map as MapIcon, Globe, ScanSearch, Camera, Key, Crosshair, SprayCan, Maximize2, ChevronLeft, ChevronRight } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useWalkthrough } from "@/lib/walkthroughContext";
 import UnitFinder from "@/components/ooh/UnitFinder";
