@@ -11,7 +11,7 @@ import { HelpCircle } from "lucide-react";
  * overflow / stacking context (map panes, terminal frames) and always
  * floats above the page. Auto-flips if near viewport edges.
  */
-export default function TerminalTooltip({ label = "hint", text, side = "top", children }) {
+export default function TerminalTooltip({ label = "hint", text, side = "top", children = null }) {
   const [open, setOpen] = useState(false);
   const [coords, setCoords] = useState({ top: 0, left: 0, arrowSide: side });
   const triggerRef = useRef(null);
