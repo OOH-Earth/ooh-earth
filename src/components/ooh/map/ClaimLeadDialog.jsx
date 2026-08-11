@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Loader2, Hand } from "lucide-react";
 
-export default function ClaimLeadDialog({ open, onClose, location, onClaimed }) {
+export default function ClaimLeadDialog({ open, onClose, location, onClaimed = null }) {
   const [handle, setHandle] = useState("");
   const [note, setNote] = useState("");
   const [submitting, setSubmitting] = useState(false);

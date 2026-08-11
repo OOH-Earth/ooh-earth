@@ -46,7 +46,7 @@ function Row({ items }) {
   );
 }
 
-export default function MapAlertTicker({ onClose }) {
+export default function MapAlertTicker({ onClose = null }) {
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [dismissed, setDismissed] = useState(false);
