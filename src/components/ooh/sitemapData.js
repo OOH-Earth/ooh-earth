@@ -111,7 +111,7 @@ export const SITEMAP_GROUPS = [
       { path: "/store", name: "Store", vis: "public", status: "live", ux: "Two-wing commerce surface: the Library sells field research and docs; the Store fronts digital products built on the app (plugins, UI kits, the Base44 theme), then NFT drops and one-off physical prototypes.", audience: "All visitors", auth: "none", flows: ["/campaign", "/portfolio"] },
       { path: "store › credentials", name: "Field Credentials · CR80", vis: "public", status: "building", ux: "Physical kit — CR80 ID cards (three tiers), lanyard, badge holder, tri-fold field-guide map. Designed and production-ready; awaiting the print run + fulfilment.", audience: "Members", auth: "optional", flows: ["/store", "/field-id"], planned: true },
       { path: "/support", name: "Support", vis: "public", status: "live", ux: "Help, contact, and FAQ.", audience: "All visitors", auth: "none", flows: ["/about"] },
-      { path: "/careers", name: "Careers", vis: "public", status: "live", ux: "Open roles for the 0101001 crew and street-art collaborators.", audience: "Volunteers", auth: "none", flows: ["/register", "/about"] },
+      { path: "/careers", name: "Careers", vis: "public", status: "live", ux: "Open roles across field, build, advisory and growth & funding tracks — status/visibility toggled live at /careers/admin.", audience: "Volunteers, contributors & advisors", auth: "none", flows: ["/register", "/about"] },
     ],
   },
   {
