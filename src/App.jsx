@@ -15,6 +15,7 @@ import TvStatic from '@/components/ooh/TvStatic';
 import CognitiveLayer from '@/components/ooh/cognitive/CognitiveLayer';
 import MobileBottomTabs from '@/components/ooh/MobileBottomTabs';
 import MatrixLoader from '@/components/ooh/MatrixLoader';
+import { hydrateLoaderStyle } from '@/lib/loaderSettings';
 import ProtectedRoute from '@/components/ProtectedRoute';
 const Account = lazy(() => import('@/pages/Account'));
 import StageBanner from '@/components/ooh/StageBanner';
@@ -118,6 +119,10 @@ const AuthenticatedApp = () => {
   // Twitter card, robots, and JSON-LD. Resolves DB PageMeta records (editable
   // in Lab Admin) with a static fallback. Pages can override via useSeo().
   useSeo();
+
+  // Hydrate the admin-controlled loading-screen style (matrix on/off) from the
+  // DB on boot, so a change in Lab Admin reaches every visitor on next load.
+  useEffect(() => { hydrateLoaderStyle(); }, []);
 
   // Show loading spinner while checking app public settings or auth
   if (isLoadingPublicSettings || isLoadingAuth) {
