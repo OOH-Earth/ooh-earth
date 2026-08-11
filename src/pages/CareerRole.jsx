@@ -36,6 +36,7 @@ const TYPE_STYLES = {
   Volunteer: "border-ozone/50 text-ozone",
   Contract: "border-flare/50 text-flare",
   "Part-time": "border-silver/40 text-silver",
+  Advisory: "border-[#39FF14]/50 text-[#39FF14]",
 };
 
 function List({ title, items, mark: Mark = Check, tone = "text-ozone" }) {
