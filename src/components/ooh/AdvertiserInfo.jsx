@@ -7,7 +7,7 @@ const SECTOR_LABELS = {
   real_estate: "Real Estate", fashion: "Fashion", automotive: "Automotive", pharma: "Pharma", other: "Other",
 };
 
-function Field({ icon: Icon, label, value, brand }) {
+function Field({ icon: Icon = null, label, value, brand = false }) {
   if (!value) return null;
   return (
     <div className="border border-slate2/40 bg-void/50 px-3 py-2">
