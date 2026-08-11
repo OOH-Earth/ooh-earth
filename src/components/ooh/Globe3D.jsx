@@ -97,7 +97,7 @@ function buildFC(markers, selectedId) {
   };
 }
 
-export default function Globe3D({ markers, selectedId, hoverId, onSelect, userLoc, activeLayers = [], interactive = true, spin = false, scrollZoom = true, flyTo, onError, onCounts }) {
+export default function Globe3D({ markers, selectedId, hoverId, onSelect, userLoc = null, activeLayers = [], interactive = true, spin = false, scrollZoom = true, flyTo = null, onError = null, onCounts = null }) {
   const mapStyle = useMapStyle().style;
   const containerRef = useRef(null);
   const mapRef = useRef(null);
