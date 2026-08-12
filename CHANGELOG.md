@@ -8,6 +8,18 @@ _Last updated: 2026-08-01_
 - **Mobile menu clipping** — `NavMenu` now portals to `document.body`, escaping the backdrop-blur containing block so the full-screen launcher fills the viewport on mobile.
 - **Header hidden under nav on notched devices** — the fixed nav inflates by `env(safe-area-inset-top)` on iPhones with notches/dynamic islands, but page top padding was a fixed `pt-24/pt-28`, causing masthead H1s to slip underneath. Added a `.page-top` utility (`calc(6rem + env(safe-area-inset-top))`, `7rem` on md) and applied it to `Channel.jsx`.
 
+## 1.0.0 (2026-08-12)
+
+
+### Features
+
+* establish production engineering foundation ([#1](https://github.com/OOH-Earth/ooh-earth/issues/1)) ([b3c4c38](https://github.com/OOH-Earth/ooh-earth/commit/b3c4c388b919a7bcdf0186a118f17e591c7e7fa8))
+
+
+### Bug Fixes
+
+* **types:** bump framer-motion to 12.43.0, fix Variants type break ([#27](https://github.com/OOH-Earth/ooh-earth/issues/27)) ([c16ccfe](https://github.com/OOH-Earth/ooh-earth/commit/c16ccfee89c269758772853286708ee442687ce1))
+
 ## 2026-08-01 — Lab: OE-1K/66 Streetrunner (Akira-class concept bike)
 
 - New Lab project at `/lab/streetrunner` (`LabStreetRunner.jsx`): an **original** Akira-class field-bike concept in our Orbital Perspective palette (genre references only: Katalis × Machine56 EV-1K/56, Akira — not reproduced). One SVG geometry, three treatments via an interactive build-up stepper — **01 vector → 02 blueprint → 03 3D concept render** — plus a rebranded concept spec sheet. Route + `LabHub` tile (`Bike` icon) wired.
