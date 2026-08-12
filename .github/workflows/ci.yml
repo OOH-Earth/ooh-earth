@@ -139,6 +139,47 @@ jobs:
             test-results
           retention-days: 14
 
+  e2e-mobile:
+    name: Playwright (mobile Chromium)
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+      - run: npm ci
+      - uses: actions/download-artifact@v8
+        with:
+          name: dist
+          path: dist
+      - name: Cache Playwright browsers
+        id: pw-cache
+        uses: actions/cache@v6
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
+      - name: Install Playwright browsers
+        if: steps.pw-cache.outputs.cache-hit != 'true'
+        run: npx playwright install --with-deps chromium
+      - name: Install Playwright OS deps (cache hit)
+        if: steps.pw-cache.outputs.cache-hit == 'true'
+        run: npx playwright install-deps chromium
+      - name: Run mobile-chromium feature tests
+        run: npx playwright test --project=mobile-chromium
+        env:
+          CI: "true"
+      - name: Upload Playwright report
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: playwright-report-mobile
+          path: |
+            playwright-report
+            test-results
+          retention-days: 14
+
   dependency-audit:
     name: Dependency audit (fails on high/critical only)
     runs-on: ubuntu-latest
@@ -177,7 +218,7 @@ jobs:
 
   summary:
     name: PR summary comment
-    needs: [lint-and-typecheck, format-check, build, e2e, dependency-audit, dependency-review]
+    needs: [lint-and-typecheck, format-check, build, e2e, e2e-mobile, dependency-audit, dependency-review]
     if: always() && github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     steps:
@@ -198,6 +239,7 @@ jobs:
             echo "| Lint & Typecheck | ${{ needs.lint-and-typecheck.result }} |"
             echo "| Build | ${{ needs.build.result }} |"
             echo "| Playwright (smoke + a11y) | ${{ needs.e2e.result }} |"
+            echo "| Playwright (mobile Chromium) | ${{ needs.e2e-mobile.result }} |"
             echo "| Prettier (informational) | ${{ needs.format-check.result }} |"
             echo "| Dependency audit (fails on high/critical) | ${{ needs.dependency-audit.result }} |"
             echo "| Dependency Review | ${{ needs.dependency-review.result }} |"
@@ -211,7 +253,7 @@ jobs:
               "
             fi
             echo ""
-            echo "_Blocking gates: Lint & Typecheck, Build, Playwright, Dependency audit (high/critical only), Dependency Review. Prettier is informational._"
+            echo "_Blocking gates: Lint & Typecheck, Build, Playwright (desktop + mobile), Dependency audit (high/critical only), Dependency Review. Prettier is informational._"
             echo "PIPELINE_SUMMARY_EOF"
           } >> "$GITHUB_OUTPUT"
       - name: Comment on PR
