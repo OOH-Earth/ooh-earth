@@ -8,6 +8,27 @@ _Last updated: 2026-08-01_
 - **Mobile menu clipping** — `NavMenu` now portals to `document.body`, escaping the backdrop-blur containing block so the full-screen launcher fills the viewport on mobile.
 - **Header hidden under nav on notched devices** — the fixed nav inflates by `env(safe-area-inset-top)` on iPhones with notches/dynamic islands, but page top padding was a fixed `pt-24/pt-28`, causing masthead H1s to slip underneath. Added a `.page-top` utility (`calc(6rem + env(safe-area-inset-top))`, `7rem` on md) and applied it to `Channel.jsx`.
 
+## [1.1.0](https://github.com/OOH-Earth/ooh-earth/compare/v1.0.0...v1.1.0) (2026-08-12)
+
+
+### Features
+
+* **field-check:** AI condition scan in the revisit flow ([#53](https://github.com/OOH-Earth/ooh-earth/issues/53)) ([0c1f0be](https://github.com/OOH-Earth/ooh-earth/commit/0c1f0bed9d255084adb523255e1c18d1fcf9d6e4))
+* **leadClaim:** move LeadClaim.create behind a validated server function ([#40](https://github.com/OOH-Earth/ooh-earth/issues/40)) ([f0c282d](https://github.com/OOH-Earth/ooh-earth/commit/f0c282d18e36d39521bb1db2efeca9429ace1143))
+
+
+### Bug Fixes
+
+* **security:** client-side validation on all real photo-upload sites ([#50](https://github.com/OOH-Earth/ooh-earth/issues/50)) ([0cb676a](https://github.com/OOH-Earth/ooh-earth/commit/0cb676acab82f1899d5df80fe6c9651f1682a2bf))
+* **security:** close incomplete HTML sanitization + double-escape bugs ([#48](https://github.com/OOH-Earth/ooh-earth/issues/48)) ([4e97ed6](https://github.com/OOH-Earth/ooh-earth/commit/4e97ed6a6efcbf97fc4a84884e39231dc035a23f))
+* **security:** remove unused react-quill/quill ([#41](https://github.com/OOH-Earth/ooh-earth/issues/41)) ([7a1e54d](https://github.com/OOH-Earth/ooh-earth/commit/7a1e54d08762eff19fda4fec7bca4eb54a694950))
+* **telemetry:** correct cancelled-flag typo in TelemetryBar air-quality effect ([#54](https://github.com/OOH-Earth/ooh-earth/issues/54)) ([7774b4b](https://github.com/OOH-Earth/ooh-earth/commit/7774b4b6ff1ecbedf81e09e607f30fd7cd367226))
+
+
+### Performance Improvements
+
+* **home:** lazy-load below-the-fold sections, cut entry chunk 27% ([#46](https://github.com/OOH-Earth/ooh-earth/issues/46)) ([135777e](https://github.com/OOH-Earth/ooh-earth/commit/135777ec4baeded45062f0f9aba00d31751b4f22))
+
 ## 1.0.0 (2026-08-12)
 
 
