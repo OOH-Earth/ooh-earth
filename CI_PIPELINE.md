@@ -65,4 +65,4 @@ Weekly npm + GitHub Actions dependency PRs. **Known gap**: Dependabot has no equ
 
 ## Verified state on `docs/base44-github-migration-plan`, 2026-08-11
 
-`lint-and-typecheck` and `build` are meaningfully blocking because they currently pass: `npm run lint` (0 errors), `npm run typecheck` (0 errors), `npm run build` (clean). `engineering/baseline` and `fix/phase1-runtime` are both already ancestors of this branch (confirmed via `git merge-base`) — their fixes are already here, not pending. See `ENGINEERING.md` for the full state table.
+`lint-and-typecheck` and `build` are meaningfully blocking because they currently pass: `npm run lint` (0 errors), `npm run typecheck` (0 errors), `npm run build` (clean) — re-verified live 2026-08-12 after resyncing against `origin/main`. `engineering/baseline` and `fix/phase1-runtime`'s fixes are already here, not pending — present in the tree, though not as literal git ancestors after the branch rebuild (see `ENGINEERING.md`'s note on why `git merge-base` alone is the wrong check here). See `ENGINEERING.md` for the full state table.

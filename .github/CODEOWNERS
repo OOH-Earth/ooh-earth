@@ -1,18 +1,23 @@
-# CODEOWNERS — RECOMMENDATION, NOT YET ACTIVE
+# CODEOWNERS — real handle, not yet enforced
 #
-# GitHub only enforces this file once real usernames/teams replace the
-# placeholders below AND branch protection has "Require review from Code
-# Owners" turned on (see BRANCHING_STRATEGY.md). We don't have a verified
-# GitHub username for anyone but the repo owner, so this ships as a single
-# catch-all rule pointing at whoever GitHub resolves the repo owner to be —
-# swap in real handles before relying on this for review routing.
+# @AdilQuantum is the verified GitHub Admin and engineering owner (CI/CD,
+# security, releases, repo config — see ENGINEERING-WORKFLOW.md). Dave
+# remains the product/Base44/UX owner and is not a GitHub collaborator on
+# this repo today, so he isn't listed here as a code owner.
+#
+# Still NOT enforced: branch protection's "Require review from Code Owners"
+# is intentionally left off (see ADMIN-ACCESS-REQUIREMENTS.md / the branch
+# protection proposal) — with @AdilQuantum as both the sole engineering
+# reviewer and the one opening most PRs, turning this on today would let a
+# PR require an approval only its own author can give, deadlocking merges.
+# Revisit once there's a second regular engineering reviewer.
 #
 # Suggested shape once the team grows past one person: split by area so
 # payment/treasury changes always get a second set of eyes even if the
 # person who touched them is also a maintainer.
 
-# Default: repo owner reviews everything not claimed below.
-* @oohearth
+# Default: engineering owner reviews everything not claimed below.
+* @AdilQuantum
 
 # Example specialisation — uncomment and fill in once there's a second
 # maintainer to assign:

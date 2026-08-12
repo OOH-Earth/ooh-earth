@@ -26,20 +26,20 @@ The entry point for how this repo is engineered day to day. CONTRIBUTING.md cove
 
 CI runs the same commands — see CI_PIPELINE.md for exactly which ones block a merge.
 
-## Repo-wide engineering state (as of `docs/base44-github-migration-plan`, 2026-08-11)
+## Repo-wide engineering state (as of `rebuild/docs-base44-github-migration-plan`, 2026-08-12, resynced against current `origin/main`)
 
 Real numbers, verified live by actually running each command on this branch — not copied from another branch's docs:
 
 | Check | State |
 |---|---|
-| `npm run lint` | **0 errors.** `engineering/baseline`'s fixes (7→0) are already an ancestor of this branch — verified via `git merge-base`, not assumed. |
-| `npm run typecheck` | **0 errors.** Same — `engineering/baseline` took this from 1,153→0 (full breakdown in `TECHNICAL_DEBT_REGISTER.md`), already inherited here. |
+| `npm run lint` | **0 errors.** `engineering/baseline`'s fixes (7→0) are present in this branch's tree — verified by actually running `npm run lint`, not by git ancestry (a rebase means `git merge-base --is-ancestor engineering/baseline HEAD` returns false even though the fix content is here; trust the command output, not the commit graph, when the two disagree). |
+| `npm run typecheck` | **0 errors on this branch.** `TECHNICAL_DEBT_REGISTER.md`'s "1,153→0" figure describes an earlier snapshot of `main`; checked directly against the current `origin/main` tip (2026-08-12, isolated worktree, `tsc -p ./jsconfig.json`) it's actually **1,543 errors** — `main` has no typecheck gate at all (`build.yml` only ran `npm run build`), so debt accumulated silently across ~450 unreviewed pushes since the original baseline was measured. This branch's fixes hold at 0 regardless — worth knowing the real number on `main` so "0 errors" isn't misread as "main only ever had a couple hundred." |
 | `npm run build` | Clean, with a bundle-size warning — `dist/assets` totals ~4.9 MB uncompressed across 152 files as of this build. Not addressed; needs route-level code-splitting as its own PR. |
-| Accessibility (`e2e/a11y.spec.ts`) | 4 routes baselined (`/`, `/about`, `/report`, `/location/:id`), pre-existing `color-contrast` debt only (12/10/13/23 nodes respectively) — `/about`'s `aria-hidden-focus` was fixed by `fix/phase1-runtime` (also already inherited here) and the baseline updated to match, 2026-08-11. |
+| Accessibility (`e2e/a11y.spec.ts`) | 4 routes baselined (`/`, `/about`, `/report`, `/location/:id`), pre-existing `color-contrast` debt only (12/10/13/23 nodes respectively) — `/about`'s `aria-hidden-focus` was fixed by `fix/phase1-runtime` (fix content present in this branch's tree) and the baseline updated to match, 2026-08-11. |
 | `npm run format:check` | **516 files** flagged (Prettier newly configured on this branch, not yet run — see Decision Register). Informational only, not a merge gate. |
 | `npm audit --omit=dev` | 4 moderate, 0 high/critical, verified 2026-08-11. `dependency-audit` in `ci.yml` blocks on high/critical only, so this gate currently starts green. |
 
-`engineering/baseline` and `fix/phase1-runtime` are both already merged into this branch (confirmed ancestors via `git merge-base`, not assumed from branch names). `feature/engineering-pipeline` was the one genuinely-separate branch; its CI/tooling additions have been reconciled onto this branch file-by-file (not a branch merge) — see individual commit messages for exactly what came from where.
+`engineering/baseline` and `fix/phase1-runtime`'s fixes are both present in this branch's tree, reapplied during the rebuild off current `main` rather than merged wholesale — so `git merge-base --is-ancestor` against those branch names returns false (checked directly, 2026-08-12) even though the actual content is here. The reliable check is running the commands (lint/typecheck/build), not the commit graph. `feature/engineering-pipeline` was the one genuinely-separate branch; its CI/tooling additions have been reconciled onto this branch file-by-file (not a branch merge) — see individual commit messages for exactly what came from where.
 
 ## Decision Register (cross-cutting, not CI-specific)
 

@@ -59,6 +59,53 @@ When it does move:
 4. PR review and squash-merge, same as any other change (`BRANCHING_STRATEGY.md`, `CONTRIBUTING.md`).
 5. Engineering (not Base44) is now the record of what that change actually is — if it needs to change again, the next change goes through the same loop, not a fresh Base44 edit that silently diverges from what GitHub has reviewed.
 
+## The exact pipeline, stage by stage
+
+For a future engineer joining the team — what actually happens between "I changed something" and "it's live," in order:
+
+```
+Base44 / product experimentation (Dave)
+        │
+        ▼
+Feature work moves into a GitHub branch (feat/…, fix/…, chore/…, docs/…)
+        │
+        ▼
+Pull request opened against main
+        │
+        ▼
+CI (.github/workflows/ci.yml): lint + typecheck  →  build  →  Playwright (smoke + a11y)
+        │
+        ▼
+Security checks: dependency audit (blocks on high/critical) + Dependency Review (PR-diff-scoped)
+        │
+        ▼
+CodeQL (.github/workflows/codeql.yml): static analysis, javascript-typescript
+        │
+        ▼
+Code Owner review — @AdilQuantum today; not yet a hard GitHub gate (see CODEOWNERS'
+own header comment for why: one reviewer can't approve their own PR, so
+enforcing this now would deadlock merges — it's already listed as the
+required reviewer, just not yet wired into branch protection)
+        │
+        ▼
+Squash-merge to main (PR title becomes the commit message — this is what
+release-please reads)
+        │
+        ▼
+release-please (.github/workflows/release-please.yml): opens/updates a
+standing release PR from Conventional Commits since the last release
+        │
+        ▼
+Merging the release PR tags the version and publishes GitHub Release notes
+(RELEASE_PROCESS.md)
+        │
+        ▼
+Production — syncing back into the live Base44 app depends on Base44's own
+two-way mirror mechanics, not something this repo controls directly
+```
+
+Every arrow above except the last one is enforced or observable from inside this repo — `ci.yml`, `codeql.yml`, `dependabot.yml`, and `release-please.yml` are the actual source of truth for what runs, not this diagram; if they ever disagree, trust the YAML.
+
 ## Why this avoids fighting Base44
 
 The two systems aren't in competition for the same job. Base44 is optimized for speed and iteration; GitHub is optimized for review, testing, and auditability. Treating Base44 output as a **draft** that becomes authoritative only after it passes through GitHub's gate — rather than treating GitHub as a second copy of Base44 that needs to be kept in sync by hand — is what keeps this sustainable as the team grows past one person.
