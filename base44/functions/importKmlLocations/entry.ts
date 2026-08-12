@@ -41,6 +41,21 @@ function validateKmlUrl(raw: string): URL | null {
   return url;
 }
 
+// Strips HTML tags to a fixed point (loops until a pass makes no further
+// change) rather than a single regex pass -- a single pass can leave
+// fragments that recombine into a new tag (CodeQL
+// js/incomplete-multi-character-sanitization), e.g. "<scr<script>ipt>"
+// only fully resolves after repeated stripping.
+function stripTags(s: string) {
+  let prev;
+  let cur = s;
+  do {
+    prev = cur;
+    cur = cur.replace(/<[^>]+>/g, '');
+  } while (cur !== prev);
+  return cur;
+}
+
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
@@ -164,10 +179,7 @@ Deno.serve(async (req) => {
           .replace(/<!--\[CDATA\[([\s\S]*?)\]\]-->/, '$1')
           .replace(/<!\[CDATA\[([\s\S]*?)\]\]>/, '$1')
           .trim();
-        d = d
-          .replace(/<br\s*\/?>/gi, ' ')
-          .replace(/<[^>]+>/g, '')
-          .trim();
+        d = stripTags(d.replace(/<br\s*\/?>/gi, ' ')).trim();
         if (d) notes = d.slice(0, 280);
       }
 

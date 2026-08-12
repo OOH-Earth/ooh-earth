@@ -6,6 +6,21 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
 // [{ "title","address","lat","lng","link","image" }, ...]
 const FEED_URL = 'https://oohearth.app/wp-content/uploads/ooh-locations.json';
 
+// Strips HTML tags to a fixed point (loops until a pass makes no further
+// change) rather than a single regex pass -- a single pass can leave
+// fragments that recombine into a new tag (CodeQL
+// js/incomplete-multi-character-sanitization), e.g. "<scr<script>ipt>"
+// only fully resolves after repeated stripping.
+function stripTags(s: string) {
+  let prev;
+  let cur = s;
+  do {
+    prev = cur;
+    cur = cur.replace(/<[^>]+>/g, '');
+  } while (cur !== prev);
+  return cur;
+}
+
 Deno.serve(async (req) => {
   try {
     // 1) JSON feed (live, no captcha).
@@ -100,7 +115,7 @@ Deno.serve(async (req) => {
         let title = address.split(',')[0];
         const hMatch = chunk.match(/<h[1-6][^>]*>([\s\S]*?)<\/h[1-6]>/i);
         if (hMatch) {
-          const t = hMatch[1].replace(/<[^>]+>/g, '').trim();
+          const t = stripTags(hMatch[1]).trim();
           if (t) title = t;
         }
         markers.push({
