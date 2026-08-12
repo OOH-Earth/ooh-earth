@@ -240,6 +240,7 @@ function useLabNavItems() {
 const withLabItems = (groups, labItems) =>
   groups.map((g) => (g.group === "Lab" ? { ...g, items: labItems } : g));
 
+/** @type {import('framer-motion').Variants} */
 const groupV = {
   hidden: { opacity: 0, y: 14 },
   show: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 260, damping: 22 } },
