@@ -11,6 +11,7 @@ Supersedes the old `build.yml` (its build step is now the `build` job below — 
         ├─ format-check (info) ─┤
 push/PR ┤                       ├─ summary (PR comment, PR only)
         ├─ build ─── e2e ───────┤
+        │        └── e2e-mobile ┤
         ├─ dependency-audit ────┤
         │    (info unless       │
         │     high/critical)    │
@@ -23,7 +24,8 @@ push/PR ┤                       ├─ summary (PR comment, PR only)
 | `lint-and-typecheck` | `npm run typecheck && npm run lint` | **Yes** |
 | `format-check` | `npm run format:check` (Prettier) | No — see below |
 | `build` | `npm run build`, uploads `dist/` + a bundle-size JSON as artifacts | **Yes** |
-| `e2e` | Downloads the `dist/` artifact, runs Playwright (`smoke.spec.ts` + `a11y.spec.ts`) against a `vite preview` server | **Yes** |
+| `e2e` | Downloads the `dist/` artifact, runs Playwright desktop chromium (`smoke.spec.ts` + `a11y.spec.ts`) against a `vite preview` server | **Yes** |
+| `e2e-mobile` | Same setup, runs the `mobile-chromium` project (gallery/upload/tag-counter feature specs, `testMatch`-scoped — see below) — added 2026-08-12, previously local/manual only | **Yes** |
 | `dependency-audit` | `npm audit --omit=dev`, fails only if high/critical count > 0, uploads the report | **Yes, but only on high/critical** |
 | `dependency-review` | `actions/dependency-review-action@v4` — flags newly-introduced vulnerable/incompatible deps in a PR's diff specifically | **Yes** (PR-only job) |
 | `summary` | Posts/updates one PR comment with a results table + top-5 bundle assets by size | N/A |
@@ -49,7 +51,7 @@ Weekly npm + GitHub Actions dependency PRs. **Known gap**: Dependabot has no equ
 
 - `smoke.spec.ts` — boots the production build, confirms `/` and `/about` render (non-empty `#root`, correct `<title>`) and that no client-side crash signal (`Uncaught`, `ReferenceError`, `is not defined`) appears in the console. CI has no live Base44 backend (no secrets in this workflow — CLAUDE.md rule #4), so `Base44Error` / 404-on-fetch console noise is an *expected* offline artifact and is deliberately not treated as a failure.
 - `a11y.spec.ts` — runs `@axe-core/playwright` (WCAG 2.1 A/AA) against 4 routes (`/`, `/about`, `/report`, `/location/:id`) as a **regression gate**, not a zero-violations bar. `e2e/a11y-baseline.json` records pre-existing debt (`color-contrast` on all 4 routes) — real numbers, captured live. CI only fails if a route grows a *new* rule ID or an existing one's violation count *increases*. `/about`'s `aria-hidden-focus` violation was fixed upstream (`fix/phase1-runtime`) and the baseline updated to match, 2026-08-11 — a stale baseline would have silently kept allowing it without ever detecting the fix. Fixing the remaining `color-contrast` debt is a design/contrast decision, not this pipeline's call.
-- `location-detail.spec.ts`, `multi-photo-upload.spec.ts`, `verify-reject-workflow.spec.ts` — feature-specific coverage for the gallery/upload/tag-counter work, network-mocked (`e2e/fixtures/mockBase44.ts`) since there's no live backend in CI either. Desktop `chromium` + a Chromium-backed mobile viewport (`mobile-chromium`, scoped via `testMatch` to just these three files — see that file's comment for why `smoke`/`a11y` don't also run at mobile viewport).
+- `location-detail.spec.ts`, `multi-photo-upload.spec.ts`, `verify-reject-workflow.spec.ts` — feature-specific coverage for the gallery/upload/tag-counter work, network-mocked (`e2e/fixtures/mockBase44.ts`) since there's no live backend in CI either. Desktop `chromium` (via the `e2e` job) + a Chromium-backed mobile viewport (`mobile-chromium`, via the separate `e2e-mobile` job, both now CI-gated as of 2026-08-12 — scoped via `testMatch` to just these three files, see that file's comment for why `smoke`/`a11y` don't also run at mobile viewport).
 
 ## Decision Register
 
