@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Images, Plus, X } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
+import { validateImageFile } from '@/lib/validateUpload';
 
 const MAX_EXTRA_PHOTOS = 8;
 
@@ -10,11 +11,16 @@ const MAX_EXTRA_PHOTOS = 8;
  * parent Location record exists — field reports create the Location first,
  * then this attaches the gallery. Individual failures don't block the rest
  * (Promise.allSettled) since losing one extra photo shouldn't fail the report.
+ * Re-validates each file at the actual upload boundary (not just relying on
+ * addFiles' selection-time check below) -- a defense-in-depth check for
+ * whatever ends up in the `files` array this was called with.
  */
 export async function uploadLocationPhotos(files, locationId) {
   if (!files?.length || !locationId) return [];
   const results = await Promise.allSettled(
     files.map(async (file, i) => {
+      const check = await validateImageFile(file);
+      if (!check.ok) throw new Error(check.error);
       const { file_url } = await base44.integrations.Core.UploadFile({ file });
       return base44.entities.LocationPhoto.create({
         location_id: String(locationId),
@@ -32,7 +38,7 @@ export async function uploadLocationPhotos(files, locationId) {
  * uploaded here — the parent form holds them in state and calls
  * uploadLocationPhotos() once it has a location id to attach them to.
  */
-export default function MultiPhotoUpload({ files, onChange, disabled = false }) {
+export default function MultiPhotoUpload({ files, onChange, disabled = false, onRejected }) {
   const inputRef = useRef(null);
   const [previews, setPreviews] = useState([]);
 
@@ -42,8 +48,14 @@ export default function MultiPhotoUpload({ files, onChange, disabled = false }) 
     return () => urls.forEach((u) => URL.revokeObjectURL(u));
   }, [files]);
 
-  const addFiles = (list) => {
-    const incoming = Array.from(list || []).filter((f) => f.type?.startsWith('image/'));
+  const addFiles = async (list) => {
+    const candidates = Array.from(list || []);
+    const checked = await Promise.all(
+      candidates.map(async (f) => ({ f, check: await validateImageFile(f) })),
+    );
+    const incoming = checked.filter((c) => c.check.ok).map((c) => c.f);
+    const rejected = checked.filter((c) => !c.check.ok);
+    if (rejected.length) onRejected?.(rejected.map((c) => c.check.error));
     if (!incoming.length) return;
     onChange([...files, ...incoming].slice(0, MAX_EXTRA_PHOTOS));
   };

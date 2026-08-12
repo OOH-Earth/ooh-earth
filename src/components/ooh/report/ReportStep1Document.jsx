@@ -2,6 +2,7 @@ import { Camera, Crosshair, Loader2, Upload } from 'lucide-react';
 import exifr from 'exifr';
 import { base44 } from '@/api/base44Client';
 import { compressImage } from '@/lib/imageCompress';
+import { validateImageFile } from '@/lib/validateUpload';
 import { useState } from 'react';
 import ReportScanner from '@/components/ooh/report/ReportScanner';
 import MapPinDropper from '@/components/ooh/report/MapPinDropper';
@@ -24,6 +25,7 @@ const inp =
 export default function ReportStep1Document({ data, onChange }) {
   const [locating, setLocating] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [uploadError, setUploadError] = useState('');
 
   const locate = () => {
     if (!navigator.geolocation) return;
@@ -41,6 +43,12 @@ export default function ReportStep1Document({ data, onChange }) {
   const onPhoto = async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
+    setUploadError('');
+    const check = await validateImageFile(file);
+    if (!check.ok) {
+      setUploadError(check.error);
+      return;
+    }
     setUploading(true);
     // Try EXIF GPS from the photo
     try {
@@ -54,6 +62,8 @@ export default function ReportStep1Document({ data, onChange }) {
     try {
       const res = await base44.integrations.Core.UploadFile({ file: await compressImage(file) });
       onChange({ image_url: res.file_url });
+    } catch {
+      setUploadError('Photo upload failed — try again.');
     } finally {
       setUploading(false);
     }
@@ -127,12 +137,21 @@ export default function ReportStep1Document({ data, onChange }) {
             </label>
           </div>
         )}
+        {uploadError && (
+          <p
+            className="mt-2 font-mono text-[10px] uppercase tracking-[0.15em] text-flare"
+            role="alert"
+          >
+            {uploadError}
+          </p>
+        )}
       </div>
 
       {/* Additional gallery photos */}
       <MultiPhotoUpload
         files={data.extraPhotos || []}
         onChange={(extraPhotos) => onChange({ extraPhotos })}
+        onRejected={(errors) => setUploadError(errors[0])}
       />
 
       {/* AI Ad Scanner — beta */}
