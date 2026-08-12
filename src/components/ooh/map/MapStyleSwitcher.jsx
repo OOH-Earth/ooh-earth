@@ -1,6 +1,6 @@
-import { useState } from "react";
-import { Layers, Check } from "lucide-react";
-import { useMapStyle } from "@/lib/mapStyleContext";
+import { useState } from 'react';
+import { Layers, Check } from 'lucide-react';
+import { useMapStyle } from '@/lib/mapStyleContext';
 
 // Compact map-style picker. Lives on the big maps (field map + portals).
 export default function MapStyleSwitcher() {
@@ -25,10 +25,15 @@ export default function MapStyleSwitcher() {
             {styles.map((s) => (
               <button
                 key={s.id}
-                onClick={() => { setStyleId(s.id); setOpen(false); }}
-                className={`flex w-full items-center gap-2 px-3 py-1.5 font-mono text-[10px] uppercase tracking-[0.2em] transition-colors ${s.id === styleId ? "text-ozone" : "text-darkgray hover:text-silver"}`}
+                onClick={() => {
+                  setStyleId(s.id);
+                  setOpen(false);
+                }}
+                className={`flex w-full items-center gap-2 px-3 py-1.5 font-mono text-[10px] uppercase tracking-[0.2em] transition-colors ${s.id === styleId ? 'text-ozone' : 'text-darkgray hover:text-silver'}`}
               >
-                <span className={`h-1.5 w-1.5 rounded-full ${s.id === styleId ? "bg-ozone" : "bg-silver/30"}`} />
+                <span
+                  className={`h-1.5 w-1.5 rounded-full ${s.id === styleId ? 'bg-ozone' : 'bg-silver/30'}`}
+                />
                 {s.label}
                 {s.id === styleId && <Check className="ml-auto h-3 w-3 text-ozone" />}
               </button>

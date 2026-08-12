@@ -1,79 +1,134 @@
-import { useEffect, useRef, useImperativeHandle, forwardRef, useState } from "react";
-import * as THREE from "three";
-import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
-import { RoomEnvironment } from "three/examples/jsm/environments/RoomEnvironment.js";
-import { RoundedBoxGeometry } from "three/examples/jsm/geometries/RoundedBoxGeometry.js";
-import { ZoomIn, ZoomOut, Maximize2, Play, Pause } from "lucide-react";
-import { LABEL_COLORS } from "./nftPresets";
+import { useEffect, useRef, useImperativeHandle, forwardRef, useState } from 'react';
+import * as THREE from 'three';
+import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
+import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment.js';
+import { RoundedBoxGeometry } from 'three/examples/jsm/geometries/RoundedBoxGeometry.js';
+import { ZoomIn, ZoomOut, Maximize2, Play, Pause } from 'lucide-react';
+import { LABEL_COLORS } from './nftPresets';
 
-const GOLD = 0xd4af37, FRAME = 0x141414, WELL = 0x0e0e0e, OZONE = 0xedff00;
+const GOLD = 0xd4af37,
+  FRAME = 0x141414,
+  WELL = 0x0e0e0e,
+  OZONE = 0xedff00;
 
 // ── Card face texture — full grading label with barcode + sub-grades ──
 function makeCardTexture(config, lc, artworkImg) {
-  const c = document.createElement("canvas");
-  c.width = 600; c.height = 840;
-  const ctx = c.getContext("2d");
+  const c = document.createElement('canvas');
+  c.width = 600;
+  c.height = 840;
+  const ctx = c.getContext('2d');
 
-  ctx.fillStyle = "#0a0a0a";
+  ctx.fillStyle = '#0a0a0a';
   ctx.fillRect(0, 0, 600, 840);
 
   // Artwork area
-  const aX = 16, aY = 106, aW = 568, aH = 678;
+  const aX = 16,
+    aY = 106,
+    aW = 568,
+    aH = 678;
   if (artworkImg) {
-    const ir = artworkImg.width / artworkImg.height, ar = aW / aH;
+    const ir = artworkImg.width / artworkImg.height,
+      ar = aW / aH;
     let dw, dh, dx, dy;
-    if (ir > ar) { dh = aH; dw = aH * ir; dx = aX - (dw - aW) / 2; dy = aY; }
-    else        { dw = aW; dh = aW / ir; dx = aX; dy = aY - (dh - aH) / 2; }
+    if (ir > ar) {
+      dh = aH;
+      dw = aH * ir;
+      dx = aX - (dw - aW) / 2;
+      dy = aY;
+    } else {
+      dw = aW;
+      dh = aW / ir;
+      dx = aX;
+      dy = aY - (dh - aH) / 2;
+    }
     ctx.drawImage(artworkImg, dx, dy, dw, dh);
   } else {
-    ctx.fillStyle = "#111"; ctx.fillRect(aX, aY, aW, aH);
-    ctx.strokeStyle = "rgba(241,241,241,0.04)"; ctx.lineWidth = 1;
-    for (let i = 40; i < aW; i += 40) { ctx.beginPath(); ctx.moveTo(aX + i, aY); ctx.lineTo(aX + i, aY + aH); ctx.stroke(); }
-    for (let i = 40; i < aH; i += 40) { ctx.beginPath(); ctx.moveTo(aX, aY + i); ctx.lineTo(aX + aW, aY + i); ctx.stroke(); }
-    ctx.fillStyle = "rgba(237,255,0,0.2)"; ctx.font = "bold 52px monospace"; ctx.textAlign = "center";
-    ctx.fillText("ADBUSTING", 300, aY + aH / 2 - 10);
-    ctx.font = "18px monospace"; ctx.fillStyle = "rgba(241,241,241,0.12)";
-    ctx.fillText("// upload or generate artwork", 300, aY + aH / 2 + 30);
+    ctx.fillStyle = '#111';
+    ctx.fillRect(aX, aY, aW, aH);
+    ctx.strokeStyle = 'rgba(241,241,241,0.04)';
+    ctx.lineWidth = 1;
+    for (let i = 40; i < aW; i += 40) {
+      ctx.beginPath();
+      ctx.moveTo(aX + i, aY);
+      ctx.lineTo(aX + i, aY + aH);
+      ctx.stroke();
+    }
+    for (let i = 40; i < aH; i += 40) {
+      ctx.beginPath();
+      ctx.moveTo(aX, aY + i);
+      ctx.lineTo(aX + aW, aY + i);
+      ctx.stroke();
+    }
+    ctx.fillStyle = 'rgba(237,255,0,0.2)';
+    ctx.font = 'bold 52px monospace';
+    ctx.textAlign = 'center';
+    ctx.fillText('ADBUSTING', 300, aY + aH / 2 - 10);
+    ctx.font = '18px monospace';
+    ctx.fillStyle = 'rgba(241,241,241,0.12)';
+    ctx.fillText('// upload or generate artwork', 300, aY + aH / 2 + 30);
   }
 
   // Label header — dark bg + colored border
-  const lY = 10, lH = 88;
-  ctx.fillStyle = "#000"; ctx.fillRect(10, lY, 580, lH);
-  ctx.strokeStyle = lc.bg; ctx.lineWidth = 2; ctx.strokeRect(10, lY, 580, lH);
+  const lY = 10,
+    lH = 88;
+  ctx.fillStyle = '#000';
+  ctx.fillRect(10, lY, 580, lH);
+  ctx.strokeStyle = lc.bg;
+  ctx.lineWidth = 2;
+  ctx.strokeRect(10, lY, 580, lH);
 
   // Brand + title
-  ctx.fillStyle = "#fff"; ctx.font = "bold 17px monospace"; ctx.textAlign = "left";
-  ctx.fillText("OOH EARTH", 26, lY + 24);
-  ctx.font = "10px monospace"; ctx.fillStyle = "rgba(241,241,241,0.5)";
-  ctx.fillText("SUBVERTISING · ADBUSTING NFT", 26, lY + 40);
-  ctx.font = "bold 12px monospace"; ctx.fillStyle = "#fff";
-  ctx.fillText(config.title || "Untitled", 26, lY + 58);
+  ctx.fillStyle = '#fff';
+  ctx.font = 'bold 17px monospace';
+  ctx.textAlign = 'left';
+  ctx.fillText('OOH EARTH', 26, lY + 24);
+  ctx.font = '10px monospace';
+  ctx.fillStyle = 'rgba(241,241,241,0.5)';
+  ctx.fillText('SUBVERTISING · ADBUSTING NFT', 26, lY + 40);
+  ctx.font = 'bold 12px monospace';
+  ctx.fillStyle = '#fff';
+  ctx.fillText(config.title || 'Untitled', 26, lY + 58);
 
   // Barcode
-  ctx.fillStyle = "#fff";
+  ctx.fillStyle = '#fff';
   let bx = 26;
   for (let i = 0; i < 48; i++) {
     const w = (i * 7 + 3) % 5 < 2 ? 1 : 2;
     if (i % 2 === 0) ctx.fillRect(bx, lY + 64, w, 16);
     bx += w + 1;
   }
-  ctx.font = "9px monospace"; ctx.fillStyle = "rgba(241,241,241,0.4)";
-  ctx.fillText(config.serial || "OOH-00000", 240, lY + 78);
+  ctx.font = '9px monospace';
+  ctx.fillStyle = 'rgba(241,241,241,0.4)';
+  ctx.fillText(config.serial || 'OOH-00000', 240, lY + 78);
 
   // Grade badge
-  const bX = 504, bY = lY + 12, bW = 72, bH = 58;
-  ctx.fillStyle = lc.bg; ctx.fillRect(bX, bY, bW, bH);
-  ctx.fillStyle = lc.fg; ctx.font = "bold 30px monospace"; ctx.textAlign = "center";
-  ctx.fillText(String(config.grade || "9.5"), bX + bW / 2, bY + 34);
-  ctx.font = "bold 8px monospace";
+  const bX = 504,
+    bY = lY + 12,
+    bW = 72,
+    bH = 58;
+  ctx.fillStyle = lc.bg;
+  ctx.fillRect(bX, bY, bW, bH);
+  ctx.fillStyle = lc.fg;
+  ctx.font = 'bold 30px monospace';
+  ctx.textAlign = 'center';
+  ctx.fillText(String(config.grade || '9.5'), bX + bW / 2, bY + 34);
+  ctx.font = 'bold 8px monospace';
   const g = String(config.grade);
-  ctx.fillText(g === "10" ? "GEM MT" : g === "9.5" ? "MINT" : "GRADE", bX + bW / 2, bY + 50);
+  ctx.fillText(g === '10' ? 'GEM MT' : g === '9.5' ? 'MINT' : 'GRADE', bX + bW / 2, bY + 50);
 
   // Footer bar
-  const fY = 792, fH = 44;
-  ctx.fillStyle = lc.bg; ctx.fillRect(10, fY, 580, fH);
-  ctx.fillStyle = lc.fg; ctx.font = "bold 13px monospace"; ctx.textAlign = "center";
-  ctx.fillText(`OOH·EARTH · ${config.serial || "OOH-00000"} · ${(config.casing || "slab").toUpperCase()}`, 300, fY + 28);
+  const fY = 792,
+    fH = 44;
+  ctx.fillStyle = lc.bg;
+  ctx.fillRect(10, fY, 580, fH);
+  ctx.fillStyle = lc.fg;
+  ctx.font = 'bold 13px monospace';
+  ctx.textAlign = 'center';
+  ctx.fillText(
+    `OOH·EARTH · ${config.serial || 'OOH-00000'} · ${(config.casing || 'slab').toUpperCase()}`,
+    300,
+    fY + 28,
+  );
 
   const tex = new THREE.CanvasTexture(c);
   tex.needsUpdate = true;
@@ -89,30 +144,53 @@ function rbox(w, h, d, r = 0.02) {
 // ── Build the 3D slab — rounded frame, inner well, glass layers ──
 function buildSlab(config, cardTexture, st) {
   const grp = new THREE.Group();
-  const casing = config.casing, frosted = config.finish === "frosted";
-  const cardW = 1.5, cardH = 2.1;
+  const casing = config.casing,
+    frosted = config.finish === 'frosted';
+  const cardW = 1.5,
+    cardH = 2.1;
 
   const frameMat = new THREE.MeshPhysicalMaterial({
-    color: FRAME, roughness: 0.18, metalness: 0.4,
-    clearcoat: 0.95, clearcoatRoughness: 0.1, envMapIntensity: 1.6,
+    color: FRAME,
+    roughness: 0.18,
+    metalness: 0.4,
+    clearcoat: 0.95,
+    clearcoatRoughness: 0.1,
+    envMapIntensity: 1.6,
   });
   const glassMat = new THREE.MeshPhysicalMaterial({
     color: 0xffffff,
-    transparent: true, opacity: frosted ? 0.22 : 0.06,
-    roughness: frosted ? 0.55 : 0.04, metalness: 0,
-    clearcoat: 1, clearcoatRoughness: frosted ? 0.35 : 0.01,
-    ior: 1.5, envMapIntensity: 1.8,
-    side: THREE.DoubleSide, depthWrite: false,
+    transparent: true,
+    opacity: frosted ? 0.22 : 0.06,
+    roughness: frosted ? 0.55 : 0.04,
+    metalness: 0,
+    clearcoat: 1,
+    clearcoatRoughness: frosted ? 0.35 : 0.01,
+    ior: 1.5,
+    envMapIntensity: 1.8,
+    side: THREE.DoubleSide,
+    depthWrite: false,
   });
   const wellMat = new THREE.MeshStandardMaterial({ color: WELL, roughness: 0.45, metalness: 0.2 });
   const goldMat = new THREE.MeshPhysicalMaterial({
-    color: GOLD, roughness: 0.1, metalness: 0.95,
-    clearcoat: 0.6, clearcoatRoughness: 0.05, envMapIntensity: 1.8,
+    color: GOLD,
+    roughness: 0.1,
+    metalness: 0.95,
+    clearcoat: 0.6,
+    clearcoatRoughness: 0.05,
+    envMapIntensity: 1.8,
   });
-  const cardBodyMat = new THREE.MeshStandardMaterial({ color: 0x0a0a0a, roughness: 0.5, metalness: 0.1 });
+  const cardBodyMat = new THREE.MeshStandardMaterial({
+    color: 0x0a0a0a,
+    roughness: 0.5,
+    metalness: 0.1,
+  });
   const cardFaceMat = new THREE.MeshPhysicalMaterial({
-    map: cardTexture, roughness: 0.3, metalness: 0.1,
-    clearcoat: 0.5, clearcoatRoughness: 0.3, envMapIntensity: 0.7,
+    map: cardTexture,
+    roughness: 0.3,
+    metalness: 0.1,
+    clearcoat: 0.5,
+    clearcoatRoughness: 0.3,
+    envMapIntensity: 0.7,
   });
   if (st) st.cardFaceMat = cardFaceMat;
 
@@ -123,69 +201,109 @@ function buildSlab(config, cardTexture, st) {
   face.position.z = 0.012;
   grp.add(face);
 
-  if (casing === "slab" || casing === "magnetic") {
-    const t = 0.08, d = 0.14, topH = 0.18;
+  if (casing === 'slab' || casing === 'magnetic') {
+    const t = 0.08,
+      d = 0.14,
+      topH = 0.18;
     const fW = cardW + t * 2;
     // Frame bars (rounded)
     const top = new THREE.Mesh(rbox(fW, topH, d, 0.03), frameMat);
-    top.position.y = cardH / 2 + topH / 2; grp.add(top);
+    top.position.y = cardH / 2 + topH / 2;
+    grp.add(top);
     const bot = new THREE.Mesh(rbox(fW, t, d, 0.025), frameMat);
-    bot.position.y = -cardH / 2 - t / 2; grp.add(bot);
+    bot.position.y = -cardH / 2 - t / 2;
+    grp.add(bot);
     const left = new THREE.Mesh(rbox(t, cardH, d, 0.025), frameMat);
-    left.position.x = -cardW / 2 - t / 2; grp.add(left);
+    left.position.x = -cardW / 2 - t / 2;
+    grp.add(left);
     const right = new THREE.Mesh(rbox(t, cardH, d, 0.025), frameMat);
-    right.position.x = cardW / 2 + t / 2; grp.add(right);
+    right.position.x = cardW / 2 + t / 2;
+    grp.add(right);
     // Inner well — thin dark bars around card edges, creating recessed look
-    const wT = 0.012, wD = 0.1;
-    const wTop = new THREE.Mesh(rbox(cardW, wT, wD, 0.005), wellMat); wTop.position.set(0, cardH / 2 - wT / 2, 0.03); grp.add(wTop);
-    const wBot = new THREE.Mesh(rbox(cardW, wT, wD, 0.005), wellMat); wBot.position.set(0, -cardH / 2 + wT / 2, 0.03); grp.add(wBot);
-    const wLeft = new THREE.Mesh(rbox(wT, cardH - wT * 2, wD, 0.005), wellMat); wLeft.position.set(-cardW / 2 + wT / 2, 0, 0.03); grp.add(wLeft);
-    const wRight = new THREE.Mesh(rbox(wT, cardH - wT * 2, wD, 0.005), wellMat); wRight.position.set(cardW / 2 - wT / 2, 0, 0.03); grp.add(wRight);
+    const wT = 0.012,
+      wD = 0.1;
+    const wTop = new THREE.Mesh(rbox(cardW, wT, wD, 0.005), wellMat);
+    wTop.position.set(0, cardH / 2 - wT / 2, 0.03);
+    grp.add(wTop);
+    const wBot = new THREE.Mesh(rbox(cardW, wT, wD, 0.005), wellMat);
+    wBot.position.set(0, -cardH / 2 + wT / 2, 0.03);
+    grp.add(wBot);
+    const wLeft = new THREE.Mesh(rbox(wT, cardH - wT * 2, wD, 0.005), wellMat);
+    wLeft.position.set(-cardW / 2 + wT / 2, 0, 0.03);
+    grp.add(wLeft);
+    const wRight = new THREE.Mesh(rbox(wT, cardH - wT * 2, wD, 0.005), wellMat);
+    wRight.position.set(cardW / 2 - wT / 2, 0, 0.03);
+    grp.add(wRight);
     // Front + back glass
     const winF = new THREE.Mesh(new THREE.PlaneGeometry(fW - 0.02, cardH + topH + 0.02), glassMat);
-    winF.position.set(0, topH / 2 - 0.01, d / 2 + 0.001); grp.add(winF);
+    winF.position.set(0, topH / 2 - 0.01, d / 2 + 0.001);
+    grp.add(winF);
     const winB = new THREE.Mesh(new THREE.PlaneGeometry(fW - 0.02, cardH + topH + 0.02), glassMat);
-    winB.position.set(0, topH / 2 - 0.01, -(d / 2 + 0.001)); winB.rotation.y = Math.PI; grp.add(winB);
+    winB.position.set(0, topH / 2 - 0.01, -(d / 2 + 0.001));
+    winB.rotation.y = Math.PI;
+    grp.add(winB);
     // Magnetic stud
-    if (casing === "magnetic") {
+    if (casing === 'magnetic') {
       const mag = new THREE.Mesh(
         new THREE.CylinderGeometry(0.055, 0.055, 0.03, 24),
-        new THREE.MeshPhysicalMaterial({ color: OZONE, roughness: 0.2, metalness: 0.8, clearcoat: 0.7, envMapIntensity: 1.3 }),
+        new THREE.MeshPhysicalMaterial({
+          color: OZONE,
+          roughness: 0.2,
+          metalness: 0.8,
+          clearcoat: 0.7,
+          envMapIntensity: 1.3,
+        }),
       );
       mag.rotation.x = Math.PI / 2;
       mag.position.set(0, cardH / 2 + topH / 2, d / 2 + 0.02);
       grp.add(mag);
     }
-  } else if (casing === "screwdown") {
-    const cW = cardW + 0.16, cH = cardH + 0.16, cD = 0.1;
+  } else if (casing === 'screwdown') {
+    const cW = cardW + 0.16,
+      cH = cardH + 0.16,
+      cD = 0.1;
     grp.add(new THREE.Mesh(rbox(cW, cH, cD, 0.03), glassMat));
     // Gold screws (rounded heads)
     const sg = new THREE.CylinderGeometry(0.045, 0.045, 0.04, 20);
     const off = 0.09;
-    [[cW/2-off, cH/2-off], [-cW/2+off, cH/2-off], [cW/2-off, -cH/2+off], [-cW/2+off, -cH/2+off]].forEach(([x, y]) => {
-      const sf = new THREE.Mesh(sg, goldMat); sf.rotation.x = Math.PI / 2; sf.position.set(x, y, cD / 2 + 0.01); grp.add(sf);
-      const sb = new THREE.Mesh(sg, goldMat); sb.rotation.x = Math.PI / 2; sb.position.set(x, y, -(cD / 2 + 0.01)); grp.add(sb);
+    [
+      [cW / 2 - off, cH / 2 - off],
+      [-cW / 2 + off, cH / 2 - off],
+      [cW / 2 - off, -cH / 2 + off],
+      [-cW / 2 + off, -cH / 2 + off],
+    ].forEach(([x, y]) => {
+      const sf = new THREE.Mesh(sg, goldMat);
+      sf.rotation.x = Math.PI / 2;
+      sf.position.set(x, y, cD / 2 + 0.01);
+      grp.add(sf);
+      const sb = new THREE.Mesh(sg, goldMat);
+      sb.rotation.x = Math.PI / 2;
+      sb.position.set(x, y, -(cD / 2 + 0.01));
+      grp.add(sb);
     });
-  } else if (casing === "toploader") {
+  } else if (casing === 'toploader') {
     grp.add(new THREE.Mesh(rbox(cardW + 0.06, cardH + 0.06, 0.04, 0.02), glassMat));
-  } else if (casing === "sleeve") {
+  } else if (casing === 'sleeve') {
     grp.add(new THREE.Mesh(rbox(cardW + 0.04, cardH + 0.04, 0.025, 0.015), glassMat));
   }
 
-  grp.traverse((/** @type {any} */ o) => { if (o.isMesh) o.castShadow = true; });
+  grp.traverse((/** @type {any} */ o) => {
+    if (o.isMesh) o.castShadow = true;
+  });
   return grp;
 }
 
 // ── Auto-fit camera to slab bounding box (fixes cropping at any rotation) ──
 function fitCamera(camera, controls, slab) {
-  slab.rotation.y = 0; slab.updateMatrixWorld();
+  slab.rotation.y = 0;
+  slab.updateMatrixWorld();
   const box = new THREE.Box3().setFromObject(slab);
   const sphere = new THREE.Sphere();
   box.getBoundingSphere(sphere);
   const center = sphere.center;
-  const fov = camera.fov * Math.PI / 180;
+  const fov = (camera.fov * Math.PI) / 180;
   // Bounding sphere fit — guarantees full object visibility at any rotation
-  const dist = sphere.radius / Math.sin(fov / 2) * 1.6;
+  const dist = (sphere.radius / Math.sin(fov / 2)) * 1.6;
   camera.position.set(center.x, center.y, center.z + dist);
   controls.target.copy(center);
   controls.minDistance = dist * 0.3;
@@ -197,260 +315,377 @@ function fitCamera(camera, controls, slab) {
 const SlabViewer3D = forwardRef(
   /** @param {{config: object, artworkUrl: string | null}} props */
   function SlabViewer3D({ config, artworkUrl }, ref) {
-  const mountRef = useRef(null);
-  const S = useRef(null);
-  const [bgColor, setBgColor] = useState("void");
-  const [playing, setPlaying] = useState(true);
-  const [speed, setSpeed] = useState(1);
+    const mountRef = useRef(null);
+    const S = useRef(null);
+    const [bgColor, setBgColor] = useState('void');
+    const [playing, setPlaying] = useState(true);
+    const [speed, setSpeed] = useState(1);
 
-  useImperativeHandle(ref, () => ({
-    exportPNG: () => {
-      const st = S.current; if (!st) return;
-      st.renderer.render(st.scene, st.camera);
-      const a = document.createElement("a");
-      a.href = st.renderer.domElement.toDataURL("image/png");
-      a.download = `ooh-nft-${config.serial || "prototype"}.png`;
-      a.click();
-    },
-  }));
+    useImperativeHandle(ref, () => ({
+      exportPNG: () => {
+        const st = S.current;
+        if (!st) return;
+        st.renderer.render(st.scene, st.camera);
+        const a = document.createElement('a');
+        a.href = st.renderer.domElement.toDataURL('image/png');
+        a.download = `ooh-nft-${config.serial || 'prototype'}.png`;
+        a.click();
+      },
+    }));
 
-  // ── Scene init (once) ──
-  useEffect(() => {
-    const mount = mountRef.current;
-    if (!mount || S.current) return;
-    const w = mount.clientWidth, h = mount.clientHeight || 560;
-    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-    renderer.setSize(w, h);
-    renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    renderer.toneMappingExposure = 1.2;
-    renderer.shadowMap.enabled = true;
-    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-    mount.appendChild(renderer.domElement);
+    // ── Scene init (once) ──
+    useEffect(() => {
+      const mount = mountRef.current;
+      if (!mount || S.current) return;
+      const w = mount.clientWidth,
+        h = mount.clientHeight || 560;
+      const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+      renderer.setSize(w, h);
+      renderer.toneMapping = THREE.ACESFilmicToneMapping;
+      renderer.toneMappingExposure = 1.2;
+      renderer.shadowMap.enabled = true;
+      renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+      mount.appendChild(renderer.domElement);
 
-    const scene = new THREE.Scene();
-    const camera = new THREE.PerspectiveCamera(38, w / h, 0.1, 100);
-    camera.position.set(0, 0, 7);
+      const scene = new THREE.Scene();
+      const camera = new THREE.PerspectiveCamera(38, w / h, 0.1, 100);
+      camera.position.set(0, 0, 7);
 
-    const pmrem = new THREE.PMREMGenerator(renderer);
-    scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
-    pmrem.dispose();
+      const pmrem = new THREE.PMREMGenerator(renderer);
+      scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
+      pmrem.dispose();
 
-    const controls = new OrbitControls(camera, renderer.domElement);
-    controls.enableDamping = true; controls.enablePan = false;
-    controls.autoRotate = false;
+      const controls = new OrbitControls(camera, renderer.domElement);
+      controls.enableDamping = true;
+      controls.enablePan = false;
+      controls.autoRotate = false;
 
-    // Studio 3-point lighting + key shadow caster
-    scene.add(new THREE.AmbientLight(0xffffff, 0.15));
-    const key = new THREE.DirectionalLight(0xfff0d6, 1.5);
-    key.position.set(3, 7, 4);
-    key.castShadow = true;
-    key.shadow.mapSize.set(1024, 1024);
-    key.shadow.camera.near = 0.5;
-    key.shadow.camera.far = 20;
-    key.shadow.camera.left = -2.5; key.shadow.camera.right = 2.5;
-    key.shadow.camera.top = 2.5; key.shadow.camera.bottom = -2.5;
-    key.shadow.bias = -0.0008;
-    key.shadow.radius = 6;
-    scene.add(key);
-    const fill = new THREE.DirectionalLight(0x6fd6ff, 0.5); fill.position.set(-5, -1, 3); scene.add(fill);
-    const rim = new THREE.DirectionalLight(0xedff00, 0.4); rim.position.set(0, 3, -6); scene.add(rim);
-    // Spotlight for premium specular highlight
-    const spot = new THREE.SpotLight(0xffffff, 0.8, 15, Math.PI / 5, 0.4, 1);
-    spot.position.set(2, 8, 3); scene.add(spot);
-    // Soft contact shadow (radial gradient) beneath slab
-    const sCv = document.createElement("canvas"); sCv.width = 256; sCv.height = 256;
-    const sCx = sCv.getContext("2d");
-    const sG = sCx.createRadialGradient(128, 128, 0, 128, 128, 128);
-    sG.addColorStop(0, "rgba(0,0,0,0.5)"); sG.addColorStop(0.5, "rgba(0,0,0,0.2)"); sG.addColorStop(1, "rgba(0,0,0,0)");
-    sCx.fillStyle = sG; sCx.fillRect(0, 0, 256, 256);
-    const contactShadow = new THREE.Mesh(new THREE.PlaneGeometry(4, 2.5), new THREE.MeshBasicMaterial({ map: new THREE.CanvasTexture(sCv), transparent: true, depthWrite: false }));
-    contactShadow.rotation.x = -Math.PI / 2; contactShadow.position.y = -1.35; scene.add(contactShadow);
-    // Shadow-receiving ground (invisible — only shows cast shadows)
-    const ground = new THREE.Mesh(new THREE.PlaneGeometry(10, 10), new THREE.ShadowMaterial({ opacity: 0.35 }));
-    ground.rotation.x = -Math.PI / 2; ground.position.y = -1.36; ground.receiveShadow = true; scene.add(ground);
+      // Studio 3-point lighting + key shadow caster
+      scene.add(new THREE.AmbientLight(0xffffff, 0.15));
+      const key = new THREE.DirectionalLight(0xfff0d6, 1.5);
+      key.position.set(3, 7, 4);
+      key.castShadow = true;
+      key.shadow.mapSize.set(1024, 1024);
+      key.shadow.camera.near = 0.5;
+      key.shadow.camera.far = 20;
+      key.shadow.camera.left = -2.5;
+      key.shadow.camera.right = 2.5;
+      key.shadow.camera.top = 2.5;
+      key.shadow.camera.bottom = -2.5;
+      key.shadow.bias = -0.0008;
+      key.shadow.radius = 6;
+      scene.add(key);
+      const fill = new THREE.DirectionalLight(0x6fd6ff, 0.5);
+      fill.position.set(-5, -1, 3);
+      scene.add(fill);
+      const rim = new THREE.DirectionalLight(0xedff00, 0.4);
+      rim.position.set(0, 3, -6);
+      scene.add(rim);
+      // Spotlight for premium specular highlight
+      const spot = new THREE.SpotLight(0xffffff, 0.8, 15, Math.PI / 5, 0.4, 1);
+      spot.position.set(2, 8, 3);
+      scene.add(spot);
+      // Soft contact shadow (radial gradient) beneath slab
+      const sCv = document.createElement('canvas');
+      sCv.width = 256;
+      sCv.height = 256;
+      const sCx = sCv.getContext('2d');
+      const sG = sCx.createRadialGradient(128, 128, 0, 128, 128, 128);
+      sG.addColorStop(0, 'rgba(0,0,0,0.5)');
+      sG.addColorStop(0.5, 'rgba(0,0,0,0.2)');
+      sG.addColorStop(1, 'rgba(0,0,0,0)');
+      sCx.fillStyle = sG;
+      sCx.fillRect(0, 0, 256, 256);
+      const contactShadow = new THREE.Mesh(
+        new THREE.PlaneGeometry(4, 2.5),
+        new THREE.MeshBasicMaterial({
+          map: new THREE.CanvasTexture(sCv),
+          transparent: true,
+          depthWrite: false,
+        }),
+      );
+      contactShadow.rotation.x = -Math.PI / 2;
+      contactShadow.position.y = -1.35;
+      scene.add(contactShadow);
+      // Shadow-receiving ground (invisible — only shows cast shadows)
+      const ground = new THREE.Mesh(
+        new THREE.PlaneGeometry(10, 10),
+        new THREE.ShadowMaterial({ opacity: 0.35 }),
+      );
+      ground.rotation.x = -Math.PI / 2;
+      ground.position.y = -1.36;
+      ground.receiveShadow = true;
+      scene.add(ground);
 
-    S.current = { renderer, scene, camera, controls, slab: null, raf: 0, cardFaceMat: null, fitDist: 7, fitCenter: new THREE.Vector3(0, 0, 0), playing: true, speed: 0.0025 };
+      S.current = {
+        renderer,
+        scene,
+        camera,
+        controls,
+        slab: null,
+        raf: 0,
+        cardFaceMat: null,
+        fitDist: 7,
+        fitCenter: new THREE.Vector3(0, 0, 0),
+        playing: true,
+        speed: 0.0025,
+      };
 
-    const onResize = () => {
-      const nw = mount.clientWidth, nh = mount.clientHeight || 560;
-      camera.aspect = nw / nh; camera.updateProjectionMatrix(); renderer.setSize(nw, nh);
-    };
-    window.addEventListener("resize", onResize);
+      const onResize = () => {
+        const nw = mount.clientWidth,
+          nh = mount.clientHeight || 560;
+        camera.aspect = nw / nh;
+        camera.updateProjectionMatrix();
+        renderer.setSize(nw, nh);
+      };
+      window.addEventListener('resize', onResize);
 
-    const animate = () => {
-      const st = S.current; if (!st) return;
-      st.raf = requestAnimationFrame(animate);
-      if (st.slab && st.playing) {
-        st.slab.rotation.y += st.speed;
-        st.slab.position.y = Math.sin(performance.now() * 0.0008) * 0.03;
+      const animate = () => {
+        const st = S.current;
+        if (!st) return;
+        st.raf = requestAnimationFrame(animate);
+        if (st.slab && st.playing) {
+          st.slab.rotation.y += st.speed;
+          st.slab.position.y = Math.sin(performance.now() * 0.0008) * 0.03;
+        }
+        controls.update();
+        renderer.render(scene, camera);
+      };
+      animate();
+
+      return () => {
+        const st = S.current;
+        if (st) cancelAnimationFrame(st.raf);
+        window.removeEventListener('resize', onResize);
+        controls.dispose();
+        scene.traverse((/** @type {any} */ o) => {
+          if (o.geometry) o.geometry.dispose();
+          if (o.material) {
+            const m = o.material;
+            (Array.isArray(m) ? m : [m]).forEach((x) => {
+              if (x.map) x.map.dispose();
+              x.dispose();
+            });
+          }
+        });
+        if (scene.environment) scene.environment.dispose();
+        renderer.dispose();
+        if (renderer.domElement.parentNode)
+          renderer.domElement.parentNode.removeChild(renderer.domElement);
+        S.current = null;
+      };
+    }, []);
+
+    // ── Phase 1: Geometry rebuild (casing / finish change) + auto-fit ──
+    useEffect(() => {
+      const st = S.current;
+      if (!st) return;
+      let cancelled = false;
+      if (st.slab) {
+        st.scene.remove(st.slab);
+        st.slab.traverse((/** @type {any} */ o) => {
+          if (o.geometry) o.geometry.dispose();
+          if (o.material) {
+            const m = o.material;
+            (Array.isArray(m) ? m : [m]).forEach((x) => {
+              if (x.map) x.map.dispose();
+              x.dispose();
+            });
+          }
+        });
+        st.slab = null;
+        st.cardFaceMat = null;
       }
-      controls.update(); renderer.render(scene, camera);
+      const lc = LABEL_COLORS.find((c) => c.id === config.labelColor) || LABEL_COLORS[0];
+      const build = (img) => {
+        if (cancelled) return;
+        const tex = makeCardTexture(config, lc, img);
+        st.slab = buildSlab(config, tex, st);
+        st.scene.add(st.slab);
+        const { dist, center } = fitCamera(st.camera, st.controls, st.slab);
+        st.fitDist = dist;
+        st.fitCenter = center;
+      };
+      if (artworkUrl) {
+        const img = new Image();
+        img.crossOrigin = 'anonymous';
+        img.onload = () => build(img);
+        img.onerror = () => build(null);
+        img.src = artworkUrl;
+      } else {
+        build(null);
+      }
+      return () => {
+        cancelled = true;
+      };
+    }, [config.casing, config.finish]);
+
+    // ── Phase 2: Texture-only update (label / grade / serial / colour / artwork) ──
+    useEffect(() => {
+      const st = S.current;
+      if (!st || !st.cardFaceMat) return;
+      let cancelled = false;
+      const lc = LABEL_COLORS.find((c) => c.id === config.labelColor) || LABEL_COLORS[0];
+      const update = (img) => {
+        if (cancelled) return;
+        const tex = makeCardTexture(config, lc, img);
+        if (st.cardFaceMat.map) st.cardFaceMat.map.dispose();
+        st.cardFaceMat.map = tex;
+        st.cardFaceMat.needsUpdate = true;
+      };
+      if (artworkUrl) {
+        const img = new Image();
+        img.crossOrigin = 'anonymous';
+        img.onload = () => update(img);
+        img.onerror = () => update(null);
+        img.src = artworkUrl;
+      } else {
+        update(null);
+      }
+      return () => {
+        cancelled = true;
+      };
+    }, [config.title, config.grade, config.serial, config.labelColor, artworkUrl]);
+
+    // ── Background color ──
+    useEffect(() => {
+      const st = S.current;
+      if (!st) return;
+      const opts = {
+        void: { c: 0x000000, a: 0 },
+        dark: { c: 0x1a1a1a, a: 1 },
+        grey: { c: 0x2a2a2a, a: 1 },
+        light: { c: 0x444444, a: 1 },
+        white: { c: 0xe8e8e8, a: 1 },
+      };
+      const o = opts[bgColor] || opts.void;
+      st.renderer.setClearColor(o.c, o.a);
+    }, [bgColor]);
+
+    const zoomIn = () => {
+      const st = S.current;
+      if (!st) return;
+      const dist = st.camera.position.distanceTo(st.controls.target);
+      const newDist = Math.max(st.controls.minDistance, dist - 0.8);
+      const dir = st.camera.position.clone().sub(st.controls.target).normalize();
+      st.camera.position.copy(st.controls.target).add(dir.multiplyScalar(newDist));
+      st.controls.update();
     };
-    animate();
-
-    return () => {
-      const st = S.current; if (st) cancelAnimationFrame(st.raf);
-      window.removeEventListener("resize", onResize);
-      controls.dispose();
-      scene.traverse((/** @type {any} */ o) => {
-        if (o.geometry) o.geometry.dispose();
-        if (o.material) { const m = o.material; (Array.isArray(m) ? m : [m]).forEach((x) => { if (x.map) x.map.dispose(); x.dispose(); }); }
-      });
-      if (scene.environment) scene.environment.dispose();
-      renderer.dispose();
-      if (renderer.domElement.parentNode) renderer.domElement.parentNode.removeChild(renderer.domElement);
-      S.current = null;
+    const zoomOut = () => {
+      const st = S.current;
+      if (!st) return;
+      const dist = st.camera.position.distanceTo(st.controls.target);
+      const newDist = Math.min(st.controls.maxDistance, dist + 0.8);
+      const dir = st.camera.position.clone().sub(st.controls.target).normalize();
+      st.camera.position.copy(st.controls.target).add(dir.multiplyScalar(newDist));
+      st.controls.update();
     };
-  }, []);
-
-  // ── Phase 1: Geometry rebuild (casing / finish change) + auto-fit ──
-  useEffect(() => {
-    const st = S.current; if (!st) return;
-    let cancelled = false;
-    if (st.slab) {
-      st.scene.remove(st.slab);
-      st.slab.traverse((/** @type {any} */ o) => {
-        if (o.geometry) o.geometry.dispose();
-        if (o.material) { const m = o.material; (Array.isArray(m) ? m : [m]).forEach((x) => { if (x.map) x.map.dispose(); x.dispose(); }); }
-      });
-      st.slab = null; st.cardFaceMat = null;
-    }
-    const lc = LABEL_COLORS.find((c) => c.id === config.labelColor) || LABEL_COLORS[0];
-    const build = (img) => {
-      if (cancelled) return;
-      const tex = makeCardTexture(config, lc, img);
-      st.slab = buildSlab(config, tex, st);
-      st.scene.add(st.slab);
-      const { dist, center } = fitCamera(st.camera, st.controls, st.slab);
-      st.fitDist = dist; st.fitCenter = center;
+    const resetView = () => {
+      const st = S.current;
+      if (!st) return;
+      st.camera.position.set(st.fitCenter.x, st.fitCenter.y, st.fitCenter.z + st.fitDist);
+      st.controls.target.copy(st.fitCenter);
+      st.controls.update();
     };
-    if (artworkUrl) {
-      const img = new Image();
-      img.crossOrigin = "anonymous";
-      img.onload = () => build(img);
-      img.onerror = () => build(null);
-      img.src = artworkUrl;
-    } else {
-      build(null);
-    }
-    return () => { cancelled = true; };
-  }, [config.casing, config.finish]);
-
-  // ── Phase 2: Texture-only update (label / grade / serial / colour / artwork) ──
-  useEffect(() => {
-    const st = S.current; if (!st || !st.cardFaceMat) return;
-    let cancelled = false;
-    const lc = LABEL_COLORS.find((c) => c.id === config.labelColor) || LABEL_COLORS[0];
-    const update = (img) => {
-      if (cancelled) return;
-      const tex = makeCardTexture(config, lc, img);
-      if (st.cardFaceMat.map) st.cardFaceMat.map.dispose();
-      st.cardFaceMat.map = tex;
-      st.cardFaceMat.needsUpdate = true;
+    const togglePlay = () => {
+      const np = !playing;
+      setPlaying(np);
+      if (S.current) S.current.playing = np;
     };
-    if (artworkUrl) {
-      const img = new Image();
-      img.crossOrigin = "anonymous";
-      img.onload = () => update(img);
-      img.onerror = () => update(null);
-      img.src = artworkUrl;
-    } else {
-      update(null);
-    }
-    return () => { cancelled = true; };
-  }, [config.title, config.grade, config.serial, config.labelColor, artworkUrl]);
-
-  // ── Background color ──
-  useEffect(() => {
-    const st = S.current; if (!st) return;
-    const opts = {
-      void:  { c: 0x000000, a: 0 },
-      dark:  { c: 0x1a1a1a, a: 1 },
-      grey:  { c: 0x2a2a2a, a: 1 },
-      light: { c: 0x444444, a: 1 },
-      white: { c: 0xe8e8e8, a: 1 },
+    const setSpeedVal = (v) => {
+      setSpeed(v);
+      if (S.current) S.current.speed = 0.0025 * v;
     };
-    const o = opts[bgColor] || opts.void;
-    st.renderer.setClearColor(o.c, o.a);
-  }, [bgColor]);
 
-  const zoomIn = () => {
-    const st = S.current; if (!st) return;
-    const dist = st.camera.position.distanceTo(st.controls.target);
-    const newDist = Math.max(st.controls.minDistance, dist - 0.8);
-    const dir = st.camera.position.clone().sub(st.controls.target).normalize();
-    st.camera.position.copy(st.controls.target).add(dir.multiplyScalar(newDist));
-    st.controls.update();
-  };
-  const zoomOut = () => {
-    const st = S.current; if (!st) return;
-    const dist = st.camera.position.distanceTo(st.controls.target);
-    const newDist = Math.min(st.controls.maxDistance, dist + 0.8);
-    const dir = st.camera.position.clone().sub(st.controls.target).normalize();
-    st.camera.position.copy(st.controls.target).add(dir.multiplyScalar(newDist));
-    st.controls.update();
-  };
-  const resetView = () => {
-    const st = S.current; if (!st) return;
-    st.camera.position.set(st.fitCenter.x, st.fitCenter.y, st.fitCenter.z + st.fitDist);
-    st.controls.target.copy(st.fitCenter);
-    st.controls.update();
-  };
-  const togglePlay = () => {
-    const np = !playing; setPlaying(np);
-    if (S.current) S.current.playing = np;
-  };
-  const setSpeedVal = (v) => {
-    setSpeed(v);
-    if (S.current) S.current.speed = 0.0025 * v;
-  };
-
-  return (
-    <div className="relative overflow-hidden border border-slate2 bg-card">
-      <style>{`@keyframes nft-scan{0%{top:6%}100%{top:94%}}`}</style>
-      <div ref={mountRef} className="h-[560px] w-full" style={{ touchAction: "none", cursor: "grab" }} />
-      <div className="pointer-events-none absolute inset-0">
-        <span className="absolute left-3 top-3 h-4 w-4 border-l-2 border-t-2 border-ozone/60" />
-        <span className="absolute right-3 top-3 h-4 w-4 border-r-2 border-t-2 border-ozone/60" />
-        <span className="absolute left-3 bottom-3 h-4 w-4 border-l-2 border-b-2 border-ozone/60" />
-        <span className="absolute right-3 bottom-3 h-4 w-4 border-r-2 border-b-2 border-ozone/60" />
-        <div className="absolute inset-x-6" style={{ height: 1, background: "linear-gradient(90deg,transparent,rgba(237,255,0,.4),transparent)", animation: "nft-scan 5s linear infinite" }} />
-      </div>
-      <div className="absolute left-3 top-12 flex flex-col gap-1.5">
-        {[
-          { id: "void", bg: "#0a0a0a", label: "Void" },
-          { id: "dark", bg: "#1a1a1a", label: "Dark" },
-          { id: "grey", bg: "#2a2a2a", label: "Grey" },
-          { id: "light", bg: "#444444", label: "Light" },
-          { id: "white", bg: "#e8e8e8", label: "White" },
-        ].map((bg) => (
-          <button key={bg.id} onClick={() => setBgColor(bg.id)} aria-label={`Background: ${bg.label}`}
-            className={`h-7 w-7 border ${bgColor === bg.id ? "border-ozone ring-1 ring-ozone" : "border-slate2"}`}
-            style={{ backgroundColor: bg.bg }} />
-        ))}
-      </div>
-      <div className="absolute right-3 top-12 flex flex-col gap-1.5">
-        <button onClick={zoomIn} aria-label="Zoom in" className="flex h-8 w-8 items-center justify-center border border-slate2 bg-void/80 text-silver/70 backdrop-blur transition-colors hover:border-ozone hover:text-ozone"><ZoomIn className="h-3.5 w-3.5" /></button>
-        <button onClick={zoomOut} aria-label="Zoom out" className="flex h-8 w-8 items-center justify-center border border-slate2 bg-void/80 text-silver/70 backdrop-blur transition-colors hover:border-ozone hover:text-ozone"><ZoomOut className="h-3.5 w-3.5" /></button>
-        <button onClick={resetView} aria-label="Reset view" className="flex h-8 w-8 items-center justify-center border border-slate2 bg-void/80 text-silver/70 backdrop-blur transition-colors hover:border-ozone hover:text-ozone"><Maximize2 className="h-3.5 w-3.5" /></button>
-      </div>
-      <div className="absolute inset-x-0 bottom-0 flex items-center gap-2 border-t border-slate2/60 bg-void/70 px-4 py-1.5 font-mono text-[9px] uppercase tracking-widest text-silver/50 backdrop-blur">
-        <span className="text-ozone">{(config.casing || "slab").toUpperCase()}</span>
-        <span>{(config.finish || "clear").toUpperCase()}</span>
-        <button onClick={togglePlay} className="ml-2 flex items-center gap-1 border border-slate2 px-1.5 py-0.5 text-silver/70 transition-colors hover:border-ozone hover:text-ozone">
-          {playing ? <Pause className="h-2.5 w-2.5" /> : <Play className="h-2.5 w-2.5" />}
-          {playing ? "PAUSE" : "PLAY"}
-        </button>
-        <div className="flex items-center gap-0.5">
-          {[0.5, 1, 2].map((v) => (
-            <button key={v} onClick={() => setSpeedVal(v)} className={`px-1.5 py-0.5 ${speed === v ? "bg-ozone font-bold text-void" : "border border-slate2 text-silver/50 hover:text-ozone"}`}>×{v}</button>
+    return (
+      <div className="relative overflow-hidden border border-slate2 bg-card">
+        <style>{`@keyframes nft-scan{0%{top:6%}100%{top:94%}}`}</style>
+        <div
+          ref={mountRef}
+          className="h-[560px] w-full"
+          style={{ touchAction: 'none', cursor: 'grab' }}
+        />
+        <div className="pointer-events-none absolute inset-0">
+          <span className="absolute left-3 top-3 h-4 w-4 border-l-2 border-t-2 border-ozone/60" />
+          <span className="absolute right-3 top-3 h-4 w-4 border-r-2 border-t-2 border-ozone/60" />
+          <span className="absolute left-3 bottom-3 h-4 w-4 border-l-2 border-b-2 border-ozone/60" />
+          <span className="absolute right-3 bottom-3 h-4 w-4 border-r-2 border-b-2 border-ozone/60" />
+          <div
+            className="absolute inset-x-6"
+            style={{
+              height: 1,
+              background: 'linear-gradient(90deg,transparent,rgba(237,255,0,.4),transparent)',
+              animation: 'nft-scan 5s linear infinite',
+            }}
+          />
+        </div>
+        <div className="absolute left-3 top-12 flex flex-col gap-1.5">
+          {[
+            { id: 'void', bg: '#0a0a0a', label: 'Void' },
+            { id: 'dark', bg: '#1a1a1a', label: 'Dark' },
+            { id: 'grey', bg: '#2a2a2a', label: 'Grey' },
+            { id: 'light', bg: '#444444', label: 'Light' },
+            { id: 'white', bg: '#e8e8e8', label: 'White' },
+          ].map((bg) => (
+            <button
+              key={bg.id}
+              onClick={() => setBgColor(bg.id)}
+              aria-label={`Background: ${bg.label}`}
+              className={`h-7 w-7 border ${bgColor === bg.id ? 'border-ozone ring-1 ring-ozone' : 'border-slate2'}`}
+              style={{ backgroundColor: bg.bg }}
+            />
           ))}
         </div>
-        <span className="ml-auto">DRAG TO ROTATE · SCROLL TO ZOOM</span>
+        <div className="absolute right-3 top-12 flex flex-col gap-1.5">
+          <button
+            onClick={zoomIn}
+            aria-label="Zoom in"
+            className="flex h-8 w-8 items-center justify-center border border-slate2 bg-void/80 text-silver/70 backdrop-blur transition-colors hover:border-ozone hover:text-ozone"
+          >
+            <ZoomIn className="h-3.5 w-3.5" />
+          </button>
+          <button
+            onClick={zoomOut}
+            aria-label="Zoom out"
+            className="flex h-8 w-8 items-center justify-center border border-slate2 bg-void/80 text-silver/70 backdrop-blur transition-colors hover:border-ozone hover:text-ozone"
+          >
+            <ZoomOut className="h-3.5 w-3.5" />
+          </button>
+          <button
+            onClick={resetView}
+            aria-label="Reset view"
+            className="flex h-8 w-8 items-center justify-center border border-slate2 bg-void/80 text-silver/70 backdrop-blur transition-colors hover:border-ozone hover:text-ozone"
+          >
+            <Maximize2 className="h-3.5 w-3.5" />
+          </button>
+        </div>
+        <div className="absolute inset-x-0 bottom-0 flex items-center gap-2 border-t border-slate2/60 bg-void/70 px-4 py-1.5 font-mono text-[9px] uppercase tracking-widest text-silver/50 backdrop-blur">
+          <span className="text-ozone">{(config.casing || 'slab').toUpperCase()}</span>
+          <span>{(config.finish || 'clear').toUpperCase()}</span>
+          <button
+            onClick={togglePlay}
+            className="ml-2 flex items-center gap-1 border border-slate2 px-1.5 py-0.5 text-silver/70 transition-colors hover:border-ozone hover:text-ozone"
+          >
+            {playing ? <Pause className="h-2.5 w-2.5" /> : <Play className="h-2.5 w-2.5" />}
+            {playing ? 'PAUSE' : 'PLAY'}
+          </button>
+          <div className="flex items-center gap-0.5">
+            {[0.5, 1, 2].map((v) => (
+              <button
+                key={v}
+                onClick={() => setSpeedVal(v)}
+                className={`px-1.5 py-0.5 ${speed === v ? 'bg-ozone font-bold text-void' : 'border border-slate2 text-silver/50 hover:text-ozone'}`}
+              >
+                ×{v}
+              </button>
+            ))}
+          </div>
+          <span className="ml-auto">DRAG TO ROTATE · SCROLL TO ZOOM</span>
+        </div>
       </div>
-    </div>
-  );
-});
+    );
+  },
+);
 
 export default SlabViewer3D;

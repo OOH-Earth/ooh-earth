@@ -69,7 +69,9 @@ export async function mockBase44(page: Page, db: MockDb) {
             if (p.location_id === String(id) && p.status === 'pending') p.status = status;
           }
         }
-        return route.fulfill({ json: { ok: true, action: 'verify', changed: { entity, id, status } } });
+        return route.fulfill({
+          json: { ok: true, action: 'verify', changed: { entity, id, status } },
+        });
       }
       return route.fulfill({ json: { ok: true } });
     }

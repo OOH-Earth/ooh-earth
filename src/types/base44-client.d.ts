@@ -5,9 +5,9 @@
 // and is called from 8+ call sites (CarbonCounter, CityPulse,
 // DashboardDropdown, HeroConsole, Leaderboard, OffenderRegistry,
 // OperativeNetwork, ...).
-import "@base44/sdk";
+import '@base44/sdk';
 
-declare module "@base44/sdk" {
+declare module '@base44/sdk' {
   interface Base44Client {
     listAllLocations(sort?: string, pageSize?: number, hardCap?: number): Promise<any[]>;
   }

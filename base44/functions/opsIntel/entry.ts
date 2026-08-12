@@ -36,19 +36,64 @@ const FN_SECRETS = {
 };
 
 const RISKS = [
-  ['R-01', 'Polygon vs Base chain mismatch in CryptoDonations.jsx; wallets pending.', 'high', 'Treasury / Web3', 'Reconcile target chain; resolve pending wallets.'],
-  ['R-02', 'Naming drift: "$OOHEX" symbol hardcoded across surfaces instead of a single source.', 'med', 'Coin Registry', 'Make zoraConfig the single source; strip hardcoded strings.'],
-  ['R-03', 'No release-tagging pipeline. CI build-verify now runs via GitHub Actions.', 'med', 'Infra / Deploy', 'Ship promoteBackup for release tags + CHANGELOG; CI build-verify already live.'],
-  ['R-04', 'No incident-tracking system.', 'med', 'Security', 'Ship incidentLog; retire the manual SECURITY.md process.'],
-  ['R-05', 'No rate limiting on public read functions.', 'med', 'Security', 'Per-IP throttle on fieldStats / cryptoWatch / fetchMapLocations.'],
-  ['R-06', 'No secrets rotation cadence or scanning.', 'med', 'Security', 'Define rotation; add secret-scanning; ship secretsAudit.'],
+  [
+    'R-01',
+    'Polygon vs Base chain mismatch in CryptoDonations.jsx; wallets pending.',
+    'high',
+    'Treasury / Web3',
+    'Reconcile target chain; resolve pending wallets.',
+  ],
+  [
+    'R-02',
+    'Naming drift: "$OOHEX" symbol hardcoded across surfaces instead of a single source.',
+    'med',
+    'Coin Registry',
+    'Make zoraConfig the single source; strip hardcoded strings.',
+  ],
+  [
+    'R-03',
+    'No release-tagging pipeline. CI build-verify now runs via GitHub Actions.',
+    'med',
+    'Infra / Deploy',
+    'Ship promoteBackup for release tags + CHANGELOG; CI build-verify already live.',
+  ],
+  [
+    'R-04',
+    'No incident-tracking system.',
+    'med',
+    'Security',
+    'Ship incidentLog; retire the manual SECURITY.md process.',
+  ],
+  [
+    'R-05',
+    'No rate limiting on public read functions.',
+    'med',
+    'Security',
+    'Per-IP throttle on fieldStats / cryptoWatch / fetchMapLocations.',
+  ],
+  [
+    'R-06',
+    'No secrets rotation cadence or scanning.',
+    'med',
+    'Security',
+    'Define rotation; add secret-scanning; ship secretsAudit.',
+  ],
   ['R-07', 'No dependency scanning / SBOM.', 'low', 'Security', 'Add SCA to CI; publish SBOM.'],
-  ['R-08', 'pump.fun community coin is a placeholder.', 'low', 'Coin Registry', 'Swap placeholder before any launch-ready treatment.'],
+  [
+    'R-08',
+    'pump.fun community coin is a placeholder.',
+    'low',
+    'Coin Registry',
+    'Swap placeholder before any launch-ready treatment.',
+  ],
 ];
 
 const ALLOWED_ORIGINS = new Set([
-  'https://oohearth.app', 'https://www.oohearth.app', 'https://ooh.earth',
-  'http://localhost:5173', 'http://localhost:3000',
+  'https://oohearth.app',
+  'https://www.oohearth.app',
+  'https://ooh.earth',
+  'http://localhost:5173',
+  'http://localhost:3000',
 ]);
 
 function cors(origin) {
@@ -57,7 +102,7 @@ function cors(origin) {
     'Access-Control-Allow-Origin': o,
     'Access-Control-Allow-Methods': 'POST, OPTIONS',
     'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-    'Vary': 'Origin',
+    Vary: 'Origin',
   };
 }
 
@@ -69,19 +114,29 @@ Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
     let caller = null;
-    try { caller = await base44.auth.me(); } catch { caller = null; }
+    try {
+      caller = await base44.auth.me();
+    } catch {
+      caller = null;
+    }
 
     if (!IS_AGENCY(caller)) {
-      return Response.json({ error: 'Forbidden — agency clearance required.' }, { status: 403, headers });
+      return Response.json(
+        { error: 'Forbidden — agency clearance required.' },
+        { status: 403, headers },
+      );
     }
 
     const admin = IS_ADMIN(caller);
-    return Response.json({
-      ok: true,
-      risks: RISKS,                       // moderator-visible (all agency)
-      secrets: admin ? SECRETS : null,    // admin only
-      fn_secrets: admin ? FN_SECRETS : null,
-    }, { headers });
+    return Response.json(
+      {
+        ok: true,
+        risks: RISKS, // moderator-visible (all agency)
+        secrets: admin ? SECRETS : null, // admin only
+        fn_secrets: admin ? FN_SECRETS : null,
+      },
+      { headers },
+    );
   } catch (error) {
     return Response.json({ error: error?.message || String(error) }, { status: 500, headers });
   }

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState } from 'react';
 
 export default function HorizonProgress() {
   const [progress, setProgress] = useState(0);
@@ -9,9 +9,9 @@ export default function HorizonProgress() {
       const max = el.scrollHeight - el.clientHeight;
       setProgress(max > 0 ? el.scrollTop / max : 0);
     };
-    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener('scroll', onScroll, { passive: true });
     onScroll();
-    return () => window.removeEventListener("scroll", onScroll);
+    return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
   const pct = Math.round(progress * 100);
@@ -29,7 +29,7 @@ export default function HorizonProgress() {
       {/* Coordinate readout */}
       <div className="pointer-events-none fixed right-3 top-1/2 z-40 hidden -translate-y-1/2 flex-col items-end gap-1 font-mono text-[9px] uppercase tracking-[0.25em] text-silver/40 md:flex">
         <span>HORIZON</span>
-        <span className="tabular-nums text-ozone">{pct.toString().padStart(3, "0")}%</span>
+        <span className="tabular-nums text-ozone">{pct.toString().padStart(3, '0')}%</span>
       </div>
     </>
   );

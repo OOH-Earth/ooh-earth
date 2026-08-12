@@ -1,7 +1,7 @@
-import { useEffect } from "react";
-import { useParams, Link, Navigate } from "react-router-dom";
-import Nav from "@/components/ooh/Nav";
-import { CAPITAL_LEADS, CAPITAL_ORDER } from "@/components/ooh/capitalLeads";
+import { useEffect } from 'react';
+import { useParams, Link, Navigate } from 'react-router-dom';
+import Nav from '@/components/ooh/Nav';
+import { CAPITAL_LEADS, CAPITAL_ORDER } from '@/components/ooh/capitalLeads';
 
 /* ────────────────────────────────────────────────────────────
    OOH Earth · Capital Lead Page (/capital/:slug)
@@ -10,20 +10,20 @@ import { CAPITAL_LEADS, CAPITAL_ORDER } from "@/components/ooh/capitalLeads";
 ──────────────────────────────────────────────────────────── */
 
 const TRACTION = [
-  ["~2,000", "Waitlist", true],
-  ["~47", "Ambassadors", true],
-  ["~12,000", "Documented (beta)", true],
-  ["14", "Ecosystem entities", false],
+  ['~2,000', 'Waitlist', true],
+  ['~47', 'Ambassadors', true],
+  ['~12,000', 'Documented (beta)', true],
+  ['14', 'Ecosystem entities', false],
 ];
 
-const SDG = ["SDG 11.7", "SDG 12.8", "SDG 16.7", "SDG 17", "A/69/286"];
+const SDG = ['SDG 11.7', 'SDG 12.8', 'SDG 16.7', 'SDG 17', 'A/69/286'];
 
 export default function CapitalLead() {
   const { slug } = useParams();
   const lead = CAPITAL_LEADS[slug];
 
   useEffect(() => {
-    if (lead) window.scrollTo({ top: 0, behavior: "auto" });
+    if (lead) window.scrollTo({ top: 0, behavior: 'auto' });
   }, [slug, lead]);
 
   if (!lead) return <Navigate to="/console" replace />;
@@ -38,35 +38,69 @@ export default function CapitalLead() {
 
         {/* HERO */}
         <header className="cl-hero cl-wrap">
-          <div className="cl-eye"><span className="cl-tick" />Capital pathway · {lead.tag}</div>
+          <div className="cl-eye">
+            <span className="cl-tick" />
+            Capital pathway · {lead.tag}
+          </div>
           <h1>{lead.name}</h1>
           <p className="cl-sub">{lead.sub}</p>
 
           <div className="cl-askrow">
-            <div className="cl-ask big"><div className="l">The ask</div><div className="v"><span className="cur">£</span>150k–500k+</div><div className="s">{lead.instrument} · impact &amp; replacement-cost anchored</div></div>
-            <div className="cl-ask"><div className="l">Replacement floor</div><div className="v"><span className="cur">£</span>70k–150k</div><div className="s">In-kind build value</div></div>
-            <div className="cl-ask"><div className="l">Actual outlay</div><div className="v">low £ thousands</div><div className="s">Capital-efficiency story</div></div>
+            <div className="cl-ask big">
+              <div className="l">The ask</div>
+              <div className="v">
+                <span className="cur">£</span>150k–500k+
+              </div>
+              <div className="s">{lead.instrument} · impact &amp; replacement-cost anchored</div>
+            </div>
+            <div className="cl-ask">
+              <div className="l">Replacement floor</div>
+              <div className="v">
+                <span className="cur">£</span>70k–150k
+              </div>
+              <div className="s">In-kind build value</div>
+            </div>
+            <div className="cl-ask">
+              <div className="l">Actual outlay</div>
+              <div className="v">low £ thousands</div>
+              <div className="s">Capital-efficiency story</div>
+            </div>
           </div>
-          <div className="cl-sdg">{SDG.map((s) => <span key={s}>{s}</span>)}</div>
+          <div className="cl-sdg">
+            {SDG.map((s) => (
+              <span key={s}>{s}</span>
+            ))}
+          </div>
         </header>
 
         {/* WHY THIS FITS YOU */}
         <section className="cl-wrap">
-          <div className="cl-head"><h2>Why this fits you</h2><span className="m">The angle for {lead.tag.toLowerCase()}</span></div>
+          <div className="cl-head">
+            <h2>Why this fits you</h2>
+            <span className="m">The angle for {lead.tag.toLowerCase()}</span>
+          </div>
           <ul className="cl-angle">
-            {lead.angle.map((a, i) => <li key={i}>{a}</li>)}
+            {lead.angle.map((a, i) => (
+              <li key={i}>{a}</li>
+            ))}
           </ul>
-          <p className="cl-targets"><b>Typical funders:</b> {lead.targets}</p>
+          <p className="cl-targets">
+            <b>Typical funders:</b> {lead.targets}
+          </p>
         </section>
 
         {/* WHAT CAPITAL UNLOCKS */}
         <section className="cl-wrap">
-          <div className="cl-head"><h2>What your capital unlocks</h2><span className="m">Use of funds</span></div>
+          <div className="cl-head">
+            <h2>What your capital unlocks</h2>
+            <span className="m">Use of funds</span>
+          </div>
           <div className="cl-unlocks">
             {lead.unlocks.map((u, i) => (
               <div className="cl-unlock" key={i}>
-                <div className="n">{String(i + 1).padStart(2, "0")}</div>
-                <h4>{u.h}</h4><p>{u.p}</p>
+                <div className="n">{String(i + 1).padStart(2, '0')}</div>
+                <h4>{u.h}</h4>
+                <p>{u.p}</p>
               </div>
             ))}
           </div>
@@ -74,35 +108,62 @@ export default function CapitalLead() {
 
         {/* EVIDENCE / TRACTION */}
         <section className="cl-wrap">
-          <div className="cl-head"><h2>The evidence base</h2><span className="m">Self-reported · diligence-ready</span></div>
+          <div className="cl-head">
+            <h2>The evidence base</h2>
+            <span className="m">Self-reported · diligence-ready</span>
+          </div>
           <div className="cl-trac">
             {TRACTION.map(([v, l, verify]) => (
               <div className="cl-metric" key={String(l)}>
-                <div className="mv">{v}</div><div className="ml">{l}</div>
-                <span className={`mf ${verify ? "unv" : "live"}`}>{verify ? "Verify" : "Live"}</span>
+                <div className="mv">{v}</div>
+                <div className="ml">{l}</div>
+                <span className={`mf ${verify ? 'unv' : 'live'}`}>
+                  {verify ? 'Verify' : 'Live'}
+                </span>
               </div>
             ))}
           </div>
-          <p className="cl-note">Figures marked <b className="alert">Verify</b> originated in launch/demo context and resolve to live platform counts on diligence. The two-stage frame — £70k–150k replacement-cost floor plus a traction/movement premium — sets the £150k–500k+ ask on impact and in-kind value, not equity multiples.</p>
+          <p className="cl-note">
+            Figures marked <b className="alert">Verify</b> originated in launch/demo context and
+            resolve to live platform counts on diligence. The two-stage frame — £70k–150k
+            replacement-cost floor plus a traction/movement premium — sets the £150k–500k+ ask on
+            impact and in-kind value, not equity multiples.
+          </p>
         </section>
 
         {/* CTA */}
         <section className="cl-wrap cl-cta-wrap">
           <div className="cl-cta">
             <div>
-              <div className="cl-eye"><span className="cl-tick" />Next step</div>
+              <div className="cl-eye">
+                <span className="cl-tick" />
+                Next step
+              </div>
               <h3>Open the data room conversation.</h3>
-              <p>We'll share the live console, verified metrics, and a build-cost letter tuned to a {lead.instrument.toLowerCase()}.</p>
+              <p>
+                We'll share the live console, verified metrics, and a build-cost letter tuned to a{' '}
+                {lead.instrument.toLowerCase()}.
+              </p>
             </div>
             <div className="cl-cta-actions">
-              <a className="btn primary" href={`mailto:hello@ooh.earth?subject=${encodeURIComponent("OOH Earth — " + lead.tag)}`}>Contact — hello@ooh.earth</a>
-              <Link className="btn ghost" to="/console">Open investor console →</Link>
+              <a
+                className="btn primary"
+                href={`mailto:hello@ooh.earth?subject=${encodeURIComponent('OOH Earth — ' + lead.tag)}`}
+              >
+                Contact — hello@ooh.earth
+              </a>
+              <Link className="btn ghost" to="/console">
+                Open investor console →
+              </Link>
             </div>
           </div>
 
           {/* other pathways */}
           <div className="cl-others">
-            <div className="cl-eye small"><span className="cl-tick" />Other capital pathways</div>
+            <div className="cl-eye small">
+              <span className="cl-tick" />
+              Other capital pathways
+            </div>
             <div className="cl-other-grid">
               {others.map((o) => (
                 <Link className="cl-other" to={`/capital/${o.slug}`} key={o.slug}>
@@ -115,8 +176,26 @@ export default function CapitalLead() {
           </div>
 
           <div className="cl-foot">
-            <div><div className="fb">ooh<span>.</span>earth</div><p>Capital pathway · {lead.tag}<br/>Community-funded · copyleft<br/>hello@ooh.earth</p></div>
-            <div className="right"><span className="cls">Not investment or valuation advice</span><p>Framing tool · figures verified on diligence<br/>Instrument: {lead.instrument}</p></div>
+            <div>
+              <div className="fb">
+                ooh<span>.</span>earth
+              </div>
+              <p>
+                Capital pathway · {lead.tag}
+                <br />
+                Community-funded · copyleft
+                <br />
+                hello@ooh.earth
+              </p>
+            </div>
+            <div className="right">
+              <span className="cls">Not investment or valuation advice</span>
+              <p>
+                Framing tool · figures verified on diligence
+                <br />
+                Instrument: {lead.instrument}
+              </p>
+            </div>
           </div>
         </section>
       </div>

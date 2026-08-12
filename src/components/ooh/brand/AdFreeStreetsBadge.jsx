@@ -1,7 +1,7 @@
 // Ad Free Streets — circular seal (Y2K). Struck-billboard mark + curved lockup.
 // Uses Orbitron (loaded in index.html) for the curved text. Theme-aware.
-export default function AdFreeStreetsBadge({ className = "h-40 w-40" }) {
-  const id = "afs";
+export default function AdFreeStreetsBadge({ className = 'h-40 w-40' }) {
+  const id = 'afs';
   return (
     <svg viewBox="0 0 300 300" className={className} fill="none" aria-hidden="true">
       <defs>
@@ -12,11 +12,31 @@ export default function AdFreeStreetsBadge({ className = "h-40 w-40" }) {
       <circle cx="150" cy="150" r="142" className="fill-void stroke-ozone" strokeWidth="4" />
       <circle cx="150" cy="150" r="118" className="stroke-flare" strokeWidth="2" opacity="0.7" />
 
-      <text className="fill-ozone" style={{ fontFamily: "'Orbitron',sans-serif", fontWeight: 900, fontSize: 26, letterSpacing: "8px" }}>
-        <textPath href={`#${id}-top`} startOffset="50%" textAnchor="middle">AD FREE STREETS</textPath>
+      <text
+        className="fill-ozone"
+        style={{
+          fontFamily: "'Orbitron',sans-serif",
+          fontWeight: 900,
+          fontSize: 26,
+          letterSpacing: '8px',
+        }}
+      >
+        <textPath href={`#${id}-top`} startOffset="50%" textAnchor="middle">
+          AD FREE STREETS
+        </textPath>
       </text>
-      <text className="fill-foreground/90" style={{ fontFamily: "'Orbitron',sans-serif", fontWeight: 500, fontSize: 17, letterSpacing: "6px" }}>
-        <textPath href={`#${id}-bot`} startOffset="50%" textAnchor="middle">RECLAIM PUBLIC SPACE</textPath>
+      <text
+        className="fill-foreground/90"
+        style={{
+          fontFamily: "'Orbitron',sans-serif",
+          fontWeight: 500,
+          fontSize: 17,
+          letterSpacing: '6px',
+        }}
+      >
+        <textPath href={`#${id}-bot`} startOffset="50%" textAnchor="middle">
+          RECLAIM PUBLIC SPACE
+        </textPath>
       </text>
 
       {/* struck billboard */}

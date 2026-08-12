@@ -1,17 +1,17 @@
-import DarkSpecimen from "./modes/DarkSpecimen";
-import LightSpecimen from "./modes/LightSpecimen";
-import MatrixSpecimen from "./modes/MatrixSpecimen";
-import BetaSpecimen from "./modes/BetaSpecimen";
-import CraftySpecimen from "./modes/CraftySpecimen";
-import GuildSpecimen from "./modes/GuildSpecimen";
+import DarkSpecimen from './modes/DarkSpecimen';
+import LightSpecimen from './modes/LightSpecimen';
+import MatrixSpecimen from './modes/MatrixSpecimen';
+import BetaSpecimen from './modes/BetaSpecimen';
+import CraftySpecimen from './modes/CraftySpecimen';
+import GuildSpecimen from './modes/GuildSpecimen';
 
 const MODES = [
-  { key: "dark", label: "Dark · Orbital", status: "DEFAULT", Comp: DarkSpecimen },
-  { key: "light", label: "Light · Solar Smoke", status: "STABLE", Comp: LightSpecimen },
-  { key: "matrix", label: "Matrix · Terminal", status: "STABLE", Comp: MatrixSpecimen },
-  { key: "beta", label: "BETA · Devtools", status: "STABLE", Comp: BetaSpecimen },
-  { key: "crafty", label: "Crafty · Marker", status: "STABLE", Comp: CraftySpecimen },
-  { key: "guild", label: "Guild · Public Service", status: "ALIGNED", Comp: GuildSpecimen },
+  { key: 'dark', label: 'Dark · Orbital', status: 'DEFAULT', Comp: DarkSpecimen },
+  { key: 'light', label: 'Light · Solar Smoke', status: 'STABLE', Comp: LightSpecimen },
+  { key: 'matrix', label: 'Matrix · Terminal', status: 'STABLE', Comp: MatrixSpecimen },
+  { key: 'beta', label: 'BETA · Devtools', status: 'STABLE', Comp: BetaSpecimen },
+  { key: 'crafty', label: 'Crafty · Marker', status: 'STABLE', Comp: CraftySpecimen },
+  { key: 'guild', label: 'Guild · Public Service', status: 'ALIGNED', Comp: GuildSpecimen },
 ];
 
 export default function ThemeModeMatrix() {
@@ -20,8 +20,14 @@ export default function ThemeModeMatrix() {
       {MODES.map((m) => (
         <figure key={m.key} className="flex flex-col gap-1.5">
           <figcaption className="flex items-center justify-between px-0.5">
-            <span className="font-mono text-[9px] uppercase tracking-[0.25em] text-foreground/70">{m.label}</span>
-            <span className={`font-mono text-[8px] uppercase tracking-[0.2em] ${m.status === "DEFAULT" ? "text-ozone" : "text-muted-foreground"}`}>{m.status}</span>
+            <span className="font-mono text-[9px] uppercase tracking-[0.25em] text-foreground/70">
+              {m.label}
+            </span>
+            <span
+              className={`font-mono text-[8px] uppercase tracking-[0.2em] ${m.status === 'DEFAULT' ? 'text-ozone' : 'text-muted-foreground'}`}
+            >
+              {m.status}
+            </span>
           </figcaption>
           <m.Comp />
         </figure>

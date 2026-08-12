@@ -1,77 +1,79 @@
-import { useState } from "react";
-import { base44 } from "@/api/base44Client";
-import { compressImage } from "@/lib/imageCompress";
-import { useWallet } from "@/hooks/useWallet";
-import { Coins, Loader2, Copy, Check, ExternalLink, Wallet, BadgeCheck, Lock } from "lucide-react";
+import { useState } from 'react';
+import { base44 } from '@/api/base44Client';
+import { compressImage } from '@/lib/imageCompress';
+import { useWallet } from '@/hooks/useWallet';
+import { Coins, Loader2, Copy, Check, ExternalLink, Wallet, BadgeCheck, Lock } from 'lucide-react';
 
 const SDG_BY_TYPE = {
-  billboard: "11",
-  painted: "11",
-  digital: "9",
-  projection: "11",
-  sticker: "11",
-  mural: "11",
-  transit: "11",
-  other: "11",
+  billboard: '11',
+  painted: '11',
+  digital: '9',
+  projection: '11',
+  sticker: '11',
+  mural: '11',
+  transit: '11',
+  other: '11',
 };
 
 export function buildMetadata(loc) {
-  const sdg = SDG_BY_TYPE[loc.type] || "11";
+  const sdg = SDG_BY_TYPE[loc.type] || '11';
   return {
     name: `OOH · ${loc.title}`.slice(0, 96),
-    description: `Documented ${loc.type || "out-of-home"} advertising surface${loc.address ? ` at ${loc.address}` : ""}. Field-logged on the OOH Earth resistance atlas. Minting this location mints permanent on-chain proof of the intervention — and a claimable AR / metaverse surface.`,
-    image: loc.image_url || "",
+    description: `Documented ${loc.type || 'out-of-home'} advertising surface${loc.address ? ` at ${loc.address}` : ''}. Field-logged on the OOH Earth resistance atlas. Minting this location mints permanent on-chain proof of the intervention — and a claimable AR / metaverse surface.`,
+    image: loc.image_url || '',
     external_url: loc.source_link || `https://oohearth.app/location/${loc.id}/`,
     attributes: [
-      { trait_type: "Type", value: loc.type || "other" },
-      { trait_type: "Latitude", value: loc.lat },
-      { trait_type: "Longitude", value: loc.lng },
-      { trait_type: "Access Key", value: loc.access_key || "none" },
-      { trait_type: "SDG", value: sdg },
-      { trait_type: "Status", value: loc.status || "pending" },
-      { trait_type: "Source", value: "oohearth.app" },
+      { trait_type: 'Type', value: loc.type || 'other' },
+      { trait_type: 'Latitude', value: loc.lat },
+      { trait_type: 'Longitude', value: loc.lng },
+      { trait_type: 'Access Key', value: loc.access_key || 'none' },
+      { trait_type: 'SDG', value: sdg },
+      { trait_type: 'Status', value: loc.status || 'pending' },
+      { trait_type: 'Source', value: 'oohearth.app' },
     ],
   };
 }
 
 export default function MintLocationPanel({ loc }) {
-  const evm = useWallet("evm");
-  const [phase, setPhase] = useState("idle"); // idle | preparing | done | minted
+  const evm = useWallet('evm');
+  const [phase, setPhase] = useState('idle'); // idle | preparing | done | minted
   const [metadataUri, setMetadataUri] = useState(null);
   const [mintId, setMintId] = useState(null);
-  const [tokenAddr, setTokenAddr] = useState("");
+  const [tokenAddr, setTokenAddr] = useState('');
   const [copied, setCopied] = useState(false);
   const [err, setErr] = useState(null);
 
-  const canMint = !!loc.image_url && loc.status === "verified";
+  const canMint = !!loc.image_url && loc.status === 'verified';
 
   const prepare = async () => {
     setErr(null);
-    setPhase("preparing");
+    setPhase('preparing');
     try {
       const meta = buildMetadata(loc);
-      const sdg = meta.attributes.find((a) => a.trait_type === "SDG").value;
-      const blob = new Blob([JSON.stringify(meta, null, 2)], { type: "application/json" });
-      const file = new File([blob], `ooh-${loc.id}-metadata.json`, { type: "application/json" });
-      const { file_url } = await base44.integrations.Core.UploadFile({ file: await compressImage(file) });
+      const sdg = meta.attributes.find((a) => a.trait_type === 'SDG').value;
+      const blob = new Blob([JSON.stringify(meta, null, 2)], { type: 'application/json' });
+      const file = new File([blob], `ooh-${loc.id}-metadata.json`, { type: 'application/json' });
+      const { file_url } = await base44.integrations.Core.UploadFile({
+        file: await compressImage(file),
+      });
       setMetadataUri(file_url);
       const rec = await base44.entities.Mint.create({
         location_id: String(loc.id),
         location_title: loc.title,
-        operative_address: evm.address || "",
-        chain: "base",
+        operative_address: evm.address || '',
+        chain: 'base',
         name: meta.name,
-        symbol: "OOH",
+        symbol: 'OOH',
         metadata_uri: file_url,
         image_url: loc.image_url,
         sdg,
-        status: "prepared",
+        status: 'prepared',
       });
       setMintId(rec.id);
-      setPhase("done");
+      setPhase('done');
     } catch (e) {
-      setErr(e?.message || "Mint preparation failed");
-      setPhase("idle");
+      setErr(e?.message || 'Mint preparation failed');
+      setPhase('idle');
     }
   };
 
@@ -79,10 +81,13 @@ export default function MintLocationPanel({ loc }) {
     if (!mintId || !tokenAddr.trim()) return;
     setErr(null);
     try {
-      await base44.entities.Mint.update(mintId, { token_address: tokenAddr.trim(), status: "minted" });
-      setPhase("minted");
+      await base44.entities.Mint.update(mintId, {
+        token_address: tokenAddr.trim(),
+        status: 'minted',
+      });
+      setPhase('minted');
     } catch (e) {
-      setErr(e?.message || "Could not record token address");
+      setErr(e?.message || 'Could not record token address');
     }
   };
 
@@ -96,25 +101,30 @@ export default function MintLocationPanel({ loc }) {
   };
 
   return (
-    <div className={`mt-8 border p-4 ${canMint ? "border-ozone/50" : "border-slate2/60"}`}>
+    <div className={`mt-8 border p-4 ${canMint ? 'border-ozone/50' : 'border-slate2/60'}`}>
       <div className="flex items-center justify-between gap-2">
         <span className="flex items-center gap-1.5 font-mono text-[9px] uppercase tracking-[0.3em] text-ozone">
           <Coins className="h-3.5 w-3.5" /> On-chain · mint this location
         </span>
-        <span className="font-mono text-[8px] uppercase tracking-[0.2em] text-dim/60">zora · base</span>
+        <span className="font-mono text-[8px] uppercase tracking-[0.2em] text-dim/60">
+          zora · base
+        </span>
       </div>
 
       {!canMint ? (
         <div className="mt-3 flex items-start gap-2">
           <Lock className="mt-0.5 h-3.5 w-3.5 shrink-0 text-dim" />
           <p className="text-[12px] leading-relaxed text-darkgray">
-            Minting unlocks once the location is <span className="text-silver">verified</span> with a field photo. File a report or field check to clear it.
+            Minting unlocks once the location is <span className="text-silver">verified</span> with
+            a field photo. File a report or field check to clear it.
           </p>
         </div>
-      ) : phase === "idle" ? (
+      ) : phase === 'idle' ? (
         <div className="mt-3 space-y-3">
           <p className="text-[12px] leading-relaxed text-darkgray">
-            Mint this documented ad surface as a Zora coin on Base. The snap, coordinates, access key and SDG tag become permanent on-chain metadata — and a claimable AR / metaverse surface owned by you.
+            Mint this documented ad surface as a Zora coin on Base. The snap, coordinates, access
+            key and SDG tag become permanent on-chain metadata — and a claimable AR / metaverse
+            surface owned by you.
           </p>
           <div className="flex flex-wrap items-center gap-2">
             {evm.address ? (
@@ -129,8 +139,12 @@ export default function MintLocationPanel({ loc }) {
                     disabled={evm.verifying}
                     className="flex items-center gap-1.5 border border-flare px-2.5 py-2 font-mono text-[9px] font-bold uppercase tracking-[0.2em] text-flare transition-colors hover:bg-flare hover:text-void"
                   >
-                    {evm.verifying ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <BadgeCheck className="h-3.5 w-3.5" />}
-                    {evm.verifying ? "Verifying…" : "Verify ownership"}
+                    {evm.verifying ? (
+                      <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                    ) : (
+                      <BadgeCheck className="h-3.5 w-3.5" />
+                    )}
+                    {evm.verifying ? 'Verifying…' : 'Verify ownership'}
                   </button>
                 )}
               </>
@@ -140,7 +154,8 @@ export default function MintLocationPanel({ loc }) {
                 disabled={evm.connecting}
                 className="flex items-center gap-1.5 border border-slate2 px-2.5 py-2 font-mono text-[9px] font-bold uppercase tracking-[0.2em] text-darkgray transition-colors hover:border-ozone hover:text-ozone"
               >
-                <Wallet className="h-3.5 w-3.5" /> {evm.connecting ? "Connecting…" : "Connect wallet"}
+                <Wallet className="h-3.5 w-3.5" />{' '}
+                {evm.connecting ? 'Connecting…' : 'Connect wallet'}
               </button>
             )}
             <button
@@ -152,32 +167,47 @@ export default function MintLocationPanel({ loc }) {
             </button>
           </div>
           {!evm.address && (
-            <p className="font-mono text-[9px] uppercase tracking-[0.2em] text-dim/60">// connect first so the mint is attributed to your address</p>
+            <p className="font-mono text-[9px] uppercase tracking-[0.2em] text-dim/60">
+              // connect first so the mint is attributed to your address
+            </p>
           )}
           {evm.address && !evm.verified && (
-            <p className="font-mono text-[9px] uppercase tracking-[0.2em] text-flare/80">// verify wallet ownership to unlock minting — signs a message, no transaction</p>
+            <p className="font-mono text-[9px] uppercase tracking-[0.2em] text-flare/80">
+              // verify wallet ownership to unlock minting — signs a message, no transaction
+            </p>
           )}
           {evm.verifyError && (
-            <p className="font-mono text-[9px] uppercase tracking-[0.2em] text-flare">// verification failed: {evm.verifyError}</p>
+            <p className="font-mono text-[9px] uppercase tracking-[0.2em] text-flare">
+              // verification failed: {evm.verifyError}
+            </p>
           )}
         </div>
-      ) : phase === "preparing" ? (
+      ) : phase === 'preparing' ? (
         <div className="mt-3 flex items-center gap-2">
           <Loader2 className="h-4 w-4 animate-spin text-ozone" />
-          <span className="font-mono text-[9px] uppercase tracking-[0.2em] text-dim">Preparing metadata…</span>
+          <span className="font-mono text-[9px] uppercase tracking-[0.2em] text-dim">
+            Preparing metadata…
+          </span>
         </div>
-      ) : phase === "done" ? (
+      ) : phase === 'done' ? (
         <div className="mt-3 space-y-3">
           <div className="flex items-start gap-2 border border-ozone/30 bg-ozone/[0.04] p-2.5">
             <Check className="mt-0.5 h-3.5 w-3.5 shrink-0 text-ozone" />
             <p className="text-[12px] leading-relaxed text-silver/85">
-              Metadata prepared &amp; stored. Copy the token URI below, then mint on Zora — paste it as your content / metadata when creating the coin.
+              Metadata prepared &amp; stored. Copy the token URI below, then mint on Zora — paste it
+              as your content / metadata when creating the coin.
             </p>
           </div>
           <div className="flex items-center gap-2 border border-slate2 bg-card px-2.5 py-2">
-            <span className="min-w-0 flex-1 truncate font-mono text-[10px] text-silver/80">{metadataUri}</span>
-            <button onClick={copy} className="flex shrink-0 items-center gap-1 font-mono text-[9px] uppercase tracking-[0.2em] text-ozone transition-colors hover:text-flare">
-              {copied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />} {copied ? "Copied" : "Copy"}
+            <span className="min-w-0 flex-1 truncate font-mono text-[10px] text-silver/80">
+              {metadataUri}
+            </span>
+            <button
+              onClick={copy}
+              className="flex shrink-0 items-center gap-1 font-mono text-[9px] uppercase tracking-[0.2em] text-ozone transition-colors hover:text-flare"
+            >
+              {copied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}{' '}
+              {copied ? 'Copied' : 'Copy'}
             </button>
           </div>
           <a
@@ -189,7 +219,9 @@ export default function MintLocationPanel({ loc }) {
             <ExternalLink className="h-3.5 w-3.5" /> Open Zora create
           </a>
           <div className="border-t border-slate2/40 pt-3">
-            <span className="font-mono text-[9px] uppercase tracking-[0.2em] text-dim/60">// minted? paste the coin address to record it</span>
+            <span className="font-mono text-[9px] uppercase tracking-[0.2em] text-dim/60">
+              // minted? paste the coin address to record it
+            </span>
             <div className="mt-2 flex flex-wrap items-center gap-2">
               <input
                 value={tokenAddr}
@@ -224,7 +256,9 @@ export default function MintLocationPanel({ loc }) {
         </div>
       )}
 
-      {err && <p className="mt-2 font-mono text-[9px] uppercase tracking-[0.2em] text-flare">// {err}</p>}
+      {err && (
+        <p className="mt-2 font-mono text-[9px] uppercase tracking-[0.2em] text-flare">// {err}</p>
+      )}
     </div>
   );
 }

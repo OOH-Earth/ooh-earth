@@ -7,10 +7,10 @@
 // Account, AccountMenu, and PortalOps. A future access-model change is now a
 // single edit here instead of five-plus files in lockstep.
 
-export const roleOf = (u) => (u && (u.role ?? u.data?.role)) || "user";
-export const accessOf = (u) => (u && (u.access ?? u.data?.access)) || "member";
+export const roleOf = (u) => (u && (u.role ?? u.data?.role)) || 'user';
+export const accessOf = (u) => (u && (u.access ?? u.data?.access)) || 'member';
 export const agencyOf = (u) => !!(u && (u.agency ?? u.data?.agency));
-export const isAdmin = (u) => roleOf(u) === "admin" || accessOf(u) === "admin";
+export const isAdmin = (u) => roleOf(u) === 'admin' || accessOf(u) === 'admin';
 
 // Unwrap a Base44 function-invoke response ({ data } | data).
-export const payload = (res) => (res && typeof res === "object" && "data" in res ? res.data : res);
+export const payload = (res) => (res && typeof res === 'object' && 'data' in res ? res.data : res);

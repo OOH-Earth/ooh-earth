@@ -1,8 +1,8 @@
-import React, { useEffect, useState } from "react";
-import { appParams } from "@/lib/app-params";
-import { Button } from "@/components/ui/button";
-import { ShieldCheck, Loader2 } from "lucide-react";
-import AuthLayout from "@/components/AuthLayout";
+import React, { useEffect, useState } from 'react';
+import { appParams } from '@/lib/app-params';
+import { Button } from '@/components/ui/button';
+import { ShieldCheck, Loader2 } from 'lucide-react';
+import AuthLayout from '@/components/AuthLayout';
 
 // App-side OAuth consent page for the app's MCP server. The platform redirects
 // AI clients here (see base44/mcp/config.json `consent_path`) with an opaque
@@ -12,20 +12,20 @@ import AuthLayout from "@/components/AuthLayout";
 // Do not change the fetch calls, headers, or the `ctx` handle handling — styling
 // and copy are safe to edit.
 export default function OAuthConsent() {
-  const ctx = new URLSearchParams(window.location.search).get("ctx");
+  const ctx = new URLSearchParams(window.location.search).get('ctx');
   const [info, setInfo] = useState(null);
   const [checking, setChecking] = useState(true);
   const [submitting, setSubmitting] = useState(false);
-  const [decided, setDecided] = useState("");
-  const [error, setError] = useState("");
-  const [reconnect, setReconnect] = useState("");
+  const [decided, setDecided] = useState('');
+  const [error, setError] = useState('');
+  const [reconnect, setReconnect] = useState('');
 
   useEffect(() => {
     (async () => {
       let redirecting = false;
       try {
         if (!ctx) {
-          setError("This authorization link is invalid or has expired.");
+          setError('This authorization link is invalid or has expired.');
           return;
         }
         // Resolve the handle first: a dead handle must never render
@@ -35,13 +35,13 @@ export default function OAuthConsent() {
         // signed-in user — the same auth the approve/deny call sends; without
         // it the display request is anonymous and shows no tools.
         const infoHeaders = /** @type {Record<string, string>} */ ({});
-        if (appParams.token) infoHeaders.Authorization = "Bearer " + appParams.token;
+        if (appParams.token) infoHeaders.Authorization = 'Bearer ' + appParams.token;
         const res = await fetch(
           `/api/apps/${appParams.appId}/mcp/consent-info?handle=${encodeURIComponent(ctx)}`,
-          { credentials: "include", headers: infoHeaders },
+          { credentials: 'include', headers: infoHeaders },
         );
         if (!res.ok) {
-          setError("This authorization link is invalid or has expired.");
+          setError('This authorization link is invalid or has expired.');
           return;
         }
         const data = await res.json();
@@ -62,17 +62,16 @@ export default function OAuthConsent() {
           // link (app_base_url, access_token, …) would ride through the login
           // round-trip and app-params.js would persist them into the freshly
           // authenticated session.
-          const returnTo =
-            window.location.pathname + "?ctx=" + encodeURIComponent(ctx);
+          const returnTo = window.location.pathname + '?ctx=' + encodeURIComponent(ctx);
           const encoded = encodeURIComponent(returnTo);
           redirecting = true; // keep the spinner while the browser navigates
           window.location.href =
-            (data.login_path || "/login") + "?returnTo=" + encoded + "&from_url=" + encoded;
+            (data.login_path || '/login') + '?returnTo=' + encoded + '&from_url=' + encoded;
           return;
         }
         setInfo(data);
       } catch (e) {
-        setError("Could not load this authorization request. Please try again.");
+        setError('Could not load this authorization request. Please try again.');
       } finally {
         if (!redirecting) setChecking(false);
       }
@@ -81,15 +80,15 @@ export default function OAuthConsent() {
 
   const respond = async (action) => {
     setSubmitting(true);
-    setError("");
+    setError('');
     try {
-      const headers = { "Content-Type": "application/json" };
+      const headers = { 'Content-Type': 'application/json' };
       // Cookie-backed sessions carry no token; sending "Bearer null" would
       // shadow the valid cookie, so add the header only when a token exists.
-      if (appParams.token) headers.Authorization = "Bearer " + appParams.token;
+      if (appParams.token) headers.Authorization = 'Bearer ' + appParams.token;
       const res = await fetch(`/api/apps/${appParams.appId}/mcp/authorize-grant`, {
-        method: "POST",
-        credentials: "include",
+        method: 'POST',
+        credentials: 'include',
         headers,
         body: JSON.stringify({ ctx, action }),
       });
@@ -100,10 +99,14 @@ export default function OAuthConsent() {
         // redirect the initial signed-out path uses — so they can return and
         // approve the still-valid handle.
         if (res.status === 401) {
-          const returnTo = window.location.pathname + "?ctx=" + encodeURIComponent(ctx);
+          const returnTo = window.location.pathname + '?ctx=' + encodeURIComponent(ctx);
           const encoded = encodeURIComponent(returnTo);
           window.location.href =
-            ((info && info.login_path) || "/login") + "?returnTo=" + encoded + "&from_url=" + encoded;
+            ((info && info.login_path) || '/login') +
+            '?returnTo=' +
+            encoded +
+            '&from_url=' +
+            encoded;
           return;
         }
         // These all come AFTER the single-use handle is atomically consumed
@@ -111,13 +114,20 @@ export default function OAuthConsent() {
         // gone; 400 malformed/handle already used), so retrying can only 404.
         // Show a terminal reconnect state, not an impossible "try again".
         if ([400, 403, 404, 409].includes(res.status)) {
-          let detail = "";
-          try { detail = (await res.json()).detail; } catch (_) { /* keep default */ }
-          setReconnect(detail || "This authorization can no longer be completed. Reconnect from your AI client to try again.");
+          let detail = '';
+          try {
+            detail = (await res.json()).detail;
+          } catch (_) {
+            /* keep default */
+          }
+          setReconnect(
+            detail ||
+              'This authorization can no longer be completed. Reconnect from your AI client to try again.',
+          );
           setSubmitting(false);
           return;
         }
-        throw new Error("Could not complete authorization. Please try again.");
+        throw new Error('Could not complete authorization. Please try again.');
       }
       const data = await res.json();
       window.location.href = data.redirect_url;
@@ -145,14 +155,14 @@ export default function OAuthConsent() {
     );
   }
 
-  const client = (info && info.client_name) || "An AI client";
-  const appName = (info && info.app_name) || "this app";
+  const client = (info && info.client_name) || 'An AI client';
+  const appName = (info && info.app_name) || 'this app';
 
   if (decided) {
     return (
       <AuthLayout
         icon={ShieldCheck}
-        title={decided === "approve" ? "Access granted" : "Access denied"}
+        title={decided === 'approve' ? 'Access granted' : 'Access denied'}
         subtitle={`You can return to ${client} and close this window.`}
       />
     );
@@ -164,9 +174,7 @@ export default function OAuthConsent() {
   if (reconnect) {
     return (
       <AuthLayout icon={ShieldCheck} title="Reconnect required">
-        <div className="p-3 rounded-lg bg-destructive/10 text-destructive text-sm">
-          {reconnect}
-        </div>
+        <div className="p-3 rounded-lg bg-destructive/10 text-destructive text-sm">{reconnect}</div>
       </AuthLayout>
     );
   }
@@ -177,9 +185,7 @@ export default function OAuthConsent() {
   if (error && !info) {
     return (
       <AuthLayout icon={ShieldCheck} title="Authorize access">
-        <div className="p-3 rounded-lg bg-destructive/10 text-destructive text-sm">
-          {error}
-        </div>
+        <div className="p-3 rounded-lg bg-destructive/10 text-destructive text-sm">{error}</div>
       </AuthLayout>
     );
   }
@@ -199,15 +205,13 @@ export default function OAuthConsent() {
       )}
 
       <p className="text-sm font-medium text-foreground mb-2">
-        {tools.length ? `It will be able to use these tools in ${appName}:` : "No tools requested"}
+        {tools.length ? `It will be able to use these tools in ${appName}:` : 'No tools requested'}
       </p>
       {tools.length > 0 && (
         <ul className="space-y-2 text-sm mb-6">
           {tools.map((tool) => (
             <li key={tool.name} className="flex flex-col">
-              <span className="text-foreground font-medium">
-                {tool.title || tool.name}
-              </span>
+              <span className="text-foreground font-medium">{tool.title || tool.name}</span>
               {tool.description && (
                 <span className="text-muted-foreground">{tool.description}</span>
               )}
@@ -221,14 +225,14 @@ export default function OAuthConsent() {
           variant="outline"
           className="flex-1 h-12 font-medium"
           disabled={submitting}
-          onClick={() => respond("deny")}
+          onClick={() => respond('deny')}
         >
           Deny
         </Button>
         <Button
           className="flex-1 h-12 font-medium"
           disabled={submitting}
-          onClick={() => respond("approve")}
+          onClick={() => respond('approve')}
         >
           {submitting ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : null}
           Approve

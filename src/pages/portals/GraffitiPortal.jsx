@@ -1,40 +1,40 @@
-import { useState, useEffect, useMemo, useCallback } from "react";
-import { base44 } from "@/api/base44Client";
-import { Link } from "react-router-dom";
-import { Camera, Megaphone } from "lucide-react";
-import PortalShell from "@/components/ooh/map/PortalShell";
-import LocationCard from "@/components/ooh/map/LocationCard";
-import ClaimLeadDialog from "@/components/ooh/map/ClaimLeadDialog";
-import QuickCapture from "@/components/ooh/QuickCapture";
-import seedMarkers from "@/components/ooh/mapSeed";
-import { toMarker } from "@/components/ooh/map/markerUtils";
+import { useState, useEffect, useMemo, useCallback } from 'react';
+import { base44 } from '@/api/base44Client';
+import { Link } from 'react-router-dom';
+import { Camera, Megaphone } from 'lucide-react';
+import PortalShell from '@/components/ooh/map/PortalShell';
+import LocationCard from '@/components/ooh/map/LocationCard';
+import ClaimLeadDialog from '@/components/ooh/map/ClaimLeadDialog';
+import QuickCapture from '@/components/ooh/QuickCapture';
+import seedMarkers from '@/components/ooh/mapSeed';
+import { toMarker } from '@/components/ooh/map/markerUtils';
 
 const GRAFFITI_MEDIUMS = [
-  { value: "spray_paint", label: "Spray" },
-  { value: "marker", label: "Marker" },
-  { value: "sticker", label: "Sticker" },
-  { value: "paste_up", label: "Paste-up" },
-  { value: "stencil", label: "Stencil" },
-  { value: "installation", label: "Install" },
+  { value: 'spray_paint', label: 'Spray' },
+  { value: 'marker', label: 'Marker' },
+  { value: 'sticker', label: 'Sticker' },
+  { value: 'paste_up', label: 'Paste-up' },
+  { value: 'stencil', label: 'Stencil' },
+  { value: 'installation', label: 'Install' },
 ];
 
 const GRAFFITI_TYPES = [
-  { value: "painted", label: "Painted" },
-  { value: "mural", label: "Mural" },
-  { value: "sticker", label: "Sticker" },
+  { value: 'painted', label: 'Painted' },
+  { value: 'mural', label: 'Mural' },
+  { value: 'sticker', label: 'Sticker' },
 ];
 
 function isGraffiti(m) {
   if (m.graffiti_medium) return true;
-  if (m.type === "painted" || m.type === "mural" || m.type === "sticker") return true;
-  if (m.adbust_type === "painted_over" || m.adbust_type === "wheatpasted") return true;
+  if (m.type === 'painted' || m.type === 'mural' || m.type === 'sticker') return true;
+  if (m.adbust_type === 'painted_over' || m.adbust_type === 'wheatpasted') return true;
   return false;
 }
 
 export default function GraffitiPortal() {
   const [raw, setRaw] = useState(null);
-  const [query, setQuery] = useState("");
-  const [mediumFilter, setMediumFilter] = useState("all");
+  const [query, setQuery] = useState('');
+  const [mediumFilter, setMediumFilter] = useState('all');
   const [claims, setClaims] = useState([]);
   const [claimTarget, setClaimTarget] = useState(null);
   const [captureOpen, setCaptureOpen] = useState(false);
@@ -43,34 +43,45 @@ export default function GraffitiPortal() {
     try {
       const recs = await base44.listAllLocations();
       const markers = (recs || [])
-        .filter((r) => r.status !== "rejected")
+        .filter((r) => r.status !== 'rejected')
         .map(toMarker)
         .filter(isGraffiti);
-      setRaw(markers.length ? { markers, live: true } : { markers: seedMarkers.filter(isGraffiti), live: false });
+      setRaw(
+        markers.length
+          ? { markers, live: true }
+          : { markers: seedMarkers.filter(isGraffiti), live: false },
+      );
     } catch {
       setRaw({ markers: seedMarkers.filter(isGraffiti), live: false });
     }
   }, []);
 
-  useEffect(() => { reload(); }, [reload]);
+  useEffect(() => {
+    reload();
+  }, [reload]);
 
   useEffect(() => {
     let cancelled = false;
     const load = async () => {
       try {
-        const recs = await base44.entities.LeadClaim.list("-created_date", 500);
+        const recs = await base44.entities.LeadClaim.list('-created_date', 500);
         if (!cancelled) setClaims(recs || []);
-      } catch { if (!cancelled) setClaims([]); }
+      } catch {
+        if (!cancelled) setClaims([]);
+      }
     };
     load();
     const unsub = base44.entities.LeadClaim.subscribe(() => load());
-    return () => { cancelled = true; if (unsub) unsub(); };
+    return () => {
+      cancelled = true;
+      if (unsub) unsub();
+    };
   }, []);
 
   const claimsByLoc = useMemo(() => {
     const map = {};
     claims.forEach((c) => {
-      if (c.status === "released") return;
+      if (c.status === 'released') return;
       const ex = map[c.location_id];
       if (!ex || new Date(c.created_date) > new Date(ex.created_date)) map[c.location_id] = c;
     });
@@ -82,13 +93,13 @@ export default function GraffitiPortal() {
     const q = query.trim().toLowerCase();
     return list
       .filter((m) => {
-        const mediumMatch = mediumFilter === "all" || m.graffiti_medium === mediumFilter;
+        const mediumMatch = mediumFilter === 'all' || m.graffiti_medium === mediumFilter;
         const searchMatch = !q || `${m.title} ${m.address}`.toLowerCase().includes(q);
         return mediumMatch && searchMatch;
       })
       .sort((a, b) => {
-        const aPhoto = a.status === "verified" && !!a.image ? 2 : a.image ? 1 : 0;
-        const bPhoto = b.status === "verified" && !!b.image ? 2 : b.image ? 1 : 0;
+        const aPhoto = a.status === 'verified' && !!a.image ? 2 : a.image ? 1 : 0;
+        const bPhoto = b.status === 'verified' && !!b.image ? 2 : b.image ? 1 : 0;
         return bPhoto - aPhoto;
       });
   }, [raw, mediumFilter, query]);
@@ -96,7 +107,8 @@ export default function GraffitiPortal() {
   const counts = useMemo(() => {
     const c = {};
     (raw?.markers || []).forEach((m) => {
-      const key = m.graffiti_medium || (GRAFFITI_TYPES.some((t) => t.value === m.type) ? m.type : "other");
+      const key =
+        m.graffiti_medium || (GRAFFITI_TYPES.some((t) => t.value === m.type) ? m.type : 'other');
       c[key] = (c[key] || 0) + 1;
     });
     return c;
@@ -105,9 +117,15 @@ export default function GraffitiPortal() {
   const filterTags = useMemo(() => {
     const all = (raw?.markers || []).length;
     const tags = [
-      { value: "all", label: "All", count: all },
-      ...GRAFFITI_MEDIUMS.filter((m) => (counts[m.value] || 0) > 0).map((m) => ({ ...m, count: counts[m.value] })),
-      ...GRAFFITI_TYPES.filter((t) => (counts[t.value] || 0) > 0).map((t) => ({ ...t, count: counts[t.value] })),
+      { value: 'all', label: 'All', count: all },
+      ...GRAFFITI_MEDIUMS.filter((m) => (counts[m.value] || 0) > 0).map((m) => ({
+        ...m,
+        count: counts[m.value],
+      })),
+      ...GRAFFITI_TYPES.filter((t) => (counts[t.value] || 0) > 0).map((t) => ({
+        ...t,
+        count: counts[t.value],
+      })),
     ];
     return tags.length > 1 ? tags : [];
   }, [raw, counts]);
@@ -134,7 +152,7 @@ export default function GraffitiPortal() {
       <PortalShell
         title="Graffiti"
         accent="#FF5C00"
-        activeLayers={["ads"]}
+        activeLayers={['ads']}
         markers={filtered}
         results={filtered}
         loading={!raw}
@@ -158,7 +176,11 @@ export default function GraffitiPortal() {
           />
         )}
       />
-      <ClaimLeadDialog open={!!claimTarget} onClose={() => setClaimTarget(null)} location={claimTarget} />
+      <ClaimLeadDialog
+        open={!!claimTarget}
+        onClose={() => setClaimTarget(null)}
+        location={claimTarget}
+      />
       <QuickCapture open={captureOpen} onClose={() => setCaptureOpen(false)} />
     </>
   );

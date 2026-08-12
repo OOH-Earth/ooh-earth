@@ -1,6 +1,6 @@
-import { useEffect } from "react";
-import { Link } from "react-router-dom";
-import Nav from "@/components/ooh/Nav";
+import { useEffect } from 'react';
+import { Link } from 'react-router-dom';
+import Nav from '@/components/ooh/Nav';
 
 /* ────────────────────────────────────────────────────────────
    OOH Earth · Capital & Ops Console (Investor Class) · v1
@@ -11,76 +11,122 @@ import Nav from "@/components/ooh/Nav";
 ──────────────────────────────────────────────────────────── */
 
 const METRICS = [
-  { v: "~2,000", l: "Waitlist", flag: "verify" },
-  { v: "~47", l: "City ambassadors", flag: "verify" },
-  { v: "~12,000", l: "Ads documented (beta)", flag: "verify" },
-  { v: "14", l: "Ecosystem entities", flag: "live" },
-  { v: "~$55k", l: "Raised of $100k", flag: "verify" },
+  { v: '~2,000', l: 'Waitlist', flag: 'verify' },
+  { v: '~47', l: 'City ambassadors', flag: 'verify' },
+  { v: '~12,000', l: 'Ads documented (beta)', flag: 'verify' },
+  { v: '14', l: 'Ecosystem entities', flag: 'live' },
+  { v: '~$55k', l: 'Raised of $100k', flag: 'verify' },
 ];
 
 const BUILD = [
-  "~33 routes", "9 secured entities", "7 serverless functions",
-  "Live payments", "On-chain minting", "Dual mapping",
-  "AR Reimagine", "Gamification", "Offline / PWA", "Design system",
+  '~33 routes',
+  '9 secured entities',
+  '7 serverless functions',
+  'Live payments',
+  'On-chain minting',
+  'Dual mapping',
+  'AR Reimagine',
+  'Gamification',
+  'Offline / PWA',
+  'Design system',
 ];
 
 const RATES = [
-  ["Offshore / junior freelance", "£30k–55k"],
-  ["Established freelancer / small studio", "£65k–110k"],
-  ["UK / US agency (blended)", "£130k–240k+"],
+  ['Offshore / junior freelance', '£30k–55k'],
+  ['Established freelancer / small studio', '£65k–110k'],
+  ['UK / US agency (blended)', '£130k–240k+'],
 ];
 
 const PREMIUM = [
-  ["Waitlist & demand signal", "Community assembled ahead of launch"],
-  ["Ambassador network", "City-level distribution across active chapters"],
-  ["14-entity ecosystem", "Compounding surface area a single-app estimate ignores"],
-  ["Institutional legitimacy", "UN SDG alignment · A/69/286 · precedent library"],
+  ['Waitlist & demand signal', 'Community assembled ahead of launch'],
+  ['Ambassador network', 'City-level distribution across active chapters'],
+  ['14-entity ecosystem', 'Compounding surface area a single-app estimate ignores'],
+  ['Institutional legitimacy', 'UN SDG alignment · A/69/286 · precedent library'],
 ];
 
 const CAPS = [
-  { n: "01", h: "Documentation & evidence", p: "AI-assisted capture, nine-category offence taxonomy, evidence-grade metadata for council and planning submissions.", li: ["AdCam field camera", "Objection Generator", "Precedent-cited reports"] },
-  { n: "02", h: "Creative & production", p: "Subvertising, brandalism, replacement campaigns and public-art responses — concept to installed unit.", li: ["Activist Assets library", "AR Reimagine mockups", "Field Store fulfilment"] },
-  { n: "03", h: "Strategy & live ops", p: "City chapters, ambassador coordination and an n8n back-office spine keeping the civic app clean.", li: ["OOH Local chapters", "Recruitment Hub", "Automation / live ops"] },
+  {
+    n: '01',
+    h: 'Documentation & evidence',
+    p: 'AI-assisted capture, nine-category offence taxonomy, evidence-grade metadata for council and planning submissions.',
+    li: ['AdCam field camera', 'Objection Generator', 'Precedent-cited reports'],
+  },
+  {
+    n: '02',
+    h: 'Creative & production',
+    p: 'Subvertising, brandalism, replacement campaigns and public-art responses — concept to installed unit.',
+    li: ['Activist Assets library', 'AR Reimagine mockups', 'Field Store fulfilment'],
+  },
+  {
+    n: '03',
+    h: 'Strategy & live ops',
+    p: 'City chapters, ambassador coordination and an n8n back-office spine keeping the civic app clean.',
+    li: ['OOH Local chapters', 'Recruitment Hub', 'Automation / live ops'],
+  },
 ];
 
 const ECO = [
-  ["01", "ooh.earth", "Live evidence platform & map", true],
-  ["02", "OOH Earth App", "Capture, feed, impact dashboard", true],
-  ["03", "OOH Earth Agency", "Full-service creative studio", true],
-  ["04", "OOH Maps", "Media-space intelligence", false],
-  ["05", "Activist Assets", "Open creative library", false],
-  ["06", "Citizen Billboarding", "Field guide & toolkit", false],
-  ["07", "Field Store", "Kit, cards & fulfilment", false],
-  ["08", "AdCam", "Documentation camera", false],
-  ["09", "OOH Local", "City chapters", false],
-  ["10", "OOH Nomad", "Travelling members", false],
-  ["11", "Street Social", "Community platform", false],
-  ["12", "Community Hub", "Ambassador onboarding", false],
-  ["13", "Billboarding.earth", "Campaign coordination", false],
-  ["14", "Ad Free Streets", "Standards & brand system", false],
+  ['01', 'ooh.earth', 'Live evidence platform & map', true],
+  ['02', 'OOH Earth App', 'Capture, feed, impact dashboard', true],
+  ['03', 'OOH Earth Agency', 'Full-service creative studio', true],
+  ['04', 'OOH Maps', 'Media-space intelligence', false],
+  ['05', 'Activist Assets', 'Open creative library', false],
+  ['06', 'Citizen Billboarding', 'Field guide & toolkit', false],
+  ['07', 'Field Store', 'Kit, cards & fulfilment', false],
+  ['08', 'AdCam', 'Documentation camera', false],
+  ['09', 'OOH Local', 'City chapters', false],
+  ['10', 'OOH Nomad', 'Travelling members', false],
+  ['11', 'Street Social', 'Community platform', false],
+  ['12', 'Community Hub', 'Ambassador onboarding', false],
+  ['13', 'Billboarding.earth', 'Campaign coordination', false],
+  ['14', 'Ad Free Streets', 'Standards & brand system', false],
 ];
 
 const PATHS = [
-  { h: "Impact grants", p: "SDG-anchored civic infrastructure with measurable public-space outcomes and a precedent library ready for grant panels.", t: "Civic & urban-space foundations · SDG 11.7 / 16.7 programmes · cultural-rights grantmakers", to: "impact-grants" },
-  { h: "Philanthropic capital", p: "A founder-led movement with in-kind assets already built — capital compounds reach rather than buys equity.", t: "Family offices · values-aligned HNW donors · degrowth & environmental philanthropy", to: "philanthropic" },
-  { h: "Ecosystem / retro public goods", p: "Open, copyleft, on-chain-native infrastructure — a natural fit for retroactive public-goods funding rounds.", t: "Retro-PGF rounds · Gitcoin-style ecosystems · Base public-goods pools", to: "retro-pgf" },
-  { h: "Civic-tech backers", p: "A working PWA, real routes and a live ops spine — a flagship civic-tech case study, not a deck.", t: "Civic-tech accelerators · gov-tech / open-data funds · platform sponsorship", to: "civic-tech" },
+  {
+    h: 'Impact grants',
+    p: 'SDG-anchored civic infrastructure with measurable public-space outcomes and a precedent library ready for grant panels.',
+    t: 'Civic & urban-space foundations · SDG 11.7 / 16.7 programmes · cultural-rights grantmakers',
+    to: 'impact-grants',
+  },
+  {
+    h: 'Philanthropic capital',
+    p: 'A founder-led movement with in-kind assets already built — capital compounds reach rather than buys equity.',
+    t: 'Family offices · values-aligned HNW donors · degrowth & environmental philanthropy',
+    to: 'philanthropic',
+  },
+  {
+    h: 'Ecosystem / retro public goods',
+    p: 'Open, copyleft, on-chain-native infrastructure — a natural fit for retroactive public-goods funding rounds.',
+    t: 'Retro-PGF rounds · Gitcoin-style ecosystems · Base public-goods pools',
+    to: 'retro-pgf',
+  },
+  {
+    h: 'Civic-tech backers',
+    p: 'A working PWA, real routes and a live ops spine — a flagship civic-tech case study, not a deck.',
+    t: 'Civic-tech accelerators · gov-tech / open-data funds · platform sponsorship',
+    to: 'civic-tech',
+  },
 ];
 
 const SUBNAV = [
-  ["ops", "Live Ops"], ["value", "Valuation"], ["agency", "Agency"],
-  ["ecosystem", "Ecosystem"], ["capital", "Capital"], ["portals", "Portals"],
+  ['ops', 'Live Ops'],
+  ['value', 'Valuation'],
+  ['agency', 'Agency'],
+  ['ecosystem', 'Ecosystem'],
+  ['capital', 'Capital'],
+  ['portals', 'Portals'],
 ];
 
 export default function Console() {
   // Deep-link support: /console#capital scrolls to the section after mount,
   // beating the app's ScrollToTop which fires on route change.
   useEffect(() => {
-    const hash = window.location.hash?.replace("#", "");
+    const hash = window.location.hash?.replace('#', '');
     if (!hash) return;
     const id = requestAnimationFrame(() => {
       const el = document.getElementById(hash);
-      if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
     });
     return () => cancelAnimationFrame(id);
   }, []);
@@ -89,154 +135,351 @@ export default function Console() {
     <>
       <Nav />
       <div className="ic" id="top">
-      <style>{css}</style>
+        <style>{css}</style>
 
-      {/* ── HERO / THESIS ── */}
-      <header className="ic-hero ic-wrap">
-        <div className="ic-eye"><span className="ic-tick" />Capital &amp; Ops Console · Investor Class · v1</div>
-        <h1>Public space isn't <em>blank space.</em></h1>
-        <p className="ic-lede">OOH Earth is a community-funded civic institution documenting the outdoor advertising the public never agreed to — and arming communities with the evidence to push back. A live platform, a 14-entity ecosystem and a full-service agency studio, aligned to UN SDG 11.7, 12.8, 16.7 &amp; 17.</p>
-
-        <div className="ic-askrow">
-          <div className="ic-ask big"><div className="l">Pre-seed-equivalent ask</div><div className="v"><span className="cur">£</span>150k–500k+</div><div className="s">Grant / philanthropic · impact &amp; replacement-cost anchored</div></div>
-          <div className="ic-ask"><div className="l">Replacement-cost floor</div><div className="v"><span className="cur">£</span>70k–150k</div><div className="s">Defensible in-kind build value</div></div>
-          <div className="ic-ask"><div className="l">Actual cash outlay</div><div className="v">low £ thousands</div><div className="s">The capital-efficiency story</div></div>
-        </div>
-
-        <div className="ic-pills">
-          <span className="ic-pill"><b>Copyleft</b> · community governance</span>
-          <span className="ic-pill">Networked with <b>Brandalism · Adfree Cities · Subvertising Int'l</b></span>
-          <span className="ic-pill">Active <b>UK &amp; Thailand</b></span>
-          <span className="ic-pill">Built on <b>Base44</b> PWA</span>
-        </div>
-
-        <nav className="ic-subnav">
-          {SUBNAV.map(([id, lbl]) => <a key={id} href={`#${id}`}>{lbl}</a>)}
-        </nav>
-      </header>
-
-      {/* ── LIVE OPS ── */}
-      <section id="ops" className="ic-wrap">
-        <div className="ic-head"><h2>Live ops snapshot</h2><span className="m">Traction · self-reported · diligence-ready</span></div>
-        <div className="ic-metrics">
-          {METRICS.map((x) => (
-            <div className="ic-metric" key={x.l}>
-              <div className="mv">{x.v}</div>
-              <div className="ml">{x.l}</div>
-              <span className={`mf ${x.flag === "live" ? "live" : "unv"}`}>{x.flag === "live" ? "Live / built" : "Verify pre-diligence"}</span>
-            </div>
-          ))}
-        </div>
-        <p className="ic-note">Figures marked <b className="alert">Verify</b> originated in launch/demo context and must resolve to a live platform count before any funder review. A larger open-data map import (OSM / Overpass, 45k+ candidate sites) is in progress and reported separately once deduped.</p>
-      </section>
-
-      {/* ── VALUATION ── */}
-      <section id="value" className="ic-wrap">
-        <div className="ic-head"><h2>The two-stage valuation frame</h2><span className="m">Replacement cost → movement premium</span></div>
-        <div className="ic-stages">
-          <div className="ic-stage">
-            <div className="no">STAGE 01</div>
-            <h3>Replacement-cost floor</h3>
-            <p>"This working platform already exists and would cost six figures to commission." A conventional build of this scope is a 500–1,000+ hour engagement.</p>
-            <div className="band"><span className="cur">£</span>70k–150k</div>
-            <ul className="tags">{BUILD.map((b) => <li key={b}>{b}</li>)}</ul>
-            <div className="rates">{RATES.map(([a, b]) => <div className="rate" key={a}><span>{a}</span><span>{b}</span></div>)}</div>
+        {/* ── HERO / THESIS ── */}
+        <header className="ic-hero ic-wrap">
+          <div className="ic-eye">
+            <span className="ic-tick" />
+            Capital &amp; Ops Console · Investor Class · v1
           </div>
-          <div className="ic-stage">
-            <div className="no orange">STAGE 02</div>
-            <h3>Traction + movement premium</h3>
-            <p>The value a pure code estimate misses. Anchored on impact and the reach of the wider institution — not equity multiples.</p>
-            <div className="band orange">+ premium</div>
-            <ul className="prem">{PREMIUM.map(([a, b]) => <li key={a}>{a}<small>{b}</small></li>)}</ul>
+          <h1>
+            Public space isn't <em>blank space.</em>
+          </h1>
+          <p className="ic-lede">
+            OOH Earth is a community-funded civic institution documenting the outdoor advertising
+            the public never agreed to — and arming communities with the evidence to push back. A
+            live platform, a 14-entity ecosystem and a full-service agency studio, aligned to UN SDG
+            11.7, 12.8, 16.7 &amp; 17.
+          </p>
+
+          <div className="ic-askrow">
+            <div className="ic-ask big">
+              <div className="l">Pre-seed-equivalent ask</div>
+              <div className="v">
+                <span className="cur">£</span>150k–500k+
+              </div>
+              <div className="s">
+                Grant / philanthropic · impact &amp; replacement-cost anchored
+              </div>
+            </div>
+            <div className="ic-ask">
+              <div className="l">Replacement-cost floor</div>
+              <div className="v">
+                <span className="cur">£</span>70k–150k
+              </div>
+              <div className="s">Defensible in-kind build value</div>
+            </div>
+            <div className="ic-ask">
+              <div className="l">Actual cash outlay</div>
+              <div className="v">low £ thousands</div>
+              <div className="s">The capital-efficiency story</div>
+            </div>
           </div>
-        </div>
 
-        <div className="ic-eff">
-          <div className="col"><div className="l">Actual cash outlay</div><div className="v">low £ thousands</div><small>Base44 subscription + credits + founder time</small></div>
-          <div className="arrow">→</div>
-          <div className="col b"><div className="l">Replacement / in-kind value</div><div className="v"><span className="cur">£</span>70k–150k</div><small>The gap <b>is</b> the pitch: extreme capital efficiency</small></div>
-        </div>
+          <div className="ic-pills">
+            <span className="ic-pill">
+              <b>Copyleft</b> · community governance
+            </span>
+            <span className="ic-pill">
+              Networked with <b>Brandalism · Adfree Cities · Subvertising Int'l</b>
+            </span>
+            <span className="ic-pill">
+              Active <b>UK &amp; Thailand</b>
+            </span>
+            <span className="ic-pill">
+              Built on <b>Base44</b> PWA
+            </span>
+          </div>
 
-        <div className="ic-result">
-          <div className="ic-eye center"><span className="ic-tick" />Resulting ask</div>
-          <div className="big"><span className="cur">£</span>150k–500k+</div>
-          <p>Pre-seed-equivalent, framed for mission-aligned capital as replacement-cost + movement premium rather than equity.</p>
-        </div>
-      </section>
+          <nav className="ic-subnav">
+            {SUBNAV.map(([id, lbl]) => (
+              <a key={id} href={`#${id}`}>
+                {lbl}
+              </a>
+            ))}
+          </nav>
+        </header>
 
-      {/* ── AGENCY ── */}
-      <section id="agency" className="ic-wrap">
-        <div className="ic-head"><h2>Agency studio · live ops</h2><span className="m">Full-service · the anti-Build Hollywood</span></div>
-        <p className="ic-intro">A full-service creative OOH agency that inverts the model. Where incumbents dress corporate campaigns in street credibility, OOH Earth Agency runs <b>street-level, grassroots, Global South-tactical</b> work grounded in the SDGs and degrowth economics — production-grade, but on the public's side of the screen.</p>
-        <div className="ic-caps">
-          {CAPS.map((c) => (
-            <div className="ic-cap" key={c.n}>
-              <div className="cn">Capability {c.n}</div>
-              <h4>{c.h}</h4><p>{c.p}</p>
-              <ul>{c.li.map((i) => <li key={i}>{i}</li>)}</ul>
+        {/* ── LIVE OPS ── */}
+        <section id="ops" className="ic-wrap">
+          <div className="ic-head">
+            <h2>Live ops snapshot</h2>
+            <span className="m">Traction · self-reported · diligence-ready</span>
+          </div>
+          <div className="ic-metrics">
+            {METRICS.map((x) => (
+              <div className="ic-metric" key={x.l}>
+                <div className="mv">{x.v}</div>
+                <div className="ml">{x.l}</div>
+                <span className={`mf ${x.flag === 'live' ? 'live' : 'unv'}`}>
+                  {x.flag === 'live' ? 'Live / built' : 'Verify pre-diligence'}
+                </span>
+              </div>
+            ))}
+          </div>
+          <p className="ic-note">
+            Figures marked <b className="alert">Verify</b> originated in launch/demo context and
+            must resolve to a live platform count before any funder review. A larger open-data map
+            import (OSM / Overpass, 45k+ candidate sites) is in progress and reported separately
+            once deduped.
+          </p>
+        </section>
+
+        {/* ── VALUATION ── */}
+        <section id="value" className="ic-wrap">
+          <div className="ic-head">
+            <h2>The two-stage valuation frame</h2>
+            <span className="m">Replacement cost → movement premium</span>
+          </div>
+          <div className="ic-stages">
+            <div className="ic-stage">
+              <div className="no">STAGE 01</div>
+              <h3>Replacement-cost floor</h3>
+              <p>
+                "This working platform already exists and would cost six figures to commission." A
+                conventional build of this scope is a 500–1,000+ hour engagement.
+              </p>
+              <div className="band">
+                <span className="cur">£</span>70k–150k
+              </div>
+              <ul className="tags">
+                {BUILD.map((b) => (
+                  <li key={b}>{b}</li>
+                ))}
+              </ul>
+              <div className="rates">
+                {RATES.map(([a, b]) => (
+                  <div className="rate" key={a}>
+                    <span>{a}</span>
+                    <span>{b}</span>
+                  </div>
+                ))}
+              </div>
             </div>
-          ))}
-        </div>
-        <div className="ic-roll">
-          <div className="ic-phase p1"><div className="tag">Setup · Stage 1</div><h4>Establish the studio</h4><p>Stand up the agency arm on the replacement-cost floor: platform, evidence pipeline, brand system and first live engagements. Capitalised as in-kind build value.</p><div className="gate">Funds the floor · £70k–150k basis</div></div>
-          <div className="ic-phase p2"><div className="tag">Scale · Stage 2</div><h4>Scale live ops &amp; chapters</h4><p>Expand the ambassador network, activate Global South chapters and turn the ecosystem premium into reach — the layer justifying the full ask.</p><div className="gate">Unlocks the premium · movement scale</div></div>
-        </div>
-      </section>
-
-      {/* ── ECOSYSTEM ── */}
-      <section id="ecosystem" className="ic-wrap">
-        <div className="ic-head"><h2>The 14-entity ecosystem</h2><span className="m">One mission · return public space to the public</span></div>
-        <div className="ic-eco">
-          {ECO.map(([n, nn, nd, core]) => (
-            <div className={`ic-node ${core ? "core" : ""}`} key={String(n)}>
-              <div className="en">{n}</div><div className="nn">{nn}</div><div className="nd">{nd}</div>
+            <div className="ic-stage">
+              <div className="no orange">STAGE 02</div>
+              <h3>Traction + movement premium</h3>
+              <p>
+                The value a pure code estimate misses. Anchored on impact and the reach of the wider
+                institution — not equity multiples.
+              </p>
+              <div className="band orange">+ premium</div>
+              <ul className="prem">
+                {PREMIUM.map(([a, b]) => (
+                  <li key={a}>
+                    {a}
+                    <small>{b}</small>
+                  </li>
+                ))}
+              </ul>
             </div>
-          ))}
-        </div>
-      </section>
+          </div>
 
-      {/* ── CAPITAL ── */}
-      <section id="capital" className="ic-wrap">
-        <div className="ic-head"><h2>Capital pathways · investor class</h2><span className="m">Deep-lead pages · mission-aligned capital</span></div>
-        <p className="ic-intro">The actual investor class: mission-aligned and public-goods capital, where replacement cost and impact — not equity multiples — set the value. Each pathway routes to a dedicated lead page tuned to that funder's diligence.</p>
-        <div className="ic-paths">
-          {PATHS.map((x) => (
-            <div className="ic-path" key={x.h}>
-              <div className="ph"><h4>{x.h}</h4><span className="chip live">Deep-lead page</span></div>
-              <div className="ang">Angle</div><p>{x.p}</p>
-              <div className="ang">Target funders</div><div className="tg">{x.t}</div>
-              <Link className="lead" to={`/capital/${x.to}`}>Open lead page →</Link>
+          <div className="ic-eff">
+            <div className="col">
+              <div className="l">Actual cash outlay</div>
+              <div className="v">low £ thousands</div>
+              <small>Base44 subscription + credits + founder time</small>
             </div>
-          ))}
-        </div>
-      </section>
+            <div className="arrow">→</div>
+            <div className="col b">
+              <div className="l">Replacement / in-kind value</div>
+              <div className="v">
+                <span className="cur">£</span>70k–150k
+              </div>
+              <small>
+                The gap <b>is</b> the pitch: extreme capital efficiency
+              </small>
+            </div>
+          </div>
 
-      {/* ── PORTALS ── */}
-      <section id="portals" className="ic-wrap">
-        <div className="ic-head"><h2>Portals &amp; references</h2><span className="m">Dashboards · brand · data room</span></div>
-        <div className="ic-portals">
-          <a className="ic-portal" href="#top"><span className="pk">Dashboard</span><h4>Investor console</h4><p>Live traction, treasury and roadmap for the investor class. Gated view.</p><span className="go">Enter →</span></a>
-          <a className="ic-portal" href="#capital"><span className="pk">Dashboard</span><h4>Client portal</h4><p>Agency clients &amp; chapters: briefs, live campaigns, deliverables and evidence.</p><span className="go">Enter →</span></a>
-          <Link className="ic-portal" to="/kit"><span className="pk">Reference</span><h4>Brand guide</h4><p>Orbital Perspective system — palette, Inter Tight, reticle signature, UI kit.</p><span className="go">Open →</span></Link>
-        </div>
-      </section>
+          <div className="ic-result">
+            <div className="ic-eye center">
+              <span className="ic-tick" />
+              Resulting ask
+            </div>
+            <div className="big">
+              <span className="cur">£</span>150k–500k+
+            </div>
+            <p>
+              Pre-seed-equivalent, framed for mission-aligned capital as replacement-cost + movement
+              premium rather than equity.
+            </p>
+          </div>
+        </section>
 
-      {/* ── DISCLAIMER ── */}
-      <section className="ic-wrap ic-disc-wrap">
-        <div className="ic-disc">
-          <h3>Diligence &amp; integrity notes</h3>
-          <ul>
-            <li>This console is a <b>positioning &amp; framing tool</b>, not investment or valuation advice. It is not prepared by a valuation professional.</li>
-            <li>All <b>self-reported traction figures</b> must resolve to live platform counts before any funder review — funders will diligence them.</li>
-            <li>The replacement-cost floor is an <b>order-of-magnitude build estimate</b>; anchor it precisely with a written quote from a dev shop or agency where needed.</li>
-            <li>Anything placed in front of capital should be backed by a <b>proper data room</b>. The precise number depends on the instrument — <b>grant vs. equity vs. token</b>.</li>
-          </ul>
-        </div>
-        <div className="ic-foot">
-          <div><div className="fb">ooh<span>.</span>earth</div><p>Capital &amp; Ops Console · Orbital Perspective v1<br/>Community-funded · copyleft<br/>hello@ooh.earth</p></div>
-          <div className="right"><span className="cls">Confidential · Investor Class</span><p>Framing tool · not valuation advice<br/>Figures verified on diligence</p></div>
-        </div>
-      </section>
+        {/* ── AGENCY ── */}
+        <section id="agency" className="ic-wrap">
+          <div className="ic-head">
+            <h2>Agency studio · live ops</h2>
+            <span className="m">Full-service · the anti-Build Hollywood</span>
+          </div>
+          <p className="ic-intro">
+            A full-service creative OOH agency that inverts the model. Where incumbents dress
+            corporate campaigns in street credibility, OOH Earth Agency runs{' '}
+            <b>street-level, grassroots, Global South-tactical</b> work grounded in the SDGs and
+            degrowth economics — production-grade, but on the public's side of the screen.
+          </p>
+          <div className="ic-caps">
+            {CAPS.map((c) => (
+              <div className="ic-cap" key={c.n}>
+                <div className="cn">Capability {c.n}</div>
+                <h4>{c.h}</h4>
+                <p>{c.p}</p>
+                <ul>
+                  {c.li.map((i) => (
+                    <li key={i}>{i}</li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </div>
+          <div className="ic-roll">
+            <div className="ic-phase p1">
+              <div className="tag">Setup · Stage 1</div>
+              <h4>Establish the studio</h4>
+              <p>
+                Stand up the agency arm on the replacement-cost floor: platform, evidence pipeline,
+                brand system and first live engagements. Capitalised as in-kind build value.
+              </p>
+              <div className="gate">Funds the floor · £70k–150k basis</div>
+            </div>
+            <div className="ic-phase p2">
+              <div className="tag">Scale · Stage 2</div>
+              <h4>Scale live ops &amp; chapters</h4>
+              <p>
+                Expand the ambassador network, activate Global South chapters and turn the ecosystem
+                premium into reach — the layer justifying the full ask.
+              </p>
+              <div className="gate">Unlocks the premium · movement scale</div>
+            </div>
+          </div>
+        </section>
+
+        {/* ── ECOSYSTEM ── */}
+        <section id="ecosystem" className="ic-wrap">
+          <div className="ic-head">
+            <h2>The 14-entity ecosystem</h2>
+            <span className="m">One mission · return public space to the public</span>
+          </div>
+          <div className="ic-eco">
+            {ECO.map(([n, nn, nd, core]) => (
+              <div className={`ic-node ${core ? 'core' : ''}`} key={String(n)}>
+                <div className="en">{n}</div>
+                <div className="nn">{nn}</div>
+                <div className="nd">{nd}</div>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* ── CAPITAL ── */}
+        <section id="capital" className="ic-wrap">
+          <div className="ic-head">
+            <h2>Capital pathways · investor class</h2>
+            <span className="m">Deep-lead pages · mission-aligned capital</span>
+          </div>
+          <p className="ic-intro">
+            The actual investor class: mission-aligned and public-goods capital, where replacement
+            cost and impact — not equity multiples — set the value. Each pathway routes to a
+            dedicated lead page tuned to that funder's diligence.
+          </p>
+          <div className="ic-paths">
+            {PATHS.map((x) => (
+              <div className="ic-path" key={x.h}>
+                <div className="ph">
+                  <h4>{x.h}</h4>
+                  <span className="chip live">Deep-lead page</span>
+                </div>
+                <div className="ang">Angle</div>
+                <p>{x.p}</p>
+                <div className="ang">Target funders</div>
+                <div className="tg">{x.t}</div>
+                <Link className="lead" to={`/capital/${x.to}`}>
+                  Open lead page →
+                </Link>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* ── PORTALS ── */}
+        <section id="portals" className="ic-wrap">
+          <div className="ic-head">
+            <h2>Portals &amp; references</h2>
+            <span className="m">Dashboards · brand · data room</span>
+          </div>
+          <div className="ic-portals">
+            <a className="ic-portal" href="#top">
+              <span className="pk">Dashboard</span>
+              <h4>Investor console</h4>
+              <p>Live traction, treasury and roadmap for the investor class. Gated view.</p>
+              <span className="go">Enter →</span>
+            </a>
+            <a className="ic-portal" href="#capital">
+              <span className="pk">Dashboard</span>
+              <h4>Client portal</h4>
+              <p>
+                Agency clients &amp; chapters: briefs, live campaigns, deliverables and evidence.
+              </p>
+              <span className="go">Enter →</span>
+            </a>
+            <Link className="ic-portal" to="/kit">
+              <span className="pk">Reference</span>
+              <h4>Brand guide</h4>
+              <p>Orbital Perspective system — palette, Inter Tight, reticle signature, UI kit.</p>
+              <span className="go">Open →</span>
+            </Link>
+          </div>
+        </section>
+
+        {/* ── DISCLAIMER ── */}
+        <section className="ic-wrap ic-disc-wrap">
+          <div className="ic-disc">
+            <h3>Diligence &amp; integrity notes</h3>
+            <ul>
+              <li>
+                This console is a <b>positioning &amp; framing tool</b>, not investment or valuation
+                advice. It is not prepared by a valuation professional.
+              </li>
+              <li>
+                All <b>self-reported traction figures</b> must resolve to live platform counts
+                before any funder review — funders will diligence them.
+              </li>
+              <li>
+                The replacement-cost floor is an <b>order-of-magnitude build estimate</b>; anchor it
+                precisely with a written quote from a dev shop or agency where needed.
+              </li>
+              <li>
+                Anything placed in front of capital should be backed by a <b>proper data room</b>.
+                The precise number depends on the instrument — <b>grant vs. equity vs. token</b>.
+              </li>
+            </ul>
+          </div>
+          <div className="ic-foot">
+            <div>
+              <div className="fb">
+                ooh<span>.</span>earth
+              </div>
+              <p>
+                Capital &amp; Ops Console · Orbital Perspective v1
+                <br />
+                Community-funded · copyleft
+                <br />
+                hello@ooh.earth
+              </p>
+            </div>
+            <div className="right">
+              <span className="cls">Confidential · Investor Class</span>
+              <p>
+                Framing tool · not valuation advice
+                <br />
+                Figures verified on diligence
+              </p>
+            </div>
+          </div>
+        </section>
       </div>
     </>
   );

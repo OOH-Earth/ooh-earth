@@ -1,6 +1,6 @@
-import { useEffect, useRef, useState } from "react";
-import { Images, Plus, X } from "lucide-react";
-import { base44 } from "@/api/base44Client";
+import { useEffect, useRef, useState } from 'react';
+import { Images, Plus, X } from 'lucide-react';
+import { base44 } from '@/api/base44Client';
 
 const MAX_EXTRA_PHOTOS = 8;
 
@@ -20,11 +20,11 @@ export async function uploadLocationPhotos(files, locationId) {
         location_id: String(locationId),
         url: file_url,
         display_order: i,
-        status: "pending",
+        status: 'pending',
       });
-    })
+    }),
   );
-  return results.filter((r) => r.status === "fulfilled").map((r) => r.value);
+  return results.filter((r) => r.status === 'fulfilled').map((r) => r.value);
 }
 
 /**
@@ -43,7 +43,7 @@ export default function MultiPhotoUpload({ files, onChange, disabled = false }) 
   }, [files]);
 
   const addFiles = (list) => {
-    const incoming = Array.from(list || []).filter((f) => f.type?.startsWith("image/"));
+    const incoming = Array.from(list || []).filter((f) => f.type?.startsWith('image/'));
     if (!incoming.length) return;
     onChange([...files, ...incoming].slice(0, MAX_EXTRA_PHOTOS));
   };
@@ -53,7 +53,7 @@ export default function MultiPhotoUpload({ files, onChange, disabled = false }) 
   return (
     <div>
       <label className="mb-2 flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-[0.3em] text-dim">
-        <Images className="h-3.5 w-3.5" /> Additional photos{" "}
+        <Images className="h-3.5 w-3.5" /> Additional photos{' '}
         <span className="text-dim/60">(optional, up to {MAX_EXTRA_PHOTOS})</span>
       </label>
       <div className="flex flex-wrap gap-2">
@@ -90,7 +90,7 @@ export default function MultiPhotoUpload({ files, onChange, disabled = false }) 
         multiple
         onChange={(e) => {
           addFiles(e.target.files);
-          e.target.value = "";
+          e.target.value = '';
         }}
         className="hidden"
       />

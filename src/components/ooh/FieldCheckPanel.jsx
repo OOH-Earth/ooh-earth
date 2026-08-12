@@ -1,19 +1,23 @@
-import { useEffect, useState } from "react";
-import { base44 } from "@/api/base44Client";
-import { Image } from "@/components/ui/image";
-import { RefreshCw, Clock, MapPin, Loader2, Ban, AlertCircle } from "lucide-react";
-import FieldCheckCamera from "@/components/ooh/FieldCheckCamera";
+import { useEffect, useState } from 'react';
+import { base44 } from '@/api/base44Client';
+import { Image } from '@/components/ui/image';
+import { RefreshCw, Clock, MapPin, Loader2, Ban, AlertCircle } from 'lucide-react';
+import FieldCheckCamera from '@/components/ooh/FieldCheckCamera';
 
 const CONDITION_LABELS = {
-  functional: "Functional", neglected: "Neglected", damaged: "Damaged",
-  abandoned: "Abandoned", reclaimed: "Reclaimed", upgraded: "Upgraded",
+  functional: 'Functional',
+  neglected: 'Neglected',
+  damaged: 'Damaged',
+  abandoned: 'Abandoned',
+  reclaimed: 'Reclaimed',
+  upgraded: 'Upgraded',
 };
 
 function timeAgo(iso) {
-  if (!iso) return "";
+  if (!iso) return '';
   const diff = Date.now() - new Date(iso).getTime();
   const mins = Math.floor(diff / 60000);
-  if (mins < 1) return "just now";
+  if (mins < 1) return 'just now';
   if (mins < 60) return `${mins}m ago`;
   const hrs = Math.floor(mins / 60);
   if (hrs < 24) return `${hrs}h ago`;
@@ -35,20 +39,30 @@ export default function FieldCheckPanel({ location }) {
       try {
         const recs = await base44.entities.FieldCheck.filter(
           { location_id: location.id },
-          "-created_date",
-          50
+          '-created_date',
+          50,
         );
         if (active) setChecks(recs || []);
-      } catch { if (active) setChecks([]); }
-      finally { if (active) setLoading(false); }
+      } catch {
+        if (active) setChecks([]);
+      } finally {
+        if (active) setLoading(false);
+      }
     };
     load();
     let unsub;
-    try { unsub = base44.entities.FieldCheck?.subscribe?.(load); } catch { unsub = null; }
-    return () => { active = false; if (unsub) unsub(); };
+    try {
+      unsub = base44.entities.FieldCheck?.subscribe?.(load);
+    } catch {
+      unsub = null;
+    }
+    return () => {
+      active = false;
+      if (unsub) unsub();
+    };
   }, [location?.id]);
 
-  const verified = checks.filter((c) => c.status === "verified");
+  const verified = checks.filter((c) => c.status === 'verified');
   const latest = checks[0];
   const hasMultiple = verified.length >= 2;
 
@@ -58,9 +72,13 @@ export default function FieldCheckPanel({ location }) {
       <div className="flex items-center justify-between gap-3 border-b border-slate2/40 px-4 py-3">
         <span className="flex items-center gap-2">
           <RefreshCw className="h-4 w-4 text-ozone" />
-          <span className="font-mono text-[10px] font-bold uppercase tracking-[0.25em] text-ozone">Field Check Timeline</span>
+          <span className="font-mono text-[10px] font-bold uppercase tracking-[0.25em] text-ozone">
+            Field Check Timeline
+          </span>
           {checks.length > 0 && (
-            <span className="border border-ozone/40 px-1.5 py-0.5 font-mono text-[8px] uppercase tracking-[0.2em] text-ozone/70">{checks.length}</span>
+            <span className="border border-ozone/40 px-1.5 py-0.5 font-mono text-[8px] uppercase tracking-[0.2em] text-ozone/70">
+              {checks.length}
+            </span>
           )}
         </span>
         <button
@@ -79,26 +97,47 @@ export default function FieldCheckPanel({ location }) {
         ) : checks.length === 0 ? (
           <div className="py-6 text-center">
             <MapPin className="mx-auto h-8 w-8 text-dim/30" strokeWidth={1.2} />
-            <p className="mt-2 font-mono text-[10px] uppercase tracking-[0.25em] text-dim">// No field checks yet</p>
-            <p className="mt-1 font-mono text-[9px] leading-relaxed text-dim/60">Be the first to re-photograph this exact location. Your check starts the timeline — every future member builds on it.</p>
+            <p className="mt-2 font-mono text-[10px] uppercase tracking-[0.25em] text-dim">
+              // No field checks yet
+            </p>
+            <p className="mt-1 font-mono text-[9px] leading-relaxed text-dim/60">
+              Be the first to re-photograph this exact location. Your check starts the timeline —
+              every future member builds on it.
+            </p>
           </div>
         ) : (
           <>
             {/* Before / After comparison */}
             {hasMultiple && verified[0]?.image_url && verified[1]?.image_url && (
               <div className="mb-5">
-                <span className="font-mono text-[9px] uppercase tracking-[0.3em] text-ozone/60">// Before / After</span>
+                <span className="font-mono text-[9px] uppercase tracking-[0.3em] text-ozone/60">
+                  // Before / After
+                </span>
                 <div className="mt-2 grid gap-2 sm:grid-cols-2">
                   <div>
-                    <span className="font-mono text-[8px] uppercase tracking-[0.2em] text-dim">Earlier</span>
+                    <span className="font-mono text-[8px] uppercase tracking-[0.2em] text-dim">
+                      Earlier
+                    </span>
                     <div className="relative mt-1 aspect-[4/3] overflow-hidden border border-slate2/60">
-                      <Image src={verified[1].image_url} alt="Earlier check" className="h-full w-full" fittingType="fill" />
+                      <Image
+                        src={verified[1].image_url}
+                        alt="Earlier check"
+                        className="h-full w-full"
+                        fittingType="fill"
+                      />
                     </div>
                   </div>
                   <div>
-                    <span className="font-mono text-[8px] uppercase tracking-[0.2em] text-ozone">Latest</span>
+                    <span className="font-mono text-[8px] uppercase tracking-[0.2em] text-ozone">
+                      Latest
+                    </span>
                     <div className="relative mt-1 aspect-[4/3] overflow-hidden border border-ozone/40">
-                      <Image src={verified[0].image_url} alt="Latest check" className="h-full w-full" fittingType="fill" />
+                      <Image
+                        src={verified[0].image_url}
+                        alt="Latest check"
+                        className="h-full w-full"
+                        fittingType="fill"
+                      />
                     </div>
                   </div>
                 </div>
@@ -108,7 +147,10 @@ export default function FieldCheckPanel({ location }) {
             {/* Timeline */}
             <div className="space-y-3">
               {checks.map((check, i) => (
-                <div key={check.id} className={`relative flex gap-3 ${i < checks.length - 1 ? "pb-3" : ""}`}>
+                <div
+                  key={check.id}
+                  className={`relative flex gap-3 ${i < checks.length - 1 ? 'pb-3' : ''}`}
+                >
                   {/* Timeline line */}
                   {i < checks.length - 1 && (
                     <span className="absolute left-[15px] top-8 bottom-0 w-px bg-slate2/30" />
@@ -117,14 +159,19 @@ export default function FieldCheckPanel({ location }) {
                   <div className="relative shrink-0">
                     {check.image_url ? (
                       <div className="h-8 w-8 overflow-hidden border border-slate2/60">
-                        <Image src={check.image_url} alt="" className="h-full w-full" fittingType="fill" />
+                        <Image
+                          src={check.image_url}
+                          alt=""
+                          className="h-full w-full"
+                          fittingType="fill"
+                        />
                       </div>
                     ) : (
                       <div className="flex h-8 w-8 items-center justify-center border border-slate2/60 bg-void">
                         <MapPin className="h-3.5 w-3.5 text-dim/50" />
                       </div>
                     )}
-                    {check.status === "verified" && (
+                    {check.status === 'verified' && (
                       <span className="absolute -right-1 -top-1 h-2.5 w-2.5 rounded-full border border-void bg-ozone" />
                     )}
                   </div>
@@ -132,14 +179,18 @@ export default function FieldCheckPanel({ location }) {
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-2">
                       <Clock className="h-3 w-3 text-dim" />
-                      <span className="font-mono text-[10px] uppercase tracking-[0.15em] text-dim">{timeAgo(check.created_date)}</span>
-                      {check.status === "pending" && (
+                      <span className="font-mono text-[10px] uppercase tracking-[0.15em] text-dim">
+                        {timeAgo(check.created_date)}
+                      </span>
+                      {check.status === 'pending' && (
                         <span className="flex items-center gap-1 border border-flare/40 px-1 py-0.5 font-mono text-[7px] uppercase tracking-[0.15em] text-flare">
                           <AlertCircle className="h-2 w-2" /> Pending
                         </span>
                       )}
-                      {check.status === "verified" && (
-                        <span className="font-mono text-[7px] uppercase tracking-[0.15em] text-ozone">Verified</span>
+                      {check.status === 'verified' && (
+                        <span className="font-mono text-[7px] uppercase tracking-[0.15em] text-ozone">
+                          Verified
+                        </span>
                       )}
                     </div>
                     <div className="mt-1 flex flex-wrap gap-1.5">
@@ -148,9 +199,9 @@ export default function FieldCheckPanel({ location }) {
                           {CONDITION_LABELS[check.condition] || check.condition}
                         </span>
                       )}
-                      {check.adbust_type && check.adbust_type !== "none" && (
+                      {check.adbust_type && check.adbust_type !== 'none' && (
                         <span className="flex items-center gap-0.5 border border-flare/40 px-1.5 py-0.5 font-mono text-[8px] uppercase tracking-[0.1em] text-flare">
-                          <Ban className="h-2 w-2" /> {check.adbust_type.replace(/_/g, " ")}
+                          <Ban className="h-2 w-2" /> {check.adbust_type.replace(/_/g, ' ')}
                         </span>
                       )}
                       {check.brand_name && (
@@ -160,7 +211,9 @@ export default function FieldCheckPanel({ location }) {
                       )}
                     </div>
                     {check.notes && (
-                      <p className="mt-1 text-[12px] leading-relaxed text-silver/70">{check.notes}</p>
+                      <p className="mt-1 text-[12px] leading-relaxed text-silver/70">
+                        {check.notes}
+                      </p>
                     )}
                   </div>
                 </div>
@@ -169,14 +222,20 @@ export default function FieldCheckPanel({ location }) {
 
             {latest && (
               <p className="mt-4 border-t border-slate2/30 pt-3 font-mono text-[9px] leading-relaxed text-dim">
-                // Last checked {timeAgo(latest.created_date)}{latest.checked_by ? ` by ${latest.checked_by}` : ""}. Each check builds the record — re-photograph to track changes over time.
+                // Last checked {timeAgo(latest.created_date)}
+                {latest.checked_by ? ` by ${latest.checked_by}` : ''}. Each check builds the record
+                — re-photograph to track changes over time.
               </p>
             )}
           </>
         )}
       </div>
 
-      <FieldCheckCamera location={location} open={cameraOpen} onClose={() => setCameraOpen(false)} />
+      <FieldCheckCamera
+        location={location}
+        open={cameraOpen}
+        onClose={() => setCameraOpen(false)}
+      />
     </div>
   );
 }

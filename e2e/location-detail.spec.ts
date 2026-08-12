@@ -39,13 +39,15 @@ async function shot(
   page: import('@playwright/test').Page,
   testInfo: import('@playwright/test').TestInfo,
   name: string,
-  opts: Parameters<import('@playwright/test').Page['screenshot']>[0] = {}
+  opts: Parameters<import('@playwright/test').Page['screenshot']>[0] = {},
 ) {
   await page.screenshot({ path: `e2e/screenshots/${testInfo.project.name}/${name}.png`, ...opts });
 }
 
 test.describe('LocationDetail — existing single-image flow', () => {
-  test('renders single cover image unchanged when no gallery rows exist', async ({ page }, testInfo) => {
+  test('renders single cover image unchanged when no gallery rows exist', async ({
+    page,
+  }, testInfo) => {
     const apiFailures = trackApiFailures(page);
     const consoleErrors = trackConsoleErrors(page);
 
@@ -69,7 +71,9 @@ test.describe('LocationDetail — existing single-image flow', () => {
     });
 
     await page.goto('/location/loc-single-1');
-    await expect(page.getByRole('heading', { name: /Single Image Regression Check/i })).toBeVisible();
+    await expect(
+      page.getByRole('heading', { name: /Single Image Regression Check/i }),
+    ).toBeVisible();
 
     // Exactly one image surface, no gallery grid, no lightbox trigger badge.
     await expect(page.locator('img[src^="data:image/svg"]')).toHaveCount(1);
@@ -83,7 +87,9 @@ test.describe('LocationDetail — existing single-image flow', () => {
 });
 
 test.describe('LocationDetail — multi-photo gallery', () => {
-  test('renders hero + thumbnail grid and the lightbox opens/navigates', async ({ page }, testInfo) => {
+  test('renders hero + thumbnail grid and the lightbox opens/navigates', async ({
+    page,
+  }, testInfo) => {
     const apiFailures = trackApiFailures(page);
     const consoleErrors = trackConsoleErrors(page);
 
@@ -177,7 +183,9 @@ test.describe('LocationDetail — rolling time-since-tag counter', () => {
     await shot(page, testInfo, 'location-detail-counter-t2');
 
     const second = await counter.textContent();
-    expect(second, 'counter text should change after 2s if it is actually ticking').not.toEqual(first);
+    expect(second, 'counter text should change after 2s if it is actually ticking').not.toEqual(
+      first,
+    );
 
     expect(filterCrashes(consoleErrors), consoleErrors.join('\n')).toEqual([]);
     expect(apiFailures, apiFailures.join('\n')).toEqual([]);

@@ -4,7 +4,8 @@
 @tailwind utilities;
 
 @layer base {
-  :root, .dark {
+  :root,
+  .dark {
     --background: 0 0% 0%;
     --foreground: 0 0% 94.5%;
     --card: 0 0% 4%;
@@ -26,11 +27,11 @@
     --ring: 63 100% 50%;
     --flare: 22 100% 50%;
     --radius: 0px;
-    --font-heading: "Inter Tight", ui-sans-serif, system-ui, sans-serif;
-    --font-body: "Inter Tight", ui-sans-serif, system-ui, sans-serif;
-    --font-display: "Inter Tight", ui-sans-serif, system-ui, sans-serif;
-    --font-mono: "IBM Plex Mono", ui-monospace, monospace;
-    --font-brand: "Orbitron", ui-sans-serif, system-ui, sans-serif;
+    --font-heading: 'Inter Tight', ui-sans-serif, system-ui, sans-serif;
+    --font-body: 'Inter Tight', ui-sans-serif, system-ui, sans-serif;
+    --font-display: 'Inter Tight', ui-sans-serif, system-ui, sans-serif;
+    --font-mono: 'IBM Plex Mono', ui-monospace, monospace;
+    --font-brand: 'Orbitron', ui-sans-serif, system-ui, sans-serif;
 
     /* OOH brand channel tokens — themeable (dark default · V3.1) */
     --c-void: 0 0 0;
@@ -73,11 +74,11 @@
 
   /* Matrix theme — cyberpunk green-on-black with magenta flare */
   .matrix {
-    --font-heading: "Share Tech Mono", ui-monospace, monospace;
-    --font-body: "IBM Plex Mono", ui-monospace, monospace;
-    --font-display: "Doto", ui-monospace, monospace;
-    --font-mono: "IBM Plex Mono", ui-monospace, monospace;
-    --font-brand: "Doto", ui-monospace, monospace;
+    --font-heading: 'Share Tech Mono', ui-monospace, monospace;
+    --font-body: 'IBM Plex Mono', ui-monospace, monospace;
+    --font-display: 'Doto', ui-monospace, monospace;
+    --font-mono: 'IBM Plex Mono', ui-monospace, monospace;
+    --font-brand: 'Doto', ui-monospace, monospace;
     --background: 120 50% 3%;
     --foreground: 130 100% 55%;
     --card: 120 30% 5%;
@@ -120,11 +121,15 @@
 
   /* Matrix — 80s CRT phosphor pass */
   @keyframes ooh-crt-flicker {
-    0% { opacity: 0.93; }
-    100% { opacity: 1; }
+    0% {
+      opacity: 0.93;
+    }
+    100% {
+      opacity: 1;
+    }
   }
   .matrix body::before {
-    content: "";
+    content: '';
     position: fixed;
     inset: 0;
     z-index: 31;
@@ -139,7 +144,7 @@
     mix-blend-mode: multiply;
   }
   .matrix body::after {
-    content: "";
+    content: '';
     position: fixed;
     inset: 0;
     z-index: 30;
@@ -153,7 +158,9 @@
     letter-spacing: 0.02em;
     font-weight: 400;
     line-height: 1.04;
-    text-shadow: 0 0 8px rgba(0, 255, 85, 0.42), 0 0 28px rgba(0, 255, 85, 0.12);
+    text-shadow:
+      0 0 8px rgba(0, 255, 85, 0.42),
+      0 0 28px rgba(0, 255, 85, 0.12);
   }
   .matrix h2 {
     font-family: var(--font-heading);
@@ -163,7 +170,8 @@
     line-height: 1.1;
     text-shadow: 0 0 6px rgba(0, 255, 85, 0.3);
   }
-  .matrix h3, .matrix h4 {
+  .matrix h3,
+  .matrix h4 {
     font-family: var(--font-heading);
     text-transform: uppercase;
     letter-spacing: 0.08em;
@@ -171,29 +179,43 @@
     line-height: 1.15;
     text-shadow: 0 0 5px rgba(0, 255, 85, 0.25);
   }
-  .matrix p, .matrix li, .matrix dd, .matrix dt {
+  .matrix p,
+  .matrix li,
+  .matrix dd,
+  .matrix dt {
     font-family: var(--font-body);
     letter-spacing: 0.01em;
     line-height: 1.6;
   }
-  .matrix .font-mono, .matrix .font-mono-tech {
+  .matrix .font-mono,
+  .matrix .font-mono-tech {
     font-family: var(--font-mono);
     font-variant-numeric: tabular-nums;
   }
-  .matrix small, .matrix .text-[8px], .matrix .text-[9px], .matrix .text-[10px] {
+  .matrix small,
+  .matrix .text-[8px],
+  .matrix .text-[9px],
+  .matrix .text-[10px] {
     letter-spacing: 0.12em;
   }
-  .matrix ::-webkit-scrollbar { width: 8px; height: 8px; }
-  .matrix ::-webkit-scrollbar-track { background: #02110a; }
-  .matrix ::-webkit-scrollbar-thumb { background: rgba(0, 255, 85, 0.4); }
+  .matrix ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  .matrix ::-webkit-scrollbar-track {
+    background: #02110a;
+  }
+  .matrix ::-webkit-scrollbar-thumb {
+    background: rgba(0, 255, 85, 0.4);
+  }
 
   /* BETA MODE — developer debug / devtools */
   .beta {
-    --font-heading: "Share Tech Mono", ui-monospace, monospace;
-    --font-body: "IBM Plex Mono", ui-monospace, monospace;
-    --font-display: "Share Tech Mono", ui-monospace, monospace;
-    --font-mono: "IBM Plex Mono", ui-monospace, monospace;
-    --font-brand: "Share Tech Mono", ui-monospace, monospace;
+    --font-heading: 'Share Tech Mono', ui-monospace, monospace;
+    --font-body: 'IBM Plex Mono', ui-monospace, monospace;
+    --font-display: 'Share Tech Mono', ui-monospace, monospace;
+    --font-mono: 'IBM Plex Mono', ui-monospace, monospace;
+    --font-brand: 'Share Tech Mono', ui-monospace, monospace;
     --background: 220 14% 10%;
     --foreground: 220 8% 83%;
     --card: 220 14% 13%;
@@ -230,7 +252,10 @@
       linear-gradient(90deg, rgba(78, 201, 176, 0.04) 1px, transparent 1px);
     background-size: 24px 24px;
   }
-  .beta ::selection { background-color: #4ec9b0; color: #0d1117; }
+  .beta ::selection {
+    background-color: #4ec9b0;
+    color: #0d1117;
+  }
   .beta h1 {
     font-family: var(--font-display);
     text-transform: none;
@@ -248,7 +273,8 @@
     line-height: 1.15;
     color: #4ec9b0;
   }
-  .beta h3, .beta h4 {
+  .beta h3,
+  .beta h4 {
     font-family: var(--font-heading);
     text-transform: none;
     letter-spacing: 0.05em;
@@ -256,13 +282,17 @@
     line-height: 1.2;
     color: #dcdcaa;
   }
-  .beta p, .beta li, .beta dd, .beta dt {
+  .beta p,
+  .beta li,
+  .beta dd,
+  .beta dt {
     font-family: var(--font-body);
     letter-spacing: 0.005em;
     line-height: 1.55;
     color: #c8ccd4;
   }
-  .beta .font-mono, .beta .font-mono-tech {
+  .beta .font-mono,
+  .beta .font-mono-tech {
     font-family: var(--font-mono);
     font-variant-numeric: tabular-nums;
   }
@@ -272,16 +302,25 @@
     text-decoration-color: rgba(97, 175, 239, 0.4);
     text-underline-offset: 3px;
   }
-  .beta a:hover { text-decoration-color: #61afef; }
+  .beta a:hover {
+    text-decoration-color: #61afef;
+  }
   .beta button:hover,
   .beta a:hover,
-  .beta [role="button"]:hover {
+  .beta [role='button']:hover {
     outline: 1px dashed rgba(78, 201, 176, 0.45);
     outline-offset: 2px;
   }
-  .beta ::-webkit-scrollbar { width: 8px; height: 8px; }
-  .beta ::-webkit-scrollbar-track { background: #0d1117; }
-  .beta ::-webkit-scrollbar-thumb { background: rgba(78, 201, 176, 0.35); }
+  .beta ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  .beta ::-webkit-scrollbar-track {
+    background: #0d1117;
+  }
+  .beta ::-webkit-scrollbar-thumb {
+    background: rgba(78, 201, 176, 0.35);
+  }
 
   /* =====================================================================
      Guild — Meaning Transformation Guild (meaningguild.org)
@@ -294,49 +333,84 @@
      Inter throughout. Sharp corners. Flat colour blocks.
   ====================================================================== */
   .guild {
-    --font-heading: "Inter Tight", ui-sans-serif, system-ui, sans-serif;
-    --font-body: "Inter Tight", ui-sans-serif, system-ui, sans-serif;
-    --font-display: "Inter Tight", ui-sans-serif, system-ui, sans-serif;
-    --font-mono: "IBM Plex Mono", ui-monospace, monospace;
-    --font-brand: "Inter Tight", ui-sans-serif, system-ui, sans-serif;
-    --background: 213 100% 10%;       /* #002554 Deep Navy — page canvas */
-    --foreground: 0 0% 100%;          /* White text on navy */
-    --card: 0 0% 95%;                 /* #F1F1F1 White Smoke cards */
-    --card-foreground: 213 100% 10%;  /* Navy text on white-smoke cards */
+    --font-heading: 'Inter Tight', ui-sans-serif, system-ui, sans-serif;
+    --font-body: 'Inter Tight', ui-sans-serif, system-ui, sans-serif;
+    --font-display: 'Inter Tight', ui-sans-serif, system-ui, sans-serif;
+    --font-mono: 'IBM Plex Mono', ui-monospace, monospace;
+    --font-brand: 'Inter Tight', ui-sans-serif, system-ui, sans-serif;
+    --background: 213 100% 10%; /* #002554 Deep Navy — page canvas */
+    --foreground: 0 0% 100%; /* White text on navy */
+    --card: 0 0% 95%; /* #F1F1F1 White Smoke cards */
+    --card-foreground: 213 100% 10%; /* Navy text on white-smoke cards */
     --popover: 213 100% 8%;
     --popover-foreground: 0 0% 100%;
-    --primary: 63 100% 50%;           /* #EDFF00 Yellow CTAs */
+    --primary: 63 100% 50%; /* #EDFF00 Yellow CTAs */
     --primary-foreground: 213 100% 10%; /* Navy text on yellow */
-    --secondary: 213 60% 16%;        /* lighter navy */
+    --secondary: 213 60% 16%; /* lighter navy */
     --secondary-foreground: 0 0% 100%;
     --muted: 213 60% 14%;
-    --muted-foreground: 0 0% 70%;     /* light gray #B2B2B2 on navy */
-    --accent: 63 100% 50%;           /* Yellow is also the accent */
+    --muted-foreground: 0 0% 70%; /* light gray #B2B2B2 on navy */
+    --accent: 63 100% 50%; /* Yellow is also the accent */
     --accent-foreground: 213 100% 10%;
     --destructive: 0 70% 50%;
     --destructive-foreground: 0 0% 98%;
-    --border: 213 40% 22%;           /* visible navy-ish border on navy bg */
+    --border: 213 40% 22%; /* visible navy-ish border on navy bg */
     --input: 213 40% 22%;
     --ring: 63 100% 50%;
-    --flare: 63 100% 50%;            /* yellow flare (no rose on live site) */
+    --flare: 63 100% 50%; /* yellow flare (no rose on live site) */
     --radius: 0px;
-    --c-void: 0 37 84;               /* #002554 navy for bg-void */
-    --c-silver: 241 241 241;         /* white smoke — text-silver renders white-ish */
+    --c-void: 0 37 84; /* #002554 navy for bg-void */
+    --c-silver: 241 241 241; /* white smoke — text-silver renders white-ish */
     --c-slate2: 100 115 140;
     --c-dim: 160 170 185;
-    --c-darkgray: 178 178 178;       /* #B2B2B2 */
-    --c-ozone: 237 255 0;            /* #EDFF00 yellow */
-    --c-flare: 237 255 0;            /* yellow (no rose) */
+    --c-darkgray: 178 178 178; /* #B2B2B2 */
+    --c-ozone: 237 255 0; /* #EDFF00 yellow */
+    --c-flare: 237 255 0; /* yellow (no rose) */
   }
-  .guild body { background-color: #002554; color: #FFFFFF; }
-  .guild ::selection { background-color: #EDFF00; color: #002554; }
+  .guild body {
+    background-color: #002554;
+    color: #ffffff;
+  }
+  .guild ::selection {
+    background-color: #edff00;
+    color: #002554;
+  }
 
   /* Typography — Inter throughout */
-  .guild h1 { font-family: var(--font-display); font-weight: 800; letter-spacing: -0.025em; line-height: 1.0; color: #FFFFFF; }
-  .guild h2 { font-family: var(--font-display); font-weight: 700; letter-spacing: -0.02em; line-height: 1.08; color: #FFFFFF; }
-  .guild h3, .guild h4 { font-family: var(--font-display); font-weight: 700; letter-spacing: -0.015em; line-height: 1.12; color: #FFFFFF; }
-  .guild p, .guild li { font-family: var(--font-body); font-weight: 400; line-height: 1.65; color: #FFFFFF; }
-  .guild .font-mono, .guild .font-mono-tech { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+  .guild h1 {
+    font-family: var(--font-display);
+    font-weight: 800;
+    letter-spacing: -0.025em;
+    line-height: 1;
+    color: #ffffff;
+  }
+  .guild h2 {
+    font-family: var(--font-display);
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    line-height: 1.08;
+    color: #ffffff;
+  }
+  .guild h3,
+  .guild h4 {
+    font-family: var(--font-display);
+    font-weight: 700;
+    letter-spacing: -0.015em;
+    line-height: 1.12;
+    color: #ffffff;
+  }
+  .guild p,
+  .guild li {
+    font-family: var(--font-body);
+    font-weight: 400;
+    line-height: 1.65;
+    color: #ffffff;
+  }
+  .guild .font-mono,
+  .guild .font-mono-tech {
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+  }
 
   /* ====== CONTRAST RULES — strict dark-on-light / light-on-dark ======
      1. WHITE-SMOKE CARDS (#F1F1F1) → ALL text navy #002554
@@ -345,28 +419,47 @@
   ==================================================================== */
 
   /* (1) White-smoke cards/sections — navy text */
-  .guild .bg-card { color: #002554; }
+  .guild .bg-card {
+    color: #002554;
+  }
   .guild .bg-card .text-foreground,
   .guild .bg-card .text-silver,
   .guild .bg-card .text-dim,
   .guild .bg-card .text-darkgray,
   .guild .bg-card .text-slate2,
-  .guild .bg-card h1, .guild .bg-card h2, .guild .bg-card h3, .guild .bg-card h4,
-  .guild .bg-card p, .guild .bg-card li, .guild .bg-card span, .guild .bg-card dd, .guild .bg-card dt,
-  .guild .bg-card .text-card-foreground { color: #002554 !important; }
-  .guild .bg-card .text-muted-foreground { color: #4a5a6a !important; }
+  .guild .bg-card h1,
+  .guild .bg-card h2,
+  .guild .bg-card h3,
+  .guild .bg-card h4,
+  .guild .bg-card p,
+  .guild .bg-card li,
+  .guild .bg-card span,
+  .guild .bg-card dd,
+  .guild .bg-card dt,
+  .guild .bg-card .text-card-foreground {
+    color: #002554 !important;
+  }
+  .guild .bg-card .text-muted-foreground {
+    color: #4a5a6a !important;
+  }
   .guild .bg-card .text-ozone,
   .guild .bg-card .text-accent,
-  .guild .bg-card .text-flare { color: #002554 !important; }
+  .guild .bg-card .text-flare {
+    color: #002554 !important;
+  }
   /* Kill yellow glow on light cards — shadow renders as invisible halo */
   .guild .bg-card .text-glow-ozone,
-  .guild .bg-card .text-glow-flare { text-shadow: none !important; }
+  .guild .bg-card .text-glow-flare {
+    text-shadow: none !important;
+  }
 
   /* (2) Yellow backgrounds (primary, accent, ozone, flare) — navy text */
   .guild .bg-primary,
   .guild .bg-accent,
   .guild .bg-ozone,
-  .guild .bg-flare { color: #002554; }
+  .guild .bg-flare {
+    color: #002554;
+  }
   .guild .bg-primary .text-foreground,
   .guild .bg-primary .text-silver,
   .guild .bg-primary .text-muted-foreground,
@@ -374,32 +467,54 @@
   .guild .bg-primary .text-darkgray,
   .guild .bg-primary .text-slate2,
   .guild .bg-primary .text-card-foreground,
-  .guild .bg-primary h1, .guild .bg-primary h2, .guild .bg-primary h3, .guild .bg-primary h4,
-  .guild .bg-primary p, .guild .bg-primary li, .guild .bg-primary span,
+  .guild .bg-primary h1,
+  .guild .bg-primary h2,
+  .guild .bg-primary h3,
+  .guild .bg-primary h4,
+  .guild .bg-primary p,
+  .guild .bg-primary li,
+  .guild .bg-primary span,
   .guild .bg-accent .text-foreground,
   .guild .bg-accent .text-silver,
   .guild .bg-accent .text-muted-foreground,
   .guild .bg-accent .text-dim,
   .guild .bg-accent .text-darkgray,
   .guild .bg-accent .text-slate2,
-  .guild .bg-accent h1, .guild .bg-accent h2, .guild .bg-accent h3, .guild .bg-accent h4,
-  .guild .bg-accent p, .guild .bg-accent li, .guild .bg-accent span,
+  .guild .bg-accent h1,
+  .guild .bg-accent h2,
+  .guild .bg-accent h3,
+  .guild .bg-accent h4,
+  .guild .bg-accent p,
+  .guild .bg-accent li,
+  .guild .bg-accent span,
   .guild .bg-ozone .text-foreground,
   .guild .bg-ozone .text-silver,
   .guild .bg-ozone .text-muted-foreground,
   .guild .bg-ozone .text-dim,
   .guild .bg-ozone .text-darkgray,
   .guild .bg-ozone .text-slate2,
-  .guild .bg-ozone h1, .guild .bg-ozone h2, .guild .bg-ozone h3, .guild .bg-ozone h4,
-  .guild .bg-ozone p, .guild .bg-ozone li, .guild .bg-ozone span,
+  .guild .bg-ozone h1,
+  .guild .bg-ozone h2,
+  .guild .bg-ozone h3,
+  .guild .bg-ozone h4,
+  .guild .bg-ozone p,
+  .guild .bg-ozone li,
+  .guild .bg-ozone span,
   .guild .bg-flare .text-foreground,
   .guild .bg-flare .text-silver,
   .guild .bg-flare .text-muted-foreground,
   .guild .bg-flare .text-dim,
   .guild .bg-flare .text-darkgray,
   .guild .bg-flare .text-slate2,
-  .guild .bg-flare h1, .guild .bg-flare h2, .guild .bg-flare h3, .guild .bg-flare h4,
-  .guild .bg-flare p, .guild .bg-flare li, .guild .bg-flare span { color: #002554 !important; }
+  .guild .bg-flare h1,
+  .guild .bg-flare h2,
+  .guild .bg-flare h3,
+  .guild .bg-flare h4,
+  .guild .bg-flare p,
+  .guild .bg-flare li,
+  .guild .bg-flare span {
+    color: #002554 !important;
+  }
   /* Yellow text on yellow bg → navy */
   .guild .bg-primary .text-ozone,
   .guild .bg-primary .text-accent,
@@ -412,13 +527,17 @@
   .guild .bg-ozone .text-flare,
   .guild .bg-flare .text-ozone,
   .guild .bg-flare .text-accent,
-  .guild .bg-flare .text-flare { color: #002554 !important; }
+  .guild .bg-flare .text-flare {
+    color: #002554 !important;
+  }
 
   /* (3) Navy backgrounds (void, popover, muted, secondary) — white text */
   .guild .bg-void,
   .guild .bg-popover,
   .guild .bg-muted,
-  .guild .bg-secondary { color: #FFFFFF; }
+  .guild .bg-secondary {
+    color: #ffffff;
+  }
   .guild .bg-void .text-card-foreground,
   .guild .bg-void .text-primary-foreground,
   .guild .bg-void .text-accent-foreground,
@@ -430,90 +549,167 @@
   .guild .bg-muted .text-accent-foreground,
   .guild .bg-secondary .text-card-foreground,
   .guild .bg-secondary .text-primary-foreground,
-  .guild .bg-secondary .text-accent-foreground { color: #FFFFFF !important; }
+  .guild .bg-secondary .text-accent-foreground {
+    color: #ffffff !important;
+  }
   /* NOTE: text-void (navy) is designed for light/yellow backgrounds — do NOT
      force it white just because an ancestor has a navy bg, or buttons like
      "EXPLORE THE MAP" (bg-ozone text-void inside a bg-void hero) lose their
      navy-on-yellow contrast. */
 
   /* Links — white on navy, navy on light, yellow hover */
-  .guild a { color: #FFFFFF; text-decoration: underline; text-decoration-color: rgba(237,255,0,0.5); text-underline-offset: 3px; }
-  .guild a:hover { color: #EDFF00; text-decoration-color: #EDFF00; }
+  .guild a {
+    color: #ffffff;
+    text-decoration: underline;
+    text-decoration-color: rgba(237, 255, 0, 0.5);
+    text-underline-offset: 3px;
+  }
+  .guild a:hover {
+    color: #edff00;
+    text-decoration-color: #edff00;
+  }
   .guild .bg-card a,
   .guild .bg-primary a,
   .guild .bg-accent a,
   .guild .bg-ozone a,
-  .guild .bg-flare a { color: #002554; text-decoration-color: rgba(0,37,84,0.4); }
+  .guild .bg-flare a {
+    color: #002554;
+    text-decoration-color: rgba(0, 37, 84, 0.4);
+  }
   .guild .bg-card a:hover,
   .guild .bg-primary a:hover,
   .guild .bg-accent a:hover,
   .guild .bg-ozone a:hover,
-  .guild .bg-flare a:hover { color: #002554; text-decoration-color: #002554; }
+  .guild .bg-flare a:hover {
+    color: #002554;
+    text-decoration-color: #002554;
+  }
 
   /* Yellow highlight phrase */
-  .guild .guild-emph { color: #EDFF00; font-weight: 700; }
+  .guild .guild-emph {
+    color: #edff00;
+    font-weight: 700;
+  }
   .guild .bg-card .guild-emph,
   .guild .bg-primary .guild-emph,
   .guild .bg-accent .guild-emph,
   .guild .bg-ozone .guild-emph,
-  .guild .bg-flare .guild-emph { color: #002554; font-weight: 700; }
+  .guild .bg-flare .guild-emph {
+    color: #002554;
+    font-weight: 700;
+  }
 
   /* Yellow CTA button — yellow fill, navy text */
   .guild .guild-btn {
-    display: inline-flex; align-items: center; gap: 6px;
-    background: #EDFF00; color: #002554; border: 2px solid #002554;
-    font-family: var(--font-body); font-size: 10px; font-weight: 700;
-    letter-spacing: 0.14em; text-transform: uppercase; padding: 10px 18px;
-    cursor: pointer; transition: opacity 0.15s;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: #edff00;
+    color: #002554;
+    border: 2px solid #002554;
+    font-family: var(--font-body);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    padding: 10px 18px;
+    cursor: pointer;
+    transition: opacity 0.15s;
   }
-  .guild .guild-btn:hover { opacity: 0.85; }
+  .guild .guild-btn:hover {
+    opacity: 0.85;
+  }
   /* Navy button — navy fill, yellow text */
   .guild .guild-btn-navy {
-    display: inline-flex; align-items: center; gap: 6px;
-    background: #002554; color: #EDFF00; border: none;
-    font-family: var(--font-body); font-size: 9px; font-weight: 700;
-    letter-spacing: 0.12em; text-transform: uppercase; padding: 8px 14px;
-    cursor: pointer; transition: opacity 0.15s;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: #002554;
+    color: #edff00;
+    border: none;
+    font-family: var(--font-body);
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    padding: 8px 14px;
+    cursor: pointer;
+    transition: opacity 0.15s;
   }
-  .guild .guild-btn-navy:hover { opacity: 0.85; }
+  .guild .guild-btn-navy:hover {
+    opacity: 0.85;
+  }
 
   /* Nav/header/footer — navy with white text */
-  .guild nav, .guild header, .guild footer {
-    background: #002554 !important; border-color: rgba(237,255,0,0.15) !important; color: #FFFFFF;
+  .guild nav,
+  .guild header,
+  .guild footer {
+    background: #002554 !important;
+    border-color: rgba(237, 255, 0, 0.15) !important;
+    color: #ffffff;
   }
-  .guild nav *, .guild header * { color: #FFFFFF; }
-  .guild nav a, .guild nav button, .guild header a, .guild header button {
-    color: #FFFFFF !important; border-color: rgba(255,255,255,0.2) !important;
+  .guild nav *,
+  .guild header * {
+    color: #ffffff;
   }
-  .guild nav a:hover, .guild nav button:hover, .guild header a:hover, .guild header button:hover {
-    color: #EDFF00 !important; border-color: #EDFF00 !important;
+  .guild nav a,
+  .guild nav button,
+  .guild header a,
+  .guild header button {
+    color: #ffffff !important;
+    border-color: rgba(255, 255, 255, 0.2) !important;
   }
-  .guild header .bg-ozone, .guild nav .bg-ozone {
-    background: #EDFF00 !important; color: #002554 !important; border-color: #002554 !important;
+  .guild nav a:hover,
+  .guild nav button:hover,
+  .guild header a:hover,
+  .guild header button:hover {
+    color: #edff00 !important;
+    border-color: #edff00 !important;
   }
-  .guild header .bg-ozone:hover, .guild nav .bg-ozone:hover {
-    background: #FFFFFF !important; color: #002554 !important;
+  .guild header .bg-ozone,
+  .guild nav .bg-ozone {
+    background: #edff00 !important;
+    color: #002554 !important;
+    border-color: #002554 !important;
+  }
+  .guild header .bg-ozone:hover,
+  .guild nav .bg-ozone:hover {
+    background: #ffffff !important;
+    color: #002554 !important;
   }
 
   /* Scrollbar */
-  .guild ::-webkit-scrollbar { width: 8px; height: 8px; }
-  .guild ::-webkit-scrollbar-track { background: #001a3a; }
-  .guild ::-webkit-scrollbar-thumb { background: rgba(237,255,0,0.4); }
+  .guild ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  .guild ::-webkit-scrollbar-track {
+    background: #001a3a;
+  }
+  .guild ::-webkit-scrollbar-thumb {
+    background: rgba(237, 255, 0, 0.4);
+  }
 
   /* Yellow stripe at very top of page (brand signature) */
   .guild body::before {
-    content: ""; display: block; position: fixed;
-    top: 0; left: 0; right: 0; height: 4px;
-    background: #EDFF00; z-index: 9999;
+    content: '';
+    display: block;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: #edff00;
+    z-index: 9999;
   }
 
   /* Crafty — hand-drawn marker mode */
   .crafty {
-    --font-heading: "Lacquer", "Inter Tight", ui-sans-serif, system-ui, sans-serif;
-    --font-body: "Lacquer", "Inter Tight", ui-sans-serif, system-ui, sans-serif;
-    --font-display: "Lacquer", "Inter Tight", ui-sans-serif, system-ui, sans-serif;
-    --font-mono: "Doto", "Share Tech Mono", ui-monospace, monospace;
-    --font-brand: "Lacquer", "Inter Tight", ui-sans-serif, system-ui, sans-serif;
+    --font-heading: 'Lacquer', 'Inter Tight', ui-sans-serif, system-ui, sans-serif;
+    --font-body: 'Lacquer', 'Inter Tight', ui-sans-serif, system-ui, sans-serif;
+    --font-display: 'Lacquer', 'Inter Tight', ui-sans-serif, system-ui, sans-serif;
+    --font-mono: 'Doto', 'Share Tech Mono', ui-monospace, monospace;
+    --font-brand: 'Lacquer', 'Inter Tight', ui-sans-serif, system-ui, sans-serif;
     --background: 40 12% 8%;
     --foreground: 40 18% 92%;
     --card: 40 10% 11%;
@@ -543,24 +739,39 @@
     --c-ozone: 229 57 53;
     --c-flare: 245 158 60;
   }
-  .crafty body { background-color: hsl(40 12% 8%); }
-  .crafty ::selection { background-color: #E53935; color: #fff; }
-  .crafty h1, .crafty h2, .crafty h3, .crafty h4 {
+  .crafty body {
+    background-color: hsl(40 12% 8%);
+  }
+  .crafty ::selection {
+    background-color: #e53935;
+    color: #fff;
+  }
+  .crafty h1,
+  .crafty h2,
+  .crafty h3,
+  .crafty h4 {
     font-family: var(--font-display);
     font-weight: 400;
     letter-spacing: 0.01em;
     line-height: 1.05;
   }
-  .crafty, .crafty * { text-transform: none !important; }
+  .crafty,
+  .crafty * {
+    text-transform: none !important;
+  }
   /* Enforce Lacquer across all body copy (beats inline-style leaks);
      numeric / monospaced readouts remain in the digital font */
-  .crafty * { font-family: var(--font-body) !important; }
+  .crafty * {
+    font-family: var(--font-body) !important;
+  }
   .crafty .font-mono,
   .crafty .font-mono-tech,
   .crafty .tabular,
   .crafty .tabular-nums,
   .crafty code,
-  .crafty pre { font-family: var(--font-mono) !important; }
+  .crafty pre {
+    font-family: var(--font-mono) !important;
+  }
 }
 
 @layer base {
@@ -600,12 +811,21 @@
   }
 
   /* Prevent any media element from exceeding the viewport width */
-  img, video, canvas, svg, iframe, table {
+  img,
+  video,
+  canvas,
+  svg,
+  iframe,
+  table {
     max-width: 100%;
   }
 
   /* Ensure flex/grid children don't force horizontal overflow */
-  main, section, footer, header, nav {
+  main,
+  section,
+  footer,
+  header,
+  nav {
     max-width: 100%;
   }
 
@@ -620,7 +840,7 @@
   button,
   a,
   nav,
-  [role="button"],
+  [role='button'],
   summary {
     -webkit-user-select: none;
     user-select: none;
@@ -632,7 +852,7 @@
   }
 
   ::selection {
-    background-color: #EDFF00;
+    background-color: #edff00;
     color: #000000;
   }
 
@@ -642,20 +862,24 @@
   textarea:focus-visible,
   select:focus-visible,
   [tabindex]:focus-visible {
-    outline: 2px solid #EDFF00;
+    outline: 2px solid #edff00;
     outline-offset: 2px;
   }
 }
 
 @layer utilities {
   .font-display {
-    font-family: "Inter Tight", ui-sans-serif, system-ui, sans-serif;
+    font-family: 'Inter Tight', ui-sans-serif, system-ui, sans-serif;
   }
   .font-mono-tech {
     font-family: var(--font-mono);
   }
-  .crafty .font-display { font-family: var(--font-display); }
-  .crafty .font-mono-tech { font-family: var(--font-mono); }
+  .crafty .font-display {
+    font-family: var(--font-display);
+  }
+  .crafty .font-mono-tech {
+    font-family: var(--font-mono);
+  }
   .meridian-line {
     border-color: rgba(241, 241, 241, 0.08);
   }
@@ -665,17 +889,21 @@
   .hi-vis-stripes {
     background-image: repeating-linear-gradient(
       45deg,
-      #EDFF00 0,
-      #EDFF00 12px,
+      #edff00 0,
+      #edff00 12px,
       #000000 12px,
       #000000 24px
     );
   }
   .text-glow-ozone {
-    text-shadow: 0 0 6px rgba(237, 255, 0, 0.45), 0 0 16px rgba(237, 255, 0, 0.15);
+    text-shadow:
+      0 0 6px rgba(237, 255, 0, 0.45),
+      0 0 16px rgba(237, 255, 0, 0.15);
   }
   .text-glow-flare {
-    text-shadow: 0 0 6px rgba(255, 92, 0, 0.5), 0 0 16px rgba(255, 92, 0, 0.18);
+    text-shadow:
+      0 0 6px rgba(255, 92, 0, 0.5),
+      0 0 16px rgba(255, 92, 0, 0.18);
   }
   .glitch {
     position: relative;
@@ -699,12 +927,24 @@
     animation: ooh-glitch-bottom 1.9s infinite steps(2) alternate-reverse;
   }
   @keyframes ooh-glitch-top {
-    0% { clip-path: inset(0 0 82% 0); transform: translateX(-1px); }
-    100% { clip-path: inset(38% 0 48% 0); transform: translateX(1px); }
+    0% {
+      clip-path: inset(0 0 82% 0);
+      transform: translateX(-1px);
+    }
+    100% {
+      clip-path: inset(38% 0 48% 0);
+      transform: translateX(1px);
+    }
   }
   @keyframes ooh-glitch-bottom {
-    0% { clip-path: inset(78% 0 0 0); transform: translateX(1px); }
-    100% { clip-path: inset(22% 0 58% 0); transform: translateX(-1px); }
+    0% {
+      clip-path: inset(78% 0 0 0);
+      transform: translateX(1px);
+    }
+    100% {
+      clip-path: inset(22% 0 58% 0);
+      transform: translateX(-1px);
+    }
   }
   .tabular {
     font-variant-numeric: tabular-nums;
@@ -757,7 +997,7 @@
 @media (prefers-reduced-motion: no-preference) {
   button:active:not(:disabled),
   a:active,
-  [role="button"]:active,
+  [role='button']:active,
   [data-tactile]:active,
   summary:active {
     transform: scale(0.985);
@@ -767,11 +1007,20 @@
 
 /* Ambient sensory layer — air-quality-driven breathe */
 @keyframes ambient-breathe {
-  0%, 100% { opacity: 0.5; }
-  50% { opacity: 1; }
+  0%,
+  100% {
+    opacity: 0.5;
+  }
+  50% {
+    opacity: 1;
+  }
 }
-.ambient-glow[data-cat="warn"] { animation: ambient-breathe 6s ease-in-out infinite; }
-.ambient-glow[data-cat="hazard"] { animation: ambient-breathe 3.2s ease-in-out infinite; }
+.ambient-glow[data-cat='warn'] {
+  animation: ambient-breathe 6s ease-in-out infinite;
+}
+.ambient-glow[data-cat='hazard'] {
+  animation: ambient-breathe 3.2s ease-in-out infinite;
+}
 
 /* Reduced motion */
 @media (prefers-reduced-motion: reduce) {
@@ -788,92 +1037,222 @@
 }
 
 @keyframes flicker {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.7; }
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
 }
 .animate-flicker {
   animation: flicker 3s ease-in-out infinite;
 }
 
 @keyframes marquee {
-  0% { transform: translateX(0); }
-  100% { transform: translateX(-50%); }
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
 }
 .animate-marquee {
   animation: marquee 30s linear infinite;
 }
 
 @keyframes blink {
-  0%, 49% { opacity: 1; }
-  50%, 100% { opacity: 0; }
+  0%,
+  49% {
+    opacity: 1;
+  }
+  50%,
+  100% {
+    opacity: 0;
+  }
 }
 .animate-blink {
   animation: blink 1.1s steps(1) infinite;
 }
 
 @keyframes spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 /* Pin selection pulse — V2 map marker */
 @keyframes ooh-pinpulse {
-  0% { transform: scale(1); opacity: 0.6; }
-  100% { transform: scale(1.7); opacity: 0; }
+  0% {
+    transform: scale(1);
+    opacity: 0.6;
+  }
+  100% {
+    transform: scale(1.7);
+    opacity: 0;
+  }
 }
 
 @keyframes scan-sweep {
-  0% { transform: translateY(0); }
-  100% { transform: translateY(100vh); }
+  0% {
+    transform: translateY(0);
+  }
+  100% {
+    transform: translateY(100vh);
+  }
 }
 .animate-scan {
   animation: scan-sweep 7s linear infinite;
 }
 
 /* Sparkline draw-in */
-@keyframes spark-draw { from { stroke-dashoffset: 1000; } to { stroke-dashoffset: 0; } }
-.spark-line { stroke-dasharray: 1000; stroke-dashoffset: 1000; animation: spark-draw 1.4s ease-out forwards; }
-@keyframes spark-fade { from { opacity: 0; } to { opacity: 1; } }
-.spark-area { opacity: 0; animation: spark-fade 1.2s ease-out 0.4s forwards; }
+@keyframes spark-draw {
+  from {
+    stroke-dashoffset: 1000;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+.spark-line {
+  stroke-dasharray: 1000;
+  stroke-dashoffset: 1000;
+  animation: spark-draw 1.4s ease-out forwards;
+}
+@keyframes spark-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+.spark-area {
+  opacity: 0;
+  animation: spark-fade 1.2s ease-out 0.4s forwards;
+}
 
 /* Click ripple */
-@keyframes ripple-expand { from { transform: translate(-50%,-50%) scale(0); opacity: 0.55; } to { transform: translate(-50%,-50%) scale(2.6); opacity: 0; } }
-.ripple-pulse { animation: ripple-expand 0.6s ease-out forwards; }
+@keyframes ripple-expand {
+  from {
+    transform: translate(-50%, -50%) scale(0);
+    opacity: 0.55;
+  }
+  to {
+    transform: translate(-50%, -50%) scale(2.6);
+    opacity: 0;
+  }
+}
+.ripple-pulse {
+  animation: ripple-expand 0.6s ease-out forwards;
+}
 
 /* Radio equalizer bars */
 @keyframes ooh-eq {
-  0%, 100% { transform: scaleY(0.25); }
-  50% { transform: scaleY(1); }
+  0%,
+  100% {
+    transform: scaleY(0.25);
+  }
+  50% {
+    transform: scaleY(1);
+  }
 }
-.eq-bar { transform-origin: bottom; animation: ooh-eq 0.8s ease-in-out infinite; }
+.eq-bar {
+  transform-origin: bottom;
+  animation: ooh-eq 0.8s ease-in-out infinite;
+}
 
 /* === Mode style-kit specimens (ThemeModeMatrix) === */
-@keyframes kit-draw { from { stroke-dashoffset: 240; } to { stroke-dashoffset: 0; } }
-.draw-stroke { stroke-dasharray: 240; stroke-dashoffset: 240; animation: kit-draw 1.8s ease-out 0.2s forwards; }
+@keyframes kit-draw {
+  from {
+    stroke-dashoffset: 240;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+.draw-stroke {
+  stroke-dasharray: 240;
+  stroke-dashoffset: 240;
+  animation: kit-draw 1.8s ease-out 0.2s forwards;
+}
 
-@keyframes kit-type { from { width: 0; } to { width: 21ch; } }
-.typewriter { display: inline-block; overflow: hidden; white-space: nowrap; vertical-align: bottom; width: 0; animation: kit-type 2.6s steps(21) 0.3s forwards; }
-.typewriter-caret { display: inline-block; animation: blink 1.1s steps(1) infinite; }
+@keyframes kit-type {
+  from {
+    width: 0;
+  }
+  to {
+    width: 21ch;
+  }
+}
+.typewriter {
+  display: inline-block;
+  overflow: hidden;
+  white-space: nowrap;
+  vertical-align: bottom;
+  width: 0;
+  animation: kit-type 2.6s steps(21) 0.3s forwards;
+}
+.typewriter-caret {
+  display: inline-block;
+  animation: blink 1.1s steps(1) infinite;
+}
 
-@keyframes kit-rain { from { background-position: 0 -200px; } to { background-position: 0 200px; } }
+@keyframes kit-rain {
+  from {
+    background-position: 0 -200px;
+  }
+  to {
+    background-position: 0 200px;
+  }
+}
 .matrix-rain {
-  background-image: repeating-linear-gradient(180deg, rgba(0,255,85,0.7) 0 1px, transparent 1px 14px);
+  background-image: repeating-linear-gradient(
+    180deg,
+    rgba(0, 255, 85, 0.7) 0 1px,
+    transparent 1px 14px
+  );
   background-size: 100% 200px;
   animation: kit-rain 1.6s linear infinite;
   -webkit-mask-image: linear-gradient(180deg, transparent, #000 35%, #000 65%, transparent);
   mask-image: linear-gradient(180deg, transparent, #000 35%, #000 65%, transparent);
 }
 
-@keyframes kit-radar { from { transform: rotate(0); } to { transform: rotate(360deg); } }
-.radar-sweep { transform-box: view-box; transform-origin: 24px 24px; animation: kit-radar 3s linear infinite; }
+@keyframes kit-radar {
+  from {
+    transform: rotate(0);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+.radar-sweep {
+  transform-box: view-box;
+  transform-origin: 24px 24px;
+  animation: kit-radar 3s linear infinite;
+}
 
-.highlighter { -webkit-box-decoration-break: clone; box-decoration-break: clone; padding: 0 0.12em; background: linear-gradient(180deg, transparent 58%, rgb(var(--c-flare) / 0.5) 58%); }
+.highlighter {
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+  padding: 0 0.12em;
+  background: linear-gradient(180deg, transparent 58%, rgb(var(--c-flare) / 0.5) 58%);
+}
 
-.tape { background: rgb(var(--c-ozone) / 0.16); border: 1px dashed rgb(var(--c-ozone) / 0.5); box-shadow: 0 2px 8px rgba(0,0,0,0.3); }
+.tape {
+  background: rgb(var(--c-ozone) / 0.16);
+  border: 1px dashed rgb(var(--c-ozone) / 0.5);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
 
 /* Light mode: hide hero background video/images + dark gradient overlays for now */
 .light .hero-media,
-.light .hero-overlay { display: none !important; }
-.light .hero-section { background-color: #ffffff !important; }
+.light .hero-overlay {
+  display: none !important;
+}
+.light .hero-section {
+  background-color: #ffffff !important;
+}
 
 /* Light mode: MetroKit inverted cards become solid, legible header-style surfaces */
 .light .metro-invert {
@@ -897,8 +1276,13 @@
 
 /* BrandMark — orbital gyroscope */
 @keyframes ooh-core-pulse {
-  0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.16); }
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.16);
+  }
 }
 .ooh-core {
   transform-box: fill-box;
@@ -906,8 +1290,13 @@
   animation: ooh-core-pulse 3.4s ease-in-out infinite;
 }
 @media (prefers-reduced-motion: reduce) {
-  animate, animateTransform { display: none; }
-  .ooh-core { animation: none; }
+  animate,
+  animateTransform {
+    display: none;
+  }
+  .ooh-core {
+    animation: none;
+  }
 }
 
 /* Map popup action buttons — terminal-style bordered micro-buttons */
@@ -924,15 +1313,36 @@
   letter-spacing: 0.15em;
   text-decoration: none;
   line-height: 1;
-  transition: background 0.15s, color 0.15s, border-color 0.15s;
+  transition:
+    background 0.15s,
+    color 0.15s,
+    border-color 0.15s;
   white-space: nowrap;
 }
-.ooh-popup-btn--flare { border-color: rgba(255, 92, 0, 0.5); color: #FF5C00; }
-.ooh-popup-btn--flare:hover { background: #FF5C00; color: #000; }
-.ooh-popup-btn--ozone { border-color: rgba(237, 255, 0, 0.5); color: #EDFF00; }
-.ooh-popup-btn--ozone:hover { background: #EDFF00; color: #000; }
-.ooh-popup-btn--ghost { border-color: rgba(178, 178, 178, 0.3); color: #B2B2B2; }
-.ooh-popup-btn--ghost:hover { border-color: #EDFF00; color: #EDFF00; }
+.ooh-popup-btn--flare {
+  border-color: rgba(255, 92, 0, 0.5);
+  color: #ff5c00;
+}
+.ooh-popup-btn--flare:hover {
+  background: #ff5c00;
+  color: #000;
+}
+.ooh-popup-btn--ozone {
+  border-color: rgba(237, 255, 0, 0.5);
+  color: #edff00;
+}
+.ooh-popup-btn--ozone:hover {
+  background: #edff00;
+  color: #000;
+}
+.ooh-popup-btn--ghost {
+  border-color: rgba(178, 178, 178, 0.3);
+  color: #b2b2b2;
+}
+.ooh-popup-btn--ghost:hover {
+  border-color: #edff00;
+  color: #edff00;
+}
 
 /* Leaflet popup — terminal-styled, theme-aware chrome */
 .leaflet-container .leaflet-popup-content-wrapper,
@@ -950,15 +1360,23 @@
   border-color: rgba(0, 0, 0, 0.1) !important;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.18) !important;
 }
-.leaflet-container .leaflet-popup-content { margin: 0 !important; line-height: 1.4; }
+.leaflet-container .leaflet-popup-content {
+  margin: 0 !important;
+  line-height: 1.4;
+}
 .leaflet-container .leaflet-popup-close-button {
   color: hsl(var(--muted-foreground)) !important;
   top: 6px !important;
   right: 6px !important;
   z-index: 10;
 }
-.leaflet-container .leaflet-popup-close-button:hover { color: #EDFF00 !important; }
-.leaflet-container a.leaflet-popup-close-button { width: 20px; height: 20px; }
+.leaflet-container .leaflet-popup-close-button:hover {
+  color: #edff00 !important;
+}
+.leaflet-container a.leaflet-popup-close-button {
+  width: 20px;
+  height: 20px;
+}
 
 /* Leaflet zoom control — terminal-styled */
 .leaflet-control-zoom {
@@ -969,7 +1387,7 @@
 }
 .leaflet-control-zoom a {
   background: rgba(10, 10, 10, 0.85) !important;
-  color: #B2B2B2 !important;
+  color: #b2b2b2 !important;
   border-bottom: 1px solid rgba(237, 255, 0, 0.08) !important;
   font-family: 'IBM Plex Mono', monospace !important;
   font-size: 16px !important;
@@ -977,12 +1395,14 @@
   width: 32px !important;
   height: 32px !important;
   line-height: 32px !important;
-  transition: color 0.15s, background 0.15s !important;
+  transition:
+    color 0.15s,
+    background 0.15s !important;
   backdrop-filter: blur(8px);
 }
 .leaflet-control-zoom a:hover {
   background: rgba(237, 255, 0, 0.1) !important;
-  color: #EDFF00 !important;
+  color: #edff00 !important;
 }
 .leaflet-control-zoom a:last-child {
   border-bottom: none !important;
@@ -1026,22 +1446,40 @@
   border-color: rgba(0, 0, 0, 0.1) !important;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.18) !important;
 }
-.leaflet-tooltip-top::before { border-top-color: #0a0a0a !important; }
-.leaflet-tooltip-bottom::before { border-bottom-color: #0a0a0a !important; }
-.leaflet-tooltip-left::before { border-left-color: #0a0a0a !important; }
-.leaflet-tooltip-right::before { border-right-color: #0a0a0a !important; }
-.light .leaflet-tooltip-top::before { border-top-color: #f7f7f7 !important; }
-.light .leaflet-tooltip-bottom::before { border-bottom-color: #f7f7f7 !important; }
-.light .leaflet-tooltip-left::before { border-left-color: #f7f7f7 !important; }
-.light .leaflet-tooltip-right::before { border-right-color: #f7f7f7 !important; }
+.leaflet-tooltip-top::before {
+  border-top-color: #0a0a0a !important;
+}
+.leaflet-tooltip-bottom::before {
+  border-bottom-color: #0a0a0a !important;
+}
+.leaflet-tooltip-left::before {
+  border-left-color: #0a0a0a !important;
+}
+.leaflet-tooltip-right::before {
+  border-right-color: #0a0a0a !important;
+}
+.light .leaflet-tooltip-top::before {
+  border-top-color: #f7f7f7 !important;
+}
+.light .leaflet-tooltip-bottom::before {
+  border-bottom-color: #f7f7f7 !important;
+}
+.light .leaflet-tooltip-left::before {
+  border-left-color: #f7f7f7 !important;
+}
+.light .leaflet-tooltip-right::before {
+  border-right-color: #f7f7f7 !important;
+}
 
 /* Matrix — mobile bottom nav: phosphor glow + scanline border */
 .matrix .ooh-mobile-nav {
   border-color: rgba(0, 255, 85, 0.3);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.7), 0 0 24px rgba(0, 255, 85, 0.12);
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.7),
+    0 0 24px rgba(0, 255, 85, 0.12);
 }
 .matrix .ooh-mobile-nav::before {
-  content: "";
+  content: '';
   position: absolute;
   inset: 0;
   border-radius: 9999px;
@@ -1059,11 +1497,13 @@
 }
 
 /* Mobile map fullscreen — hide global bottom tab bar */
-body.map-fullscreen .ooh-mobile-nav { display: none !important; }
+body.map-fullscreen .ooh-mobile-nav {
+  display: none !important;
+}
 
 /* Bottom sheet scanline overlay — subtle CRT layer over the sheet */
 .ooh-bottom-sheet::before {
-  content: "";
+  content: '';
   position: absolute;
   inset: 0;
   pointer-events: none;
@@ -1076,19 +1516,32 @@ body.map-fullscreen .ooh-mobile-nav { display: none !important; }
     transparent 3px
   );
 }
-.ooh-bottom-sheet > * { position: relative; z-index: 1; }
+.ooh-bottom-sheet > * {
+  position: relative;
+  z-index: 1;
+}
 
 /* Matrix map tint — green-on-black via CSS filter (tiles only, pins stay yellow) */
-.ooh-map-style-matrix .leaflet-tile-pane { filter: sepia(1) hue-rotate(60deg) saturate(2.6) brightness(0.92); }
-.ooh-globe-style-matrix .maplibregl-canvas { filter: sepia(1) hue-rotate(60deg) saturate(2.6) brightness(0.92); }
+.ooh-map-style-matrix .leaflet-tile-pane {
+  filter: sepia(1) hue-rotate(60deg) saturate(2.6) brightness(0.92);
+}
+.ooh-globe-style-matrix .maplibregl-canvas {
+  filter: sepia(1) hue-rotate(60deg) saturate(2.6) brightness(0.92);
+}
 
 /* MapLibre GL — capture touch so the globe rotates on mobile instead of scrolling the page */
 .maplibregl-canvas-container,
-.maplibregl-canvas { touch-action: none; }
+.maplibregl-canvas {
+  touch-action: none;
+}
 
 /* MapLibre GL popup — terminal-styled chrome */
-.maplibregl-popup { --pp-bg: #0a0a0a; }
-.light .maplibregl-popup { --pp-bg: #f5f5f5; }
+.maplibregl-popup {
+  --pp-bg: #0a0a0a;
+}
+.light .maplibregl-popup {
+  --pp-bg: #f5f5f5;
+}
 .maplibregl-popup-content {
   background: var(--pp-bg) !important;
   color: hsl(var(--foreground)) !important;
@@ -1106,21 +1559,39 @@ body.map-fullscreen .ooh-mobile-nav { display: none !important; }
   font-size: 18px !important;
   padding: 6px 8px !important;
 }
-.maplibregl-popup-close-button:hover { color: #EDFF00 !important; }
+.maplibregl-popup-close-button:hover {
+  color: #edff00 !important;
+}
 .maplibregl-popup-tip {
   border-top-color: var(--pp-bg) !important;
   border-bottom-color: var(--pp-bg) !important;
   border-left-color: var(--pp-bg) !important;
   border-right-color: var(--pp-bg) !important;
 }
-.maplibregl-ctrl-attrib { background: rgba(0,0,0,0.5) !important; }
-.maplibregl-ctrl-attrib, .maplibregl-ctrl-attrib a { color: #888 !important; }
+.maplibregl-ctrl-attrib {
+  background: rgba(0, 0, 0, 0.5) !important;
+}
+.maplibregl-ctrl-attrib,
+.maplibregl-ctrl-attrib a {
+  color: #888 !important;
+}
 
 /* Print scope — only the field ID card prints when triggered from the dashboard */
 @media print {
-  body.printing-field-id * { visibility: hidden !important; }
+  body.printing-field-id * {
+    visibility: hidden !important;
+  }
   body.printing-field-id .print-scope,
-  body.printing-field-id .print-scope * { visibility: visible !important; }
-  body.printing-field-id .print-scope { position: absolute; left: 0; top: 0; width: 100%; }
-  body.printing-field-id .no-print { display: none !important; }
+  body.printing-field-id .print-scope * {
+    visibility: visible !important;
+  }
+  body.printing-field-id .print-scope {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+  }
+  body.printing-field-id .no-print {
+    display: none !important;
+  }
 }

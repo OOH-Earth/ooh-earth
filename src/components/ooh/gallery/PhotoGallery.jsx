@@ -1,8 +1,8 @@
-import { useEffect, useState } from "react";
-import { base44 } from "@/api/base44Client";
-import { Image } from "@/components/ui/image";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { ChevronLeft, ChevronRight, Images } from "lucide-react";
+import { useEffect, useState } from 'react';
+import { base44 } from '@/api/base44Client';
+import { Image } from '@/components/ui/image';
+import { Dialog, DialogContent } from '@/components/ui/dialog';
+import { ChevronLeft, ChevronRight, Images } from 'lucide-react';
 
 /**
  * Location photo gallery. Reads LocationPhoto rows (base44/entities/LocationPhoto.jsonc)
@@ -25,10 +25,10 @@ export default function PhotoGallery({ loc, icon: Icon, accent }) {
       try {
         const rows = await base44.entities.LocationPhoto.filter(
           { location_id: String(loc.id) },
-          "display_order",
-          50
+          'display_order',
+          50,
         );
-        if (alive) setPhotos((rows || []).map((r) => ({ url: r.url, caption: r.caption || "" })));
+        if (alive) setPhotos((rows || []).map((r) => ({ url: r.url, caption: r.caption || '' })));
       } catch {
         if (alive) setPhotos([]);
       } finally {
@@ -41,7 +41,7 @@ export default function PhotoGallery({ loc, icon: Icon, accent }) {
   }, [loc?.id]);
 
   const extra = photos.filter((p) => p.url && p.url !== loc.image_url);
-  const gallery = loc.image_url ? [{ url: loc.image_url, caption: "" }, ...extra] : extra;
+  const gallery = loc.image_url ? [{ url: loc.image_url, caption: '' }, ...extra] : extra;
 
   if (!loaded) {
     return <div className="aspect-[4/3] animate-pulse border border-slate2 grid-bg" />;
@@ -62,7 +62,12 @@ export default function PhotoGallery({ loc, icon: Icon, accent }) {
         onClick={() => setOpenIndex(0)}
         className="relative aspect-[4/3] overflow-hidden border border-slate2 text-left"
       >
-        <Image src={gallery[0].url} alt={loc.title} className="h-full w-full object-cover" fittingType="fill" />
+        <Image
+          src={gallery[0].url}
+          alt={loc.title}
+          className="h-full w-full object-cover"
+          fittingType="fill"
+        />
         {gallery.length > 1 && (
           <span className="absolute bottom-2 right-2 flex items-center gap-1 border border-slate2 bg-void/80 px-2 py-1 font-mono text-[9px] uppercase tracking-[0.2em] text-silver backdrop-blur-sm">
             <Images className="h-3 w-3" /> {gallery.length}
@@ -100,7 +105,9 @@ export default function PhotoGallery({ loc, icon: Icon, accent }) {
                 className="max-h-[75vh] w-full object-contain"
               />
               {gallery[openIndex].caption && (
-                <p className="mt-2 px-1 font-mono text-[11px] text-darkgray">{gallery[openIndex].caption}</p>
+                <p className="mt-2 px-1 font-mono text-[11px] text-darkgray">
+                  {gallery[openIndex].caption}
+                </p>
               )}
               {gallery.length > 1 && (
                 <div className="mt-2 flex items-center justify-between">

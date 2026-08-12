@@ -1,6 +1,6 @@
-import { useEffect, useRef } from "react";
-import * as THREE from "three";
-import { platformMeta } from "./digitalConfig";
+import { useEffect, useRef } from 'react';
+import * as THREE from 'three';
+import { platformMeta } from './digitalConfig';
 
 // 3D metaverse-style ad field: floating billboard planes on posts.
 // Operatives drag to orbit, click a billboard to select the bust.
@@ -49,7 +49,7 @@ export default function DigitalScene({ busts = [], selectedId, onSelect, onPlace
     // invisible ground plane for click-to-place raycasting
     const ground = new THREE.Mesh(
       new THREE.PlaneGeometry(90, 90),
-      new THREE.MeshStandardMaterial({ color: 0x0a0a0a, transparent: true, opacity: 0.01 })
+      new THREE.MeshStandardMaterial({ color: 0x0a0a0a, transparent: true, opacity: 0.01 }),
     );
     ground.rotation.x = -Math.PI / 2;
     ground.position.y = -2.99;
@@ -71,16 +71,28 @@ export default function DigitalScene({ busts = [], selectedId, onSelect, onPlace
       pointer.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
       raycaster.setFromCamera(pointer, camera);
       const hit = raycaster.intersectObjects(stateRef.current.planes, false)[0];
-      if (hit && hit.object.userData.bustId) { onSelect && onSelect(hit.object.userData.bustId); return; }
-      const g = stateRef.current.ground && raycaster.intersectObject(stateRef.current.ground, false)[0];
+      if (hit && hit.object.userData.bustId) {
+        onSelect && onSelect(hit.object.userData.bustId);
+        return;
+      }
+      const g =
+        stateRef.current.ground && raycaster.intersectObject(stateRef.current.ground, false)[0];
       if (g) onPlace && onPlace();
     };
-    renderer.domElement.addEventListener("click", onClick);
+    renderer.domElement.addEventListener('click', onClick);
 
     // drag to orbit
-    let dragging = false, lastX = 0, lastY = 0;
-    let yaw = 0, pitch = 0.25;
-    const down = () => { dragging = true; dragged = false; lastX = 0; lastY = 0; };
+    let dragging = false,
+      lastX = 0,
+      lastY = 0;
+    let yaw = 0,
+      pitch = 0.25;
+    const down = () => {
+      dragging = true;
+      dragged = false;
+      lastX = 0;
+      lastY = 0;
+    };
     const move = (e) => {
       if (!dragging) return;
       if (lastX || lastY) {
@@ -88,12 +100,15 @@ export default function DigitalScene({ busts = [], selectedId, onSelect, onPlace
       }
       yaw += (e.clientX - lastX) * 0.005;
       pitch = Math.max(-0.4, Math.min(1.1, pitch + (e.clientY - lastY) * 0.005));
-      lastX = e.clientX; lastY = e.clientY;
+      lastX = e.clientX;
+      lastY = e.clientY;
     };
-    const up = () => { dragging = false; };
-    renderer.domElement.addEventListener("pointerdown", down);
-    window.addEventListener("pointermove", move);
-    window.addEventListener("pointerup", up);
+    const up = () => {
+      dragging = false;
+    };
+    renderer.domElement.addEventListener('pointerdown', down);
+    window.addEventListener('pointermove', move);
+    window.addEventListener('pointerup', up);
 
     let raf;
     const animate = () => {
@@ -109,18 +124,21 @@ export default function DigitalScene({ busts = [], selectedId, onSelect, onPlace
     animate();
 
     const onResize = () => {
-      const W = mount.clientWidth || 1, H = mount.clientHeight || 1;
-      camera.aspect = W / H; camera.updateProjectionMatrix(); renderer.setSize(W, H);
+      const W = mount.clientWidth || 1,
+        H = mount.clientHeight || 1;
+      camera.aspect = W / H;
+      camera.updateProjectionMatrix();
+      renderer.setSize(W, H);
     };
-    window.addEventListener("resize", onResize);
+    window.addEventListener('resize', onResize);
 
     return () => {
       cancelAnimationFrame(raf);
-      window.removeEventListener("resize", onResize);
-      window.removeEventListener("pointermove", move);
-      window.removeEventListener("pointerup", up);
-      renderer.domElement.removeEventListener("click", onClick);
-      renderer.domElement.removeEventListener("pointerdown", down);
+      window.removeEventListener('resize', onResize);
+      window.removeEventListener('pointermove', move);
+      window.removeEventListener('pointerup', up);
+      renderer.domElement.removeEventListener('click', onClick);
+      renderer.domElement.removeEventListener('pointerdown', down);
       mount.removeChild(renderer.domElement);
       renderer.dispose();
     };
@@ -144,8 +162,8 @@ export default function DigitalScene({ busts = [], selectedId, onSelect, onPlace
     const cols = 5;
     busts.forEach((b, i) => {
       const meta = platformMeta(b.platform);
-      const verified = b.status === "verified";
-      const color = verified ? 0xedff00 : (meta.accent === "#FF5C00" ? 0xff5c00 : 0xedff00);
+      const verified = b.status === 'verified';
+      const color = verified ? 0xedff00 : meta.accent === '#FF5C00' ? 0xff5c00 : 0xedff00;
       const col = i % cols;
       const row = Math.floor(i / cols);
       const x = (col - (cols - 1) / 2) * 4.4;

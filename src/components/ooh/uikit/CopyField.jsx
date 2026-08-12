@@ -1,7 +1,7 @@
-import { useState } from "react";
-import { Check, Copy } from "lucide-react";
+import { useState } from 'react';
+import { Check, Copy } from 'lucide-react';
 
-export default function CopyField({ label, value, note = "", swatch = "" }) {
+export default function CopyField({ label, value, note = '', swatch = '' }) {
   const [copied, setCopied] = useState(false);
   const copy = async () => {
     try {
@@ -25,7 +25,9 @@ export default function CopyField({ label, value, note = "", swatch = "" }) {
       )}
       <span className="flex-1 overflow-hidden">
         {label && (
-          <span className="block font-mono text-[9px] uppercase tracking-[0.25em] text-dim">{label}</span>
+          <span className="block font-mono text-[9px] uppercase tracking-[0.25em] text-dim">
+            {label}
+          </span>
         )}
         <span className="block truncate font-mono text-[11px] text-silver">{value}</span>
         {note && <span className="block font-mono text-[9px] text-dim/60">{note}</span>}

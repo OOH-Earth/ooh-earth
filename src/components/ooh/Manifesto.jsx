@@ -4,7 +4,9 @@ export default function Manifesto() {
       <div className="hi-vis-stripes h-1 w-full opacity-80" />
       <div className="px-5 py-16 md:px-8 md:py-24">
         <div className="mx-auto max-w-4xl text-center">
-          <span className="font-mono text-[10px] uppercase tracking-[0.3em] text-ozone">// Manifesto</span>
+          <span className="font-mono text-[10px] uppercase tracking-[0.3em] text-ozone">
+            // Manifesto
+          </span>
           <blockquote className="mt-6 font-display text-3xl font-bold leading-[1.15] tracking-[-0.02em] text-silver md:text-5xl">
             “Industry is the ceaseless piracy of the rich against the poor.”
           </blockquote>

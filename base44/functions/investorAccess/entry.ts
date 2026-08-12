@@ -17,24 +17,42 @@
 const TTL_MS = 7 * 24 * 60 * 60 * 1000;
 const enc = new TextEncoder();
 
-const b64url = (bytes: Uint8Array) => btoa(String.fromCharCode(...bytes)).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+const b64url = (bytes: Uint8Array) =>
+  btoa(String.fromCharCode(...bytes))
+    .replace(/\+/g, '-')
+    .replace(/\//g, '_')
+    .replace(/=+$/, '');
 const b64urlStr = (s: string) => b64url(enc.encode(s));
-const fromB64urlStr = (s: string) => atob(s.replace(/-/g, "+").replace(/_/g, "/"));
+const fromB64urlStr = (s: string) => atob(s.replace(/-/g, '+').replace(/_/g, '/'));
 
-const norm = (s: unknown) => String(s ?? "").trim().toUpperCase();
-function safeEqual(a: string, b: string) { if (a.length !== b.length) return false; let d = 0; for (let i = 0; i < a.length; i++) d |= a.charCodeAt(i) ^ b.charCodeAt(i); return d === 0; }
+const norm = (s: unknown) =>
+  String(s ?? '')
+    .trim()
+    .toUpperCase();
+function safeEqual(a: string, b: string) {
+  if (a.length !== b.length) return false;
+  let d = 0;
+  for (let i = 0; i < a.length; i++) d |= a.charCodeAt(i) ^ b.charCodeAt(i);
+  return d === 0;
+}
 
 // Signing secret is REQUIRED — no derivation from the access code, no default.
 // A missing secret throws, which the handler turns into a fail-closed response.
 function tokenSecret(): string {
-  const s = Deno.env.get("INVESTOR_TOKEN_SECRET");
-  if (!s) throw new Error("investorAccess not configured: INVESTOR_TOKEN_SECRET is unset");
+  const s = Deno.env.get('INVESTOR_TOKEN_SECRET');
+  if (!s) throw new Error('investorAccess not configured: INVESTOR_TOKEN_SECRET is unset');
   return s;
 }
 
 async function hmac(msg: string): Promise<string> {
-  const key = await crypto.subtle.importKey("raw", enc.encode(tokenSecret()), { name: "HMAC", hash: "SHA-256" }, false, ["sign"]);
-  const sig = await crypto.subtle.sign("HMAC", key, enc.encode(msg));
+  const key = await crypto.subtle.importKey(
+    'raw',
+    enc.encode(tokenSecret()),
+    { name: 'HMAC', hash: 'SHA-256' },
+    false,
+    ['sign'],
+  );
+  const sig = await crypto.subtle.sign('HMAC', key, enc.encode(msg));
   return b64url(new Uint8Array(sig));
 }
 
@@ -46,30 +64,42 @@ async function mint(): Promise<{ token: string; exp: number }> {
 }
 
 async function verify(token: string): Promise<boolean> {
-  if (!token || typeof token !== "string" || !token.includes(".")) return false;
-  const [payload, sig] = token.split(".");
+  if (!token || typeof token !== 'string' || !token.includes('.')) return false;
+  const [payload, sig] = token.split('.');
   if (!payload || !sig) return false;
   if (!safeEqual(sig, await hmac(payload))) return false;
-  try { const { exp } = JSON.parse(fromB64urlStr(payload)); return typeof exp === "number" && Date.now() < exp; }
-  catch { return false; }
+  try {
+    const { exp } = JSON.parse(fromB64urlStr(payload));
+    return typeof exp === 'number' && Date.now() < exp;
+  } catch {
+    return false;
+  }
 }
 
 Deno.serve(async (req) => {
-  if (req.method !== "POST") return Response.json({ ok: false, reason: "POST required" }, { status: 405 });
+  if (req.method !== 'POST')
+    return Response.json({ ok: false, reason: 'POST required' }, { status: 405 });
   let body: Record<string, unknown> = {};
-  try { body = await req.json(); } catch { /* empty body */ }
+  try {
+    body = await req.json();
+  } catch {
+    /* empty body */
+  }
 
   try {
-    if (body?.action === "verify") {
+    if (body?.action === 'verify') {
       // hmac() throws if the signing secret is unset → caught below (fail closed).
-      return Response.json({ ok: await verify(String(body?.token || "")) }, { status: 200 });
+      return Response.json({ ok: await verify(String(body?.token || '')) }, { status: 200 });
     }
 
     // Access code is REQUIRED — no default. If unset, the gate stays shut.
-    const expected = norm(Deno.env.get("INVESTOR_ACCESS_CODE"));
+    const expected = norm(Deno.env.get('INVESTOR_ACCESS_CODE'));
     if (!expected) {
-      console.error("investorAccess: INVESTOR_ACCESS_CODE is unset — failing closed");
-      return Response.json({ ok: false, reason: "gate_unconfigured", ts: Date.now() }, { status: 200 });
+      console.error('investorAccess: INVESTOR_ACCESS_CODE is unset — failing closed');
+      return Response.json(
+        { ok: false, reason: 'gate_unconfigured', ts: Date.now() },
+        { status: 200 },
+      );
     }
     const ok = safeEqual(norm(body?.code), expected);
     if (!ok) return Response.json({ ok: false, ts: Date.now() }, { status: 200 });
@@ -78,7 +108,10 @@ Deno.serve(async (req) => {
     const { token, exp } = await mint();
     return Response.json({ ok: true, token, exp, ts: Date.now() }, { status: 200 });
   } catch (err) {
-    console.error("investorAccess error (failing closed):", (err as Error)?.message);
-    return Response.json({ ok: false, reason: "gate_unconfigured", ts: Date.now() }, { status: 200 });
+    console.error('investorAccess error (failing closed):', (err as Error)?.message);
+    return Response.json(
+      { ok: false, reason: 'gate_unconfigured', ts: Date.now() },
+      { status: 200 },
+    );
   }
 });

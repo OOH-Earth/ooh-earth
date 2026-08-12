@@ -1,6 +1,6 @@
-import { Link } from "react-router-dom";
-import { Zap } from "lucide-react";
-import { LEVELS, levelFromXp } from "@/components/ooh/gamification/gamification";
+import { Link } from 'react-router-dom';
+import { Zap } from 'lucide-react';
+import { LEVELS, levelFromXp } from '@/components/ooh/gamification/gamification';
 
 export default function XpBar({ xp, compact = false }) {
   const lvl = levelFromXp(xp || 0);
@@ -13,9 +13,14 @@ export default function XpBar({ xp, compact = false }) {
         </span>
         <div className="hidden w-24 sm:block">
           <div className="h-1.5 w-full overflow-hidden bg-slate2/60">
-            <div className="h-full bg-ozone transition-all duration-500" style={{ width: `${lvl.progress}%` }} />
+            <div
+              className="h-full bg-ozone transition-all duration-500"
+              style={{ width: `${lvl.progress}%` }}
+            />
           </div>
-          <div className="mt-0.5 font-mono text-[7px] uppercase tracking-[0.2em] text-dim">{lvl.title}</div>
+          <div className="mt-0.5 font-mono text-[7px] uppercase tracking-[0.2em] text-dim">
+            {lvl.title}
+          </div>
         </div>
       </Link>
     );
@@ -31,8 +36,12 @@ export default function XpBar({ xp, compact = false }) {
             {lvl.level}
           </span>
           <div>
-            <div className="font-display text-lg font-black uppercase tracking-tight text-silver">{lvl.title}</div>
-            <div className="font-mono text-[9px] uppercase tracking-[0.2em] text-dim">Level {lvl.level}</div>
+            <div className="font-display text-lg font-black uppercase tracking-tight text-silver">
+              {lvl.title}
+            </div>
+            <div className="font-mono text-[9px] uppercase tracking-[0.2em] text-dim">
+              Level {lvl.level}
+            </div>
           </div>
         </div>
         <div className="text-right">
@@ -45,8 +54,8 @@ export default function XpBar({ xp, compact = false }) {
 
       <div className="mt-4">
         <div className="flex items-center justify-between font-mono text-[9px] uppercase tracking-[0.2em] text-dim">
-          <span>{lvl.isMax ? "Max level" : `${lvl.xpIntoLevel} / ${lvl.xpForNext} XP`}</span>
-          <span>{lvl.isMax ? "Mythic" : `Next: ${nextLevel?.title || ""}`}</span>
+          <span>{lvl.isMax ? 'Max level' : `${lvl.xpIntoLevel} / ${lvl.xpForNext} XP`}</span>
+          <span>{lvl.isMax ? 'Mythic' : `Next: ${nextLevel?.title || ''}`}</span>
         </div>
         <div className="mt-1.5 h-2.5 w-full overflow-hidden bg-slate2/60">
           <div

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from 'react';
 
 export default function ViewfinderCursor() {
   const [pos, setPos] = useState({ x: -100, y: -100 });
@@ -7,8 +7,8 @@ export default function ViewfinderCursor() {
   const raf = useRef(null);
 
   useEffect(() => {
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-    if (window.matchMedia("(hover: none)").matches) return;
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    if (window.matchMedia('(hover: none)').matches) return;
     setEnabled(true);
 
     const move = (e) => {
@@ -22,9 +22,9 @@ export default function ViewfinderCursor() {
         setActive(!!el?.closest("a, button, input, textarea, select, [data-cursor='view']"));
       });
     };
-    window.addEventListener("mousemove", move);
+    window.addEventListener('mousemove', move);
     return () => {
-      window.removeEventListener("mousemove", move);
+      window.removeEventListener('mousemove', move);
       if (raf.current) cancelAnimationFrame(raf.current);
     };
   }, []);
@@ -34,7 +34,7 @@ export default function ViewfinderCursor() {
   return (
     <div
       className="pointer-events-none fixed z-[9999] transition-[width,height] duration-150"
-      style={{ left: pos.x, top: pos.y, transform: "translate(-50%, -50%)" }}
+      style={{ left: pos.x, top: pos.y, transform: 'translate(-50%, -50%)' }}
       aria-hidden="true"
     >
       {active ? (

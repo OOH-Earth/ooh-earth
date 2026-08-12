@@ -18,9 +18,12 @@ function trackConsoleErrors(page: import('@playwright/test').Page) {
 async function shot(
   page: import('@playwright/test').Page,
   testInfo: import('@playwright/test').TestInfo,
-  name: string
+  name: string,
 ) {
-  await page.screenshot({ path: `e2e/screenshots/${testInfo.project.name}/${name}.png`, fullPage: true });
+  await page.screenshot({
+    path: `e2e/screenshots/${testInfo.project.name}/${name}.png`,
+    fullPage: true,
+  });
 }
 
 test.describe('FieldReport (/report) — multi-photo upload', () => {
@@ -46,7 +49,9 @@ test.describe('FieldReport (/report) — multi-photo upload', () => {
     expect(filterCrashes(consoleErrors), consoleErrors.join('\n')).toEqual([]);
   });
 
-  test('full submit: cover photo + extra photos sync as LocationPhoto rows', async ({ page }, testInfo) => {
+  test('full submit: cover photo + extra photos sync as LocationPhoto rows', async ({
+    page,
+  }, testInfo) => {
     const consoleErrors = trackConsoleErrors(page);
     await mockBase44(page, { user: null, locations: {}, locationPhotos: [] });
 

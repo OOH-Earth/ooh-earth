@@ -33,7 +33,11 @@ export default defineConfig({
       // deliberate follow-up, not a side effect of this feature's tests.
       name: 'mobile-chromium',
       use: { ...devices['Pixel 7'] },
-      testMatch: ['location-detail.spec.ts', 'multi-photo-upload.spec.ts', 'verify-reject-workflow.spec.ts'],
+      testMatch: [
+        'location-detail.spec.ts',
+        'multi-photo-upload.spec.ts',
+        'verify-reject-workflow.spec.ts',
+      ],
     },
   ],
   webServer: {

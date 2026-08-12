@@ -1,7 +1,7 @@
-name: "🗺️ Map data correction"
-description: "A billboard/OOH record on the map is wrong, missing, moved, or duplicated"
-title: "[Data]: "
-labels: ["map-data"]
+name: '🗺️ Map data correction'
+description: 'A billboard/OOH record on the map is wrong, missing, moved, or duplicated'
+title: '[Data]: '
+labels: ['map-data']
 body:
   - type: markdown
     attributes:
@@ -27,7 +27,7 @@ body:
     attributes:
       label: Location
       description: City and approximate coordinates or address, if you have them.
-      placeholder: "Bangkok · 13.7563° N, 100.5018° E"
+      placeholder: 'Bangkok · 13.7563° N, 100.5018° E'
     validations:
       required: true
   - type: textarea

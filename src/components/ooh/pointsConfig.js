@@ -11,16 +11,16 @@ export const POINTS = {
 // Points earned by a single Location record.
 export function pointsForReport(r) {
   let p = POINTS.report_filed;
-  if (r.status === "verified") p += POINTS.verified_bonus;
+  if (r.status === 'verified') p += POINTS.verified_bonus;
   if (r.image_url || r.image) p += POINTS.photo_bonus;
   return p;
 }
 
 // Rank tier derived from cumulative operative points.
 export function rankTier(points) {
-  if (points >= 5000) return { label: "Champion", accent: "#EDFF00" };
-  if (points >= 2000) return { label: "Field Reporter", accent: "#FF5C00" };
-  if (points >= 500) return { label: "Mapper", accent: "#39FF14" };
-  if (points >= 100) return { label: "Scout", accent: "#B2B2B2" };
-  return { label: "Newcomer", accent: "#666666" };
+  if (points >= 5000) return { label: 'Champion', accent: '#EDFF00' };
+  if (points >= 2000) return { label: 'Field Reporter', accent: '#FF5C00' };
+  if (points >= 500) return { label: 'Mapper', accent: '#39FF14' };
+  if (points >= 100) return { label: 'Scout', accent: '#B2B2B2' };
+  return { label: 'Newcomer', accent: '#666666' };
 }

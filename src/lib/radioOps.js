@@ -13,13 +13,13 @@
 // ─────────────────────────────────────────────────────────────
 
 // e.g. "https://radio.ooh.earth"  (no trailing slash)
-export const AZURACAST_BASE = "";
+export const AZURACAST_BASE = '';
 
 // AzuraCast station shortcode (Station → Profile → "URL Stub")
-export const OOH_SHORTCODE = "ooh";
+export const OOH_SHORTCODE = 'ooh';
 
 // e.g. "https://radio.ooh.earth/listen/ooh/radio.mp3"
-export const OOH_STREAM_URL = "";
+export const OOH_STREAM_URL = '';
 
 // Derived: the OOH channel is live only once a stream URL is set.
 export const RADIO_OPS_ENABLED = Boolean(OOH_STREAM_URL);
@@ -27,18 +27,18 @@ export const RADIO_OPS_ENABLED = Boolean(OOH_STREAM_URL);
 // The OOH broadcast channel, shaped exactly like a RADIO_STATIONS entry
 // so the existing player treats it as just another station.
 export const OOH_STATION = {
-  id: "ooh-radio",
-  name: "OOH Radio",
-  genre: "Ad-Free Broadcast",
-  category: "ooh",
+  id: 'ooh-radio',
+  name: 'OOH Radio',
+  genre: 'Ad-Free Broadcast',
+  category: 'ooh',
   stream: OOH_STREAM_URL,
-  city: "Everywhere",
-  country: "Global",
+  city: 'Everywhere',
+  country: 'Global',
   lat: 51.5074,
   lng: -0.1278,
 };
 
-const trimBase = () => AZURACAST_BASE.replace(/\/$/, "");
+const trimBase = () => AZURACAST_BASE.replace(/\/$/, '');
 
 // AzuraCast now-playing endpoint for the OOH station.
 export function nowPlayingUrl() {
@@ -64,25 +64,25 @@ export async function fetchNowPlaying(signal) {
     const np = Array.isArray(data) ? data[0] : data;
     if (!np) return null;
     const song = np.now_playing?.song || {};
-    const joined = [song.artist, song.title].filter(Boolean).join(" — ");
+    const joined = [song.artist, song.title].filter(Boolean).join(' — ');
     return {
-      title: song.title || "",
-      artist: song.artist || "",
+      title: song.title || '',
+      artist: song.artist || '',
       text: song.text || joined,
-      art: song.art || "",
+      art: song.art || '',
       elapsed: np.now_playing?.elapsed ?? 0,
       duration: np.now_playing?.duration ?? 0,
       isLive: Boolean(np.live?.is_live),
-      streamerName: np.live?.is_live ? (np.live?.streamer_name || "Live DJ") : "",
+      streamerName: np.live?.is_live ? np.live?.streamer_name || 'Live DJ' : '',
       listeners: np.listeners?.current ?? 0,
-      playingNext: np.playing_next?.song?.text || "",
+      playingNext: np.playing_next?.song?.text || '',
       recentHistory: Array.isArray(np.song_history)
         ? np.song_history.slice(0, 6).map((h) => ({
-            text: h.song?.text || [h.song?.artist, h.song?.title].filter(Boolean).join(" — "),
-            art: h.song?.art || "",
+            text: h.song?.text || [h.song?.artist, h.song?.title].filter(Boolean).join(' — '),
+            art: h.song?.art || '',
           }))
         : [],
-      stationName: np.station?.name || "OOH Radio",
+      stationName: np.station?.name || 'OOH Radio',
     };
   } catch {
     return null;

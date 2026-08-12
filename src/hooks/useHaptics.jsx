@@ -1,6 +1,6 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from 'react';
 
-const STORAGE_KEY = "ooh_haptics_enabled";
+const STORAGE_KEY = 'ooh_haptics_enabled';
 
 // Semantic haptic patterns (ms or ms-pulse arrays)
 export const HAPTIC_PATTERNS = {
@@ -14,16 +14,16 @@ export const HAPTIC_PATTERNS = {
 };
 
 export function supportsHaptics() {
-  return typeof navigator !== "undefined" && typeof navigator.vibrate === "function";
+  return typeof navigator !== 'undefined' && typeof navigator.vibrate === 'function';
 }
 
 function prefersReducedMotion() {
-  return window.matchMedia?.("(prefers-reduced-motion: reduce)").matches ?? false;
+  return window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false;
 }
 
 function isEnabled() {
   try {
-    return localStorage.getItem(STORAGE_KEY) !== "0";
+    return localStorage.getItem(STORAGE_KEY) !== '0';
   } catch {
     return true;
   }
@@ -36,28 +36,35 @@ export function initGlobalHaptics() {
   globalInit = true;
   const handler = (e) => {
     if (prefersReducedMotion() || !isEnabled()) return;
-    const el = e.target instanceof Element
-      ? e.target.closest("button, a, [role='button'], [data-tactile], input[type='checkbox'], input[type='radio'], summary")
-      : null;
+    const el =
+      e.target instanceof Element
+        ? e.target.closest(
+            "button, a, [role='button'], [data-tactile], input[type='checkbox'], input[type='radio'], summary",
+          )
+        : null;
     if (el) navigator.vibrate(HAPTIC_PATTERNS.tap);
   };
-  document.addEventListener("pointerdown", handler, { passive: true });
+  document.addEventListener('pointerdown', handler, { passive: true });
 }
 
 export default function useHaptics() {
   const [enabled, setEnabled] = useState(() => isEnabled());
 
-  useEffect(() => { initGlobalHaptics(); }, []);
+  useEffect(() => {
+    initGlobalHaptics();
+  }, []);
 
   const toggle = useCallback(() => {
     setEnabled((prev) => {
       const next = !prev;
-      try { localStorage.setItem(STORAGE_KEY, next ? "1" : "0"); } catch {}
+      try {
+        localStorage.setItem(STORAGE_KEY, next ? '1' : '0');
+      } catch {}
       return next;
     });
   }, []);
 
-  const buzz = useCallback((pattern = "tap") => {
+  const buzz = useCallback((pattern = 'tap') => {
     if (!supportsHaptics() || prefersReducedMotion() || !isEnabled()) return;
     const p = HAPTIC_PATTERNS[pattern] ?? HAPTIC_PATTERNS.tap;
     navigator.vibrate(p);

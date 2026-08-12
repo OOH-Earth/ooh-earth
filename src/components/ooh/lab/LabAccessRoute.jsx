@@ -1,8 +1,8 @@
-import { useEffect, useState } from "react";
-import { Navigate, Outlet, useLocation } from "react-router-dom";
-import { useAuth } from "@/lib/AuthContext";
-import { hasInvestorToken, verifyInvestorSession } from "@/components/ooh/investorAccess";
-import { base44 } from "@/api/base44Client";
+import { useEffect, useState } from 'react';
+import { Navigate, Outlet, useLocation } from 'react-router-dom';
+import { useAuth } from '@/lib/AuthContext';
+import { hasInvestorToken, verifyInvestorSession } from '@/components/ooh/investorAccess';
+import { base44 } from '@/api/base44Client';
 
 /* ────────────────────────────────────────────────────────────
    LabAccessRoute — dynamic gate for every /lab/* page.
@@ -22,25 +22,30 @@ const Fallback = () => (
 // The lab index is always public so it can never lock itself out — every
 // other /lab/* page is governed by its LabPrototype.access record, so the
 // admin panel can flip any prototype (including the showcases) to restricted.
-const ALWAYS_PUBLIC = ["/lab"];
+const ALWAYS_PUBLIC = ['/lab'];
 
 export default function LabAccessRoute() {
   const { isAuthenticated, isLoadingAuth, authChecked, checkUserAuth } = useAuth();
   const location = useLocation();
-  const [tok, setTok] = useState(hasInvestorToken() ? "checking" : "no");
+  const [tok, setTok] = useState(hasInvestorToken() ? 'checking' : 'no');
   const [access, setAccess] = useState(null);
   const [cfgLoading, setCfgLoading] = useState(true);
 
   // verify investor token (if any) once
   useEffect(() => {
     let alive = true;
-    if (tok === "checking") verifyInvestorSession().then((ok) => { if (alive) setTok(ok ? "ok" : "no"); });
-    return () => { alive = false; };
+    if (tok === 'checking')
+      verifyInvestorSession().then((ok) => {
+        if (alive) setTok(ok ? 'ok' : 'no');
+      });
+    return () => {
+      alive = false;
+    };
   }, [tok]);
 
   // only resolve account auth when the token path has failed
   useEffect(() => {
-    if (tok === "no" && !authChecked && !isLoadingAuth) checkUserAuth();
+    if (tok === 'no' && !authChecked && !isLoadingAuth) checkUserAuth();
   }, [tok, authChecked, isLoadingAuth, checkUserAuth]);
 
   // fetch the access setting for this path
@@ -50,24 +55,26 @@ export default function LabAccessRoute() {
     (async () => {
       try {
         const recs = await base44.entities.LabPrototype.filter({ path: location.pathname });
-        if (alive) setAccess(recs[0]?.access || "restricted");
+        if (alive) setAccess(recs[0]?.access || 'restricted');
       } catch {
-        if (alive) setAccess("restricted");
+        if (alive) setAccess('restricted');
       } finally {
         if (alive) setCfgLoading(false);
       }
     })();
-    return () => { alive = false; };
+    return () => {
+      alive = false;
+    };
   }, [location.pathname]);
 
   if (ALWAYS_PUBLIC.includes(location.pathname)) return <Outlet />;
   if (cfgLoading) return <Fallback />;
 
-  if (access === "public") return <Outlet />;
+  if (access === 'public') return <Outlet />;
 
   // restricted path — need token or authenticated account
-  if (tok === "ok") return <Outlet />;
-  if (tok === "checking") return <Fallback />;
+  if (tok === 'ok') return <Outlet />;
+  if (tok === 'checking') return <Fallback />;
   if (isLoadingAuth || !authChecked) return <Fallback />;
   if (!isAuthenticated) {
     const r = encodeURIComponent(location.pathname + location.search);

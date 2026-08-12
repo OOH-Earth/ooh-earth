@@ -17,8 +17,11 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
 const OWNED = ['Location', 'DigitalBust', 'QuestCompletion', 'LeadClaim'];
 
 const ALLOWED_ORIGINS = new Set([
-  'https://oohearth.app', 'https://www.oohearth.app', 'https://ooh.earth',
-  'http://localhost:5173', 'http://localhost:3000',
+  'https://oohearth.app',
+  'https://www.oohearth.app',
+  'https://ooh.earth',
+  'http://localhost:5173',
+  'http://localhost:3000',
 ]);
 
 function cors(origin) {
@@ -27,7 +30,7 @@ function cors(origin) {
     'Access-Control-Allow-Origin': o,
     'Access-Control-Allow-Methods': 'POST, OPTIONS',
     'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-    'Vary': 'Origin',
+    Vary: 'Origin',
   };
 }
 
@@ -35,10 +38,17 @@ async function purgeOwned(svc, entity, userId) {
   let deleted = 0;
   try {
     const rows = await svc.entities[entity].filter({ created_by_id: userId }, '-created_date', 500);
-    for (const r of (rows || [])) {
-      try { await svc.entities[entity].delete(r.id); deleted++; } catch { /* skip individual failures */ }
+    for (const r of rows || []) {
+      try {
+        await svc.entities[entity].delete(r.id);
+        deleted++;
+      } catch {
+        /* skip individual failures */
+      }
     }
-  } catch { /* entity absent or no ownership field — skip */ }
+  } catch {
+    /* entity absent or no ownership field — skip */
+  }
   return deleted;
 }
 
@@ -51,12 +61,20 @@ Deno.serve(async (req) => {
     const base44 = createClientFromRequest(req);
 
     let caller = null;
-    try { caller = await base44.auth.me(); } catch { caller = null; }
-    if (!caller?.id) return Response.json({ error: 'Not authenticated.' }, { status: 401, headers });
+    try {
+      caller = await base44.auth.me();
+    } catch {
+      caller = null;
+    }
+    if (!caller?.id)
+      return Response.json({ error: 'Not authenticated.' }, { status: 401, headers });
 
     const body = await req.json().catch(() => ({}));
     if (body?.confirm !== true) {
-      return Response.json({ error: 'Missing confirmation. Send { confirm: true }.' }, { status: 400, headers });
+      return Response.json(
+        { error: 'Missing confirmation. Send { confirm: true }.' },
+        { status: 400, headers },
+      );
     }
 
     const svc = base44.asServiceRole;
@@ -76,21 +94,29 @@ Deno.serve(async (req) => {
       try {
         await svc.entities.User.update(uid, {
           full_name: 'Deleted user',
-          handle: null, bio: null, avatar_url: null, prefs: null,
+          handle: null,
+          bio: null,
+          avatar_url: null,
+          prefs: null,
         });
         scrubbed = true;
-      } catch { /* nothing more we can do server-side */ }
+      } catch {
+        /* nothing more we can do server-side */
+      }
     }
 
-    return Response.json({
-      ok: true,
-      user_removed: userRemoved,
-      pii_scrubbed: scrubbed,
-      purged,
-      note: userRemoved
-        ? 'Account and owned records removed.'
-        : 'Owned records removed and profile scrubbed. Contact Base44 support to fully remove the auth record.',
-    }, { headers });
+    return Response.json(
+      {
+        ok: true,
+        user_removed: userRemoved,
+        pii_scrubbed: scrubbed,
+        purged,
+        note: userRemoved
+          ? 'Account and owned records removed.'
+          : 'Owned records removed and profile scrubbed. Contact Base44 support to fully remove the auth record.',
+      },
+      { headers },
+    );
   } catch (error) {
     return Response.json({ error: error?.message || String(error) }, { status: 500, headers });
   }

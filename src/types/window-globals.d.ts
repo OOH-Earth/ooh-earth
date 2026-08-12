@@ -8,5 +8,8 @@ interface Window {
   phantom?: any;
   webkitAudioContext?: typeof AudioContext;
   BarcodeDetector?: any;
-  storage?: { get(key: string): Promise<{ value: any } | null>; set(key: string, value: any): Promise<void> };
+  storage?: {
+    get(key: string): Promise<{ value: any } | null>;
+    set(key: string, value: any): Promise<void>;
+  };
 }

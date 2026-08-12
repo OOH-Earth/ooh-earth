@@ -1,6 +1,6 @@
 // @ts-nocheck -- intentionally excluded from typecheck (jsconfig.json), see TECHNICAL_DEBT_REGISTER.md
-import { createContext, useContext, useState, useRef, useCallback } from "react";
-import Walkthrough from "@/components/ooh/Walkthrough";
+import { createContext, useContext, useState, useRef, useCallback } from 'react';
+import Walkthrough from '@/components/ooh/Walkthrough';
 
 const WalkthroughCtx = createContext(null);
 

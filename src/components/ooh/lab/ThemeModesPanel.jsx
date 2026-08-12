@@ -1,16 +1,16 @@
-import { useEffect, useState } from "react";
-import { base44 } from "@/api/base44Client";
-import { THEME_ORDER, SETTING_KEY } from "@/lib/themes";
-import { useToast } from "@/components/ui/use-toast";
-import { Loader2, Palette, Star } from "lucide-react";
+import { useEffect, useState } from 'react';
+import { base44 } from '@/api/base44Client';
+import { THEME_ORDER, SETTING_KEY } from '@/lib/themes';
+import { useToast } from '@/components/ui/use-toast';
+import { Loader2, Palette, Star } from 'lucide-react';
 
 const META = {
-  dark: { label: "Dark" },
-  light: { label: "Light" },
-  matrix: { label: "Matrix" },
-  beta: { label: "BETA" },
-  crafty: { label: "Crafty" },
-  guild: { label: "Guild" },
+  dark: { label: 'Dark' },
+  light: { label: 'Light' },
+  matrix: { label: 'Matrix' },
+  beta: { label: 'BETA' },
+  crafty: { label: 'Crafty' },
+  guild: { label: 'Guild' },
 };
 
 export default function ThemeModesPanel() {
@@ -28,7 +28,10 @@ export default function ThemeModesPanel() {
         if (!active) return;
         if (rec) {
           setRecId(rec.id);
-          const list = (rec.value || "").split(",").map((s) => s.trim()).filter(Boolean);
+          const list = (rec.value || '')
+            .split(',')
+            .map((s) => s.trim())
+            .filter(Boolean);
           setEnabled(list.length ? list : THEME_ORDER);
           // Dedup stale duplicate settings rows (keep the first / canonical)
           if (rows.length > 1) {
@@ -41,7 +44,9 @@ export default function ThemeModesPanel() {
         if (active) setEnabled(THEME_ORDER);
       }
     })();
-    return () => { active = false; };
+    return () => {
+      active = false;
+    };
   }, []);
 
   const toggle = (id) => {
@@ -54,7 +59,7 @@ export default function ThemeModesPanel() {
 
   const persist = async (list) => {
     setSaving(true);
-    const value = list.join(",");
+    const value = list.join(',');
     try {
       if (recId) {
         await base44.entities.SiteSetting.update(recId, { value });
@@ -62,9 +67,9 @@ export default function ThemeModesPanel() {
         const rec = await base44.entities.SiteSetting.create({ key: SETTING_KEY, value });
         if (rec?.id) setRecId(rec.id);
       }
-      toast({ title: "Theme modes saved" });
+      toast({ title: 'Theme modes saved' });
     } catch {
-      toast({ title: "Save failed", variant: "destructive" });
+      toast({ title: 'Save failed', variant: 'destructive' });
     } finally {
       setSaving(false);
     }
@@ -86,16 +91,18 @@ export default function ThemeModesPanel() {
       <div className="flex flex-wrap items-center gap-1.5">
         {THEME_ORDER.map((id) => {
           const on = enabled.includes(id);
-          const isDefault = id === "matrix";
+          const isDefault = id === 'matrix';
           return (
             <button
               key={id}
               onClick={() => toggle(id)}
               className={`flex items-center gap-1.5 border px-2.5 py-1 font-mono text-[9px] font-bold uppercase tracking-[0.15em] transition-all ${
-                on ? "border-ozone bg-ozone text-void" : "border-slate2 text-silver/50 hover:border-silver/60"
+                on
+                  ? 'border-ozone bg-ozone text-void'
+                  : 'border-slate2 text-silver/50 hover:border-silver/60'
               }`}
             >
-              <span className={`h-1.5 w-1.5 ${on ? "bg-void/70" : "bg-silver/30"}`} />
+              <span className={`h-1.5 w-1.5 ${on ? 'bg-void/70' : 'bg-silver/30'}`} />
               {META[id].label}
               {isDefault && <Star className="h-2.5 w-2.5 text-void/70" />}
             </button>
@@ -104,7 +111,8 @@ export default function ThemeModesPanel() {
         {saving && <Loader2 className="h-3.5 w-3.5 animate-spin text-ozone" />}
       </div>
       <p className="mt-2 font-mono text-[9px] uppercase tracking-[0.15em] text-silver/40">
-        ★ matrix is the site default · toggles which modes appear in the header cycle · visitors on a disabled mode fall back to matrix
+        ★ matrix is the site default · toggles which modes appear in the header cycle · visitors on
+        a disabled mode fall back to matrix
       </p>
     </div>
   );

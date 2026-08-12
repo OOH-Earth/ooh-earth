@@ -1,10 +1,13 @@
-import { useEffect, useState } from "react";
-import { base44 } from "@/api/base44Client";
-import { Trophy, BadgeCheck, Camera, FileText, Crown } from "lucide-react";
-import { pointsForReport, rankTier, POINTS } from "@/components/ooh/pointsConfig";
-import OperativeUnitRoster from "@/components/ooh/OperativeUnitRoster";
+import { useEffect, useState } from 'react';
+import { base44 } from '@/api/base44Client';
+import { Trophy, BadgeCheck, Camera, FileText, Crown } from 'lucide-react';
+import { pointsForReport, rankTier, POINTS } from '@/components/ooh/pointsConfig';
+import OperativeUnitRoster from '@/components/ooh/OperativeUnitRoster';
 
-const masked = (id) => `OP-${String(id || "").slice(-4).toUpperCase()}`;
+const masked = (id) =>
+  `OP-${String(id || '')
+    .slice(-4)
+    .toUpperCase()}`;
 
 function aggregate(recs) {
   const byOp = {};
@@ -14,7 +17,7 @@ function aggregate(recs) {
     if (!byOp[oid]) byOp[oid] = { id: oid, reports: 0, verified: 0, photos: 0, points: 0 };
     const o = byOp[oid];
     o.reports += 1;
-    if (r.status === "verified") o.verified += 1;
+    if (r.status === 'verified') o.verified += 1;
     if (r.image_url || r.image) o.photos += 1;
     o.points += pointsForReport(r);
   }
@@ -65,17 +68,24 @@ export default function Leaderboard() {
     <section className="relative border-t border-slate2/60 bg-void px-5 py-16 md:px-8 md:py-24">
       <div className="mx-auto max-w-6xl">
         <div className="flex flex-col gap-1">
-          <span className="font-mono text-[10px] uppercase tracking-[0.3em] text-ozone">// Member Leaderboard</span>
-          <h2 className="font-display text-3xl font-black uppercase tracking-tight2 text-silver md:text-5xl">Resistance Index</h2>
+          <span className="font-mono text-[10px] uppercase tracking-[0.3em] text-ozone">
+            // Member Leaderboard
+          </span>
+          <h2 className="font-display text-3xl font-black uppercase tracking-tight2 text-silver md:text-5xl">
+            Resistance Index
+          </h2>
           <p className="mt-2 max-w-2xl font-display text-sm leading-relaxed text-darkgray">
-            Field contributions ranked by points. File reports, get verified, add photo evidence to climb. Member identities masked for privacy.
+            Field contributions ranked by points. File reports, get verified, add photo evidence to
+            climb. Member identities masked for privacy.
           </p>
         </div>
 
         <div className="mt-8 flex flex-wrap items-center gap-4 border border-slate2/60 bg-card p-4">
           <Trophy className="h-5 w-5 shrink-0 text-ozone" />
           <div>
-            <div className="font-mono text-[9px] uppercase tracking-[0.25em] text-dim">Combined resistance score</div>
+            <div className="font-mono text-[9px] uppercase tracking-[0.25em] text-dim">
+              Combined resistance score
+            </div>
             <div className="font-display text-2xl font-black tabular text-silver">
               {totalPoints.toLocaleString()}
               <span className="ml-1 text-sm text-dim">pts</span>
@@ -83,8 +93,12 @@ export default function Leaderboard() {
           </div>
           <div className="ml-auto flex flex-wrap gap-4 font-mono text-[10px] uppercase tracking-[0.2em] text-dim">
             <span>+{POINTS.report_filed} filed</span>
-            <span className="text-ozone">+{POINTS.report_filed + POINTS.verified_bonus} verified</span>
-            <span className="text-flare">+{POINTS.report_filed + POINTS.verified_bonus + POINTS.photo_bonus} verified+photo</span>
+            <span className="text-ozone">
+              +{POINTS.report_filed + POINTS.verified_bonus} verified
+            </span>
+            <span className="text-flare">
+              +{POINTS.report_filed + POINTS.verified_bonus + POINTS.photo_bonus} verified+photo
+            </span>
           </div>
         </div>
 
@@ -103,28 +117,49 @@ export default function Leaderboard() {
               return (
                 <div
                   key={o.id}
-                  className={`flex items-center gap-4 p-4 ${isMe ? "bg-ozone/5" : ""}`}
-                  style={isMe ? { borderLeft: "2px solid #EDFF00" } : undefined}
+                  className={`flex items-center gap-4 p-4 ${isMe ? 'bg-ozone/5' : ''}`}
+                  style={isMe ? { borderLeft: '2px solid #EDFF00' } : undefined}
                 >
                   <div className="flex w-8 shrink-0 items-center justify-center font-display text-xl font-black tabular text-dim">
-                    {o.rank === 1 ? <Crown className="h-5 w-5 text-ozone" /> : <span>{o.rank}</span>}
+                    {o.rank === 1 ? (
+                      <Crown className="h-5 w-5 text-ozone" />
+                    ) : (
+                      <span>{o.rank}</span>
+                    )}
                   </div>
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-2">
-                      <span className="font-display text-base font-bold text-silver">{masked(o.id)}</span>
+                      <span className="font-display text-base font-bold text-silver">
+                        {masked(o.id)}
+                      </span>
                       {isMe && (
-                        <span className="border border-ozone px-1.5 py-0.5 font-mono text-[8px] font-bold uppercase tracking-[0.2em] text-ozone">You</span>
+                        <span className="border border-ozone px-1.5 py-0.5 font-mono text-[8px] font-bold uppercase tracking-[0.2em] text-ozone">
+                          You
+                        </span>
                       )}
                     </div>
                     <div className="mt-1 flex flex-wrap items-center gap-3 font-mono text-[9px] uppercase tracking-[0.2em] text-dim">
-                      <span className="flex items-center gap-1"><FileText className="h-3 w-3" /> {o.reports} filed</span>
-                      <span className="flex items-center gap-1 text-ozone"><BadgeCheck className="h-3 w-3" /> {o.verified} verified</span>
-                      <span className="flex items-center gap-1 text-flare"><Camera className="h-3 w-3" /> {o.photos} photo</span>
+                      <span className="flex items-center gap-1">
+                        <FileText className="h-3 w-3" /> {o.reports} filed
+                      </span>
+                      <span className="flex items-center gap-1 text-ozone">
+                        <BadgeCheck className="h-3 w-3" /> {o.verified} verified
+                      </span>
+                      <span className="flex items-center gap-1 text-flare">
+                        <Camera className="h-3 w-3" /> {o.photos} photo
+                      </span>
                     </div>
                   </div>
                   <div className="shrink-0 text-right">
-                    <div className="font-display text-xl font-black tabular text-silver">{o.points.toLocaleString()}</div>
-                    <div className="font-mono text-[8px] uppercase tracking-[0.2em]" style={{ color: o.tier.accent }}>{o.tier.label}</div>
+                    <div className="font-display text-xl font-black tabular text-silver">
+                      {o.points.toLocaleString()}
+                    </div>
+                    <div
+                      className="font-mono text-[8px] uppercase tracking-[0.2em]"
+                      style={{ color: o.tier.accent }}
+                    >
+                      {o.tier.label}
+                    </div>
                   </div>
                 </div>
               );

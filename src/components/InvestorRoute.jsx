@@ -1,7 +1,7 @@
-import { useEffect, useState } from "react";
-import { Navigate, Outlet, useLocation } from "react-router-dom";
-import { useAuth } from "@/lib/AuthContext";
-import { hasInvestorToken, verifyInvestorSession } from "@/components/ooh/investorAccess";
+import { useEffect, useState } from 'react';
+import { Navigate, Outlet, useLocation } from 'react-router-dom';
+import { useAuth } from '@/lib/AuthContext';
+import { hasInvestorToken, verifyInvestorSession } from '@/components/ooh/investorAccess';
 
 /* ────────────────────────────────────────────────────────────
    InvestorRoute — dual gate for the investor area.
@@ -21,23 +21,29 @@ export default function InvestorRoute() {
   const { isAuthenticated, isLoadingAuth, authChecked, checkUserAuth } = useAuth();
   const location = useLocation();
   // token gate: 'checking' | 'ok' | 'no'
-  const [tok, setTok] = useState(hasInvestorToken() ? "checking" : "no");
+  const [tok, setTok] = useState(hasInvestorToken() ? 'checking' : 'no');
 
   useEffect(() => {
     let alive = true;
-    if (tok === "checking") verifyInvestorSession().then((ok) => { if (alive) setTok(ok ? "ok" : "no"); });
-    return () => { alive = false; };
+    if (tok === 'checking')
+      verifyInvestorSession().then((ok) => {
+        if (alive) setTok(ok ? 'ok' : 'no');
+      });
+    return () => {
+      alive = false;
+    };
   }, [tok]);
 
   useEffect(() => {
     // Only resolve account auth once the token path has failed.
-    if (tok === "no" && !authChecked && !isLoadingAuth) checkUserAuth();
+    if (tok === 'no' && !authChecked && !isLoadingAuth) checkUserAuth();
   }, [tok, authChecked, isLoadingAuth, checkUserAuth]);
 
-  if (tok === "ok") return <Outlet />;
-  if (tok === "checking") return <Fallback />;
+  if (tok === 'ok') return <Outlet />;
+  if (tok === 'checking') return <Fallback />;
 
   if (isLoadingAuth || !authChecked) return <Fallback />;
-  if (!isAuthenticated) return <Navigate to="/investor-access" replace state={{ from: location.pathname }} />;
+  if (!isAuthenticated)
+    return <Navigate to="/investor-access" replace state={{ from: location.pathname }} />;
   return <Outlet />;
 }

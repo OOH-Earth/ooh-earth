@@ -1,4 +1,4 @@
-import { Component } from "react";
+import { Component } from 'react';
 
 // No error boundary existed anywhere in the app before this — any uncaught
 // render-time exception in any route white-screened the whole app with no
@@ -16,7 +16,7 @@ export default class ErrorBoundary extends Component {
   }
 
   componentDidCatch(error, info) {
-    console.error("Unhandled render error:", error, info?.componentStack);
+    console.error('Unhandled render error:', error, info?.componentStack);
   }
 
   render() {
@@ -24,22 +24,22 @@ export default class ErrorBoundary extends Component {
       return (
         <div
           style={{
-            minHeight: "100vh",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            padding: "24px",
-            background: "#000",
-            color: "#fff",
-            fontFamily: "system-ui, sans-serif",
-            textAlign: "center",
+            minHeight: '100vh',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '24px',
+            background: '#000',
+            color: '#fff',
+            fontFamily: 'system-ui, sans-serif',
+            textAlign: 'center',
           }}
         >
           <div>
             <p style={{ fontSize: 14, opacity: 0.7, marginBottom: 16 }}>
               Something went wrong loading this page.
             </p>
-            <a href="/" style={{ color: "#EDFF00", textDecoration: "underline" }}>
+            <a href="/" style={{ color: '#EDFF00', textDecoration: 'underline' }}>
               Back to home
             </a>
           </div>

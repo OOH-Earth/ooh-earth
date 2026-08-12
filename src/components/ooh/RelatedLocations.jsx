@@ -1,9 +1,9 @@
-import { useEffect, useState } from "react";
-import { base44 } from "@/api/base44Client";
-import { Link } from "react-router-dom";
-import { Image } from "@/components/ui/image";
-import { Layers, Building2, MapPin, Loader2 } from "lucide-react";
-import { metaFor } from "@/components/ooh/map/LocationThumb";
+import { useEffect, useState } from 'react';
+import { base44 } from '@/api/base44Client';
+import { Link } from 'react-router-dom';
+import { Image } from '@/components/ui/image';
+import { Layers, Building2, MapPin, Loader2 } from 'lucide-react';
+import { metaFor } from '@/components/ooh/map/LocationThumb';
 
 // Haversine distance in km
 function distKm(a, b) {
@@ -11,7 +11,9 @@ function distKm(a, b) {
   const R = 6371;
   const dLat = ((b.lat - a.lat) * Math.PI) / 180;
   const dLng = ((b.lng - a.lng) * Math.PI) / 180;
-  const s = Math.sin(dLat / 2) ** 2 + Math.cos((a.lat * Math.PI) / 180) * Math.cos((b.lat * Math.PI) / 180) * Math.sin(dLng / 2) ** 2;
+  const s =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos((a.lat * Math.PI) / 180) * Math.cos((b.lat * Math.PI) / 180) * Math.sin(dLng / 2) ** 2;
   return R * 2 * Math.atan2(Math.sqrt(s), Math.sqrt(1 - s));
 }
 
@@ -34,10 +36,10 @@ function RelatedCard({ loc, badge, distKm: dist = null }) {
       </div>
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-1.5">
-          {badge === "nearby" && <MapPin className="h-2.5 w-2.5 text-ozone" />}
-          {badge === "brand" && <Building2 className="h-2.5 w-2.5 text-flare" />}
+          {badge === 'nearby' && <MapPin className="h-2.5 w-2.5 text-ozone" />}
+          {badge === 'brand' && <Building2 className="h-2.5 w-2.5 text-flare" />}
           <span className="font-mono text-[8px] uppercase tracking-[0.15em] text-dim">
-            {badge === "nearby" && dist != null ? `${dist.toFixed(1)}km` : "same brand"}
+            {badge === 'nearby' && dist != null ? `${dist.toFixed(1)}km` : 'same brand'}
           </span>
         </div>
         <div className="mt-0.5 truncate font-display text-[13px] font-semibold text-silver transition-colors group-hover:text-ozone">
@@ -64,9 +66,9 @@ export default function RelatedLocations({ location }) {
       try {
         // Fetch a broad set and compute proximity client-side (avoids geo query limits)
         const all = await base44.entities.Location.filter(
-          { status: "verified" },
-          "-created_date",
-          200
+          { status: 'verified' },
+          '-created_date',
+          200,
         );
         if (!active) return;
         const others = (all || []).filter((r) => r.id !== location.id && r.lat != null);
@@ -80,24 +82,37 @@ export default function RelatedLocations({ location }) {
         // Same brand
         if (location.brand_name) {
           const brand = others
-            .filter((r) => r.brand_name && r.brand_name.toLowerCase() === location.brand_name.toLowerCase())
+            .filter(
+              (r) =>
+                r.brand_name && r.brand_name.toLowerCase() === location.brand_name.toLowerCase(),
+            )
             .slice(0, 4);
           setSameBrand(brand);
         } else {
           setSameBrand([]);
         }
-      } catch { if (active) { setNearby([]); setSameBrand([]); } }
-      finally { if (active) setLoading(false); }
+      } catch {
+        if (active) {
+          setNearby([]);
+          setSameBrand([]);
+        }
+      } finally {
+        if (active) setLoading(false);
+      }
     };
     load();
-    return () => { active = false; };
+    return () => {
+      active = false;
+    };
   }, [location?.id, location?.lat, location?.lng, location?.brand_name]);
 
   if (loading) {
     return (
       <div className="mt-8 flex items-center gap-2 border border-slate2/40 px-4 py-3">
         <Loader2 className="h-3.5 w-3.5 animate-spin text-dim" />
-        <span className="font-mono text-[9px] uppercase tracking-[0.25em] text-dim">// Finding related locations…</span>
+        <span className="font-mono text-[9px] uppercase tracking-[0.25em] text-dim">
+          // Finding related locations…
+        </span>
       </div>
     );
   }
@@ -108,24 +123,33 @@ export default function RelatedLocations({ location }) {
     <div className="mt-8 border border-slate2/40">
       <div className="flex items-center gap-2 border-b border-slate2/40 px-4 py-3">
         <Layers className="h-4 w-4 text-ozone" />
-        <span className="font-mono text-[10px] font-bold uppercase tracking-[0.25em] text-ozone">Connected Locations</span>
+        <span className="font-mono text-[10px] font-bold uppercase tracking-[0.25em] text-ozone">
+          Connected Locations
+        </span>
         <span className="h-px flex-1 bg-slate2/30" />
       </div>
       <div className="space-y-4 px-4 py-4">
         {nearby.length > 0 && (
           <div>
-            <span className="mb-2 block font-mono text-[9px] uppercase tracking-[0.3em] text-ozone/60">// Nearby (within 2km)</span>
+            <span className="mb-2 block font-mono text-[9px] uppercase tracking-[0.3em] text-ozone/60">
+              // Nearby (within 2km)
+            </span>
             <div className="grid gap-2 sm:grid-cols-2">
-              {nearby.map((loc) => <RelatedCard key={loc.id} loc={loc} badge="nearby" distKm={loc._d} />)}
+              {nearby.map((loc) => (
+                <RelatedCard key={loc.id} loc={loc} badge="nearby" distKm={loc._d} />
+              ))}
             </div>
           </div>
         )}
         {sameBrand.length > 0 && (
           <div>
-            <span className="mb-2 block font-mono text-[9px] uppercase tracking-[0.3em] text-flare/60">// Same advertiser</span>
+            <span className="mb-2 block font-mono text-[9px] uppercase tracking-[0.3em] text-flare/60">
+              // Same advertiser
+            </span>
             <div className="grid gap-2 sm:grid-cols-2">
-              {sameBrand.map((loc) => <RelatedCard key={loc.id} loc={loc} badge="brand" />)}
-
+              {sameBrand.map((loc) => (
+                <RelatedCard key={loc.id} loc={loc} badge="brand" />
+              ))}
             </div>
           </div>
         )}

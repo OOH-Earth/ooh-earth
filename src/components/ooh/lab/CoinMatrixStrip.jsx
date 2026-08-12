@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState } from 'react';
 
 // Matrix-style artifact metadata readout — mirrors NftMatrixStrip for the
 // Genesis Coin. Dense, terminal, live status.
@@ -7,18 +7,22 @@ export default function CoinMatrixStrip({ config, material }) {
   const [dpr, setDpr] = useState(1);
   useEffect(() => setDpr(window.devicePixelRatio || 1), []);
 
-  const seed = (config.serial || "0") + (material?.id || "brass") + (config.edition || "");
-  const hash = seed.split("").reduce((a, c) => ((a << 5) - a + c.charCodeAt(0)) | 0, 0).toString(16).replace("-", "");
+  const seed = (config.serial || '0') + (material?.id || 'brass') + (config.edition || '');
+  const hash = seed
+    .split('')
+    .reduce((a, c) => ((a << 5) - a + c.charCodeAt(0)) | 0, 0)
+    .toString(16)
+    .replace('-', '');
 
   const rows = [
-    ["SERIAL", `№ ${config.serial}`],
-    ["EDITION", (config.edition || "").replace(" EDITION", "")],
-    ["MATERIAL", (material?.name || "BRASS").toUpperCase()],
-    ["Ø", "64MM"],
-    ["SDG", "11 · 16 · 17"],
-    ["CHAIN", "BASE · ERC-721"],
-    ["NFC", "NTAG216"],
-    ["HASH", hash.slice(0, 12).toUpperCase()],
+    ['SERIAL', `№ ${config.serial}`],
+    ['EDITION', (config.edition || '').replace(' EDITION', '')],
+    ['MATERIAL', (material?.name || 'BRASS').toUpperCase()],
+    ['Ø', '64MM'],
+    ['SDG', '11 · 16 · 17'],
+    ['CHAIN', 'BASE · ERC-721'],
+    ['NFC', 'NTAG216'],
+    ['HASH', hash.slice(0, 12).toUpperCase()],
   ];
 
   return (

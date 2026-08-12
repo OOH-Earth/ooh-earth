@@ -5,7 +5,7 @@ contact_links:
     about: "New billboard/OOH sightings go through the app's capture flow, not GitHub."
   - name: 🔒 Report a security issue
     url: https://github.com/oohearth/ooh-earth/security/policy
-    about: "Please report vulnerabilities privately — see our security policy."
+    about: 'Please report vulnerabilities privately — see our security policy.'
   - name: ✉️ General questions
     url: mailto:hello@outofhell.org
-    about: "Anything else — reach the movement directly."
+    about: 'Anything else — reach the movement directly.'

@@ -39,26 +39,42 @@ export const MOVEMENT = {
   get years() {
     return Math.max(0, new Date().getFullYear() - MOVEMENT_SINCE);
   },
-  subvertisers: 3000,   // ~3,000+ people who've taken part worldwide (est.)
+  subvertisers: 3000, // ~3,000+ people who've taken part worldwide (est.)
   interventions: 25000, // ~25,000+ documented / reported interventions since 2012 (est.)
-  collectives: 30,      // ~30+ organized groups / nodes (est.)
-  countries: 20,        // ~20+ countries with documented actions (est.)
+  collectives: 30, // ~30+ organized groups / nodes (est.)
+  countries: 20, // ~20+ countries with documented actions (est.)
 };
 
 // Shown so the platform's early-stage status is never mistaken for movement scale.
-export const PLATFORM_STATUS = "EARLY ACCESS · FOUNDING BACKERS SOUGHT";
+export const PLATFORM_STATUS = 'EARLY ACCESS · FOUNDING BACKERS SOUGHT';
 
 export const MOVEMENT_NOTE =
-  "Rough movement-wide estimate of global subvertising activity since 2012 " +
-  "(Brandalism, Subvertisers Intl, Adfree Cities, Les Déboulonneurs, Adbusters, " +
-  "independents). Estimate, not a census — and not OOH Earth platform metrics.";
+  'Rough movement-wide estimate of global subvertising activity since 2012 ' +
+  '(Brandalism, Subvertisers Intl, Adfree Cities, Les Déboulonneurs, Adbusters, ' +
+  'independents). Estimate, not a census — and not OOH Earth platform metrics.';
 
 // Sourced milestones used to ground the estimate on investor / campaign pages.
 export const MOVEMENT_ANCHORS = [
-  { year: "2012", text: "Brandalism forms in the UK — first project subverts 30+ billboards across 5 cities.", source: "Brandalism / BBC" },
-  { year: "2015", text: "COP21 Paris: 82 artists from 19 countries install ~600 subverts in a single action.", source: "BBC / Brandalism" },
-  { year: "2017", text: "Adfree Cities founded — a UK network of local ad-block groups from Bristol to London.", source: "Adfree Cities" },
-  { year: "now", text: "UK digital ad frames have roughly trebled since 2015 — the surface to map keeps growing.", source: "Route Research" },
+  {
+    year: '2012',
+    text: 'Brandalism forms in the UK — first project subverts 30+ billboards across 5 cities.',
+    source: 'Brandalism / BBC',
+  },
+  {
+    year: '2015',
+    text: 'COP21 Paris: 82 artists from 19 countries install ~600 subverts in a single action.',
+    source: 'BBC / Brandalism',
+  },
+  {
+    year: '2017',
+    text: 'Adfree Cities founded — a UK network of local ad-block groups from Bristol to London.',
+    source: 'Adfree Cities',
+  },
+  {
+    year: 'now',
+    text: 'UK digital ad frames have roughly trebled since 2015 — the surface to map keeps growing.',
+    source: 'Route Research',
+  },
 ];
 
 // Compact "3K" / "25K" formatting for tickers.

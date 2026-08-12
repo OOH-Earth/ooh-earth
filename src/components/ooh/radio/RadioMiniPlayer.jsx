@@ -1,22 +1,39 @@
-import { useState, useRef, useEffect } from "react";
-import { Radio, Play, Pause, Volume2, VolumeX, SkipBack, SkipForward, Loader2 } from "lucide-react";
-import { AnimatePresence, motion } from "framer-motion";
-import { useRadio } from "@/lib/radioContext";
-import RadioVisualizer from "@/components/ooh/radio/RadioVisualizer";
+import { useState, useRef, useEffect } from 'react';
+import { Radio, Play, Pause, Volume2, VolumeX, SkipBack, SkipForward, Loader2 } from 'lucide-react';
+import { AnimatePresence, motion } from 'framer-motion';
+import { useRadio } from '@/lib/radioContext';
+import RadioVisualizer from '@/components/ooh/radio/RadioVisualizer';
 
 function EqBars({ active, bars = 3 }) {
   if (!active) return null;
   return (
     <span className="inline-flex items-end gap-[1px]">
       {Array.from({ length: bars }).map((_, i) => (
-        <span key={i} className="eq-bar w-[1.5px] bg-ozone" style={{ height: "6px", animationDelay: `${i * 0.15}s` }} />
+        <span
+          key={i}
+          className="eq-bar w-[1.5px] bg-ozone"
+          style={{ height: '6px', animationDelay: `${i * 0.15}s` }}
+        />
       ))}
     </span>
   );
 }
 
 export default function RadioMiniPlayer() {
-  const { station, playing, loading, volume, error, stations, selectStation, stepStation, togglePlay, setVolume, toggleMute, nowPlaying } = useRadio();
+  const {
+    station,
+    playing,
+    loading,
+    volume,
+    error,
+    stations,
+    selectStation,
+    stepStation,
+    togglePlay,
+    setVolume,
+    toggleMute,
+    nowPlaying,
+  } = useRadio();
   const [open, setOpen] = useState(false);
   const ref = useRef(null);
 
@@ -25,8 +42,8 @@ export default function RadioMiniPlayer() {
     const onClick = (e) => {
       if (ref.current && !ref.current.contains(e.target)) setOpen(false);
     };
-    document.addEventListener("mousedown", onClick);
-    return () => document.removeEventListener("mousedown", onClick);
+    document.addEventListener('mousedown', onClick);
+    return () => document.removeEventListener('mousedown', onClick);
   }, [open]);
 
   return (
@@ -37,7 +54,7 @@ export default function RadioMiniPlayer() {
         aria-label="Open radio"
         aria-expanded={open}
         title="Radio"
-        className={`flex h-8 items-center gap-2 border border-slate2 px-2.5 font-mono text-[10px] font-bold uppercase tracking-[0.25em] transition-colors hover:border-ozone hover:text-ozone ${playing ? "border-ozone/60 text-ozone" : "text-silver"}`}
+        className={`flex h-8 items-center gap-2 border border-slate2 px-2.5 font-mono text-[10px] font-bold uppercase tracking-[0.25em] transition-colors hover:border-ozone hover:text-ozone ${playing ? 'border-ozone/60 text-ozone' : 'text-silver'}`}
       >
         <Radio className="h-3.5 w-3.5" />
         <span className="hidden sm:inline">Radio</span>
@@ -46,11 +63,17 @@ export default function RadioMiniPlayer() {
       {/* On/off toggle — separate from visualizer */}
       <button
         onClick={togglePlay}
-        aria-label={playing ? "Pause" : "Play"}
-        title={playing ? "Pause" : "Play"}
-        className={`flex h-8 w-8 items-center justify-center border-y border-r border-slate2 transition-colors hover:border-ozone hover:text-ozone ${playing ? "text-ozone" : "text-silver"}`}
+        aria-label={playing ? 'Pause' : 'Play'}
+        title={playing ? 'Pause' : 'Play'}
+        className={`flex h-8 w-8 items-center justify-center border-y border-r border-slate2 transition-colors hover:border-ozone hover:text-ozone ${playing ? 'text-ozone' : 'text-silver'}`}
       >
-        {loading && !playing ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : playing ? <Pause className="h-3.5 w-3.5" /> : <Play className="h-3.5 w-3.5" />}
+        {loading && !playing ? (
+          <Loader2 className="h-3.5 w-3.5 animate-spin" />
+        ) : playing ? (
+          <Pause className="h-3.5 w-3.5" />
+        ) : (
+          <Play className="h-3.5 w-3.5" />
+        )}
       </button>
 
       <AnimatePresence>
@@ -59,8 +82,8 @@ export default function RadioMiniPlayer() {
             initial={{ opacity: 0, scale: 0.94, y: -8 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.96, y: -6 }}
-            transition={{ type: "spring", stiffness: 320, damping: 26 }}
-            style={{ transformOrigin: "top right" }}
+            transition={{ type: 'spring', stiffness: 320, damping: 26 }}
+            style={{ transformOrigin: 'top right' }}
             className="absolute right-0 top-full z-[200] mt-2 w-[260px] border border-slate2 bg-void shadow-[0_24px_60px_rgba(0,0,0,0.7)]"
           >
             {/* Now playing header */}
@@ -70,40 +93,86 @@ export default function RadioMiniPlayer() {
                   <Radio className="h-2.5 w-2.5" /> OOH Radio
                 </span>
                 <div className="flex items-center gap-1">
-                  <button onClick={() => stepStation(-1)} aria-label="Previous station" title="Previous station" className="flex h-8 w-7 items-center justify-center border border-slate2 text-silver transition-colors hover:border-ozone hover:text-ozone"><SkipBack className="h-3 w-3" /></button>
-                  <button onClick={togglePlay} aria-label={playing ? "Pause" : "Play"} className="flex h-8 w-8 items-center justify-center border border-ozone bg-ozone text-void transition-colors hover:bg-flare hover:border-flare">
-                    {loading && !playing ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : playing ? <Pause className="h-3.5 w-3.5" /> : <Play className="h-3.5 w-3.5" />}
+                  <button
+                    onClick={() => stepStation(-1)}
+                    aria-label="Previous station"
+                    title="Previous station"
+                    className="flex h-8 w-7 items-center justify-center border border-slate2 text-silver transition-colors hover:border-ozone hover:text-ozone"
+                  >
+                    <SkipBack className="h-3 w-3" />
                   </button>
-                  <button onClick={() => stepStation(1)} aria-label="Next station" title="Next station" className="flex h-8 w-7 items-center justify-center border border-slate2 text-silver transition-colors hover:border-ozone hover:text-ozone"><SkipForward className="h-3 w-3" /></button>
+                  <button
+                    onClick={togglePlay}
+                    aria-label={playing ? 'Pause' : 'Play'}
+                    className="flex h-8 w-8 items-center justify-center border border-ozone bg-ozone text-void transition-colors hover:bg-flare hover:border-flare"
+                  >
+                    {loading && !playing ? (
+                      <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                    ) : playing ? (
+                      <Pause className="h-3.5 w-3.5" />
+                    ) : (
+                      <Play className="h-3.5 w-3.5" />
+                    )}
+                  </button>
+                  <button
+                    onClick={() => stepStation(1)}
+                    aria-label="Next station"
+                    title="Next station"
+                    className="flex h-8 w-7 items-center justify-center border border-slate2 text-silver transition-colors hover:border-ozone hover:text-ozone"
+                  >
+                    <SkipForward className="h-3 w-3" />
+                  </button>
                 </div>
               </div>
               <div className="mt-2">
                 <div className="flex items-center gap-1.5">
                   <div className="font-display text-[14px] font-semibold tracking-[-0.02em] text-silver">
-                    {station ? station.name : "No station"}
+                    {station ? station.name : 'No station'}
                   </div>
                   {nowPlaying?.isLive && (
-                    <span className="font-mono text-[7px] font-bold uppercase tracking-[0.2em] text-flare">● LIVE</span>
+                    <span className="font-mono text-[7px] font-bold uppercase tracking-[0.2em] text-flare">
+                      ● LIVE
+                    </span>
                   )}
                 </div>
                 <div className="font-mono text-[8px] uppercase tracking-[0.2em] text-dim">
-                  {station ? station.genre : "Select below"}
+                  {station ? station.genre : 'Select below'}
                 </div>
                 {nowPlaying?.text && (
-                  <div className="mt-1 truncate font-mono text-[9px] tracking-[0.02em] text-ozone/80" title={nowPlaying.text}>
-                    ♪ {nowPlaying.streamerName ? `${nowPlaying.streamerName} · ` : ""}{nowPlaying.text}
+                  <div
+                    className="mt-1 truncate font-mono text-[9px] tracking-[0.02em] text-ozone/80"
+                    title={nowPlaying.text}
+                  >
+                    ♪ {nowPlaying.streamerName ? `${nowPlaying.streamerName} · ` : ''}
+                    {nowPlaying.text}
                   </div>
                 )}
               </div>
-              {loading && !error && <div className="mt-2 font-mono text-[8px] uppercase tracking-[0.2em] text-ozone/70">// Connecting…</div>}
-              {error && <div className="mt-2 font-mono text-[8px] uppercase tracking-[0.2em] text-flare">// Stream unavailable</div>}
+              {loading && !error && (
+                <div className="mt-2 font-mono text-[8px] uppercase tracking-[0.2em] text-ozone/70">
+                  // Connecting…
+                </div>
+              )}
+              {error && (
+                <div className="mt-2 font-mono text-[8px] uppercase tracking-[0.2em] text-flare">
+                  // Stream unavailable
+                </div>
+              )}
             </div>
 
             {/* Volume */}
             {station && (
               <div className="flex items-center gap-2 border-b border-slate2/60 px-4 py-3">
-                <button onClick={toggleMute} aria-label={volume === 0 ? "Unmute" : "Mute"} className="text-dim transition-colors hover:text-ozone">
-                  {volume === 0 ? <VolumeX className="h-3.5 w-3.5" /> : <Volume2 className="h-3.5 w-3.5" />}
+                <button
+                  onClick={toggleMute}
+                  aria-label={volume === 0 ? 'Unmute' : 'Mute'}
+                  className="text-dim transition-colors hover:text-ozone"
+                >
+                  {volume === 0 ? (
+                    <VolumeX className="h-3.5 w-3.5" />
+                  ) : (
+                    <Volume2 className="h-3.5 w-3.5" />
+                  )}
                 </button>
                 <input
                   type="range"
@@ -124,15 +193,23 @@ export default function RadioMiniPlayer() {
                 <button
                   key={s.id}
                   onClick={() => selectStation(s.id)}
-                  className={`flex w-full items-center justify-between border-b border-slate2/30 px-4 py-2.5 text-left transition-colors hover:bg-slate2/30 ${s.id === station?.id ? "bg-slate2/20" : ""}`}
+                  className={`flex w-full items-center justify-between border-b border-slate2/30 px-4 py-2.5 text-left transition-colors hover:bg-slate2/30 ${s.id === station?.id ? 'bg-slate2/20' : ''}`}
                 >
                   <div className="min-w-0">
-                    <div className={`truncate font-display text-[12px] font-medium tracking-[-0.01em] ${s.id === station?.id ? "text-ozone" : "text-silver/80"}`}>
+                    <div
+                      className={`truncate font-display text-[12px] font-medium tracking-[-0.01em] ${s.id === station?.id ? 'text-ozone' : 'text-silver/80'}`}
+                    >
                       {s.name}
                     </div>
                     <div className="flex items-center gap-1.5">
-                      <span className={`font-mono text-[7px] font-bold uppercase tracking-[0.15em] ${s.category === "news" ? "text-flare" : "text-ozone/60"}`}>{s.category === "news" ? "[NEWS]" : "[MUSIC]"}</span>
-                      <span className="font-mono text-[7px] uppercase tracking-[0.15em] text-dim/60">{s.genre}</span>
+                      <span
+                        className={`font-mono text-[7px] font-bold uppercase tracking-[0.15em] ${s.category === 'news' ? 'text-flare' : 'text-ozone/60'}`}
+                      >
+                        {s.category === 'news' ? '[NEWS]' : '[MUSIC]'}
+                      </span>
+                      <span className="font-mono text-[7px] uppercase tracking-[0.15em] text-dim/60">
+                        {s.genre}
+                      </span>
                     </div>
                   </div>
                   {s.id === station?.id && <EqBars active={playing} bars={3} />}

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from 'react';
 
 // Polls DexScreener for a single token; accumulates a session sparkline.
 // Returns { data, error } — error is true after 2 consecutive fetch failures
@@ -22,12 +22,15 @@ export default function useCoinData(address, intervalMs = 30000) {
         const pairs = (j && j.pairs) || [];
         const p = pairs.find((x) => x.priceUsd) || pairs[0];
         if (!p || !active) {
-          if (!p) { failCount++; if (failCount >= 2) setError(true); }
+          if (!p) {
+            failCount++;
+            if (failCount >= 2) setError(true);
+          }
           return;
         }
         const price = parseFloat(p.priceUsd);
         const change = p.priceChange ? parseFloat(p.priceChange.h24) : null;
-        const mcap = p.marketCap ? parseFloat(p.marketCap) : (p.fdv ? parseFloat(p.fdv) : null);
+        const mcap = p.marketCap ? parseFloat(p.marketCap) : p.fdv ? parseFloat(p.fdv) : null;
         const vol = p.volume ? parseFloat(p.volume.h24) : null;
         const txns = p.txns?.h24 || null;
         if (lastRef.current !== price) {
@@ -53,7 +56,10 @@ export default function useCoinData(address, intervalMs = 30000) {
     };
     load();
     const id = setInterval(load, intervalMs);
-    return () => { active = false; clearInterval(id); };
+    return () => {
+      active = false;
+      clearInterval(id);
+    };
   }, [address, intervalMs]);
 
   return { data, error };

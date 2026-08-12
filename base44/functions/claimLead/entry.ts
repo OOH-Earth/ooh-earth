@@ -15,8 +15,11 @@ const NOTE_MAX = 1000;
 const ACTIVE_STATUSES = new Set(['pending', 'accepted']);
 
 const ALLOWED_ORIGINS = new Set([
-  'https://oohearth.app', 'https://www.oohearth.app', 'https://ooh.earth',
-  'http://localhost:5173', 'http://localhost:3000',
+  'https://oohearth.app',
+  'https://www.oohearth.app',
+  'https://ooh.earth',
+  'http://localhost:5173',
+  'http://localhost:3000',
 ]);
 
 function cors(origin: string | null) {
@@ -25,7 +28,7 @@ function cors(origin: string | null) {
     'Access-Control-Allow-Origin': o,
     'Access-Control-Allow-Methods': 'POST, OPTIONS',
     'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-    'Vary': 'Origin',
+    Vary: 'Origin',
   };
 }
 
@@ -40,12 +43,19 @@ Deno.serve(async (req) => {
 
     const locationId = String(body?.location_id || '').trim();
     const handle = String(body?.operative_handle || '').trim();
-    const note = String(body?.note || '').trim().slice(0, NOTE_MAX);
+    const note = String(body?.note || '')
+      .trim()
+      .slice(0, NOTE_MAX);
 
-    if (!locationId) return Response.json({ error: 'Missing location_id.' }, { status: 400, headers });
-    if (!handle) return Response.json({ error: 'A member handle is required.' }, { status: 400, headers });
+    if (!locationId)
+      return Response.json({ error: 'Missing location_id.' }, { status: 400, headers });
+    if (!handle)
+      return Response.json({ error: 'A member handle is required.' }, { status: 400, headers });
     if (handle.length > HANDLE_MAX) {
-      return Response.json({ error: `Handle must be ${HANDLE_MAX} characters or fewer.` }, { status: 400, headers });
+      return Response.json(
+        { error: `Handle must be ${HANDLE_MAX} characters or fewer.` },
+        { status: 400, headers },
+      );
     }
 
     // Validate location_id against a real Location record -- never trust a
@@ -53,15 +63,20 @@ Deno.serve(async (req) => {
     // doesn't exist.
     const locations = await base44.asServiceRole.entities.Location.filter({ id: locationId });
     const location = locations?.[0];
-    if (!location) return Response.json({ error: 'That location no longer exists.' }, { status: 404, headers });
+    if (!location)
+      return Response.json({ error: 'That location no longer exists.' }, { status: 404, headers });
 
     // Prevent an obviously duplicate claim -- one active (pending/accepted)
     // claim per location at a time, using the status field the entity
     // already has. Not a hard uniqueness constraint (Base44 entities don't
     // support one here), just a check-then-write guard against the common
     // case; a true race is still possible but low-stakes for this feature.
-    const existing = await base44.asServiceRole.entities.LeadClaim.filter({ location_id: locationId });
-    if ((existing || []).some((c: { status?: string }) => ACTIVE_STATUSES.has(c?.status || 'pending'))) {
+    const existing = await base44.asServiceRole.entities.LeadClaim.filter({
+      location_id: locationId,
+    });
+    if (
+      (existing || []).some((c: { status?: string }) => ACTIVE_STATUSES.has(c?.status || 'pending'))
+    ) {
       return Response.json({ error: 'This lead is already claimed.' }, { status: 409, headers });
     }
 

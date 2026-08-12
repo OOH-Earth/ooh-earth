@@ -1,8 +1,8 @@
-import { useEffect, useState, useRef } from "react";
-import { base44 } from "@/api/base44Client";
-import { AlertTriangle, Loader2, Radio, X } from "lucide-react";
-import DraggableTicker from "@/components/ooh/DraggableTicker";
-import { shuffleArray } from "@/hooks/useNewsHeadlines";
+import { useEffect, useState, useRef } from 'react';
+import { base44 } from '@/api/base44Client';
+import { AlertTriangle, Loader2, Radio, X } from 'lucide-react';
+import DraggableTicker from '@/components/ooh/DraggableTicker';
+import { shuffleArray } from '@/hooks/useNewsHeadlines';
 
 // Compact environmental alert ticker overlaid on the map.
 // Pulls real urgent alerts from verified open-source feeds via LLM + web search.
@@ -14,21 +14,19 @@ function Row({ items }) {
       {items.map((it, i) => (
         <a
           key={i}
-          href={it.url || "#"}
+          href={it.url || '#'}
           target="_blank"
           rel="noreferrer"
           className="flex shrink-0 items-center gap-2 px-4"
         >
           <span
             className="h-1.5 w-1.5 shrink-0 rounded-full"
-            style={{ background: it.severity === "flash" ? "#FF5C00" : "#EDFF00" }}
+            style={{ background: it.severity === 'flash' ? '#FF5C00' : '#EDFF00' }}
           />
-          {it.severity === "flash" && (
-            <AlertTriangle className="h-3 w-3 shrink-0 text-flare" />
-          )}
+          {it.severity === 'flash' && <AlertTriangle className="h-3 w-3 shrink-0 text-flare" />}
           <span
             className={`font-mono text-[10px] uppercase tracking-[0.12em] ${
-              it.severity === "flash" ? "text-flare" : "text-silver/90"
+              it.severity === 'flash' ? 'text-flare' : 'text-silver/90'
             }`}
           >
             {it.region && <span className="text-ozone">{it.region} · </span>}
@@ -61,24 +59,24 @@ export default function MapAlertTicker({ onClose = null }) {
             "Return 6 current urgent environmental alerts and regional updates relevant to public-space activism and climate justice. Focus on: wildfire smoke events, air quality emergencies (PM2.5), flood warnings, heat advisories, industrial pollution incidents, and environmental protest crackdowns. Use real verifiable events from the last 48 hours. For each, provide a short title (max 80 chars), the affected region/city, the source name, article URL, and severity ('flash' for immediate life-safety hazards like wildfires/floods, 'watch' for advisories and regional updates).",
           add_context_from_internet: true,
           response_json_schema: {
-            type: "object",
+            type: 'object',
             properties: {
               alerts: {
-                type: "array",
+                type: 'array',
                 items: {
-                  type: "object",
+                  type: 'object',
                   properties: {
-                    title: { type: "string" },
-                    region: { type: "string" },
-                    source: { type: "string" },
-                    url: { type: "string" },
-                    severity: { type: "string", enum: ["flash", "watch"] },
+                    title: { type: 'string' },
+                    region: { type: 'string' },
+                    source: { type: 'string' },
+                    url: { type: 'string' },
+                    severity: { type: 'string', enum: ['flash', 'watch'] },
                   },
-                  required: ["title", "severity"],
+                  required: ['title', 'severity'],
                 },
               },
             },
-            required: ["alerts"],
+            required: ['alerts'],
           },
         });
         if (mounted.current) {
@@ -118,13 +116,13 @@ export default function MapAlertTicker({ onClose = null }) {
 
   if (!items.length) return null;
 
-  const hasFlash = items.some((it) => it.severity === "flash");
+  const hasFlash = items.some((it) => it.severity === 'flash');
 
   return (
     <div className="pointer-events-auto relative flex h-8 w-full items-center gap-2 border border-slate2/60 bg-void/90 backdrop-blur-md">
       <span
         className={`flex shrink-0 items-center gap-1.5 border-r border-slate2/60 px-3 ${
-          hasFlash ? "text-flare" : "text-ozone"
+          hasFlash ? 'text-flare' : 'text-ozone'
         }`}
       >
         {hasFlash ? (
@@ -133,7 +131,7 @@ export default function MapAlertTicker({ onClose = null }) {
           <Radio className="h-3 w-3 animate-pulse" />
         )}
         <span className="font-mono text-[8px] font-bold uppercase tracking-[0.25em]">
-          {hasFlash ? "Alert" : "Intel"}
+          {hasFlash ? 'Alert' : 'Intel'}
         </span>
       </span>
       <DraggableTicker>

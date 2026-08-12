@@ -1,53 +1,87 @@
-import { useState } from "react";
-import { Crosshair, Menu, Tv, Map as MapIcon, Compass, Zap } from "lucide-react";
-import { Link } from "react-router-dom";
-import ThemeToggle from "@/components/ooh/ThemeToggle";
-import HapticsToggle from "@/components/ooh/cognitive/HapticsToggle";
-import SoundToggle from "@/components/ooh/SoundToggle";
-import ReadAloudToggle from "@/components/ooh/ReadAloudToggle";
-import TelemetryBar from "@/components/ooh/TelemetryBar";
-import TypeEnhancer from "@/components/ooh/TypeEnhancer";
-import DashboardDropdown from "@/components/ooh/DashboardDropdown";
-import NavMenu from "@/components/ooh/NavMenu";
-import BrandMark from "@/components/ooh/BrandMark";
-import BetaTag from "@/components/ooh/BetaTag";
-import AccountMenu from "@/components/ooh/AccountMenu";
-import OfflineSyncBadge from "@/components/ooh/OfflineSyncBadge";
-import RadioMiniPlayer from "@/components/ooh/radio/RadioMiniPlayer";
-import { useWalkthrough } from "@/lib/walkthroughContext";
-import { useCommandCenter } from "@/lib/commandCenterContext";
+import { useState } from 'react';
+import { Crosshair, Menu, Tv, Map as MapIcon, Compass, Zap } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import ThemeToggle from '@/components/ooh/ThemeToggle';
+import HapticsToggle from '@/components/ooh/cognitive/HapticsToggle';
+import SoundToggle from '@/components/ooh/SoundToggle';
+import ReadAloudToggle from '@/components/ooh/ReadAloudToggle';
+import TelemetryBar from '@/components/ooh/TelemetryBar';
+import TypeEnhancer from '@/components/ooh/TypeEnhancer';
+import DashboardDropdown from '@/components/ooh/DashboardDropdown';
+import NavMenu from '@/components/ooh/NavMenu';
+import BrandMark from '@/components/ooh/BrandMark';
+import BetaTag from '@/components/ooh/BetaTag';
+import AccountMenu from '@/components/ooh/AccountMenu';
+import OfflineSyncBadge from '@/components/ooh/OfflineSyncBadge';
+import RadioMiniPlayer from '@/components/ooh/radio/RadioMiniPlayer';
+import { useWalkthrough } from '@/lib/walkthroughContext';
+import { useCommandCenter } from '@/lib/commandCenterContext';
 
 export default function Nav() {
   const [menuOpen, setMenuOpen] = useState(false);
   const { startTour } = useWalkthrough();
   const { openCommand } = useCommandCenter();
   return (
-    <header className="fixed inset-x-0 top-0 z-50 border-b border-border bg-background shadow-[0_1px_0_rgba(0,0,0,0.04),0_4px_16px_rgba(0,0,0,0.06)] backdrop-blur-md" style={{ paddingTop: "env(safe-area-inset-top)" }}>
+    <header
+      className="fixed inset-x-0 top-0 z-50 border-b border-border bg-background shadow-[0_1px_0_rgba(0,0,0,0.04),0_4px_16px_rgba(0,0,0,0.06)] backdrop-blur-md"
+      style={{ paddingTop: 'env(safe-area-inset-top)' }}
+    >
       <div className="flex items-center justify-between gap-2 px-3 py-3 md:px-8 md:py-4">
         <div className="flex items-center gap-2">
-          <Link to="/" aria-label="OOH Earth — Home console" title="OOH Earth" className="flex h-8 w-8 items-center justify-center border border-slate2 transition-colors hover:border-ozone">
+          <Link
+            to="/"
+            aria-label="OOH Earth — Home console"
+            title="OOH Earth"
+            className="flex h-8 w-8 items-center justify-center border border-slate2 transition-colors hover:border-ozone"
+          >
             <BrandMark className="h-5 w-5" />
           </Link>
           <BetaTag className="hidden sm:inline-flex" />
           <TypeEnhancer />
-          <div className="hidden md:block"><DashboardDropdown /></div>
+          <div className="hidden md:block">
+            <DashboardDropdown />
+          </div>
         </div>
 
         <div className="flex items-center gap-2">
           <OfflineSyncBadge />
           <RadioMiniPlayer />
           <ThemeToggle />
-          <span data-tour="theme" className="hidden md:flex items-center gap-1.5"><HapticsToggle /><SoundToggle /><ReadAloudToggle /></span>
-          <Link to="/map" aria-label="Field map" title="Map" className="hidden h-8 w-8 items-center justify-center border border-slate2 text-silver transition-colors hover:border-ozone hover:text-ozone md:flex">
+          <span data-tour="theme" className="hidden md:flex items-center gap-1.5">
+            <HapticsToggle />
+            <SoundToggle />
+            <ReadAloudToggle />
+          </span>
+          <Link
+            to="/map"
+            aria-label="Field map"
+            title="Map"
+            className="hidden h-8 w-8 items-center justify-center border border-slate2 text-silver transition-colors hover:border-ozone hover:text-ozone md:flex"
+          >
             <MapIcon className="h-3.5 w-3.5" />
           </Link>
-          <button onClick={startTour} aria-label="Start walkthrough" title="Tour" className="hidden h-8 w-8 items-center justify-center border border-slate2 text-silver transition-colors hover:border-ozone hover:text-ozone md:flex">
+          <button
+            onClick={startTour}
+            aria-label="Start walkthrough"
+            title="Tour"
+            className="hidden h-8 w-8 items-center justify-center border border-slate2 text-silver transition-colors hover:border-ozone hover:text-ozone md:flex"
+          >
             <Compass className="h-3.5 w-3.5" />
           </button>
-          <Link to="/operative" aria-label="Member profile" title="Member" className="hidden h-8 w-8 items-center justify-center border border-slate2 text-silver transition-colors hover:border-ozone hover:text-ozone md:flex">
+          <Link
+            to="/operative"
+            aria-label="Member profile"
+            title="Member"
+            className="hidden h-8 w-8 items-center justify-center border border-slate2 text-silver transition-colors hover:border-ozone hover:text-ozone md:flex"
+          >
             <Zap className="h-3.5 w-3.5" />
           </Link>
-          <Link to="/channel" aria-label="OOH·TV channel" title="OOH·TV" className="hidden h-8 w-8 items-center justify-center border border-slate2 text-silver transition-colors hover:border-ozone hover:text-ozone md:flex">
+          <Link
+            to="/channel"
+            aria-label="OOH·TV channel"
+            title="OOH·TV"
+            className="hidden h-8 w-8 items-center justify-center border border-slate2 text-silver transition-colors hover:border-ozone hover:text-ozone md:flex"
+          >
             <Tv className="h-3.5 w-3.5" />
           </Link>
           <AccountMenu />
@@ -56,7 +90,8 @@ export default function Nav() {
             aria-label="Open menu"
             className="flex h-10 items-center gap-2 border border-slate2 px-3 font-mono text-[10px] font-bold uppercase tracking-[0.25em] text-silver transition-colors hover:border-ozone hover:text-ozone md:h-8"
           >
-            <Menu className="h-5 w-5 md:h-4 md:w-4" /> <span className="hidden sm:inline">Menu</span>
+            <Menu className="h-5 w-5 md:h-4 md:w-4" />{' '}
+            <span className="hidden sm:inline">Menu</span>
           </button>
           <button
             onClick={openCommand}

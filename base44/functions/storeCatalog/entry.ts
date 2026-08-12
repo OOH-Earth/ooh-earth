@@ -5,9 +5,21 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
 // so the goods can't leak to the browser; the storefront reads through this.
 // Pass { item_id } for a single item's metadata; omit for the full catalogue.
 const META_FIELDS = [
-  "id", "title", "subtitle", "description", "category", "price_usd", "status",
-  "image_url", "external_url", "edition_size", "edition_sold", "tags",
-  "featured", "sort_order", "created_date",
+  'id',
+  'title',
+  'subtitle',
+  'description',
+  'category',
+  'price_usd',
+  'status',
+  'image_url',
+  'external_url',
+  'edition_size',
+  'edition_sold',
+  'tags',
+  'featured',
+  'sort_order',
+  'created_date',
 ];
 
 function toMeta(it: any) {
@@ -23,11 +35,11 @@ Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
     const body = await req.json().catch(() => ({}));
-    const itemId = body?.item_id ? String(body.item_id) : "";
+    const itemId = body?.item_id ? String(body.item_id) : '';
 
     if (itemId) {
       const it = await base44.asServiceRole.entities.StoreItem.get(itemId);
-      if (!it) return Response.json({ ok: false, error: "not_found" }, { status: 200 });
+      if (!it) return Response.json({ ok: false, error: 'not_found' }, { status: 200 });
       return Response.json({ ok: true, item: toMeta(it) }, { status: 200 });
     }
 
@@ -35,7 +47,11 @@ Deno.serve(async (req) => {
     const all: any[] = [];
     const pageSize = 100;
     for (let skip = 0; skip < 2000; skip += pageSize) {
-      const page = await base44.asServiceRole.entities.StoreItem.list("-created_date", pageSize, skip);
+      const page = await base44.asServiceRole.entities.StoreItem.list(
+        '-created_date',
+        pageSize,
+        skip,
+      );
       if (!page || !page.length) break;
       all.push(...page);
       if (page.length < pageSize) break;

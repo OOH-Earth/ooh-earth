@@ -1,7 +1,7 @@
-import { useState, useEffect } from "react";
-import { createPortal } from "react-dom";
-import { X, ChevronLeft, ChevronRight, ArrowUpRight } from "lucide-react";
-import { Link } from "react-router-dom";
+import { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
+import { X, ChevronLeft, ChevronRight, ArrowUpRight } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 export default function Walkthrough({ open, onClose, steps }) {
   const [i, setI] = useState(0);
@@ -25,7 +25,7 @@ export default function Walkthrough({ open, onClose, steps }) {
         setRect(null);
         return;
       }
-      el.scrollIntoView({ block: "center", behavior: "smooth" });
+      el.scrollIntoView({ block: 'center', behavior: 'smooth' });
       raf = setTimeout(() => setRect(el.getBoundingClientRect()), 320);
     };
     measure();
@@ -38,16 +38,16 @@ export default function Walkthrough({ open, onClose, steps }) {
       }
     };
     const onKey = (e) => {
-      if (e.key === "Escape") onClose();
-      if (e.key === "ArrowRight") setI((p) => Math.min(p + 1, steps.length - 1));
-      if (e.key === "ArrowLeft") setI((p) => Math.max(p - 1, 0));
+      if (e.key === 'Escape') onClose();
+      if (e.key === 'ArrowRight') setI((p) => Math.min(p + 1, steps.length - 1));
+      if (e.key === 'ArrowLeft') setI((p) => Math.max(p - 1, 0));
     };
-    window.addEventListener("resize", onResize);
-    window.addEventListener("keydown", onKey);
+    window.addEventListener('resize', onResize);
+    window.addEventListener('keydown', onKey);
     return () => {
       clearTimeout(raf);
-      window.removeEventListener("resize", onResize);
-      window.removeEventListener("keydown", onKey);
+      window.removeEventListener('resize', onResize);
+      window.removeEventListener('keydown', onKey);
     };
   }, [open, i, steps, onClose]);
 
@@ -58,7 +58,8 @@ export default function Walkthrough({ open, onClose, steps }) {
 
   const ttStyle = hasRect
     ? {
-        top: rect.bottom + 170 < window.innerHeight ? rect.bottom + 12 : Math.max(16, rect.top - 230),
+        top:
+          rect.bottom + 170 < window.innerHeight ? rect.bottom + 12 : Math.max(16, rect.top - 230),
         left: Math.min(Math.max(16, rect.left), window.innerWidth - 316),
       }
     : {
@@ -67,38 +68,44 @@ export default function Walkthrough({ open, onClose, steps }) {
       };
 
   return createPortal(
-    <div className="fixed inset-0 z-[2000]" style={{ pointerEvents: "none" }}>
+    <div className="fixed inset-0 z-[2000]" style={{ pointerEvents: 'none' }}>
       {hasRect ? (
         <div
           style={{
-            position: "absolute",
+            position: 'absolute',
             top: rect.top - 6,
             left: rect.left - 6,
             width: rect.width + 12,
             height: rect.height + 12,
-            boxShadow: "0 0 0 9999px rgba(0,0,0,0.74)",
-            border: "2px solid rgb(var(--c-ozone))",
-            transition: "all 0.25s ease",
+            boxShadow: '0 0 0 9999px rgba(0,0,0,0.74)',
+            border: '2px solid rgb(var(--c-ozone))',
+            transition: 'all 0.25s ease',
           }}
         />
       ) : (
-        <div className="absolute inset-0 bg-black/74" style={{ pointerEvents: "auto" }} />
+        <div className="absolute inset-0 bg-black/74" style={{ pointerEvents: 'auto' }} />
       )}
-      {hasRect && <div className="absolute inset-0" style={{ pointerEvents: "auto" }} />}
+      {hasRect && <div className="absolute inset-0" style={{ pointerEvents: 'auto' }} />}
 
       <div
-        style={{ position: "absolute", ...ttStyle, pointerEvents: "auto" }}
+        style={{ position: 'absolute', ...ttStyle, pointerEvents: 'auto' }}
         className="w-[300px] border border-ozone/50 bg-void p-5 shadow-[0_0_0_1px_rgba(237,255,0,0.15),0_8px_40px_rgba(0,0,0,0.8),0_0_24px_rgba(237,255,0,0.12)]"
       >
         <div className="flex items-start justify-between gap-3">
           <span className="font-mono text-[10px] uppercase tracking-[0.3em] text-ozone">
             // Step {i + 1} / {steps.length}
           </span>
-          <button onClick={onClose} aria-label="Skip tour" className="text-silver/70 transition-colors hover:text-ozone">
+          <button
+            onClick={onClose}
+            aria-label="Skip tour"
+            className="text-silver/70 transition-colors hover:text-ozone"
+          >
             <X className="h-4 w-4" />
           </button>
         </div>
-        <h3 className="mt-3 font-display text-xl font-bold leading-tight tracking-[-0.01em] text-silver text-glow-ozone">{step.title}</h3>
+        <h3 className="mt-3 font-display text-xl font-bold leading-tight tracking-[-0.01em] text-silver text-glow-ozone">
+          {step.title}
+        </h3>
         <p className="mt-2 font-display text-[13px] leading-[1.55] text-silver/85">{step.body}</p>
 
         {step.cta && (
@@ -143,13 +150,13 @@ export default function Walkthrough({ open, onClose, steps }) {
             <button
               key={idx}
               onClick={() => setI(idx)}
-              className={`h-1.5 w-1.5 rounded-full transition-colors ${idx === i ? "bg-ozone" : "bg-dim"}`}
+              className={`h-1.5 w-1.5 rounded-full transition-colors ${idx === i ? 'bg-ozone' : 'bg-dim'}`}
               aria-label={`Go to step ${idx + 1}`}
             />
           ))}
         </div>
       </div>
     </div>,
-    document.body
+    document.body,
   );
 }

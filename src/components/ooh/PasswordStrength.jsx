@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo } from 'react';
 
 function score(pw) {
   if (!pw) return 0;
@@ -12,12 +12,12 @@ function score(pw) {
 }
 
 const LEVELS = [
-  { label: "Too short", color: "bg-dim" },
-  { label: "Weak", color: "bg-destructive" },
-  { label: "Fair", color: "bg-flare" },
-  { label: "Good", color: "bg-ozone" },
-  { label: "Strong", color: "bg-ozone" },
-  { label: "Maximum", color: "bg-ozone" },
+  { label: 'Too short', color: 'bg-dim' },
+  { label: 'Weak', color: 'bg-destructive' },
+  { label: 'Fair', color: 'bg-flare' },
+  { label: 'Good', color: 'bg-ozone' },
+  { label: 'Strong', color: 'bg-ozone' },
+  { label: 'Maximum', color: 'bg-ozone' },
 ];
 
 export default function PasswordStrength({ value }) {
@@ -30,7 +30,7 @@ export default function PasswordStrength({ value }) {
         {[0, 1, 2, 3, 4].map((i) => (
           <span
             key={i}
-            className={`h-1 flex-1 rounded-full transition-colors ${i < s ? level.color : "bg-border"}`}
+            className={`h-1 flex-1 rounded-full transition-colors ${i < s ? level.color : 'bg-border'}`}
           />
         ))}
       </div>
