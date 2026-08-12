@@ -138,21 +138,53 @@ const FALLBACK = [
   },
 ];
 
+// Strips HTML tags to a fixed point (loops until a pass makes no further
+// change) rather than a single regex pass -- a single pass can leave
+// fragments that recombine into a new tag once entity-decoded (CodeQL
+// js/incomplete-multi-character-sanitization), e.g. "<scr<script>ipt>"
+// only fully resolves after repeated stripping.
+function stripTags(s: string) {
+  let prev;
+  let cur = s;
+  do {
+    prev = cur;
+    cur = cur.replace(/<[^>]+>/g, '');
+  } while (cur !== prev);
+  return cur;
+}
+
+const ENTITIES: Record<string, string> = {
+  '&amp;': '&',
+  '&lt;': '<',
+  '&gt;': '>',
+  '&quot;': '"',
+  '&#39;': "'",
+  '&#x27;': "'",
+  '&apos;': "'",
+  '&nbsp;': ' ',
+  '&#8217;': "'",
+  '&#8216;': "'",
+};
+const ENTITY_RE = /&(?:amp|lt|gt|quot|#39|#x27|apos|nbsp|#8217|#8216);/g;
+
 function decode(s: string) {
-  return String(s)
-    .replace(/<!\[CDATA\[([\s\S]*?)\]\]>/g, '$1')
-    .replace(/<[^>]+>/g, '')
-    .replace(/&amp;/g, '&')
-    .replace(/&lt;/g, '<')
-    .replace(/&gt;/g, '>')
-    .replace(/&quot;/g, '"')
-    .replace(/&#39;/g, "'")
-    .replace(/&#x27;/g, "'")
-    .replace(/&apos;/g, "'")
-    .replace(/&nbsp;/g, ' ')
-    .replace(/&#8217;/g, "'")
-    .replace(/&#8216;/g, "'")
-    .trim();
+  // Single-pass entity decode (one regex matching every entity at once,
+  // via a lookup replacer) instead of chained sequential .replace() calls
+  // -- chaining lets one replacement's output become a later replacement's
+  // input, e.g. the old &amp; -> &lt; -> < order turned a deliberately
+  // double-encoded "&amp;lt;script&amp;gt;" into a literal "<script>"
+  // (CodeQL js/double-escaping). A single pass processes each character
+  // position once, so that cascade can't happen.
+  //
+  // Decode BEFORE stripping tags, not after: decoding first and stripping
+  // last means no HTML-producing step runs after the strip (CodeQL
+  // js/incomplete-multi-character-sanitization) -- previously an
+  // entity-encoded tag survived the strip (nothing literal to match yet)
+  // and only became a real tag once decoded afterward, with no further
+  // stripping applied.
+  const withoutCdata = String(s).replace(/<!\[CDATA\[([\s\S]*?)\]\]>/g, '$1');
+  const decoded = withoutCdata.replace(ENTITY_RE, (m) => ENTITIES[m] ?? m);
+  return stripTags(decoded).trim();
 }
 function pick(block: string, tag: string) {
   const m = block.match(new RegExp(`<${tag}[^>]*>([\\s\\S]*?)<\\/${tag}>`, 'i'));
