@@ -2,7 +2,17 @@ import { useEffect, useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { compressImage } from '@/lib/imageCompress';
 import { validateImageFile } from '@/lib/validateUpload';
-import { Camera, Crosshair, Loader2, Check, X, MapPin, CloudOff, RefreshCw } from 'lucide-react';
+import {
+  Camera,
+  Crosshair,
+  Loader2,
+  Check,
+  X,
+  MapPin,
+  CloudOff,
+  RefreshCw,
+  Sparkles,
+} from 'lucide-react';
 import { submitFieldCheck } from '@/lib/offlineQueue';
 import CameraViewfinder from '@/components/ooh/CameraViewfinder';
 
@@ -36,6 +46,8 @@ export default function FieldCheckCamera({ location, open, onClose }) {
   const [submitting, setSubmitting] = useState(false);
   const [done, setDone] = useState(null);
   const [error, setError] = useState('');
+  const [detecting, setDetecting] = useState(false);
+  const [detected, setDetected] = useState(null);
 
   useEffect(() => {
     if (!open || !location) return;
@@ -46,6 +58,7 @@ export default function FieldCheckCamera({ location, open, onClose }) {
     setAdbustType(location.adbust_type || 'none');
     setBrandName(location.brand_name || '');
     setNotes('');
+    setDetected(null);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, location]);
 
@@ -80,6 +93,46 @@ export default function FieldCheckCamera({ location, open, onClose }) {
       setError('Photo upload failed.');
     } finally {
       setUploading(false);
+    }
+  };
+
+  const aiDetect = async () => {
+    if (!image_url) return;
+    setDetecting(true);
+    setDetected(null);
+    try {
+      const result = await base44.integrations.Core.InvokeLLM({
+        prompt: `You are an out-of-home (OOH) field inspector re-checking a known advertising unit. Examine this photo of "${location.title}" and assess its CURRENT state:
+1. condition: infrastructure condition, exactly one of: functional, neglected, damaged, abandoned, reclaimed, upgraded.
+2. adbust_type: any visible activist intervention on the ad face, exactly one of: none, subverted, painted_over, stickered, projected, wheatpasted, removed, other.
+3. brand_name: the brand currently being advertised, if any is visible. If none or unclear, say "Unknown".
+Respond in JSON only.`,
+        file_urls: [image_url],
+        response_json_schema: {
+          type: 'object',
+          properties: {
+            condition: { type: 'string' },
+            adbust_type: { type: 'string' },
+            brand_name: { type: 'string' },
+          },
+        },
+      });
+      // InvokeLLM's SDK type is `string | object`; response_json_schema
+      // above guarantees an object at runtime.
+      const suggestion =
+        /** @type {{condition?: string, adbust_type?: string, brand_name?: string}} */ (result);
+      const validCondition = CONDITIONS.some((c) => c.value === suggestion.condition);
+      const validAdbust = ADBUST_TYPES.some((a) => a.value === suggestion.adbust_type);
+      if (validCondition) setCondition(/** @type {string} */ (suggestion.condition));
+      if (validAdbust) setAdbustType(/** @type {string} */ (suggestion.adbust_type));
+      if (suggestion.brand_name && suggestion.brand_name !== 'Unknown') {
+        setBrandName(suggestion.brand_name);
+      }
+      setDetected({ condition: validCondition, adbust: validAdbust });
+    } catch {
+      setDetected({ error: true });
+    } finally {
+      setDetecting(false);
     }
   };
 
@@ -124,6 +177,7 @@ export default function FieldCheckCamera({ location, open, onClose }) {
     setImageUrl('');
     setNotes('');
     setError('');
+    setDetected(null);
   };
 
   return (
@@ -200,7 +254,10 @@ export default function FieldCheckCamera({ location, open, onClose }) {
               <div className="relative mt-4 aspect-[4/3] overflow-hidden border border-slate2 bg-card">
                 <img src={image_url} alt="field check" className="h-full w-full object-cover" />
                 <button
-                  onClick={() => setImageUrl('')}
+                  onClick={() => {
+                    setImageUrl('');
+                    setDetected(null);
+                  }}
                   className="absolute right-2 top-2 flex items-center gap-1.5 border border-slate2 bg-void/80 px-2.5 py-1.5 font-mono text-[9px] uppercase tracking-[0.2em] text-silver backdrop-blur-sm transition-colors hover:border-flare hover:text-flare"
                 >
                   <Camera className="h-3 w-3" /> Retake
@@ -221,6 +278,41 @@ export default function FieldCheckCamera({ location, open, onClose }) {
                   />
                 </label>
               </>
+            )}
+
+            {image_url && (
+              <div className="mt-4 border border-ozone/30 bg-ozone/5 p-3">
+                <div className="flex items-center justify-between gap-3">
+                  <div>
+                    <div className="font-mono text-[9px] uppercase tracking-[0.2em] text-ozone">
+                      AI condition scan
+                    </div>
+                    {detected?.error && (
+                      <p className="mt-0.5 font-mono text-[9px] text-flare">
+                        Detection failed — set manually below.
+                      </p>
+                    )}
+                    {detected && !detected.error && (
+                      <p className="mt-0.5 font-mono text-[9px] text-ozone">
+                        ✓ Suggested — review and correct below.
+                      </p>
+                    )}
+                  </div>
+                  <button
+                    type="button"
+                    onClick={aiDetect}
+                    disabled={detecting}
+                    className="flex shrink-0 items-center gap-1.5 bg-ozone px-3 py-2 font-mono text-[9px] font-bold uppercase tracking-[0.2em] text-void transition-colors hover:bg-flare disabled:opacity-40"
+                  >
+                    {detecting ? (
+                      <Loader2 className="h-3 w-3 animate-spin" />
+                    ) : (
+                      <Sparkles className="h-3 w-3" />
+                    )}
+                    {detecting ? 'Scanning…' : 'Scan'}
+                  </button>
+                </div>
+              </div>
             )}
 
             {/* Condition */}
