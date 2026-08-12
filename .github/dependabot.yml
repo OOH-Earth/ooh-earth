@@ -8,6 +8,22 @@
 # version published minutes ago. Until this gap is closed (Renovate, or a
 # manual review habit of checking npm publish dates on Dependabot PRs), don't
 # auto-merge Dependabot PRs. See ENGINEERING.md Decision Register.
+#
+# Grouping policy (added 2026-08-12, after the first real wave produced 22
+# individual PRs for one week's worth of updates): group routine minor/patch
+# maintenance so it lands as one or two PRs instead of dozens, but keep every
+# major-version bump as its own separate, ungrouped PR — a major mixed into a
+# routine group can fail CI for the whole batch on its own (this happened:
+# the old ungrouped-by-update-type dev-dependencies group pulled in an eslint
+# 9->10 major alongside safe patches and broke that PR's CI as a unit).
+#
+# Security updates (from Dependabot security updates / vulnerability alerts,
+# separate from this file's scheduled version-update groups) are NOT grouped
+# here on purpose — they use Dependabot's default behavior of one immediate,
+# individual PR per advisory, so a real high/critical fix stays fast-moving
+# and doesn't wait on a weekly group or get buried in one. `groups:` below
+# has no `applies-to: security-updates` anywhere; that's deliberate, not an
+# omission.
 version: 2
 updates:
   - package-ecosystem: "npm"
@@ -20,8 +36,26 @@ updates:
       radix-ui:
         patterns:
           - "@radix-ui/*"
+        update-types:
+          - "minor"
+          - "patch"
       dev-dependencies:
         dependency-type: "development"
+        update-types:
+          - "minor"
+          - "patch"
+      npm-routine:
+        # Everything else (production deps not already in a more specific
+        # group above) — minor/patch only. A major bump for any of these
+        # falls out of this group automatically and opens its own PR, per
+        # the update-types restriction.
+        patterns:
+          - "*"
+        exclude-patterns:
+          - "@radix-ui/*"
+        update-types:
+          - "minor"
+          - "patch"
     commit-message:
       prefix: "chore"
       include: "scope"
@@ -32,6 +66,13 @@ updates:
       interval: "weekly"
       day: "monday"
     open-pull-requests-limit: 10
+    groups:
+      actions-routine:
+        patterns:
+          - "*"
+        update-types:
+          - "minor"
+          - "patch"
     commit-message:
       prefix: "chore"
       include: "scope"
