@@ -84,7 +84,7 @@ export default function TelemetryBar() {
       }
     })();
     return () => {
-      cancelled = false;
+      cancelled = true;
     };
   }, []);
 
