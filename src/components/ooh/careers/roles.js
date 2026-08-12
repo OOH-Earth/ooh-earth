@@ -2,7 +2,7 @@
 // plus a global volunteer network. Volunteering is the backbone; paid contracts
 // exist where the treasury allows. Each role carries full detail for its page.
 
-export const CATEGORIES = ["Field & Community", "Build & Design", "Growth & Funding"];
+export const CATEGORIES = ["Field & Community", "Build & Design", "Advisory & Leadership", "Growth & Funding"];
 
 export const ROLES = [
   // ─────────── Field & Community ───────────
@@ -317,6 +317,95 @@ export const ROLES = [
     ],
   },
 
+  // ─────────── Advisory & Leadership ───────────
+  // Low-commitment, high-leverage seats for senior agency, creative, media and
+  // legal people who don't want a job — they want somewhere to point real
+  // experience without a client on the other end of it.
+  {
+    id: "creative-advisor",
+    title: "Creative Advisor",
+    type: "Advisory",
+    category: "Advisory & Leadership",
+    location: "Remote",
+    commitment: "A few hours a month",
+    comp: "Advisory seat — unpaid, expenses covered for any in-person reviews",
+    summary: "Rotate onto campaign creative a few hours a month — the senior eye without the day job.",
+    tags: ["Creative", "Campaigns", "Advisory"],
+    about: "For creative directors and senior creatives who've spent a career on the client side of outdoor advertising and want a genuine seat on the other side of it — reviewing campaign creative, sense-checking tone, and lending craft to work that's never going to a client for approval.",
+    responsibilities: [
+      "Join a rotating review of campaign and subvertising creative",
+      "Sense-check tone, craft and impact before work goes live",
+      "Mentor volunteer designers on brief-writing and craft",
+      "Weigh in on the visual identity as it evolves",
+    ],
+    requirements: [
+      "Senior creative experience — agency, in-house or freelance",
+      "Comfortable giving direct, useful feedback fast",
+      "No conflicts with active OOH industry clients",
+    ],
+    gain: [
+      "A seat with real creative influence, no client to answer to",
+      "Credited work on a genuinely public-interest campaign",
+      "A standing connection to a global creative-resistance network",
+    ],
+  },
+  {
+    id: "media-planning-advisor",
+    title: "Media & Planning Advisor",
+    type: "Advisory",
+    category: "Advisory & Leadership",
+    location: "Remote",
+    commitment: "A few hours a month",
+    comp: "Advisory seat — unpaid, expenses covered for any in-person reviews",
+    summary: "Bring agency-side media and planning knowledge to bear on where the real pressure points in OOH buying and permitting sit.",
+    tags: ["Media", "Planning", "Advisory"],
+    about: "Nobody understands how outdoor advertising actually gets bought, planned and permitted better than people who've spent a career doing it for agencies and media owners. This is a seat for that knowledge — pointed at accountability instead of sales.",
+    responsibilities: [
+      "Advise on how OOH buys, permits and contracts actually work in practice",
+      "Flag where campaign or evidence work is technically weak",
+      "Help translate industry jargon into plain-language guides for members",
+      "Introduce the platform to trusted contacts where it's a genuine fit",
+    ],
+    requirements: [
+      "Media planning, buying or OOH operations background",
+      "Comfortable being candid about how the industry really works",
+      "No conflicts with active OOH industry clients",
+    ],
+    gain: [
+      "A way to use hard-won industry knowledge for something you believe in",
+      "Direct influence on campaign and evidence strategy",
+      "A clean, low-commitment way back in on your own terms",
+    ],
+  },
+  {
+    id: "legal-advisor",
+    title: "Legal Advisor",
+    type: "Advisory",
+    category: "Advisory & Leadership",
+    location: "Remote · any jurisdiction",
+    commitment: "A few hours a month",
+    comp: "Advisory seat — unpaid, expenses covered for any in-person reviews",
+    summary: "Senior legal counsel on advertising standards, planning law and public-space rights — the seat that keeps the movement lawful and confident.",
+    tags: ["Law", "Advertising Standards", "Advisory"],
+    about: "Distinct from our volunteer Legal & Rights Observers doing ground-level research — this is a senior advisory seat for a lawyer who can sanity-check the platform's public claims, campaign framing and objection tools before they go out.",
+    responsibilities: [
+      "Review campaign, fundraising and objection-tool copy for legal exposure",
+      "Advise on advertising standards, planning consent and public-space rights across jurisdictions",
+      "Support the Legal & Rights Observer network with senior guidance",
+      "Flag risk early, in plain language, before it becomes a problem",
+    ],
+    requirements: [
+      "Qualified lawyer — advertising, planning, media or public-interest law",
+      "Comfortable advising a nonprofit civic platform, not a corporate client",
+      "Precision without slowing the movement down",
+    ],
+    gain: [
+      "A genuinely public-interest use of legal training",
+      "A named advisory credit on a global civic platform",
+      "Direct line to the founder on anything time-sensitive",
+    ],
+  },
+
   // ─────────── Growth & Funding ───────────
   {
     id: "funding-grants",
@@ -376,30 +465,87 @@ export const ROLES = [
   },
   {
     id: "partnerships-lead",
-    title: "Partnerships Lead",
+    title: "Partnerships & Agency Backing Lead",
     type: "Part-time",
     category: "Growth & Funding",
     location: "Remote",
     commitment: "Part-time — regular hours",
     comp: "Part-time — paid where funded, honorarium otherwise",
-    summary: "Build alliances with NGOs, artist collectives and ethical funders to fund and amplify the resistance atlas.",
-    tags: ["Partnerships", "Fundraising", "Outreach"],
-    about: "The movement is bigger than us. You build the alliances that multiply it — with NGOs, adbusting collectives, academics and ethical funders who share the fight against ad saturation.",
+    summary: "Turn agency relationships into real backing — in-kind support, funding and campaign amplification — pitched on what the movement is actually worth.",
+    tags: ["Partnerships", "Agency Backing", "Fundraising"],
+    about: "The movement is bigger than us, and so is the ask. You build alliances with NGOs, adbusting collectives, academics and — critically — agencies and ethical funders willing to back a project like this, using a plain replacement-cost-plus-traction pitch instead of a startup multiple nobody asked for.",
     responsibilities: [
-      "Identify and open relationships with aligned organisations",
+      "Identify and open relationships with aligned organisations and agencies",
+      "Pitch backing using OOH Earth's replacement-cost + traction-premium valuation frame, not equity",
       "Structure partnerships that fund or amplify the work",
-      "Represent OOH Earth to allies and funders",
+      "Represent OOH Earth to allies, agencies and funders",
       "Keep partners close and reporting honest",
     ],
     requirements: [
-      "Partnerships, BD or NGO-relations experience",
+      "Partnerships, BD or agency-relations experience",
       "A network — or the skill to build one fast",
-      "Strong judgement on who's genuinely aligned",
+      "Strong judgement on who's genuinely aligned, not just useful",
     ],
     gain: [
       "A paid role where funding allows, honorarium otherwise",
-      "Ownership of the movement's alliances",
-      "A widening network across civil society",
+      "Ownership of the movement's alliances and its highest-leverage pitch",
+      "A widening network across agencies and civil society",
+    ],
+  },
+  {
+    id: "development-lead",
+    title: "Development & Fundraising Lead",
+    type: "Part-time",
+    category: "Growth & Funding",
+    location: "Remote",
+    commitment: "Part-time — regular hours",
+    comp: "Part-time — paid where funded, honorarium otherwise",
+    summary: "Own the funding operations layer — campaign consolidation, payment plumbing, and the pipeline that keeps a community-funded platform solvent.",
+    tags: ["Fundraising", "Operations", "Leadership"],
+    about: "Above the volunteer fundraising and grants roles sits the person who owns the whole funding operation — consolidating campaigns, keeping payment processing straight, and building a pipeline that doesn't depend on one founder holding it all in their head.",
+    responsibilities: [
+      "Own donation-campaign strategy and consolidation",
+      "Keep payment processing and subscription tooling running cleanly",
+      "Build recurring-donor and mid-level-donor programmes",
+      "Report funding health to the core team and, where relevant, to funders",
+    ],
+    requirements: [
+      "Nonprofit development or fundraising-operations experience",
+      "Comfort with payment platforms and the unglamorous admin behind them",
+      "Organised, deadline-driven, trustworthy with money",
+    ],
+    gain: [
+      "A paid leadership role where funding allows, honorarium otherwise",
+      "Ownership of the platform's entire funding pipeline",
+      "A visible hand in making the no-ad-money model actually work",
+    ],
+  },
+  {
+    id: "operations-lead",
+    title: "Operations Lead",
+    type: "Part-time",
+    category: "Growth & Funding",
+    location: "Remote",
+    commitment: "Part-time — regular hours",
+    comp: "Part-time — paid where funded, honorarium otherwise",
+    summary: "Own the automation layer — workflows, integrations and the plumbing that keeps the platform running without it all sitting on one person.",
+    tags: ["Operations", "Automation", "Leadership"],
+    about: "A platform this ambitious can't run on founder-memory forever. You own the automation and integration layer — the workflows connecting donations, community tools and the live platform — so growth doesn't mean everything breaks.",
+    responsibilities: [
+      "Own the automation/workflow layer end to end",
+      "Keep integrations between the platform, payments and community tools reliable",
+      "Document processes so they don't live in one person's head",
+      "Flag operational risk before it becomes an outage",
+    ],
+    requirements: [
+      "Operations or technical-automation experience",
+      "Comfort owning infrastructure without hand-holding",
+      "A documentation habit — you write things down",
+    ],
+    gain: [
+      "A paid leadership role where funding allows, honorarium otherwise",
+      "Real ownership of how the platform actually runs",
+      "A front-row seat as the project scales past one founder",
     ],
   },
   {

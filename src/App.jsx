@@ -16,6 +16,7 @@ import TvStatic from '@/components/ooh/TvStatic';
 import CognitiveLayer from '@/components/ooh/cognitive/CognitiveLayer';
 import MobileBottomTabs from '@/components/ooh/MobileBottomTabs';
 import MatrixLoader from '@/components/ooh/MatrixLoader';
+import { hydrateLoaderStyle } from '@/lib/loaderSettings';
 import ProtectedRoute from '@/components/ProtectedRoute';
 const Account = lazy(() => import('@/pages/Account'));
 import StageBanner from '@/components/ooh/StageBanner';
@@ -97,6 +98,7 @@ const RiversPortal = lazy(() => import('@/pages/portals/RiversPortal'));
 const WarZonesPortal = lazy(() => import('@/pages/portals/WarZonesPortal'));
 const Careers = lazy(() => import('@/pages/Careers'));
 const CareerRole = lazy(() => import('@/pages/CareerRole'));
+const CareersAdmin = lazy(() => import('@/pages/CareersAdmin'));
 const RadioOps = lazy(() => import('@/pages/RadioOps'));
 const Console = lazy(() => import('@/pages/Console'));
 const InvestorHub = lazy(() => import('@/pages/InvestorHub'));
@@ -119,6 +121,10 @@ const AuthenticatedApp = () => {
   // Twitter card, robots, and JSON-LD. Resolves DB PageMeta records (editable
   // in Lab Admin) with a static fallback. Pages can override via useSeo().
   useSeo();
+
+  // Hydrate the admin-controlled loading-screen style (matrix on/off) from the
+  // DB on boot, so a change in Lab Admin reaches every visitor on next load.
+  useEffect(() => { hydrateLoaderStyle(); }, []);
 
   // Show loading spinner while checking app public settings or auth
   if (isLoadingPublicSettings || isLoadingAuth) {
@@ -205,6 +211,7 @@ const AuthenticatedApp = () => {
       <Route path="/blog/studio" element={<BlogStudio />} />
       <Route path="/lab/admin" element={<LabAdmin />} />
       <Route path="/store/admin" element={<StoreAdmin />} />
+      <Route path="/careers/admin" element={<CareersAdmin />} />
     </Route>
     {/* Lab — dynamic access guard (public/agency toggled per prototype via /lab/admin) */}
     <Route element={<LabAccessRoute />}>

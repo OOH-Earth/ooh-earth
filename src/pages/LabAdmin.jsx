@@ -7,9 +7,10 @@ import Nav from "@/components/ooh/Nav";
 import Breadcrumbs from "@/components/ooh/Breadcrumbs";
 import SiteFooter from "@/components/ooh/SiteFooter";
 import { useToast } from "@/components/ui/use-toast";
-import { Loader2, Lock, ExternalLink, Radio, Power, Eye, EyeOff, Gauge, Map as MapIcon, ArrowUpRight } from "lucide-react";
+import { Loader2, Lock, ExternalLink, Radio, Power, Eye, EyeOff, Gauge, Map as MapIcon, ArrowUpRight, MonitorPlay } from "lucide-react";
 import { LAB_PROJECTS } from "@/components/ooh/labProjects";
 import ThemeModesPanel from "@/components/ooh/lab/ThemeModesPanel";
+import LoaderAdminPanel from "@/components/ooh/lab/LoaderAdminPanel";
 import MapStyleAdminPanel from "@/components/ooh/lab/MapStyleAdminPanel";
 import SeoAdminPanel from "@/components/ooh/lab/SeoAdminPanel";
 import CollapsibleSection from "@/components/ooh/lab/CollapsibleSection";
@@ -193,6 +194,15 @@ export default function LabAdmin() {
           defaultOpen={false}
         >
           <ThemeModesPanel />
+        </CollapsibleSection>
+
+        {/* Loading screen — matrix on/off, site-wide */}
+        <CollapsibleSection
+          title="Loading screen"
+          icon={<MonitorPlay className="h-3.5 w-3.5 text-ozone" />}
+          defaultOpen={false}
+        >
+          <LoaderAdminPanel />
         </CollapsibleSection>
 
         {/* Map style default — site-wide */}
