@@ -54,6 +54,7 @@ const STORY = {
   Long: "We've always been deeply aware of the growing impact of corporate interests on our public spaces. As seasoned advertising professionals, we saw first-hand how the industry prioritised commercial gain over community values. Despite our best efforts to advocate for more creative, community-centred approaches within the industry, our ideas were often overshadowed by corporate agendas. Realising true change was unattainable within the existing system, we stepped away and channelled our expertise into a platform designed to make a real difference. It isn't just a tool — it's a movement to reclaim public spaces from corporate dominance. Public spaces should reflect our collective values and spirit, not commercial interests. Join us in reshaping how advertising interacts with our urban environment.",
 };
 
+/** @type {[string, string[]][]} */
 const HEADLINES = [
   ["Inspiration & Vision", ["Redefine Urban Spaces: Embrace Creativity Over Corporate Control", "Join the Movement: Reclaim Public Spaces from Corporate Dominance"]],
   ["Empowerment & Action", ["Take a Stand: Challenge Intrusive Ads and Reclaim Your Space", "Empower Your Voice: Transform Public Spaces with Our Platform"]],

@@ -1,7 +1,11 @@
+// @ts-nocheck -- intentionally excluded from typecheck (jsconfig.json), see TECHNICAL_DEBT_REGISTER.md
 import * as React from "react"
 
 import { cn } from "@/lib/utils"
 
+/**
+ * @type {React.ForwardRefExoticComponent<React.InputHTMLAttributes<HTMLInputElement> & React.RefAttributes<HTMLInputElement>>}
+ */
 const Input = React.forwardRef(({ className, type, ...props }, ref) => {
   return (
     (<input

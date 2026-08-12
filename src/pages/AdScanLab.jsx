@@ -30,7 +30,7 @@ const SECTOR_LABELS = {
 
 // Terminal-style field cell — compact bordered unit with mono label + value.
 // If `brand` is true, renders a BrandIcon next to the value (brand/operator/corp).
-function TerminalField({ icon: Icon, label, value, brand }) {
+function TerminalField({ icon: Icon, label, value, brand = false }) {
   if (!value || (Array.isArray(value) && value.length === 0)) return null;
   return (
     <div className="border border-slate2/40 bg-void/50 px-3 py-2">

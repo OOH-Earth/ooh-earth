@@ -64,7 +64,7 @@ function Chip({ active, onClick, children }) {
   );
 }
 
-function Row({ n, onVerify, busy, triage, selectable, selected, onToggle }) {
+function Row({ n, onVerify = null, busy = false, triage = false, selectable = false, selected = false, onToggle = null }) {
   return (
     <div className={`flex items-center gap-3 border bg-card p-3 ${selected ? "border-ozone/60" : "border-slate2/50"}`}>
       {selectable && (

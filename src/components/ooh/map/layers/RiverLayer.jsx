@@ -11,7 +11,7 @@ export default function RiverLayer() {
       {RIVERS.map((r, i) => (
         <Polyline
           key={`river-${i}`}
-          positions={r.coords}
+          positions={/** @type {[number, number][]} */ (r.coords)}
           pathOptions={{
             color: "#39FF14",
             weight: 3,

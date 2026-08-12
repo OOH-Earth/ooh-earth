@@ -1,0 +1,68 @@
+{
+  "name": "LocationPhoto",
+  "type": "object",
+  "properties": {
+    "location_id": {
+      "type": "string",
+      "description": "Parent Location record id (one-to-many — a Location has many LocationPhoto rows)"
+    },
+    "url": {
+      "type": "string",
+      "description": "Uploaded photo URL"
+    },
+    "caption": {
+      "type": "string"
+    },
+    "uploaded_by": {
+      "type": "string",
+      "description": "Wallet address or display name of the contributor, if provided"
+    },
+    "display_order": {
+      "type": "number",
+      "default": 0,
+      "description": "Sort position within the parent location's gallery, ascending"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "verified",
+        "rejected"
+      ],
+      "default": "pending",
+      "description": "Mirrors the parent Location's moderation state — set explicitly at create time (verified immediately when added to an already-verified location, pending when submitted alongside a new field report) and cascaded when the parent location is verified/rejected"
+    }
+  },
+  "required": [
+    "location_id",
+    "url"
+  ],
+  "rls": {
+    "create": null,
+    "read": {
+      "$or": [
+        {
+          "data.status": "verified"
+        },
+        {
+          "created_by_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

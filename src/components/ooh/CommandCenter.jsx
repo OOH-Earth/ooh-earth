@@ -109,6 +109,7 @@ export default function CommandCenter({ open, onClose }) {
             </div>
             <div className="grid gap-px sm:grid-cols-2">
               {ACTIONS.map((a) => {
+                /** @type {any} */
                 const Wrap = a.to ? Link : "button";
                 const wrapProps = a.to ? { to: a.to, onClick: onClose } : { onClick: () => handleAction(a) };
                 return (
@@ -136,6 +137,7 @@ export default function CommandCenter({ open, onClose }) {
               </div>
               <div className="grid gap-px sm:grid-cols-2">
                 {g.links.map((l) => {
+                  /** @type {any} */
                   const Wrap = l.to ? Link : "a";
                   const wrapProps = l.to ? { to: l.to, onClick: onClose } : { href: l.href, target: "_blank", rel: "noreferrer" };
                   return (

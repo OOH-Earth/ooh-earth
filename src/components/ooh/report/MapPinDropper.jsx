@@ -52,7 +52,7 @@ function FlyTo({ target }) {
 }
 
 export default function MapPinDropper({ lat, lng, onPick, placeholder = "Search street, city, or place" }) {
-  const [center, setCenter] = useState([13.7563, 100.5018]); // Bangkok default
+  const [center, setCenter] = useState(/** @type {[number, number]} */ ([13.7563, 100.5018])); // Bangkok default
   const [zoom, setZoom] = useState(12);
   const [query, setQuery] = useState("");
   const [results, setResults] = useState([]);
@@ -135,7 +135,7 @@ export default function MapPinDropper({ lat, lng, onPick, placeholder = "Search 
   };
 
   const hasPin = lat && lng && isFinite(parseFloat(lat)) && isFinite(parseFloat(lng));
-  const pinPos = hasPin ? [parseFloat(lat), parseFloat(lng)] : null;
+  const pinPos = hasPin ? /** @type {[number, number]} */ ([parseFloat(lat), parseFloat(lng)]) : null;
 
   return (
     <div className="relative border border-slate2 bg-card crt-scanlines">

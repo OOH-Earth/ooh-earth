@@ -13,7 +13,7 @@ export const STATUS_TAGS = {
   "data-piracy": { label: "Data Piracy", color: "#800080" },
 };
 
-export default function StatusTag({ tag, active = false, onClick }) {
+export default function StatusTag({ tag, active = false, onClick = () => {} }) {
   const t = STATUS_TAGS[tag] || { label: tag, color: "#666666" };
   return (
     <button

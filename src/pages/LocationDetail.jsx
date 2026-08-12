@@ -8,8 +8,9 @@ import seed from "@/components/ooh/mapSeed";
 import Nav from "@/components/ooh/Nav";
 import Breadcrumbs from "@/components/ooh/Breadcrumbs";
 import MobileHeader from "@/components/ooh/MobileHeader";
-import { Image } from "@/components/ui/image";
 import MintLocationPanel from "@/components/ooh/mint/MintLocationPanel";
+import PhotoGallery from "@/components/ooh/gallery/PhotoGallery";
+import TimeSinceTag from "@/components/ooh/TimeSinceTag";
 import LocationEditPanel from "@/components/ooh/LocationEditPanel";
 import SubvertisingPanel from "@/components/ooh/SubvertisingPanel";
 import AdvertiserInfo from "@/components/ooh/AdvertiserInfo";
@@ -167,6 +168,7 @@ export default function LocationDetail() {
               {loc.status === "verified" ? <BadgeCheck className="h-3.5 w-3.5 text-ozone" /> : null}
               {loc.status || "pending"}
             </span>
+            {!isPending && <TimeSinceTag since={loc.status_updated_at} />}
             {loc.industry_sector && (
               <span className="border border-slate2 px-2.5 py-1 font-mono text-[9px] uppercase tracking-[0.25em] text-darkgray">
                 {loc.industry_sector.replace(/_/g, " ")}
@@ -197,21 +199,15 @@ export default function LocationDetail() {
         <section className="mb-8 grid gap-4 md:grid-cols-2">
           {/* Left: photo + field map */}
           <div className="flex flex-col gap-4">
-            {loc.image_url ? (
-              <div className="relative aspect-[4/3] overflow-hidden border border-slate2">
-                <Image src={loc.image_url} alt={loc.title} className="h-full w-full object-cover" fittingType="fill" />
-              </div>
-            ) : (
-              <div className="flex aspect-[4/3] items-center justify-center border border-slate2 grid-bg">
-                <Icon className="h-10 w-10" style={{ color: meta.accent }} strokeWidth={1.2} />
-              </div>
-            )}
+            <PhotoGallery loc={loc} icon={Icon} accent={meta.accent} />
             {mapSrc && (
               <iframe
                 title="Field map"
                 src={mapSrc}
                 className="aspect-[4/3] w-full border border-slate2 grayscale-[0.3]"
                 loading="lazy"
+                sandbox="allow-scripts allow-same-origin"
+                referrerPolicy="no-referrer"
               />
             )}
           </div>

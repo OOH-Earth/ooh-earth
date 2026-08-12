@@ -87,7 +87,7 @@ function CityCard({ c, highlighted }) {
   );
 }
 
-function Group({ title, subtitle, cities, highlighted }) {
+function Group({ title, subtitle, cities, highlighted = false }) {
   return (
     <div className="mt-12">
       <div className="flex flex-col gap-1 border-l-2 border-ozone/60 pl-4">

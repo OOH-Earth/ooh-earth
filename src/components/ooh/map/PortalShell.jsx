@@ -26,7 +26,7 @@ export default function PortalShell({
   filterTags = [],
   filterValue = "all",
   onFilterChange,
-  onRefresh,
+  onRefresh = null,
   mapActions = null,
 }) {
   const [selectedId, setSelectedId] = useState(null);

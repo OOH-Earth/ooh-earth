@@ -409,7 +409,9 @@ function fitCamera(camera, controls, obj) {
   return { dist, center };
 }
 
-const CoinViewer3D = forwardRef(function CoinViewer3D({ config, materialId, edgeType, enamelId }, ref) {
+const CoinViewer3D = forwardRef(
+  /** @param {{config: object, materialId: string, edgeType: string, enamelId: string}} props */
+  function CoinViewer3D({ config, materialId, edgeType, enamelId }, ref) {
   const mountRef = useRef(null);
   const S = useRef(null);
   const [bgColor, setBgColor] = useState("void");
@@ -503,7 +505,7 @@ const CoinViewer3D = forwardRef(function CoinViewer3D({ config, materialId, edge
       const st = S.current; if (st) cancelAnimationFrame(st.raf);
       window.removeEventListener("resize", onResize);
       controls.dispose();
-      scene.traverse((o) => {
+      scene.traverse((/** @type {any} */ o) => {
         if (o.geometry) o.geometry.dispose();
         if (o.material) { const m = o.material; (Array.isArray(m) ? m : [m]).forEach((x) => { if (x.map) x.map.dispose(); if (x.bumpMap) x.bumpMap.dispose(); x.dispose(); }); }
       });
@@ -519,7 +521,7 @@ const CoinViewer3D = forwardRef(function CoinViewer3D({ config, materialId, edge
     const st = S.current; if (!st) return;
     if (st.coin) {
       st.scene.remove(st.coin);
-      st.coin.traverse((o) => {
+      st.coin.traverse((/** @type {any} */ o) => {
         if (o.geometry) o.geometry.dispose();
         if (o.material) { const m = o.material; (Array.isArray(m) ? m : [m]).forEach((x) => { if (x.map) x.map.dispose(); if (x.bumpMap) x.bumpMap.dispose(); x.dispose(); }); }
       });

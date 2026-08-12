@@ -47,7 +47,7 @@ export default function SeoAdminPanel() {
       for (const path of Object.keys(byPath)) {
         const arr = byPath[path];
         if (arr.length > 1) {
-          arr.sort((a, b) => (b.og_generated ? 1 : 0) - (a.og_generated ? 1 : 0) || (b.og_image ? 1 : 0) - (a.og_image ? 1 : 0) || new Date(b.updated_date) - new Date(a.updated_date));
+          arr.sort((a, b) => (b.og_generated ? 1 : 0) - (a.og_generated ? 1 : 0) || (b.og_image ? 1 : 0) - (a.og_image ? 1 : 0) || new Date(b.updated_date).getTime() - new Date(a.updated_date).getTime());
           arr.slice(1).forEach((r) => base44.entities.PageMeta.delete(r.id).catch(() => {}));
         }
         map[path] = arr[0];

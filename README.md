@@ -47,6 +47,8 @@ npm run dev        # local dev server
 npm run build      # production build — the gate before anything ships
 ```
 
+Environment variables (frontend `VITE_*` + which secrets the backend functions expect, and where each one actually lives): see [.env.example](./.env.example).
+
 Build-verify (the habit we hold everyone to):
 
 ```bash

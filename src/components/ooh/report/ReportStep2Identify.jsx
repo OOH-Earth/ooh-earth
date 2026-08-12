@@ -53,12 +53,15 @@ Respond in JSON only.`,
           }
         }
       });
-      setDetected(result);
+      // InvokeLLM's SDK type is `string | object`; response_json_schema
+      // above guarantees an object at runtime.
+      const detected = /** @type {{brand_name?: string, campaign_name?: string, industry_sector?: string, parent_corp?: string}} */ (result);
+      setDetected(detected);
       onChange({
-        brand_name: result.brand_name && result.brand_name !== "Unknown" ? result.brand_name : data.brand_name,
-        campaign_name: result.campaign_name || data.campaign_name,
-        industry_sector: result.industry_sector || data.industry_sector,
-        parent_corp: result.parent_corp || data.parent_corp,
+        brand_name: detected.brand_name && detected.brand_name !== "Unknown" ? detected.brand_name : data.brand_name,
+        campaign_name: detected.campaign_name || data.campaign_name,
+        industry_sector: detected.industry_sector || data.industry_sector,
+        parent_corp: detected.parent_corp || data.parent_corp,
       });
     } catch (e) {
       setDetected({ error: true });

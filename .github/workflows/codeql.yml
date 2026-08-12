@@ -1,0 +1,36 @@
+name: CodeQL
+
+# Static analysis for the JS/TS frontend and the Deno functions in
+# base44/functions (Deno is TypeScript, CodeQL's javascript-typescript
+# extractor covers both without extra config). Runs on every PR, every push
+# to main, and weekly so it also catches newly-published query packs against
+# unchanged code.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  schedule:
+    - cron: "17 3 * * 1"
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+  security-events: write
+
+jobs:
+  analyze:
+    name: Analyze (javascript-typescript)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: github/codeql-action/init@v3
+        with:
+          languages: javascript-typescript
+          queries: security-and-quality
+
+      - uses: github/codeql-action/analyze@v3
+        with:
+          category: "/language:javascript-typescript"

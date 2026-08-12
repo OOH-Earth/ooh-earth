@@ -1,6 +1,9 @@
 import { Info } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from "@/components/ui/tooltip";
 
+/**
+ * @param {{ label: string, children?: import("react").ReactNode, side?: "top" | "bottom" | "left" | "right" }} props
+ */
 export default function InfoTip({ label, children, side = "top" }) {
   return (
     <TooltipProvider delayDuration={120}>

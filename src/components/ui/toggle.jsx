@@ -1,3 +1,4 @@
+// @ts-nocheck -- intentionally excluded from typecheck (jsconfig.json), see TECHNICAL_DEBT_REGISTER.md
 import * as React from "react"
 import * as TogglePrimitive from "@radix-ui/react-toggle"
 import { cva } from "class-variance-authority";
@@ -26,6 +27,9 @@ const toggleVariants = cva(
   }
 )
 
+/**
+ * @type {React.ForwardRefExoticComponent<React.ComponentPropsWithoutRef<typeof TogglePrimitive.Root> & import("class-variance-authority").VariantProps<typeof toggleVariants> & React.RefAttributes<React.ElementRef<typeof TogglePrimitive.Root>>>}
+ */
 const Toggle = React.forwardRef(({ className, variant, size, ...props }, ref) => (
   <TogglePrimitive.Root
     ref={ref}

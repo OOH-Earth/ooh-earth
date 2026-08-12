@@ -46,7 +46,13 @@ function requestGeocode(q) {
  * + debounced place-name autocomplete (geocode fly-to) + clear button.
  * Works identically on desktop and mobile.
  */
-export default function MapSearch({ query, setQuery, onFlyTo, placeholder = "Search street, city, or place", className = "" }) {
+// `onReset`: accepted but currently unused — Map.jsx passes a handler that
+// also clears type/layer filters, but this component's own clear button
+// only resets `query` via `setQuery("")`. Possible real gap (clearing
+// search doesn't reset the other filters) or intentionally separate
+// concerns — flagged, not guessed at; kept for call-site type-compatibility
+// only (same pattern as BrandMark.jsx's `spinning` prop).
+export default function MapSearch({ query, setQuery, onFlyTo, onReset = null, placeholder = "Search street, city, or place", className = "" }) {
   const [, force] = useState(0);
   const [open, setOpen] = useState(false);
   const [activeIdx, setActiveIdx] = useState(-1);

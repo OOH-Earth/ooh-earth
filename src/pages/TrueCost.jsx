@@ -73,7 +73,7 @@ export default function TrueCost() {
         response_json_schema: SCHEMA,
         ...(useWeb ? { add_context_from_internet: true, model: "gemini_3_flash" } : {}),
       });
-      const out = { upc: code, ...(product || {}), ...res };
+      const out = { upc: code, ...(product || {}), .../** @type {object} */ (res) };
       setResult(out);
       setHistory((h) => [out, ...h.filter((x) => x.upc !== code)].slice(0, 12));
     } catch (e) {

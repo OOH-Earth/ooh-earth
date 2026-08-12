@@ -1,3 +1,4 @@
+// @ts-nocheck -- intentionally excluded from typecheck (jsconfig.json), see TECHNICAL_DEBT_REGISTER.md
 import * as React from "react"
 import { useSize } from "@/hooks/use-size"
 import { cn } from "@/lib/utils"
@@ -171,6 +172,16 @@ ResponsiveImage.displayName = "ResponsiveImage"
  * device pixel ratio) and re-encoded to WebP; `fittingType="fill"` crops
  * server-side, optionally anchored at a focal point. Other URLs render as a
  * plain <img>. Failed loads swap to a fallback image.
+ */
+/**
+ * @type {React.ForwardRefExoticComponent<React.ImgHTMLAttributes<HTMLImageElement> & {
+ *   fittingType?: "fill" | "fit",
+ *   originWidth?: number,
+ *   originHeight?: number,
+ *   focalPointX?: number,
+ *   focalPointY?: number,
+ *   quality?: number,
+ * } & React.RefAttributes<HTMLImageElement>>}
  */
 const Image = React.forwardRef(
   (

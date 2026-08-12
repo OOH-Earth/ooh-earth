@@ -4,6 +4,7 @@ import { compressImage } from "@/lib/imageCompress";
 import { Camera, Crosshair, Loader2, Check, X, MapPin, CloudOff } from "lucide-react";
 import { submitCapture } from "@/lib/offlineQueue";
 import CameraViewfinder from "@/components/ooh/CameraViewfinder";
+import MultiPhotoUpload, { uploadLocationPhotos } from "@/components/ooh/gallery/MultiPhotoUpload";
 
 const TYPES = [
   { value: "billboard", label: "Billboard" },
@@ -22,6 +23,7 @@ export default function QuickCapture({ open, onClose }) {
   const [lat, setLat] = useState("");
   const [lng, setLng] = useState("");
   const [image_url, setImageUrl] = useState("");
+  const [extraPhotos, setExtraPhotos] = useState([]);
   const [locating, setLocating] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -61,7 +63,7 @@ export default function QuickCapture({ open, onClose }) {
   if (!open) return null;
 
   const reset = () => {
-    setDone(null); setImageUrl(""); setAddress(""); setLat(""); setLng(""); setType("billboard"); setError("");
+    setDone(null); setImageUrl(""); setExtraPhotos([]); setAddress(""); setLat(""); setLng(""); setType("billboard"); setError("");
   };
 
   const uploadFile = async (file) => {
@@ -91,8 +93,12 @@ export default function QuickCapture({ open, onClose }) {
         title, type, address, lat: latN, lng: lngN, image_url,
         notes: "Anonymous field capture", source_link: "", status: "pending",
       });
-      if (res.status === "synced") setDone(res.rec);
-      else setDone({ queued: true, lat: latN, lng: lngN });
+      if (res.status === "synced") {
+        setDone(res.rec);
+        if (extraPhotos.length) uploadLocationPhotos(extraPhotos, res.rec.id).catch(() => {});
+      } else {
+        setDone({ queued: true, lat: latN, lng: lngN });
+      }
     } catch (err) { setError(err?.message || "Transmission failed."); }
     finally { setSubmitting(false); }
   };
@@ -142,6 +148,10 @@ export default function QuickCapture({ open, onClose }) {
                 </label>
               </>
             )}
+
+            <div className="mt-4">
+              <MultiPhotoUpload files={extraPhotos} onChange={setExtraPhotos} disabled={submitting} />
+            </div>
 
             <div className="mt-4">
               <span className="mb-2 block font-mono text-[10px] uppercase tracking-[0.3em] text-dim">Type</span>

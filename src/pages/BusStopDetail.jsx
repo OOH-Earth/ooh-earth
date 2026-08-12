@@ -116,6 +116,8 @@ export default function BusStopDetail() {
             src={mapSrc}
             className="aspect-[4/3] w-full border border-slate2 grayscale-[0.3]"
             loading="lazy"
+            sandbox="allow-scripts allow-same-origin"
+            referrerPolicy="no-referrer"
           />
 
           <div className="flex flex-col gap-4">

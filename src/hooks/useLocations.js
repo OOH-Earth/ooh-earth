@@ -10,6 +10,11 @@ import { toMarker } from "@/components/ooh/map/markerUtils";
  * Returns { markers, live }.
  */
 export function useLocations() {
+  // Seed markers (mapSeed.js) and live markers (toMarker() in markerUtils.js)
+  // carry genuinely different field sets (seed has `notes`, live has
+  // `status`) — real, pre-existing inconsistency between the two sources,
+  // not something to silently unify here. Typed loosely to reflect that.
+  /** @type {[{ markers: Array<Record<string, any>>, live: boolean }, (d: { markers: Array<Record<string, any>>, live: boolean } | ((cur: { markers: Array<Record<string, any>>, live: boolean }) => { markers: Array<Record<string, any>>, live: boolean })) => void]} */
   const [data, setData] = useState({ markers: seedMarkers, live: false });
 
   useEffect(() => {

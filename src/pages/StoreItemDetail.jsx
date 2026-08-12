@@ -13,6 +13,16 @@ import { useSeo } from "@/lib/seoContext";
 
 const inIframe = typeof window !== "undefined" && window.self !== window.top;
 
+const GATE_DEFAULT = {
+  loading: false,
+  owned: false,
+  free: false,
+  locked: false,
+  content: "",
+  file_url: "",
+  reason: /** @type {string | undefined} */ (undefined),
+};
+
 const MD_COMPONENTS = {
   h2: (p) => <h2 className="mt-6 mb-2 font-display text-lg font-bold tracking-[-0.01em] text-silver" {...p} />,
   h3: (p) => <h3 className="mt-5 mb-1.5 font-display text-base font-bold text-silver" {...p} />,
@@ -29,22 +39,28 @@ export default function StoreItemDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
   const [item, setItem] = useState(null);       // metadata: null=loading, false=not found
-  const [gate, setGate] = useState({ loading: true }); // deliverable gate
+  // Full shape declared up front (GATE_DEFAULT) — useState({ loading: true })
+  // alone would narrow the state type to exactly { loading: boolean }
+  // forever, rejecting every later setGate({ ...owned, file_url, ... })
+  // call. Same runtime behavior either way (every field is read via a
+  // truthy/equality check that already treats undefined as "no"), just
+  // declared once and reused via spread so every setGate call stays typed.
+  const [gate, setGate] = useState({ ...GATE_DEFAULT, loading: true });
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
 
   const loadContent = async () => {
-    setGate({ loading: true });
+    setGate({ ...GATE_DEFAULT, loading: true });
     try {
       const res = await base44.functions.invoke("getStoreContent", { item_id: id });
       const d = res?.data ?? res;
       setGate({ loading: false, owned: !!d?.owned, free: !!d?.free, locked: !!d?.locked, content: d?.content || "", file_url: d?.file_url || "", reason: d?.reason });
-    } catch { setGate({ loading: false, locked: true }); }
+    } catch { setGate({ ...GATE_DEFAULT, locked: true }); }
   };
 
   useEffect(() => {
     let cancelled = false;
-    setItem(null); setGate({ loading: true });
+    setItem(null); setGate({ ...GATE_DEFAULT, loading: true });
     (async () => {
       try {
         const res = await base44.functions.invoke("storeCatalog", { item_id: id });

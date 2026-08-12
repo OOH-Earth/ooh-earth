@@ -77,7 +77,7 @@ export default function CapitalLead() {
           <div className="cl-head"><h2>The evidence base</h2><span className="m">Self-reported · diligence-ready</span></div>
           <div className="cl-trac">
             {TRACTION.map(([v, l, verify]) => (
-              <div className="cl-metric" key={l}>
+              <div className="cl-metric" key={String(l)}>
                 <div className="mv">{v}</div><div className="ml">{l}</div>
                 <span className={`mf ${verify ? "unv" : "live"}`}>{verify ? "Verify" : "Live"}</span>
               </div>

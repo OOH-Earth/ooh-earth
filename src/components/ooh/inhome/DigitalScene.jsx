@@ -6,6 +6,13 @@ import { platformMeta } from "./digitalConfig";
 // Operatives drag to orbit, click a billboard to select the bust.
 export default function DigitalScene({ busts = [], selectedId, onSelect, onPlace }) {
   const mountRef = useRef(null);
+  /**
+   * @type {import("react").MutableRefObject<{
+   *   ground?: THREE.Mesh,
+   *   group?: THREE.Group,
+   *   planes?: THREE.Mesh[],
+   * }>}
+   */
   const stateRef = useRef({});
 
   // mount once
@@ -124,10 +131,12 @@ export default function DigitalScene({ busts = [], selectedId, onSelect, onPlace
     const group = stateRef.current.group;
     if (!group) return;
     while (group.children.length) {
-      const c = group.children[0];
+      // Every child here is one of the Mesh billboards/posts built below —
+      // Object3D itself (the base class) has no geometry/material.
+      const c = /** @type {THREE.Mesh} */ (group.children[0]);
       group.remove(c);
       if (c.geometry) c.geometry.dispose();
-      if (c.material) c.material.dispose();
+      if (c.material) /** @type {THREE.Material} */ (c.material).dispose();
     }
     const planes = [];
     stateRef.current.planes = planes;
@@ -171,7 +180,12 @@ export default function DigitalScene({ busts = [], selectedId, onSelect, onPlace
     const planes = stateRef.current.planes || [];
     planes.forEach((m) => {
       const sel = m.userData.bustId === selectedId;
-      m.material.emissiveIntensity = sel ? 0.95 : m.userData.baseEmissive;
+      // Billboard planes are always built with a single MeshStandardMaterial
+      // (see the mat = new THREE.MeshStandardMaterial(...) above), never the
+      // multi-material array form Mesh.material's type also allows.
+      /** @type {THREE.MeshStandardMaterial} */ (m.material).emissiveIntensity = sel
+        ? 0.95
+        : m.userData.baseEmissive;
       m.scale.setScalar(sel ? 1.18 : 1);
     });
   }, [selectedId, busts]);

@@ -1,3 +1,4 @@
+// @ts-nocheck -- intentionally excluded from typecheck (jsconfig.json), see TECHNICAL_DEBT_REGISTER.md
 "use client";
 import * as React from "react"
 import * as RechartsPrimitive from "recharts"

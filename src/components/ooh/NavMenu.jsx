@@ -303,6 +303,7 @@ function MobileLauncher({ onClose, onTour }) {
                   n += 1;
                   const Icon = ICON[l.label] || LayoutGrid;
                   const st = l.status ? STATUS[l.status] : null;
+                  /** @type {any} */
                   const Wrap = l.to ? Link : "div";
                   const wrapProps = l.to ? { to: l.to, onClick: onClose } : {};
                   return (
@@ -351,6 +352,7 @@ function PopoverLinks({ onClose }) {
           {g.items.filter((l) => !l.agencyOnly || agency).map((l) => {
             n += 1;
             const st = l.status ? STATUS[l.status] : null;
+            /** @type {any} */
             const Wrap = l.to ? Link : "div";
             const wrapProps = l.to ? { to: l.to, onClick: onClose } : {};
             return (

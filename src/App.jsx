@@ -5,6 +5,7 @@ import { queryClientInstance } from '@/lib/query-client'
 import { BrowserRouter as Router, Route, Routes, Navigate, useLocation } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import PageNotFound from './lib/PageNotFound';
+import ErrorBoundary from '@/components/ErrorBoundary';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import { getRouteMeta } from '@/lib/routeMeta';
 import { SeoProvider, useSeo } from '@/lib/seoContext';
@@ -265,7 +266,7 @@ function App() {
               <LabGateProvider>
                 <ScrollToTop />
                 <StageBanner />
-                <AuthenticatedApp />
+                <ErrorBoundary><AuthenticatedApp /></ErrorBoundary>
                 <CrtOverlay />
                 <TvStatic />
                 <CognitiveLayer />

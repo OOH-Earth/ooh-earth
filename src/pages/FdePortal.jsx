@@ -36,7 +36,7 @@ function nodeId(seed = "") {
   return String((h % 101) + 1).padStart(4, "0");
 }
 
-function Stat({ Icon, label, value, accent }) {
+function Stat({ Icon, label, value, accent = "" }) {
   return (
     <div className="border border-slate2/60 bg-card p-4">
       <Icon className={`h-4 w-4 ${accent || "text-dim"}`} />

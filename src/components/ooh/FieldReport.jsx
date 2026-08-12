@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { submitCapture } from "@/lib/offlineQueue";
+import { uploadLocationPhotos } from "@/components/ooh/gallery/MultiPhotoUpload";
 import { Link } from "react-router-dom";
 import { MapPin, Loader2, Check, CloudOff, AlertTriangle, ArrowRight, ArrowLeft } from "lucide-react";
 import ReportStep1Document from "@/components/ooh/report/ReportStep1Document";
@@ -34,6 +35,7 @@ const EMPTY = {
   adbust_type: "none",
   adbust_image_url: "",
   action_flags: [],
+  extraPhotos: [],
 };
 
 export default function FieldReport() {
@@ -91,8 +93,12 @@ export default function FieldReport() {
         adbust_image_url: data.adbust_image_url,
         action_flags: data.action_flags,
       });
-      if (res.status === "synced") setDone(res.rec);
-      else setDone({ queued: true, lat: latN, lng: lngN });
+      if (res.status === "synced") {
+        setDone(res.rec);
+        if (data.extraPhotos?.length) uploadLocationPhotos(data.extraPhotos, res.rec.id).catch(() => {});
+      } else {
+        setDone({ queued: true, lat: latN, lng: lngN });
+      }
     } catch (err) {
       setError(err?.message || "Transmission failed.");
     } finally {

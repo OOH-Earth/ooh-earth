@@ -272,7 +272,7 @@ function ClusteredMarkers({ pins, selectedId, onSelect, compactPopup, onExpandPi
   );
 }
 
-export default function LocationMap({ markers, selectedId, hoverId, onSelect, userLoc, futures, activeLayers = [], onBoundsChange, flyTo, compactPopup, onExpandPin }) {
+export default function LocationMap({ markers, selectedId, hoverId, onSelect, userLoc = null, futures, activeLayers = [], onBoundsChange = null, flyTo = null, compactPopup = false, onExpandPin = null }) {
   const { style } = useMapStyle();
   const pins = useMemo(() => markers.filter((m) => isFinite(m.lat) && isFinite(m.lng)), [markers]);
 

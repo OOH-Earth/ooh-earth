@@ -46,7 +46,7 @@ function Row({ items }) {
   );
 }
 
-export default function MapAlertTicker({ onClose }) {
+export default function MapAlertTicker({ onClose = null }) {
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [dismissed, setDismissed] = useState(false);
@@ -82,7 +82,8 @@ export default function MapAlertTicker({ onClose }) {
           },
         });
         if (mounted.current) {
-          setItems(shuffleArray(res?.alerts || []));
+          const alerts = /** @type {{ alerts?: any[] }} */ (res)?.alerts;
+          setItems(shuffleArray(alerts || []));
           setLoading(false);
         }
       } catch {

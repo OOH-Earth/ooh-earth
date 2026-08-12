@@ -14,7 +14,9 @@
       "description": "Handle of the operative adopting the lead"
     },
     "note": {
-      "type": "string"
+      "type": "string",
+      "description": "Optional recon note from the claiming operative (max 1000 characters)",
+      "maxLength": 1000
     },
     "status": {
       "type": "string",

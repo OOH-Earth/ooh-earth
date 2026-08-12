@@ -1,0 +1,26 @@
+# CODEOWNERS — real handle, not yet enforced
+#
+# @AdilQuantum is the verified GitHub Admin and engineering owner (CI/CD,
+# security, releases, repo config — see ENGINEERING-WORKFLOW.md). Dave
+# remains the product/Base44/UX owner and is not a GitHub collaborator on
+# this repo today, so he isn't listed here as a code owner.
+#
+# Still NOT enforced: branch protection's "Require review from Code Owners"
+# is intentionally left off (see ADMIN-ACCESS-REQUIREMENTS.md / the branch
+# protection proposal) — with @AdilQuantum as both the sole engineering
+# reviewer and the one opening most PRs, turning this on today would let a
+# PR require an approval only its own author can give, deadlocking merges.
+# Revisit once there's a second regular engineering reviewer.
+#
+# Suggested shape once the team grows past one person: split by area so
+# payment/treasury changes always get a second set of eyes even if the
+# person who touched them is also a maintainer.
+
+# Default: engineering owner reviews everything not claimed below.
+* @AdilQuantum
+
+# Example specialisation — uncomment and fill in once there's a second
+# maintainer to assign:
+# /base44/functions/stripeWebhook/   @<payments-owner>
+# /base44/functions/cryptoWatch/     @<treasury-owner>
+# /.github/                          @<engineering-owner>

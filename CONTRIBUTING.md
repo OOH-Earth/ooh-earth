@@ -26,17 +26,22 @@ If you're not sure whether something is "risky," treat it as risky.
 
 ```bash
 npm run build > /tmp/b.log 2>&1; echo "BUILD EXIT: $?"; tail -3 /tmp/b.log
+npm run lint
+npm run typecheck
 ```
 
-`BUILD EXIT: 0` or it doesn't merge. CI enforces the same check, but run it locally first — it's faster for everyone.
+`BUILD EXIT: 0`, plus lint and typecheck clean, or it doesn't merge. CI enforces the same checks — see [CI_PIPELINE.md](./CI_PIPELINE.md) for the full pipeline (Playwright, accessibility, bundle size, dependency audit) and exactly which gates block a merge. Run these locally first — it's faster for everyone.
 
 ## Pull requests
 
-1. Branch from `main` with a short, descriptive name (`fix/map-marker-drift`, `feat/objection-generator-copy`).
+1. Branch from `main` with a short, descriptive name (`fix/map-marker-drift`, `feat/objection-generator-copy`) — see [BRANCHING_STRATEGY.md](./BRANCHING_STRATEGY.md).
 2. Keep PRs focused — one concern per PR is easier to review and safer to revert.
-3. Fill in the PR template. Say what changed, why, and how you tested it.
-4. Confirm the build passes.
-5. Note any production/data implications explicitly so a maintainer can sequence the deploy.
+3. Title the PR using [Conventional Commits](./RELEASE_PROCESS.md) (`feat: …`, `fix: …`, `chore: …`) — squash merges use the PR title as the commit message, and that's what drives automatic versioning and changelog generation.
+4. Fill in the PR template. Say what changed, why, and how you tested it.
+5. Confirm the build, lint, and typecheck all pass.
+6. Note any production/data implications explicitly so a maintainer can sequence the deploy.
+
+See [ENGINEERING.md](./ENGINEERING.md) for how the engineering system fits together end to end.
 
 ## Style & tone
 

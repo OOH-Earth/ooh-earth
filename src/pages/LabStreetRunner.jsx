@@ -59,7 +59,7 @@ function bikeMarkup(mode, uid) {
   p.push(`<line x1="530" y1="336" x2="${RCX + 42}" y2="${RCY}" stroke="${bp ? HIVIS : "#1a1b21"}" stroke-width="${bp ? SW : 17}" opacity="${bp ? 0.6 : 1}" stroke-linecap="round"/>`);
   p.push(`<line x1="476" y1="256" x2="332" y2="356" stroke="${bp ? HIVIS : "#202127"}" stroke-width="${bp ? SW : 9}" opacity="${bp ? 0.6 : 1}" stroke-linecap="round"/>`);
   p.push(wheel(RCX, RCY)); p.push(wheel(FCX, FCY));
-  [[-16, "#20212a"], [15, "#17181d"]].forEach(([dx, col]) => { p.push(`<line x1="${FCX + dx - 6}" y1="${FCY - 28}" x2="${FCX + dx + 24}" y2="182" stroke="${bp ? HIVIS : col}" stroke-width="${bp ? SW : 15}" opacity="${bp ? 0.7 : 1}" stroke-linecap="round"/>`); });
+  (/** @type {[number, string][]} */ ([[-16, "#20212a"], [15, "#17181d"]])).forEach(([dx, col]) => { p.push(`<line x1="${FCX + dx - 6}" y1="${FCY - 28}" x2="${FCX + dx + 24}" y2="182" stroke="${bp ? HIVIS : col}" stroke-width="${bp ? SW : 15}" opacity="${bp ? 0.7 : 1}" stroke-linecap="round"/>`); });
   p.push(`<path d="M ${FCX - 98} 302 Q ${FCX} 250 ${FCX + 98} 302 L ${FCX + 94} 326 Q ${FCX} 278 ${FCX - 94} 326 Z" fill="${BODY}" stroke="${LINE}" stroke-width="${SW}"/>`);
   p.push(`<path d="${BODY_D}" fill="${BODY}" stroke="${LINE}" stroke-width="${1.3 * SW}"/>`);
   p.push(`<path d="M 200 224 L 330 214 Q 470 196 604 200 Q 720 204 792 224" fill="none" stroke="${rn ? HIVIS : EDGE}" stroke-width="${rn ? 1.6 : 1.4}" opacity="${rn ? 0.55 : 0.8}"/>`);

@@ -17,7 +17,7 @@ import { COIN_MATERIALS, COIN_EDITIONS, COIN_SPECS, COIN_TOKENOMICS, SDG_ALIGNME
 export default function GenesisCoin() {
   const viewerRef = useRef(null);
   const { gate } = useLabGate();
-  const [serial, setSerial] = useState(45);
+  const [serial, setSerial] = useState(/** @type {string | number} */ (45));
   const [edition, setEdition] = useState("FOUNDING EDITION");
   const [materialId, setMaterialId] = useState("brass");
   const [edgeType, setEdgeType] = useState("reeded");

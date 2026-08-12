@@ -15,7 +15,7 @@ function distKm(a, b) {
   return R * 2 * Math.atan2(Math.sqrt(s), Math.sqrt(1 - s));
 }
 
-function RelatedCard({ loc, badge, distKm: dist }) {
+function RelatedCard({ loc, badge, distKm: dist = null }) {
   const meta = metaFor(loc.type);
   const Icon = meta.Icon;
   return (

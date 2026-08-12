@@ -5,6 +5,7 @@ import { compressImage } from "@/lib/imageCompress";
 import { useState } from "react";
 import ReportScanner from "@/components/ooh/report/ReportScanner";
 import MapPinDropper from "@/components/ooh/report/MapPinDropper";
+import MultiPhotoUpload from "@/components/ooh/gallery/MultiPhotoUpload";
 
 const TYPES = [
   { value: "billboard", label: "Billboard" },
@@ -96,6 +97,9 @@ export default function ReportStep1Document({ data, onChange }) {
           </div>
         )}
       </div>
+
+      {/* Additional gallery photos */}
+      <MultiPhotoUpload files={data.extraPhotos || []} onChange={(extraPhotos) => onChange({ extraPhotos })} />
 
       {/* AI Ad Scanner — beta */}
       <ReportScanner data={data} onChange={onChange} />

@@ -1,3 +1,4 @@
+// @ts-nocheck -- intentionally excluded from typecheck (jsconfig.json), see TECHNICAL_DEBT_REGISTER.md
 import { createContext, useContext, useRef, useState, useEffect, useCallback } from "react";
 import { RADIO_STATIONS } from "@/components/ooh/radio/radioStations";
 import { OOH_STATION, RADIO_OPS_ENABLED, fetchNowPlaying } from "@/lib/radioOps";

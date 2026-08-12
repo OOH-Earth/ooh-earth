@@ -8,7 +8,7 @@ import { Search, MapPin, Loader2, Crosshair, Check } from "lucide-react";
 const NOMINATIM_URL = "https://nominatim.openstreetmap.org/search";
 const REVERSE_URL = "https://nominatim.openstreetmap.org/reverse";
 
-export default function PlaceSearch({ onSelect, placeholder = "Search street, city, or place", bias }) {
+export default function PlaceSearch({ onSelect, placeholder = "Search street, city, or place", bias = null }) {
   const [query, setQuery] = useState("");
   const [results, setResults] = useState([]);
   const [loading, setLoading] = useState(false);

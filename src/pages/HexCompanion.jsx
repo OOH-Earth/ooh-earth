@@ -38,7 +38,7 @@ function Phone({ code, name, tab, children }) {
   );
 }
 
-const Row = ({ k, v, c }) => (
+const Row = ({ k, v, c = "" }) => (
   <div className="flex justify-between border-b border-slate2/40 py-1.5 font-mono text-[10px] last:border-0">
     <span className="text-silver/40">{k}</span><span style={c ? { color: c } : undefined} className={c ? "" : "text-silver"}>{v}</span>
   </div>

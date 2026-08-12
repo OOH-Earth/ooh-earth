@@ -1,3 +1,4 @@
+// @ts-nocheck -- intentionally excluded from typecheck (jsconfig.json), see TECHNICAL_DEBT_REGISTER.md
 // Inspired by react-hot-toast library
 import { useState, useEffect } from "react";
 

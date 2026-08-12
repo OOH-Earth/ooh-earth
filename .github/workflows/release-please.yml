@@ -1,0 +1,26 @@
+name: release-please
+
+# Watches main for Conventional Commits and keeps a standing "release PR"
+# up to date with the next version bump + CHANGELOG.md entry. Merging that
+# PR is what actually cuts the release: release-please then tags the commit
+# and publishes GitHub Release notes. Nothing here ever runs `npm publish` —
+# this app isn't distributed via the npm registry, so release-please only
+# manages package.json's version field, CHANGELOG.md, and the git tag/GitHub
+# Release. See RELEASE_PROCESS.md before merging your first release PR.
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  release-please:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: googleapis/release-please-action@v4
+        with:
+          config-file: release-please-config.json
+          manifest-file: .release-please-manifest.json

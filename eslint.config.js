@@ -52,7 +52,10 @@ export default [
       "react/react-in-jsx-scope": "off",
       "react/no-unknown-property": [
         "error",
-        { ignore: ["cmdk-input-wrapper", "toast-close"] },
+        // allowpaymentrequest: real HTML5 iframe attribute (Payment Request
+        // API) used by the Donorbox embed in Support.jsx — React just
+        // doesn't know it, same as the other two.
+        { ignore: ["cmdk-input-wrapper", "toast-close", "allowpaymentrequest"] },
       ],
       "react-hooks/rules-of-hooks": "error",
     },

@@ -2,6 +2,7 @@ import { MapPin, Hand } from "lucide-react";
 import { Link } from "react-router-dom";
 import LocationThumb, { metaFor } from "@/components/ooh/map/LocationThumb";
 import { BrandIcon } from "@/components/ooh/BrandBadge";
+import TimeSinceTag from "@/components/ooh/TimeSinceTag";
 
 // Terminal reticle corner brackets — wraps a child box with four L-shaped marks.
 function Reticle({ children, className = "" }) {
@@ -44,6 +45,9 @@ export default function LocationCard({ m, selected, onSelect, onHover, onHoverEn
         <div className="flex items-center gap-1.5">
           <span className="font-mono text-[9px] uppercase tracking-[0.2em] text-ozone">{metaFor(m.type).label}</span>
           <span className="h-1 w-1 rounded-full" style={{ backgroundColor: dotColor }} />
+          {m.status !== "pending" && m.status_updated_at && (
+            <TimeSinceTag since={m.status_updated_at} compact className="text-[8px] text-dim/70" />
+          )}
           {m.adbust_type && m.adbust_type !== "none" && (
             <span className="font-mono text-[8px] uppercase tracking-[0.15em] text-flare">// busted</span>
           )}

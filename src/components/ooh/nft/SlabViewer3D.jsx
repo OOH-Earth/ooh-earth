@@ -172,7 +172,7 @@ function buildSlab(config, cardTexture, st) {
     grp.add(new THREE.Mesh(rbox(cardW + 0.04, cardH + 0.04, 0.025, 0.015), glassMat));
   }
 
-  grp.traverse((o) => { if (o.isMesh) o.castShadow = true; });
+  grp.traverse((/** @type {any} */ o) => { if (o.isMesh) o.castShadow = true; });
   return grp;
 }
 
@@ -194,7 +194,9 @@ function fitCamera(camera, controls, slab) {
   return { dist, center };
 }
 
-const SlabViewer3D = forwardRef(function SlabViewer3D({ config, artworkUrl }, ref) {
+const SlabViewer3D = forwardRef(
+  /** @param {{config: object, artworkUrl: string | null}} props */
+  function SlabViewer3D({ config, artworkUrl }, ref) {
   const mountRef = useRef(null);
   const S = useRef(null);
   const [bgColor, setBgColor] = useState("void");
@@ -291,7 +293,7 @@ const SlabViewer3D = forwardRef(function SlabViewer3D({ config, artworkUrl }, re
       const st = S.current; if (st) cancelAnimationFrame(st.raf);
       window.removeEventListener("resize", onResize);
       controls.dispose();
-      scene.traverse((o) => {
+      scene.traverse((/** @type {any} */ o) => {
         if (o.geometry) o.geometry.dispose();
         if (o.material) { const m = o.material; (Array.isArray(m) ? m : [m]).forEach((x) => { if (x.map) x.map.dispose(); x.dispose(); }); }
       });
@@ -308,7 +310,7 @@ const SlabViewer3D = forwardRef(function SlabViewer3D({ config, artworkUrl }, re
     let cancelled = false;
     if (st.slab) {
       st.scene.remove(st.slab);
-      st.slab.traverse((o) => {
+      st.slab.traverse((/** @type {any} */ o) => {
         if (o.geometry) o.geometry.dispose();
         if (o.material) { const m = o.material; (Array.isArray(m) ? m : [m]).forEach((x) => { if (x.map) x.map.dispose(); x.dispose(); }); }
       });
