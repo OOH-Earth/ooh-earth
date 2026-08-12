@@ -11,22 +11,32 @@ export default function ClaimLeadDialog({ open, onClose, location, onClaimed = n
   const [handle, setHandle] = useState("");
   const [note, setNote] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState("");
 
-  const reset = () => { setHandle(""); setNote(""); };
+  const reset = () => { setHandle(""); setNote(""); setError(""); };
 
   const submit = async () => {
     if (!handle.trim() || !location) return;
     setSubmitting(true);
+    setError("");
     try {
-      await base44.entities.LeadClaim.create({
+      // LeadClaim.create is admin-only in entity RLS -- claimLead is the
+      // validated server-side write path (checks the location is real,
+      // trims/bounds free text, rejects an already-claimed lead).
+      const { data } = await base44.functions.invoke("claimLead", {
         location_id: location.id,
-        location_title: location.title,
         operative_handle: handle.trim(),
         note: note.trim(),
       });
+      if (data?.error) {
+        setError(data.error);
+        return;
+      }
       reset();
       onClaimed?.();
       onClose?.();
+    } catch {
+      setError("Could not submit claim — try again.");
     } finally {
       setSubmitting(false);
     }
@@ -55,6 +65,7 @@ export default function ClaimLeadDialog({ open, onClose, location, onClaimed = n
             <Textarea value={note} onChange={(e) => setNote(e.target.value)} placeholder="When you plan to document this site…" rows={3} className="font-mono text-sm" />
           </div>
           <p className="font-mono text-[9px] uppercase tracking-[0.15em] text-dim">// adopting a lead assigns it to your handle · document it to earn field credit</p>
+          {error && <p className="font-mono text-[10px] uppercase tracking-[0.15em] text-flare" role="alert">{error}</p>}
         </div>
         <DialogFooter>
           <Button variant="outline" onClick={close} className="font-mono text-[10px] uppercase tracking-[0.2em]">Cancel</Button>
