@@ -13,7 +13,7 @@ Deno.serve(async (req) => {
       const res = await fetch(FEED_URL, { headers: { accept: 'application/json' } });
       if (res.ok) {
         const data = await res.json();
-        const list = Array.isArray(data) ? data : (data.markers || data.locations || []);
+        const list = Array.isArray(data) ? data : data.markers || data.locations || [];
         if (Array.isArray(list) && list.length) {
           const markers = list
             .map((m) => ({
@@ -23,7 +23,11 @@ Deno.serve(async (req) => {
               lat: parseFloat(m.lat ?? m.latitude),
               lng: parseFloat(m.lng ?? m.longitude),
               image: m.image || m.thumbnail || null,
-              link: m.link || (m.id != null ? `https://oohearth.app/location/${m.id}/` : 'https://oohearth.app/location/'),
+              link:
+                m.link ||
+                (m.id != null
+                  ? `https://oohearth.app/location/${m.id}/`
+                  : 'https://oohearth.app/location/'),
             }))
             .filter((m) => isFinite(m.lat) && isFinite(m.lng));
           if (markers.length) return Response.json({ count: markers.length, markers, live: true });
@@ -43,12 +47,14 @@ Deno.serve(async (req) => {
     const seen = new Set();
 
     for (let p = 1; p <= pages; p++) {
-      const url = p === 1 ? 'https://oohearth.app/location/' : `https://oohearth.app/location/page/${p}/`;
+      const url =
+        p === 1 ? 'https://oohearth.app/location/' : `https://oohearth.app/location/page/${p}/`;
       let html;
       try {
         const res = await fetch(url, {
           headers: {
-            'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36',
+            'user-agent':
+              'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36',
             accept: 'text/html,application/xhtml+xml,*/*;q=0.8',
             'accept-language': 'en-US,en;q=0.9',
           },
@@ -68,11 +74,16 @@ Deno.serve(async (req) => {
         const q = chunk.indexOf('"');
         if (q === -1) continue;
         let raw = chunk.slice(0, q);
-        try { raw = decodeURIComponent(raw); } catch (_) {}
+        try {
+          raw = decodeURIComponent(raw);
+        } catch (_) {}
         const semi = raw.lastIndexOf(';');
         if (semi === -1) continue;
         const address = raw.slice(0, semi).trim();
-        const cp = raw.slice(semi + 1).trim().split(',');
+        const cp = raw
+          .slice(semi + 1)
+          .trim()
+          .split(',');
         const lat = parseFloat(cp[0]);
         const lng = parseFloat(cp[1]);
         if (!isFinite(lat) || !isFinite(lng)) continue;
@@ -82,7 +93,9 @@ Deno.serve(async (req) => {
         if (seen.has(key)) continue;
         seen.add(key);
         let image = null;
-        const imgMatch = chunk.match(/src="(https:\/\/ooh\.earth\/wp-content\/uploads\/[^"]+\.(?:webp|jpe?g|png)[^"]*)"/i);
+        const imgMatch = chunk.match(
+          /src="(https:\/\/ooh\.earth\/wp-content\/uploads\/[^"]+\.(?:webp|jpe?g|png)[^"]*)"/i,
+        );
         if (imgMatch) image = imgMatch[1].replace(/-\d+x\d+(?=\.\w+)/, '');
         let title = address.split(',')[0];
         const hMatch = chunk.match(/<h[1-6][^>]*>([\s\S]*?)<\/h[1-6]>/i);

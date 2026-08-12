@@ -1,7 +1,7 @@
-name: "💡 Feature / idea"
-description: "Suggest something new for the platform or the movement"
-title: "[Idea]: "
-labels: ["enhancement"]
+name: '💡 Feature / idea'
+description: 'Suggest something new for the platform or the movement'
+title: '[Idea]: '
+labels: ['enhancement']
 body:
   - type: textarea
     id: problem

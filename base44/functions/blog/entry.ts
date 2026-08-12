@@ -16,12 +16,29 @@ const accessOf = (u) => (u && (u.access ?? u.data?.access)) || 'member';
 const isAdmin = (u) => roleOf(u) === 'admin' || accessOf(u) === 'admin';
 const isAgency = (u) => isAdmin(u) || agencyOf(u);
 
-const CARD_FIELDS = ['id', 'title', 'slug', 'excerpt', 'category', 'audience', 'status', 'author', 'cover_image', 'network', 'cta', 'pinned', 'published_date'];
-const pick = (o, keys) => keys.reduce((a, k) => (o[k] !== undefined ? (a[k] = o[k], a) : a), {});
+const CARD_FIELDS = [
+  'id',
+  'title',
+  'slug',
+  'excerpt',
+  'category',
+  'audience',
+  'status',
+  'author',
+  'cover_image',
+  'network',
+  'cta',
+  'pinned',
+  'published_date',
+];
+const pick = (o, keys) => keys.reduce((a, k) => (o[k] !== undefined ? ((a[k] = o[k]), a) : a), {});
 
 const ALLOWED_ORIGINS = new Set([
-  'https://oohearth.app', 'https://www.oohearth.app', 'https://ooh.earth',
-  'http://localhost:5173', 'http://localhost:3000',
+  'https://oohearth.app',
+  'https://www.oohearth.app',
+  'https://ooh.earth',
+  'http://localhost:5173',
+  'http://localhost:3000',
 ]);
 
 function cors(origin) {
@@ -30,11 +47,13 @@ function cors(origin) {
     'Access-Control-Allow-Origin': o,
     'Access-Control-Allow-Methods': 'POST, OPTIONS',
     'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-    'Vary': 'Origin',
+    Vary: 'Origin',
   };
 }
 
-const sortPosts = (a, b) => (Number(b.pinned) - Number(a.pinned)) || String(b.published_date || '').localeCompare(String(a.published_date || ''));
+const sortPosts = (a, b) =>
+  Number(b.pinned) - Number(a.pinned) ||
+  String(b.published_date || '').localeCompare(String(a.published_date || ''));
 
 Deno.serve(async (req) => {
   const headers = cors(req.headers.get('origin'));
@@ -44,7 +63,11 @@ Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
     let caller = null;
-    try { caller = await base44.auth.me(); } catch { caller = null; }
+    try {
+      caller = await base44.auth.me();
+    } catch {
+      caller = null;
+    }
 
     const svc = base44.asServiceRole.entities.BlogPost;
     const body = await req.json().catch(() => ({}));
@@ -54,10 +77,13 @@ Deno.serve(async (req) => {
       const scope = String(body?.scope || 'public').toLowerCase();
       const wantDrafts = !!body?.includeDrafts && isAdmin(caller);
       if (scope === 'agency' && !isAgency(caller)) {
-        return Response.json({ error: 'Forbidden — agency access required.' }, { status: 403, headers });
+        return Response.json(
+          { error: 'Forbidden — agency access required.' },
+          { status: 403, headers },
+        );
       }
       const audience = scope === 'agency' ? 'agency' : 'public';
-      let posts = await svc.filter({ audience }, '-published_date', 300) || [];
+      let posts = (await svc.filter({ audience }, '-published_date', 300)) || [];
       if (!wantDrafts) posts = posts.filter((p) => p.status === 'published');
       if (body?.category) posts = posts.filter((p) => p.category === body.category);
       posts = posts.sort(sortPosts).map((p) => pick(p, CARD_FIELDS));
@@ -71,7 +97,10 @@ Deno.serve(async (req) => {
       const post = (found || [])[0];
       if (!post) return Response.json({ error: 'Not found.' }, { status: 404, headers });
       if (post.audience === 'agency' && !isAgency(caller)) {
-        return Response.json({ error: 'Forbidden — agency access required.' }, { status: 403, headers });
+        return Response.json(
+          { error: 'Forbidden — agency access required.' },
+          { status: 403, headers },
+        );
       }
       if (post.status !== 'published' && !isAdmin(caller)) {
         return Response.json({ error: 'Not found.' }, { status: 404, headers });
@@ -80,14 +109,18 @@ Deno.serve(async (req) => {
     }
 
     if (action === 'save') {
-      if (!isAdmin(caller)) return Response.json({ error: 'Forbidden — admin only.' }, { status: 403, headers });
+      if (!isAdmin(caller))
+        return Response.json({ error: 'Forbidden — admin only.' }, { status: 403, headers });
       const p = body?.post || {};
       if (!p.title) return Response.json({ error: 'title required.' }, { status: 400, headers });
       const saved = p.id ? await svc.update(p.id, p) : await svc.create(p);
       return Response.json({ ok: true, post: saved }, { headers });
     }
 
-    return Response.json({ error: `Unknown action '${action}'. Use: list | get | save.` }, { status: 400, headers });
+    return Response.json(
+      { error: `Unknown action '${action}'. Use: list | get | save.` },
+      { status: 400, headers },
+    );
   } catch (error) {
     return Response.json({ error: error?.message || String(error) }, { status: 500, headers });
   }

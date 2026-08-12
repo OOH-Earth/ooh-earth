@@ -1,25 +1,25 @@
-import { useMemo, useState } from "react";
-import { Link } from "react-router-dom";
-import { BusFront, Search, ArrowLeft } from "lucide-react";
-import Nav from "@/components/ooh/Nav";
-import { BUS_STOPS, BUS_STOP_LEGEND } from "@/components/ooh/busStops";
-import ProgressInfographic from "@/components/ooh/bus/ProgressInfographic";
-import AreaDirectory from "@/components/ooh/bus/AreaDirectory";
-import CategoryNav from "@/components/ooh/CategoryNav";
-import { regionBySlug, REGION_STATUS, REGION_ACCESS } from "@/components/ooh/regions";
+import { useMemo, useState } from 'react';
+import { Link } from 'react-router-dom';
+import { BusFront, Search, ArrowLeft } from 'lucide-react';
+import Nav from '@/components/ooh/Nav';
+import { BUS_STOPS, BUS_STOP_LEGEND } from '@/components/ooh/busStops';
+import ProgressInfographic from '@/components/ooh/bus/ProgressInfographic';
+import AreaDirectory from '@/components/ooh/bus/AreaDirectory';
+import CategoryNav from '@/components/ooh/CategoryNav';
+import { regionBySlug, REGION_STATUS, REGION_ACCESS } from '@/components/ooh/regions';
 
 export default function BusStops() {
-  const [q, setQ] = useState("");
-  const [face, setFace] = useState("all");
-  const [shape, setShape] = useState("all");
-  const rg = regionBySlug("london");
+  const [q, setQ] = useState('');
+  const [face, setFace] = useState('all');
+  const [shape, setShape] = useState('all');
+  const rg = regionBySlug('london');
 
   const list = useMemo(() => {
     const s = q.trim().toLowerCase();
     return BUS_STOPS.filter((b) => {
-      if (face !== "all" && b.facing !== face) return false;
-      if (shape === "shelter" && b.shape !== "shelter") return false;
-      if (shape === "pole" && b.shape === "shelter") return false;
+      if (face !== 'all' && b.facing !== face) return false;
+      if (shape === 'shelter' && b.shape !== 'shelter') return false;
+      if (shape === 'pole' && b.shape === 'shelter') return false;
       if (s && !b.name.toLowerCase().includes(s)) return false;
       return true;
     });
@@ -29,22 +29,38 @@ export default function BusStops() {
     <div className="min-h-screen bg-void text-silver">
       <Nav />
       <main className="page-top mx-auto max-w-6xl px-5 pb-24">
-        <Link to="/map" className="mb-6 inline-flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.25em] text-dim hover:text-ozone">
+        <Link
+          to="/map"
+          className="mb-6 inline-flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.25em] text-dim hover:text-ozone"
+        >
           <ArrowLeft className="h-3.5 w-3.5" /> Atlas
         </Link>
 
         <div className="flex items-center gap-2">
           <BusFront className="h-4 w-4 text-ozone" />
-          <span className="font-mono text-[9px] uppercase tracking-[0.3em] text-ozone">// {rg.city} · {rg.country} · accessible bus stops</span>
+          <span className="font-mono text-[9px] uppercase tracking-[0.3em] text-ozone">
+            // {rg.city} · {rg.country} · accessible bus stops
+          </span>
         </div>
         <div className="mt-2 flex flex-wrap items-center gap-2">
-          <h1 className="font-display text-3xl font-bold tracking-[-0.02em] md:text-4xl">Bus-stop directory</h1>
-          <span className={`border px-1.5 py-0.5 font-mono text-[8px] uppercase tracking-[0.2em] ${REGION_STATUS[rg.status].cls}`}>{REGION_STATUS[rg.status].text}</span>
-          <span className={`border px-1.5 py-0.5 font-mono text-[8px] uppercase tracking-[0.2em] ${REGION_ACCESS[rg.access].cls}`}>{REGION_ACCESS[rg.access].text}</span>
+          <h1 className="font-display text-3xl font-bold tracking-[-0.02em] md:text-4xl">
+            Bus-stop directory
+          </h1>
+          <span
+            className={`border px-1.5 py-0.5 font-mono text-[8px] uppercase tracking-[0.2em] ${REGION_STATUS[rg.status].cls}`}
+          >
+            {REGION_STATUS[rg.status].text}
+          </span>
+          <span
+            className={`border px-1.5 py-0.5 font-mono text-[8px] uppercase tracking-[0.2em] ${REGION_ACCESS[rg.access].cls}`}
+          >
+            {REGION_ACCESS[rg.access].text}
+          </span>
         </div>
         <p className="mt-2 max-w-2xl text-[13px] leading-relaxed text-darkgray">
-          {BUS_STOPS.length} shelters mapped from the public accessible-bus-stops record. Each has its own page
-          listing unit type, facing, and a probable access key — <span className="text-flare">unconfirmed until a field check</span>.
+          {BUS_STOPS.length} shelters mapped from the public accessible-bus-stops record. Each has
+          its own page listing unit type, facing, and a probable access key —{' '}
+          <span className="text-flare">unconfirmed until a field check</span>.
         </p>
 
         <div className="mt-5">
@@ -53,7 +69,10 @@ export default function BusStops() {
 
         <div className="mt-5 flex flex-wrap gap-3">
           {BUS_STOP_LEGEND.map((l) => (
-            <span key={l.label} className="flex items-center gap-1.5 font-mono text-[9px] uppercase tracking-[0.2em] text-dim">
+            <span
+              key={l.label}
+              className="flex items-center gap-1.5 font-mono text-[9px] uppercase tracking-[0.2em] text-dim"
+            >
               <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: l.color }} />
               {l.label}
             </span>
@@ -65,8 +84,12 @@ export default function BusStops() {
         </div>
 
         <div className="mt-8 mb-3 flex items-center gap-2">
-          <span className="font-mono text-[9px] uppercase tracking-[0.3em] text-ozone">// Directory</span>
-          <span className="font-mono text-[9px] uppercase tracking-[0.2em] text-dim/50">by location</span>
+          <span className="font-mono text-[9px] uppercase tracking-[0.3em] text-ozone">
+            // Directory
+          </span>
+          <span className="font-mono text-[9px] uppercase tracking-[0.2em] text-dim/50">
+            by location
+          </span>
           <span className="h-px flex-1 bg-slate2/30" />
         </div>
 
@@ -81,22 +104,22 @@ export default function BusStops() {
             />
           </div>
           <div className="flex border border-slate2">
-            {["all", "pavement", "road"].map((f) => (
+            {['all', 'pavement', 'road'].map((f) => (
               <button
                 key={f}
                 onClick={() => setFace(f)}
-                className={`px-3 py-2 font-mono text-[10px] uppercase tracking-[0.2em] transition-colors ${face === f ? "bg-ozone text-void" : "text-darkgray hover:text-ozone"}`}
+                className={`px-3 py-2 font-mono text-[10px] uppercase tracking-[0.2em] transition-colors ${face === f ? 'bg-ozone text-void' : 'text-darkgray hover:text-ozone'}`}
               >
                 {f}
               </button>
             ))}
           </div>
           <div className="flex border border-slate2">
-            {["all", "shelter", "pole"].map((sh) => (
+            {['all', 'shelter', 'pole'].map((sh) => (
               <button
                 key={sh}
                 onClick={() => setShape(sh)}
-                className={`px-3 py-2 font-mono text-[10px] uppercase tracking-[0.2em] transition-colors ${shape === sh ? "bg-ozone text-void" : "text-darkgray hover:text-ozone"}`}
+                className={`px-3 py-2 font-mono text-[10px] uppercase tracking-[0.2em] transition-colors ${shape === sh ? 'bg-ozone text-void' : 'text-darkgray hover:text-ozone'}`}
               >
                 {sh}
               </button>
@@ -104,7 +127,9 @@ export default function BusStops() {
           </div>
         </div>
 
-        <div className="mb-3 font-mono text-[10px] uppercase tracking-[0.25em] text-dim">// {list.length} stops</div>
+        <div className="mb-3 font-mono text-[10px] uppercase tracking-[0.25em] text-dim">
+          // {list.length} stops
+        </div>
         <AreaDirectory stops={list} />
       </main>
     </div>

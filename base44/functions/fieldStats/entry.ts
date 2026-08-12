@@ -22,7 +22,14 @@ async function listAll(entity, sort, pageSize = 500, hardCap = 50000) {
 // Active automated field agents — real platform subsystems that operate
 // autonomously alongside human operatives: vision capture, objection drafting,
 // atlas intel, verification assist, treasury watch, and the automation hub.
-const AI_AGENTS = ["capture-vision", "objection-writer", "atlas-intel", "verify-assist", "treasury-watch", "automation-hub"];
+const AI_AGENTS = [
+  'capture-vision',
+  'objection-writer',
+  'atlas-intel',
+  'verify-assist',
+  'treasury-watch',
+  'automation-hub',
+];
 
 Deno.serve(async (req) => {
   try {
@@ -40,11 +47,17 @@ Deno.serve(async (req) => {
     const cities = new Set();
     for (const r of active) {
       let p = 10; // base credit per filed report
-      if (r.status === 'verified') { p += 40; verified += 1; }
+      if (r.status === 'verified') {
+        p += 40;
+        verified += 1;
+      }
       if (r.image_url) p += 50; // photo evidence bonus
       points += p;
       if (r.created_by_id) ops.add(r.created_by_id);
-      const parts = String(r.address || '').split(',').map((s) => s.trim()).filter(Boolean);
+      const parts = String(r.address || '')
+        .split(',')
+        .map((s) => s.trim())
+        .filter(Boolean);
       if (parts.length) cities.add(parts[parts.length - 1]);
     }
     // Public "raised"/"donors" count CONFIRMED donations only (stripe/crypto).

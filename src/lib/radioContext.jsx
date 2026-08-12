@@ -1,7 +1,7 @@
 // @ts-nocheck -- intentionally excluded from typecheck (jsconfig.json), see TECHNICAL_DEBT_REGISTER.md
-import { createContext, useContext, useRef, useState, useEffect, useCallback } from "react";
-import { RADIO_STATIONS } from "@/components/ooh/radio/radioStations";
-import { OOH_STATION, RADIO_OPS_ENABLED, fetchNowPlaying } from "@/lib/radioOps";
+import { createContext, useContext, useRef, useState, useEffect, useCallback } from 'react';
+import { RADIO_STATIONS } from '@/components/ooh/radio/radioStations';
+import { OOH_STATION, RADIO_OPS_ENABLED, fetchNowPlaying } from '@/lib/radioOps';
 
 // The OOH broadcast channel is merged in ONLY for the player list —
 // never injected into RADIO_STATIONS (which the map + globe consume).
@@ -62,19 +62,26 @@ export function RadioProvider({ children }) {
         analysisRef.current.pause();
       }
     };
-    const onError = () => { setError(true); setPlaying(false); setLoading(false); };
+    const onError = () => {
+      setError(true);
+      setPlaying(false);
+      setLoading(false);
+    };
 
-    audio.addEventListener("playing", onPlaying);
-    audio.addEventListener("pause", onPause);
-    audio.addEventListener("error", onError);
+    audio.addEventListener('playing', onPlaying);
+    audio.addEventListener('pause', onPause);
+    audio.addEventListener('error', onError);
 
     return () => {
       audio.pause();
-      audio.src = "";
-      audio.removeEventListener("playing", onPlaying);
-      audio.removeEventListener("pause", onPause);
-      audio.removeEventListener("error", onError);
-      if (analysisRef.current) { analysisRef.current.pause(); analysisRef.current.src = ""; }
+      audio.src = '';
+      audio.removeEventListener('playing', onPlaying);
+      audio.removeEventListener('pause', onPause);
+      audio.removeEventListener('error', onError);
+      if (analysisRef.current) {
+        analysisRef.current.pause();
+        analysisRef.current.src = '';
+      }
       if (audioCtxRef.current) audioCtxRef.current.close().catch(() => {});
     };
   }, []);
@@ -86,7 +93,7 @@ export function RadioProvider({ children }) {
    */
   const ensureAudioGraph = useCallback(() => {
     if (audioCtxRef.current) {
-      if (audioCtxRef.current.state === "suspended") {
+      if (audioCtxRef.current.state === 'suspended') {
         audioCtxRef.current.resume().catch(() => {});
       }
       return;
@@ -100,7 +107,7 @@ export function RadioProvider({ children }) {
       an.smoothingTimeConstant = 0.72;
       // Analysis audio element — CORS required for real FFT data
       const analysisAudio = new Audio();
-      analysisAudio.crossOrigin = "anonymous";
+      analysisAudio.crossOrigin = 'anonymous';
       // Silence the analysis element at the ELEMENT level, not just via the graph.
       // The graph only mutes it when createMediaElementSource() successfully reroutes
       // the element's output — which is unreliable on mobile Safari/iOS, where the
@@ -136,7 +143,7 @@ export function RadioProvider({ children }) {
     // Analysis stream — CORS required, fails silently for non-CORS streams
     if (analysisRef.current) {
       const an = analysisRef.current;
-      an.crossOrigin = "anonymous";
+      an.crossOrigin = 'anonymous';
       an.src = station.stream;
       an.load();
       an.play().catch(() => {});
@@ -163,14 +170,21 @@ export function RadioProvider({ children }) {
     };
     tick();
     const iv = setInterval(tick, 15000);
-    return () => { active = false; controller.abort(); clearInterval(iv); };
+    return () => {
+      active = false;
+      controller.abort();
+      clearInterval(iv);
+    };
   }, [stationId, playing]);
 
   const togglePlay = useCallback(() => {
     ensureAudioGraph();
     const audio = playbackRef.current;
     if (!audio) return;
-    if (!station) { setStationId(STATIONS[0].id); return; }
+    if (!station) {
+      setStationId(STATIONS[0].id);
+      return;
+    }
     if (audio.paused) {
       audio.play().catch(() => setError(true));
       if (analysisRef.current) analysisRef.current.play().catch(() => {});
@@ -180,66 +194,95 @@ export function RadioProvider({ children }) {
     }
   }, [station, ensureAudioGraph]);
 
-  const selectStation = useCallback((id) => {
-    ensureAudioGraph();
-    setStationId((cur) => {
-      if (cur === id) {
-        // Same station tapped → toggle play/pause
-        const audio = playbackRef.current;
-        if (audio) {
-          if (audio.paused) {
-            audio.play().catch(() => setError(true));
-            if (analysisRef.current) analysisRef.current.play().catch(() => {});
-          } else {
-            audio.pause();
-            if (analysisRef.current) analysisRef.current.pause();
+  const selectStation = useCallback(
+    (id) => {
+      ensureAudioGraph();
+      setStationId((cur) => {
+        if (cur === id) {
+          // Same station tapped → toggle play/pause
+          const audio = playbackRef.current;
+          if (audio) {
+            if (audio.paused) {
+              audio.play().catch(() => setError(true));
+              if (analysisRef.current) analysisRef.current.play().catch(() => {});
+            } else {
+              audio.pause();
+              if (analysisRef.current) analysisRef.current.pause();
+            }
           }
+          return cur;
         }
-        return cur;
-      }
-      return id;
-    });
-  }, [ensureAudioGraph]);
+        return id;
+      });
+    },
+    [ensureAudioGraph],
+  );
 
   const setVolume = useCallback((v) => setVolumeState(v), []);
   const toggleMute = useCallback(() => setVolumeState((v) => (v > 0 ? 0 : 0.5)), []);
 
   // Skip to the next / previous station in the list (wraps around).
-  const stepStation = useCallback((dir) => {
-    ensureAudioGraph();
-    setStationId((cur) => {
-      const idx = STATIONS.findIndex((s) => s.id === cur);
-      const nextIdx = idx < 0 ? 0 : (idx + dir + STATIONS.length) % STATIONS.length;
-      return STATIONS[nextIdx].id;
-    });
-  }, [ensureAudioGraph]);
+  const stepStation = useCallback(
+    (dir) => {
+      ensureAudioGraph();
+      setStationId((cur) => {
+        const idx = STATIONS.findIndex((s) => s.id === cur);
+        const nextIdx = idx < 0 ? 0 : (idx + dir + STATIONS.length) % STATIONS.length;
+        return STATIONS[nextIdx].id;
+      });
+    },
+    [ensureAudioGraph],
+  );
 
   // Media Session — lock screen / Control Center / Bluetooth metadata + controls.
   useEffect(() => {
-    if (typeof navigator === "undefined" || !("mediaSession" in navigator)) return;
+    if (typeof navigator === 'undefined' || !('mediaSession' in navigator)) return;
     const ms = navigator.mediaSession;
-    if (station && typeof window.MediaMetadata === "function") {
+    if (station && typeof window.MediaMetadata === 'function') {
       try {
         ms.metadata = new window.MediaMetadata({
           title: station.name,
-          artist: station.genre || "OOH Radio",
-          album: "OOH Radio \u00b7 ooh.earth",
+          artist: station.genre || 'OOH Radio',
+          album: 'OOH Radio \u00b7 ooh.earth',
         });
-      } catch { /* metadata unsupported */ }
+      } catch {
+        /* metadata unsupported */
+      }
     }
-    ms.playbackState = playing ? "playing" : "paused";
+    ms.playbackState = playing ? 'playing' : 'paused';
     const setAction = (name, handler) => {
-      try { ms.setActionHandler(name, handler); } catch { /* action unsupported */ }
+      try {
+        ms.setActionHandler(name, handler);
+      } catch {
+        /* action unsupported */
+      }
     };
-    setAction("play", () => togglePlay());
-    setAction("pause", () => togglePlay());
-    setAction("nexttrack", () => stepStation(1));
-    setAction("previoustrack", () => stepStation(-1));
-    return () => ["play", "pause", "nexttrack", "previoustrack"].forEach((a) => setAction(a, null));
+    setAction('play', () => togglePlay());
+    setAction('pause', () => togglePlay());
+    setAction('nexttrack', () => stepStation(1));
+    setAction('previoustrack', () => stepStation(-1));
+    return () => ['play', 'pause', 'nexttrack', 'previoustrack'].forEach((a) => setAction(a, null));
   }, [station, playing, togglePlay, stepStation]);
 
   return (
-    <RadioContext.Provider value={{ station, stationId, playing, loading, volume, error, stations: STATIONS, selectStation, stepStation, togglePlay, setVolume, toggleMute, analyser, nowPlaying }}>
+    <RadioContext.Provider
+      value={{
+        station,
+        stationId,
+        playing,
+        loading,
+        volume,
+        error,
+        stations: STATIONS,
+        selectStation,
+        stepStation,
+        togglePlay,
+        setVolume,
+        toggleMute,
+        analyser,
+        nowPlaying,
+      }}
+    >
       {children}
     </RadioContext.Provider>
   );
@@ -247,6 +290,6 @@ export function RadioProvider({ children }) {
 
 export function useRadio() {
   const ctx = useContext(RadioContext);
-  if (!ctx) throw new Error("useRadio must be used within RadioProvider");
+  if (!ctx) throw new Error('useRadio must be used within RadioProvider');
   return ctx;
 }

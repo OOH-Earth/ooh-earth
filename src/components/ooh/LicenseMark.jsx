@@ -1,7 +1,7 @@
 // Licence / ethos mark — the project's structural commitments as a tidy mono block,
 // with the licence pair on its own micro line (no overlap). Used in the hero dispatch
 // panel and the footer. `prefix` shows the "//" dispatch slash.
-export default function LicenseMark({ className = "", prefix = true }) {
+export default function LicenseMark({ className = '', prefix = true }) {
   return (
     <div className={`font-mono uppercase ${className}`}>
       <div className="text-[9px] leading-[1.5] tracking-[0.22em] text-silver/60">

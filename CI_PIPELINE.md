@@ -8,7 +8,7 @@ Supersedes the old `build.yml` (its build step is now the `build` job below — 
 
 ```
         ┌─ lint-and-typecheck ──┐
-        ├─ format-check (info) ─┤
+        ├─ format-check ────────┤
 push/PR ┤                       ├─ summary (PR comment, PR only)
         ├─ build ─── e2e ───────┤
         │        └── e2e-mobile ┤
@@ -22,7 +22,7 @@ push/PR ┤                       ├─ summary (PR comment, PR only)
 | Job | What | Blocking? |
 |---|---|---|
 | `lint-and-typecheck` | `npm run typecheck && npm run lint` | **Yes** |
-| `format-check` | `npm run format:check` (Prettier) | No — see below |
+| `format-check` | `npm run format:check` (Prettier) | **Yes** — see below |
 | `build` | `npm run build`, uploads `dist/` + a bundle-size JSON as artifacts | **Yes** |
 | `e2e` | Downloads the `dist/` artifact, runs Playwright desktop chromium (`smoke.spec.ts` + `a11y.spec.ts`) against a `vite preview` server | **Yes** |
 | `e2e-mobile` | Same setup, runs the `mobile-chromium` project (gallery/upload/tag-counter feature specs, `testMatch`-scoped — see below) — added 2026-08-12, previously local/manual only | **Yes** |
@@ -30,9 +30,9 @@ push/PR ┤                       ├─ summary (PR comment, PR only)
 | `dependency-review` | `actions/dependency-review-action@v4` — flags newly-introduced vulnerable/incompatible deps in a PR's diff specifically | **Yes** (PR-only job) |
 | `summary` | Posts/updates one PR comment with a results table + top-5 bundle assets by size | N/A |
 
-### Why Prettier isn't blocking (and why the audit mostly is)
+### Prettier is now blocking (and why the audit mostly is)
 
-- **Prettier**: the codebase predates it. `npm run format:check` (`prettier --check .`) currently flags **516 files** (verified 2026-08-11). Turning this into a merge gate today would block every PR, including ones that never touch those files. Once a dedicated one-time formatting PR lands (see Decision Register below), flip `continue-on-error: true` off in `ci.yml`'s `format-check` job.
+- **Prettier**: was informational (`continue-on-error: true`) while the codebase carried a pre-Prettier backlog — 444 files as of the one-time formatting PR that landed 2026-08-12 (verified live via `git diff --stat` on that PR, not estimated). That PR ran the formatter across everything `.prettierignore` doesn't exclude, verified formatting-only via lint/typecheck/build/Playwright (desktop + mobile) all passing after, plus one real catch: Prettier stripped the parens around a JSDoc type-cast in `src/lib/imageCompress.js`, silently changing what was being cast and breaking typecheck — fixed and guarded with `// prettier-ignore` on that exact line so a future `npm run format` run can't reintroduce it. With the backlog gone, `format-check` is a real blocking gate as of 2026-08-12 — see Decision Register #1.
 - **Dependency audit**: promoted from purely-informational to severity-gated — moderate/low findings stay informational (surfaced via the uploaded report, not silent), but the job now fails the build on any high/critical count. As of 2026-08-11, `npm audit --omit=dev` reports **4 moderate, 0 high/critical** — this gate starts green, not pre-broken. Re-run `npm audit --omit=dev` for current status; numbers drift as the dependency tree changes.
 
 ## `codeql.yml`
@@ -57,14 +57,14 @@ Weekly npm + GitHub Actions dependency PRs. **Known gap**: Dependabot has no equ
 
 | # | Decision | Status |
 |---|---|---|
-| 1 | One-time repo-wide Prettier formatting PR, then flip `format-check` to blocking | Not started — needs a maintainer to review a 516-file diff before merging |
+| 1 | ~~One-time repo-wide Prettier formatting PR, then flip `format-check` to blocking~~ | **Done, 2026-08-12** — 444 files reformatted, verified formatting-only (one real Prettier-introduced type-cast bug found and fixed, see above), `format-check` is now a required status check |
 | 2 | Expand Playwright/a11y coverage to more routes (landing, map, donation/support, auth) | Partial — 4 routes covered as of 2026-08-11 (started at 2); see Phase 6 testing-gap notes in `ENGINEERING_SUMMARY.md` |
 | 3 | Dependabot → Renovate (for `minimumReleaseAge`), or a documented manual-check habit | Not started |
 | 4 | ~~Promote `npm audit` to blocking on high/critical only~~ | **Done, 2026-08-11** — `dependency-audit` now fails on high/critical, moderate/low stay informational |
 | 5 | Bundle-size regression tracking (currently absolute-size reporting only, no vs-main diff — that would require building `main` on every PR too, doubling build time) | Not started — candidate: `size-limit` or `bundlewatch` with a committed budget file |
-| 6 | Branch protection settings | See BRANCHING_STRATEGY.md — needs to be applied by hand in GitHub Settings, no admin API token available here |
+| 6 | ~~Branch protection settings~~ | **Done, 2026-08-12** — applied via API once GitHub Admin access was granted, independently verified live. See ADMIN-ACCESS-REQUIREMENTS.md / BRANCHING_STRATEGY.md for the exact configuration |
 | 7 | ~~Add `dependency-review` job~~ | **Done, 2026-08-11** |
 
-## Verified state on `docs/base44-github-migration-plan`, 2026-08-11
+## Verified state on `main`, 2026-08-12
 
-`lint-and-typecheck` and `build` are meaningfully blocking because they currently pass: `npm run lint` (0 errors), `npm run typecheck` (0 errors), `npm run build` (clean) — re-verified live 2026-08-12 after resyncing against `origin/main`. `engineering/baseline` and `fix/phase1-runtime`'s fixes are already here, not pending — present in the tree, though not as literal git ancestors after the branch rebuild (see `ENGINEERING.md`'s note on why `git merge-base` alone is the wrong check here). See `ENGINEERING.md` for the full state table.
+Every blocking gate is meaningfully blocking because all of them currently pass on `main`: `npm run lint` (0 errors), `npm run typecheck` (0 errors), `npm run build` (clean), `npm run format:check` (clean, post-444-file formatting PR), Playwright desktop 18/18 + mobile 9/9. `main` is tagged `v1.0.0`. See `ENGINEERING.md` for the full state table.

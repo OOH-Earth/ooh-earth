@@ -11,8 +11,11 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
 // server-side is a further hardening step (would recompute the metric here).
 
 const ALLOWED_ORIGINS = new Set([
-  'https://oohearth.app', 'https://www.oohearth.app', 'https://ooh.earth',
-  'http://localhost:5173', 'http://localhost:3000',
+  'https://oohearth.app',
+  'https://www.oohearth.app',
+  'https://ooh.earth',
+  'http://localhost:5173',
+  'http://localhost:3000',
 ]);
 function cors(origin) {
   const o = origin && ALLOWED_ORIGINS.has(origin) ? origin : 'https://oohearth.app';
@@ -20,7 +23,7 @@ function cors(origin) {
     'Access-Control-Allow-Origin': o,
     'Access-Control-Allow-Methods': 'POST, OPTIONS',
     'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-    'Vary': 'Origin',
+    Vary: 'Origin',
   };
 }
 
@@ -50,8 +53,13 @@ Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
     let caller = null;
-    try { caller = await base44.auth.me(); } catch { caller = null; }
-    if (!caller?.id) return Response.json({ error: 'Authentication required.' }, { status: 401, headers });
+    try {
+      caller = await base44.auth.me();
+    } catch {
+      caller = null;
+    }
+    if (!caller?.id)
+      return Response.json({ error: 'Authentication required.' }, { status: 401, headers });
 
     const body = await req.json().catch(() => ({}));
     const questId = String(body?.quest_id || body?.questId || '');
@@ -62,7 +70,9 @@ Deno.serve(async (req) => {
 
     // dedupe — one claim per user + quest + period
     const existing = await base44.asServiceRole.entities.QuestCompletion.filter(
-      { quest_id: questId, period_key: period, created_by_id: caller.id }, '-created_date', 1
+      { quest_id: questId, period_key: period, created_by_id: caller.id },
+      '-created_date',
+      1,
     );
     if (existing && existing.length) {
       return Response.json({ ok: true, already: true }, { headers });
@@ -74,7 +84,10 @@ Deno.serve(async (req) => {
       xp_awarded: quest.reward_xp, // server-authoritative — client value ignored
       created_by_id: caller.id,
     });
-    return Response.json({ ok: true, xp_awarded: quest.reward_xp, period_key: period }, { headers });
+    return Response.json(
+      { ok: true, xp_awarded: quest.reward_xp, period_key: period },
+      { headers },
+    );
   } catch (error) {
     return Response.json({ error: error?.message || String(error) }, { status: 500, headers });
   }

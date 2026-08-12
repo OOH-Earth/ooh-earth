@@ -1,17 +1,22 @@
-import { useState, useEffect } from "react";
-import { Sun, Moon, Terminal, Bug, PenTool, Landmark } from "lucide-react";
+import { useState, useEffect } from 'react';
+import { Sun, Moon, Terminal, Bug, PenTool, Landmark } from 'lucide-react';
 import {
-  THEME_ORDER, THEME_DEFAULT, applyTheme, fetchEnabledThemes,
-  readCachedThemes, writeThemeCache, resolveDefault,
-} from "@/lib/themes";
+  THEME_ORDER,
+  THEME_DEFAULT,
+  applyTheme,
+  fetchEnabledThemes,
+  readCachedThemes,
+  writeThemeCache,
+  resolveDefault,
+} from '@/lib/themes';
 
 const META = {
-  dark: { icon: Moon, label: "Dark" },
-  light: { icon: Sun, label: "Light" },
-  matrix: { icon: Terminal, label: "Matrix" },
-  beta: { icon: Bug, label: "BETA" },
-  crafty: { icon: PenTool, label: "Crafty" },
-  guild: { icon: Landmark, label: "Guild" },
+  dark: { icon: Moon, label: 'Dark' },
+  light: { icon: Sun, label: 'Light' },
+  matrix: { icon: Terminal, label: 'Matrix' },
+  beta: { icon: Bug, label: 'BETA' },
+  crafty: { icon: PenTool, label: 'Crafty' },
+  guild: { icon: Landmark, label: 'Guild' },
 };
 
 export default function ThemeToggle() {
@@ -20,7 +25,7 @@ export default function ThemeToggle() {
 
   useEffect(() => {
     let active = true;
-    const stored = localStorage.getItem("ooh-theme");
+    const stored = localStorage.getItem('ooh-theme');
     const cached = readCachedThemes();
     const initEnabled = cached ? THEME_ORDER.filter((t) => cached.includes(t)) : THEME_ORDER;
     setEnabled(initEnabled);
@@ -35,14 +40,18 @@ export default function ThemeToggle() {
       setEnabled(list);
       setTheme((cur) => (list.includes(cur) ? cur : resolveDefault(list)));
     });
-    return () => { active = false; };
+    return () => {
+      active = false;
+    };
   }, []);
 
   const cycle = () => {
     const order = enabled.length ? enabled : THEME_ORDER;
     const next = order[(order.indexOf(theme) + 1) % order.length];
     setTheme(next);
-    try { localStorage.setItem("ooh-theme", next); } catch (e) {}
+    try {
+      localStorage.setItem('ooh-theme', next);
+    } catch (e) {}
     applyTheme(next);
   };
 

@@ -28,9 +28,12 @@ function trackConsoleErrors(page: import('@playwright/test').Page) {
 async function shot(
   page: import('@playwright/test').Page,
   testInfo: import('@playwright/test').TestInfo,
-  name: string
+  name: string,
 ) {
-  await page.screenshot({ path: `e2e/screenshots/${testInfo.project.name}/${name}.png`, fullPage: true });
+  await page.screenshot({
+    path: `e2e/screenshots/${testInfo.project.name}/${name}.png`,
+    fullPage: true,
+  });
 }
 
 test.describe('Dashboard — verify/reject/classify workflow', () => {
@@ -61,8 +64,18 @@ test.describe('Dashboard — verify/reject/classify workflow', () => {
         },
       },
       locationPhotos: [
-        { id: 'photo-1', location_id: 'loc-pending-1', url: 'https://example.com/1.jpg', status: 'pending' },
-        { id: 'photo-2', location_id: 'loc-pending-1', url: 'https://example.com/2.jpg', status: 'pending' },
+        {
+          id: 'photo-1',
+          location_id: 'loc-pending-1',
+          url: 'https://example.com/1.jpg',
+          status: 'pending',
+        },
+        {
+          id: 'photo-2',
+          location_id: 'loc-pending-1',
+          url: 'https://example.com/2.jpg',
+          status: 'pending',
+        },
       ],
     };
     await mockBase44(page, db);
@@ -79,7 +92,11 @@ test.describe('Dashboard — verify/reject/classify workflow', () => {
     // (mocked here identically to the real function) computes
     // status_updated_at and cascades the photos. Assert both halves.
     const verifyCall = moderateCalls.find((c) => c.action === 'verify');
-    expect(verifyCall).toMatchObject({ entity: 'Location', id: 'loc-pending-1', status: 'verified' });
+    expect(verifyCall).toMatchObject({
+      entity: 'Location',
+      id: 'loc-pending-1',
+      status: 'verified',
+    });
 
     expect(db.locations!['loc-pending-1'].status).toBe('verified');
     expect(typeof db.locations!['loc-pending-1'].status_updated_at).toBe('string');
@@ -89,7 +106,9 @@ test.describe('Dashboard — verify/reject/classify workflow', () => {
     expect(filterCrashes(consoleErrors), consoleErrors.join('\n')).toEqual([]);
   });
 
-  test('Reject sets the location (and its pending photos) to rejected', async ({ page }, testInfo) => {
+  test('Reject sets the location (and its pending photos) to rejected', async ({
+    page,
+  }, testInfo) => {
     const consoleErrors = trackConsoleErrors(page);
 
     const db: MockDb = {
@@ -106,7 +125,12 @@ test.describe('Dashboard — verify/reject/classify workflow', () => {
         },
       },
       locationPhotos: [
-        { id: 'photo-3', location_id: 'loc-pending-2', url: 'https://example.com/3.jpg', status: 'pending' },
+        {
+          id: 'photo-3',
+          location_id: 'loc-pending-2',
+          url: 'https://example.com/3.jpg',
+          status: 'pending',
+        },
       ],
     };
     await mockBase44(page, db);

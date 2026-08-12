@@ -9,8 +9,8 @@
 async function forward(url: string, payload: unknown) {
   const started = Date.now();
   const res = await fetch(url, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload),
   });
   let body: unknown = null;
@@ -24,33 +24,35 @@ async function forward(url: string, payload: unknown) {
 }
 
 Deno.serve(async (req) => {
-  const url = Deno.env.get("N8N_WEBHOOK_URL") || "";
+  const url = Deno.env.get('N8N_WEBHOOK_URL') || '';
   if (!url) {
     return Response.json(
       {
         ok: false,
-        reason: "N8N_WEBHOOK_URL not set",
-        hint: "Add the n8n Webhook node URL to Base44 Secrets, then call this endpoint again.",
+        reason: 'N8N_WEBHOOK_URL not set',
+        hint: 'Add the n8n Webhook node URL to Base44 Secrets, then call this endpoint again.',
       },
       { status: 200 },
     );
   }
 
   // Allow a custom note via ?note= or JSON body {note}, otherwise default.
-  let note = new URL(req.url).searchParams.get("note") || "";
-  if (!note && req.method === "POST") {
+  let note = new URL(req.url).searchParams.get('note') || '';
+  if (!note && req.method === 'POST') {
     try {
       const j = await req.json();
-      note = (j && typeof j.note === "string") ? j.note : "";
-    } catch { /* no/invalid body — fine */ }
+      note = j && typeof j.note === 'string' ? j.note : '';
+    } catch {
+      /* no/invalid body — fine */
+    }
   }
 
   const payload = {
-    source: "base44",
-    app: "MAIN",
-    appId: Deno.env.get("BASE44_APP_ID") || null,
-    event: "bridge.ping",
-    note: note || "hello from OOH Earth MAIN",
+    source: 'base44',
+    app: 'MAIN',
+    appId: Deno.env.get('BASE44_APP_ID') || null,
+    event: 'bridge.ping',
+    note: note || 'hello from OOH Earth MAIN',
     ts: Date.now(),
   };
 

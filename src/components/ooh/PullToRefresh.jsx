@@ -1,10 +1,10 @@
-import { useRef, useCallback, useState } from "react";
-import { motion } from "framer-motion";
-import { RefreshCw } from "lucide-react";
+import { useRef, useCallback, useState } from 'react';
+import { motion } from 'framer-motion';
+import { RefreshCw } from 'lucide-react';
 
 // Pull-to-refresh wrapper for a scrollable container.
 // <PullToRefresh onRefresh={asyncFn}>…scrollable children…</PullToRefresh>
-export default function PullToRefresh({ onRefresh, children, className = "" }) {
+export default function PullToRefresh({ onRefresh, children, className = '' }) {
   const scrollRef = useRef(null);
   const startY = useRef(0);
   const pulling = useRef(false);
@@ -42,7 +42,9 @@ export default function PullToRefresh({ onRefresh, children, className = "" }) {
     setPull(0);
     if (shouldRefresh && onRefresh) {
       setRefreshing(true);
-      try { await onRefresh(); } catch {}
+      try {
+        await onRefresh();
+      } catch {}
       setRefreshing(false);
     }
   }, [onRefresh]);
@@ -70,7 +72,7 @@ export default function PullToRefresh({ onRefresh, children, className = "" }) {
             className="h-4 w-4 text-ozone"
             style={{
               transform: `rotate(${progress * 360}deg)`,
-              animation: refreshing ? "spin 0.8s linear infinite" : "none",
+              animation: refreshing ? 'spin 0.8s linear infinite' : 'none',
             }}
           />
         </div>

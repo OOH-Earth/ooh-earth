@@ -1,7 +1,7 @@
-import { useRef, useState, useEffect } from "react";
-import { Maximize2, Minimize2, X, ChevronUp, ChevronDown } from "lucide-react";
+import { useRef, useState, useEffect } from 'react';
+import { Maximize2, Minimize2, X, ChevronUp, ChevronDown } from 'lucide-react';
 
-const SNAP_STATES = ["peek", "half", "full"];
+const SNAP_STATES = ['peek', 'half', 'full'];
 
 /**
  * Draggable results bottom sheet for the mobile map — Google/Apple Maps-style
@@ -15,8 +15,18 @@ const SNAP_STATES = ["peek", "half", "full"];
  * Controlled snap state — parent can force a state (e.g. "half" when a pin
  * detail is expanded) by setting `snap` + `onSnapChange`.
  */
-export default function MapBottomSheet({ children, count, layerLabel, detailMode, onCloseDetail, snap, onSnapChange, fullscreen, onToggleFullscreen }) {
-  const [vh, setVh] = useState(() => (typeof window !== "undefined" ? window.innerHeight : 800));
+export default function MapBottomSheet({
+  children,
+  count,
+  layerLabel,
+  detailMode,
+  onCloseDetail,
+  snap,
+  onSnapChange,
+  fullscreen,
+  onToggleFullscreen,
+}) {
+  const [vh, setVh] = useState(() => (typeof window !== 'undefined' ? window.innerHeight : 800));
   const dragging = useRef(false);
   const startY = useRef(0);
   const startH = useRef(0);
@@ -25,8 +35,8 @@ export default function MapBottomSheet({ children, count, layerLabel, detailMode
 
   useEffect(() => {
     const onResize = () => setVh(window.innerHeight);
-    window.addEventListener("resize", onResize);
-    return () => window.removeEventListener("resize", onResize);
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
   }, []);
 
   const peekH = 132;
@@ -42,7 +52,11 @@ export default function MapBottomSheet({ children, count, layerLabel, detailMode
     startH.current = stateH[snap] || peekH;
     liveHRef.current = startH.current;
     setLiveH(startH.current);
-    try { e.currentTarget.setPointerCapture(e.pointerId); } catch { /* noop */ }
+    try {
+      e.currentTarget.setPointerCapture(e.pointerId);
+    } catch {
+      /* noop */
+    }
   };
   const onPointerMove = (e) => {
     if (!dragging.current) return;
@@ -57,19 +71,25 @@ export default function MapBottomSheet({ children, count, layerLabel, detailMode
     const h = liveHRef.current ?? startH.current;
     liveHRef.current = null;
     setLiveH(null);
-    let nearest = "peek";
+    let nearest = 'peek';
     let bestDist = Infinity;
     for (const s of SNAP_STATES) {
       const d = Math.abs(h - stateH[s]);
-      if (d < bestDist) { bestDist = d; nearest = s; }
+      if (d < bestDist) {
+        bestDist = d;
+        nearest = s;
+      }
     }
     onSnapChange?.(nearest);
   };
 
   return (
     <div
-      className={`ooh-bottom-sheet lg:hidden fixed inset-x-0 z-[1100] flex flex-col border-t border-ozone/30 bg-void/95 backdrop-blur-xl shadow-[0_-8px_32px_rgba(0,0,0,0.6)] ${fullscreen ? "bottom-0" : "bottom-[calc(76px+env(safe-area-inset-bottom))]"}`}
-      style={{ height: currentH, transition: liveH !== null ? "none" : "height 0.32s cubic-bezier(0.32,0.72,0,1)" }}
+      className={`ooh-bottom-sheet lg:hidden fixed inset-x-0 z-[1100] flex flex-col border-t border-ozone/30 bg-void/95 backdrop-blur-xl shadow-[0_-8px_32px_rgba(0,0,0,0.6)] ${fullscreen ? 'bottom-0' : 'bottom-[calc(76px+env(safe-area-inset-bottom))]'}`}
+      style={{
+        height: currentH,
+        transition: liveH !== null ? 'none' : 'height 0.32s cubic-bezier(0.32,0.72,0,1)',
+      }}
     >
       {/* Drag handle + header */}
       <div
@@ -78,33 +98,53 @@ export default function MapBottomSheet({ children, count, layerLabel, detailMode
         onPointerUp={onPointerUp}
         onPointerCancel={onPointerUp}
         className="flex cursor-grab touch-none flex-col active:cursor-grabbing"
-        style={{ touchAction: "none" }}
+        style={{ touchAction: 'none' }}
       >
         <div className="flex justify-center pt-2">
           <div className="h-1 w-10 rounded-full bg-slate2" />
         </div>
         <div className="flex w-full items-center justify-between px-3 py-2">
           <span className="font-mono text-[9px] uppercase tracking-[0.25em] text-ozone">
-            {detailMode ? "// pin detail" : `// ${count} ${layerLabel || "results"}`}
+            {detailMode ? '// pin detail' : `// ${count} ${layerLabel || 'results'}`}
           </span>
           <div className="flex items-center gap-1">
-            {!detailMode && snap !== "full" && (
-              <button onClick={() => onSnapChange("full")} aria-label="Expand sheet" className="flex h-6 w-6 items-center justify-center text-dim transition-colors hover:text-ozone">
+            {!detailMode && snap !== 'full' && (
+              <button
+                onClick={() => onSnapChange('full')}
+                aria-label="Expand sheet"
+                className="flex h-6 w-6 items-center justify-center text-dim transition-colors hover:text-ozone"
+              >
                 <ChevronUp className="h-3.5 w-3.5" />
               </button>
             )}
-            {!detailMode && snap !== "peek" && (
-              <button onClick={() => onSnapChange("peek")} aria-label="Collapse sheet" className="flex h-6 w-6 items-center justify-center text-dim transition-colors hover:text-ozone">
+            {!detailMode && snap !== 'peek' && (
+              <button
+                onClick={() => onSnapChange('peek')}
+                aria-label="Collapse sheet"
+                className="flex h-6 w-6 items-center justify-center text-dim transition-colors hover:text-ozone"
+              >
                 <ChevronDown className="h-3.5 w-3.5" />
               </button>
             )}
             {detailMode && (
-              <button onClick={onCloseDetail} aria-label="Close detail" className="flex h-6 w-6 items-center justify-center text-dim transition-colors hover:text-ozone">
+              <button
+                onClick={onCloseDetail}
+                aria-label="Close detail"
+                className="flex h-6 w-6 items-center justify-center text-dim transition-colors hover:text-ozone"
+              >
                 <X className="h-3.5 w-3.5" />
               </button>
             )}
-            <button onClick={onToggleFullscreen} aria-label={fullscreen ? "Exit fullscreen" : "Fullscreen map"} className="flex h-6 w-6 items-center justify-center text-dim transition-colors hover:text-ozone">
-              {fullscreen ? <Minimize2 className="h-3.5 w-3.5" /> : <Maximize2 className="h-3.5 w-3.5" />}
+            <button
+              onClick={onToggleFullscreen}
+              aria-label={fullscreen ? 'Exit fullscreen' : 'Fullscreen map'}
+              className="flex h-6 w-6 items-center justify-center text-dim transition-colors hover:text-ozone"
+            >
+              {fullscreen ? (
+                <Minimize2 className="h-3.5 w-3.5" />
+              ) : (
+                <Maximize2 className="h-3.5 w-3.5" />
+              )}
             </button>
           </div>
         </div>

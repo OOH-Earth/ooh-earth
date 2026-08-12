@@ -1,5 +1,5 @@
-import { useEffect, useRef, useState } from "react";
-import { ScanLine, Keyboard, X } from "lucide-react";
+import { useEffect, useRef, useState } from 'react';
+import { ScanLine, Keyboard, X } from 'lucide-react';
 
 // Dependency-free UPC/EAN scanner using the native BarcodeDetector API
 // (Chrome/Edge on mobile + most Android webviews). Falls back to manual entry
@@ -10,12 +10,12 @@ export default function UpcScanner({ onDetected }) {
   const [supported, setSupported] = useState(true);
   const [active, setActive] = useState(false);
   const [manual, setManual] = useState(false);
-  const [manualVal, setManualVal] = useState("");
-  const [err, setErr] = useState("");
+  const [manualVal, setManualVal] = useState('');
+  const [err, setErr] = useState('');
 
   useEffect(() => {
-    if (typeof window === "undefined") return;
-    const hasBarcodeDetector = "BarcodeDetector" in window;
+    if (typeof window === 'undefined') return;
+    const hasBarcodeDetector = 'BarcodeDetector' in window;
     const isSecure = window.isSecureContext;
     if (!hasBarcodeDetector || !isSecure) setSupported(false);
     return () => stop();
@@ -34,19 +34,23 @@ export default function UpcScanner({ onDetected }) {
   };
 
   const start = async () => {
-    setErr("");
+    setErr('');
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: 'environment' },
+      });
       const v = videoRef.current;
       v.srcObject = stream;
       await v.play();
       setActive(true);
-      const detector = new window.BarcodeDetector({ formats: ["upc_a", "upc_e", "ean_13", "ean_8"] });
+      const detector = new window.BarcodeDetector({
+        formats: ['upc_a', 'upc_e', 'ean_13', 'ean_8'],
+      });
       const tick = async () => {
         try {
           const codes = await detector.detect(v);
           if (codes && codes.length) {
-            const val = String(codes[0].rawValue).replace(/\D/g, "");
+            const val = String(codes[0].rawValue).replace(/\D/g, '');
             if (val.length >= 8) {
               stop();
               onDetected(val);
@@ -60,22 +64,27 @@ export default function UpcScanner({ onDetected }) {
       };
       rafRef.current = requestAnimationFrame(tick);
     } catch (e) {
-      setErr(e.message || "Camera unavailable — use manual entry.");
+      setErr(e.message || 'Camera unavailable — use manual entry.');
     }
   };
 
   const submitManual = (e) => {
     e.preventDefault();
-    const v = manualVal.replace(/\D/g, "");
+    const v = manualVal.replace(/\D/g, '');
     if (v.length >= 8) onDetected(v);
   };
 
   return (
     <div className="border border-slate2/60 bg-card">
       <div className="flex items-center justify-between border-b border-slate2/60 px-4 py-2">
-        <span className="font-mono text-[10px] uppercase tracking-[0.25em] text-dim">// UPC acquisition</span>
-        <button onClick={() => setManual((m) => !m)} className="flex items-center gap-1 font-mono text-[10px] uppercase tracking-[0.2em] text-darkgray transition-colors hover:text-ozone">
-          <Keyboard className="h-3 w-3" /> {manual ? "Camera" : "Manual"}
+        <span className="font-mono text-[10px] uppercase tracking-[0.25em] text-dim">
+          // UPC acquisition
+        </span>
+        <button
+          onClick={() => setManual((m) => !m)}
+          className="flex items-center gap-1 font-mono text-[10px] uppercase tracking-[0.2em] text-darkgray transition-colors hover:text-ozone"
+        >
+          <Keyboard className="h-3 w-3" /> {manual ? 'Camera' : 'Manual'}
         </button>
       </div>
       <div className="p-4">
@@ -88,7 +97,12 @@ export default function UpcScanner({ onDetected }) {
               placeholder="Enter UPC / EAN digits"
               className="flex-1 border border-slate2 bg-void px-3 py-2 font-mono text-sm text-silver outline-none focus:border-ozone"
             />
-            <button type="submit" className="border border-ozone bg-ozone px-4 py-2 font-mono text-[10px] font-bold uppercase tracking-[0.2em] text-void">Decode</button>
+            <button
+              type="submit"
+              className="border border-ozone bg-ozone px-4 py-2 font-mono text-[10px] font-bold uppercase tracking-[0.2em] text-void"
+            >
+              Decode
+            </button>
           </form>
         ) : (
           <div className="relative aspect-video w-full overflow-hidden bg-void">
@@ -102,17 +116,25 @@ export default function UpcScanner({ onDetected }) {
             {!active && (
               <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 px-4 text-center">
                 {supported ? (
-                  <button onClick={start} className="flex items-center gap-2 border-2 border-ozone bg-ozone px-4 py-2 font-mono text-[11px] font-bold uppercase tracking-[0.25em] text-void">
+                  <button
+                    onClick={start}
+                    className="flex items-center gap-2 border-2 border-ozone bg-ozone px-4 py-2 font-mono text-[11px] font-bold uppercase tracking-[0.25em] text-void"
+                  >
                     <ScanLine className="h-4 w-4" /> Start camera
                   </button>
                 ) : (
-                  <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-dim">Camera scanning unsupported here — switch to manual entry.</span>
+                  <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-dim">
+                    Camera scanning unsupported here — switch to manual entry.
+                  </span>
                 )}
                 {err && <span className="font-mono text-[9px] text-flare">{err}</span>}
               </div>
             )}
             {active && (
-              <button onClick={stop} className="absolute right-2 top-2 flex items-center gap-1 border border-slate2 bg-void/80 px-2 py-1 font-mono text-[9px] uppercase tracking-[0.2em] text-silver backdrop-blur-md hover:text-flare">
+              <button
+                onClick={stop}
+                className="absolute right-2 top-2 flex items-center gap-1 border border-slate2 bg-void/80 px-2 py-1 font-mono text-[9px] uppercase tracking-[0.2em] text-silver backdrop-blur-md hover:text-flare"
+              >
                 <X className="h-3 w-3" /> Stop
               </button>
             )}

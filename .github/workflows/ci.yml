@@ -24,7 +24,7 @@ permissions:
   checks: write
 
 env:
-  NODE_VERSION: "20"
+  NODE_VERSION: '20'
 
 jobs:
   lint-and-typecheck:
@@ -43,13 +43,12 @@ jobs:
         run: npm run lint
 
   format-check:
-    name: Prettier (informational)
+    name: Prettier
     runs-on: ubuntu-latest
-    # Not a merge gate: the codebase predates Prettier and has a large
-    # existing backlog of unformatted files (516 as of 2026-08-11 — see
-    # CI_PIPELINE.md Decision Register). This reports drift without blocking
-    # until a dedicated one-time formatting PR lands.
-    continue-on-error: true
+    # Blocking as of 2026-08-12 -- the one-time 444-file formatting PR
+    # (CI_PIPELINE.md Decision Register #1) landed, so there's no longer a
+    # pre-existing backlog to hide behind. Was "Prettier (informational)"
+    # with continue-on-error: true before this.
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-node@v7
@@ -128,7 +127,7 @@ jobs:
       - name: Run smoke + accessibility tests
         run: npx playwright test --project=chromium
         env:
-          CI: "true"
+          CI: 'true'
       - name: Upload Playwright report
         if: always()
         uses: actions/upload-artifact@v7
@@ -169,7 +168,7 @@ jobs:
       - name: Run mobile-chromium feature tests
         run: npx playwright test --project=mobile-chromium
         env:
-          CI: "true"
+          CI: 'true'
       - name: Upload Playwright report
         if: always()
         uses: actions/upload-artifact@v7
@@ -218,7 +217,16 @@ jobs:
 
   summary:
     name: PR summary comment
-    needs: [lint-and-typecheck, format-check, build, e2e, e2e-mobile, dependency-audit, dependency-review]
+    needs:
+      [
+        lint-and-typecheck,
+        format-check,
+        build,
+        e2e,
+        e2e-mobile,
+        dependency-audit,
+        dependency-review,
+      ]
     if: always() && github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     steps:
@@ -240,7 +248,7 @@ jobs:
             echo "| Build | ${{ needs.build.result }} |"
             echo "| Playwright (smoke + a11y) | ${{ needs.e2e.result }} |"
             echo "| Playwright (mobile Chromium) | ${{ needs.e2e-mobile.result }} |"
-            echo "| Prettier (informational) | ${{ needs.format-check.result }} |"
+            echo "| Prettier | ${{ needs.format-check.result }} |"
             echo "| Dependency audit (fails on high/critical) | ${{ needs.dependency-audit.result }} |"
             echo "| Dependency Review | ${{ needs.dependency-review.result }} |"
             echo ""
@@ -253,7 +261,7 @@ jobs:
               "
             fi
             echo ""
-            echo "_Blocking gates: Lint & Typecheck, Build, Playwright (desktop + mobile), Dependency audit (high/critical only), Dependency Review. Prettier is informational._"
+            echo "_Blocking gates: Lint & Typecheck, Build, Playwright (desktop + mobile), Prettier, Dependency audit (high/critical only), Dependency Review._"
             echo "PIPELINE_SUMMARY_EOF"
           } >> "$GITHUB_OUTPUT"
       - name: Comment on PR

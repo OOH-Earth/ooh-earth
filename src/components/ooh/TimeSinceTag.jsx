@@ -1,5 +1,5 @@
-import { useEffect, useState } from "react";
-import { Clock } from "lucide-react";
+import { useEffect, useState } from 'react';
+import { Clock } from 'lucide-react';
 
 function formatDuration(ms, compact) {
   const clamped = Math.max(0, ms);
@@ -21,7 +21,7 @@ function formatDuration(ms, compact) {
   if (days > 0 || hours > 0) parts.push(`${hours}h`);
   parts.push(`${mins}m`);
   if (days === 0 && hours === 0) parts.push(`${secs}s`);
-  return parts.join(" ");
+  return parts.join(' ');
 }
 
 /**
@@ -29,7 +29,7 @@ function formatDuration(ms, compact) {
  * status_updated_at (set whenever a verify/reject action runs — see
  * base44/functions/moderate/entry.ts and Dashboard.jsx's admin path).
  */
-export default function TimeSinceTag({ since, compact = false, className = "" }) {
+export default function TimeSinceTag({ since, compact = false, className = '' }) {
   const [now, setNow] = useState(() => Date.now());
 
   useEffect(() => {

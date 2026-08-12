@@ -1,7 +1,7 @@
-import { useEffect, lazy, Suspense } from "react";
-import { Toaster } from "@/components/ui/toaster"
-import { QueryClientProvider } from '@tanstack/react-query'
-import { queryClientInstance } from '@/lib/query-client'
+import { useEffect, lazy, Suspense } from 'react';
+import { Toaster } from '@/components/ui/toaster';
+import { QueryClientProvider } from '@tanstack/react-query';
+import { queryClientInstance } from '@/lib/query-client';
 import { BrowserRouter as Router, Route, Routes, Navigate, useLocation } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import PageNotFound from './lib/PageNotFound';
@@ -124,7 +124,9 @@ const AuthenticatedApp = () => {
 
   // Hydrate the admin-controlled loading-screen style (matrix on/off) from the
   // DB on boot, so a change in Lab Admin reaches every visitor on next load.
-  useEffect(() => { hydrateLoaderStyle(); }, []);
+  useEffect(() => {
+    hydrateLoaderStyle();
+  }, []);
 
   // Show loading spinner while checking app public settings or auth
   if (isLoadingPublicSettings || isLoadingAuth) {
@@ -145,143 +147,151 @@ const AuthenticatedApp = () => {
   // Render the main app
   return (
     <AnimatePresence mode="wait">
-    <motion.div key={location.pathname} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.18, ease: 'easeOut' }}>
-    <Suspense fallback={<MatrixLoader />}>
-    <Routes location={location}>
-    {/* Add your page Route elements here */}
-    <Route path="/login" element={<Login />} />
-    <Route path="/register" element={<Register />} />
-    <Route path="/forgot-password" element={<ForgotPassword />} />
-    <Route path="/reset-password" element={<ResetPassword />} />
-    <Route path="/oauth/consent" element={<OAuthConsent />} />
-    <Route path="/" element={<Home />} />
-    <Route path="/map" element={<Map />} />
-    <Route path="/adbusting" element={<AdbustingPortal />} />
-    <Route path="/graffiti" element={<GraffitiPortal />} />
-    <Route path="/ecology" element={<EcologyPortal />} />
-    <Route path="/rivers" element={<RiversPortal />} />
-    <Route path="/warzones" element={<WarZonesPortal />} />
-    <Route path="/report" element={<Report />} />
-    <Route path="/media-corps" element={<MediaCorps />} />
-    <Route path="/about" element={<About />} />
-    <Route path="/support" element={<Support />} />
-    <Route path="/contact" element={<Contact />} />
-    <Route path="/plans" element={<Plans />} />
-    <Route path="/campaign" element={<Campaign />} />
-    <Route path="/store" element={<Store />} />
-    <Route path="/store/:id" element={<StoreItemDetail />} />
-    <Route path="/ar" element={<ArLens />} />
-    <Route path="/scan" element={<TrueCost />} />
-    <Route path="/trash" element={<TrashId />} />
-    <Route path="/inhome" element={<InHome />} />
-    <Route path="/zora" element={<Zora />} />
-    <Route path="/kit" element={<UiKit />} />
-    <Route path="/brand" element={<Brand />} />
-    <Route path="/operative" element={<OperativeProfile />} />
-    <Route path="/guides" element={<Guides />} />
-    <Route path="/field-id" element={<FieldId />} />
-    <Route path="/card" element={<SuperCard />} />
-    <Route path="/channel" element={<Channel />} />
-    <Route path="/location/:id" element={<LocationDetail />} />
-    <Route path="/bus-stops" element={<BusStops />} />
-    <Route path="/bus-stop/:id" element={<BusStopDetail />} />
-    <Route path="/access-keys" element={<AccessKeys />} />
-    <Route path="/access-keys/:slug" element={<AccessKeyDetail />} />
-    <Route path="/journey" element={<JourneyMap />} />
-    <Route path="/categories" element={<Categories />} />
-    <Route path="/category/:slug" element={<CategoryDirectory />} />
-    <Route path="/regions" element={<Regions />} />
-    <Route path="/careers" element={<Careers />} />
-    <Route path="/careers/:id" element={<CareerRole />} />
-    <Route path="/blog" element={<Blog scope="public" />} />
-    <Route path="/blog/:slug" element={<BlogArticle scope="public" />} />
-    <Route path="/investor-access" element={<InvestorAccess />} />
-    <Route path="/capital/:slug" element={<CapitalLead />} />
-    <Route element={<ProtectedRoute unauthenticatedElement={<Navigate to="/login" replace />} />}>
-      <Route path="/account" element={<Account />} />
-      <Route path="/dashboard" element={<Dashboard />} />
-      <Route path="/fde" element={<FdePortal />} />
-      <Route path="/portal/ops" element={<PortalOps />} />
-      <Route path="/portfolio" element={<AtariPortfolio />} />
-      <Route path="/radio-ops" element={<RadioOps />} />
-      <Route path="/sitemap" element={<Sitemap />} />
-      <Route path="/agency" element={<AgencyNewsroom />} />
-      <Route path="/agency/blog" element={<Blog scope="agency" />} />
-      <Route path="/agency/blog/:slug" element={<BlogArticle scope="agency" />} />
-      <Route path="/blog/studio" element={<BlogStudio />} />
-      <Route path="/lab/admin" element={<LabAdmin />} />
-      <Route path="/store/admin" element={<StoreAdmin />} />
-      <Route path="/careers/admin" element={<CareersAdmin />} />
-    </Route>
-    {/* Lab — dynamic access guard (public/agency toggled per prototype via /lab/admin) */}
-    <Route element={<LabAccessRoute />}>
-      <Route path="/lab" element={<LabHub />} />
-      <Route path="/lab/book" element={<Book />} />
-      <Route path="/lab/poster" element={<HexPoster />} />
-      <Route path="/lab/coin-poster" element={<CoinPoster />} />
-      <Route path="/lab/sequencer" element={<HexSequencer />} />
-      <Route path="/lab/nft" element={<NftCreator />} />
-      <Route path="/lab/coin" element={<GenesisCoin />} />
-      <Route path="/lab/token" element={<GenesisToken />} />
-      <Route path="/lab/simulator" element={<HexSimulator />} />
-      <Route path="/lab/spec" element={<HexSpec />} />
-      <Route path="/lab/companion" element={<HexCompanion />} />
-      <Route path="/lab/devices" element={<Devices />} />
-      <Route path="/lab/devices/field-tag" element={<NfcFieldTag />} />
-      <Route path="/lab/devices/desktop" element={<DesktopConsole />} />
-      <Route path="/lab/devices/watch" element={<OohWatch />} />
-      <Route path="/lab/device" element={<HexDevice3D />} />
-      <Route path="/lab/livingcoin" element={<HexCoinCube />} />
-      <Route path="/lab/status" element={<LabStatus />} />
-      <Route path="/lab/streetrunner" element={<LabStreetRunner />} />
-      <Route path="/lab/scanner" element={<AdScanLab />} />
-      <Route path="/lab/graffiti-cam" element={<GraffitiCam />} />
-    </Route>
-    <Route element={<InvestorRoute />}>
-      <Route path="/investor" element={<InvestorHub />} />
-      <Route path="/console" element={<Console />} />
-      <Route path="/portal/investor" element={<InvestorDashboard />} />
-      <Route path="/portal/client" element={<ClientPortal />} />
-    </Route>
-    <Route path="*" element={<PageNotFound />} />
-    </Routes>
-    </Suspense>
-    </motion.div>
+      <motion.div
+        key={location.pathname}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        transition={{ duration: 0.18, ease: 'easeOut' }}
+      >
+        <Suspense fallback={<MatrixLoader />}>
+          <Routes location={location}>
+            {/* Add your page Route elements here */}
+            <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
+            <Route path="/forgot-password" element={<ForgotPassword />} />
+            <Route path="/reset-password" element={<ResetPassword />} />
+            <Route path="/oauth/consent" element={<OAuthConsent />} />
+            <Route path="/" element={<Home />} />
+            <Route path="/map" element={<Map />} />
+            <Route path="/adbusting" element={<AdbustingPortal />} />
+            <Route path="/graffiti" element={<GraffitiPortal />} />
+            <Route path="/ecology" element={<EcologyPortal />} />
+            <Route path="/rivers" element={<RiversPortal />} />
+            <Route path="/warzones" element={<WarZonesPortal />} />
+            <Route path="/report" element={<Report />} />
+            <Route path="/media-corps" element={<MediaCorps />} />
+            <Route path="/about" element={<About />} />
+            <Route path="/support" element={<Support />} />
+            <Route path="/contact" element={<Contact />} />
+            <Route path="/plans" element={<Plans />} />
+            <Route path="/campaign" element={<Campaign />} />
+            <Route path="/store" element={<Store />} />
+            <Route path="/store/:id" element={<StoreItemDetail />} />
+            <Route path="/ar" element={<ArLens />} />
+            <Route path="/scan" element={<TrueCost />} />
+            <Route path="/trash" element={<TrashId />} />
+            <Route path="/inhome" element={<InHome />} />
+            <Route path="/zora" element={<Zora />} />
+            <Route path="/kit" element={<UiKit />} />
+            <Route path="/brand" element={<Brand />} />
+            <Route path="/operative" element={<OperativeProfile />} />
+            <Route path="/guides" element={<Guides />} />
+            <Route path="/field-id" element={<FieldId />} />
+            <Route path="/card" element={<SuperCard />} />
+            <Route path="/channel" element={<Channel />} />
+            <Route path="/location/:id" element={<LocationDetail />} />
+            <Route path="/bus-stops" element={<BusStops />} />
+            <Route path="/bus-stop/:id" element={<BusStopDetail />} />
+            <Route path="/access-keys" element={<AccessKeys />} />
+            <Route path="/access-keys/:slug" element={<AccessKeyDetail />} />
+            <Route path="/journey" element={<JourneyMap />} />
+            <Route path="/categories" element={<Categories />} />
+            <Route path="/category/:slug" element={<CategoryDirectory />} />
+            <Route path="/regions" element={<Regions />} />
+            <Route path="/careers" element={<Careers />} />
+            <Route path="/careers/:id" element={<CareerRole />} />
+            <Route path="/blog" element={<Blog scope="public" />} />
+            <Route path="/blog/:slug" element={<BlogArticle scope="public" />} />
+            <Route path="/investor-access" element={<InvestorAccess />} />
+            <Route path="/capital/:slug" element={<CapitalLead />} />
+            <Route
+              element={<ProtectedRoute unauthenticatedElement={<Navigate to="/login" replace />} />}
+            >
+              <Route path="/account" element={<Account />} />
+              <Route path="/dashboard" element={<Dashboard />} />
+              <Route path="/fde" element={<FdePortal />} />
+              <Route path="/portal/ops" element={<PortalOps />} />
+              <Route path="/portfolio" element={<AtariPortfolio />} />
+              <Route path="/radio-ops" element={<RadioOps />} />
+              <Route path="/sitemap" element={<Sitemap />} />
+              <Route path="/agency" element={<AgencyNewsroom />} />
+              <Route path="/agency/blog" element={<Blog scope="agency" />} />
+              <Route path="/agency/blog/:slug" element={<BlogArticle scope="agency" />} />
+              <Route path="/blog/studio" element={<BlogStudio />} />
+              <Route path="/lab/admin" element={<LabAdmin />} />
+              <Route path="/store/admin" element={<StoreAdmin />} />
+              <Route path="/careers/admin" element={<CareersAdmin />} />
+            </Route>
+            {/* Lab — dynamic access guard (public/agency toggled per prototype via /lab/admin) */}
+            <Route element={<LabAccessRoute />}>
+              <Route path="/lab" element={<LabHub />} />
+              <Route path="/lab/book" element={<Book />} />
+              <Route path="/lab/poster" element={<HexPoster />} />
+              <Route path="/lab/coin-poster" element={<CoinPoster />} />
+              <Route path="/lab/sequencer" element={<HexSequencer />} />
+              <Route path="/lab/nft" element={<NftCreator />} />
+              <Route path="/lab/coin" element={<GenesisCoin />} />
+              <Route path="/lab/token" element={<GenesisToken />} />
+              <Route path="/lab/simulator" element={<HexSimulator />} />
+              <Route path="/lab/spec" element={<HexSpec />} />
+              <Route path="/lab/companion" element={<HexCompanion />} />
+              <Route path="/lab/devices" element={<Devices />} />
+              <Route path="/lab/devices/field-tag" element={<NfcFieldTag />} />
+              <Route path="/lab/devices/desktop" element={<DesktopConsole />} />
+              <Route path="/lab/devices/watch" element={<OohWatch />} />
+              <Route path="/lab/device" element={<HexDevice3D />} />
+              <Route path="/lab/livingcoin" element={<HexCoinCube />} />
+              <Route path="/lab/status" element={<LabStatus />} />
+              <Route path="/lab/streetrunner" element={<LabStreetRunner />} />
+              <Route path="/lab/scanner" element={<AdScanLab />} />
+              <Route path="/lab/graffiti-cam" element={<GraffitiCam />} />
+            </Route>
+            <Route element={<InvestorRoute />}>
+              <Route path="/investor" element={<InvestorHub />} />
+              <Route path="/console" element={<Console />} />
+              <Route path="/portal/investor" element={<InvestorDashboard />} />
+              <Route path="/portal/client" element={<ClientPortal />} />
+            </Route>
+            <Route path="*" element={<PageNotFound />} />
+          </Routes>
+        </Suspense>
+      </motion.div>
     </AnimatePresence>
   );
 };
 
-
 function App() {
-
   return (
     <AuthProvider>
       <QueryClientProvider client={queryClientInstance}>
         <Router>
           <SeoProvider>
-          <MapStyleProvider>
-          <RadioProvider>
-            <WalkthroughProvider>
-              <CommandCenterProvider>
-              <LabGateProvider>
-                <ScrollToTop />
-                <StageBanner />
-                <ErrorBoundary><AuthenticatedApp /></ErrorBoundary>
-                <CrtOverlay />
-                <TvStatic />
-                <CognitiveLayer />
-                <MobileBottomTabs />
-              </LabGateProvider>
-              </CommandCenterProvider>
-            </WalkthroughProvider>
-          </RadioProvider>
-          </MapStyleProvider>
+            <MapStyleProvider>
+              <RadioProvider>
+                <WalkthroughProvider>
+                  <CommandCenterProvider>
+                    <LabGateProvider>
+                      <ScrollToTop />
+                      <StageBanner />
+                      <ErrorBoundary>
+                        <AuthenticatedApp />
+                      </ErrorBoundary>
+                      <CrtOverlay />
+                      <TvStatic />
+                      <CognitiveLayer />
+                      <MobileBottomTabs />
+                    </LabGateProvider>
+                  </CommandCenterProvider>
+                </WalkthroughProvider>
+              </RadioProvider>
+            </MapStyleProvider>
           </SeoProvider>
         </Router>
         <Toaster />
       </QueryClientProvider>
     </AuthProvider>
-  )
+  );
 }
 
-export default App
+export default App;

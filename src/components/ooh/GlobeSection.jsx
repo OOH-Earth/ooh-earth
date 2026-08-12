@@ -1,15 +1,15 @@
-import { useState, lazy, Suspense } from "react";
-import MatrixLoader from "@/components/ooh/MatrixLoader";
-import { Link } from "react-router-dom";
-import { Globe } from "lucide-react";
-const Globe3D = lazy(() => import("@/components/ooh/Globe3D"));
-import { useLocations } from "@/hooks/useLocations";
+import { useState, lazy, Suspense } from 'react';
+import MatrixLoader from '@/components/ooh/MatrixLoader';
+import { Link } from 'react-router-dom';
+import { Globe } from 'lucide-react';
+const Globe3D = lazy(() => import('@/components/ooh/Globe3D'));
+import { useLocations } from '@/hooks/useLocations';
 
 const CORNERS = [
-  "left-0 top-0 border-l border-t",
-  "right-0 top-0 border-r border-t",
-  "left-0 bottom-0 border-l border-b",
-  "right-0 bottom-0 border-r border-b",
+  'left-0 top-0 border-l border-t',
+  'right-0 top-0 border-r border-t',
+  'left-0 bottom-0 border-l border-b',
+  'right-0 bottom-0 border-r border-b',
 ];
 
 export default function GlobeSection() {
@@ -28,7 +28,7 @@ export default function GlobeSection() {
       className="group relative isolate h-[58dvh] min-h-[360px] w-full cursor-pointer overflow-hidden border-b border-slate2/60 bg-void transition-all duration-500 hover:border-ozone/40 hover:shadow-[inset_0_0_90px_-24px_rgba(237,255,0,0.2)]"
     >
       <Suspense fallback={<MatrixLoader label="ATLAS" fullscreen={false} />}>
-        <Globe3D markers={markers} activeLayers={["ads"]} scrollZoom={false} />
+        <Globe3D markers={markers} activeLayers={['ads']} scrollZoom={false} />
       </Suspense>
 
       {/* hover scan sweep */}
@@ -38,7 +38,10 @@ export default function GlobeSection() {
 
       {/* corner registration marks */}
       {CORNERS.map((c, i) => (
-        <span key={i} className={`pointer-events-none absolute z-[1001] h-5 w-5 border-slate2/40 transition-colors duration-500 group-hover:border-ozone/70 ${c}`} />
+        <span
+          key={i}
+          className={`pointer-events-none absolute z-[1001] h-5 w-5 border-slate2/40 transition-colors duration-500 group-hover:border-ozone/70 ${c}`}
+        />
       ))}
 
       {/* click ripple */}
@@ -54,11 +57,16 @@ export default function GlobeSection() {
         <div className="flex flex-col gap-0.5">
           <span className="flex items-center gap-2">
             <Globe className="h-3.5 w-3.5 shrink-0 text-ozone" />
-            <span className="font-mono text-[10px] uppercase tracking-[0.28em] text-ozone">// orbital atlas</span>
-            <span className="hidden font-mono text-[9px] uppercase tracking-[0.28em] text-dim/45 sm:inline">· live global atlas</span>
+            <span className="font-mono text-[10px] uppercase tracking-[0.28em] text-ozone">
+              // orbital atlas
+            </span>
+            <span className="hidden font-mono text-[9px] uppercase tracking-[0.28em] text-dim/45 sm:inline">
+              · live global atlas
+            </span>
           </span>
           <span className="pl-[22px] font-mono text-[8px] uppercase tracking-[0.22em] text-dim/70">
-            {markers.length} spots · {live ? "live sync" : "live spin"}<span className="hidden sm:inline"> · spot clusters</span>
+            {markers.length} spots · {live ? 'live sync' : 'live spin'}
+            <span className="hidden sm:inline"> · spot clusters</span>
           </span>
         </div>
         <Link

@@ -22,13 +22,18 @@ function isDisallowedHost(hostname: string): boolean {
     if (a === 100 && b >= 64 && b <= 127) return true;
   }
   // IPv6 loopback / ULA
-  if (h === '::1' || h === '::' || h.startsWith('fc') || h.startsWith('fd') || h.startsWith('fe80')) return true;
+  if (h === '::1' || h === '::' || h.startsWith('fc') || h.startsWith('fd') || h.startsWith('fe80'))
+    return true;
   return false;
 }
 
 function validateKmlUrl(raw: string): URL | null {
   let url: URL;
-  try { url = new URL(raw); } catch { return null; }
+  try {
+    url = new URL(raw);
+  } catch {
+    return null;
+  }
   if (url.protocol !== 'https:') return null;
   if (isDisallowedHost(url.hostname)) return null;
   // Block credentials embedded in the URL.
@@ -52,7 +57,11 @@ Deno.serve(async (req) => {
     }
 
     let body: any = {};
-    try { body = await req.json(); } catch { /* empty payload */ }
+    try {
+      body = await req.json();
+    } catch {
+      /* empty payload */
+    }
 
     const kmlUrl = body.kml_url;
     if (!kmlUrl || typeof kmlUrl !== 'string') {
@@ -60,7 +69,10 @@ Deno.serve(async (req) => {
     }
     const safeUrl = validateKmlUrl(kmlUrl);
     if (!safeUrl) {
-      return Response.json({ error: 'kml_url must be an https URL on a public host' }, { status: 400 });
+      return Response.json(
+        { error: 'kml_url must be an https URL on a public host' },
+        { status: 400 },
+      );
     }
 
     const sourceLink = body.source_link || '';
@@ -76,9 +88,14 @@ Deno.serve(async (req) => {
       res = await fetch(current, { redirect: 'manual' });
       if (res.status >= 300 && res.status < 400) {
         const loc = res.headers.get('location');
-        if (!loc) return Response.json({ error: 'KML fetch failed: redirect without location' }, { status: 502 });
+        if (!loc)
+          return Response.json(
+            { error: 'KML fetch failed: redirect without location' },
+            { status: 502 },
+          );
         const next = validateKmlUrl(new URL(loc, current).toString());
-        if (!next) return Response.json({ error: 'KML redirect to disallowed host' }, { status: 502 });
+        if (!next)
+          return Response.json({ error: 'KML redirect to disallowed host' }, { status: 502 });
         current = next;
         continue;
       }
@@ -92,11 +109,14 @@ Deno.serve(async (req) => {
     // Placemarks: some My Maps return a NetworkLink pointing elsewhere.
     if (/<NetworkLink>/.test(kml) && !/<Placemark>/.test(kml)) {
       const href = kml.match(/<href>([^<]+)<\/href>/);
-      return Response.json({
-        error: 'KML is a NetworkLink with no inline placemarks',
-        network_link_href: href ? href[1] : null,
-        hint: 'Re-run with kml_url set to this href',
-      }, { status: 400 });
+      return Response.json(
+        {
+          error: 'KML is a NetworkLink with no inline placemarks',
+          network_link_href: href ? href[1] : null,
+          hint: 'Re-run with kml_url set to this href',
+        },
+        { status: 400 },
+      );
     }
 
     const pmRe = /<Placemark>([\s\S]*?)<\/Placemark>/g;
@@ -113,23 +133,41 @@ Deno.serve(async (req) => {
       const nameMatch = block.match(nameRe);
       const coordMatch = block.match(coordRe);
       const descMatch = block.match(descRe);
-      if (!nameMatch || !coordMatch) { skipped++; continue; }
+      if (!nameMatch || !coordMatch) {
+        skipped++;
+        continue;
+      }
 
       let name = nameMatch[1].trim();
-      name = name.replace(/<!--\[CDATA\[([\s\S]*?)\]\]-->/, '$1').replace(/<!\[CDATA\[([\s\S]*?)\]\]>/, '$1').trim();
-      if (!name) { skipped++; continue; }
+      name = name
+        .replace(/<!--\[CDATA\[([\s\S]*?)\]\]-->/, '$1')
+        .replace(/<!\[CDATA\[([\s\S]*?)\]\]>/, '$1')
+        .trim();
+      if (!name) {
+        skipped++;
+        continue;
+      }
 
       const coordStr = coordMatch[1].trim().split(/\s+/)[0];
       const parts = coordStr.split(',');
       const lng = parseFloat(parts[0]);
       const lat = parseFloat(parts[1]);
-      if (Number.isNaN(lat) || Number.isNaN(lng)) { skipped++; continue; }
+      if (Number.isNaN(lat) || Number.isNaN(lng)) {
+        skipped++;
+        continue;
+      }
 
       let notes = '';
       if (descMatch) {
-        let d = descMatch[1].trim()
-          .replace(/<!--\[CDATA\[([\s\S]*?)\]\]-->/, '$1').replace(/<!\[CDATA\[([\s\S]*?)\]\]>/, '$1').trim();
-        d = d.replace(/<br\s*\/?>/gi, ' ').replace(/<[^>]+>/g, '').trim();
+        let d = descMatch[1]
+          .trim()
+          .replace(/<!--\[CDATA\[([\s\S]*?)\]\]-->/, '$1')
+          .replace(/<!\[CDATA\[([\s\S]*?)\]\]>/, '$1')
+          .trim();
+        d = d
+          .replace(/<br\s*\/?>/gi, ' ')
+          .replace(/<[^>]+>/g, '')
+          .trim();
         if (d) notes = d.slice(0, 280);
       }
 
@@ -146,7 +184,12 @@ Deno.serve(async (req) => {
     }
 
     if (records.length === 0) {
-      return Response.json({ parsed: 0, created: 0, skipped, message: 'No placemarks with name + coordinates found.' });
+      return Response.json({
+        parsed: 0,
+        created: 0,
+        skipped,
+        message: 'No placemarks with name + coordinates found.',
+      });
     }
 
     // Chunk into batches of 500 (bulkCreate limit).
@@ -155,7 +198,7 @@ Deno.serve(async (req) => {
     for (let i = 0; i < records.length; i += BATCH) {
       const batch = records.slice(i, i + BATCH);
       const result = await base44.asServiceRole.entities.Location.bulkCreate(batch);
-      created += Array.isArray(result) ? result.length : (batch.length);
+      created += Array.isArray(result) ? result.length : batch.length;
     }
 
     return Response.json({

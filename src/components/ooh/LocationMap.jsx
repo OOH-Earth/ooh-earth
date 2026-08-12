@@ -1,15 +1,24 @@
-import { useEffect, useMemo, useRef, useState } from "react";
-import { MapContainer, TileLayer, Marker, Popup, Tooltip, useMap, useMapEvents, ZoomControl } from "react-leaflet";
-import { Link } from "react-router-dom";
-import L from "leaflet";
-import "leaflet/dist/leaflet.css";
+import { useEffect, useMemo, useRef, useState } from 'react';
+import {
+  MapContainer,
+  TileLayer,
+  Marker,
+  Popup,
+  Tooltip,
+  useMap,
+  useMapEvents,
+  ZoomControl,
+} from 'react-leaflet';
+import { Link } from 'react-router-dom';
+import L from 'leaflet';
+import 'leaflet/dist/leaflet.css';
 
 // Category-specific pin icons — yellow disc + per-type glyph.
 // Each location type (billboard, digital, transit, mural, etc.) gets its
 // own distinct iconography from the shared pinGlyphs library.
 function pinIcon(type) {
   return L.divIcon({
-    className: "ooh-pin",
+    className: 'ooh-pin',
     html: `<div style="position:relative;width:22px;height:22px"><span style="position:absolute;inset:-7px;border-radius:50%;background:radial-gradient(circle,rgba(255,72,118,0.26),transparent 65%)"></span><span style="position:relative;display:flex;width:22px;height:22px;border-radius:50%;background:#EDFF00;border:1.5px solid #000;box-shadow:0 0 0 2px rgba(237,255,0,0.20),0 0 12px rgba(237,255,0,0.5);align-items:center;justify-content:center">${glyphSVG(type, 11)}</span></div>`,
     iconSize: [22, 22],
     iconAnchor: [11, 11],
@@ -19,7 +28,7 @@ function pinIcon(type) {
 
 function selIcon(type) {
   return L.divIcon({
-    className: "ooh-pin ooh-pin--sel",
+    className: 'ooh-pin ooh-pin--sel',
     html: `<div style="position:relative;width:30px;height:30px"><span style="position:absolute;inset:-12px;border-radius:50%;background:radial-gradient(circle,rgba(255,72,118,0.45),transparent 65%)"></span><span style="position:absolute;inset:0;border-radius:50%;border:2px solid #FF5C00;animation:ooh-pinpulse 1.4s ease-out infinite"></span><span style="position:relative;display:flex;width:30px;height:30px;border-radius:50%;background:#EDFF00;border:2px solid #000;box-shadow:0 0 0 3px rgba(255,92,0,0.25),0 0 18px rgba(255,92,0,0.55);align-items:center;justify-content:center">${glyphSVG(type, 14)}</span></div>`,
     iconSize: [30, 30],
     iconAnchor: [15, 15],
@@ -28,34 +37,40 @@ function selIcon(type) {
 }
 
 const userIcon = L.divIcon({
-  className: "ooh-pin ooh-pin--user",
+  className: 'ooh-pin ooh-pin--user',
   html: `<span style="display:block;width:16px;height:16px;border-radius:50%;background:#1F51FF;border:2px solid #fff;box-shadow:0 0 0 4px rgba(31,81,255,0.22),0 0 14px rgba(31,81,255,0.6)"></span>`,
   iconSize: [16, 16],
   iconAnchor: [8, 8],
   popupAnchor: [0, -10],
 });
 
-import { thumbHTML, metaFor } from "@/components/ooh/map/LocationThumb";
-import { glyphSVG, GLYPH_COLORS } from "@/components/ooh/map/pinGlyphs";
-import FutureLayer from "@/components/ooh/map/FutureLayer";
-import LayerManager from "@/components/ooh/map/layers/LayerManager";
-import CompactPinPopup from "@/components/ooh/map/CompactPinPopup";
-import { useMapStyle } from "@/lib/mapStyleContext";
+import { thumbHTML, metaFor } from '@/components/ooh/map/LocationThumb';
+import { glyphSVG, GLYPH_COLORS } from '@/components/ooh/map/pinGlyphs';
+import FutureLayer from '@/components/ooh/map/FutureLayer';
+import LayerManager from '@/components/ooh/map/layers/LayerManager';
+import CompactPinPopup from '@/components/ooh/map/CompactPinPopup';
+import { useMapStyle } from '@/lib/mapStyleContext';
 
 // Photo-circle pin — white-ringed location photo with a category micro-badge
 // (bottom-right) and a status dot (top-left), plus the pink radial highlight.
 // Matches the oohearth.app field-pin style. Badge colour + glyph come from
 // the shared pinGlyphs library so every category has its own icon.
 function pinFor(m, selected) {
-  const verified = m.status === "verified";
+  const verified = m.status === 'verified';
   const mc_color = GLYPH_COLORS[m.type] || GLYPH_COLORS.other;
   const mc_svg = glyphSVG(m.type, 10);
   const size = selected ? 62 : 52;
   const badge = selected ? 22 : 18;
-  const glow = selected ? "rgba(255,72,118,0.45)" : "rgba(255,72,118,0.20)";
-  const img = String(m.image).replace(/-\d+x\d+(?=\.\w+$)/, "");
-  const html = `<div style="position:relative;width:${size}px;height:${size}px"><span style="position:absolute;inset:-${selected ? 12 : 8}px;border-radius:50%;background:radial-gradient(circle,${glow},transparent 65%)"></span><span style="position:relative;display:block;width:${size}px;height:${size}px;border-radius:50%;border:3px solid #fff;overflow:hidden;background:#000;box-shadow:0 2px 6px rgba(0,0,0,0.6)${selected ? ",0 0 0 2px " + mc_color : ""}"><img src="${img}" alt="" style="width:100%;height:100%;object-fit:cover;display:block"/></span><span style="position:absolute;right:-3px;bottom:-3px;width:${badge}px;height:${badge}px;border-radius:50%;background:${mc_color};border:2px solid #000;display:flex;align-items:center;justify-content:center;box-shadow:0 0 6px rgba(0,0,0,0.6)">${mc_svg}</span><span style="position:absolute;left:-2px;top:-2px;width:10px;height:10px;border-radius:50%;background:${verified ? "#39FF14" : "#FF5C00"};border:2px solid #000"></span></div>`;
-  return L.divIcon({ className: "ooh-pin ooh-pin--photo", html, iconSize: [size, size], iconAnchor: [size / 2, size / 2], popupAnchor: [0, -(size / 2) - 4] });
+  const glow = selected ? 'rgba(255,72,118,0.45)' : 'rgba(255,72,118,0.20)';
+  const img = String(m.image).replace(/-\d+x\d+(?=\.\w+$)/, '');
+  const html = `<div style="position:relative;width:${size}px;height:${size}px"><span style="position:absolute;inset:-${selected ? 12 : 8}px;border-radius:50%;background:radial-gradient(circle,${glow},transparent 65%)"></span><span style="position:relative;display:block;width:${size}px;height:${size}px;border-radius:50%;border:3px solid #fff;overflow:hidden;background:#000;box-shadow:0 2px 6px rgba(0,0,0,0.6)${selected ? ',0 0 0 2px ' + mc_color : ''}"><img src="${img}" alt="" style="width:100%;height:100%;object-fit:cover;display:block"/></span><span style="position:absolute;right:-3px;bottom:-3px;width:${badge}px;height:${badge}px;border-radius:50%;background:${mc_color};border:2px solid #000;display:flex;align-items:center;justify-content:center;box-shadow:0 0 6px rgba(0,0,0,0.6)">${mc_svg}</span><span style="position:absolute;left:-2px;top:-2px;width:10px;height:10px;border-radius:50%;background:${verified ? '#39FF14' : '#FF5C00'};border:2px solid #000"></span></div>`;
+  return L.divIcon({
+    className: 'ooh-pin ooh-pin--photo',
+    html,
+    iconSize: [size, size],
+    iconAnchor: [size / 2, size / 2],
+    popupAnchor: [0, -(size / 2) - 4],
+  });
 }
 
 function FitBounds({ markers }) {
@@ -143,7 +158,12 @@ function clusterIcon(count) {
   const size = count > 99 ? 52 : count > 9 ? 46 : 40;
   const fs = count > 99 ? 15 : count > 9 ? 14 : 13;
   const html = `<div style="position:relative;width:${size}px;height:${size}px"><span style="position:absolute;inset:-8px;border-radius:50%;background:radial-gradient(circle,rgba(237,255,0,0.18),transparent 65%)"></span><span style="position:relative;display:flex;width:${size}px;height:${size}px;border-radius:50%;background:#0a0a0a;border:2px solid #EDFF00;box-shadow:0 0 0 2px rgba(237,255,0,0.15),0 0 14px rgba(237,255,0,0.35);align-items:center;justify-content:center"><span style="font-family:'Inter Tight',monospace;font-weight:700;font-size:${fs}px;color:#EDFF00;letter-spacing:-0.02em">${count}</span></span><span style="position:absolute;left:50%;top:-3px;width:2px;height:6px;background:#EDFF00;transform:translateX(-50%)"></span><span style="position:absolute;left:50%;bottom:-3px;width:2px;height:6px;background:#EDFF00;transform:translateX(-50%)"></span><span style="position:absolute;top:50%;left:-3px;width:6px;height:2px;background:#EDFF00;transform:translateY(-50%)"></span><span style="position:absolute;top:50%;right:-3px;width:6px;height:2px;background:#EDFF00;transform:translateY(-50%)"></span></div>`;
-  return L.divIcon({ className: "ooh-pin ooh-pin--cluster", html, iconSize: [size, size], iconAnchor: [size / 2, size / 2] });
+  return L.divIcon({
+    className: 'ooh-pin ooh-pin--cluster',
+    html,
+    iconSize: [size, size],
+    iconAnchor: [size / 2, size / 2],
+  });
 }
 
 function PinMarker({ m, selected, onSelect, compactPopup, onExpandPin }) {
@@ -159,30 +179,108 @@ function PinMarker({ m, selected, onSelect, compactPopup, onExpandPin }) {
         ) : (
           <div style={{ width: 240, fontFamily: "'IBM Plex Mono', monospace" }}>
             {/* Terminal header — traffic lights + filename */}
-            <div style={{ display: "flex", alignItems: "center", gap: 4, padding: "5px 8px", borderBottom: "1px solid rgba(237,255,0,0.12)", background: "#080808" }}>
-              <span style={{ width: 7, height: 7, borderRadius: "50%", background: "#FF5555" }} />
-              <span style={{ width: 7, height: 7, borderRadius: "50%", background: "#FFB86C" }} />
-              <span style={{ width: 7, height: 7, borderRadius: "50%", background: "#50FA7B" }} />
-              <span style={{ marginLeft: 8, fontSize: 8, textTransform: "uppercase", letterSpacing: "0.2em", color: "#555", fontWeight: 700 }}>{metaFor(m.type).label}.ts</span>
-              <span style={{ marginLeft: "auto", fontSize: 6, textTransform: "uppercase", letterSpacing: "0.15em", color: "#333" }}>DEV</span>
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 4,
+                padding: '5px 8px',
+                borderBottom: '1px solid rgba(237,255,0,0.12)',
+                background: '#080808',
+              }}
+            >
+              <span style={{ width: 7, height: 7, borderRadius: '50%', background: '#FF5555' }} />
+              <span style={{ width: 7, height: 7, borderRadius: '50%', background: '#FFB86C' }} />
+              <span style={{ width: 7, height: 7, borderRadius: '50%', background: '#50FA7B' }} />
+              <span
+                style={{
+                  marginLeft: 8,
+                  fontSize: 8,
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.2em',
+                  color: '#555',
+                  fontWeight: 700,
+                }}
+              >
+                {metaFor(m.type).label}.ts
+              </span>
+              <span
+                style={{
+                  marginLeft: 'auto',
+                  fontSize: 6,
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.15em',
+                  color: '#333',
+                }}
+              >
+                DEV
+              </span>
             </div>
             <div dangerouslySetInnerHTML={{ __html: thumbHTML(m) }} />
-            <div style={{ padding: "10px 12px 12px" }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 4 }}>
-                <span style={{ fontSize: 9, textTransform: "uppercase", letterSpacing: "0.2em", fontWeight: 700, color: "#EDFF00" }}>
+            <div style={{ padding: '10px 12px 12px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
+                <span
+                  style={{
+                    fontSize: 9,
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.2em',
+                    fontWeight: 700,
+                    color: '#EDFF00',
+                  }}
+                >
                   {metaFor(m.type).label}
                 </span>
                 <span
-                  style={{ width: 5, height: 5, borderRadius: 999, background: m.status === "verified" ? "#39FF14" : "#FF5C00" }}
+                  style={{
+                    width: 5,
+                    height: 5,
+                    borderRadius: 999,
+                    background: m.status === 'verified' ? '#39FF14' : '#FF5C00',
+                  }}
                 />
-                <span style={{ fontSize: 9, textTransform: "uppercase", letterSpacing: "0.2em", color: "hsl(var(--muted-foreground))" }}>{m.status}</span>
+                <span
+                  style={{
+                    fontSize: 9,
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.2em',
+                    color: 'hsl(var(--muted-foreground))',
+                  }}
+                >
+                  {m.status}
+                </span>
               </div>
-              <div style={{ fontWeight: 700, fontSize: 15, color: "hsl(var(--foreground))", lineHeight: 1.25 }}>{m.title}</div>
-              <div style={{ fontSize: 12, color: "hsl(var(--muted-foreground))", marginTop: 4, lineHeight: 1.4 }}>{m.address}</div>
-              <div style={{ fontSize: 9, color: "hsl(var(--muted-foreground))", marginTop: 4, fontFamily: "monospace", opacity: 0.8 }}>
+              <div
+                style={{
+                  fontWeight: 700,
+                  fontSize: 15,
+                  color: 'hsl(var(--foreground))',
+                  lineHeight: 1.25,
+                }}
+              >
+                {m.title}
+              </div>
+              <div
+                style={{
+                  fontSize: 12,
+                  color: 'hsl(var(--muted-foreground))',
+                  marginTop: 4,
+                  lineHeight: 1.4,
+                }}
+              >
+                {m.address}
+              </div>
+              <div
+                style={{
+                  fontSize: 9,
+                  color: 'hsl(var(--muted-foreground))',
+                  marginTop: 4,
+                  fontFamily: 'monospace',
+                  opacity: 0.8,
+                }}
+              >
                 {Number(m.lat).toFixed(4)}, {Number(m.lng).toFixed(4)}
               </div>
-              <div style={{ display: "flex", flexWrap: "wrap", gap: 5, marginTop: 10 }}>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5, marginTop: 10 }}>
                 <a
                   href={`https://www.google.com/maps/dir/?api=1&destination=${m.lat},${m.lng}`}
                   target="_blank"
@@ -195,7 +293,12 @@ function PinMarker({ m, selected, onSelect, compactPopup, onExpandPin }) {
                   Page ↗
                 </Link>
                 {m.link && /^https?:\/\//i.test(m.link) && (
-                  <a href={m.link} target="_blank" rel="noreferrer" className="ooh-popup-btn ooh-popup-btn--ghost">
+                  <a
+                    href={m.link}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="ooh-popup-btn ooh-popup-btn--ghost"
+                  >
                     OOH.EARTH ↗
                   </a>
                 )}
@@ -225,7 +328,7 @@ function ClusteredMarkers({ pins, selectedId, onSelect, compactPopup, onExpandPi
     const groups = {};
     for (const m of pins) {
       const p = map.latLngToContainerPoint([m.lat, m.lng]);
-      const key = Math.floor(p.x / cellSize) + "_" + Math.floor(p.y / cellSize);
+      const key = Math.floor(p.x / cellSize) + '_' + Math.floor(p.y / cellSize);
       if (!groups[key]) groups[key] = { items: [], lat: 0, lng: 0 };
       groups[key].items.push(m);
     }
@@ -239,13 +342,22 @@ function ClusteredMarkers({ pins, selectedId, onSelect, compactPopup, onExpandPi
 
   return clusters.map((c, i) =>
     c.single ? (
-      <PinMarker key={c.m.id || i} m={c.m} selected={selectedId === c.m.id} onSelect={onSelect} compactPopup={compactPopup} onExpandPin={onExpandPin} />
+      <PinMarker
+        key={c.m.id || i}
+        m={c.m}
+        selected={selectedId === c.m.id}
+        onSelect={onSelect}
+        compactPopup={compactPopup}
+        onExpandPin={onExpandPin}
+      />
     ) : (
       <Marker
-        key={"c" + i}
+        key={'c' + i}
         position={[c.g.lat, c.g.lng]}
         icon={clusterIcon(c.g.items.length)}
-        eventHandlers={{ click: () => safeFlyTo(map, c.g.lat, c.g.lng, Math.min(20, zoom + 2), { duration: 0.6 }) }}
+        eventHandlers={{
+          click: () => safeFlyTo(map, c.g.lat, c.g.lng, Math.min(20, zoom + 2), { duration: 0.6 }),
+        }}
       >
         <Tooltip direction="top" offset={[0, -18]} opacity={0.96}>
           {(() => {
@@ -254,12 +366,45 @@ function ClusteredMarkers({ pins, selectedId, onSelect, compactPopup, onExpandPi
             const rows = Object.entries(tally).sort((a, b) => b[1] - a[1]);
             return (
               <div style={{ fontFamily: "'Inter Tight', sans-serif", minWidth: 96 }}>
-                <div style={{ fontSize: 8, letterSpacing: "0.2em", textTransform: "uppercase", color: "rgb(var(--c-ozone))", fontWeight: 700 }}>Cluster · {c.g.items.length} spots</div>
-                <div style={{ marginTop: 4, display: "grid", gap: 2 }}>
+                <div
+                  style={{
+                    fontSize: 8,
+                    letterSpacing: '0.2em',
+                    textTransform: 'uppercase',
+                    color: 'rgb(var(--c-ozone))',
+                    fontWeight: 700,
+                  }}
+                >
+                  Cluster · {c.g.items.length} spots
+                </div>
+                <div style={{ marginTop: 4, display: 'grid', gap: 2 }}>
                   {rows.map(([t, n]) => (
-                    <div key={t} style={{ display: "flex", justifyContent: "space-between", fontSize: 10, color: "hsl(var(--foreground))" }}>
-                      <span style={{ color: "hsl(var(--muted-foreground))", textTransform: "capitalize" }}>{t}</span>
-                      <span style={{ fontFamily: "monospace", fontWeight: 700, color: "rgb(var(--c-ozone))" }}>{n}</span>
+                    <div
+                      key={t}
+                      style={{
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        fontSize: 10,
+                        color: 'hsl(var(--foreground))',
+                      }}
+                    >
+                      <span
+                        style={{
+                          color: 'hsl(var(--muted-foreground))',
+                          textTransform: 'capitalize',
+                        }}
+                      >
+                        {t}
+                      </span>
+                      <span
+                        style={{
+                          fontFamily: 'monospace',
+                          fontWeight: 700,
+                          color: 'rgb(var(--c-ozone))',
+                        }}
+                      >
+                        {n}
+                      </span>
                     </div>
                   ))}
                 </div>
@@ -268,11 +413,23 @@ function ClusteredMarkers({ pins, selectedId, onSelect, compactPopup, onExpandPi
           })()}
         </Tooltip>
       </Marker>
-    )
+    ),
   );
 }
 
-export default function LocationMap({ markers, selectedId, hoverId, onSelect, userLoc = null, futures, activeLayers = [], onBoundsChange = null, flyTo = null, compactPopup = false, onExpandPin = null }) {
+export default function LocationMap({
+  markers,
+  selectedId,
+  hoverId,
+  onSelect,
+  userLoc = null,
+  futures,
+  activeLayers = [],
+  onBoundsChange = null,
+  flyTo = null,
+  compactPopup = false,
+  onExpandPin = null,
+}) {
   const { style } = useMapStyle();
   const pins = useMemo(() => markers.filter((m) => isFinite(m.lat) && isFinite(m.lng)), [markers]);
 
@@ -282,13 +439,13 @@ export default function LocationMap({ markers, selectedId, hoverId, onSelect, us
       zoom={13}
       scrollWheelZoom
       zoomControl={false}
-      className={`h-full w-full ${style.tint ? "ooh-map-style-matrix" : ""}`}
+      className={`h-full w-full ${style.tint ? 'ooh-map-style-matrix' : ''}`}
       style={{ background: style.bg }}
     >
       <TileLayer
         attribution={style.attribution}
         url={style.url}
-        subdomains={style.subdomains || "abc"}
+        subdomains={style.subdomains || 'abc'}
         maxZoom={style.maxZoom}
       />
       <ZoomControl position="bottomright" />
@@ -301,17 +458,42 @@ export default function LocationMap({ markers, selectedId, hoverId, onSelect, us
       {userLoc && (
         <Marker position={[userLoc.lat, userLoc.lng]} icon={userIcon}>
           <Popup>
-            <div style={{ fontFamily: "Inter Tight, sans-serif", padding: "4px 6px" }}>
-              <div style={{ fontSize: 9, textTransform: "uppercase", letterSpacing: "0.2em", fontWeight: 700, color: "#1F51FF" }}>Your position</div>
+            <div style={{ fontFamily: 'Inter Tight, sans-serif', padding: '4px 6px' }}>
+              <div
+                style={{
+                  fontSize: 9,
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.2em',
+                  fontWeight: 700,
+                  color: '#1F51FF',
+                }}
+              >
+                Your position
+              </div>
               <div style={{ fontSize: 13, fontWeight: 700, marginTop: 2 }}>You are here</div>
-              <div style={{ fontSize: 9, color: "hsl(var(--muted-foreground))", marginTop: 4, fontFamily: "monospace" }}>
+              <div
+                style={{
+                  fontSize: 9,
+                  color: 'hsl(var(--muted-foreground))',
+                  marginTop: 4,
+                  fontFamily: 'monospace',
+                }}
+              >
                 {userLoc.lat.toFixed(4)}, {userLoc.lng.toFixed(4)}
               </div>
             </div>
           </Popup>
         </Marker>
       )}
-      {activeLayers.some((l) => l === "ads" || l === "adbusting" || l === "graffiti") && <ClusteredMarkers pins={pins} selectedId={selectedId} onSelect={onSelect} compactPopup={compactPopup} onExpandPin={onExpandPin} />}
+      {activeLayers.some((l) => l === 'ads' || l === 'adbusting' || l === 'graffiti') && (
+        <ClusteredMarkers
+          pins={pins}
+          selectedId={selectedId}
+          onSelect={onSelect}
+          compactPopup={compactPopup}
+          onExpandPin={onExpandPin}
+        />
+      )}
       <FutureLayer futures={futures} />
       <LayerManager activeLayers={activeLayers} />
     </MapContainer>

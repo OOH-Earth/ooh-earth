@@ -1,13 +1,16 @@
 // OOH Earth — full wireframe-globe emblem (Y2K / Orbital Perspective).
 // Detailed version for hero, share cards, and the brand guide. Theme-aware:
 // ozone = hi-vis primary, flare = orange orbit, node = green pop.
-export default function OohEmblem({ className = "h-24 w-24", reticle = true, animate = false }) {
+export default function OohEmblem({ className = 'h-24 w-24', reticle = true, animate = false }) {
   return (
     <svg viewBox="0 0 200 200" className={className} fill="none" aria-hidden="true">
       {reticle && (
         <path
           d="M18 40 L18 18 L40 18 M160 18 L182 18 L182 40 M182 160 L182 182 L160 182 M40 182 L18 182 L18 160"
-          className="stroke-ozone" strokeWidth="5" strokeLinecap="square" opacity="0.9"
+          className="stroke-ozone"
+          strokeWidth="5"
+          strokeLinecap="square"
+          opacity="0.9"
         />
       )}
 
@@ -30,12 +33,31 @@ export default function OohEmblem({ className = "h-24 w-24", reticle = true, ani
       {/* front orbit + satellite */}
       <g>
         <g transform="rotate(-24 100 100)">
-          <path d="M 18 100 A 82 30 0 0 0 182 100" className="stroke-flare" strokeWidth="3" fill="none" strokeLinecap="round" />
+          <path
+            d="M 18 100 A 82 30 0 0 0 182 100"
+            className="stroke-flare"
+            strokeWidth="3"
+            fill="none"
+            strokeLinecap="round"
+          />
         </g>
-        <circle cx="30.9" cy="132.6" r="6.4" fill="#39FF14" style={{ filter: "drop-shadow(0 0 4px rgba(57,255,20,0.85))" }} />
+        <circle
+          cx="30.9"
+          cy="132.6"
+          r="6.4"
+          fill="#39FF14"
+          style={{ filter: 'drop-shadow(0 0 4px rgba(57,255,20,0.85))' }}
+        />
         <circle cx="30.9" cy="132.6" r="2.8" fill="#fff" />
         {animate && (
-          <animateTransform attributeName="transform" type="rotate" from="0 100 100" to="360 100 100" dur="14s" repeatCount="indefinite" />
+          <animateTransform
+            attributeName="transform"
+            type="rotate"
+            from="0 100 100"
+            to="360 100 100"
+            dur="14s"
+            repeatCount="indefinite"
+          />
         )}
       </g>
     </svg>

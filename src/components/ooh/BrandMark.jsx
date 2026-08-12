@@ -1,7 +1,7 @@
 // OOH Earth brandmark — Y2K wireframe globe on an orbital ring (Orbital Perspective).
 // Theme-aware via tokens (ozone = hi-vis primary, flare = orange). Same 0..32 viewBox
 // and { className } API as before, so every consumer (nav, field-ID cards, UI kit) is unchanged.
-export default function BrandMark({ className = "h-6 w-6", animate = true }) {
+export default function BrandMark({ className = 'h-6 w-6', animate = true }) {
   return (
     <svg viewBox="0 0 32 32" className={className} fill="none" aria-hidden="true">
       {/* faint back-orbit for depth */}
@@ -22,11 +22,30 @@ export default function BrandMark({ className = "h-6 w-6", animate = true }) {
       {/* front orbit ring + satellite — rotates */}
       <g>
         <g transform="rotate(-24 16 16)">
-          <path d="M 2.4 16 A 13.6 5 0 0 0 29.6 16" className="stroke-flare" strokeWidth="1.4" fill="none" strokeLinecap="round" />
+          <path
+            d="M 2.4 16 A 13.6 5 0 0 0 29.6 16"
+            className="stroke-flare"
+            strokeWidth="1.4"
+            fill="none"
+            strokeLinecap="round"
+          />
         </g>
-        <circle cx="29.6" cy="16" r="1.7" className="fill-flare" style={{ filter: "drop-shadow(0 0 3px rgba(255,92,0,0.9))" }} />
+        <circle
+          cx="29.6"
+          cy="16"
+          r="1.7"
+          className="fill-flare"
+          style={{ filter: 'drop-shadow(0 0 3px rgba(255,92,0,0.9))' }}
+        />
         {animate && (
-          <animateTransform attributeName="transform" type="rotate" from="0 16 16" to="360 16 16" dur="10s" repeatCount="indefinite" />
+          <animateTransform
+            attributeName="transform"
+            type="rotate"
+            from="0 16 16"
+            to="360 16 16"
+            dur="10s"
+            repeatCount="indefinite"
+          />
         )}
       </g>
     </svg>

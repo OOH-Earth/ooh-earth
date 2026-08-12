@@ -16,8 +16,11 @@ const agencyOf = (u) => !!(u && (u.agency ?? u.data?.agency));
 const isElevated = (u) => !!u && (roleOf(u) === 'admin' || accessOf(u) === 'admin');
 
 const ALLOWED_ORIGINS = new Set([
-  'https://oohearth.app', 'https://www.oohearth.app', 'https://ooh.earth',
-  'http://localhost:5173', 'http://localhost:3000',
+  'https://oohearth.app',
+  'https://www.oohearth.app',
+  'https://ooh.earth',
+  'http://localhost:5173',
+  'http://localhost:3000',
 ]);
 
 function cors(origin) {
@@ -26,7 +29,7 @@ function cors(origin) {
     'Access-Control-Allow-Origin': o,
     'Access-Control-Allow-Methods': 'POST, OPTIONS',
     'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Persona-Key',
-    'Vary': 'Origin',
+    Vary: 'Origin',
   };
 }
 
@@ -41,7 +44,11 @@ Deno.serve(async (req) => {
     const action = String(body?.action || 'list').toLowerCase();
 
     let caller = null;
-    try { caller = await base44.auth.me(); } catch { caller = null; }
+    try {
+      caller = await base44.auth.me();
+    } catch {
+      caller = null;
+    }
     const keyProvided = req.headers.get('x-persona-key') || body?.key || '';
     const keyExpected = Deno.env.get('PERSONA_KEY') || '';
     const keyOk = keyExpected.length > 0 && keyProvided === keyExpected;
@@ -59,8 +66,12 @@ Deno.serve(async (req) => {
     const roster = async () => {
       const users = await svc.list('-created_date', 500);
       return (users || []).map((u) => ({
-        id: u.id, email: u.email, full_name: u.full_name,
-        role: roleOf(u), access: accessOf(u), agency: agencyOf(u),
+        id: u.id,
+        email: u.email,
+        full_name: u.full_name,
+        role: roleOf(u),
+        access: accessOf(u),
+        agency: agencyOf(u),
       }));
     };
 
@@ -72,7 +83,9 @@ Deno.serve(async (req) => {
           actor_id: caller?.id || '',
           ...rec,
         });
-      } catch { /* audit failure must never break the operation */ }
+      } catch {
+        /* audit failure must never break the operation */
+      }
     };
 
     if (action === 'list') {
@@ -83,31 +96,57 @@ Deno.serve(async (req) => {
       const patch = {};
       if (body?.role !== undefined) {
         const role = String(body.role).toLowerCase();
-        if (!ROLES.has(role)) return Response.json({ error: `Invalid role. Use: ${[...ROLES].join(', ')}` }, { status: 400, headers });
+        if (!ROLES.has(role))
+          return Response.json(
+            { error: `Invalid role. Use: ${[...ROLES].join(', ')}` },
+            { status: 400, headers },
+          );
         patch.role = role;
       }
       if (body?.access !== undefined) {
         const access = String(body.access).toLowerCase();
-        if (!ACCESS.has(access)) return Response.json({ error: `Invalid access. Use: ${[...ACCESS].join(', ')}` }, { status: 400, headers });
+        if (!ACCESS.has(access))
+          return Response.json(
+            { error: `Invalid access. Use: ${[...ACCESS].join(', ')}` },
+            { status: 400, headers },
+          );
         patch.access = access;
       }
       if (body?.agency !== undefined) {
         patch.agency = !!body.agency;
       }
       if (!('role' in patch) && !('access' in patch) && !('agency' in patch)) {
-        return Response.json({ error: 'Nothing to set — pass role, access, and/or agency.' }, { status: 400, headers });
+        return Response.json(
+          { error: 'Nothing to set — pass role, access, and/or agency.' },
+          { status: 400, headers },
+        );
       }
 
       let target = null;
-      if (body?.id) { try { target = await svc.get(String(body.id)); } catch { target = null; } }
-      else if (body?.email) { const f = await svc.filter({ email: String(body.email) }, '-created_date', 1); target = (f || [])[0] || null; }
-      if (!target) return Response.json({ error: 'Target user not found — pass a valid id or email.' }, { status: 404, headers });
+      if (body?.id) {
+        try {
+          target = await svc.get(String(body.id));
+        } catch {
+          target = null;
+        }
+      } else if (body?.email) {
+        const f = await svc.filter({ email: String(body.email) }, '-created_date', 1);
+        target = (f || [])[0] || null;
+      }
+      if (!target)
+        return Response.json(
+          { error: 'Target user not found — pass a valid id or email.' },
+          { status: 404, headers },
+        );
 
       // lockout guard: never drop the last platform admin
       if (patch.role === 'user' && roleOf(target) === 'admin') {
         const all = await svc.list('-created_date', 500);
         if ((all || []).filter((u) => roleOf(u) === 'admin').length <= 1) {
-          return Response.json({ error: 'Refused — that is the last platform admin. Promote another account first.' }, { status: 409, headers });
+          return Response.json(
+            { error: 'Refused — that is the last platform admin. Promote another account first.' },
+            { status: 409, headers },
+          );
         }
       }
 
@@ -116,41 +155,67 @@ Deno.serve(async (req) => {
       const after = { ...before, ...patch };
 
       await logChange({
-        action: 'set', target_email: target.email, target_id: target.id,
-        from_role: before.role, to_role: after.role,
-        from_access: before.access, to_access: after.access,
+        action: 'set',
+        target_email: target.email,
+        target_id: target.id,
+        from_role: before.role,
+        to_role: after.role,
+        from_access: before.access,
+        to_access: after.access,
       });
 
-      return Response.json({
-        ok: true, action,
-        changed: { id: target.id, email: target.email, from: before, to: after },
-        users: await roster(),
-      }, { headers });
+      return Response.json(
+        {
+          ok: true,
+          action,
+          changed: { id: target.id, email: target.email, from: before, to: after },
+          users: await roster(),
+        },
+        { headers },
+      );
     }
 
     if (action === 'reset') {
       const anchor = String(body?.anchor_email || '').toLowerCase();
-      if (!anchor) return Response.json({ error: 'reset requires anchor_email.' }, { status: 400, headers });
+      if (!anchor)
+        return Response.json({ error: 'reset requires anchor_email.' }, { status: 400, headers });
       const all = await svc.list('-created_date', 500);
       const anchorUser = (all || []).find((u) => String(u.email || '').toLowerCase() === anchor);
-      if (!anchorUser) return Response.json({ error: `anchor_email ${anchor} not found in this app.` }, { status: 404, headers });
+      if (!anchorUser)
+        return Response.json(
+          { error: `anchor_email ${anchor} not found in this app.` },
+          { status: 404, headers },
+        );
 
       for (const u of all || []) {
-        const want = u.id === anchorUser.id ? { role: 'admin', access: 'admin' } : { role: 'user', access: 'member' };
+        const want =
+          u.id === anchorUser.id
+            ? { role: 'admin', access: 'admin' }
+            : { role: 'user', access: 'member' };
         const before = { role: roleOf(u), access: accessOf(u) };
         if (before.role !== want.role || before.access !== want.access) {
           await svc.update(u.id, want);
           await logChange({
-            action: 'reset', target_email: u.email, target_id: u.id,
-            from_role: before.role, to_role: want.role,
-            from_access: before.access, to_access: want.access,
+            action: 'reset',
+            target_email: u.email,
+            target_id: u.id,
+            from_role: before.role,
+            to_role: want.role,
+            from_access: before.access,
+            to_access: want.access,
           });
         }
       }
-      return Response.json({ ok: true, action, anchor: anchorUser.email, users: await roster() }, { headers });
+      return Response.json(
+        { ok: true, action, anchor: anchorUser.email, users: await roster() },
+        { headers },
+      );
     }
 
-    return Response.json({ error: `Unknown action '${action}'. Use: list | set | reset.` }, { status: 400, headers });
+    return Response.json(
+      { error: `Unknown action '${action}'. Use: list | set | reset.` },
+      { status: 400, headers },
+    );
   } catch (error) {
     return Response.json({ error: error?.message || String(error) }, { status: 500, headers });
   }

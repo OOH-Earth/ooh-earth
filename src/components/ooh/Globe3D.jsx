@@ -1,17 +1,21 @@
-import { useEffect, useRef, useState } from "react";
-import maplibregl from "maplibre-gl";
-import { ZoomIn, ZoomOut, Compass, RotateCw } from "lucide-react";
-import "maplibre-gl/dist/maplibre-gl.css";
-import GlobeHud from "@/components/ooh/GlobeHud";
-import FieldStatsHud from "@/components/ooh/FieldStatsHud";
-import { motion } from "framer-motion";
+import { useEffect, useRef, useState } from 'react';
+import maplibregl from 'maplibre-gl';
+import { ZoomIn, ZoomOut, Compass, RotateCw } from 'lucide-react';
+import 'maplibre-gl/dist/maplibre-gl.css';
+import GlobeHud from '@/components/ooh/GlobeHud';
+import FieldStatsHud from '@/components/ooh/FieldStatsHud';
+import { motion } from 'framer-motion';
 
-import { thumbHTML, metaFor } from "@/components/ooh/map/LocationThumb";
-import { drawGlyph, GLYPH_COLORS, PIN_TYPES } from "@/components/ooh/map/pinGlyphs";
-import GlobeLayerManager from "@/components/ooh/map/layers/GlobeLayerManager";
-import { useMapStyle } from "@/lib/mapStyleContext";
+import { thumbHTML, metaFor } from '@/components/ooh/map/LocationThumb';
+import { drawGlyph, GLYPH_COLORS, PIN_TYPES } from '@/components/ooh/map/pinGlyphs';
+import GlobeLayerManager from '@/components/ooh/map/layers/GlobeLayerManager';
+import { useMapStyle } from '@/lib/mapStyleContext';
 
-const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const esc = (s) =>
+  String(s ?? '').replace(
+    /[&<>"']/g,
+    (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c],
+  );
 
 // Canvas-drawn field pin for the globe symbol layer — yellow disc,
 // category-specific glyph (from the shared pinGlyphs library), micro-badge +
@@ -19,55 +23,78 @@ const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "
 function makePinIcon(type, selected, verified) {
   const S = 64;
   const badgeColor = GLYPH_COLORS[type] || GLYPH_COLORS.other;
-  const c = document.createElement("canvas");
+  const c = document.createElement('canvas');
   c.width = c.height = S;
-  const ctx = c.getContext("2d");
-  const cx = S / 2, cy = S / 2;
+  const ctx = c.getContext('2d');
+  const cx = S / 2,
+    cy = S / 2;
   // pink radial highlight
   const g = ctx.createRadialGradient(cx, cy, 2, cx, cy, S / 2);
-  g.addColorStop(0, selected ? "rgba(255,72,118,0.55)" : "rgba(255,72,118,0.22)");
-  g.addColorStop(1, "rgba(255,72,118,0)");
+  g.addColorStop(0, selected ? 'rgba(255,72,118,0.55)' : 'rgba(255,72,118,0.22)');
+  g.addColorStop(1, 'rgba(255,72,118,0)');
   ctx.fillStyle = g;
   ctx.fillRect(0, 0, S, S);
   // disc
-  ctx.beginPath(); ctx.arc(cx, cy, 20, 0, Math.PI * 2);
-  ctx.fillStyle = "#EDFF00"; ctx.fill();
-  ctx.lineWidth = 3; ctx.strokeStyle = "#000"; ctx.stroke();
-  if (selected) { ctx.lineWidth = 2; ctx.strokeStyle = "#FF5C00"; ctx.beginPath(); ctx.arc(cx, cy, 25, 0, Math.PI * 2); ctx.stroke(); }
+  ctx.beginPath();
+  ctx.arc(cx, cy, 20, 0, Math.PI * 2);
+  ctx.fillStyle = '#EDFF00';
+  ctx.fill();
+  ctx.lineWidth = 3;
+  ctx.strokeStyle = '#000';
+  ctx.stroke();
+  if (selected) {
+    ctx.lineWidth = 2;
+    ctx.strokeStyle = '#FF5C00';
+    ctx.beginPath();
+    ctx.arc(cx, cy, 25, 0, Math.PI * 2);
+    ctx.stroke();
+  }
   // category glyph (billboard, digital, transit, mural, etc.)
   drawGlyph(ctx, type, cx, cy, 16);
   // micro badge bottom-right
-  const bx = cx + 14, by = cy + 14;
-  ctx.beginPath(); ctx.arc(bx, by, 8.5, 0, Math.PI * 2);
-  ctx.fillStyle = badgeColor; ctx.fill();
-  ctx.lineWidth = 2; ctx.strokeStyle = "#000"; ctx.stroke();
-  ctx.beginPath(); ctx.arc(bx, by, 2.6, 0, Math.PI * 2); ctx.fillStyle = "#000"; ctx.fill();
+  const bx = cx + 14,
+    by = cy + 14;
+  ctx.beginPath();
+  ctx.arc(bx, by, 8.5, 0, Math.PI * 2);
+  ctx.fillStyle = badgeColor;
+  ctx.fill();
+  ctx.lineWidth = 2;
+  ctx.strokeStyle = '#000';
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.arc(bx, by, 2.6, 0, Math.PI * 2);
+  ctx.fillStyle = '#000';
+  ctx.fill();
   // status dot top-left
-  ctx.beginPath(); ctx.arc(cx - 14, cy - 14, 4.5, 0, Math.PI * 2);
-  ctx.fillStyle = verified ? "#39FF14" : "#FF5C00"; ctx.fill();
-  ctx.lineWidth = 1.5; ctx.strokeStyle = "#000"; ctx.stroke();
+  ctx.beginPath();
+  ctx.arc(cx - 14, cy - 14, 4.5, 0, Math.PI * 2);
+  ctx.fillStyle = verified ? '#39FF14' : '#FF5C00';
+  ctx.fill();
+  ctx.lineWidth = 1.5;
+  ctx.strokeStyle = '#000';
+  ctx.stroke();
   return c;
 }
 
 function popupHTML(m) {
   const type = metaFor(m.type).label;
-  const status = m.status || "pending";
+  const status = m.status || 'pending';
   return `
     <div style="width:220px;font-family:'Inter Tight',sans-serif">
       ${thumbHTML(m)}
       <div style="padding:10px 12px 12px">
         <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px">
           <span style="font-size:9px;text-transform:uppercase;letter-spacing:0.2em;font-weight:700;color:#EDFF00">${esc(type)}</span>
-          <span style="width:5px;height:5px;border-radius:999px;background:${status === "verified" ? "#39FF14" : "#FF5C00"}"></span>
+          <span style="width:5px;height:5px;border-radius:999px;background:${status === 'verified' ? '#39FF14' : '#FF5C00'}"></span>
           <span style="font-size:9px;text-transform:uppercase;letter-spacing:0.2em;color:hsl(var(--muted-foreground))">${esc(status)}</span>
         </div>
         <div style="font-weight:700;font-size:15px;color:hsl(var(--foreground));line-height:1.25">${esc(m.title)}</div>
-        <div style="font-size:12px;color:hsl(var(--muted-foreground));margin-top:4px;line-height:1.4">${esc(m.address || "")}</div>
+        <div style="font-size:12px;color:hsl(var(--muted-foreground));margin-top:4px;line-height:1.4">${esc(m.address || '')}</div>
         <div style="font-size:9px;color:hsl(var(--muted-foreground));margin-top:4px;font-family:monospace;opacity:0.8">${Number(m.lat).toFixed(4)}, ${Number(m.lng).toFixed(4)}</div>
         <div style="display:flex;flex-wrap:wrap;gap:5px;margin-top:10px">
           <a href="https://www.google.com/maps/dir/?api=1&destination=${m.lat},${m.lng}" target="_blank" rel="noreferrer" class="ooh-popup-btn ooh-popup-btn--flare">Directions ↗</a>
           <a href="/location/${esc(m.id)}" class="ooh-popup-btn ooh-popup-btn--ozone">Page ↗</a>
-          ${m.link && /^https?:\/\//i.test(m.link) ? `<a href="${esc(m.link)}" target="_blank" rel="noreferrer" class="ooh-popup-btn ooh-popup-btn--ghost">OOH.EARTH ↗</a>` : ""}
+          ${m.link && /^https?:\/\//i.test(m.link) ? `<a href="${esc(m.link)}" target="_blank" rel="noreferrer" class="ooh-popup-btn ooh-popup-btn--ghost">OOH.EARTH ↗</a>` : ''}
         </div>
       </div>
     </div>`;
@@ -75,12 +102,12 @@ function popupHTML(m) {
 
 function buildFC(markers, selectedId) {
   return {
-    type: "FeatureCollection",
+    type: 'FeatureCollection',
     features: markers
       .filter((m) => isFinite(m.lat) && isFinite(m.lng))
       .map((m) => ({
-        type: "Feature",
-        geometry: { type: "Point", coordinates: [m.lng, m.lat] },
+        type: 'Feature',
+        geometry: { type: 'Point', coordinates: [m.lng, m.lat] },
         properties: {
           id: m.id,
           title: m.title,
@@ -97,13 +124,26 @@ function buildFC(markers, selectedId) {
   };
 }
 
-export default function Globe3D({ markers, selectedId = null, hoverId = null, onSelect = null, userLoc = null, activeLayers = [], interactive = true, spin = false, scrollZoom = true, flyTo = null, onError = null, onCounts = null }) {
+export default function Globe3D({
+  markers,
+  selectedId = null,
+  hoverId = null,
+  onSelect = null,
+  userLoc = null,
+  activeLayers = [],
+  interactive = true,
+  spin = false,
+  scrollZoom = true,
+  flyTo = null,
+  onError = null,
+  onCounts = null,
+}) {
   const mapStyle = useMapStyle().style;
   const containerRef = useRef(null);
   const mapRef = useRef(null);
   const popupRef = useRef(null);
   const readyRef = useRef(false);
-  const dataRef = useRef({ type: "FeatureCollection", features: [] });
+  const dataRef = useRef({ type: 'FeatureCollection', features: [] });
   const onSelectRef = useRef(onSelect);
   const userCenteredRef = useRef(false);
   const onErrorRef = useRef(onError);
@@ -147,7 +187,11 @@ export default function Globe3D({ markers, selectedId = null, hoverId = null, on
       interactive,
     });
     mapRef.current = map;
-    popupRef.current = new maplibregl.Popup({ closeButton: true, closeOnClick: true, maxWidth: "260px" });
+    popupRef.current = new maplibregl.Popup({
+      closeButton: true,
+      closeOnClick: true,
+      maxWidth: '260px',
+    });
 
     if (!scrollZoom) {
       map.scrollZoom.disable();
@@ -156,7 +200,7 @@ export default function Globe3D({ markers, selectedId = null, hoverId = null, on
 
     // Fail-fast: if the style fails to load (network/CORS), fall back to flat map
     let styleFailed = false;
-    map.on("error", (e) => {
+    map.on('error', (e) => {
       // MapLibre fires error events for non-fatal things too; only bail if the
       // style itself hasn't loaded within a reasonable window.
       if (!readyRef.current && !styleFailed && e?.error?.status === 404) {
@@ -174,7 +218,9 @@ export default function Globe3D({ markers, selectedId = null, hoverId = null, on
     }, 12000);
 
     const applyGlobe = () => {
-      try { map.setProjection({ type: "globe" }); } catch (e) {}
+      try {
+        map.setProjection({ type: 'globe' });
+      } catch (e) {}
       try {
         // setFog() doesn't exist on the installed maplibre-gl (5.24.0) Map
         // class — only setSky(SkySpecification) does now. This throws and is
@@ -185,65 +231,80 @@ export default function Globe3D({ markers, selectedId = null, hoverId = null, on
         // @ts-expect-error — see comment above
         map.setFog({
           range: [1, 10],
-          color: "#0a0a0a",
-          "high-color": "#1a1a1a",
-          "horizon-blend": 0.12,
-          "space-color": "#000000",
-          "star-intensity": 0.45,
+          color: '#0a0a0a',
+          'high-color': '#1a1a1a',
+          'horizon-blend': 0.12,
+          'space-color': '#000000',
+          'star-intensity': 0.45,
         });
       } catch (e) {}
     };
-    map.on("load", () => {
+    map.on('load', () => {
       applyGlobe();
-      map.on("style.load", applyGlobe);
-      map.addSource("ooh-markers", { type: "geojson", data: /** @type {GeoJSON.GeoJSON} */ (dataRef.current), cluster: true, clusterRadius: 52, clusterMaxZoom: 14 });
+      map.on('style.load', applyGlobe);
+      map.addSource('ooh-markers', {
+        type: 'geojson',
+        data: /** @type {GeoJSON.GeoJSON} */ (dataRef.current),
+        cluster: true,
+        clusterRadius: 52,
+        clusterMaxZoom: 14,
+      });
       PIN_TYPES.forEach((t) => {
         const a = makePinIcon(t, false, false);
-        map.addImage(`ooh-pin-${t}`, a.getContext("2d").getImageData(0, 0, a.width, a.height), { pixelRatio: 1 });
+        map.addImage(`ooh-pin-${t}`, a.getContext('2d').getImageData(0, 0, a.width, a.height), {
+          pixelRatio: 1,
+        });
         const b = makePinIcon(t, true, false);
-        map.addImage(`ooh-pin-${t}-sel`, b.getContext("2d").getImageData(0, 0, b.width, b.height), { pixelRatio: 1 });
+        map.addImage(`ooh-pin-${t}-sel`, b.getContext('2d').getImageData(0, 0, b.width, b.height), {
+          pixelRatio: 1,
+        });
       });
       // cluster discs — dark core, ozone ring, live count (military-grade)
       map.addLayer({
-        id: "ooh-clusters",
-        type: "circle",
-        source: "ooh-markers",
-        filter: ["has", "point_count"],
+        id: 'ooh-clusters',
+        type: 'circle',
+        source: 'ooh-markers',
+        filter: ['has', 'point_count'],
         paint: {
-          "circle-radius": ["step", ["get", "point_count"], 16, 10, 20, 50, 25, 100, 30],
-          "circle-color": "#0a0a0a",
-          "circle-stroke-color": "#EDFF00",
-          "circle-stroke-width": 2,
-          "circle-blur": 0.08,
+          'circle-radius': ['step', ['get', 'point_count'], 16, 10, 20, 50, 25, 100, 30],
+          'circle-color': '#0a0a0a',
+          'circle-stroke-color': '#EDFF00',
+          'circle-stroke-width': 2,
+          'circle-blur': 0.08,
         },
       });
       map.addLayer({
-        id: "ooh-cluster-count",
-        type: "symbol",
-        source: "ooh-markers",
-        filter: ["has", "point_count"],
+        id: 'ooh-cluster-count',
+        type: 'symbol',
+        source: 'ooh-markers',
+        filter: ['has', 'point_count'],
         layout: {
-          "text-field": ["get", "point_count_abbreviated"],
-          "text-size": 13,
-          "text-allow-overlap": true,
+          'text-field': ['get', 'point_count_abbreviated'],
+          'text-size': 13,
+          'text-allow-overlap': true,
         },
-        paint: { "text-color": "#EDFF00", "text-halo-color": "#000", "text-halo-width": 1.5 },
+        paint: { 'text-color': '#EDFF00', 'text-halo-color': '#000', 'text-halo-width': 1.5 },
       });
       // individual field pins (unclustered only)
       map.addLayer({
-        id: "ooh-markers",
-        type: "symbol",
-        source: "ooh-markers",
-        filter: ["!", ["has", "point_count"]],
+        id: 'ooh-markers',
+        type: 'symbol',
+        source: 'ooh-markers',
+        filter: ['!', ['has', 'point_count']],
         layout: {
-          "icon-image": ["case", ["==", ["get", "selected"], true], ["concat", "ooh-pin-", ["get", "type"], "-sel"], ["concat", "ooh-pin-", ["get", "type"]]],
-          "icon-size": ["case", ["==", ["get", "selected"], true], 0.95, 0.78],
-          "icon-allow-overlap": true,
-          "icon-ignore-placement": true,
+          'icon-image': [
+            'case',
+            ['==', ['get', 'selected'], true],
+            ['concat', 'ooh-pin-', ['get', 'type'], '-sel'],
+            ['concat', 'ooh-pin-', ['get', 'type']],
+          ],
+          'icon-size': ['case', ['==', ['get', 'selected'], true], 0.95, 0.78],
+          'icon-allow-overlap': true,
+          'icon-ignore-placement': true,
         },
       });
 
-      map.on("click", "ooh-markers", (e) => {
+      map.on('click', 'ooh-markers', (e) => {
         const f = e.features && e.features[0];
         if (!f) return;
         const p = f.properties;
@@ -251,33 +312,48 @@ export default function Globe3D({ markers, selectedId = null, hoverId = null, on
         popupRef.current.setLngLat(coords).setHTML(popupHTML(p)).addTo(map);
         onSelectRef.current?.(p.id);
       });
-      map.on("mouseenter", "ooh-markers", () => { map.getCanvas().style.cursor = "pointer"; });
-      map.on("mouseleave", "ooh-markers", () => { map.getCanvas().style.cursor = ""; });
+      map.on('mouseenter', 'ooh-markers', () => {
+        map.getCanvas().style.cursor = 'pointer';
+      });
+      map.on('mouseleave', 'ooh-markers', () => {
+        map.getCanvas().style.cursor = '';
+      });
 
       // cluster click → expand to reveal contained pins
-      map.on("click", "ooh-clusters", (e) => {
+      map.on('click', 'ooh-clusters', (e) => {
         const f = e.features && e.features[0];
         if (!f) return;
         const cid = f.properties.cluster_id;
         /** @type {import("maplibre-gl").GeoJSONSource} */
-        const src = /** @type {any} */ (map.getSource("ooh-markers"));
-        const coords = /** @type {[number, number]} */ (/** @type {GeoJSON.Point} */ (f.geometry).coordinates);
+        const src = /** @type {any} */ (map.getSource('ooh-markers'));
+        const coords = /** @type {[number, number]} */ (
+          /** @type {GeoJSON.Point} */ (f.geometry).coordinates
+        );
         if (src && src.getClusterExpansionZoom) {
-          src.getClusterExpansionZoom(cid).then((z) => {
-            map.flyTo({ center: coords, zoom: Math.max(z, map.getZoom() + 1), duration: 700 });
-          }).catch(() => {
-            map.flyTo({ center: coords, zoom: map.getZoom() + 2, duration: 700 });
-          });
+          src
+            .getClusterExpansionZoom(cid)
+            .then((z) => {
+              map.flyTo({ center: coords, zoom: Math.max(z, map.getZoom() + 1), duration: 700 });
+            })
+            .catch(() => {
+              map.flyTo({ center: coords, zoom: map.getZoom() + 2, duration: 700 });
+            });
         } else {
           map.flyTo({ center: coords, zoom: map.getZoom() + 2, duration: 700 });
         }
       });
-      map.on("mouseenter", "ooh-clusters", () => { map.getCanvas().style.cursor = "pointer"; });
-      map.on("mouseleave", "ooh-clusters", () => { map.getCanvas().style.cursor = ""; });
+      map.on('mouseenter', 'ooh-clusters', () => {
+        map.getCanvas().style.cursor = 'pointer';
+      });
+      map.on('mouseleave', 'ooh-clusters', () => {
+        map.getCanvas().style.cursor = '';
+      });
 
       readyRef.current = true;
       setReady(true);
-      /** @type {import("maplibre-gl").GeoJSONSource} */ (map.getSource("ooh-markers")).setData(/** @type {GeoJSON.GeoJSON} */ (dataRef.current));
+      /** @type {import("maplibre-gl").GeoJSONSource} */ (map.getSource('ooh-markers')).setData(
+        /** @type {GeoJSON.GeoJSON} */ (dataRef.current),
+      );
     });
 
     return () => {
@@ -291,17 +367,21 @@ export default function Globe3D({ markers, selectedId = null, hoverId = null, on
   useEffect(() => {
     const map = mapRef.current;
     if (!readyRef.current || !map) return;
-    const vis = activeLayers.some((l) => l === "ads" || l === "adbusting" || l === "graffiti") ? "visible" : "none";
-    ["ooh-markers", "ooh-clusters", "ooh-cluster-count"].forEach((id) => {
-      if (map.getLayer(id)) map.setLayoutProperty(id, "visibility", vis);
+    const vis = activeLayers.some((l) => l === 'ads' || l === 'adbusting' || l === 'graffiti')
+      ? 'visible'
+      : 'none';
+    ['ooh-markers', 'ooh-clusters', 'ooh-cluster-count'].forEach((id) => {
+      if (map.getLayer(id)) map.setLayoutProperty(id, 'visibility', vis);
     });
   }, [activeLayers, ready]);
 
   useEffect(() => {
     dataRef.current = buildFC(markers, selectedId);
     const map = mapRef.current;
-    if (readyRef.current && map && map.getSource("ooh-markers")) {
-      /** @type {import("maplibre-gl").GeoJSONSource} */ (map.getSource("ooh-markers")).setData(/** @type {GeoJSON.GeoJSON} */ (dataRef.current));
+    if (readyRef.current && map && map.getSource('ooh-markers')) {
+      /** @type {import("maplibre-gl").GeoJSONSource} */ (map.getSource('ooh-markers')).setData(
+        /** @type {GeoJSON.GeoJSON} */ (dataRef.current),
+      );
     }
     if (selectedId && readyRef.current && map) {
       const m = markers.find((x) => x.id === selectedId);
@@ -317,7 +397,12 @@ export default function Globe3D({ markers, selectedId = null, hoverId = null, on
     if (!readyRef.current || !map || !hoverId || hoverId === selectedId) return;
     const m = markers.find((x) => x.id === hoverId);
     if (m && isFinite(m.lat) && isFinite(m.lng)) {
-      map.flyTo({ center: [m.lng, m.lat], zoom: Math.max(map.getZoom(), 13), duration: 900, essential: true });
+      map.flyTo({
+        center: [m.lng, m.lat],
+        zoom: Math.max(map.getZoom(), 13),
+        duration: 900,
+        essential: true,
+      });
     }
   }, [hoverId, selectedId, markers, ready]);
 
@@ -326,24 +411,24 @@ export default function Globe3D({ markers, selectedId = null, hoverId = null, on
     if (!readyRef.current || !map) return;
     const recompute = () => {
       try {
-        const cl = map.queryRenderedFeatures({ layers: ["ooh-clusters"] });
-        const pts = map.queryRenderedFeatures({ layers: ["ooh-markers"] });
+        const cl = map.queryRenderedFeatures({ layers: ['ooh-clusters'] });
+        const pts = map.queryRenderedFeatures({ layers: ['ooh-markers'] });
         const all = markers;
-        const leads = all.filter((m) => !m.image && m.status !== "verified").length;
-        const verified = all.filter((m) => m.status === "verified").length;
+        const leads = all.filter((m) => !m.image && m.status !== 'verified').length;
+        const verified = all.filter((m) => m.status === 'verified').length;
         const c = { spots: all.length, clusters: cl.length, leads, verified };
         setCounts(c);
         onCountsRef.current?.(c);
       } catch (e) {}
     };
     recompute();
-    map.on("moveend", recompute);
-    map.on("zoomend", recompute);
-    map.on("sourcedata", recompute);
+    map.on('moveend', recompute);
+    map.on('zoomend', recompute);
+    map.on('sourcedata', recompute);
     return () => {
-      map.off("moveend", recompute);
-      map.off("zoomend", recompute);
-      map.off("sourcedata", recompute);
+      map.off('moveend', recompute);
+      map.off('zoomend', recompute);
+      map.off('sourcedata', recompute);
     };
   }, [ready, markers]);
 
@@ -351,31 +436,64 @@ export default function Globe3D({ markers, selectedId = null, hoverId = null, on
   useEffect(() => {
     const map = mapRef.current;
     if (!readyRef.current || !map || !flyTo || !flyTo.nonce) return;
-    map.flyTo({ center: [flyTo.lng, flyTo.lat], zoom: Math.max(map.getZoom(), 5), duration: 1200, essential: true });
+    map.flyTo({
+      center: [flyTo.lng, flyTo.lat],
+      zoom: Math.max(map.getZoom(), 5),
+      duration: 1200,
+      essential: true,
+    });
   }, [flyTo, ready]);
 
   useEffect(() => {
     const map = mapRef.current;
     if (!userLoc || !readyRef.current || !map || userCenteredRef.current) return;
     userCenteredRef.current = true;
-    const pt = { type: "Feature", geometry: { type: "Point", coordinates: [userLoc.lng, userLoc.lat] }, properties: {} };
-    if (!map.getSource("ooh-user")) {
-      map.addSource("ooh-user", { type: "geojson", data: pt });
-      map.addLayer({ id: "ooh-user", type: "circle", source: "ooh-user", paint: { "circle-radius": 8, "circle-color": "#1F51FF", "circle-stroke-color": "#ffffff", "circle-stroke-width": 2, "circle-blur": 0.2 } });
+    const pt = {
+      type: 'Feature',
+      geometry: { type: 'Point', coordinates: [userLoc.lng, userLoc.lat] },
+      properties: {},
+    };
+    if (!map.getSource('ooh-user')) {
+      map.addSource('ooh-user', { type: 'geojson', data: pt });
+      map.addLayer({
+        id: 'ooh-user',
+        type: 'circle',
+        source: 'ooh-user',
+        paint: {
+          'circle-radius': 8,
+          'circle-color': '#1F51FF',
+          'circle-stroke-color': '#ffffff',
+          'circle-stroke-width': 2,
+          'circle-blur': 0.2,
+        },
+      });
     } else {
-      map.getSource("ooh-user").setData(pt);
+      map.getSource('ooh-user').setData(pt);
     }
-    map.flyTo({ center: [userLoc.lng, userLoc.lat], zoom: Math.max(map.getZoom(), 12), duration: 800 });
+    map.flyTo({
+      center: [userLoc.lng, userLoc.lat],
+      zoom: Math.max(map.getZoom(), 12),
+      duration: 800,
+    });
   }, [userLoc, ready]);
 
   return (
     <div className="absolute inset-0">
-      <div ref={containerRef} className={`h-full w-full ${mapStyle.tint ? "ooh-globe-style-matrix" : ""}`} style={{ background: mapStyle.bg }} />
+      <div
+        ref={containerRef}
+        className={`h-full w-full ${mapStyle.tint ? 'ooh-globe-style-matrix' : ''}`}
+        style={{ background: mapStyle.bg }}
+      />
       {!ready && (
-        <div className="pointer-events-none absolute inset-0 z-[5] flex items-center justify-center" style={{ background: mapStyle.bg }}>
+        <div
+          className="pointer-events-none absolute inset-0 z-[5] flex items-center justify-center"
+          style={{ background: mapStyle.bg }}
+        >
           <div className="flex flex-col items-center gap-3">
             <div className="h-6 w-6 animate-spin rounded-full border-2 border-slate2 border-t-ozone" />
-            <span className="font-mono text-[10px] uppercase tracking-[0.3em] text-dim">Initializing globe…</span>
+            <span className="font-mono text-[10px] uppercase tracking-[0.3em] text-dim">
+              Initializing globe…
+            </span>
           </div>
         </div>
       )}
@@ -386,9 +504,9 @@ export default function Globe3D({ markers, selectedId = null, hoverId = null, on
         <div className="absolute left-1/2 top-1/2 h-[28rem] w-[28rem] -translate-x-1/2 -translate-y-1/2 rounded-full border border-ozone/[0.06]" />
         <motion.div
           className="absolute left-1/2 top-1/2 h-[26rem] w-[26rem] -translate-x-1/2 -translate-y-1/2 rounded-full"
-          style={{ background: "conic-gradient(from 0deg, rgba(237,255,0,0.10), transparent 22%)" }}
+          style={{ background: 'conic-gradient(from 0deg, rgba(237,255,0,0.10), transparent 22%)' }}
           animate={{ rotate: 360 }}
-          transition={{ duration: 8, repeat: Infinity, ease: "linear" }}
+          transition={{ duration: 8, repeat: Infinity, ease: 'linear' }}
         />
         <div className="absolute left-3 top-3 h-4 w-4 border-l border-t border-ozone/40" />
         <div className="absolute right-3 top-3 h-4 w-4 border-r border-t border-ozone/40" />
@@ -400,34 +518,60 @@ export default function Globe3D({ markers, selectedId = null, hoverId = null, on
         <div className="pointer-events-none absolute bottom-12 left-3 flex flex-col gap-1.5">
           <div className="flex items-center gap-2 border border-slate2/70 bg-void/85 px-2.5 py-1.5 font-mono text-[9px] uppercase tracking-[0.2em] text-darkgray backdrop-blur-sm">
             <span className="text-ozone/80">⊙</span>
-            <span>{scrollZoom ? "drag · scroll to zoom · click a marker" : "drag to rotate · click marker · + / − keys zoom"}</span>
+            <span>
+              {scrollZoom
+                ? 'drag · scroll to zoom · click a marker'
+                : 'drag to rotate · click marker · + / − keys zoom'}
+            </span>
           </div>
           {!scrollZoom && (
             <div className="flex items-center gap-1.5 font-mono text-[8px] uppercase tracking-[0.2em] text-dim/60">
-              <span className="rounded-sm border border-slate2/60 px-1 py-0.5 text-silver/70">+</span>
-              <span className="rounded-sm border border-slate2/60 px-1 py-0.5 text-silver/70">−</span>
+              <span className="rounded-sm border border-slate2/60 px-1 py-0.5 text-silver/70">
+                +
+              </span>
+              <span className="rounded-sm border border-slate2/60 px-1 py-0.5 text-silver/70">
+                −
+              </span>
               <span>click globe first, then zoom</span>
             </div>
           )}
         </div>
       )}
       {interactive && (
-      <div className="absolute bottom-12 right-3 z-[1000] flex flex-col gap-1.5">
-        <button onClick={zoomIn} aria-label="Zoom in" className="flex h-9 w-9 items-center justify-center border border-slate2 bg-void/80 font-mono text-darkgray backdrop-blur-md transition-colors hover:border-ozone hover:text-ozone">
-          <ZoomIn className="h-4 w-4" />
-        </button>
-        <button onClick={zoomOut} aria-label="Zoom out" className="flex h-9 w-9 items-center justify-center border border-slate2 bg-void/80 font-mono text-darkgray backdrop-blur-md transition-colors hover:border-ozone hover:text-ozone">
-          <ZoomOut className="h-4 w-4" />
-        </button>
-        <button onClick={resetNorth} aria-label="Reset north" className="flex h-9 w-9 items-center justify-center border border-slate2 bg-void/80 font-mono text-darkgray backdrop-blur-md transition-colors hover:border-ozone hover:text-ozone">
-          <Compass className="h-4 w-4" />
-        </button>
-        <button onClick={() => setSpinning((s) => !s)} aria-label="Auto-spin" className={`flex h-9 w-9 items-center justify-center border bg-void/80 font-mono backdrop-blur-md transition-colors ${spinning ? "border-ozone text-ozone" : "border-slate2 text-darkgray hover:border-ozone hover:text-ozone"}`}>
-          <RotateCw className="h-4 w-4" />
-        </button>
-      </div>
+        <div className="absolute bottom-12 right-3 z-[1000] flex flex-col gap-1.5">
+          <button
+            onClick={zoomIn}
+            aria-label="Zoom in"
+            className="flex h-9 w-9 items-center justify-center border border-slate2 bg-void/80 font-mono text-darkgray backdrop-blur-md transition-colors hover:border-ozone hover:text-ozone"
+          >
+            <ZoomIn className="h-4 w-4" />
+          </button>
+          <button
+            onClick={zoomOut}
+            aria-label="Zoom out"
+            className="flex h-9 w-9 items-center justify-center border border-slate2 bg-void/80 font-mono text-darkgray backdrop-blur-md transition-colors hover:border-ozone hover:text-ozone"
+          >
+            <ZoomOut className="h-4 w-4" />
+          </button>
+          <button
+            onClick={resetNorth}
+            aria-label="Reset north"
+            className="flex h-9 w-9 items-center justify-center border border-slate2 bg-void/80 font-mono text-darkgray backdrop-blur-md transition-colors hover:border-ozone hover:text-ozone"
+          >
+            <Compass className="h-4 w-4" />
+          </button>
+          <button
+            onClick={() => setSpinning((s) => !s)}
+            aria-label="Auto-spin"
+            className={`flex h-9 w-9 items-center justify-center border bg-void/80 font-mono backdrop-blur-md transition-colors ${spinning ? 'border-ozone text-ozone' : 'border-slate2 text-darkgray hover:border-ozone hover:text-ozone'}`}
+          >
+            <RotateCw className="h-4 w-4" />
+          </button>
+        </div>
       )}
-      {ready && mapRef.current && <GlobeLayerManager map={mapRef.current} activeLayers={activeLayers} />}
+      {ready && mapRef.current && (
+        <GlobeLayerManager map={mapRef.current} activeLayers={activeLayers} />
+      )}
       {ready && <GlobeHud map={mapRef.current} />}
       {ready && <FieldStatsHud />}
     </div>

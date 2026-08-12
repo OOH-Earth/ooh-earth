@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useRef, useCallback } from "react";
+import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 
 /* ============================================================================
    OOH EARTH · AD FREE STREETS — "The Guild" Reader
@@ -7,23 +7,21 @@ import React, { useState, useEffect, useMemo, useRef, useCallback } from "react"
    Self-contained: no external UI deps. Drop into Base44 as a page component.
    ========================================================================== */
 
-import { BOOK } from "./guildBookData";
-import Nav from "@/components/ooh/Nav";
-import HorizonProgress from "@/components/ooh/HorizonProgress";
-import Breadcrumbs from "@/components/ooh/Breadcrumbs";
-import SiteFooter from "@/components/ooh/SiteFooter";
+import { BOOK } from './guildBookData';
+import Nav from '@/components/ooh/Nav';
+import HorizonProgress from '@/components/ooh/HorizonProgress';
+import Breadcrumbs from '@/components/ooh/Breadcrumbs';
+import SiteFooter from '@/components/ooh/SiteFooter';
 
 /* ---- working-doc config: hide front matter, open Ch 1..MAX_OPEN -------- */
 const HIDE_FRONT = true;
 const MAX_OPEN = 3;
-const isFrontChapter = (c) => c.kind === "front" || c.part === "FRONT MATTER";
+const isFrontChapter = (c) => c.kind === 'front' || c.part === 'FRONT MATTER';
 const isLockedChapter = (c) => c.num != null && c.num > MAX_OPEN;
 
 /* ---- chapter lists + lookups ------------------------------------------ */
 const RAW = [];
-BOOK.parts.forEach((p) =>
-  p.chapters.forEach((c) => RAW.push({ ...c, part: p.title }))
-);
+BOOK.parts.forEach((p) => p.chapters.forEach((c) => RAW.push({ ...c, part: p.title })));
 const DISPLAY = RAW.filter((c) => !(HIDE_FRONT && isFrontChapter(c)));
 DISPLAY.forEach((c) => {
   c.locked = isLockedChapter(c);
@@ -38,7 +36,7 @@ const mem = {};
 const store = {
   async get(k) {
     try {
-      if (typeof window !== "undefined" && window.storage) {
+      if (typeof window !== 'undefined' && window.storage) {
         const r = await window.storage.get(k);
         return r ? r.value : null;
       }
@@ -47,7 +45,7 @@ const store = {
   },
   async set(k, v) {
     try {
-      if (typeof window !== "undefined" && window.storage) {
+      if (typeof window !== 'undefined' && window.storage) {
         await window.storage.set(k, v);
         return;
       }
@@ -55,7 +53,7 @@ const store = {
     mem[k] = v;
   },
 };
-const PKEY = "oohguild:progress:v1";
+const PKEY = 'oohguild:progress:v1';
 
 /* ---- inline formatting: **bold**  *italic*  _italic_ ------------------- */
 function renderInline(text) {
@@ -70,9 +68,9 @@ function renderInline(text) {
     if (m.index > last) out.push(text.slice(last, m.index));
     if (m[2] !== undefined)
       out.push(
-        <strong key={key++} style={{ color: "var(--paper)", fontWeight: 700 }}>
+        <strong key={key++} style={{ color: 'var(--paper)', fontWeight: 700 }}>
           {m[2]}
-        </strong>
+        </strong>,
       );
     else out.push(<em key={key++}>{m[3] !== undefined ? m[3] : m[4]}</em>);
     last = re.lastIndex;
@@ -82,12 +80,12 @@ function renderInline(text) {
 }
 
 const isLyric = (t) =>
-  t && t.length > 2 && t.trim().startsWith("*") && t.trim().endsWith("*") && !t.includes("**");
+  t && t.length > 2 && t.trim().startsWith('*') && t.trim().endsWith('*') && !t.includes('**');
 
 /* ---- block renderer ---------------------------------------------------- */
 function Block({ b, first }) {
   switch (b.type) {
-    case "h":
+    case 'h':
       if (b.level === 3)
         return (
           <h3 className="rh3">
@@ -97,15 +95,15 @@ function Block({ b, first }) {
         );
       if (b.level === 4) return <h4 className="rh4">{b.text}</h4>;
       return <h5 className="rh5">{b.text}</h5>;
-    case "quote":
+    case 'quote':
       return <blockquote className="rquote">{renderInline(b.text)}</blockquote>;
-    case "hr":
+    case 'hr':
       return (
         <div className="rhr" aria-hidden>
           <span /> <b /> <span />
         </div>
       );
-    case "ul":
+    case 'ul':
       return (
         <ul className="rul">
           {b.items.map((it, i) => (
@@ -113,7 +111,7 @@ function Block({ b, first }) {
           ))}
         </ul>
       );
-    case "ol":
+    case 'ol':
       return (
         <ol className="rol">
           {b.items.map((it, i) => (
@@ -121,13 +119,10 @@ function Block({ b, first }) {
           ))}
         </ol>
       );
-    case "p":
+    case 'p':
     default:
-      if (isLyric(b.text))
-        return <p className="rlyric">{renderInline(b.text)}</p>;
-      return (
-        <p className={"rp" + (first ? " rp-first" : "")}>{renderInline(b.text)}</p>
-      );
+      if (isLyric(b.text)) return <p className="rlyric">{renderInline(b.text)}</p>;
+      return <p className={'rp' + (first ? ' rp-first' : '')}>{renderInline(b.text)}</p>;
   }
 }
 
@@ -136,7 +131,7 @@ function Ring({ pct, size = 34, stroke = 3 }) {
   const r = (size - stroke) / 2;
   const c = 2 * Math.PI * r;
   return (
-    <svg width={size} height={size} style={{ transform: "rotate(-90deg)" }}>
+    <svg width={size} height={size} style={{ transform: 'rotate(-90deg)' }}>
       <circle
         cx={size / 2}
         cy={size / 2}
@@ -155,28 +150,30 @@ function Ring({ pct, size = 34, stroke = 3 }) {
         strokeLinecap="round"
         strokeDasharray={c}
         strokeDashoffset={c * (1 - pct)}
-        style={{ transition: "stroke-dashoffset .5s ease", filter: "drop-shadow(0 0 4px rgba(237,255,0,.5))" }}
+        style={{
+          transition: 'stroke-dashoffset .5s ease',
+          filter: 'drop-shadow(0 0 4px rgba(237,255,0,.5))',
+        }}
       />
     </svg>
   );
 }
 
 /* ---- reticle corner brackets ------------------------------------------ */
-const Brackets = ({ which = "all" }) => {
-  const set =
-    which === "all" ? ["tl", "tr", "bl", "br"] : which.split(" ");
-  return set.map((p) => <span key={p} className={"brk " + p} />);
+const Brackets = ({ which = 'all' }) => {
+  const set = which === 'all' ? ['tl', 'tr', 'bl', 'br'] : which.split(' ');
+  return set.map((p) => <span key={p} className={'brk ' + p} />);
 };
 
 /* ======================================================================== */
 export default function GuildReader() {
-  const [view, setView] = useState("cover"); // cover | reader
+  const [view, setView] = useState('cover'); // cover | reader
   const [activeId, setActiveId] = useState(FLAT[0].id);
   const [readIds, setReadIds] = useState([]);
   const [fontScale, setFontScale] = useState(1);
   const [toc, setToc] = useState(false); // mobile drawer
   const [search, setSearch] = useState(false);
-  const [q, setQ] = useState("");
+  const [q, setQ] = useState('');
   const [loaded, setLoaded] = useState(false);
   const scrollRef = useRef(null);
 
@@ -206,7 +203,7 @@ export default function GuildReader() {
       };
       store.set(PKEY, JSON.stringify(payload));
     },
-    [readIds, activeId, fontScale]
+    [readIds, activeId, fontScale],
   );
 
   const markRead = useCallback(
@@ -214,29 +211,26 @@ export default function GuildReader() {
       setReadIds((prev) => {
         if (prev.includes(id)) return prev;
         const next = [...prev, id];
-        store.set(
-          PKEY,
-          JSON.stringify({ readIds: next, lastId: id, fontScale })
-        );
+        store.set(PKEY, JSON.stringify({ readIds: next, lastId: id, fontScale }));
         return next;
       });
     },
-    [fontScale]
+    [fontScale],
   );
 
   const goto = useCallback(
     (id) => {
       setActiveId(id);
-      setView("reader");
+      setView('reader');
       setToc(false);
       setSearch(false);
       persist({ lastId: id });
       requestAnimationFrame(() => {
         if (scrollRef.current) scrollRef.current.scrollTop = 0;
-        if (typeof window !== "undefined") window.scrollTo(0, 0);
+        if (typeof window !== 'undefined') window.scrollTo(0, 0);
       });
     },
-    [persist]
+    [persist],
   );
 
   const active = BY_ID[activeId];
@@ -248,7 +242,7 @@ export default function GuildReader() {
 
   /* mark active read on mount / change */
   useEffect(() => {
-    if (view === "reader" && active) {
+    if (view === 'reader' && active) {
       const t = setTimeout(() => markRead(active.id), 900);
       return () => clearTimeout(t);
     }
@@ -269,19 +263,19 @@ export default function GuildReader() {
     const out = [];
     for (const c of FLAT) {
       for (const b of c.blocks) {
-        const t = (b.text || (b.items && b.items.join(" ")) || "").toLowerCase();
+        const t = (b.text || (b.items && b.items.join(' ')) || '').toLowerCase();
         const at = t.indexOf(term);
         if (at !== -1) {
-          const src = b.text || (b.items && b.items.join(" ")) || "";
+          const src = b.text || (b.items && b.items.join(' ')) || '';
           const start = Math.max(0, at - 40);
           out.push({
             id: c.id,
             title: c.title,
             part: c.part,
             snippet:
-              (start > 0 ? "…" : "") +
-              src.slice(start, at + term.length + 60).replace(/\*/g, "") +
-              "…",
+              (start > 0 ? '…' : '') +
+              src.slice(start, at + term.length + 60).replace(/\*/g, '') +
+              '…',
           });
           break;
         }
@@ -310,9 +304,7 @@ export default function GuildReader() {
             <div className="ca-sub">
               THE <em>GUILD</em>
             </div>
-            <div className="ca-meta">
-              A field manual for creative resistance · Est. 2026
-            </div>
+            <div className="ca-meta">A field manual for creative resistance · Est. 2026</div>
             <div className="ca-coord">13.7563° N · 100.5018° E</div>
           </div>
         </div>
@@ -325,9 +317,8 @@ export default function GuildReader() {
             The working <em>file.</em>
           </h1>
           <p className="cs-lede">
-            Live agency draft of the field manual. Chapters 1–3 are open for
-            review; the rest of the manuscript is in review and reveals as it
-            clears. Notes welcome.
+            Live agency draft of the field manual. Chapters 1–3 are open for review; the rest of the
+            manuscript is in review and reveals as it clears. Notes welcome.
           </p>
 
           <div className="cs-stats">
@@ -345,22 +336,17 @@ export default function GuildReader() {
             </div>
             <div className="stat">
               <b>
-                {Math.floor(BOOK.totalMinutes / 60)}h{" "}
-                {BOOK.totalMinutes % 60}m
+                {Math.floor(BOOK.totalMinutes / 60)}h {BOOK.totalMinutes % 60}m
               </b>
               <span>Full read</span>
             </div>
           </div>
 
           <div className="cs-cta">
-            <button
-              className="btn-primary"
-              onClick={() => goto(started ? activeId : FLAT[0].id)}
-            >
+            <button className="btn-primary" onClick={() => goto(started ? activeId : FLAT[0].id)}>
               {started ? (
                 <>
-                  Continue —{" "}
-                  {active.num ? "Ch " + active.num : active.title}{" "}
+                  Continue — {active.num ? 'Ch ' + active.num : active.title}{' '}
                   <span className="arr">→</span>
                 </>
               ) : (
@@ -378,8 +364,7 @@ export default function GuildReader() {
             <div className="cs-progress">
               <Ring pct={pct} />
               <span>
-                {Math.round(pct * 100)}% · {readIds.length}/{FLAT.length}{" "}
-                chapters read
+                {Math.round(pct * 100)}% · {readIds.length}/{FLAT.length} chapters read
               </span>
             </div>
           )}
@@ -389,10 +374,7 @@ export default function GuildReader() {
               <span className="tick" /> Working file
             </div>
             <div className="cs-tiles">
-              <button
-                className="tile active"
-                onClick={() => goto(started ? activeId : FLAT[0].id)}
-              >
+              <button className="tile active" onClick={() => goto(started ? activeId : FLAT[0].id)}>
                 <div className="tile-k">Read now</div>
                 <div className="tile-v">Ch 1–3</div>
                 <div className="tile-note">Open for review →</div>
@@ -402,10 +384,7 @@ export default function GuildReader() {
                 <div className="tile-v">In review</div>
                 <div className="tile-note">Reveals as it clears</div>
               </div>
-              <a
-                className="tile buy"
-                href="mailto:hello@ooh.earth?subject=The%20Guild%20notes"
-              >
+              <a className="tile buy" href="mailto:hello@ooh.earth?subject=The%20Guild%20notes">
                 <div className="tile-k">Feedback</div>
                 <div className="tile-v">Send notes</div>
                 <div className="tile-note">hello@ooh.earth →</div>
@@ -417,8 +396,8 @@ export default function GuildReader() {
               <span className="pill ghost">Draft · v0.9</span>
             </div>
             <p className="cs-fine">
-              Internal agency draft — not for public circulation yet. Chapters
-              open as they clear review.
+              Internal agency draft — not for public circulation yet. Chapters open as they clear
+              review.
             </p>
           </div>
         </div>
@@ -430,41 +409,33 @@ export default function GuildReader() {
           <span className="tick" /> Contents
         </div>
         {BOOK.parts
-          .filter((p) => p.title !== "FRONT MATTER")
+          .filter((p) => p.title !== 'FRONT MATTER')
           .map((p) => (
-          <div className="ct-part" key={p.title}>
-            <div className="ct-part-name">{p.title}</div>
-            {p.chapters.map((c) => {
-              const locked = c.num != null && c.num > MAX_OPEN;
-              if (locked)
+            <div className="ct-part" key={p.title}>
+              <div className="ct-part-name">{p.title}</div>
+              {p.chapters.map((c) => {
+                const locked = c.num != null && c.num > MAX_OPEN;
+                if (locked)
+                  return (
+                    <div className="ct-row locked" key={c.id}>
+                      <span className="ct-num">{String(c.num).padStart(2, '0')}</span>
+                      <span className="ct-title">{c.title}</span>
+                      <span className="ct-min lock">Reveal soon</span>
+                    </div>
+                  );
                 return (
-                  <div className="ct-row locked" key={c.id}>
-                    <span className="ct-num">
-                      {String(c.num).padStart(2, "0")}
-                    </span>
+                  <button className="ct-row" key={c.id} onClick={() => goto(c.id)}>
+                    <span className="ct-num">{c.num ? String(c.num).padStart(2, '0') : '—'}</span>
                     <span className="ct-title">{c.title}</span>
-                    <span className="ct-min lock">Reveal soon</span>
-                  </div>
+                    <span className="ct-min">
+                      {readIds.includes(c.id) && <i className="dot-read" />}
+                      {c.minutes}m
+                    </span>
+                  </button>
                 );
-              return (
-                <button
-                  className="ct-row"
-                  key={c.id}
-                  onClick={() => goto(c.id)}
-                >
-                  <span className="ct-num">
-                    {c.num ? String(c.num).padStart(2, "0") : "—"}
-                  </span>
-                  <span className="ct-title">{c.title}</span>
-                  <span className="ct-min">
-                    {readIds.includes(c.id) && <i className="dot-read" />}
-                    {c.minutes}m
-                  </span>
-                </button>
-              );
-            })}
-          </div>
-        ))}
+              })}
+            </div>
+          ))}
       </div>
 
       <div className="cover-foot">
@@ -477,9 +448,9 @@ export default function GuildReader() {
      READER VIEW
      ===================================================================== */
   const Sidebar = (
-    <aside className={"sidebar" + (toc ? " open" : "")}>
+    <aside className={'sidebar' + (toc ? ' open' : '')}>
       <div className="sb-top">
-        <button className="sb-home" onClick={() => setView("cover")}>
+        <button className="sb-home" onClick={() => setView('cover')}>
           ← Cover
         </button>
         <button className="sb-x" onClick={() => setToc(false)}>
@@ -488,43 +459,39 @@ export default function GuildReader() {
       </div>
       <div className="sb-scroll">
         {BOOK.parts
-          .filter((p) => p.title !== "FRONT MATTER")
+          .filter((p) => p.title !== 'FRONT MATTER')
           .map((p) => (
-          <div className="sb-part" key={p.title}>
-            <div className="sb-part-name">{p.title}</div>
-            {p.chapters.map((c) => {
-              const locked = c.num != null && c.num > MAX_OPEN;
-              if (locked)
+            <div className="sb-part" key={p.title}>
+              <div className="sb-part-name">{p.title}</div>
+              {p.chapters.map((c) => {
+                const locked = c.num != null && c.num > MAX_OPEN;
+                if (locked)
+                  return (
+                    <div className="sb-row locked" key={c.id}>
+                      <span className="sb-num">{String(c.num).padStart(2, '0')}</span>
+                      <span className="sb-title">{c.title}</span>
+                      <span className="sb-min lock">soon</span>
+                    </div>
+                  );
+                const on = c.id === activeId;
+                const read = readIds.includes(c.id);
                 return (
-                  <div className="sb-row locked" key={c.id}>
-                    <span className="sb-num">
-                      {String(c.num).padStart(2, "0")}
-                    </span>
+                  <button
+                    key={c.id}
+                    className={'sb-row' + (on ? ' on' : '')}
+                    onClick={() => goto(c.id)}
+                  >
+                    <span className="sb-num">{c.num ? String(c.num).padStart(2, '0') : '•'}</span>
                     <span className="sb-title">{c.title}</span>
-                    <span className="sb-min lock">soon</span>
-                  </div>
+                    <span className="sb-min">
+                      {read && <i className="dot-read" />}
+                      {c.minutes}m
+                    </span>
+                  </button>
                 );
-              const on = c.id === activeId;
-              const read = readIds.includes(c.id);
-              return (
-                <button
-                  key={c.id}
-                  className={"sb-row" + (on ? " on" : "")}
-                  onClick={() => goto(c.id)}
-                >
-                  <span className="sb-num">
-                    {c.num ? String(c.num).padStart(2, "0") : "•"}
-                  </span>
-                  <span className="sb-title">{c.title}</span>
-                  <span className="sb-min">
-                    {read && <i className="dot-read" />}
-                    {c.minutes}m
-                  </span>
-                </button>
-              );
-            })}
-          </div>
-        ))}
+              })}
+            </div>
+          ))}
       </div>
     </aside>
   );
@@ -539,7 +506,7 @@ export default function GuildReader() {
           <button className="tb-menu" onClick={() => setToc(true)}>
             ☰
           </button>
-          <button className="tb-brand" onClick={() => setView("cover")}>
+          <button className="tb-brand" onClick={() => setView('cover')}>
             <span className="tb-tick" />
             THE GUILD
           </button>
@@ -557,33 +524,24 @@ export default function GuildReader() {
           </div>
         </header>
 
-        <div className="progline" style={{ width: pct * 100 + "%" }} />
+        <div className="progline" style={{ width: pct * 100 + '%' }} />
 
         <div className="stage-scroll" ref={scrollRef}>
           <Brackets which="tl tr" />
-          <article
-            className="rdr"
-            style={{ fontSize: 19 * fontScale + "px" }}
-            key={active.id}
-          >
+          <article className="rdr" style={{ fontSize: 19 * fontScale + 'px' }} key={active.id}>
             <div className="ch-head">
               <div className="ch-part">
                 <span className="tick" /> {active.part}
               </div>
               <h2 className="ch-title">
                 {active.num != null && (
-                  <span className="ch-no">
-                    {String(active.num).padStart(2, "0")}
-                  </span>
+                  <span className="ch-no">{String(active.num).padStart(2, '0')}</span>
                 )}
                 {active.title}
               </h2>
-              {active.byline && (
-                <div className="ch-byline">{active.byline}</div>
-              )}
+              {active.byline && <div className="ch-byline">{active.byline}</div>}
               <div className="ch-time">
-                {active.words.toLocaleString()} words · {active.minutes} min
-                read
+                {active.words.toLocaleString()} words · {active.minutes} min read
               </div>
             </div>
 
@@ -591,10 +549,7 @@ export default function GuildReader() {
               <Block
                 key={i}
                 b={b}
-                first={
-                  b.type === "p" &&
-                  !active.blocks.slice(0, i).some((x) => x.type === "p")
-                }
+                first={b.type === 'p' && !active.blocks.slice(0, i).some((x) => x.type === 'p')}
               />
             ))}
 
@@ -613,7 +568,7 @@ export default function GuildReader() {
                   <span className="nav-name">{next.title}</span>
                 </button>
               ) : (
-                <button className="nav-btn right" onClick={() => setView("cover")}>
+                <button className="nav-btn right" onClick={() => setView('cover')}>
                   <span className="nav-dir">Fin →</span>
                   <span className="nav-name">Back to cover</span>
                 </button>
@@ -621,8 +576,7 @@ export default function GuildReader() {
             </nav>
 
             <div className="rdr-foot">
-              ooh<span className="dot">.</span>earth · The Meaning
-              Transformation Guild
+              ooh<span className="dot">.</span>earth · The Meaning Transformation Guild
             </div>
           </article>
         </div>
@@ -642,9 +596,7 @@ export default function GuildReader() {
               <button onClick={() => setSearch(false)}>ESC</button>
             </div>
             <div className="search-results">
-              {q.trim().length < 3 && (
-                <div className="s-hint">Type at least 3 characters.</div>
-              )}
+              {q.trim().length < 3 && <div className="s-hint">Type at least 3 characters.</div>}
               {q.trim().length >= 3 && results.length === 0 && (
                 <div className="s-hint">No matches.</div>
               )}
@@ -675,10 +627,13 @@ export default function GuildReader() {
       <HorizonProgress />
       <Nav />
       <div className="page-top">
-        <Breadcrumbs items={[{ label: "Lab", to: "/lab" }, { label: "The Guild · Book" }]} className="mx-auto mb-4 max-w-[1220px] px-6" />
+        <Breadcrumbs
+          items={[{ label: 'Lab', to: '/lab' }, { label: 'The Guild · Book' }]}
+          className="mx-auto mb-4 max-w-[1220px] px-6"
+        />
         <div className="guild-root">
           <style>{CSS}</style>
-          {view === "cover" ? Cover : Reader}
+          {view === 'cover' ? Cover : Reader}
         </div>
       </div>
       <SiteFooter />

@@ -1,4 +1,4 @@
-import { useRef, useEffect, useState, useCallback } from "react";
+import { useRef, useEffect, useState, useCallback } from 'react';
 
 /**
  * DraggableTicker — a horizontally auto-scrolling strip that can be
@@ -10,7 +10,7 @@ import { useRef, useEffect, useState, useCallback } from "react";
  *  - speed:    px per frame at 60fps (default 0.4 ≈ 24px/s)
  *  - className: extra classes on the overflow container
  */
-export default function DraggableTicker({ children, speed = 0.4, className = "" }) {
+export default function DraggableTicker({ children, speed = 0.4, className = '' }) {
   const trackRef = useRef(null);
   const offsetRef = useRef(0);
   const dragRef = useRef({ dragging: false, startX: 0, startOffset: 0 });
@@ -18,7 +18,9 @@ export default function DraggableTicker({ children, speed = 0.4, className = "" 
   const [slow, setSlow] = useState(false);
   const slowRef = useRef(false);
 
-  useEffect(() => { slowRef.current = slow; }, [slow]);
+  useEffect(() => {
+    slowRef.current = slow;
+  }, [slow]);
 
   useEffect(() => {
     let last = performance.now();
@@ -45,7 +47,11 @@ export default function DraggableTicker({ children, speed = 0.4, className = "" 
   const onPointerDown = useCallback((e) => {
     dragRef.current = { dragging: true, startX: e.clientX, startOffset: offsetRef.current };
     setSlow(true);
-    try { e.currentTarget.setPointerCapture(e.pointerId); } catch { /* noop */ }
+    try {
+      e.currentTarget.setPointerCapture(e.pointerId);
+    } catch {
+      /* noop */
+    }
   }, []);
 
   const onPointerMove = useCallback((e) => {
@@ -67,21 +73,31 @@ export default function DraggableTicker({ children, speed = 0.4, className = "" 
   const onPointerUp = useCallback((e) => {
     dragRef.current.dragging = false;
     setSlow(false);
-    try { e.currentTarget.releasePointerCapture(e.pointerId); } catch { /* noop */ }
+    try {
+      e.currentTarget.releasePointerCapture(e.pointerId);
+    } catch {
+      /* noop */
+    }
   }, []);
 
   return (
     <div
       className={`relative flex flex-1 items-center overflow-hidden cursor-grab active:cursor-grabbing select-none ${className}`}
-      style={{ touchAction: "pan-y" }}
+      style={{ touchAction: 'pan-y' }}
       onMouseEnter={() => setSlow(true)}
-      onMouseLeave={() => { if (!dragRef.current.dragging) setSlow(false); }}
+      onMouseLeave={() => {
+        if (!dragRef.current.dragging) setSlow(false);
+      }}
       onPointerDown={onPointerDown}
       onPointerMove={onPointerMove}
       onPointerUp={onPointerUp}
       onPointerCancel={onPointerUp}
     >
-      <div ref={trackRef} className="flex w-max shrink-0 items-center" style={{ willChange: "transform" }}>
+      <div
+        ref={trackRef}
+        className="flex w-max shrink-0 items-center"
+        style={{ willChange: 'transform' }}
+      >
         <div className="flex shrink-0 items-center">{children}</div>
         <div className="flex shrink-0 items-center">{children}</div>
       </div>

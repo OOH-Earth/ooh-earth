@@ -1,7 +1,7 @@
-name: "🐛 Bug report"
-description: "Something in the app is broken or behaving wrong"
-title: "[Bug]: "
-labels: ["bug"]
+name: '🐛 Bug report'
+description: 'Something in the app is broken or behaving wrong'
+title: '[Bug]: '
+labels: ['bug']
 body:
   - type: markdown
     attributes:
@@ -12,7 +12,7 @@ body:
     attributes:
       label: What happened?
       description: What went wrong, and what did you expect instead?
-      placeholder: "When I tried to add a sighting, the map marker landed in the wrong place…"
+      placeholder: 'When I tried to add a sighting, the map marker landed in the wrong place…'
     validations:
       required: true
   - type: textarea
@@ -44,7 +44,7 @@ body:
     id: environment
     attributes:
       label: Device & browser
-      placeholder: "iPhone 15, Safari / Windows, Chrome 126"
+      placeholder: 'iPhone 15, Safari / Windows, Chrome 126'
   - type: textarea
     id: extra
     attributes:

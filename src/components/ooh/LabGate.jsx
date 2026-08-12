@@ -1,6 +1,6 @@
-import { createContext, useContext, useState, useCallback } from "react";
-import LabSignupModal from "@/components/ooh/LabSignupModal";
-import { useAuth } from "@/lib/AuthContext";
+import { createContext, useContext, useState, useCallback } from 'react';
+import LabSignupModal from '@/components/ooh/LabSignupModal';
+import { useAuth } from '@/lib/AuthContext';
 
 // Lab gate — lab pages are publicly viewable, but "create/act" actions
 // (export, generate, mint) fire this gate. If the visitor isn't authed,
@@ -10,7 +10,7 @@ const LabGateContext = createContext(null);
 export function LabGateProvider({ children }) {
   const { isAuthenticated } = useAuth();
   const [open, setOpen] = useState(false);
-  const [action, setAction] = useState("");
+  const [action, setAction] = useState('');
 
   const gate = useCallback(
     (actionLabel) => {
@@ -19,7 +19,7 @@ export function LabGateProvider({ children }) {
       setOpen(true);
       return false;
     },
-    [isAuthenticated]
+    [isAuthenticated],
   );
 
   return (
@@ -32,6 +32,6 @@ export function LabGateProvider({ children }) {
 
 export function useLabGate() {
   const ctx = useContext(LabGateContext);
-  if (!ctx) throw new Error("useLabGate must be used within LabGateProvider");
+  if (!ctx) throw new Error('useLabGate must be used within LabGateProvider');
   return ctx;
 }

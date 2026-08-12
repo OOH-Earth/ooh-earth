@@ -8,18 +8,18 @@ import {
   BusFront,
   MapPin,
   BadgeCheck,
-} from "lucide-react";
+} from 'lucide-react';
 
 // Category → icon + accent for placeholders
 export const TYPE_META = {
-  billboard: { label: "Billboard", Icon: Megaphone, accent: "#EDFF00" },
-  digital: { label: "Digital", Icon: Monitor, accent: "#EDFF00" },
-  painted: { label: "Painted", Icon: Brush, accent: "#FF5C00" },
-  projection: { label: "Projection", Icon: Projector, accent: "#FF5C00" },
-  sticker: { label: "Sticker", Icon: Sticker, accent: "#EDFF00" },
-  mural: { label: "Mural", Icon: Frame, accent: "#FF5C00" },
-  transit: { label: "Transit", Icon: BusFront, accent: "#EDFF00" },
-  other: { label: "Field", Icon: MapPin, accent: "#B2B2B2" },
+  billboard: { label: 'Billboard', Icon: Megaphone, accent: '#EDFF00' },
+  digital: { label: 'Digital', Icon: Monitor, accent: '#EDFF00' },
+  painted: { label: 'Painted', Icon: Brush, accent: '#FF5C00' },
+  projection: { label: 'Projection', Icon: Projector, accent: '#FF5C00' },
+  sticker: { label: 'Sticker', Icon: Sticker, accent: '#EDFF00' },
+  mural: { label: 'Mural', Icon: Frame, accent: '#FF5C00' },
+  transit: { label: 'Transit', Icon: BusFront, accent: '#EDFF00' },
+  other: { label: 'Field', Icon: MapPin, accent: '#B2B2B2' },
 };
 
 export const metaFor = (type) => TYPE_META[type] || TYPE_META.other;
@@ -38,12 +38,12 @@ const GLYPH = {
 
 // Escape HTML entities for safe interpolation into raw HTML strings
 const esc = (s) =>
-  String(s ?? "")
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#39;");
+  String(s ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
 
 // HTML string for popup contexts — real photo w/ CONFIRMED badge, else glyph placeholder
 export function thumbHTML(m) {
@@ -56,7 +56,10 @@ export function thumbHTML(m) {
     </div>`;
   }
   const glyph = (GLYPH[m.type] || GLYPH.other).replace(/\{A\}/g, accent);
-  const leadPill = m.status !== "verified" ? `<span style="position:absolute;left:4px;top:4px;border:1px solid rgba(255,92,0,0.5);background:rgba(10,10,10,0.7);padding:1px 4px;font-size:7px;font-weight:700;text-transform:uppercase;letter-spacing:0.2em;color:#FF5C00;font-family:'Inter Tight',sans-serif">Lead</span>` : "";
+  const leadPill =
+    m.status !== 'verified'
+      ? `<span style="position:absolute;left:4px;top:4px;border:1px solid rgba(255,92,0,0.5);background:rgba(10,10,10,0.7);padding:1px 4px;font-size:7px;font-weight:700;text-transform:uppercase;letter-spacing:0.2em;color:#FF5C00;font-family:'Inter Tight',sans-serif">Lead</span>`
+      : '';
   return `<div style="position:relative;width:100%;height:110px;background:#0a0a0a;background-image:linear-gradient(rgba(241,241,241,0.04) 1px,transparent 1px),linear-gradient(90deg,rgba(241,241,241,0.04) 1px,transparent 1px);background-size:14px 14px;display:flex;align-items:center;justify-content:center">
     ${leadPill}
     <svg viewBox="0 0 32 32" width="40" height="40" fill="none">${glyph}</svg>
@@ -65,7 +68,7 @@ export function thumbHTML(m) {
 }
 
 // React thumbnail — real photo w/ CONFIRMED badge, else designed category glyph
-export default function LocationThumb({ m, className = "", imgClassName = "" }) {
+export default function LocationThumb({ m, className = '', imgClassName = '' }) {
   const { Icon, accent } = metaFor(m.type);
   if (m.image) {
     return (
@@ -78,10 +81,12 @@ export default function LocationThumb({ m, className = "", imgClassName = "" }) 
   return (
     <div
       className={`relative flex shrink-0 items-center justify-center grid-bg ${className}`}
-      style={{ backgroundColor: "#0a0a0a" }}
+      style={{ backgroundColor: '#0a0a0a' }}
     >
-      {m.status !== "verified" && (
-        <span className="absolute left-1 top-1 border border-flare/50 bg-void/70 px-1 py-0.5 font-mono text-[6px] font-bold uppercase tracking-[0.2em] text-flare">Lead</span>
+      {m.status !== 'verified' && (
+        <span className="absolute left-1 top-1 border border-flare/50 bg-void/70 px-1 py-0.5 font-mono text-[6px] font-bold uppercase tracking-[0.2em] text-flare">
+          Lead
+        </span>
       )}
       <Icon className="h-6 w-6" style={{ color: accent }} strokeWidth={1.5} />
       <span

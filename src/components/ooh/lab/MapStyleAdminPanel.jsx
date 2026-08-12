@@ -1,8 +1,8 @@
-import { useEffect, useState } from "react";
-import { base44 } from "@/api/base44Client";
-import { MAP_STYLES, MAP_STYLE_DEFAULT_KEY } from "@/lib/mapStyleContext";
-import { useToast } from "@/components/ui/use-toast";
-import { Loader2, Map as MapIcon } from "lucide-react";
+import { useEffect, useState } from 'react';
+import { base44 } from '@/api/base44Client';
+import { MAP_STYLES, MAP_STYLE_DEFAULT_KEY } from '@/lib/mapStyleContext';
+import { useToast } from '@/components/ui/use-toast';
+import { Loader2, Map as MapIcon } from 'lucide-react';
 
 export default function MapStyleAdminPanel() {
   const { toast } = useToast();
@@ -19,19 +19,21 @@ export default function MapStyleAdminPanel() {
         if (!active) return;
         if (rec) {
           setRecId(rec.id);
-          setCurrent(rec.value || "dark");
+          setCurrent(rec.value || 'dark');
           // Dedup stale duplicate settings rows (keep the first / canonical)
           if (rows.length > 1) {
             rows.slice(1).forEach((r) => base44.entities.SiteSetting.delete(r.id).catch(() => {}));
           }
         } else {
-          setCurrent("dark");
+          setCurrent('dark');
         }
       } catch {
-        if (active) setCurrent("dark");
+        if (active) setCurrent('dark');
       }
     })();
-    return () => { active = false; };
+    return () => {
+      active = false;
+    };
   }, []);
 
   const pick = async (id) => {
@@ -41,12 +43,15 @@ export default function MapStyleAdminPanel() {
       if (recId) {
         await base44.entities.SiteSetting.update(recId, { value: id });
       } else {
-        const rec = await base44.entities.SiteSetting.create({ key: MAP_STYLE_DEFAULT_KEY, value: id });
+        const rec = await base44.entities.SiteSetting.create({
+          key: MAP_STYLE_DEFAULT_KEY,
+          value: id,
+        });
         if (rec?.id) setRecId(rec.id);
       }
-      toast({ title: "Map default saved" });
+      toast({ title: 'Map default saved' });
     } catch {
-      toast({ title: "Save failed", variant: "destructive" });
+      toast({ title: 'Save failed', variant: 'destructive' });
     } finally {
       setSaving(false);
     }
@@ -72,9 +77,9 @@ export default function MapStyleAdminPanel() {
             <button
               key={s.id}
               onClick={() => pick(s.id)}
-              className={`flex items-center gap-1.5 border px-2.5 py-1 font-mono text-[9px] font-bold uppercase tracking-[0.15em] transition-all ${on ? "border-ozone bg-ozone text-void" : "border-slate2 text-silver/50 hover:border-silver/60"}`}
+              className={`flex items-center gap-1.5 border px-2.5 py-1 font-mono text-[9px] font-bold uppercase tracking-[0.15em] transition-all ${on ? 'border-ozone bg-ozone text-void' : 'border-slate2 text-silver/50 hover:border-silver/60'}`}
             >
-              <span className={`h-1.5 w-1.5 ${on ? "bg-void/70" : "bg-silver/30"}`} />
+              <span className={`h-1.5 w-1.5 ${on ? 'bg-void/70' : 'bg-silver/30'}`} />
               {s.label}
             </button>
           );
@@ -82,7 +87,8 @@ export default function MapStyleAdminPanel() {
         {saving && <Loader2 className="h-3.5 w-3.5 animate-spin text-ozone" />}
       </div>
       <p className="mt-2 font-mono text-[9px] uppercase tracking-[0.15em] text-silver/40">
-        Sets the default map tile style for every visitor · users can still override locally from the map switcher
+        Sets the default map tile style for every visitor · users can still override locally from
+        the map switcher
       </p>
     </div>
   );

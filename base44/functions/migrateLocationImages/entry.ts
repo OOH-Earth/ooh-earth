@@ -4,17 +4,17 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
 // still pointing at the legacy ooh.earth WordPress host into the app's own
 // media storage. Idempotent — only touches records whose image_url still
 // contains "ooh.earth", so partial runs / re-runs are safe.
-export default async function(req) {
+export default async function (req) {
   try {
     const base44 = createClientFromRequest(req);
     const Loc = base44.asServiceRole.entities.Location;
     const Core = base44.asServiceRole.integrations.Core;
 
     // 1. Fetch every Location record still hotlinking ooh.earth
-    const broken = await Loc.filter({ image_url: { $regex: "ooh.earth" } }, "-created_date", 5000);
+    const broken = await Loc.filter({ image_url: { $regex: 'ooh.earth' } }, '-created_date', 5000);
 
     // 2. Unique legacy URLs
-    const uniqueUrls = [...new Set(broken.map(r => r.image_url).filter(Boolean))];
+    const uniqueUrls = [...new Set(broken.map((r) => r.image_url).filter(Boolean))];
 
     const migrated = [];
     const errors = [];
@@ -23,10 +23,13 @@ export default async function(req) {
     for (const oldUrl of uniqueUrls) {
       try {
         const r = await fetch(oldUrl);
-        if (!r.ok) { errors.push({ url: oldUrl, error: "HTTP " + r.status }); continue; }
+        if (!r.ok) {
+          errors.push({ url: oldUrl, error: 'HTTP ' + r.status });
+          continue;
+        }
         const buf = await r.arrayBuffer();
-        const ct = r.headers.get("content-type") || "image/jpeg";
-        const name = oldUrl.split("/").pop();
+        const ct = r.headers.get('content-type') || 'image/jpeg';
+        const name = oldUrl.split('/').pop();
         const file = new File([buf], name, { type: ct });
         const res = await Core.UploadFile({ file });
         const newUrl = res.file_url;
@@ -43,7 +46,7 @@ export default async function(req) {
       migratedCount: migrated.length,
       errorCount: errors.length,
       migrated,
-      errors
+      errors,
     });
   } catch (error) {
     return Response.json({ error: error.message, stack: error.stack }, { status: 500 });

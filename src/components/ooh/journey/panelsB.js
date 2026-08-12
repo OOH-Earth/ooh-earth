@@ -2,7 +2,6 @@
 // Plain HTML strings injected under the scoped .jm-root wrapper.
 
 export const PANELS_B = {
-
   ambassador: `
     <div class="jm-phead">
       <div class="jm-badge"><span class="jm-bk tl"></span><span class="jm-bk br"></span>&#127942;</div>

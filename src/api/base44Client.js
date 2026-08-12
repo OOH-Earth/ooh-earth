@@ -11,7 +11,7 @@ export const base44 = createClient({
   functionsVersion,
   serverUrl: '',
   requiresAuth: false,
-  appBaseUrl
+  appBaseUrl,
 });
 
 // Page through the Location entity so counts and maps reflect the true total

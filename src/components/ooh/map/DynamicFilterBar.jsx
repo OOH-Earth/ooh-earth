@@ -1,23 +1,23 @@
-import { Fragment, useMemo } from "react";
-import { useMushroomData } from "./layers/useMushroomData";
-import { useFloraData } from "./layers/useFloraData";
-import { useWarZoneData } from "./layers/useWarZoneData";
-import { RIVER_SOURCES, POLLUTION_META } from "./layers/riverData";
+import { Fragment, useMemo } from 'react';
+import { useMushroomData } from './layers/useMushroomData';
+import { useFloraData } from './layers/useFloraData';
+import { useWarZoneData } from './layers/useWarZoneData';
+import { RIVER_SOURCES, POLLUTION_META } from './layers/riverData';
 
 const ADS_TYPES = [
-  { value: "billboard", label: "Billboard" },
-  { value: "digital", label: "Digital" },
-  { value: "painted", label: "Painted" },
-  { value: "transit", label: "Transit" },
-  { value: "projection", label: "Projection" },
-  { value: "sticker", label: "Sticker" },
-  { value: "mural", label: "Mural" },
-  { value: "other", label: "Other" },
+  { value: 'billboard', label: 'Billboard' },
+  { value: 'digital', label: 'Digital' },
+  { value: 'painted', label: 'Painted' },
+  { value: 'transit', label: 'Transit' },
+  { value: 'projection', label: 'Projection' },
+  { value: 'sticker', label: 'Sticker' },
+  { value: 'mural', label: 'Mural' },
+  { value: 'other', label: 'Other' },
 ];
 
 function adsTags(counts, total) {
   return [
-    { value: "all", label: "All", count: total },
+    { value: 'all', label: 'All', count: total },
     ...ADS_TYPES.filter((t) => (counts[t.value] || 0) > 0).map((t) => ({
       ...t,
       count: counts[t.value],
@@ -31,7 +31,7 @@ function riverTags() {
     tally[s.pollution] = (tally[s.pollution] || 0) + 1;
   });
   return [
-    { value: "all", label: "All", count: RIVER_SOURCES.length },
+    { value: 'all', label: 'All', count: RIVER_SOURCES.length },
     ...Object.keys(POLLUTION_META)
       .map((key) => ({ value: key, label: POLLUTION_META[key].label, count: tally[key] || 0 }))
       .filter((t) => t.count > 0),
@@ -41,11 +41,11 @@ function riverTags() {
 function mushroomTags(spots) {
   const tally = {};
   spots.forEach((s) => {
-    const r = s.region || "Unknown";
+    const r = s.region || 'Unknown';
     tally[r] = (tally[r] || 0) + 1;
   });
   return [
-    { value: "all", label: "All", count: spots.length },
+    { value: 'all', label: 'All', count: spots.length },
     ...Object.entries(tally)
       .sort((a, b) => b[1] - a[1])
       .slice(0, 6)
@@ -56,11 +56,11 @@ function mushroomTags(spots) {
 function floraTags(spots) {
   const tally = {};
   spots.forEach((s) => {
-    const e = s.ecosystem || "Unknown";
+    const e = s.ecosystem || 'Unknown';
     tally[e] = (tally[e] || 0) + 1;
   });
   return [
-    { value: "all", label: "All", count: spots.length },
+    { value: 'all', label: 'All', count: spots.length },
     ...Object.entries(tally)
       .sort((a, b) => b[1] - a[1])
       .slice(0, 6)
@@ -69,43 +69,60 @@ function floraTags(spots) {
 }
 
 function warTags(zones) {
-  const critical = zones.filter((z) => z.severity === "critical").length;
-  const advisory = zones.filter((z) => z.severity !== "critical").length;
+  const critical = zones.filter((z) => z.severity === 'critical').length;
+  const advisory = zones.filter((z) => z.severity !== 'critical').length;
   return [
-    { value: "all", label: "All", count: zones.length },
-    { value: "critical", label: "Critical", count: critical },
-    { value: "advisory", label: "Advisory", count: advisory },
+    { value: 'all', label: 'All', count: zones.length },
+    { value: 'critical', label: 'Critical', count: critical },
+    { value: 'advisory', label: 'Advisory', count: advisory },
   ];
 }
 
 const LAYER_ACCENT = {
-  ads: "#EDFF00",
-  adbusting: "#FF5C00",
-  graffiti: "#FF5C00",
-  rivers: "#39FF14",
-  mushrooms: "#FF5C00",
-  flora: "#39FF14",
-  war: "#FF0040",
+  ads: '#EDFF00',
+  adbusting: '#FF5C00',
+  graffiti: '#FF5C00',
+  rivers: '#39FF14',
+  mushrooms: '#FF5C00',
+  flora: '#39FF14',
+  war: '#FF0040',
 };
 
-export default function DynamicFilterBar({ typeFilter, setTypeFilter, counts = {}, total = 0, primaryLayer, layerFilter, setLayerFilter }) {
+export default function DynamicFilterBar({
+  typeFilter,
+  setTypeFilter,
+  counts = {},
+  total = 0,
+  primaryLayer,
+  layerFilter,
+  setLayerFilter,
+}) {
   const { spots: mushrooms } = useMushroomData();
   const { spots: flora } = useFloraData();
   const { zones: warZones } = useWarZoneData();
 
   const tags = useMemo(() => {
     switch (primaryLayer) {
-      case "ads": case "adbusting": case "graffiti": return adsTags(counts, total);
-      case "rivers": return riverTags();
-      case "mushrooms": return mushroomTags(mushrooms);
-      case "flora": return floraTags(flora);
-      case "war": return warTags(warZones);
-      default: return [];
+      case 'ads':
+      case 'adbusting':
+      case 'graffiti':
+        return adsTags(counts, total);
+      case 'rivers':
+        return riverTags();
+      case 'mushrooms':
+        return mushroomTags(mushrooms);
+      case 'flora':
+        return floraTags(flora);
+      case 'war':
+        return warTags(warZones);
+      default:
+        return [];
     }
   }, [primaryLayer, counts, total, mushrooms, flora, warZones]);
 
-  const isStreet = primaryLayer === "ads" || primaryLayer === "adbusting" || primaryLayer === "graffiti";
-  const accent = LAYER_ACCENT[primaryLayer] || "#EDFF00";
+  const isStreet =
+    primaryLayer === 'ads' || primaryLayer === 'adbusting' || primaryLayer === 'graffiti';
+  const accent = LAYER_ACCENT[primaryLayer] || '#EDFF00';
   const selected = isStreet ? typeFilter : layerFilter;
   const onSelect = isStreet ? setTypeFilter : setLayerFilter;
 
@@ -124,12 +141,12 @@ export default function DynamicFilterBar({ typeFilter, setTypeFilter, counts = {
             <button
               onClick={() => onSelect(t.value)}
               className={`flex shrink-0 items-center gap-1.5 px-3 py-1.5 font-mono text-[10px] font-bold uppercase tracking-[0.15em] transition-colors ${
-                active ? "text-void" : "text-darkgray hover:text-silver"
+                active ? 'text-void' : 'text-darkgray hover:text-silver'
               }`}
               style={active ? { backgroundColor: accent } : {}}
             >
               {t.label}
-              <span className={`text-[9px] ${active ? "text-void/70" : "text-dim"}`}>
+              <span className={`text-[9px] ${active ? 'text-void/70' : 'text-dim'}`}>
                 {t.count}
               </span>
             </button>

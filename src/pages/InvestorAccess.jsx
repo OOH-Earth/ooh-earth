@@ -1,7 +1,7 @@
-import { useEffect, useRef, useState } from "react";
-import { Link, useNavigate, useLocation } from "react-router-dom";
-import { useAuth } from "@/lib/AuthContext";
-import { unlockInvestor, hasInvestorToken } from "@/components/ooh/investorAccess";
+import { useEffect, useRef, useState } from 'react';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { useAuth } from '@/lib/AuthContext';
+import { unlockInvestor, hasInvestorToken } from '@/components/ooh/investorAccess';
 
 /* ────────────────────────────────────────────────────────────
    Investor Access (/investor-access) — the special investor
@@ -14,10 +14,10 @@ export default function InvestorAccess() {
   const navigate = useNavigate();
   const location = useLocation();
   const auth = useAuth();
-  const dest = location.state?.from || "/investor";
+  const dest = location.state?.from || '/investor';
 
-  const [code, setCode] = useState("");
-  const [err, setErr] = useState("");
+  const [code, setCode] = useState('');
+  const [err, setErr] = useState('');
   const [shake, setShake] = useState(false);
   const [busy, setBusy] = useState(false);
   const inputRef = useRef(null);
@@ -46,43 +46,71 @@ export default function InvestorAccess() {
   return (
     <div className="iacc">
       <style>{css}</style>
-      <div className={`card ${shake ? "shake" : ""}`}>
-        <span className="brk tl" /><span className="brk tr" /><span className="brk bl" /><span className="brk br" />
+      <div className={`card ${shake ? 'shake' : ''}`}>
+        <span className="brk tl" />
+        <span className="brk tr" />
+        <span className="brk bl" />
+        <span className="brk br" />
 
-        <div className="brand">ooh<span>.</span>earth</div>
-        <div className="eye"><span className="tick" />Investor access · confidential</div>
+        <div className="brand">
+          ooh<span>.</span>earth
+        </div>
+        <div className="eye">
+          <span className="tick" />
+          Investor access · confidential
+        </div>
         <h1>The investor area.</h1>
-        <p className="sub">Enter your access code to open the console, dashboards, and capital pathways. No account needed.</p>
+        <p className="sub">
+          Enter your access code to open the console, dashboards, and capital pathways. No account
+          needed.
+        </p>
 
         <form className="form" onSubmit={submit}>
-          <label htmlFor="ic" className="lab">Access code</label>
+          <label htmlFor="ic" className="lab">
+            Access code
+          </label>
           <input
             id="ic"
             ref={inputRef}
-            className={`input ${err ? "bad" : ""}`}
+            className={`input ${err ? 'bad' : ''}`}
             value={code}
-            onChange={(e) => { setCode(e.target.value); if (err) setErr(""); }}
+            onChange={(e) => {
+              setCode(e.target.value);
+              if (err) setErr('');
+            }}
             placeholder="OOH-XXXXX-XXXX"
             autoComplete="off"
             spellCheck="false"
           />
           {err && <div className="err">{err}</div>}
-          <button type="submit" className="go" disabled={busy}>{busy ? "Checking…" : "Enter →"}</button>
+          <button type="submit" className="go" disabled={busy}>
+            {busy ? 'Checking…' : 'Enter →'}
+          </button>
         </form>
 
-        <div className="divider"><span>or</span></div>
+        <div className="divider">
+          <span>or</span>
+        </div>
 
         <div className="alts">
-          <button className="alt" onClick={() => (auth?.navigateToLogin ? auth.navigateToLogin() : navigate("/login"))}>
+          <button
+            className="alt"
+            onClick={() => (auth?.navigateToLogin ? auth.navigateToLogin() : navigate('/login'))}
+          >
             Sign in with an account →
           </button>
-          <a className="alt" href="mailto:hello@ooh.earth?subject=OOH%20Earth%20%E2%80%94%20Investor%20access%20request">
+          <a
+            className="alt"
+            href="mailto:hello@ooh.earth?subject=OOH%20Earth%20%E2%80%94%20Investor%20access%20request"
+          >
             Request access →
           </a>
         </div>
 
         <div className="foot">
-          <Link to="/" className="back">← Back to site</Link>
+          <Link to="/" className="back">
+            ← Back to site
+          </Link>
           <span className="note">Confidential · for the investor class</span>
         </div>
       </div>

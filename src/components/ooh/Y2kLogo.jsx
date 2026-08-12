@@ -1,4 +1,4 @@
-import React from "react";
+import React from 'react';
 
 /**
  * Y2K Logo — OOH Earth wordmark in the late-90s/early-2000s cyber-pop style:
@@ -13,9 +13,9 @@ import React from "react";
  *  accent     — sparkle + tagline tint ("ozone" | "flare" | "silver")
  */
 const ACCENT = {
-  ozone: "rgb(var(--c-ozone))",
-  flare: "rgb(var(--c-flare))",
-  silver: "rgb(var(--c-silver))",
+  ozone: 'rgb(var(--c-ozone))',
+  flare: 'rgb(var(--c-flare))',
+  silver: 'rgb(var(--c-silver))',
 };
 
 const Sparkle = ({ x, y, s, fill }) => (
@@ -27,18 +27,30 @@ const Sparkle = ({ x, y, s, fill }) => (
 );
 
 export default function Y2kLogo({
-  className = "h-14",
-  primary = "OOH EARTH",
-  tagline = "STREET · MAPS",
-  accent = "ozone",
+  className = 'h-14',
+  primary = 'OOH EARTH',
+  tagline = 'STREET · MAPS',
+  accent = 'ozone',
 }) {
   const ac = ACCENT[accent] || ACCENT.ozone;
   return (
     <span className={`inline-block leading-none ${className}`} role="img" aria-label="OOH Earth">
-      <svg viewBox="0 0 360 168" width="100%" height="100%" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg">
+      <svg
+        viewBox="0 0 360 168"
+        width="100%"
+        height="100%"
+        preserveAspectRatio="xMidYMid meet"
+        xmlns="http://www.w3.org/2000/svg"
+      >
         <defs>
           <filter id="y2k-shadow" x="-20%" y="-20%" width="140%" height="160%">
-            <feDropShadow dx="0" dy="4" stdDeviation="1.4" floodColor="#000000" floodOpacity="0.85" />
+            <feDropShadow
+              dx="0"
+              dy="4"
+              stdDeviation="1.4"
+              floodColor="#000000"
+              floodOpacity="0.85"
+            />
           </filter>
         </defs>
 

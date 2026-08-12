@@ -1,5 +1,5 @@
-import { useRef, useEffect } from "react";
-import { useRadio } from "@/lib/radioContext";
+import { useRef, useEffect } from 'react';
+import { useRadio } from '@/lib/radioContext';
 
 const NUM_BARS = 14;
 const BAR_GAP = 1;
@@ -26,7 +26,7 @@ export default function RadioVisualizer() {
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
-    const ctx = canvas.getContext("2d");
+    const ctx = canvas.getContext('2d');
     const dpr = window.devicePixelRatio || 1;
     canvas.width = CW * dpr;
     canvas.height = CH * dpr;
@@ -39,7 +39,7 @@ export default function RadioVisualizer() {
       const { analyser: an, playing: pl, error: er, cat } = stateRef.current;
       ctx.clearRect(0, 0, CW, CH);
 
-      const color = er ? "#FF5C00" : cat === "news" ? "#FF5C00" : "#EDFF00";
+      const color = er ? '#FF5C00' : cat === 'news' ? '#FF5C00' : '#EDFF00';
       const vals = new Array(NUM_BARS).fill(0.04);
 
       if (pl) {
@@ -83,5 +83,5 @@ export default function RadioVisualizer() {
     return () => cancelAnimationFrame(rafRef.current);
   }, []);
 
-  return <canvas ref={canvasRef} style={{ width: CW, height: CH, display: "block" }} />;
+  return <canvas ref={canvasRef} style={{ width: CW, height: CH, display: 'block' }} />;
 }

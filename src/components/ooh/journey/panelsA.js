@@ -2,18 +2,17 @@
 // Plain HTML strings injected under the scoped .jm-root wrapper.
 
 export const TABS = [
-  { id: "overview",   n: "00", label: "Overview + Kit" },
-  { id: "passerby",   n: "01", label: "The Passer-by" },
-  { id: "scout",      n: "02", label: "The Scout" },
-  { id: "operative",  n: "03", label: "Field Reporter" },
-  { id: "ambassador", n: "04", label: "City Ambassador" },
-  { id: "supporter",  n: "05", label: "The Supporter" },
-  { id: "partner",    n: "06", label: "Movement Partner" },
-  { id: "roadmap",    n: "07", label: "Feature Roadmap" },
+  { id: 'overview', n: '00', label: 'Overview + Kit' },
+  { id: 'passerby', n: '01', label: 'The Passer-by' },
+  { id: 'scout', n: '02', label: 'The Scout' },
+  { id: 'operative', n: '03', label: 'Field Reporter' },
+  { id: 'ambassador', n: '04', label: 'City Ambassador' },
+  { id: 'supporter', n: '05', label: 'The Supporter' },
+  { id: 'partner', n: '06', label: 'Movement Partner' },
+  { id: 'roadmap', n: '07', label: 'Feature Roadmap' },
 ];
 
 export const PANELS_A = {
-
   overview: `
     <div class="jm-grid2">
       <div class="jm-obox">

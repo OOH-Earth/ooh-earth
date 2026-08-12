@@ -5,25 +5,25 @@
 // distinct iconography instead of the old one-size-fits-all billboard glyph.
 
 export const GLYPH_COLORS = {
-  billboard: "#EDFF00",
-  digital: "#EDFF00",
-  transit: "#39FF14",
-  painted: "#FF5C00",
-  mural: "#FF5C00",
-  sticker: "#EDFF00",
-  projection: "#FF5C00",
-  other: "#B2B2B2",
+  billboard: '#EDFF00',
+  digital: '#EDFF00',
+  transit: '#39FF14',
+  painted: '#FF5C00',
+  mural: '#FF5C00',
+  sticker: '#EDFF00',
+  projection: '#FF5C00',
+  other: '#B2B2B2',
 };
 
 export const PIN_TYPES = [
-  "billboard",
-  "digital",
-  "transit",
-  "painted",
-  "mural",
-  "sticker",
-  "projection",
-  "other",
+  'billboard',
+  'digital',
+  'transit',
+  'painted',
+  'mural',
+  'sticker',
+  'projection',
+  'other',
 ];
 
 // ── SVG path fragments (viewBox 0 0 24 24) ──────────────────────────
@@ -60,29 +60,29 @@ export function glyphSVG(type, size = 11) {
 // pixel size.
 const GLYPH_CANVAS = {
   billboard: (ctx, a) => {
-    ctx.fillStyle = "#000";
+    ctx.fillStyle = '#000';
     ctx.fillRect(5, 3, 14, 11);
     ctx.globalAlpha = 0.85;
     ctx.fillStyle = a;
     ctx.fillRect(7, 5, 10, 2.5);
     ctx.globalAlpha = 1;
-    ctx.fillStyle = "#000";
+    ctx.fillStyle = '#000';
     ctx.fillRect(9, 14, 2, 6);
     ctx.fillRect(13, 14, 2, 6);
   },
   digital: (ctx, a) => {
-    ctx.fillStyle = "#000";
+    ctx.fillStyle = '#000';
     ctx.fillRect(5, 4, 14, 10);
     ctx.fillStyle = a;
     ctx.fillRect(7, 6, 10, 2);
     ctx.fillRect(7, 9, 6, 1.5);
   },
   transit: (ctx, a) => {
-    ctx.fillStyle = "#000";
+    ctx.fillStyle = '#000';
     ctx.fillRect(5, 4, 14, 11);
     ctx.fillStyle = a;
     ctx.fillRect(7, 6, 10, 3);
-    ctx.fillStyle = "#000";
+    ctx.fillStyle = '#000';
     ctx.beginPath();
     ctx.arc(9, 17, 1.4, 0, Math.PI * 2);
     ctx.fill();
@@ -91,27 +91,27 @@ const GLYPH_CANVAS = {
     ctx.fill();
   },
   painted: (ctx) => {
-    ctx.fillStyle = "#000";
+    ctx.fillStyle = '#000';
     ctx.fillRect(4, 5, 13, 6);
     ctx.fillRect(17, 6, 4, 4);
     ctx.fillRect(9, 11, 2, 5);
     ctx.fillRect(7, 16, 6, 3);
   },
   mural: (ctx, a) => {
-    ctx.fillStyle = "#000";
+    ctx.fillStyle = '#000';
     ctx.fillRect(4, 5, 16, 10);
     ctx.fillStyle = a;
     ctx.fillRect(4, 5, 16, 2.5);
   },
   sticker: (ctx, a) => {
-    ctx.fillStyle = "#000";
+    ctx.fillStyle = '#000';
     ctx.beginPath();
     ctx.arc(12, 12, 7, 0, Math.PI * 2);
     ctx.fill();
     ctx.strokeStyle = a;
     ctx.lineWidth = 1.6;
-    ctx.lineCap = "round";
-    ctx.lineJoin = "round";
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
     ctx.beginPath();
     ctx.moveTo(12, 5);
     ctx.lineTo(12, 12);
@@ -119,18 +119,18 @@ const GLYPH_CANVAS = {
     ctx.stroke();
   },
   projection: (ctx) => {
-    ctx.fillStyle = "#000";
+    ctx.fillStyle = '#000';
     ctx.fillRect(3, 9, 6, 6);
-    ctx.strokeStyle = "#000";
+    ctx.strokeStyle = '#000';
     ctx.lineWidth = 2.4;
-    ctx.lineCap = "round";
+    ctx.lineCap = 'round';
     ctx.beginPath();
     ctx.moveTo(9, 12);
     ctx.lineTo(21, 6);
     ctx.stroke();
   },
   other: (ctx) => {
-    ctx.fillStyle = "#000";
+    ctx.fillStyle = '#000';
     ctx.beginPath();
     ctx.arc(12, 12, 6, 0, Math.PI * 2);
     ctx.fill();

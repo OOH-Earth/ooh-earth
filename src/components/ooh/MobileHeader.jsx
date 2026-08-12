@@ -1,12 +1,12 @@
-import { ArrowLeft } from "lucide-react";
-import { Link } from "react-router-dom";
+import { ArrowLeft } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 // Consistent mobile back-header for detail pages.
-export default function MobileHeader({ to = "/map", label = "Back" }) {
+export default function MobileHeader({ to = '/map', label = 'Back' }) {
   return (
     <div
       className="sticky top-0 z-40 border-b border-slate2/60 bg-void/85 backdrop-blur-md lg:hidden"
-      style={{ paddingTop: "env(safe-area-inset-top)" }}
+      style={{ paddingTop: 'env(safe-area-inset-top)' }}
     >
       <div className="flex items-center gap-2 px-4 py-3">
         <Link

@@ -7,8 +7,11 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
 // creates, so a client can no longer inject a fake channel="stripe" record.
 
 const ALLOWED_ORIGINS = new Set([
-  'https://oohearth.app', 'https://www.oohearth.app', 'https://ooh.earth',
-  'http://localhost:5173', 'http://localhost:3000',
+  'https://oohearth.app',
+  'https://www.oohearth.app',
+  'https://ooh.earth',
+  'http://localhost:5173',
+  'http://localhost:3000',
 ]);
 function cors(origin) {
   const o = origin && ALLOWED_ORIGINS.has(origin) ? origin : 'https://oohearth.app';
@@ -16,7 +19,7 @@ function cors(origin) {
     'Access-Control-Allow-Origin': o,
     'Access-Control-Allow-Methods': 'POST, OPTIONS',
     'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-    'Vary': 'Origin',
+    Vary: 'Origin',
   };
 }
 const isEmail = (s) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(s);
@@ -29,10 +32,17 @@ Deno.serve(async (req) => {
     const base44 = createClientFromRequest(req);
     const body = await req.json().catch(() => ({}));
 
-    const email = String(body?.email || '').trim().slice(0, 200);
-    if (!isEmail(email)) return Response.json({ error: 'Valid email required.' }, { status: 400, headers });
-    const name = String(body?.name || '').trim().slice(0, 200);
-    const message = String(body?.message || '').trim().slice(0, 2000);
+    const email = String(body?.email || '')
+      .trim()
+      .slice(0, 200);
+    if (!isEmail(email))
+      return Response.json({ error: 'Valid email required.' }, { status: 400, headers });
+    const name = String(body?.name || '')
+      .trim()
+      .slice(0, 200);
+    const message = String(body?.message || '')
+      .trim()
+      .slice(0, 2000);
 
     // Pledge amount is captured but NEVER counts as raised (fieldStats sums
     // confirmed channels only). Clamp to a sane range; ignore anything weird.
@@ -41,7 +51,11 @@ Deno.serve(async (req) => {
     amount = Math.min(amount, 1000000);
 
     let caller = null;
-    try { caller = await base44.auth.me(); } catch { caller = null; }
+    try {
+      caller = await base44.auth.me();
+    } catch {
+      caller = null;
+    }
 
     const rec = { name, email, amount, channel: 'lead', message };
     if (caller?.id) rec.created_by_id = caller.id;
@@ -52,18 +66,18 @@ Deno.serve(async (req) => {
     // hello@ooh.earth must be an invited app user for delivery to succeed.
     try {
       await base44.asServiceRole.integrations.Core.SendEmail({
-        to: "hello@ooh.earth",
+        to: 'hello@ooh.earth',
         subject: `New contact form message from ${name || email}`,
         body: [
-          `Name: ${name || "—"}`,
+          `Name: ${name || '—'}`,
           `Email: ${email}`,
           ``,
           `Message:`,
-          message || "(empty)",
-        ].join("\n"),
+          message || '(empty)',
+        ].join('\n'),
       });
     } catch (emailErr) {
-      console.error("captureLead: SendEmail failed:", emailErr?.message || emailErr);
+      console.error('captureLead: SendEmail failed:', emailErr?.message || emailErr);
     }
 
     return Response.json({ ok: true }, { headers });
