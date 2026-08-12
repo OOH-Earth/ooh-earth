@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { compressImage } from '@/lib/imageCompress';
+import { validateImageFile } from '@/lib/validateUpload';
 import { Camera, Crosshair, Loader2, Check, X, MapPin, CloudOff } from 'lucide-react';
 import { submitCapture } from '@/lib/offlineQueue';
 import CameraViewfinder from '@/components/ooh/CameraViewfinder';
@@ -83,8 +84,13 @@ export default function QuickCapture({ open, onClose }) {
 
   const uploadFile = async (file) => {
     if (!file) return;
-    setUploading(true);
     setError('');
+    const check = await validateImageFile(file);
+    if (!check.ok) {
+      setError(check.error);
+      return;
+    }
+    setUploading(true);
     try {
       const res = await base44.integrations.Core.UploadFile({ file: await compressImage(file) });
       setImageUrl(res.file_url);
@@ -230,6 +236,7 @@ export default function QuickCapture({ open, onClose }) {
                 files={extraPhotos}
                 onChange={setExtraPhotos}
                 disabled={submitting}
+                onRejected={(errors) => setError(errors[0])}
               />
             </div>
 

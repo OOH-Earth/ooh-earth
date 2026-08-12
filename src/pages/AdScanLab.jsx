@@ -18,6 +18,7 @@ import {
 } from 'lucide-react';
 import exifr from 'exifr';
 import { compressImage } from '@/lib/imageCompress';
+import { validateImageFile } from '@/lib/validateUpload';
 import Nav from '@/components/ooh/Nav';
 import Breadcrumbs from '@/components/ooh/Breadcrumbs';
 import SiteFooter from '@/components/ooh/SiteFooter';
@@ -75,6 +76,11 @@ export default function AdScanLab() {
 
   const handleCapture = useCallback(
     async (file) => {
+      const check = await validateImageFile(file);
+      if (!check.ok) {
+        toast({ title: check.error, variant: 'destructive' });
+        return;
+      }
       setUploading(true);
       setPhotoCoords(null);
       setPhotoSource(null);

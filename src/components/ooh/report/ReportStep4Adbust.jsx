@@ -1,5 +1,6 @@
 import { base44 } from '@/api/base44Client';
 import { compressImage } from '@/lib/imageCompress';
+import { validateImageFile } from '@/lib/validateUpload';
 import { useState } from 'react';
 import { Camera, Loader2 } from 'lucide-react';
 
@@ -25,14 +26,23 @@ const ACTION_FLAGS = [
 
 export default function ReportStep4Adbust({ data, onChange }) {
   const [uploading, setUploading] = useState(false);
+  const [uploadError, setUploadError] = useState('');
 
   const onPhoto = async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
+    setUploadError('');
+    const check = await validateImageFile(file);
+    if (!check.ok) {
+      setUploadError(check.error);
+      return;
+    }
     setUploading(true);
     try {
       const res = await base44.integrations.Core.UploadFile({ file: await compressImage(file) });
       onChange({ adbust_image_url: res.file_url });
+    } catch {
+      setUploadError('Photo upload failed — try again.');
     } finally {
       setUploading(false);
     }
@@ -100,6 +110,14 @@ export default function ReportStep4Adbust({ data, onChange }) {
               className="hidden"
             />
           </label>
+          {uploadError && (
+            <p
+              className="mt-2 font-mono text-[10px] uppercase tracking-[0.15em] text-flare"
+              role="alert"
+            >
+              {uploadError}
+            </p>
+          )}
         </div>
       )}
 

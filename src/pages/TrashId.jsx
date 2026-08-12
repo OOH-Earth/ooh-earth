@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { compressImage } from '@/lib/imageCompress';
+import { validateImageFile } from '@/lib/validateUpload';
 import Nav from '@/components/ooh/Nav';
 import TrashResult from '@/components/ooh/trash/TrashResult';
 import { Camera, Loader2, Upload, Trash2, AlertCircle } from 'lucide-react';
@@ -45,6 +46,11 @@ export default function TrashId() {
     if (!f) return;
     setError('');
     setResult(null);
+    const check = await validateImageFile(f);
+    if (!check.ok) {
+      setError(check.error);
+      return;
+    }
     setPreview(URL.createObjectURL(f));
     setLoading(true);
     try {
