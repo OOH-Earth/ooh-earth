@@ -19,6 +19,22 @@
 # Default: engineering owner reviews everything not claimed below.
 * @AdilQuantum
 
+# Unowned: paths Dependabot's own routine version-update PRs touch. A
+# pattern with no owner overrides the wildcard above for that path (real
+# GitHub CODEOWNERS syntax, not a workaround) -- it stops every Dependabot
+# PR from firing a "review requested... as a code owner" notification
+# (confirmed: ~30 such emails from one week's Dependabot wave, 2026-08-12),
+# without touching branch protection (require_code_owner_reviews is
+# already false, so this changes notification volume only, not any
+# enforced gate). Deliberate trade-off: a human PR touching only these
+# exact paths also won't request review -- acceptable today with one
+# active reviewer; revisit once there's a second one and human dependency
+# PRs are common enough to want that signal back.
+package.json
+package-lock.json
+/.github/dependabot.yml
+/.github/workflows/
+
 # Example specialisation — uncomment and fill in once there's a second
 # maintainer to assign:
 # /base44/functions/stripeWebhook/   @<payments-owner>
