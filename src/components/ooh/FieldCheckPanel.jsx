@@ -64,7 +64,15 @@ export default function FieldCheckPanel({ location }) {
 
   const verified = checks.filter((c) => c.status === 'verified');
   const latest = checks[0];
-  const hasMultiple = verified.length >= 2;
+  // With 2+ verified checks, compare the two most recent. Otherwise fall back
+  // to the location's original report photo as the "before" — most locations
+  // will have exactly one verified re-check long before they have two, and
+  // that's still a real before/after story worth showing.
+  const latestImage = verified[0]?.image_url;
+  const earlierImage = verified.length >= 2 ? verified[1]?.image_url : location.image_url;
+  const earlierLabel = verified.length >= 2 ? 'Earlier' : 'Original report';
+  const showComparison =
+    Boolean(latestImage) && Boolean(earlierImage) && earlierImage !== latestImage;
 
   return (
     <div className="mt-8 border border-ozone/30 bg-card">
@@ -108,7 +116,7 @@ export default function FieldCheckPanel({ location }) {
         ) : (
           <>
             {/* Before / After comparison */}
-            {hasMultiple && verified[0]?.image_url && verified[1]?.image_url && (
+            {showComparison && (
               <div className="mb-5">
                 <span className="font-mono text-[9px] uppercase tracking-[0.3em] text-ozone/60">
                   // Before / After
@@ -116,12 +124,12 @@ export default function FieldCheckPanel({ location }) {
                 <div className="mt-2 grid gap-2 sm:grid-cols-2">
                   <div>
                     <span className="font-mono text-[8px] uppercase tracking-[0.2em] text-dim">
-                      Earlier
+                      {earlierLabel}
                     </span>
                     <div className="relative mt-1 aspect-[4/3] overflow-hidden border border-slate2/60">
                       <Image
-                        src={verified[1].image_url}
-                        alt="Earlier check"
+                        src={earlierImage}
+                        alt={earlierLabel}
                         className="h-full w-full"
                         fittingType="fill"
                       />
@@ -133,7 +141,7 @@ export default function FieldCheckPanel({ location }) {
                     </span>
                     <div className="relative mt-1 aspect-[4/3] overflow-hidden border border-ozone/40">
                       <Image
-                        src={verified[0].image_url}
+                        src={latestImage}
                         alt="Latest check"
                         className="h-full w-full"
                         fittingType="fill"
