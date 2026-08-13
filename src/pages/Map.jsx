@@ -214,8 +214,21 @@ export default function Map() {
 
   const reloadLocations = useCallback(async () => {
     try {
-      const recs = await base44.listAllLocations();
-      const markers = (recs || []).filter((r) => r.status !== 'rejected').map(toMarker);
+      const [recs, verifiedChecks] = await Promise.all([
+        base44.listAllLocations(),
+        base44.entities.FieldCheck.filter({ status: 'verified' }, '-created_date', 2000).catch(
+          () => [],
+        ),
+      ]);
+      // "Living record" = has at least one verified re-check, i.e. the same
+      // eligibility PR #56's before/after comparison already uses. Computed
+      // as one extra global query, not per-marker — a FieldCheck getting
+      // verified doesn't fire a Location realtime event, so this flag only
+      // refreshes on reload/pull-to-refresh, not instantly.
+      const livingRecordIds = new Set((verifiedChecks || []).map((c) => String(c.location_id)));
+      const markers = (recs || [])
+        .filter((r) => r.status !== 'rejected')
+        .map((r) => ({ ...toMarker(r), livingRecord: livingRecordIds.has(String(r.id)) }));
       setRaw(markers.length ? { markers, live: true } : { markers: seedMarkers, live: false });
     } catch (e) {
       setRaw({ markers: seedMarkers, live: false });
@@ -231,10 +244,14 @@ export default function Map() {
         if (!cur || !cur.live) return cur;
         let markers = cur.markers;
         const m = toMarker(event.data);
-        if (event.type === 'create') markers = [m, ...markers.filter((x) => x.id !== m.id)];
+        if (event.type === 'create')
+          markers = [{ ...m, livingRecord: false }, ...markers.filter((x) => x.id !== m.id)];
         else if (event.type === 'update') {
           if (m.status === 'rejected') markers = markers.filter((x) => x.id !== m.id);
-          else markers = markers.map((x) => (x.id === m.id ? m : x));
+          else
+            markers = markers.map((x) =>
+              x.id === m.id ? { ...m, livingRecord: x.livingRecord } : x,
+            );
         } else if (event.type === 'delete') markers = markers.filter((x) => x.id !== m.id);
         return { ...cur, markers };
       });
