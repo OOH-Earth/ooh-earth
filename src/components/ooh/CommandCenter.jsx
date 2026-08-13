@@ -1,7 +1,8 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { X, ArrowUpRight, SprayCan } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import GraffitiCamera from '@/components/ooh/GraffitiCamera';
+import { useFocusTrap } from '@/hooks/useFocusTrap';
 
 // Internal app routes shown as action cards at the top of the panel.
 // `camera` actions open a field camera modal instead of navigating.
@@ -141,6 +142,8 @@ const GROUPS = [
 
 export default function CommandCenter({ open, onClose }) {
   const [graffitiCam, setGraffitiCam] = useState(false);
+  const panelRef = useRef(null);
+  useFocusTrap(panelRef, open, { label: 'Command Center' });
 
   useEffect(() => {
     const onKey = (e) => e.key === 'Escape' && onClose();
@@ -169,6 +172,7 @@ export default function CommandCenter({ open, onClose }) {
       <div className="absolute inset-0 bg-void/80 backdrop-blur-xl" onClick={onClose} />
 
       <div
+        ref={panelRef}
         className={`absolute inset-y-0 right-0 flex w-full flex-col border-l border-ozone/20 bg-void shadow-2xl transition-transform duration-500 ${open ? 'translate-x-0' : 'translate-x-full'}`}
       >
         <div className="flex items-center justify-between border-b border-white/5 px-6 py-5">

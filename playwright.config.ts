@@ -37,6 +37,7 @@ export default defineConfig({
         'location-detail.spec.ts',
         'multi-photo-upload.spec.ts',
         'verify-reject-workflow.spec.ts',
+        'focus-trap.spec.ts',
       ],
     },
   ],

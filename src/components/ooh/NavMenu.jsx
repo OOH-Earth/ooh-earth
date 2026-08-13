@@ -1,9 +1,10 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { useAuth } from '@/lib/AuthContext';
 import { base44 } from '@/api/base44Client';
+import { useFocusTrap } from '@/hooks/useFocusTrap';
 import {
   X,
   Compass,
@@ -352,7 +353,7 @@ const isAgencyMember = (u) => {
   return r === 'admin' || a === 'admin' || !!ag;
 };
 
-function MobileLauncher({ onClose, onTour }) {
+function MobileLauncher({ onClose, onTour, panelRef }) {
   const { user } = useAuth();
   const agency = isAgencyMember(user);
   const groups = withLabItems(SITEMAP, useLabNavItems());
@@ -360,6 +361,7 @@ function MobileLauncher({ onClose, onTour }) {
   return (
     <motion.div
       key="mobile"
+      ref={panelRef}
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: 8 }}
@@ -536,6 +538,16 @@ function PopoverLinks({ onClose }) {
 }
 
 export default function NavMenu({ open, onClose, onTour }) {
+  // Two real, independently-sized surfaces exist at once (mobile launcher
+  // vs desktop popover, toggled purely via Tailwind's md: classes) -- each
+  // needs its own trap since only one is ever visually rendered, and a
+  // position:fixed child can't be wrapped in a single plain container
+  // without collapsing that container to a zero-size box.
+  const mobilePanelRef = useRef(null);
+  const desktopPanelRef = useRef(null);
+  useFocusTrap(mobilePanelRef, open, { label: 'Navigation menu' });
+  useFocusTrap(desktopPanelRef, open, { label: 'Navigation menu' });
+
   useEffect(() => {
     if (!open) return;
     const onKey = (e) => {
@@ -560,11 +572,12 @@ export default function NavMenu({ open, onClose, onTour }) {
           />
 
           {/* Mobile · full-screen smart launcher */}
-          <MobileLauncher onClose={onClose} onTour={onTour} />
+          <MobileLauncher onClose={onClose} onTour={onTour} panelRef={mobilePanelRef} />
 
           {/* Desktop · popover */}
           <motion.div
             key="popover"
+            ref={desktopPanelRef}
             initial={{ opacity: 0, scale: 0.94, y: -10 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.96, y: -8 }}
