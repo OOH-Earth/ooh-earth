@@ -46,9 +46,9 @@ export function useFocusTrap(containerRef, open, { label } = {}) {
       return rect.width > 0 && rect.height > 0;
     };
     const getFocusable = () =>
-      /** @type {HTMLElement[]} */ (Array.from(container.querySelectorAll(FOCUSABLE_SELECTOR))).filter(
-        isVisible,
-      );
+      /** @type {HTMLElement[]} */ (
+        Array.from(container.querySelectorAll(FOCUSABLE_SELECTOR))
+      ).filter(isVisible);
 
     const focusFirst = () => {
       const focusables = getFocusable();
