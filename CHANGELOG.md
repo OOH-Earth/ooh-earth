@@ -8,6 +8,19 @@ _Last updated: 2026-08-01_
 - **Mobile menu clipping** — `NavMenu` now portals to `document.body`, escaping the backdrop-blur containing block so the full-screen launcher fills the viewport on mobile.
 - **Header hidden under nav on notched devices** — the fixed nav inflates by `env(safe-area-inset-top)` on iPhones with notches/dynamic islands, but page top padding was a fixed `pt-24/pt-28`, causing masthead H1s to slip underneath. Added a `.page-top` utility (`calc(6rem + env(safe-area-inset-top))`, `7rem` on md) and applied it to `Channel.jsx`.
 
+## [1.2.0](https://github.com/OOH-Earth/ooh-earth/compare/v1.1.0...v1.2.0) (2026-08-13)
+
+
+### Features
+
+* **location:** use original report photo as before/after baseline ([#56](https://github.com/OOH-Earth/ooh-earth/issues/56)) ([6e8eea1](https://github.com/OOH-Earth/ooh-earth/commit/6e8eea166c8f41bec394b46acbdc4562447834dc))
+* **map:** spotlight locations with verified before/after evidence ([#59](https://github.com/OOH-Earth/ooh-earth/issues/59)) ([c45f819](https://github.com/OOH-Earth/ooh-earth/commit/c45f819008a3a8e885ed5af03fb52073cca55390))
+
+
+### Performance Improvements
+
+* **fonts:** load Google Fonts asynchronously to unblock first paint ([#58](https://github.com/OOH-Earth/ooh-earth/issues/58)) ([2590416](https://github.com/OOH-Earth/ooh-earth/commit/259041694655c11776637072bbfb3ba928208702))
+
 ## [1.1.0](https://github.com/OOH-Earth/ooh-earth/compare/v1.0.0...v1.1.0) (2026-08-12)
 
 
