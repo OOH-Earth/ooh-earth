@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { compressImage } from '@/lib/imageCompress';
 import { validateImageFile } from '@/lib/validateUpload';
@@ -6,6 +6,7 @@ import { Camera, Crosshair, Loader2, Check, X, MapPin, CloudOff } from 'lucide-r
 import { submitCapture } from '@/lib/offlineQueue';
 import CameraViewfinder from '@/components/ooh/CameraViewfinder';
 import MultiPhotoUpload, { uploadLocationPhotos } from '@/components/ooh/gallery/MultiPhotoUpload';
+import { useFocusTrap } from '@/hooks/useFocusTrap';
 
 const TYPES = [
   { value: 'billboard', label: 'Billboard' },
@@ -30,6 +31,8 @@ export default function QuickCapture({ open, onClose }) {
   const [submitting, setSubmitting] = useState(false);
   const [done, setDone] = useState(null);
   const [error, setError] = useState('');
+  const panelRef = useRef(null);
+  useFocusTrap(panelRef, open, { label: 'Anonymous field capture' });
 
   const locate = () => {
     if (!navigator.geolocation) return;
@@ -153,6 +156,7 @@ export default function QuickCapture({ open, onClose }) {
       onClick={onClose}
     >
       <div
+        ref={panelRef}
         className="relative max-h-[92dvh] w-full max-w-md overflow-y-auto border border-slate2 bg-void p-5 sm:p-6"
         onClick={(e) => e.stopPropagation()}
       >
