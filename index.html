@@ -53,10 +53,27 @@
     />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <!-- Non-blocking font load: paint starts immediately on fallback fonts,
+         swaps in once the stylesheet arrives (display=swap in the URL below
+         already covers the swap; this covers not blocking first paint on the
+         request itself). -->
     <link
+      rel="preload"
+      as="style"
       href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700;800;900&family=Orbitron:wght@500;700;900&display=swap"
-      rel="stylesheet"
     />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700;800;900&family=Orbitron:wght@500;700;900&display=swap"
+      media="print"
+      onload="this.media = 'all'"
+    />
+    <noscript>
+      <link
+        rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700;800;900&family=Orbitron:wght@500;700;900&display=swap"
+      />
+    </noscript>
     <title>OOH Street Art & Adbusting Maps</title>
     <script>
       (function () {
