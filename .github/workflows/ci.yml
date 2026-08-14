@@ -210,10 +210,19 @@ jobs:
   dependency-review:
     name: Dependency Review
     runs-on: ubuntu-latest
-    if: github.event_name == 'pull_request'
+    # Also runs on workflow_dispatch so release-please.yml can re-verify a
+    # release PR (its GITHUB_TOKEN-authored push never fires a pull_request
+    # event -- see release-please.yml). dependency-review-action needs
+    # explicit base-ref/head-ref outside a real pull_request context; both
+    # are left empty on pull_request so the action's own PR-context defaults
+    # apply unchanged. See CI_PIPELINE.md Decision Register #8.
+    if: github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch'
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
       - uses: actions/dependency-review-action@a1d282b36b6f3519aa1f3fc636f609c47dddb294 # v5.0.0
+        with:
+          base-ref: ${{ github.event_name == 'workflow_dispatch' && 'main' || '' }}
+          head-ref: ${{ github.event_name == 'workflow_dispatch' && github.ref_name || '' }}
 
   summary:
     name: PR summary comment

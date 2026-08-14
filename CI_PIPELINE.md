@@ -41,7 +41,7 @@ Static analysis (`security-and-quality` query pack) on every push/PR to `main` p
 
 ## `release-please.yml`
 
-See RELEASE_PROCESS.md.
+See RELEASE_PROCESS.md. Its push to the release PR branch uses this workflow's own `GITHUB_TOKEN`, which GitHub excludes from triggering other workflows (anti-recursion rule) — left alone, the release PR would sit with zero CI/CodeQL checks and could never satisfy required-status-checks branch protection. As of 2026-08-14, `release-please.yml` re-dispatches `ci.yml` and `codeql.yml` via `workflow_dispatch` (exempt from that suppression) directly onto the release PR's branch right after release-please opens/updates it — see Decision Register #8. `dependency-review` (a job inside `ci.yml`) also accepts `workflow_dispatch` now, passing explicit `base-ref`/`head-ref` since it has no `pull_request` context to infer them from.
 
 ## `.github/dependabot.yml`
 
@@ -64,6 +64,7 @@ Weekly npm + GitHub Actions dependency PRs. **Known gap**: Dependabot has no equ
 | 5 | Bundle-size regression tracking (currently absolute-size reporting only, no vs-main diff — that would require building `main` on every PR too, doubling build time) | Not started — candidate: `size-limit` or `bundlewatch` with a committed budget file |
 | 6 | ~~Branch protection settings~~ | **Done, 2026-08-12** — applied via API once GitHub Admin access was granted, independently verified live. See ADMIN-ACCESS-REQUIREMENTS.md / BRANCHING_STRATEGY.md for the exact configuration |
 | 7 | ~~Add `dependency-review` job~~ | **Done, 2026-08-11** |
+| 8 | ~~Release PRs get zero CI/CodeQL checks (`GITHUB_TOKEN` push doesn't trigger `pull_request` workflows) and sit permanently BLOCKED under required-status-checks~~ | **Done, 2026-08-14** — `release-please.yml` re-dispatches `ci.yml`/`codeql.yml` via `workflow_dispatch` after opening/updating a release PR; `dependency-review` now accepts `workflow_dispatch` with explicit `base-ref`/`head-ref`. No PAT, no force-push, no branch-protection change. |
 
 ## Verified state on `main`, 2026-08-12
 
