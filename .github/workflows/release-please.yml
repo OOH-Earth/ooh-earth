@@ -12,6 +12,16 @@ on:
   push:
     branches: [main]
 
+# Two pushes landing on main in quick succession (e.g. a rapid squash-merge
+# chain) could otherwise start two overlapping release-please runs, each
+# independently dispatching CI/CodeQL onto the release branch -- queue
+# instead of running concurrently. cancel-in-progress is false because an
+# interrupted release-please-action run could leave the PR/manifest state
+# half-updated; a queued run always sees a clean prior result to build on.
+concurrency:
+  group: release-please-${{ github.ref }}
+  cancel-in-progress: false
+
 permissions:
   contents: write
   pull-requests: write
