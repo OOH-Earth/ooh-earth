@@ -1,6 +1,7 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { Search, MapPin, Plus, Check, Loader2, X, Sparkles } from 'lucide-react';
+import { useFocusTrap } from '@/hooks/useFocusTrap';
 
 const TYPE_LABEL = {
   billboard: 'Billboard',
@@ -31,6 +32,8 @@ export default function UnitFinder({ open, onClose }) {
   const [addedIds, setAddedIds] = useState(new Set());
   const [addingAll, setAddingAll] = useState(false);
   const [error, setError] = useState('');
+  const panelRef = useRef(null);
+  useFocusTrap(panelRef, open, { label: 'AI Unit Finder' });
 
   useEffect(() => {
     if (!open) return;
@@ -117,7 +120,10 @@ export default function UnitFinder({ open, onClose }) {
   return (
     <div className="fixed inset-0 z-[2000]">
       <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
-      <div className="absolute right-0 top-0 flex h-full w-full max-w-[420px] flex-col border-l border-slate2/70 bg-void shadow-2xl">
+      <div
+        ref={panelRef}
+        className="absolute right-0 top-0 flex h-full w-full max-w-[420px] flex-col border-l border-slate2/70 bg-void shadow-2xl"
+      >
         <div className="flex items-center justify-between border-b border-slate2/60 px-5 py-4">
           <div className="flex items-center gap-2">
             <Sparkles className="h-4 w-4 text-ozone" />
