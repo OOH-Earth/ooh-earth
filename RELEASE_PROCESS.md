@@ -10,6 +10,10 @@
 
 Nothing here runs `npm publish`. This app isn't distributed via the npm registry (`"private": true` in `package.json`) — release-please only manages the version field, the changelog, and the git tag/GitHub Release.
 
+### Why the release PR shows real CI checks
+
+release-please pushes to its own PR branch using this workflow's `GITHUB_TOKEN`, and GitHub deliberately excludes `GITHUB_TOKEN`-authored pushes from triggering other workflows (an anti-recursion rule). Without a workaround, the release PR would sit with zero checks and could never satisfy required-status-checks branch protection. `release-please.yml` closes that gap itself: right after opening/updating the PR, it re-dispatches `ci.yml` and `codeql.yml` via `workflow_dispatch` (which *is* exempt from that suppression) directly on the release PR's branch, so the same required checks run for real — no PAT, no force-push, no relaxed branch protection. See `CI_PIPELINE.md` Decision Register #8.
+
 ## Conventional Commits — this is the part that needs adoption
 
 Recent commit history (`git log --oneline`) is almost entirely `External agent changes` / `File changes` — not Conventional Commits format. **This automation only works from the point the team starts using the format going forward; it does not retrofit history.** If PR titles don't follow the format below, release-please will find nothing to bucket and won't open a release PR, or will only be able to infer a generic patch bump.

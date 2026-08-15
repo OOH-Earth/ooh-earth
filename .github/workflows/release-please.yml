@@ -12,15 +12,53 @@ on:
   push:
     branches: [main]
 
+# Two pushes landing on main in quick succession (e.g. a rapid squash-merge
+# chain) could otherwise start two overlapping release-please runs, each
+# independently dispatching CI/CodeQL onto the release branch -- queue
+# instead of running concurrently. cancel-in-progress is false because an
+# interrupted release-please-action run could leave the PR/manifest state
+# half-updated; a queued run always sees a clean prior result to build on.
+concurrency:
+  group: release-please-${{ github.ref }}
+  cancel-in-progress: false
+
 permissions:
   contents: write
   pull-requests: write
+  actions: write
 
 jobs:
   release-please:
     runs-on: ubuntu-latest
     steps:
-      - uses: googleapis/release-please-action@45996ed1f6d02564a971a2fa1b5860e934307cf7 # v5
+      - id: release
+        uses: googleapis/release-please-action@45996ed1f6d02564a971a2fa1b5860e934307cf7 # v5
         with:
           config-file: release-please-config.json
           manifest-file: .release-please-manifest.json
+
+      # release-please's push uses this workflow's own GITHUB_TOKEN, and
+      # GitHub excludes GITHUB_TOKEN-authored pushes from triggering other
+      # workflows (anti-recursion rule) -- so the release PR it just
+      # created/updated gets zero CI/CodeQL checks and can never satisfy
+      # required-status-checks branch protection on its own. workflow_dispatch
+      # is explicitly exempt from that suppression, so re-dispatch both
+      # required-check workflows directly onto the release PR's branch. No
+      # PAT, no force-push, no branch-protection change. See CI_PIPELINE.md
+      # Decision Register #8 and RELEASE_PROCESS.md.
+      - name: Trigger CI + CodeQL verification on the release PR branch
+        if: steps.release.outputs.prs_created == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PRS_JSON: ${{ steps.release.outputs.prs }}
+        run: |
+          branches=$(node -e "
+            const prs = JSON.parse(process.env.PRS_JSON);
+            for (const pr of prs) console.log(pr.headBranchName);
+          ")
+          while IFS= read -r branch; do
+            [ -z "$branch" ] && continue
+            echo "Dispatching CI + CodeQL on release PR branch: $branch"
+            gh workflow run ci.yml --ref "$branch"
+            gh workflow run codeql.yml --ref "$branch"
+          done <<< "$branches"
