@@ -54,7 +54,7 @@ export default function ArLens() {
   const [layers, setLayers] = useState({ takeover: true, intel: true, log: true });
   const [pm25, setPm25] = useState(null);
   const [logState, setLogState] = useState('idle'); // idle | capturing | uploading | done | error
-  const [lastReport, setLastReport] = useState(null);
+  const [, setLastReport] = useState(null);
   const { pos, err: geoErr } = useGeolocation();
 
   const startCamera = useCallback(async () => {

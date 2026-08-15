@@ -153,7 +153,7 @@ export default function Globe3D({
 
   const [ready, setReady] = useState(false);
   const [spinning, setSpinning] = useState(spin);
-  const [counts, setCounts] = useState({ spots: 0, clusters: 0, leads: 0, verified: 0 });
+  const [, setCounts] = useState({ spots: 0, clusters: 0, leads: 0, verified: 0 });
 
   const zoomIn = () => mapRef.current?.zoomIn();
   const zoomOut = () => mapRef.current?.zoomOut();
@@ -412,7 +412,6 @@ export default function Globe3D({
     const recompute = () => {
       try {
         const cl = map.queryRenderedFeatures({ layers: ['ooh-clusters'] });
-        const pts = map.queryRenderedFeatures({ layers: ['ooh-markers'] });
         const all = markers;
         const leads = all.filter((m) => !m.image && m.status !== 'verified').length;
         const verified = all.filter((m) => m.status === 'verified').length;

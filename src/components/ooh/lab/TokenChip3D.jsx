@@ -117,7 +117,6 @@ function makeChipFace(cfg) {
   ctx.stroke();
 
   // Arched text — top + bottom
-  const textCol = fieldDark ? '#FFFFFF' : '#0a0a0a';
   const accent = cfg.ring === '#0a0a0a' ? '#EDFF00' : '#FFFFFF';
   archedText(
     ctx,

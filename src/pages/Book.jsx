@@ -59,8 +59,7 @@ const PKEY = 'oohguild:progress:v1';
 function renderInline(text) {
   if (!text) return null;
   const out = [];
-  let i = 0,
-    key = 0;
+  let key = 0;
   const re = /(\*\*([^*]+)\*\*|\*([^*]+)\*|_([^_]+)_)/g;
   let m,
     last = 0;

@@ -201,7 +201,6 @@ export default function ChipExplodedView() {
                   })}
                 {L.facets &&
                   Array.from({ length: 14 }).map((_, i) => {
-                    const a1 = (i / 14) * Math.PI * 2;
                     const a2 = ((i + 1) / 14) * Math.PI * 2;
                     return (
                       <line

@@ -153,7 +153,6 @@ export default function GraffitiCam() {
       return;
     }
     setSubmitting(true);
-    const label = GRAFFITI_TYPES.find((t) => t.value === type)?.label || type;
     const title = `Graffiti · ${address.split(',')[0].trim() || 'Field capture'}`;
     try {
       const res = await submitCapture({
