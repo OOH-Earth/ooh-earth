@@ -1,5 +1,6 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { useAuth } from '@/lib/AuthContext';
 import { isAdmin } from '@/lib/clearance';
@@ -24,24 +25,21 @@ import {
 export default function StoreAdmin() {
   const { user, isAuthenticated, isLoadingAuth } = useAuth();
   const { toast } = useToast();
-  const [items, setItems] = useState(null);
+  const queryClient = useQueryClient();
+  const { data: items = null, refetch } = useQuery({
+    queryKey: ['store-items'],
+    queryFn: async () => {
+      try {
+        return await base44.entities.StoreItem.list('-created_date');
+      } catch {
+        return [];
+      }
+    },
+  });
   const [editing, setEditing] = useState(null); // record being edited (or {} for new)
   const [open, setOpen] = useState(false);
   const [busy, setBusy] = useState(null);
   const [q, setQ] = useState('');
-
-  const load = useCallback(async () => {
-    try {
-      const recs = await base44.entities.StoreItem.list('-created_date');
-      setItems(recs);
-    } catch {
-      setItems([]);
-    }
-  }, []);
-
-  useEffect(() => {
-    load();
-  }, [load]);
 
   const openNew = () => {
     setEditing({});
@@ -60,7 +58,7 @@ export default function StoreAdmin() {
       await base44.entities.StoreItem.create(payload);
       toast({ title: 'Item created' });
     }
-    await load();
+    await refetch();
   };
 
   const remove = async (item) => {
@@ -68,7 +66,10 @@ export default function StoreAdmin() {
     setBusy(item.id);
     try {
       await base44.entities.StoreItem.delete(item.id);
-      setItems((prev) => (prev || []).filter((i) => i.id !== item.id));
+      queryClient.setQueryData(['store-items'], (prev) => {
+        const list = /** @type {any[]} */ (prev) || [];
+        return list.filter((i) => i.id !== item.id);
+      });
       toast({ title: 'Item deleted' });
     } catch {
       toast({ title: 'Delete failed', variant: 'destructive' });

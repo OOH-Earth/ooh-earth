@@ -22,6 +22,7 @@ export type MockDb = {
   user?: Record<string, unknown> | null;
   locations?: Record<string, any>;
   locationPhotos?: any[];
+  storeItems?: Record<string, any>;
   uploadUrl?: string;
 };
 
@@ -141,6 +142,28 @@ export async function mockBase44(page: Page, db: MockDb) {
         const rec = { id: `mock-photo-${photoSeq}`, status: 'pending', ...body };
         list.push(rec);
         return route.fulfill({ json: rec });
+      }
+    }
+
+    if (entity === 'StoreItem') {
+      const store = db.storeItems ?? (db.storeItems = {});
+      if (idOrAction && method === 'PUT') {
+        const body = req.postDataJSON();
+        store[idOrAction] = { ...(store[idOrAction] ?? { id: idOrAction }), ...body };
+        return route.fulfill({ json: store[idOrAction] });
+      }
+      if (idOrAction && method === 'DELETE') {
+        delete store[idOrAction];
+        return route.fulfill({ json: { ok: true } });
+      }
+      if (!idOrAction && method === 'GET') {
+        return route.fulfill({ json: Object.values(store) });
+      }
+      if (!idOrAction && method === 'POST') {
+        const body = req.postDataJSON();
+        const id = body.id ?? `mock-store-item-${Object.keys(store).length + 1}`;
+        store[id] = { id, ...body };
+        return route.fulfill({ json: store[id] });
       }
     }
 
