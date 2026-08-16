@@ -1,4 +1,3 @@
-import { useRef } from 'react';
 import { Link } from 'react-router-dom';
 import {
   ChevronLeft,
@@ -12,6 +11,7 @@ import {
   Link as LinkIcon,
 } from 'lucide-react';
 import { CASING_TYPES, FINISHES, LABEL_COLORS, LAYERS } from './nftPresets';
+import { useKeyboardFilePicker } from '@/hooks/useKeyboardFilePicker';
 
 export default function NftStudioPanel({
   config,
@@ -23,7 +23,7 @@ export default function NftStudioPanel({
   generating,
   onRandomize,
 }) {
-  const fileRef = useRef(null);
+  const uploadTrigger = useKeyboardFilePicker();
   const idx = CASING_TYPES.findIndex((c) => c.id === config.casing);
   const current = CASING_TYPES[idx] || CASING_TYPES[0];
   const layers = LAYERS[config.casing] || [];
@@ -148,9 +148,13 @@ export default function NftStudioPanel({
       <div className="border border-slate2 bg-card p-4">
         <div className="font-mono text-[10px] uppercase tracking-[0.2em] text-ozone">Artwork</div>
         <div className="mt-3 flex flex-wrap gap-2">
-          <label className="flex cursor-pointer items-center gap-2 border border-slate2 px-3 py-2 font-mono text-[10px] font-bold uppercase tracking-[0.15em] text-silver/70 hover:border-ozone hover:text-ozone">
+          <label
+            {...uploadTrigger.labelProps}
+            aria-label="Upload artwork"
+            className="flex cursor-pointer items-center gap-2 border border-slate2 px-3 py-2 font-mono text-[10px] font-bold uppercase tracking-[0.15em] text-silver/70 hover:border-ozone hover:text-ozone"
+          >
             <input
-              ref={fileRef}
+              {...uploadTrigger.inputProps}
               type="file"
               accept="image/*"
               className="hidden"

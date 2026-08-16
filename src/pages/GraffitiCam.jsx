@@ -13,6 +13,7 @@ import {
 import exifr from 'exifr';
 import { compressImage } from '@/lib/imageCompress';
 import { validateImageFile } from '@/lib/validateUpload';
+import { useKeyboardFilePicker } from '@/hooks/useKeyboardFilePicker';
 import Nav from '@/components/ooh/Nav';
 import Breadcrumbs from '@/components/ooh/Breadcrumbs';
 import SiteFooter from '@/components/ooh/SiteFooter';
@@ -60,6 +61,7 @@ export default function GraffitiCam() {
   const { toast } = useToast();
   const [capturedUrl, setCapturedUrl] = useState(null);
   const [uploading, setUploading] = useState(false);
+  const uploadTrigger = useKeyboardFilePicker(uploading);
   const [submitting, setSubmitting] = useState(false);
   const [done, setDone] = useState(null);
 
@@ -278,12 +280,18 @@ export default function GraffitiCam() {
               ) : (
                 <>
                   <CameraViewfinder onCapture={handleCapture} uploading={uploading} />
-                  <label className="flex cursor-pointer items-center justify-center gap-2 border border-slate2 py-3 font-mono text-[10px] uppercase tracking-[0.2em] text-silver/60 transition-colors hover:border-flare hover:text-flare">
+                  <label
+                    {...uploadTrigger.labelProps}
+                    aria-label="Upload image"
+                    className={`flex items-center justify-center gap-2 border border-slate2 py-3 font-mono text-[10px] uppercase tracking-[0.2em] text-silver/60 transition-colors ${uploading ? 'cursor-not-allowed opacity-60' : 'cursor-pointer hover:border-flare hover:text-flare'}`}
+                  >
                     <Upload className="h-3.5 w-3.5" /> Upload image
                     <input
+                      {...uploadTrigger.inputProps}
                       type="file"
                       accept="image/*"
                       className="hidden"
+                      disabled={uploading}
                       onChange={handleFileSelect}
                     />
                   </label>

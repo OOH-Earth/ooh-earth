@@ -49,8 +49,15 @@ test.describe('FieldReport — Step 2 does not duplicate Step 1s AI scan', () =>
     await page.goto('/report');
 
     // Step 1: upload a photo (drives ReportScanner's visibility) and run it.
+    // The trigger label is a keyboard-focusable role="button" with its own
+    // accessible name (see useKeyboardFilePicker), so getByLabel('Upload')
+    // matches both it and the input it wraps -- scope to the input inside
+    // that labelled group instead of the ambiguous bare getByLabel query.
     const file = path.join(__dirname, 'fixtures', 'test-image.png');
-    await page.getByLabel('Upload').setInputFiles(file);
+    await page
+      .getByRole('button', { name: 'Upload' })
+      .locator('input[type="file"]')
+      .setInputFiles(file);
     await expect(page.getByText('AI Ad Scanner')).toBeVisible();
     await page.getByRole('button', { name: 'Run scan' }).click();
     await expect(page.getByText('Scan complete')).toBeVisible({ timeout: 10_000 });
