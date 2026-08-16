@@ -38,12 +38,8 @@ import {
 } from '@/components/ui/alert-dialog';
 import PullToRefresh from '@/components/ooh/PullToRefresh';
 import PersonaControl from '@/components/ooh/PersonaControl';
+import { STATUS_BADGE_CLASSES as STATUS_BADGE } from '@/lib/statusBadge';
 
-const STATUS_BADGE = {
-  pending: 'border-ozone/50 text-ozone',
-  verified: 'border-silver/30 text-silver',
-  rejected: 'border-flare/50 text-flare',
-};
 const ACCESS_BADGE = {
   admin: 'border-ozone/50 text-ozone',
   moderator: 'border-flare/50 text-flare',

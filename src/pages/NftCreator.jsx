@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { Box, Coins, ArrowRight, Layers as LayersIcon, ShoppingBag } from 'lucide-react';
@@ -25,10 +25,30 @@ export default function NftCreator() {
     serial: 'OOH-00001',
     labelColor: 'ozone',
   });
-  const [artworkUrl, setArtworkUrl] = useState(null);
+  const [artworkUrl, setArtworkUrlState] = useState(null);
   const [generating, setGenerating] = useState(false);
+  const [generateError, setGenerateError] = useState('');
   const viewerRef = useRef(null);
+  const artworkUrlRef = useRef(null);
+  artworkUrlRef.current = artworkUrl;
   const { gate } = useLabGate();
+
+  // Uploaded artwork arrives as a local blob: URL (see NftStudioPanel's
+  // onUpload) -- generated/premade artwork is a remote URL. Only blob URLs
+  // need revoking; revoking a non-blob URL is a silent no-op but we guard
+  // explicitly so this stays correct if that assumption ever changes.
+  const setArtworkUrl = (url) => {
+    const prev = artworkUrlRef.current;
+    if (prev?.startsWith('blob:') && prev !== url) URL.revokeObjectURL(prev);
+    setArtworkUrlState(url);
+  };
+
+  useEffect(
+    () => () => {
+      if (artworkUrlRef.current?.startsWith('blob:')) URL.revokeObjectURL(artworkUrlRef.current);
+    },
+    [],
+  );
 
   const onConfig = (patch) => setConfig((c) => ({ ...c, ...patch }));
 
@@ -37,13 +57,15 @@ export default function NftCreator() {
   const generateArt = async () => {
     if (!gate('Generate artwork')) return;
     setGenerating(true);
+    setGenerateError('');
     try {
       const res = await base44.integrations.Core.GenerateImage({
         prompt: `Subvertising adbusting poster artwork: "${config.title}". High-contrast political stencil art, black and yellow palette, anti-corporate advertising, public space reclamation, bold graphic design suitable for a trading card.`,
       });
       if (res?.url) setArtworkUrl(res.url);
+      else setGenerateError('Generation returned no image — try again.');
     } catch {
-      /* ignore for prototype */
+      setGenerateError('Artwork generation failed — try again.');
     }
     setGenerating(false);
   };
@@ -110,10 +132,14 @@ export default function NftCreator() {
             config={config}
             onConfig={onConfig}
             artworkUrl={artworkUrl}
-            onArtwork={setArtworkUrl}
+            onArtwork={(url) => {
+              setGenerateError('');
+              setArtworkUrl(url);
+            }}
             onExport={handleExport}
             onGenerate={generateArt}
             generating={generating}
+            generateError={generateError}
             onRandomize={randomize}
           />
         </div>

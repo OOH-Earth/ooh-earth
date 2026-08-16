@@ -10,6 +10,7 @@ import { thumbHTML, metaFor } from '@/components/ooh/map/LocationThumb';
 import { drawGlyph, GLYPH_COLORS, PIN_TYPES } from '@/components/ooh/map/pinGlyphs';
 import GlobeLayerManager from '@/components/ooh/map/layers/GlobeLayerManager';
 import { useMapStyle } from '@/lib/mapStyleContext';
+import { getStatusDotColor } from '@/lib/statusBadge';
 
 const esc = (s) =>
   String(s ?? '').replace(
@@ -85,7 +86,7 @@ function popupHTML(m) {
       <div style="padding:10px 12px 12px">
         <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px">
           <span style="font-size:9px;text-transform:uppercase;letter-spacing:0.2em;font-weight:700;color:#EDFF00">${esc(type)}</span>
-          <span style="width:5px;height:5px;border-radius:999px;background:${status === 'verified' ? '#39FF14' : '#FF5C00'}"></span>
+          <span style="width:5px;height:5px;border-radius:999px;background:${getStatusDotColor(status)}"></span>
           <span style="font-size:9px;text-transform:uppercase;letter-spacing:0.2em;color:hsl(var(--muted-foreground))">${esc(status)}</span>
         </div>
         <div style="font-weight:700;font-size:15px;color:hsl(var(--foreground));line-height:1.25">${esc(m.title)}</div>

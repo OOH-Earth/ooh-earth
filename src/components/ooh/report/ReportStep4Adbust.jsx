@@ -1,6 +1,7 @@
 import { base44 } from '@/api/base44Client';
 import { compressImage } from '@/lib/imageCompress';
 import { validateImageFile } from '@/lib/validateUpload';
+import { useKeyboardFilePicker } from '@/hooks/useKeyboardFilePicker';
 import { useState } from 'react';
 import { Camera, Loader2 } from 'lucide-react';
 
@@ -27,6 +28,7 @@ const ACTION_FLAGS = [
 export default function ReportStep4Adbust({ data, onChange }) {
   const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState('');
+  const photoTrigger = useKeyboardFilePicker(uploading);
 
   const onPhoto = async (e) => {
     const file = e.target.files?.[0];
@@ -87,7 +89,11 @@ export default function ReportStep4Adbust({ data, onChange }) {
           <label className="mb-2 block font-mono text-[10px] uppercase tracking-[0.3em] text-dim">
             Intervention photo <span className="text-dim/50">(optional)</span>
           </label>
-          <label className="flex cursor-pointer items-center gap-3 border border-slate2 bg-card px-4 py-4 transition-colors hover:border-ozone">
+          <label
+            {...photoTrigger.labelProps}
+            aria-label={data.adbust_image_url ? 'Replace photo' : 'Upload adbust evidence'}
+            className="flex cursor-pointer items-center gap-3 border border-slate2 bg-card px-4 py-4 transition-colors hover:border-ozone"
+          >
             {uploading ? (
               <Loader2 className="h-4 w-4 animate-spin text-ozone" />
             ) : data.adbust_image_url ? (
@@ -103,6 +109,7 @@ export default function ReportStep4Adbust({ data, onChange }) {
                   : 'Upload adbust evidence'}
             </span>
             <input
+              {...photoTrigger.inputProps}
               type="file"
               accept="image/*"
               capture="environment"

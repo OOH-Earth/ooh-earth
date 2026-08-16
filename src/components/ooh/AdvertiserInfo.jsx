@@ -1,5 +1,6 @@
 import { Tag, Building2, Flag, Megaphone, Ban } from 'lucide-react';
 import { BrandIcon } from '@/components/ooh/BrandBadge';
+import { lookupParentCorpSector } from '@/components/ooh/report/advertiserRegistry';
 
 const SECTOR_LABELS = {
   fossil_fuel: 'Fossil Fuel',
@@ -35,6 +36,10 @@ function Field({ icon: Icon = null, label, value, brand = false }) {
 // right column. No outer border; the parent container provides visual structure.
 export default function AdvertiserInfo({ loc }) {
   const isSubverted = loc.adbust_type && loc.adbust_type !== 'none';
+  // industry_sector is a separate field the reporter may not have filled in
+  // even when parent_corp is known and recognized -- suggest it from the
+  // advertiser registry rather than leaving the sector silently blank.
+  const inferredSector = !loc.industry_sector ? lookupParentCorpSector(loc.parent_corp) : null;
   const hasFields =
     loc.brand_name ||
     loc.campaign_name ||
@@ -83,6 +88,12 @@ export default function AdvertiserInfo({ loc }) {
             <Field
               label="Sector"
               value={SECTOR_LABELS[loc.industry_sector] || loc.industry_sector}
+            />
+          )}
+          {!loc.industry_sector && inferredSector && (
+            <Field
+              label="Sector (from registry)"
+              value={SECTOR_LABELS[inferredSector] || inferredSector}
             />
           )}
         </div>
