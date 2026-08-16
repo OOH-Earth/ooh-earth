@@ -59,6 +59,6 @@ jobs:
           while IFS= read -r branch; do
             [ -z "$branch" ] && continue
             echo "Dispatching CI + CodeQL on release PR branch: $branch"
-            gh workflow run ci.yml --ref "$branch"
-            gh workflow run codeql.yml --ref "$branch"
+            gh workflow run ci.yml --repo "${{ github.repository }}" --ref "$branch"
+            gh workflow run codeql.yml --repo "${{ github.repository }}" --ref "$branch"
           done <<< "$branches"

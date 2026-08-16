@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import { submitFieldCheck } from '@/lib/offlineQueue';
 import CameraViewfinder from '@/components/ooh/CameraViewfinder';
+import { useKeyboardFilePicker } from '@/hooks/useKeyboardFilePicker';
 
 const CONDITIONS = [
   { value: 'functional', label: 'Functional' },
@@ -48,6 +49,7 @@ export default function FieldCheckCamera({ location, open, onClose }) {
   const [error, setError] = useState('');
   const [detecting, setDetecting] = useState(false);
   const [detected, setDetected] = useState(null);
+  const uploadTrigger = useKeyboardFilePicker(uploading);
 
   useEffect(() => {
     if (!open || !location) return;
@@ -268,12 +270,18 @@ Respond in JSON only.`,
                 <div className="mt-4">
                   <CameraViewfinder onCapture={(file) => uploadFile(file)} uploading={uploading} />
                 </div>
-                <label className="mt-2 flex cursor-pointer items-center justify-center gap-2 border border-slate2/60 py-2 font-mono text-[9px] uppercase tracking-[0.2em] text-darkgray transition-colors hover:border-ozone hover:text-ozone">
+                <label
+                  {...uploadTrigger.labelProps}
+                  aria-label="Or choose from gallery"
+                  className={`mt-2 flex items-center justify-center gap-2 border border-slate2/60 py-2 font-mono text-[9px] uppercase tracking-[0.2em] text-darkgray transition-colors ${uploading ? 'cursor-not-allowed opacity-60' : 'cursor-pointer hover:border-ozone hover:text-ozone'}`}
+                >
                   <Camera className="h-3 w-3" /> Or choose from gallery
                   <input
+                    {...uploadTrigger.inputProps}
                     type="file"
                     accept="image/*"
                     onChange={(e) => uploadFile(e.target.files?.[0])}
+                    disabled={uploading}
                     className="hidden"
                   />
                 </label>

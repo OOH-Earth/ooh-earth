@@ -20,6 +20,16 @@ import {
 
 const BILLBOARD_CO2_KG_YR = 4760; // ~4.76 t CO2/yr per illuminated static billboard
 const WHO_24H = 15;
+const VALID_SURFACE_TYPES = [
+  'billboard',
+  'painted',
+  'digital',
+  'projection',
+  'sticker',
+  'mural',
+  'transit',
+  'other',
+];
 
 function useGeolocation() {
   const [pos, setPos] = useState(null);
@@ -53,8 +63,9 @@ export default function ArLens() {
   const [box, setBox] = useState(60); // percent width of target reticle
   const [layers, setLayers] = useState({ takeover: true, intel: true, log: true });
   const [pm25, setPm25] = useState(null);
-  const [logState, setLogState] = useState('idle'); // idle | capturing | uploading | done | error
+  const [logState, setLogState] = useState('idle'); // idle | capturing | uploading | analyzing | done | error
   const [, setLastReport] = useState(null);
+  const [detection, setDetection] = useState(null);
   const { pos, err: geoErr } = useGeolocation();
 
   const startCamera = useCallback(async () => {
@@ -118,8 +129,9 @@ export default function ArLens() {
   };
 
   const logReport = async () => {
-    if (logState === 'capturing' || logState === 'uploading') return;
+    if (logState === 'capturing' || logState === 'uploading' || logState === 'analyzing') return;
     setLogState('capturing');
+    setDetection(null);
     try {
       const blob = await captureFrame();
       if (!blob) {
@@ -142,6 +154,35 @@ export default function ArLens() {
         notes: 'Filed via AR Lens field capture',
       });
       setLastReport(rec);
+      setLogState('analyzing');
+
+      // Same AI ad-scanner the /report wizard already uses -- an AR capture
+      // shouldn't be a second-class report missing brand identification
+      // just because it was filed through the camera lens instead of the
+      // form. Best-effort: the report is already safely filed above, so a
+      // failed/empty scan here still resolves to 'done', not 'error'.
+      try {
+        const resp = await base44.functions.invoke('scanAd', { file_url: up.file_url });
+        const det = resp.data?.detection?.response || resp.data?.detection || resp.data;
+        if (det?.is_advertising) {
+          const scannedType = VALID_SURFACE_TYPES.includes(det.surface_type)
+            ? det.surface_type
+            : rec.type;
+          await base44.entities.Location.update(rec.id, {
+            type: scannedType,
+            brand_name: det.brand_name && det.brand_name !== 'Unknown' ? det.brand_name : '',
+            ad_agency: det.ad_agency || '',
+            parent_corp: det.parent_corp || '',
+            campaign_name: det.campaign_name || '',
+            ooh_operator: det.ooh_operator || '',
+            industry_sector: det.industry_sector || '',
+            harm_tags: det.harm_tags?.length ? det.harm_tags : [],
+          });
+          setDetection(det);
+        }
+      } catch {
+        /* AR capture is already filed -- a failed scan is not fatal */
+      }
       setLogState('done');
     } catch (e) {
       console.error(e);
@@ -395,15 +436,29 @@ export default function ArLens() {
                         {pos ? 'Capture & file report' : 'Waiting for GPS…'}
                       </button>
                     )}
-                    {(logState === 'capturing' || logState === 'uploading') && (
+                    {(logState === 'capturing' ||
+                      logState === 'uploading' ||
+                      logState === 'analyzing') && (
                       <div className="flex w-full items-center justify-center gap-2 border-2 border-slate2 bg-void/80 px-6 py-3 font-mono text-[11px] uppercase tracking-[0.25em] text-ozone">
                         <Loader2 className="h-4 w-4 animate-spin" />{' '}
-                        {logState === 'capturing' ? 'Capturing frame…' : 'Uploading + filing…'}
+                        {logState === 'capturing'
+                          ? 'Capturing frame…'
+                          : logState === 'uploading'
+                            ? 'Uploading + filing…'
+                            : 'Identifying brand…'}
                       </div>
                     )}
                     {logState === 'done' && (
-                      <div className="flex w-full items-center justify-center gap-2 border-2 border-ozone bg-void/80 px-6 py-3 font-mono text-[11px] uppercase tracking-[0.25em] text-ozone">
-                        <Check className="h-4 w-4" /> Report filed — pending verification
+                      <div className="flex w-full flex-col items-center gap-1.5 border-2 border-ozone bg-void/80 px-6 py-3">
+                        <div className="flex items-center gap-2 font-mono text-[11px] uppercase tracking-[0.25em] text-ozone">
+                          <Check className="h-4 w-4" /> Report filed — pending verification
+                        </div>
+                        {detection?.brand_name && detection.brand_name !== 'Unknown' && (
+                          <div className="font-mono text-[10px] uppercase tracking-[0.2em] text-silver/70">
+                            Identified: {detection.brand_name}
+                            {detection.ooh_operator ? ` · ${detection.ooh_operator}` : ''}
+                          </div>
+                        )}
                       </div>
                     )}
                     {logState === 'error' && (

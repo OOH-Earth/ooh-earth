@@ -5,6 +5,7 @@ import { validateImageFile } from '@/lib/validateUpload';
 import { SprayCan, Crosshair, Loader2, Check, X, MapPin, CloudOff, Camera } from 'lucide-react';
 import { submitCapture } from '@/lib/offlineQueue';
 import CameraViewfinder from '@/components/ooh/CameraViewfinder';
+import { useKeyboardFilePicker } from '@/hooks/useKeyboardFilePicker';
 
 const GRAFFITI_TYPES = [
   { value: 'painted', label: 'Painted' },
@@ -52,6 +53,7 @@ export default function GraffitiCamera({ open, onClose }) {
   const [submitting, setSubmitting] = useState(false);
   const [done, setDone] = useState(null);
   const [error, setError] = useState('');
+  const uploadTrigger = useKeyboardFilePicker(uploading);
 
   const locate = () => {
     if (!navigator.geolocation) return;
@@ -253,9 +255,20 @@ export default function GraffitiCamera({ open, onClose }) {
                 <div className="mt-4">
                   <CameraViewfinder onCapture={onCapture} uploading={uploading} />
                 </div>
-                <label className="mt-2 flex cursor-pointer items-center justify-center gap-2 border border-slate2/60 py-2 font-mono text-[9px] uppercase tracking-[0.2em] text-darkgray transition-colors hover:border-flare hover:text-flare">
+                <label
+                  {...uploadTrigger.labelProps}
+                  aria-label="Or choose from gallery"
+                  className={`mt-2 flex items-center justify-center gap-2 border border-slate2/60 py-2 font-mono text-[9px] uppercase tracking-[0.2em] text-darkgray transition-colors ${uploading ? 'cursor-not-allowed opacity-60' : 'cursor-pointer hover:border-flare hover:text-flare'}`}
+                >
                   <Camera className="h-3 w-3" /> Or choose from gallery
-                  <input type="file" accept="image/*" onChange={onPhoto} className="hidden" />
+                  <input
+                    {...uploadTrigger.inputProps}
+                    type="file"
+                    accept="image/*"
+                    onChange={onPhoto}
+                    disabled={uploading}
+                    className="hidden"
+                  />
                 </label>
               </>
             )}

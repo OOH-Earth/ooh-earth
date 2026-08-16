@@ -35,6 +35,7 @@ export default function ReportScanner({ data, onChange }) {
         const scannedType = VALID_TYPES.includes(det.surface_type) ? det.surface_type : 'other';
         onChange({
           type: scannedType,
+          ai_scanned: true,
           brand_name:
             det.brand_name && det.brand_name !== 'Unknown' ? det.brand_name : data.brand_name,
           ad_agency: det.ad_agency || data.ad_agency,
