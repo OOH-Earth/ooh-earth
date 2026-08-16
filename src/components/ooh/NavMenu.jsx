@@ -59,56 +59,31 @@ import {
   FlaskConical,
   Store,
   ScanLine,
+  ChevronDown,
 } from 'lucide-react';
 
-// Navigation hierarchy — audience-ordered. Keep in step with
-// src/components/ooh/sitemapData.js (the /sitemap doc is the canonical model;
-// this menu is the navigable subset). Items may carry a status:
-//   (none) = live · "building" · "planned" · "exploring".
+// Navigation hierarchy — intent-first. `tier: 'primary'` groups (Tools,
+// Campaigns) are what someone opening the menu should see and act on
+// immediately; they're expanded by default. Everything else is real,
+// reachable, and one tap away, but starts collapsed so the first screen
+// answers "what can I do" instead of dumping the whole ecosystem inventory.
+// The fuller audience-ordered model (with UX/audience/auth annotations)
+// lives in src/components/ooh/sitemapData.js and drives the standalone
+// /sitemap "what is OOH Earth connected to" page — keep both in step when
+// adding or removing a route, but they intentionally answer different
+// questions and don't need identical grouping.
+// Items may carry a status: (none) = live · "building" · "planned" · "exploring".
 // A null `to` means the surface isn't navigable yet — it renders as a
 // non-clickable row so unbuilt work is still visible in the map.
-// Categories (surface types) are an INDEX — they live in their own group and
-// on /categories, not as a giant inline dropdown.
+// `Ecosystem`'s `subgroups` nest audience-specific surfaces (investor,
+// agency, docs) one level under a single secondary disclosure, so they don't
+// compete with Tools/Campaigns for primary attention but stay fully linked.
 const SITEMAP = [
   {
-    group: 'Explore',
+    group: 'Tools',
+    tier: 'primary',
     items: [
-      { to: '/', label: 'Home', status: 'live' },
       { to: '/map', label: 'Field Atlas', status: 'live' },
-      { to: '/channel', label: 'OOH·TV', status: 'live' },
-      { to: '/blog', label: 'Blog', status: 'live' },
-      { to: '/about', label: 'About', status: 'live' },
-      { to: null, label: 'City Density · OSM', status: 'planned' },
-    ],
-  },
-  {
-    group: 'Categories',
-    items: [
-      { to: '/categories', label: 'All Categories', status: 'live' },
-      { to: '/regions', label: 'Regions', status: 'live' },
-      { to: '/bus-stops', label: 'Bus Stops', status: 'live' },
-      { to: '/category/billboard', label: 'Billboards', status: 'live' },
-      { to: '/category/digital', label: 'Digital', status: 'live' },
-      { to: '/category/transit', label: 'Transit', status: 'live' },
-      { to: '/category/painted', label: 'Painted', status: 'live' },
-    ],
-  },
-  {
-    group: 'Campaigns',
-    items: [
-      { to: '/adbusting', label: 'Adbusting', status: 'live' },
-      { to: '/graffiti', label: 'Graffiti', status: 'live' },
-      { to: '/ecology', label: 'Ecology', status: 'live' },
-      { to: '/rivers', label: 'Rivers', status: 'live' },
-      { to: '/warzones', label: 'War Zones', status: 'live' },
-      { to: '/campaign', label: 'Fund the Offensive', status: 'testing' },
-      { to: '/media-corps', label: 'Media Corps Map', status: 'live' },
-      { to: null, label: 'AFC Correspondents', status: 'planned' },
-    ],
-  },
-  {
-    group: 'Field Ops',
-    items: [
       { to: '/report', label: 'Field Report', status: 'live' },
       { to: '/ar', label: 'AR Lens', status: 'testing' },
       { to: '/scan', label: 'TrueCost', status: 'testing' },
@@ -124,7 +99,46 @@ const SITEMAP = [
     ],
   },
   {
+    group: 'Campaigns',
+    tier: 'primary',
+    items: [
+      { to: '/adbusting', label: 'Adbusting', status: 'live' },
+      { to: '/graffiti', label: 'Graffiti', status: 'live' },
+      { to: '/ecology', label: 'Ecology', status: 'live' },
+      { to: '/rivers', label: 'Rivers', status: 'live' },
+      { to: '/warzones', label: 'War Zones', status: 'live' },
+      { to: '/campaign', label: 'Fund the Offensive', status: 'testing' },
+      { to: '/media-corps', label: 'Media Corps Map', status: 'live' },
+      { to: null, label: 'AFC Correspondents', status: 'planned' },
+    ],
+  },
+  {
+    group: 'Explore',
+    tier: 'secondary',
+    items: [
+      { to: '/', label: 'Home', status: 'live' },
+      { to: '/channel', label: 'OOH·TV', status: 'live' },
+      { to: '/blog', label: 'Blog', status: 'live' },
+      { to: '/about', label: 'About', status: 'live' },
+      { to: null, label: 'City Density · OSM', status: 'planned' },
+    ],
+  },
+  {
+    group: 'Categories',
+    tier: 'secondary',
+    items: [
+      { to: '/categories', label: 'All Categories', status: 'live' },
+      { to: '/regions', label: 'Regions', status: 'live' },
+      { to: '/bus-stops', label: 'Bus Stops', status: 'live' },
+      { to: '/category/billboard', label: 'Billboards', status: 'live' },
+      { to: '/category/digital', label: 'Digital', status: 'live' },
+      { to: '/category/transit', label: 'Transit', status: 'live' },
+      { to: '/category/painted', label: 'Painted', status: 'live' },
+    ],
+  },
+  {
     group: 'Operate',
+    tier: 'secondary',
     items: [
       { to: '/operative', label: 'Member Profile', status: 'live' },
       { to: '/dashboard', label: 'Console', status: 'live' },
@@ -134,6 +148,7 @@ const SITEMAP = [
   },
   {
     group: 'Fund & Store',
+    tier: 'secondary',
     items: [
       { to: null, label: 'On-chain Treasury', status: 'building' },
       { to: '/plans', label: 'Plans / Roadmap', status: 'live' },
@@ -145,45 +160,8 @@ const SITEMAP = [
     ],
   },
   {
-    group: 'Capital · Investor',
-    items: [
-      { to: '/investor-access', label: 'Investor Access', status: 'live' },
-      { to: '/investor', label: 'Investor Hub', status: 'live' },
-      { to: '/console', label: 'Investor Console', status: 'live' },
-      { to: '/portal/investor', label: 'Investor Dashboard', status: 'live' },
-      { to: '/portal/client', label: 'Client Portal', status: 'building' },
-      { to: '/capital/impact-grants', label: 'Impact Grants', status: 'live' },
-      { to: '/capital/philanthropic', label: 'Philanthropic', status: 'live' },
-      { to: '/capital/retro-pgf', label: 'Retro Public Goods', status: 'live' },
-      { to: '/capital/civic-tech', label: 'Civic-Tech', status: 'live' },
-    ],
-  },
-  {
-    group: 'Agency · Internal',
-    items: [
-      { to: '/agency', label: 'Agency HQ', status: 'live' },
-      { to: '/agency/blog', label: 'Agency Newsroom', status: 'live' },
-      { to: '/fde', label: 'FDE Portal', status: 'live' },
-      { to: '/portfolio', label: 'Treasury Console', status: 'live' },
-      { to: '/radio-ops', label: 'Radio Ops', status: 'live' },
-      { to: null, label: 'Automation · n8n', status: 'building' },
-      { to: '/lab/book', label: 'The Guild · Book', status: 'live' },
-    ],
-  },
-  {
-    group: 'Ops · Access & Moderation',
-    agencyOnly: true,
-    items: [
-      { to: '/portal/ops', label: 'Architecture Ops', status: 'live' },
-      { to: '/lab/admin', label: 'Lab Admin', status: 'live' },
-      { to: '/store/admin', label: 'Store Admin', status: 'live' },
-      { to: '/dashboard', label: 'Persona Control', status: 'live' },
-      { to: '/dashboard', label: 'Moderation Service', status: 'live' },
-      { to: '/dashboard', label: 'Access Audit Log', status: 'live' },
-    ],
-  },
-  {
     group: 'Lab',
+    tier: 'secondary',
     items: [
       { to: '/lab', label: 'Hex Engine Lab', status: 'live' },
       { to: '/lab/coin', label: 'Genesis Coin', status: 'live' },
@@ -199,15 +177,67 @@ const SITEMAP = [
     ],
   },
   {
-    group: 'Reference & Docs',
-    items: [
-      { to: '/journey', label: 'Journey Map', status: 'live' },
-      { to: '/sitemap', label: 'Sitemap', status: 'live' },
-      { to: '/kit', label: 'Brand Guide', status: 'live' },
-      { to: '/brand', label: 'Brand Standards', status: 'live' },
+    group: 'Ecosystem',
+    tier: 'secondary',
+    subgroups: [
+      {
+        group: 'Capital · Investor',
+        items: [
+          { to: '/investor-access', label: 'Investor Access', status: 'live' },
+          { to: '/investor', label: 'Investor Hub', status: 'live' },
+          { to: '/console', label: 'Investor Console', status: 'live' },
+          { to: '/portal/investor', label: 'Investor Dashboard', status: 'live' },
+          { to: '/portal/client', label: 'Client Portal', status: 'building' },
+          { to: '/capital/impact-grants', label: 'Impact Grants', status: 'live' },
+          { to: '/capital/philanthropic', label: 'Philanthropic', status: 'live' },
+          { to: '/capital/retro-pgf', label: 'Retro Public Goods', status: 'live' },
+          { to: '/capital/civic-tech', label: 'Civic-Tech', status: 'live' },
+        ],
+      },
+      {
+        group: 'Agency · Internal',
+        items: [
+          { to: '/agency', label: 'Agency HQ', status: 'live' },
+          { to: '/agency/blog', label: 'Agency Newsroom', status: 'live' },
+          { to: '/fde', label: 'FDE Portal', status: 'live' },
+          { to: '/portfolio', label: 'Treasury Console', status: 'live' },
+          { to: '/radio-ops', label: 'Radio Ops', status: 'live' },
+          { to: null, label: 'Automation · n8n', status: 'building' },
+          { to: '/lab/book', label: 'The Guild · Book', status: 'live' },
+        ],
+      },
+      {
+        group: 'Ops · Access & Moderation',
+        agencyOnly: true,
+        items: [
+          { to: '/portal/ops', label: 'Architecture Ops', status: 'live' },
+          { to: '/lab/admin', label: 'Lab Admin', status: 'live' },
+          { to: '/store/admin', label: 'Store Admin', status: 'live' },
+          { to: '/dashboard', label: 'Persona Control', status: 'live' },
+          { to: '/dashboard', label: 'Moderation Service', status: 'live' },
+          { to: '/dashboard', label: 'Access Audit Log', status: 'live' },
+        ],
+      },
+      {
+        group: 'Reference & Docs',
+        items: [
+          { to: '/journey', label: 'Journey Map', status: 'live' },
+          { to: '/sitemap', label: 'Sitemap', status: 'live' },
+          { to: '/kit', label: 'Brand Guide', status: 'live' },
+          { to: '/brand', label: 'Brand Standards', status: 'live' },
+        ],
+      },
     ],
   },
 ];
+
+const PRIMARY_GROUPS = SITEMAP.filter((g) => g.tier === 'primary').map((g) => g.group);
+
+const slug = (s) =>
+  s
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/(^-|-$)/g, '');
 
 const ICON = {
   Home,
@@ -353,11 +383,76 @@ const isAgencyMember = (u) => {
   return r === 'admin' || a === 'admin' || !!ag;
 };
 
-function MobileLauncher({ onClose, onTour, panelRef }) {
+// Shared open/closed state for collapsible groups, lifted above the
+// mobile/desktop split so both panels agree on what's expanded even though
+// only one is ever visually shown at a time.
+function useGroupDisclosure() {
+  const [openGroups, setOpenGroups] = useState(() => new Set(PRIMARY_GROUPS));
+  const toggleGroup = (name) =>
+    setOpenGroups((prev) => {
+      const next = new Set(prev);
+      if (next.has(name)) next.delete(name);
+      else next.add(name);
+      return next;
+    });
+  return { openGroups, toggleGroup };
+}
+
+function groupItemCount(g, agency) {
+  if (g.subgroups) {
+    return g.subgroups
+      .filter((sg) => !sg.agencyOnly || agency)
+      .reduce((sum, sg) => sum + sg.items.length, 0);
+  }
+  return g.items.length;
+}
+
+function MobileLauncher({ onClose, onTour, panelRef, openGroups, toggleGroup }) {
   const { user } = useAuth();
   const agency = isAgencyMember(user);
   const groups = withLabItems(SITEMAP, useLabNavItems());
   let n = 0;
+
+  function renderCard(l) {
+    n += 1;
+    const Icon = ICON[l.label] || LayoutGrid;
+    const st = l.status ? STATUS[l.status] : null;
+    /** @type {any} */
+    const Wrap = l.to ? Link : 'div';
+    const wrapProps = l.to ? { to: l.to, onClick: onClose } : {};
+    return (
+      <Wrap
+        key={l.label}
+        {...wrapProps}
+        className={`group flex flex-col gap-2 border p-3.5 transition-colors ${l.to ? 'border-slate2/50 bg-card hover:border-ozone/60 hover:bg-slate2/20' : 'border-dashed border-slate2/40 bg-card/40 cursor-default'}`}
+      >
+        <div className="flex items-center justify-between">
+          <Icon
+            className={`h-5 w-5 transition-colors ${l.to ? 'text-silver/70 group-hover:text-ozone' : 'text-silver/35'}`}
+          />
+          {st ? (
+            <span
+              className="flex items-center gap-1 font-mono text-[7px] font-bold uppercase tracking-[0.15em]"
+              style={{ color: st.color }}
+            >
+              <span className="h-1.5 w-1.5 rounded-full" style={{ background: st.color }} />
+              {st.text}
+            </span>
+          ) : (
+            <span className="font-mono text-[8px] tabular text-dim/40">
+              {String(n).padStart(2, '0')}
+            </span>
+          )}
+        </div>
+        <span
+          className={`font-display text-sm font-semibold tracking-[-0.02em] transition-colors ${l.to ? 'text-silver/85 group-hover:text-ozone' : 'text-silver/55'}`}
+        >
+          {l.label}
+        </span>
+      </Wrap>
+    );
+  }
+
   return (
     <motion.div
       key="mobile"
@@ -366,14 +461,14 @@ function MobileLauncher({ onClose, onTour, panelRef }) {
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: 8 }}
       transition={{ duration: 0.2, ease: 'easeOut' }}
-      className="fixed inset-0 z-[100] flex flex-col bg-void md:hidden"
+      className="fixed inset-0 z-[2000] flex flex-col bg-void md:hidden"
     >
       <div
         className="flex items-center justify-between border-b border-slate2/60 px-4 py-3"
         style={{ paddingTop: 'calc(env(safe-area-inset-top) + 12px)' }}
       >
         <span className="font-mono text-[10px] font-bold uppercase tracking-[0.3em] text-ozone">
-          // Sitemap
+          // Menu
         </span>
         <div className="flex items-center gap-2">
           <button
@@ -406,133 +501,161 @@ function MobileLauncher({ onClose, onTour, panelRef }) {
         >
           {groups
             .filter((g) => !g.agencyOnly || agency)
-            .map((g) => (
-              <motion.div key={g.group} variants={groupV}>
-                <div className="mb-2 flex items-center gap-2">
-                  <span className="font-mono text-[9px] uppercase tracking-[0.3em] text-ozone">
-                    // {g.group}
-                  </span>
-                  <span className="h-px flex-1 bg-slate2/40" />
-                </div>
-                <div className="grid grid-cols-2 gap-2">
-                  {g.items
-                    .filter((l) => !l.agencyOnly || agency)
-                    .map((l) => {
-                      n += 1;
-                      const Icon = ICON[l.label] || LayoutGrid;
-                      const st = l.status ? STATUS[l.status] : null;
-                      /** @type {any} */
-                      const Wrap = l.to ? Link : 'div';
-                      const wrapProps = l.to ? { to: l.to, onClick: onClose } : {};
-                      return (
-                        <Wrap
-                          key={l.label}
-                          {...wrapProps}
-                          className={`group flex flex-col gap-2 border p-3.5 transition-colors ${l.to ? 'border-slate2/50 bg-card hover:border-ozone/60 hover:bg-slate2/20' : 'border-dashed border-slate2/40 bg-card/40 cursor-default'}`}
-                        >
-                          <div className="flex items-center justify-between">
-                            <Icon
-                              className={`h-5 w-5 transition-colors ${l.to ? 'text-silver/70 group-hover:text-ozone' : 'text-silver/35'}`}
-                            />
-                            {st ? (
-                              <span
-                                className="flex items-center gap-1 font-mono text-[7px] font-bold uppercase tracking-[0.15em]"
-                                style={{ color: st.color }}
-                              >
-                                <span
-                                  className="h-1.5 w-1.5 rounded-full"
-                                  style={{ background: st.color }}
-                                />
-                                {st.text}
-                              </span>
-                            ) : (
-                              <span className="font-mono text-[8px] tabular text-dim/40">
-                                {String(n).padStart(2, '0')}
-                              </span>
-                            )}
-                          </div>
-                          <span
-                            className={`font-display text-sm font-semibold tracking-[-0.02em] transition-colors ${l.to ? 'text-silver/85 group-hover:text-ozone' : 'text-silver/55'}`}
-                          >
-                            {l.label}
-                          </span>
-                        </Wrap>
-                      );
-                    })}
-                </div>
-              </motion.div>
-            ))}
+            .map((g) => {
+              const isOpen = openGroups.has(g.group);
+              const count = groupItemCount(g, agency);
+              const panelId = `navgroup-mobile-${slug(g.group)}`;
+              return (
+                <motion.div key={g.group} variants={groupV}>
+                  <button
+                    type="button"
+                    onClick={() => toggleGroup(g.group)}
+                    aria-expanded={isOpen}
+                    aria-controls={panelId}
+                    className="mb-2 flex w-full items-center gap-2 py-1 text-left"
+                  >
+                    <span className="font-mono text-[9px] uppercase tracking-[0.3em] text-ozone">
+                      // {g.group}
+                    </span>
+                    <span className="h-px flex-1 bg-slate2/40" />
+                    <span className="font-mono text-[8px] tabular text-dim/50">
+                      {String(count).padStart(2, '0')}
+                    </span>
+                    <ChevronDown
+                      className={`h-3.5 w-3.5 text-dim/60 transition-transform ${isOpen ? 'rotate-180' : ''}`}
+                    />
+                  </button>
+                  {isOpen &&
+                    (g.subgroups ? (
+                      <div id={panelId} className="space-y-4">
+                        {g.subgroups
+                          .filter((sg) => !sg.agencyOnly || agency)
+                          .map((sg) => (
+                            <div key={sg.group}>
+                              <div className="mb-2 font-mono text-[8px] uppercase tracking-[0.25em] text-dim/60">
+                                {sg.group}
+                              </div>
+                              <div className="grid grid-cols-2 gap-2">
+                                {sg.items.filter((l) => !l.agencyOnly || agency).map(renderCard)}
+                              </div>
+                            </div>
+                          ))}
+                      </div>
+                    ) : (
+                      <div id={panelId} className="grid grid-cols-2 gap-2">
+                        {g.items.filter((l) => !l.agencyOnly || agency).map(renderCard)}
+                      </div>
+                    ))}
+                </motion.div>
+              );
+            })}
         </motion.div>
       </div>
     </motion.div>
   );
 }
 
-function PopoverLinks({ onClose }) {
+function PopoverLinks({ onClose, openGroups, toggleGroup }) {
   const { user } = useAuth();
   const agency = isAgencyMember(user);
   const groups = withLabItems(SITEMAP, useLabNavItems());
   let n = 0;
+
+  function renderRow(l) {
+    n += 1;
+    const st = l.status ? STATUS[l.status] : null;
+    /** @type {any} */
+    const Wrap = l.to ? Link : 'div';
+    const wrapProps = l.to ? { to: l.to, onClick: onClose } : {};
+    return (
+      <Wrap
+        key={l.label}
+        {...wrapProps}
+        className={`group flex items-center justify-between border-b border-slate2/20 px-1 py-2 transition-colors ${l.to ? 'hover:bg-slate2/30' : 'cursor-default'}`}
+      >
+        <span className="flex items-baseline gap-2.5">
+          <span className="font-mono text-[9px] tabular text-dim/50">
+            {String(n).padStart(2, '0')}
+          </span>
+          <span
+            className={`font-display text-[13px] font-semibold tracking-[-0.02em] transition-all duration-200 ${l.to ? 'text-silver/85 group-hover:translate-x-0.5 group-hover:text-ozone' : 'text-silver/55'}`}
+          >
+            {l.label}
+          </span>
+        </span>
+        {st ? (
+          <span
+            className="flex items-center gap-1 font-mono text-[7px] font-bold uppercase tracking-[0.15em]"
+            style={{ color: st.color }}
+          >
+            <span className="h-1.5 w-1.5 rounded-full" style={{ background: st.color }} />
+            {st.text}
+          </span>
+        ) : (
+          <span className="h-1 w-1 rounded-full bg-dim/40 transition-colors group-hover:bg-ozone" />
+        )}
+      </Wrap>
+    );
+  }
+
   return (
     <motion.div
       variants={list}
       initial="hidden"
       animate="show"
       exit="exit"
-      className="grid grid-cols-2 gap-x-5 gap-y-4 px-2 py-2"
+      className="flex flex-col gap-4 px-2 py-2"
     >
       {groups
         .filter((g) => !g.agencyOnly || agency)
-        .map((g) => (
-          <motion.div key={g.group} variants={groupV}>
-            <div className="mb-1 flex items-center gap-2 border-b border-slate2/40 pb-1">
-              <span className="font-mono text-[9px] uppercase tracking-[0.3em] text-ozone">
-                // {g.group}
-              </span>
-            </div>
-            {g.items
-              .filter((l) => !l.agencyOnly || agency)
-              .map((l) => {
-                n += 1;
-                const st = l.status ? STATUS[l.status] : null;
-                /** @type {any} */
-                const Wrap = l.to ? Link : 'div';
-                const wrapProps = l.to ? { to: l.to, onClick: onClose } : {};
-                return (
-                  <Wrap
-                    key={l.label}
-                    {...wrapProps}
-                    className={`group flex items-center justify-between border-b border-slate2/20 px-1 py-2 transition-colors ${l.to ? 'hover:bg-slate2/30' : 'cursor-default'}`}
-                  >
-                    <span className="flex items-baseline gap-2.5">
-                      <span className="font-mono text-[9px] tabular text-dim/50">
-                        {String(n).padStart(2, '0')}
-                      </span>
-                      <span
-                        className={`font-display text-[13px] font-semibold tracking-[-0.02em] transition-all duration-200 ${l.to ? 'text-silver/85 group-hover:translate-x-0.5 group-hover:text-ozone' : 'text-silver/55'}`}
-                      >
-                        {l.label}
-                      </span>
-                    </span>
-                    {st ? (
-                      <span
-                        className="flex items-center gap-1 font-mono text-[7px] font-bold uppercase tracking-[0.15em]"
-                        style={{ color: st.color }}
-                      >
-                        <span
-                          className="h-1.5 w-1.5 rounded-full"
-                          style={{ background: st.color }}
-                        />
-                        {st.text}
-                      </span>
-                    ) : (
-                      <span className="h-1 w-1 rounded-full bg-dim/40 transition-colors group-hover:bg-ozone" />
-                    )}
-                  </Wrap>
-                );
-              })}
-          </motion.div>
-        ))}
+        .map((g) => {
+          const isOpen = openGroups.has(g.group);
+          const count = groupItemCount(g, agency);
+          const panelId = `navgroup-desktop-${slug(g.group)}`;
+          return (
+            <motion.div key={g.group} variants={groupV}>
+              <button
+                type="button"
+                onClick={() => toggleGroup(g.group)}
+                aria-expanded={isOpen}
+                aria-controls={panelId}
+                className="mb-1 flex w-full items-center gap-2 border-b border-slate2/40 pb-1 text-left"
+              >
+                <span className="font-mono text-[9px] uppercase tracking-[0.3em] text-ozone">
+                  // {g.group}
+                </span>
+                <span className="flex-1" />
+                <span className="font-mono text-[8px] tabular text-dim/50">
+                  {String(count).padStart(2, '0')}
+                </span>
+                <ChevronDown
+                  className={`h-3.5 w-3.5 text-dim/60 transition-transform ${isOpen ? 'rotate-180' : ''}`}
+                />
+              </button>
+              {isOpen &&
+                (g.subgroups ? (
+                  <div id={panelId} className="space-y-3">
+                    {g.subgroups
+                      .filter((sg) => !sg.agencyOnly || agency)
+                      .map((sg) => (
+                        <div key={sg.group}>
+                          <div className="mb-1 font-mono text-[8px] uppercase tracking-[0.25em] text-dim/60">
+                            {sg.group}
+                          </div>
+                          <div className="grid grid-cols-2 gap-x-5">
+                            {sg.items.filter((l) => !l.agencyOnly || agency).map(renderRow)}
+                          </div>
+                        </div>
+                      ))}
+                  </div>
+                ) : (
+                  <div id={panelId} className="grid grid-cols-2 gap-x-5">
+                    {g.items.filter((l) => !l.agencyOnly || agency).map(renderRow)}
+                  </div>
+                ))}
+            </motion.div>
+          );
+        })}
     </motion.div>
   );
 }
@@ -547,6 +670,7 @@ export default function NavMenu({ open, onClose, onTour }) {
   const desktopPanelRef = useRef(null);
   useFocusTrap(mobilePanelRef, open, { label: 'Navigation menu' });
   useFocusTrap(desktopPanelRef, open, { label: 'Navigation menu' });
+  const { openGroups, toggleGroup } = useGroupDisclosure();
 
   useEffect(() => {
     if (!open) return;
@@ -568,11 +692,17 @@ export default function NavMenu({ open, onClose, onTour }) {
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
             onClick={onClose}
-            className="fixed inset-0 z-[99] bg-black/60 backdrop-blur-sm"
+            className="fixed inset-0 z-[1999] bg-black/60 backdrop-blur-sm"
           />
 
           {/* Mobile · full-screen smart launcher */}
-          <MobileLauncher onClose={onClose} onTour={onTour} panelRef={mobilePanelRef} />
+          <MobileLauncher
+            onClose={onClose}
+            onTour={onTour}
+            panelRef={mobilePanelRef}
+            openGroups={openGroups}
+            toggleGroup={toggleGroup}
+          />
 
           {/* Desktop · popover */}
           <motion.div
@@ -583,11 +713,11 @@ export default function NavMenu({ open, onClose, onTour }) {
             exit={{ opacity: 0, scale: 0.96, y: -8 }}
             transition={{ type: 'spring', stiffness: 320, damping: 26 }}
             style={{ transformOrigin: 'top right' }}
-            className="fixed right-3 top-[60px] z-[100] hidden max-h-[calc(100vh-76px)] w-[min(440px,calc(100vw-24px))] flex-col overflow-hidden border border-slate2 bg-void shadow-[0_24px_60px_rgba(0,0,0,0.6)] md:right-8 md:flex"
+            className="fixed right-3 top-[60px] z-[2000] hidden max-h-[calc(100vh-76px)] w-[min(440px,calc(100vw-24px))] flex-col overflow-hidden border border-slate2 bg-void shadow-[0_24px_60px_rgba(0,0,0,0.6)] md:right-8 md:flex"
           >
             <div className="flex items-center justify-between border-b border-slate2/60 px-5 py-4">
               <span className="font-mono text-[9px] font-bold uppercase tracking-[0.3em] text-ozone">
-                // Sitemap
+                // Menu
               </span>
               <button
                 onClick={onClose}
@@ -598,7 +728,7 @@ export default function NavMenu({ open, onClose, onTour }) {
               </button>
             </div>
             <div className="min-h-0 flex-1 overflow-y-auto">
-              <PopoverLinks onClose={onClose} />
+              <PopoverLinks onClose={onClose} openGroups={openGroups} toggleGroup={toggleGroup} />
             </div>
             <div className="border-t border-slate2/60 px-5 py-3">
               <span className="font-mono text-[9px] uppercase tracking-[0.3em] text-dim/60">
