@@ -66,7 +66,15 @@ test.describe('FieldReport (/report) — multi-photo upload', () => {
 
     // Cover photo — "Upload" is the file-picker input; "Capture live" is the
     // camera-capture one, same non-multiple type, disambiguate by label.
-    await page.getByLabel('Upload').setInputFiles(IMG1);
+    // The trigger label is now itself a keyboard-focusable role="button"
+    // (see useKeyboardFilePicker) with its own accessible name, so
+    // getByLabel('Upload') matches both it and the input it wraps -- scope
+    // to the input inside that labelled group instead of the ambiguous bare
+    // getByLabel query.
+    await page
+      .getByRole('button', { name: 'Upload' })
+      .locator('input[type="file"]')
+      .setInputFiles(IMG1);
     await expect(page.getByText(/Replace/i)).toBeVisible();
 
     // Extra gallery photos.
