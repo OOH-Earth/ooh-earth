@@ -44,7 +44,7 @@ export default function TrashId() {
   const [error, setError] = useState('');
   const previewRef = useRef(null);
   previewRef.current = preview;
-  const { inputRef: fileInputRef, labelProps, inputProps } = useKeyboardFilePicker(loading);
+  const { labelProps, inputProps } = useKeyboardFilePicker(loading);
 
   useEffect(
     () => () => {
