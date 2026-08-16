@@ -5,7 +5,6 @@ import HeroConsole from '@/components/ooh/HeroConsole';
 import BrandMark from '@/components/ooh/BrandMark';
 import BetaTag from '@/components/ooh/BetaTag';
 import LicenseMark from '@/components/ooh/LicenseMark';
-import { useCommandCenter } from '@/lib/commandCenterContext';
 
 const WORD = 'oohearth.app';
 
@@ -15,7 +14,6 @@ const VIDEO_SRC =
 export default function Hero() {
   const [offset, setOffset] = useState(0);
   const [reduced, setReduced] = useState(false);
-  const { openCommand } = useCommandCenter();
 
   useEffect(() => {
     const mq = window.matchMedia('(prefers-reduced-motion: reduce)');

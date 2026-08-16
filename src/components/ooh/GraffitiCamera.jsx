@@ -144,7 +144,6 @@ export default function GraffitiCamera({ open, onClose }) {
       return;
     }
     setSubmitting(true);
-    const label = GRAFFITI_TYPES.find((t) => t.value === type)?.label || type;
     const title = `Graffiti · ${address.split(',')[0].trim() || 'Field capture'}`;
     // Build payload — strip empty numeric fields (API rejects "" for number type)
     const payload = {

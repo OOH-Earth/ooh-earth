@@ -4,8 +4,6 @@
 
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
 
-const SITE = 'OOH Earth';
-
 export default async function (req: Request): Promise<Response> {
   try {
     const base44 = createClientFromRequest(req);

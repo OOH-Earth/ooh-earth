@@ -1,5 +1,3 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
-
 // Preferred live source: a static JSON feed you publish on oohearth.app.
 // Static files aren't routed through the SG captcha, so this works from the
 // backend the moment the file exists. Expected shape:
