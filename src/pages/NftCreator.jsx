@@ -27,6 +27,7 @@ export default function NftCreator() {
   });
   const [artworkUrl, setArtworkUrl] = useState(null);
   const [generating, setGenerating] = useState(false);
+  const [generateError, setGenerateError] = useState('');
   const viewerRef = useRef(null);
   const { gate } = useLabGate();
 
@@ -37,13 +38,15 @@ export default function NftCreator() {
   const generateArt = async () => {
     if (!gate('Generate artwork')) return;
     setGenerating(true);
+    setGenerateError('');
     try {
       const res = await base44.integrations.Core.GenerateImage({
         prompt: `Subvertising adbusting poster artwork: "${config.title}". High-contrast political stencil art, black and yellow palette, anti-corporate advertising, public space reclamation, bold graphic design suitable for a trading card.`,
       });
       if (res?.url) setArtworkUrl(res.url);
+      else setGenerateError('Generation returned no image — try again.');
     } catch {
-      /* ignore for prototype */
+      setGenerateError('Artwork generation failed — try again.');
     }
     setGenerating(false);
   };
@@ -110,10 +113,14 @@ export default function NftCreator() {
             config={config}
             onConfig={onConfig}
             artworkUrl={artworkUrl}
-            onArtwork={setArtworkUrl}
+            onArtwork={(url) => {
+              setGenerateError('');
+              setArtworkUrl(url);
+            }}
             onExport={handleExport}
             onGenerate={generateArt}
             generating={generating}
+            generateError={generateError}
             onRandomize={randomize}
           />
         </div>
