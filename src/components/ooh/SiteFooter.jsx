@@ -7,7 +7,7 @@ import { useCommandCenter } from '@/lib/commandCenterContext';
 export default function SiteFooter() {
   const { openCommand } = useCommandCenter();
   return (
-    <footer className="border-t border-white/5 bg-void">
+    <footer className="border-t border-white/5 bg-void pb-[calc(6rem+env(safe-area-inset-bottom))] lg:pb-0">
       <div className="px-5 py-12 md:px-8">
         <div className="grid gap-10 md:grid-cols-[2fr_1fr_1fr_1fr]">
           <div>
