@@ -1,0 +1,116 @@
+name: '📋 Field test observation'
+description: 'Structured record for a real-world field-testing session (camera, scanner, map, capture workflows)'
+title: '[Field Test]: '
+labels: ['field-test', 'needs-repro']
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use this for structured field testing (see `FIELD_TESTING_PLAYBOOK.md`), not a quick one-line bug.
+        For a fast, informal report use **🐛 Bug report** instead — this form is for a real field session with
+        a specific expected-vs-actual comparison.
+
+        One observation per issue. If you hit 3 problems in one session, file 3 of these.
+  - type: input
+    id: tester
+    attributes:
+      label: Tester
+      description: Leave blank to use your GitHub identity. Fill in if testing on someone else's behalf.
+      placeholder: 'Dave'
+  - type: dropdown
+    id: workflow
+    attributes:
+      label: Feature / workflow being tested
+      options:
+        - AD Scanner / AR Lens
+        - Camera — Field Check (revisit/recheck)
+        - Camera — Graffiti capture
+        - Report a sighting (initial capture, /report)
+        - FieldCheck / revisit flow
+        - Map
+        - Location Detail
+        - Before/after evidence
+        - AI-assisted workflow (Unit Finder, condition scan, or similar)
+        - Onboarding / first-use experience
+        - Other
+    validations:
+      required: true
+  - type: input
+    id: device
+    attributes:
+      label: Device & browser
+      placeholder: 'iPhone 15, Safari / Samsung A54, Chrome'
+    validations:
+      required: true
+  - type: input
+    id: context
+    attributes:
+      label: Location / context
+      description: City, real-world conditions that might matter (bright sun / patchy signal / indoors, etc.)
+      placeholder: 'Bangkok, Sukhumvit — outdoor, bright daylight, 4G'
+  - type: textarea
+    id: action
+    attributes:
+      label: Exact action taken
+      description: What did you actually do, step by step?
+      placeholder: |
+        1. Opened the map
+        2. Tapped Capture
+        3. Pointed camera at the billboard and tapped Scan
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behaviour
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behaviour
+    validations:
+      required: true
+  - type: dropdown
+    id: severity
+    attributes:
+      label: Severity
+      description: See FIELD_TESTING_PLAYBOOK.md's triage model if unsure. Engineering may adjust after reproducing.
+      options:
+        - 'P0 — blocker / unsafe / data loss'
+        - 'P1 — critical workflow failure'
+        - 'P2 — meaningful UX/product problem'
+        - 'P3 — polish / improvement'
+        - 'Idea — future opportunity, not a defect'
+    validations:
+      required: true
+  - type: dropdown
+    id: reproducibility
+    attributes:
+      label: Reproducibility
+      options:
+        - Always
+        - Sometimes
+        - Happened once
+        - Tried again, couldn't reproduce
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Screenshot / video evidence
+      description: |
+        Drag and drop images or video directly into this box. For a recorded session, start the recording by
+        stating: Session / Feature / Device / Location / Start time / Test objective — see
+        FIELD_TESTING_PLAYBOOK.md §6 for the full convention.
+    validations:
+      required: true
+  - type: textarea
+    id: friction
+    attributes:
+      label: UX friction (optional)
+      description: Even if it technically worked — was anything confusing, slow, or took more than one attempt to understand?
+  - type: textarea
+    id: suggestion
+    attributes:
+      label: Suggested improvement (optional)

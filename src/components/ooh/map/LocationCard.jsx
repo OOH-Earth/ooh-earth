@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import LocationThumb, { metaFor } from '@/components/ooh/map/LocationThumb';
 import { BrandIcon } from '@/components/ooh/BrandBadge';
 import TimeSinceTag from '@/components/ooh/TimeSinceTag';
+import { getStatusDotColor } from '@/lib/statusBadge';
 
 // Terminal reticle corner brackets — wraps a child box with four L-shaped marks.
 function Reticle({ children, className = '' }) {
@@ -28,7 +29,7 @@ export default function LocationCard({
   onClaim,
 }) {
   const isLead = !m.image && m.status !== 'verified';
-  const dotColor = m.status === 'verified' ? '#39FF14' : '#FF5C00';
+  const dotColor = getStatusDotColor(m.status);
 
   return (
     <div

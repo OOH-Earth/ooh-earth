@@ -1,4 +1,5 @@
 import { metaFor } from '@/components/ooh/map/LocationThumb';
+import { getStatusDotColor } from '@/lib/statusBadge';
 
 /**
  * Terminal-styled compact popup for mobile map pins.
@@ -10,9 +11,8 @@ import { metaFor } from '@/components/ooh/map/LocationThumb';
  * the existing popup pattern (Leaflet doesn't reliably inherit Tailwind).
  */
 export default function CompactPinPopup({ m, onExpand }) {
-  const verified = m.status === 'verified';
   const accent = metaFor(m.type).accent;
-  const dotColor = verified ? '#39FF14' : '#FF5C00';
+  const dotColor = getStatusDotColor(m.status);
 
   return (
     <div

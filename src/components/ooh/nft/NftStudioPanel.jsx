@@ -1,4 +1,3 @@
-import { useRef } from 'react';
 import { Link } from 'react-router-dom';
 import {
   ChevronLeft,
@@ -10,8 +9,10 @@ import {
   Download,
   Shuffle,
   Link as LinkIcon,
+  AlertTriangle,
 } from 'lucide-react';
 import { CASING_TYPES, FINISHES, LABEL_COLORS, LAYERS } from './nftPresets';
+import { useKeyboardFilePicker } from '@/hooks/useKeyboardFilePicker';
 
 export default function NftStudioPanel({
   config,
@@ -21,9 +22,10 @@ export default function NftStudioPanel({
   onExport,
   onGenerate,
   generating,
+  generateError,
   onRandomize,
 }) {
-  const fileRef = useRef(null);
+  const uploadTrigger = useKeyboardFilePicker();
   const idx = CASING_TYPES.findIndex((c) => c.id === config.casing);
   const current = CASING_TYPES[idx] || CASING_TYPES[0];
   const layers = LAYERS[config.casing] || [];
@@ -148,9 +150,13 @@ export default function NftStudioPanel({
       <div className="border border-slate2 bg-card p-4">
         <div className="font-mono text-[10px] uppercase tracking-[0.2em] text-ozone">Artwork</div>
         <div className="mt-3 flex flex-wrap gap-2">
-          <label className="flex cursor-pointer items-center gap-2 border border-slate2 px-3 py-2 font-mono text-[10px] font-bold uppercase tracking-[0.15em] text-silver/70 hover:border-ozone hover:text-ozone">
+          <label
+            {...uploadTrigger.labelProps}
+            aria-label="Upload artwork"
+            className="flex cursor-pointer items-center gap-2 border border-slate2 px-3 py-2 font-mono text-[10px] font-bold uppercase tracking-[0.15em] text-silver/70 hover:border-ozone hover:text-ozone"
+          >
             <input
-              ref={fileRef}
+              {...uploadTrigger.inputProps}
               type="file"
               accept="image/*"
               className="hidden"
@@ -180,6 +186,11 @@ export default function NftStudioPanel({
             <Shuffle className="h-3.5 w-3.5" /> Random
           </button>
         </div>
+        {generateError && (
+          <div className="mt-2 flex items-center gap-1.5 font-mono text-[9px] uppercase tracking-[0.15em] text-flare">
+            <AlertTriangle className="h-3 w-3 shrink-0" /> {generateError}
+          </div>
+        )}
       </div>
 
       {/* Layer panel */}
@@ -211,11 +222,15 @@ export default function NftStudioPanel({
         >
           <Download className="h-3.5 w-3.5" /> Export PNG
         </button>
+        {/* /zora is a display-only market page (sample coin data) -- it has
+            no mechanism to receive this artwork/config, so this deliberately
+            doesn't claim to mint it. See CLAUDE_CONVERGENCE_STATE.md's NFT
+            decision matrix for what canonicalizing a real mint flow needs. */}
         <Link
           to="/zora"
           className="flex flex-1 items-center justify-center gap-2 border border-slate2 px-4 py-2.5 font-mono text-[10px] font-bold uppercase tracking-[0.2em] text-silver/70 hover:border-ozone hover:text-ozone"
         >
-          <LinkIcon className="h-3.5 w-3.5" /> Mint on Zora
+          <LinkIcon className="h-3.5 w-3.5" /> View Zora Markets
         </Link>
       </div>
     </div>

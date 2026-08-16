@@ -3,6 +3,7 @@ import exifr from 'exifr';
 import { base44 } from '@/api/base44Client';
 import { compressImage } from '@/lib/imageCompress';
 import { validateImageFile } from '@/lib/validateUpload';
+import { useKeyboardFilePicker } from '@/hooks/useKeyboardFilePicker';
 import { useState } from 'react';
 import ReportScanner from '@/components/ooh/report/ReportScanner';
 import MapPinDropper from '@/components/ooh/report/MapPinDropper';
@@ -26,6 +27,8 @@ export default function ReportStep1Document({ data, onChange }) {
   const [locating, setLocating] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState('');
+  const captureTrigger = useKeyboardFilePicker(uploading);
+  const uploadTrigger = useKeyboardFilePicker(uploading);
 
   const locate = () => {
     if (!navigator.geolocation) return;
@@ -115,12 +118,17 @@ export default function ReportStep1Document({ data, onChange }) {
           </div>
         ) : (
           <div className="grid grid-cols-2 gap-px border border-slate2/60 bg-slate2/40">
-            <label className="group flex cursor-pointer flex-col items-center gap-2 bg-card px-4 py-6 transition-colors hover:border-ozone">
+            <label
+              {...captureTrigger.labelProps}
+              aria-label="Capture live"
+              className="group flex cursor-pointer flex-col items-center gap-2 bg-card px-4 py-6 transition-colors hover:border-ozone"
+            >
               <Camera className="h-5 w-5 text-ozone transition-transform group-hover:scale-110" />
               <span className="font-mono text-[10px] font-bold uppercase tracking-[0.2em] text-silver">
                 Capture live
               </span>
               <input
+                {...captureTrigger.inputProps}
                 type="file"
                 accept="image/*"
                 capture="environment"
@@ -128,12 +136,22 @@ export default function ReportStep1Document({ data, onChange }) {
                 className="hidden"
               />
             </label>
-            <label className="group flex cursor-pointer flex-col items-center gap-2 bg-card px-4 py-6 transition-colors hover:border-flare">
+            <label
+              {...uploadTrigger.labelProps}
+              aria-label="Upload"
+              className="group flex cursor-pointer flex-col items-center gap-2 bg-card px-4 py-6 transition-colors hover:border-flare"
+            >
               <Upload className="h-5 w-5 text-flare transition-transform group-hover:scale-110" />
               <span className="font-mono text-[10px] font-bold uppercase tracking-[0.2em] text-silver">
                 Upload
               </span>
-              <input type="file" accept="image/*" onChange={onPhoto} className="hidden" />
+              <input
+                {...uploadTrigger.inputProps}
+                type="file"
+                accept="image/*"
+                onChange={onPhoto}
+                className="hidden"
+              />
             </label>
           </div>
         )}
