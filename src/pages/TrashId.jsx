@@ -1,7 +1,8 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { compressImage } from '@/lib/imageCompress';
 import { validateImageFile } from '@/lib/validateUpload';
+import { useKeyboardFilePicker } from '@/hooks/useKeyboardFilePicker';
 import Nav from '@/components/ooh/Nav';
 import TrashResult from '@/components/ooh/trash/TrashResult';
 import { Camera, Loader2, Upload, Trash2, AlertCircle } from 'lucide-react';
@@ -41,9 +42,19 @@ export default function TrashId() {
   const [result, setResult] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const previewRef = useRef(null);
+  previewRef.current = preview;
+  const { labelProps, inputProps } = useKeyboardFilePicker(loading);
+
+  useEffect(
+    () => () => {
+      if (previewRef.current) URL.revokeObjectURL(previewRef.current);
+    },
+    [],
+  );
 
   const handleFile = async (f) => {
-    if (!f) return;
+    if (!f || loading) return;
     setError('');
     setResult(null);
     const check = await validateImageFile(f);
@@ -51,7 +62,10 @@ export default function TrashId() {
       setError(check.error);
       return;
     }
-    setPreview(URL.createObjectURL(f));
+    setPreview((prev) => {
+      if (prev) URL.revokeObjectURL(prev);
+      return URL.createObjectURL(f);
+    });
     setLoading(true);
     try {
       const up = await base44.integrations.Core.UploadFile({ file: await compressImage(f) });
@@ -91,7 +105,20 @@ export default function TrashId() {
           <div className="mb-3 font-mono text-[10px] uppercase tracking-[0.25em] text-dim">
             // Capture evidence
           </div>
-          <label className="flex cursor-pointer flex-col items-center justify-center gap-3 border-2 border-dashed border-slate2 bg-void p-8 transition-colors hover:border-ozone">
+          <label
+            {...labelProps}
+            aria-label={preview ? 'Change photo' : 'Take photo or drop image'}
+            onDragOver={(e) => {
+              if (loading) return;
+              e.preventDefault();
+            }}
+            onDrop={(e) => {
+              if (loading) return;
+              e.preventDefault();
+              handleFile(e.dataTransfer.files?.[0]);
+            }}
+            className={`flex flex-col items-center justify-center gap-3 border-2 border-dashed border-slate2 bg-void p-8 transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-ozone ${loading ? 'cursor-not-allowed opacity-60' : 'cursor-pointer hover:border-ozone'}`}
+          >
             {preview ? (
               <img src={preview} alt="trash evidence" className="max-h-64 w-auto object-contain" />
             ) : (
@@ -105,17 +132,22 @@ export default function TrashId() {
               </>
             )}
             <input
+              {...inputProps}
               type="file"
               accept="image/*"
               capture="environment"
               className="hidden"
+              disabled={loading}
               onChange={(e) => handleFile(e.target.files?.[0])}
             />
           </label>
           {preview && !loading && (
             <button
               onClick={() => {
-                setPreview(null);
+                setPreview((prev) => {
+                  if (prev) URL.revokeObjectURL(prev);
+                  return null;
+                });
                 setResult(null);
               }}
               className="mt-2 flex items-center gap-1.5 font-mono text-[9px] uppercase tracking-[0.2em] text-darkgray hover:text-flare"

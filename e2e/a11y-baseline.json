@@ -16,5 +16,8 @@
   "/report": {
     "aria-hidden-focus": 1,
     "color-contrast": 6
+  },
+  "/trash": {
+    "aria-hidden-focus": 1
   }
 }

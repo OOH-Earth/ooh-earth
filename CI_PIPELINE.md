@@ -41,7 +41,7 @@ Static analysis (`security-and-quality` query pack) on every push/PR to `main` p
 
 ## `release-please.yml`
 
-See RELEASE_PROCESS.md.
+See RELEASE_PROCESS.md. Its push to the release PR branch uses this workflow's own `GITHUB_TOKEN`, which GitHub excludes from triggering other workflows (anti-recursion rule) — left alone, the release PR would sit with zero CI/CodeQL checks and could never satisfy required-status-checks branch protection. As of 2026-08-14, `release-please.yml` re-dispatches `ci.yml` and `codeql.yml` via `workflow_dispatch` (exempt from that suppression) directly onto the release PR's branch right after release-please opens/updates it — see Decision Register #8. `dependency-review` (a job inside `ci.yml`) also accepts `workflow_dispatch` now, passing explicit `base-ref`/`head-ref` since it has no `pull_request` context to infer them from.
 
 ## `.github/dependabot.yml`
 
@@ -64,6 +64,7 @@ Weekly npm + GitHub Actions dependency PRs. **Known gap**: Dependabot has no equ
 | 5 | Bundle-size regression tracking (currently absolute-size reporting only, no vs-main diff — that would require building `main` on every PR too, doubling build time) | Not started — candidate: `size-limit` or `bundlewatch` with a committed budget file |
 | 6 | ~~Branch protection settings~~ | **Done, 2026-08-12** — applied via API once GitHub Admin access was granted, independently verified live. See ADMIN-ACCESS-REQUIREMENTS.md / BRANCHING_STRATEGY.md for the exact configuration |
 | 7 | ~~Add `dependency-review` job~~ | **Done, 2026-08-11** |
+| 8 | ~~Release PRs get zero CI/CodeQL checks (`GITHUB_TOKEN` push doesn't trigger `pull_request` workflows) and sit permanently BLOCKED under required-status-checks~~ | **Done, 2026-08-14** — `release-please.yml` re-dispatches `ci.yml`/`codeql.yml` via `workflow_dispatch` after opening/updating a release PR; `dependency-review` now accepts `workflow_dispatch` with explicit `base-ref`/`head-ref` (derived from `github.event.repository.default_branch`, not hardcoded). No PAT, no force-push, no branch-protection change. `release-please.yml` also gained a `concurrency` group so two near-simultaneous pushes to `main` can't start overlapping release-please runs that each independently dispatch CI/CodeQL. **Live bug found and fixed, 2026-08-15**: once actually merged and exercised against the real, already-open PR #63, the re-dispatch step failed — `gh workflow run` (no preceding `actions/checkout` in this job) couldn't infer the target repository from git context (`fatal: not a git repository`). Fixed by passing `--repo "${{ github.repository }}"` explicitly to both `gh workflow run` calls rather than adding a full checkout just for two CLI invocations. Confirmed via a real failed run (`gh run view`), not assumed — see PR that introduced this fix for the exact log. Full end-to-end proof (PR #63 actually receiving green checks) still needs a subsequent push to `main` to re-trigger `release-please.yml` after this fix lands. |
 
 ## Verified state on `main`, 2026-08-12
 

@@ -60,6 +60,7 @@ Respond in JSON only.`,
         );
       setDetected(detected);
       onChange({
+        ai_scanned: true,
         brand_name:
           detected.brand_name && detected.brand_name !== 'Unknown'
             ? detected.brand_name
@@ -77,7 +78,12 @@ Respond in JSON only.`,
 
   return (
     <div className="space-y-7">
-      {/* AI Detection CTA */}
+      {/* AI Detection CTA — Step 1's AI Ad Scanner already runs this same
+          analysis (better: it also covers agency/operator/harm tags) when
+          the user uses it there. Don't present a second full-price scan as
+          the primary action if that already succeeded -- offer a
+          de-emphasized re-scan instead, so the same image isn't silently
+          re-analyzed with a weaker prompt by default. */}
       {data.image_url && (
         <div className="border border-ozone/30 bg-ozone/5 p-4">
           <div className="flex items-start justify-between gap-4">
@@ -85,9 +91,16 @@ Respond in JSON only.`,
               <div className="font-mono text-[10px] uppercase tracking-[0.25em] text-ozone">
                 AI brand scanner
               </div>
-              <p className="mt-1 font-display text-sm text-darkgray">
-                Analyse your photo to auto-identify the brand, campaign, and sector.
-              </p>
+              {data.ai_scanned && !detected ? (
+                <p className="mt-1 font-display text-sm text-darkgray">
+                  ✓ Already identified by the Step 1 AI Scanner — review the fields below, or
+                  re-scan for a second opinion.
+                </p>
+              ) : (
+                <p className="mt-1 font-display text-sm text-darkgray">
+                  Analyse your photo to auto-identify the brand, campaign, and sector.
+                </p>
+              )}
               {detected?.error && (
                 <p className="mt-1 font-mono text-[10px] text-flare">
                   Detection failed — fill manually below.
@@ -103,14 +116,18 @@ Respond in JSON only.`,
               type="button"
               onClick={aiDetect}
               disabled={detecting}
-              className="flex shrink-0 items-center gap-2 bg-ozone px-4 py-2.5 font-mono text-[10px] font-bold uppercase tracking-[0.2em] text-void transition-colors hover:bg-flare disabled:opacity-40"
+              className={`flex shrink-0 items-center gap-2 px-4 py-2.5 font-mono text-[10px] font-bold uppercase tracking-[0.2em] transition-colors disabled:opacity-40 ${
+                data.ai_scanned && !detected
+                  ? 'border border-ozone/40 text-ozone hover:bg-ozone/10'
+                  : 'bg-ozone text-void hover:bg-flare'
+              }`}
             >
               {detecting ? (
                 <Loader2 className="h-3.5 w-3.5 animate-spin" />
               ) : (
                 <Sparkles className="h-3.5 w-3.5" />
               )}
-              {detecting ? 'Scanning…' : 'Identify'}
+              {detecting ? 'Scanning…' : data.ai_scanned ? 'Re-scan' : 'Identify'}
             </button>
           </div>
         </div>

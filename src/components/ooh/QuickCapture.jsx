@@ -7,6 +7,7 @@ import { submitCapture } from '@/lib/offlineQueue';
 import CameraViewfinder from '@/components/ooh/CameraViewfinder';
 import MultiPhotoUpload, { uploadLocationPhotos } from '@/components/ooh/gallery/MultiPhotoUpload';
 import { useFocusTrap } from '@/hooks/useFocusTrap';
+import { useKeyboardFilePicker } from '@/hooks/useKeyboardFilePicker';
 
 const TYPES = [
   { value: 'billboard', label: 'Billboard' },
@@ -33,6 +34,7 @@ export default function QuickCapture({ open, onClose }) {
   const [error, setError] = useState('');
   const panelRef = useRef(null);
   useFocusTrap(panelRef, open, { label: 'Anonymous field capture' });
+  const uploadTrigger = useKeyboardFilePicker(uploading);
 
   const locate = () => {
     if (!navigator.geolocation) return;
@@ -228,9 +230,20 @@ export default function QuickCapture({ open, onClose }) {
                 <div className="mt-4">
                   <CameraViewfinder onCapture={onCapture} uploading={uploading} />
                 </div>
-                <label className="mt-2 flex cursor-pointer items-center justify-center gap-2 border border-slate2/60 py-2 font-mono text-[9px] uppercase tracking-[0.2em] text-darkgray transition-colors hover:border-ozone hover:text-ozone">
+                <label
+                  {...uploadTrigger.labelProps}
+                  aria-label="Or choose from gallery"
+                  className={`mt-2 flex items-center justify-center gap-2 border border-slate2/60 py-2 font-mono text-[9px] uppercase tracking-[0.2em] text-darkgray transition-colors ${uploading ? 'cursor-not-allowed opacity-60' : 'cursor-pointer hover:border-ozone hover:text-ozone'}`}
+                >
                   <Camera className="h-3 w-3" /> Or choose from gallery
-                  <input type="file" accept="image/*" onChange={onPhoto} className="hidden" />
+                  <input
+                    {...uploadTrigger.inputProps}
+                    type="file"
+                    accept="image/*"
+                    onChange={onPhoto}
+                    disabled={uploading}
+                    className="hidden"
+                  />
                 </label>
               </>
             )}

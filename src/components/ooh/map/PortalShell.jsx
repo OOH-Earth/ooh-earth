@@ -28,6 +28,7 @@ export default function PortalShell({
   onFilterChange,
   onRefresh = null,
   mapActions = null,
+  live = undefined,
 }) {
   const [selectedId, setSelectedId] = useState(null);
   const [hoverId, setHoverId] = useState(null);
@@ -77,6 +78,17 @@ export default function PortalShell({
         <span className="font-mono text-[9px] uppercase tracking-[0.2em] text-dim">
           {results.length} results
         </span>
+        {live !== undefined && (
+          <span
+            className="flex items-center gap-1.5 font-mono text-[9px] uppercase tracking-[0.2em] text-dim"
+            title={live ? 'Live public reports' : 'No live reports yet — showing sample locations'}
+          >
+            <span
+              className={`h-1.5 w-1.5 rounded-full ${live ? 'bg-ozone animate-flicker' : 'bg-dim'}`}
+            />
+            {live ? 'live' : 'sample data'}
+          </span>
+        )}
 
         <div className="ml-auto flex items-center gap-2">
           <div className="hidden items-center gap-2 border border-slate2 bg-card px-3 py-1.5 sm:flex">
