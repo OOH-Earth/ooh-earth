@@ -1,6 +1,10 @@
+import { useEffect, useState } from 'react';
 import { Image } from '@/components/ui/image';
-import { Ban, ExternalLink, Building2, AlertTriangle } from 'lucide-react';
+import { Ban, ExternalLink, Building2, AlertTriangle, Globe } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { base44 } from '@/api/base44Client';
+
+const normalize = (s) => (s || '').toLowerCase().trim();
 
 // SubvertisingPanel — renders the visual before/after comparison and contextual
 // notes. The advertiser intelligence fields (brand, agency, harm tags, etc.)
@@ -15,6 +19,32 @@ export default function SubvertisingPanel({ loc }) {
   const showParticipation = !isSubverted;
   const showSubvertedNote = isSubverted;
   const hasMediaCorps = !!loc.ooh_operator;
+
+  // Real cross-reference against the MediaCorp entity (the one genuine
+  // "organisation" record this app has, for OOH media operators). Falls
+  // back to just the registry link below if no match/fetch failure --
+  // never blocks rendering on this.
+  const [operatorCorp, setOperatorCorp] = useState(null);
+  useEffect(() => {
+    if (!loc.ooh_operator) return;
+    let alive = true;
+    (async () => {
+      try {
+        const corps = await base44.entities.MediaCorp.list('name');
+        const key = normalize(loc.ooh_operator);
+        const match = (corps || []).find((c) => {
+          const name = normalize(c.name);
+          return name === key || name.includes(key) || key.includes(name);
+        });
+        if (alive && match) setOperatorCorp(match);
+      } catch {
+        /* registry lookup is a nice-to-have, not required for the page to work */
+      }
+    })();
+    return () => {
+      alive = false;
+    };
+  }, [loc.ooh_operator]);
 
   // Nothing visual to render — advertiser info is handled by AdvertiserInfo
   if (
@@ -128,14 +158,30 @@ export default function SubvertisingPanel({ loc }) {
           </div>
         )}
 
-        {/* Link to MediaCorps registry */}
+        {/* MediaCorp registry cross-reference — real data when the named
+            operator matches a MediaCorp record, generic link otherwise. */}
         {hasMediaCorps && (
-          <Link
-            to="/media-corps"
-            className="mt-4 inline-flex items-center gap-1.5 font-mono text-[9px] uppercase tracking-[0.2em] text-dim transition-colors hover:text-ozone"
-          >
-            <Building2 className="h-3 w-3" /> View Media Corps registry →
-          </Link>
+          <div className="mt-4 border-t border-slate2/40 pt-3">
+            {operatorCorp && (
+              <div className="mb-2 flex flex-wrap items-center gap-x-3 gap-y-1 font-mono text-[9px] uppercase tracking-[0.15em] text-dim">
+                <span className="flex items-center gap-1 text-silver/80">
+                  <Building2 className="h-3 w-3" /> {operatorCorp.name}
+                </span>
+                {operatorCorp.scope && <span>{operatorCorp.scope}</span>}
+                {operatorCorp.hq && (
+                  <span className="flex items-center gap-1">
+                    <Globe className="h-3 w-3" /> {operatorCorp.hq}
+                  </span>
+                )}
+              </div>
+            )}
+            <Link
+              to="/media-corps"
+              className="inline-flex items-center gap-1.5 font-mono text-[9px] uppercase tracking-[0.2em] text-dim transition-colors hover:text-ozone"
+            >
+              <Building2 className="h-3 w-3" /> View Media Corps registry →
+            </Link>
+          </div>
         )}
       </div>
     </div>

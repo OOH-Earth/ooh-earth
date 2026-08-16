@@ -163,6 +163,7 @@ export default function GraffitiPortal() {
         onFilterChange={setMediumFilter}
         onRefresh={reload}
         mapActions={mapActions}
+        live={raw?.live}
         renderCard={(m, _i, { selectedId, setSelectedId, hoverId, setHoverId }) => (
           <LocationCard
             key={m.id}

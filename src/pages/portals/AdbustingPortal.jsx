@@ -135,6 +135,7 @@ export default function AdbustingPortal() {
         onFilterChange={setTypeFilter}
         onRefresh={reload}
         mapActions={mapActions}
+        live={raw?.live}
         renderCard={(m, _i, { selectedId, setSelectedId, hoverId, setHoverId }) => (
           <LocationCard
             key={m.id}

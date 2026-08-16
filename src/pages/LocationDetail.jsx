@@ -27,6 +27,7 @@ import AdvertiserInfo from '@/components/ooh/AdvertiserInfo';
 import FieldCheckPanel from '@/components/ooh/FieldCheckPanel';
 import RelatedLocations from '@/components/ooh/RelatedLocations';
 import { useSeo } from '@/lib/seoContext';
+import { getStatusBadgeClasses } from '@/lib/statusBadge';
 
 function normalizeSeed(rec) {
   return {
@@ -213,7 +214,7 @@ export default function LocationDetail() {
               {category.label}
             </span>
             <span
-              className={`flex items-center gap-1.5 border px-2.5 py-1 font-mono text-[9px] uppercase tracking-[0.25em] ${isPending ? 'border-flare/50 text-flare' : 'border-slate2 text-darkgray'}`}
+              className={`flex items-center gap-1.5 border px-2.5 py-1 font-mono text-[9px] uppercase tracking-[0.25em] ${getStatusBadgeClasses(loc.status || 'pending')}`}
             >
               {loc.status === 'verified' ? <BadgeCheck className="h-3.5 w-3.5 text-ozone" /> : null}
               {loc.status || 'pending'}

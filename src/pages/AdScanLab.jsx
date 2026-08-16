@@ -19,6 +19,7 @@ import {
 import exifr from 'exifr';
 import { compressImage } from '@/lib/imageCompress';
 import { validateImageFile } from '@/lib/validateUpload';
+import { useKeyboardFilePicker } from '@/hooks/useKeyboardFilePicker';
 import Nav from '@/components/ooh/Nav';
 import Breadcrumbs from '@/components/ooh/Breadcrumbs';
 import SiteFooter from '@/components/ooh/SiteFooter';
@@ -67,6 +68,7 @@ export default function AdScanLab() {
   const { toast } = useToast();
   const [capturedUrl, setCapturedUrl] = useState(null);
   const [uploading, setUploading] = useState(false);
+  const uploadTrigger = useKeyboardFilePicker(uploading);
   const [scanning, setScanning] = useState(false);
   const [detection, setDetection] = useState(null);
   const [cataloging, setCataloging] = useState(false);
@@ -205,10 +207,21 @@ export default function AdScanLab() {
               Step 01 — Capture or upload
             </div>
             <CameraViewfinder onCapture={handleCapture} uploading={uploading} />
-            <label className="flex cursor-pointer items-center justify-center gap-2 border border-slate2 py-3 font-mono text-[10px] uppercase tracking-[0.2em] text-silver/60 transition-colors hover:border-ozone hover:text-ozone">
+            <label
+              {...uploadTrigger.labelProps}
+              aria-label="Upload image"
+              className={`flex items-center justify-center gap-2 border border-slate2 py-3 font-mono text-[10px] uppercase tracking-[0.2em] text-silver/60 transition-colors ${uploading ? 'cursor-not-allowed opacity-60' : 'cursor-pointer hover:border-ozone hover:text-ozone'}`}
+            >
               <Upload className="h-3.5 w-3.5" />
               Upload image
-              <input type="file" accept="image/*" className="hidden" onChange={handleFileSelect} />
+              <input
+                {...uploadTrigger.inputProps}
+                type="file"
+                accept="image/*"
+                className="hidden"
+                disabled={uploading}
+                onChange={handleFileSelect}
+              />
             </label>
           </div>
         )}
