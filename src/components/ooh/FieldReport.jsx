@@ -38,6 +38,7 @@ const EMPTY = {
   industry_sector: '',
   harm_tags: [],
   harm_statement: '',
+  ai_scanned: false,
   condition: 'functional',
   notes: '',
   adbust_type: 'none',
