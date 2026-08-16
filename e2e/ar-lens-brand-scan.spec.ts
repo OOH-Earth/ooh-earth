@@ -74,3 +74,21 @@ test.describe('ArLens — AR capture is identified by the same AI scanner as /re
     expect(filterCrashes(errors), errors.join('\n')).toEqual([]);
   });
 });
+
+// The CO2 overlay's number was always a fixed, generic per-billboard-average
+// constant, never a measurement of the specific billboard in frame -- but
+// the copy ("THIS AD COSTS THE PLANET") read as if it were describing that
+// exact ad. Now it's honestly framed as an average.
+test.describe('ArLens — CO2 overlay is honestly framed as an average, not a measurement', () => {
+  test('takeover and intel overlays say "average", not "this ad"', async ({ page }) => {
+    await mockBase44(page, { user: null, locations: {} });
+    await page.goto('/ar');
+    await page.getByRole('button', { name: /activate camera/i }).click();
+    await expect(page.getByRole('button', { name: /lock on/i })).toBeVisible({ timeout: 10_000 });
+    await page.getByRole('button', { name: /lock on/i }).click();
+
+    await expect(page.getByText(/costs the planet/i)).toBeVisible();
+    await expect(page.getByText(/^this ad$/i)).not.toBeVisible();
+    await expect(page.getByText(/avg\./i).first()).toBeVisible();
+  });
+});

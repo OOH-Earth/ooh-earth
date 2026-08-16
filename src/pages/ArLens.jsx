@@ -294,12 +294,12 @@ export default function ArLens() {
                     <div className="hi-vis-stripes absolute inset-x-0 top-0 h-2" />
                     <div className="hi-vis-stripes absolute inset-x-0 bottom-0 h-2" />
                     <span className="px-3 text-center font-display text-[clamp(14px,3.5vw,40px)] font-black uppercase leading-[1] tracking-[-0.02em] text-ozone text-glow-ozone">
-                      THIS AD COSTS
+                      A BILLBOARD LIKE THIS
                       <br />
-                      THE PLANET
+                      COSTS THE PLANET
                     </span>
                     <span className="mt-1 px-3 text-center font-display text-[clamp(10px,2.5vw,26px)] font-black uppercase tracking-[-0.02em] text-flare text-glow-flare">
-                      {co2t}t CO₂ / yr
+                      ~{co2t}t CO₂ / yr avg.
                     </span>
                     <span className="mt-2 font-mono text-[clamp(6px,1.4vw,14px)] uppercase tracking-[0.3em] text-silver/70">
                       OOH·EARTH
@@ -323,7 +323,7 @@ export default function ArLens() {
                     </div>
                     <div className="absolute -right-2 top-1/4 translate-x-full border border-slate2 bg-void/85 px-2.5 py-1.5 backdrop-blur-md">
                       <div className="font-mono text-[8px] uppercase tracking-[0.2em] text-dim">
-                        Billboard CO₂
+                        Avg. billboard CO₂
                       </div>
                       <div className="font-display text-base font-black tabular text-ozone">
                         {co2t}t
