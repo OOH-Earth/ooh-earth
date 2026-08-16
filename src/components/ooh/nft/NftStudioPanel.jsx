@@ -9,6 +9,7 @@ import {
   Download,
   Shuffle,
   Link as LinkIcon,
+  AlertTriangle,
 } from 'lucide-react';
 import { CASING_TYPES, FINISHES, LABEL_COLORS, LAYERS } from './nftPresets';
 import { useKeyboardFilePicker } from '@/hooks/useKeyboardFilePicker';
@@ -21,6 +22,7 @@ export default function NftStudioPanel({
   onExport,
   onGenerate,
   generating,
+  generateError,
   onRandomize,
 }) {
   const uploadTrigger = useKeyboardFilePicker();
@@ -184,6 +186,11 @@ export default function NftStudioPanel({
             <Shuffle className="h-3.5 w-3.5" /> Random
           </button>
         </div>
+        {generateError && (
+          <div className="mt-2 flex items-center gap-1.5 font-mono text-[9px] uppercase tracking-[0.15em] text-flare">
+            <AlertTriangle className="h-3 w-3 shrink-0" /> {generateError}
+          </div>
+        )}
       </div>
 
       {/* Layer panel */}
@@ -215,11 +222,15 @@ export default function NftStudioPanel({
         >
           <Download className="h-3.5 w-3.5" /> Export PNG
         </button>
+        {/* /zora is a display-only market page (sample coin data) -- it has
+            no mechanism to receive this artwork/config, so this deliberately
+            doesn't claim to mint it. See CLAUDE_CONVERGENCE_STATE.md's NFT
+            decision matrix for what canonicalizing a real mint flow needs. */}
         <Link
           to="/zora"
           className="flex flex-1 items-center justify-center gap-2 border border-slate2 px-4 py-2.5 font-mono text-[10px] font-bold uppercase tracking-[0.2em] text-silver/70 hover:border-ozone hover:text-ozone"
         >
-          <LinkIcon className="h-3.5 w-3.5" /> Mint on Zora
+          <LinkIcon className="h-3.5 w-3.5" /> View Zora Markets
         </Link>
       </div>
     </div>
