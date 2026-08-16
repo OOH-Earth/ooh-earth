@@ -50,13 +50,14 @@ import FutureLayer from '@/components/ooh/map/FutureLayer';
 import LayerManager from '@/components/ooh/map/layers/LayerManager';
 import CompactPinPopup from '@/components/ooh/map/CompactPinPopup';
 import { useMapStyle } from '@/lib/mapStyleContext';
+import { getStatusDotColor } from '@/lib/statusBadge';
 
 // Photo-circle pin — white-ringed location photo with a category micro-badge
 // (bottom-right) and a status dot (top-left), plus the pink radial highlight.
 // Matches the oohearth.app field-pin style. Badge colour + glyph come from
 // the shared pinGlyphs library so every category has its own icon.
 function pinFor(m, selected) {
-  const verified = m.status === 'verified';
+  const dotColor = getStatusDotColor(m.status);
   // "Living record" — has a verified re-check, so a before/after comparison
   // exists on this location's detail page (same eligibility as PR #56's
   // FieldCheckPanel comparison). Signaled with the app's ozone accent ring
@@ -72,7 +73,7 @@ function pinFor(m, selected) {
   const glow = selected ? 'rgba(255,72,118,0.45)' : 'rgba(255,72,118,0.20)';
   const img = String(m.image).replace(/-\d+x\d+(?=\.\w+$)/, '');
   const title = living ? ' title="Living record — documented over time"' : '';
-  const html = `<div${title} style="position:relative;width:${size}px;height:${size}px"><span style="position:absolute;inset:-${selected ? 12 : 8}px;border-radius:50%;background:radial-gradient(circle,${glow},transparent 65%)"></span><span style="position:relative;display:block;width:${size}px;height:${size}px;border-radius:50%;border:3px solid ${ringColor};overflow:hidden;background:#000;box-shadow:0 2px 6px rgba(0,0,0,0.6)${selected ? ',0 0 0 2px ' + mc_color : ''}${living ? ',0 0 8px rgba(237,255,0,0.5)' : ''}"><img src="${img}" alt="" style="width:100%;height:100%;object-fit:cover;display:block"/></span><span style="position:absolute;right:-3px;bottom:-3px;width:${badge}px;height:${badge}px;border-radius:50%;background:${mc_color};border:2px solid #000;display:flex;align-items:center;justify-content:center;box-shadow:0 0 6px rgba(0,0,0,0.6)">${mc_svg}</span><span style="position:absolute;left:-2px;top:-2px;width:10px;height:10px;border-radius:50%;background:${verified ? '#39FF14' : '#FF5C00'};border:2px solid #000"></span></div>`;
+  const html = `<div${title} style="position:relative;width:${size}px;height:${size}px"><span style="position:absolute;inset:-${selected ? 12 : 8}px;border-radius:50%;background:radial-gradient(circle,${glow},transparent 65%)"></span><span style="position:relative;display:block;width:${size}px;height:${size}px;border-radius:50%;border:3px solid ${ringColor};overflow:hidden;background:#000;box-shadow:0 2px 6px rgba(0,0,0,0.6)${selected ? ',0 0 0 2px ' + mc_color : ''}${living ? ',0 0 8px rgba(237,255,0,0.5)' : ''}"><img src="${img}" alt="" style="width:100%;height:100%;object-fit:cover;display:block"/></span><span style="position:absolute;right:-3px;bottom:-3px;width:${badge}px;height:${badge}px;border-radius:50%;background:${mc_color};border:2px solid #000;display:flex;align-items:center;justify-content:center;box-shadow:0 0 6px rgba(0,0,0,0.6)">${mc_svg}</span><span style="position:absolute;left:-2px;top:-2px;width:10px;height:10px;border-radius:50%;background:${dotColor};border:2px solid #000"></span></div>`;
   return L.divIcon({
     className: living ? 'ooh-pin ooh-pin--photo ooh-pin--living' : 'ooh-pin ooh-pin--photo',
     html,
@@ -244,7 +245,7 @@ function PinMarker({ m, selected, onSelect, compactPopup, onExpandPin }) {
                     width: 5,
                     height: 5,
                     borderRadius: 999,
-                    background: m.status === 'verified' ? '#39FF14' : '#FF5C00',
+                    background: getStatusDotColor(m.status),
                   }}
                 />
                 <span
