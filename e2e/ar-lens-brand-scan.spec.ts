@@ -104,7 +104,13 @@ test.describe('ArLens — a filed report links back into the rest of the product
     const viewReport = page.getByRole('link', { name: /view report/i });
     await expect(viewReport).toBeVisible();
     await expect(viewReport).toHaveAttribute('href', /^\/location\//);
-    await expect(page.getByRole('link', { name: /view on map/i })).toHaveAttribute('href', '/map');
+    // Now carries ?highlight=<id> (see map-contribution-highlight.spec.ts)
+    // so /map opens with this exact report highlighted, not just a plain
+    // generic map link.
+    await expect(page.getByRole('link', { name: /view on map/i })).toHaveAttribute(
+      'href',
+      /^\/map\?highlight=/,
+    );
   });
 });
 
