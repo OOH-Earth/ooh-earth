@@ -97,7 +97,7 @@
     "@types/three": "^0.185.4",
     "@vitejs/plugin-react": "^4.3.4",
     "autoprefixer": "^10.5.4",
-    "baseline-browser-mapping": "^2.8.32",
+    "baseline-browser-mapping": "^2.11.13",
     "eslint": "^9.19.0",
     "eslint-plugin-react": "^7.37.4",
     "eslint-plugin-react-hooks": "^5.0.0",
