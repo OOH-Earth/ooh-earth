@@ -16,6 +16,7 @@ import {
   Minus,
   RotateCcw,
   MapPin,
+  ArrowRight,
 } from 'lucide-react';
 
 const BILLBOARD_CO2_KG_YR = 4760; // ~4.76 t CO2/yr per illuminated static billboard
@@ -64,7 +65,7 @@ export default function ArLens() {
   const [layers, setLayers] = useState({ takeover: true, intel: true, log: true });
   const [pm25, setPm25] = useState(null);
   const [logState, setLogState] = useState('idle'); // idle | capturing | uploading | analyzing | done | error
-  const [, setLastReport] = useState(null);
+  const [lastReport, setLastReport] = useState(null);
   const [detection, setDetection] = useState(null);
   const { pos, err: geoErr } = useGeolocation();
 
@@ -449,7 +450,7 @@ export default function ArLens() {
                       </div>
                     )}
                     {logState === 'done' && (
-                      <div className="flex w-full flex-col items-center gap-1.5 border-2 border-ozone bg-void/80 px-6 py-3">
+                      <div className="flex w-full flex-col items-center gap-2 border-2 border-ozone bg-void/80 px-6 py-3">
                         <div className="flex items-center gap-2 font-mono text-[11px] uppercase tracking-[0.25em] text-ozone">
                           <Check className="h-4 w-4" /> Report filed — pending verification
                         </div>
@@ -457,6 +458,22 @@ export default function ArLens() {
                           <div className="font-mono text-[10px] uppercase tracking-[0.2em] text-silver/70">
                             Identified: {detection.brand_name}
                             {detection.ooh_operator ? ` · ${detection.ooh_operator}` : ''}
+                          </div>
+                        )}
+                        {lastReport?.id && (
+                          <div className="mt-1 flex flex-wrap items-center justify-center gap-2">
+                            <Link
+                              to={`/location/${lastReport.id}`}
+                              className="flex items-center gap-1.5 bg-ozone px-3 py-1.5 font-mono text-[10px] font-bold uppercase tracking-[0.2em] text-void hover:bg-flare"
+                            >
+                              View report <ArrowRight className="h-3 w-3" />
+                            </Link>
+                            <Link
+                              to="/map"
+                              className="flex items-center gap-1.5 border border-slate2 px-3 py-1.5 font-mono text-[10px] font-bold uppercase tracking-[0.2em] text-darkgray hover:border-ozone hover:text-ozone"
+                            >
+                              View on map <ArrowRight className="h-3 w-3" />
+                            </Link>
                           </div>
                         )}
                       </div>

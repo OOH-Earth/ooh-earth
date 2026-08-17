@@ -75,6 +75,39 @@ test.describe('ArLens — AR capture is identified by the same AI scanner as /re
   });
 });
 
+// A filed AR report used to be a dead end -- "Re-target" was the only
+// option, with no way back to the location detail page or the map. The
+// ordinary /report wizard's done-state already offers "View your report"
+// and "View on map" (FieldReport.jsx); AR should feel like the same
+// journey, not a separate disconnected product.
+test.describe('ArLens — a filed report links back into the rest of the product', () => {
+  test('done state offers "View report" and "View on map", not just re-target', async ({
+    page,
+    context,
+  }) => {
+    await context.grantPermissions(['geolocation']);
+    await context.setGeolocation({ latitude: 13.7563, longitude: 100.5018 });
+    await mockBase44(page, { user: null, locations: {} });
+    await page.route('**/functions/scanAd', (route) =>
+      route.fulfill({
+        json: { detection: { response: { is_advertising: false } } },
+      }),
+    );
+
+    await page.goto('/ar');
+    await page.getByRole('button', { name: /activate camera/i }).click();
+    await expect(page.getByRole('button', { name: /lock on/i })).toBeVisible({ timeout: 10_000 });
+    await page.getByRole('button', { name: /lock on/i }).click();
+    await page.getByRole('button', { name: /capture & file report/i }).click();
+    await expect(page.getByText(/report filed/i)).toBeVisible({ timeout: 15_000 });
+
+    const viewReport = page.getByRole('link', { name: /view report/i });
+    await expect(viewReport).toBeVisible();
+    await expect(viewReport).toHaveAttribute('href', /^\/location\//);
+    await expect(page.getByRole('link', { name: /view on map/i })).toHaveAttribute('href', '/map');
+  });
+});
+
 // The CO2 overlay's number was always a fixed, generic per-billboard-average
 // constant, never a measurement of the specific billboard in frame -- but
 // the copy ("THIS AD COSTS THE PLANET") read as if it were describing that
