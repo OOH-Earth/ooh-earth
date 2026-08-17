@@ -469,7 +469,7 @@ export default function ArLens() {
                               View report <ArrowRight className="h-3 w-3" />
                             </Link>
                             <Link
-                              to="/map"
+                              to={`/map?highlight=${lastReport.id}`}
                               className="flex items-center gap-1.5 border border-slate2 px-3 py-1.5 font-mono text-[10px] font-bold uppercase tracking-[0.2em] text-darkgray hover:border-ozone hover:text-ozone"
                             >
                               View on map <ArrowRight className="h-3 w-3" />
