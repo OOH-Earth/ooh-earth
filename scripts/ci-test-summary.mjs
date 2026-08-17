@@ -38,6 +38,14 @@ function firstLines(s, maxLines = 4, maxChars = 400) {
   return joined.length > maxChars ? joined.slice(0, maxChars) + '…' : joined;
 }
 
+// Escapes a value for safe interpolation into a Markdown table cell.
+// Backslash must be escaped *first* -- escaping the other characters before
+// it would let a pre-existing backslash in the input recombine with the
+// newly-inserted escape backslashes and change what gets rendered.
+function escapeTableCell(s) {
+  return String(s).replace(/\\/g, '\\\\').replace(/\|/g, '\\|').replace(/\n/g, '<br>');
+}
+
 // Walks the JSON reporter's suite tree (suites nest arbitrarily for
 // describe blocks) collecting one entry per spec whose most recent test
 // result isn't a pass.
@@ -100,8 +108,9 @@ function main() {
     lines.push('|---|---|---|');
     for (const f of failures) {
       const loc = f.file ? `\`${f.file}:${f.line ?? '?'}\`` : '—';
-      const msg = f.message.replace(/\|/g, '\\|').replace(/\n/g, '<br>');
-      lines.push(`| ${f.title} | ${loc} | ${msg} |`);
+      const title = escapeTableCell(f.title);
+      const msg = escapeTableCell(f.message);
+      lines.push(`| ${title} | ${loc} | ${msg} |`);
     }
     lines.push('');
     lines.push(
