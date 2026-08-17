@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { usePersistentState } from '@/hooks/usePersistentState';
 import { base44 } from '@/api/base44Client';
 import Nav from '@/components/ooh/Nav';
@@ -261,6 +261,29 @@ export default function Map() {
       if (unsub) unsub();
     };
   }, []);
+
+  // Contribution deep-link: /map?highlight=<locationId>, used by the report
+  // wizard's and AR's "View on map" links so a user's own new submission is
+  // immediately obvious, not just a generic map open. Reuses the same
+  // select+detail-sheet action a normal pin click already triggers
+  // (handleExpandPin) -- LocationMap.jsx and Globe3D.jsx both already fly to
+  // and visually distinguish whatever selectedId names, so no new map
+  // architecture is needed. Applied once per page load (a later background
+  // marker refresh shouldn't snap a user back after they've selected
+  // something else) once the freshly reloaded marker list actually contains
+  // the target id (a just-created record needs the post-navigation fetch to
+  // complete first).
+  const highlightAppliedRef = useRef(false);
+  useEffect(() => {
+    if (highlightAppliedRef.current) return;
+    const id = new URLSearchParams(window.location.search).get('highlight');
+    if (!id || !raw?.markers?.length) return;
+    const m = raw.markers.find((x) => String(x.id) === id);
+    if (m) {
+      handleExpandPin(m);
+      highlightAppliedRef.current = true;
+    }
+  }, [raw, handleExpandPin]);
 
   useEffect(() => {
     if (!navigator.geolocation) return;

@@ -162,7 +162,7 @@ export default function FieldReport() {
             </Link>
           )}
           <Link
-            to="/map"
+            to={done.id ? `/map?highlight=${done.id}` : '/map'}
             className={`inline-flex items-center gap-2 px-5 py-3 font-mono text-[11px] font-bold uppercase tracking-[0.25em] transition-colors ${done.id ? 'border border-slate2 text-darkgray hover:border-ozone hover:text-ozone' : 'bg-ozone text-void hover:bg-flare'}`}
           >
             View on map <ArrowRight className="h-3.5 w-3.5" />
