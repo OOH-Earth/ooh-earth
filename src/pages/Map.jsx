@@ -335,7 +335,10 @@ export default function Map() {
       .filter(
         (m) =>
           (typeFilter === 'all' || m.type === typeFilter) &&
-          (!q || `${m.title} ${m.address}`.toLowerCase().includes(q)),
+          (!q ||
+            `${m.title} ${m.address} ${m.brand_name || ''} ${m.parent_corp || ''}`
+              .toLowerCase()
+              .includes(q)),
       )
       .sort((a, b) => {
         const aPhoto = a.status === 'verified' && !!a.image ? 2 : a.image ? 1 : 0;
