@@ -25,7 +25,6 @@
 // depends on live Base44 data unavailable at build time in this repo.
 
 import { readFile, writeFile, mkdir } from 'node:fs/promises';
-import { existsSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { META } from '../src/lib/routeMeta.js';
@@ -82,11 +81,18 @@ function applyMeta(html, route, meta) {
 }
 
 async function main() {
-  if (!existsSync(templatePath)) {
-    console.error('prerender-meta: dist/index.html not found — run `vite build` first.');
-    process.exit(1);
+  // Read directly rather than check-then-read (existsSync + readFile on the
+  // same path is a TOCTOU race) -- a missing file surfaces as ENOENT here.
+  let template;
+  try {
+    template = await readFile(templatePath, 'utf8');
+  } catch (err) {
+    if (err.code === 'ENOENT') {
+      console.error('prerender-meta: dist/index.html not found — run `vite build` first.');
+      process.exit(1);
+    }
+    throw err;
   }
-  const template = await readFile(templatePath, 'utf8');
   const routes = Object.keys(META).filter((r) => r !== '/');
 
   let written = 0;
