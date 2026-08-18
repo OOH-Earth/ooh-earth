@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom';
 import {
   FileText,
   Eye,
@@ -58,6 +59,14 @@ function Badge({ badge, earned }) {
       >
         {style.label}
       </span>
+      {earned && (
+        <Link
+          to={`/lab/nft?badge=${badge.id}`}
+          className="mt-0.5 flex items-center gap-1 font-mono text-[7px] font-bold uppercase tracking-[0.12em] text-dim opacity-0 transition-opacity hover:text-ozone focus-visible:opacity-100 group-hover:opacity-100"
+        >
+          <Coins className="h-2.5 w-2.5" /> Mint as NFT
+        </Link>
+      )}
     </div>
   );
 }
