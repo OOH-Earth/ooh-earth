@@ -1,87 +1,64 @@
-# Decisions Required From Dave
+# Decisions & Blockers — Sorted for Dave
 
-Every item below materially affects business model, legal exposure,
-architecture, or credentials — exactly the category this mission's own rules
-say must stop for a decision rather than guess. Each has a recommended
-default where one exists.
+Every item below is sorted into exactly one category. Nothing here is
+engineering work disguised as a "decision" — each genuinely needs your
+input, external access, or scope before another line of code should be
+written.
 
-## Decision A — Real `Brand`/`Organisation` entity?
-**Question:** Keep running on the existing free-text `brand_name`/`parent_corp`
-fields (works today, zero migration risk), or build a real relational entity
-(would let you dedupe spelling variants — "Shell" vs "Shell plc" — and attach
-brand-level metadata not tied to any one location)?
-**Recommended default:** Keep the free-text model. Nothing currently asked
-requires the migration; revisit only if a concrete need appears (e.g.
-brand-level analytics across variant spellings).
-**Blocks:** Nothing currently. Would unblock: cross-spelling brand dedup.
+---
 
-## Decision B — Verified-only heat filter?
-**Question:** Add a toggle to show heat intensity from verified reports only?
-**Recommended default:** Ship it — it's a small, additive filter using
-existing `status` data, no new architecture.
-**Blocks:** Item 4 in `04_REMAINING_WORK.md`.
+## A. Engineering Complete
+(Shipped, merged, tested — nothing to decide.)
 
-## Decision C — Real AR object detection?
-**Question:** Invest in genuine client-side computer vision for the "lock on"
-reticle (currently an honest manual UI gesture), or keep it as-is?
-**Recommended default:** Keep as-is. It's already honestly labeled, never
-claims real detection, and a real CV feature is a multi-week model/latency/
-accuracy project, not a small integration.
-**Blocks:** Nothing — current UI is honest either way.
+Corporate footprint cross-referencing · brand/parent-corp map search ·
+Activity Heat + hotspot-to-report handoff · AR parent-corporation context ·
+trophy → NFT Studio connection · CI observability across every gate.
 
-## Decision D — NFT on-chain strategy
-**Question:** Who deploys/pays for the smart contract, which chain (Base or
-Solana — both already modeled in `Mint.jsonc`), and is "prepare in-app,
-mint externally on Zora" the permanent design, or should minting move
-in-app?
-**Recommended default:** Keep prepare-in-app/mint-externally — it's honest,
-already works, and avoids the app custodying gas funds or private keys.
-**Blocks:** Any real on-chain minting work (Blocker #2).
+See `DAVE_COMPLETION_CHECKLIST.md` items 3, 4, 5, 6, 7, 9, 11, 13.
 
-## Decision E — Ship the badge→NFT prefill link?
-**Question:** The working prototype (earned badge deep-links into the NFT
-studio with title/grade prefilled from the badge's tier) exists but was
-shelved as out-of-priority in an earlier pass. Ship it now?
-**Recommended default:** Yes — small, real, already built and verified, ties
-two existing systems together without inventing anything.
-**Blocks:** Item 3 in `04_REMAINING_WORK.md`.
+## B. Verified Existing
+(Already real before this pass — re-confirmed, not rebuilt.)
 
-## Decision F — Agency/freelance operations scope
-**Question:** What is the actual v1 scope? Specifically:
-- Are contributors employees, contractors, or volunteers (this changes what
-  "timesheets"/"clock in-out" legally imply)?
-- Is a real e-signature integration (e.g. DocuSign/HelloSign) in budget, or
-  is "signed documents" a simpler acknowledgment flow?
-- Is this internal-ops-only, or client-facing (the existing `ClientPortal.jsx`
-  scaffold is client-facing)?
-**Recommended default:** None offered — this is a genuine scope decision with
-real legal/compensation implications; building ahead of an answer would be
-inventing business logic.
-**Blocks:** All of `13_AGENCY_WORKFLOW_STATUS.md`.
+Adbusting capture + AI identification · brand intelligence · AR
+camera/GPS/capture pipeline · contribution/trophy/XP system · commercial
+licensing (AGPL-3.0 / CC BY-SA 4.0).
 
-## Decision G — What is Hermes?
-**Question:** An exact specification: what system does Hermes live in
-(internal tool, third-party SaaS, a protocol spec)? What API surface, auth
-model, and data does it expose? What should OOH Earth actually call it for?
-**Recommended default:** None — there is nothing in this repository to
-default to. This needs a real spec, not an assumption.
-**Blocks:** All of `12_HERMES_STATUS.md`.
+See `DAVE_COMPLETION_CHECKLIST.md` items 1, 2, 8, 10, 18.
 
-## Decision H — Business-intelligence use case
-**Question:** Is there a specific BI view wanted (e.g. "total documented
-exposure per corporation," "most-reported sector this month"), or is the
-existing per-location/per-brand exposure sufficient for now?
-**Recommended default:** Existing exposure is sufficient absent a named use
-case — building a dashboard for no specified question risks becoming the
-"giant CRM" the mission explicitly said not to build.
-**Blocks:** Nothing currently — this is opportunity-sizing, not a blocker.
+## C. Partial — Needs a Product Decision
 
-## Decision I — Commercial relicensing
-**Question:** The codebase is AGPL-3.0 (strong copyleft — a SaaS competitor
-using this code would likely be required to open-source their modifications).
-Does any commercialization plan require different licensing terms (e.g. a
-dual-license or a more permissive license for parts of the stack)?
-**Recommended default:** None offered — this is a legal/business decision
-explicitly outside engineering's authority to make.
-**Blocks:** Nothing today; matters only if/when commercialization plans
-solidify. See `15_LICENSING_STATUS.md`.
+| Item | Why it's partial | What Dave must decide | Recommended default |
+|---|---|---|---|
+| Verified-only heat filter | Not built — small, additive | Ship it or not? | Ship it — low risk, uses existing `status` field |
+| NFT on-chain minting | Prepare-in-app works; minting itself is external (Zora) | Which chain (Base/Solana, both already modeled)? Who pays gas? Keep external or bring in-app? | Keep external — avoids the app custodying funds or keys |
+| Business intelligence view | Real data exists per-location; no dashboard | What specific question should it answer? | None — don't build a dashboard for no named question |
+| Fundraising intelligence view | Same underlying data, no dedicated view | Same as above | Same as above |
+| Real `Brand`/`Organisation` entity | Free-text fields work today | Worth a migration for cross-spelling dedup (e.g. "Shell" vs "Shell plc")? | No — not needed for anything currently asked |
+
+## D. Blocked — Needs External Access
+
+| Item | Why | What's needed | Who decides | What unblocks it |
+|---|---|---|---|---|
+| Release 1.3.0 (PR #63) | Check-runs pass on the commit but don't link into the PR's own branch-protection rollup — a diagnosed gap in an earlier fix (PR #64), not a new bug | GitHub org/repo **Settings** access | A human with org admin rights | Fix the rollup linkage, or manually re-trigger via a mechanism that populates it |
+| Real on-chain NFT minting (if pursued) | No deployed contract, no funded wallet, no chain decision | External wallet/contract infrastructure | Dave (business) + whoever holds the wallet | Decision C above, plus the infrastructure itself |
+
+## E. Not Started — Needs Scope
+
+| Item | Why | What Dave must decide | Estimated size | Commercial value | Risk |
+|---|---|---|---|---|---|
+| **Agency / freelance workflow** | `ClientPortal.jsx` is an honest, explicitly sample-labeled scaffold — zero real timesheet/clock-in/signed-document infrastructure exists anywhere in the repo | Worker classification (employee/contractor/volunteer — real legal weight); e-signature vendor or a simpler acknowledgment flow; internal-ops-only vs. client-facing | Medium–large | Medium — enables real client/contributor operations | Legal/compensation exposure if scoped wrong before building |
+| **Hermes** | Zero references anywhere in the repository (`grep -rli "hermes"` across every source/config/doc file — zero matches) | What Hermes actually is, its API/auth surface, and what it's for | Unknown until specified | Unknown until specified | Building without a spec means fabricating an integration |
+
+---
+
+## Full detail on each
+
+Decision A (Brand entity), B (heat filter), C (AR object detection), D (NFT
+chain), F (agency scope), G (Hermes spec), H (BI use case), I (relicensing)
+are elaborated with full reasoning in the per-topic status files:
+`11_NFT_WEB3_STATUS.md`, `12_HERMES_STATUS.md`, `13_AGENCY_WORKFLOW_STATUS.md`,
+`15_LICENSING_STATUS.md`. This file is the fast-scan summary; those are the
+detailed backing.
+
+**Note**: the earlier "Decision E — ship the badge→NFT prefill link?" is now
+resolved — it shipped as PR #98 and is listed in section A above.
