@@ -505,7 +505,7 @@ export default function LocationMap({
         />
       )}
       <FutureLayer futures={futures} />
-      <LayerManager activeLayers={activeLayers} />
+      <LayerManager activeLayers={activeLayers} pins={pins} />
     </MapContainer>
   );
 }
