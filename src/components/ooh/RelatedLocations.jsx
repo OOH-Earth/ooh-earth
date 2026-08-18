@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { Link } from 'react-router-dom';
 import { Image } from '@/components/ui/image';
-import { Layers, Building2, MapPin, Loader2 } from 'lucide-react';
+import { Layers, Building2, MapPin, Globe2, Loader2 } from 'lucide-react';
 import { metaFor } from '@/components/ooh/map/LocationThumb';
 
 // Haversine distance in km
@@ -38,8 +38,13 @@ function RelatedCard({ loc, badge, distKm: dist = null }) {
         <div className="flex items-center gap-1.5">
           {badge === 'nearby' && <MapPin className="h-2.5 w-2.5 text-ozone" />}
           {badge === 'brand' && <Building2 className="h-2.5 w-2.5 text-flare" />}
+          {badge === 'parent' && <Globe2 className="h-2.5 w-2.5 text-brand-blue" />}
           <span className="font-mono text-[8px] uppercase tracking-[0.15em] text-dim">
-            {badge === 'nearby' && dist != null ? `${dist.toFixed(1)}km` : 'same brand'}
+            {badge === 'nearby' && dist != null
+              ? `${dist.toFixed(1)}km`
+              : badge === 'parent'
+                ? 'same parent corp'
+                : 'same brand'}
           </span>
         </div>
         <div className="mt-0.5 truncate font-display text-[13px] font-semibold text-silver transition-colors group-hover:text-ozone">
@@ -56,6 +61,7 @@ function RelatedCard({ loc, badge, distKm: dist = null }) {
 export default function RelatedLocations({ location }) {
   const [nearby, setNearby] = useState([]);
   const [sameBrand, setSameBrand] = useState([]);
+  const [sameParentCorp, setSameParentCorp] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -91,10 +97,30 @@ export default function RelatedLocations({ location }) {
         } else {
           setSameBrand([]);
         }
+        // Same parent corporation -- the holding company behind a brand often
+        // owns other, differently-branded surfaces too. Excluding same-brand
+        // matches keeps this group meaningfully distinct: it's specifically
+        // "other brands under this corporate umbrella," not a brand restated.
+        if (location.parent_corp) {
+          const parent = others
+            .filter(
+              (r) =>
+                r.parent_corp &&
+                r.parent_corp.toLowerCase() === location.parent_corp.toLowerCase() &&
+                (!location.brand_name ||
+                  !r.brand_name ||
+                  r.brand_name.toLowerCase() !== location.brand_name.toLowerCase()),
+            )
+            .slice(0, 4);
+          setSameParentCorp(parent);
+        } else {
+          setSameParentCorp([]);
+        }
       } catch {
         if (active) {
           setNearby([]);
           setSameBrand([]);
+          setSameParentCorp([]);
         }
       } finally {
         if (active) setLoading(false);
@@ -104,7 +130,7 @@ export default function RelatedLocations({ location }) {
     return () => {
       active = false;
     };
-  }, [location?.id, location?.lat, location?.lng, location?.brand_name]);
+  }, [location?.id, location?.lat, location?.lng, location?.brand_name, location?.parent_corp]);
 
   if (loading) {
     return (
@@ -117,7 +143,7 @@ export default function RelatedLocations({ location }) {
     );
   }
 
-  if (!nearby.length && !sameBrand.length) return null;
+  if (!nearby.length && !sameBrand.length && !sameParentCorp.length) return null;
 
   return (
     <div className="mt-8 border border-slate2/40">
@@ -149,6 +175,18 @@ export default function RelatedLocations({ location }) {
             <div className="grid gap-2 sm:grid-cols-2">
               {sameBrand.map((loc) => (
                 <RelatedCard key={loc.id} loc={loc} badge="brand" />
+              ))}
+            </div>
+          </div>
+        )}
+        {sameParentCorp.length > 0 && (
+          <div>
+            <span className="mb-2 block font-mono text-[9px] uppercase tracking-[0.3em] text-brand-blue/70">
+              // Same parent corporation ({location.parent_corp})
+            </span>
+            <div className="grid gap-2 sm:grid-cols-2">
+              {sameParentCorp.map((loc) => (
+                <RelatedCard key={loc.id} loc={loc} badge="parent" />
               ))}
             </div>
           </div>
