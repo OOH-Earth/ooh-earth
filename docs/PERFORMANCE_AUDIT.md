@@ -19,20 +19,36 @@ Read-only, from `main` @ `644110f` (plus PR #102). All numbers are from an actua
 | Finding | Evidence | Notes |
 |---|---|---|
 | Only 7 of 26 files using `<img>` also use `loading="lazy"` | `grep -rl "<img"` vs `grep -rc 'loading="lazy"'` across `src/` | Not a blind fix — some of those 19 are almost certainly above-the-fold/LCP images where lazy-loading would *hurt* (delays the image the fix is supposed to speed up). Needs a per-page pass, not a sweep. |
-| No bundle-visualizer tooling in the repo | `package.json` has no `rollup-plugin-visualizer` or equivalent | Can't safely attribute what's inside the 816 KB entry chunk (React/router/framer-motion/react-query/Base44 SDK/lucide icons used in always-mounted chrome vs. `Home.jsx` itself) without guessing — guessing at `manualChunks` config without real data risks breaking the build for no measured gain |
 
 ## P2 / P3 — not measured this pass
 
 Map/AR-specific loading, third-party script audit beyond Google Fonts, unnecessary-rerender profiling, and a real mobile network-waterfall trace all need either a live/staged environment or a browser profiling session — neither was attempted here to avoid guessing at numbers that need a real device/network trace to mean anything.
 
+## Update — real bundle composition (second pass)
+
+Added `rollup-plugin-visualizer` (dev-only, `npm run build:analyze`, zero cost to a normal build — verified: a plain `npm run build` produces no `bundle-analysis.html` and no size/behavior change). Generated a real treemap and parsed its module-level data. The 816 KB entry bundle breaks down as:
+
+| Contributor | Uncompressed bytes | % of entry bundle |
+|---|---|---|
+| `framer-motion` + `motion-dom` | ~393 KB | ~22% |
+| Base44 SDK transitive deps (`axios`, `socket.io-client`, `engine.io-*`, `partysocket`) | ~280 KB | ~16% |
+| `react-dom` | 135 KB | ~8% |
+| `tailwind-merge` | 102 KB | ~6% |
+| `react-router` | 86 KB | ~5% |
+| `@tanstack/query-core` | 72 KB | ~4% |
+| `src/components/ooh/*` (nav, footer, global overlays — ~20 small files, none over 26 KB) | 236 KB | ~13% |
+| Everything else (`lucide-react`, `@base44/sdk` itself, `@radix-ui/*`, `@floating-ui/*`, `src/lib`, `src/hooks`) | ~330 KB | ~26% |
+
+**Why no fix was implemented despite having real data:**
+
+- **`framer-motion`/`motion-dom` (the single largest contributor)** wraps the *entire* `<Routes>` tree in `App.jsx` (`<AnimatePresence><motion.div>...<Routes>...`) — it's load-bearing for the very first render, not deferrable without either delaying first paint anyway or restructuring the root render path (real risk of flicker/layout shift across all ~70 routes). Not isolated, not low-risk.
+- **The Base44 SDK's transitive HTTP/realtime dependencies** (`axios`, `socket.io-client`) aren't imported anywhere in `src/` directly — they're pulled in inside `@base44/sdk`'s own `createClient()`, which `src/api/base44Client.js` imports statically and which most of the app depends on. Splitting these would mean patching or forking the SDK's internals — out of scope for "reuse existing infrastructure, smallest viable change."
+- **The `src/components/ooh` chrome (236 KB)** is already fairly granular — no single always-mounted component is large enough on its own (largest is `NavMenu.jsx` at 26 KB, ~1.4% of the entry bundle) to justify the risk of restructuring App.jsx's global chrome for a marginal gain.
+
+**Conclusion: no safe, isolated, low-risk P0/P1 fix exists in this repo's own code right now.** The two biggest levers (framer-motion's root wrapper, the SDK's transitive deps) are both structurally necessary as currently integrated. This is a real, evidence-backed negative result, not a skipped analysis.
+
 ## Fixes implemented this pass
 
-**None.** No P0/P1 finding above met the bar of "small, isolated, measurable, low-risk, directly supported by evidence" for an actual code change:
+**One, deliberately scoped small:** `rollup-plugin-visualizer` added as a dev-only, opt-in (`ANALYZE=true`) tool. Zero effect on the production build — this is diagnostic tooling, not a performance fix itself, and it's what produced every number in the table above. No application code was changed.
 
-- Route-level splitting was already complete — nothing to convert.
-- The 816 KB entry bundle is a real, evidenced P0, but fixing it responsibly requires knowing what's inside it first. Guessing at a `manualChunks` split without that data is exactly the "optimise blindly" this audit was told not to do.
-- The `loading="lazy"` gap is real but needs per-image judgment (LCP images should stay eager), not a mechanical sweep.
-
-## Recommended next engineering action (small, safe, unlocks real fixes)
-
-Add `rollup-plugin-visualizer` as a **dev-only** dependency (zero runtime/production impact) and generate one bundle-composition report. That report turns the P0 above from "816 KB, cause unknown" into a specific, evidence-backed list of what to actually move into a lazy boundary or a manual vendor chunk — at which point a real, safe, measurable fix becomes possible in one focused follow-up PR.
+If a future pass wants to pursue the framer-motion or Base44-SDK-transitive-dependency reduction, it should be scoped as its own dedicated piece of work — each is a real architectural change (deferring the route-transition wrapper, or vendoring/patching SDK internals), not a "small, isolated" fix.
