@@ -65,7 +65,11 @@ test.describe('ArLens — AR capture is identified by the same AI scanner as /re
 
     await page.getByRole('button', { name: /capture & file report/i }).click();
     await expect(page.getByText(/report filed/i)).toBeVisible({ timeout: 15_000 });
-    await expect(page.getByText(/identified: shell/i)).toBeVisible();
+    // The done-state summary previously showed brand + ooh_operator but
+    // silently dropped parent_corp, even though it was already detected and
+    // already saved to the Location record -- a user had no corporate
+    // context without clicking through to "View report" first.
+    await expect(page.getByText(/identified: shell · shell plc · jcdecaux/i)).toBeVisible();
 
     expect(updatedLocation).not.toBeNull();
     expect((updatedLocation as unknown as { brand_name: string })?.brand_name).toBe('Shell');

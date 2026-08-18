@@ -457,6 +457,7 @@ export default function ArLens() {
                         {detection?.brand_name && detection.brand_name !== 'Unknown' && (
                           <div className="font-mono text-[10px] uppercase tracking-[0.2em] text-silver/70">
                             Identified: {detection.brand_name}
+                            {detection.parent_corp ? ` · ${detection.parent_corp}` : ''}
                             {detection.ooh_operator ? ` · ${detection.ooh_operator}` : ''}
                           </div>
                         )}
