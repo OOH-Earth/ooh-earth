@@ -41,7 +41,7 @@ export default function SiteFooter() {
                   href="https://www.instagram.com/oohstreetmaps/"
                   target="_blank"
                   rel="noreferrer"
-                  className="transition-colors hover:text-ozone"
+                  className="inline-block py-1.5 -my-1.5 transition-colors hover:text-ozone"
                 >
                   Instagram
                 </a>
@@ -51,7 +51,7 @@ export default function SiteFooter() {
                   href="https://twitch.tv/oohearth"
                   target="_blank"
                   rel="noreferrer"
-                  className="transition-colors hover:text-ozone"
+                  className="inline-block py-1.5 -my-1.5 transition-colors hover:text-ozone"
                 >
                   Twitch
                 </a>
@@ -61,7 +61,7 @@ export default function SiteFooter() {
                   href="https://zora.co/@oohearth"
                   target="_blank"
                   rel="noreferrer"
-                  className="transition-colors hover:text-ozone"
+                  className="inline-block py-1.5 -my-1.5 transition-colors hover:text-ozone"
                 >
                   Zora
                 </a>
@@ -71,7 +71,7 @@ export default function SiteFooter() {
                   href="https://pump.fun/BwVYGpW3wqe6UZWoLDj4UbxXc94n813MSJcDNePApump"
                   target="_blank"
                   rel="noreferrer"
-                  className="transition-colors hover:text-ozone"
+                  className="inline-block py-1.5 -my-1.5 transition-colors hover:text-ozone"
                 >
                   $OOHEX · pump.fun
                 </a>
@@ -89,13 +89,16 @@ export default function SiteFooter() {
                   href="https://advertisersanonymous.org/"
                   target="_blank"
                   rel="noreferrer"
-                  className="transition-colors hover:text-ozone"
+                  className="inline-block py-1.5 -my-1.5 transition-colors hover:text-ozone"
                 >
                   Advertisers Anonymous
                 </a>
               </li>
               <li>
-                <Link to="/support" className="transition-colors hover:text-ozone">
+                <Link
+                  to="/support"
+                  className="inline-block py-1.5 -my-1.5 transition-colors hover:text-ozone"
+                >
                   Sponsor / Fund
                 </Link>
               </li>
@@ -104,13 +107,16 @@ export default function SiteFooter() {
                   href="https://oohearthfoundation.framer.wiki/"
                   target="_blank"
                   rel="noreferrer"
-                  className="transition-colors hover:text-ozone"
+                  className="inline-block py-1.5 -my-1.5 transition-colors hover:text-ozone"
                 >
                   Foundation
                 </a>
               </li>
               <li>
-                <Link to="/about" className="transition-colors hover:text-ozone">
+                <Link
+                  to="/about"
+                  className="inline-block py-1.5 -my-1.5 transition-colors hover:text-ozone"
+                >
                   About
                 </Link>
               </li>
@@ -123,32 +129,50 @@ export default function SiteFooter() {
             </div>
             <ul className="mt-3 space-y-2 font-mono text-[11px] text-silver/60">
               <li>
-                <Link to="/map" className="transition-colors hover:text-ozone">
+                <Link
+                  to="/map"
+                  className="inline-block py-1.5 -my-1.5 transition-colors hover:text-ozone"
+                >
                   Map
                 </Link>
               </li>
               <li>
-                <Link to="/report" className="transition-colors hover:text-ozone">
+                <Link
+                  to="/report"
+                  className="inline-block py-1.5 -my-1.5 transition-colors hover:text-ozone"
+                >
                   Report
                 </Link>
               </li>
               <li>
-                <Link to="/plans" className="transition-colors hover:text-ozone">
+                <Link
+                  to="/plans"
+                  className="inline-block py-1.5 -my-1.5 transition-colors hover:text-ozone"
+                >
                   Plans
                 </Link>
               </li>
               <li>
-                <Link to="/about" className="transition-colors hover:text-ozone">
+                <Link
+                  to="/about"
+                  className="inline-block py-1.5 -my-1.5 transition-colors hover:text-ozone"
+                >
                   About
                 </Link>
               </li>
               <li>
-                <Link to="/contact" className="transition-colors hover:text-ozone">
+                <Link
+                  to="/contact"
+                  className="inline-block py-1.5 -my-1.5 transition-colors hover:text-ozone"
+                >
                   Contact
                 </Link>
               </li>
               <li>
-                <Link to="/support" className="transition-colors hover:text-ozone">
+                <Link
+                  to="/support"
+                  className="inline-block py-1.5 -my-1.5 transition-colors hover:text-ozone"
+                >
                   Support
                 </Link>
               </li>
