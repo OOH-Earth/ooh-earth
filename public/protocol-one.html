@@ -1,0 +1,232 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Protocol One — OOH Earth</title>
+    <meta
+      name="description"
+      content="What happens when OOH Earth encounters an advertisement in the real world. The full loop, in six real steps."
+    />
+    <style>
+      :root {
+        --void: #050505;
+        --card: #0c0c0c;
+        --border: #262626;
+        --silver: #e8e8e8;
+        --dim: #888;
+        --ozone: #edff00;
+        --flare: #ff5c00;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        background: var(--void);
+        color: var(--silver);
+        font-family: 'IBM Plex Mono', 'SFMono-Regular', Consolas, monospace;
+        line-height: 1.55;
+      }
+      .wrap {
+        max-width: 880px;
+        margin: 0 auto;
+        padding: 40px 24px 100px;
+      }
+      .hero {
+        text-align: center;
+        padding: 24px 0 40px;
+      }
+      .hero .kicker {
+        font-size: 10px;
+        letter-spacing: 0.35em;
+        text-transform: uppercase;
+        color: var(--ozone);
+      }
+      .hero h1 {
+        font-size: 34px;
+        margin: 12px 0 8px;
+      }
+      .hero p {
+        color: var(--dim);
+        font-size: 14px;
+        max-width: 520px;
+        margin: 0 auto;
+      }
+      .step {
+        border: 1px solid var(--border);
+        background: var(--card);
+        margin-top: 20px;
+        overflow: hidden;
+      }
+      .step img {
+        width: 100%;
+        display: block;
+        border-bottom: 1px solid var(--border);
+      }
+      .step .body {
+        padding: 20px;
+      }
+      .step .num {
+        font-size: 10px;
+        letter-spacing: 0.3em;
+        color: var(--ozone);
+        text-transform: uppercase;
+      }
+      .step h2 {
+        margin: 8px 0 6px;
+        font-size: 18px;
+        text-transform: uppercase;
+      }
+      .step p {
+        font-size: 13px;
+        color: var(--silver);
+        margin: 0 0 14px;
+      }
+      .step .try {
+        display: inline-block;
+        font-size: 12px;
+        color: var(--ozone);
+        border: 1px solid rgba(237, 255, 0, 0.3);
+        padding: 8px 12px;
+        background: rgba(237, 255, 0, 0.03);
+        text-decoration: none;
+      }
+      .step .try:hover {
+        background: rgba(237, 255, 0, 0.08);
+      }
+      .note {
+        font-size: 11px;
+        color: var(--dim);
+        background: var(--card);
+        border: 1px solid var(--border);
+        padding: 12px 16px;
+        margin-top: 28px;
+      }
+      footer {
+        margin-top: 40px;
+        padding-top: 20px;
+        border-top: 1px solid var(--border);
+        font-size: 11px;
+        color: var(--dim);
+        text-align: center;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <div class="hero">
+        <div class="kicker">OOH Earth · Protocol One</div>
+        <h1>What happens when OOH Earth encounters an ad?</h1>
+        <p>
+          One real loop, six real steps. Every screen below is the actual application — not a
+          mockup.
+        </p>
+      </div>
+
+      <div class="step">
+        <img
+          src="/protocol-one/screenshots/01_capture.png"
+          alt="Home screen leading into the Report flow"
+        />
+        <div class="body">
+          <div class="num">01 · Capture</div>
+          <h2>See something. Log it.</h2>
+          <p>
+            A billboard, a screen, a painted wall — anyone can document it in seconds. No login, no
+            gatekeeper.
+          </p>
+          <a class="try" href="/report">Try it → /report</a>
+        </div>
+      </div>
+
+      <div class="step">
+        <img
+          src="/protocol-one/screenshots/02_identify.png"
+          alt="AI Ad Scanner showing a completed scan with 94% confidence"
+        />
+        <div class="body">
+          <div class="num">02 · Identify</div>
+          <h2>AI identifies the brand.</h2>
+          <p>
+            A real AI scan reads the photo and returns brand, agency, and surface type — not a
+            guess, not a placeholder.
+          </p>
+          <a class="try" href="/report">Try it → /report</a>
+        </div>
+      </div>
+
+      <div class="step">
+        <img
+          src="/protocol-one/screenshots/03_connect.png"
+          alt="Location page showing brand, agency, and parent corporation"
+        />
+        <div class="body">
+          <div class="num">03 · Connect</div>
+          <h2>The parent corporation surfaces.</h2>
+          <p>
+            The brand is never the whole story. The same location page reveals the parent
+            corporation and operator behind it.
+          </p>
+          <a class="try" href="/map">Try it → any location on /map</a>
+        </div>
+      </div>
+
+      <div class="step">
+        <img
+          src="/protocol-one/screenshots/04_discover.png"
+          alt="Map filtered by a brand and parent-corporation search"
+        />
+        <div class="body">
+          <div class="num">04 · Discover</div>
+          <h2>One report becomes a pattern.</h2>
+          <p>
+            Search the map by that same brand or parent corporation — a single capture connects to
+            everywhere else it appears.
+          </p>
+          <a class="try" href="/map">Try it → /map</a>
+        </div>
+      </div>
+
+      <div class="step">
+        <img
+          src="/protocol-one/screenshots/05_contribute.png"
+          alt="Activity Heat layer with a hotspot opening the report behind it"
+        />
+        <div class="body">
+          <div class="num">05 · Contribute</div>
+          <h2>The observation joins the intelligence layer.</h2>
+          <p>
+            Every filed report feeds the Activity Heat layer — density that's real, and clickable
+            straight back into the report that produced it.
+          </p>
+          <a class="try" href="/map">Try it → /map → toggle Activity Heat</a>
+        </div>
+      </div>
+
+      <div class="step">
+        <img
+          src="/protocol-one/screenshots/06_proof.png"
+          alt="NFT Studio pre-filled from an earned contribution badge"
+        />
+        <div class="body">
+          <div class="num">06 · Proof</div>
+          <h2>Contribution, honestly recorded.</h2>
+          <p>
+            The person who filed it earns real, tracked credit — a badge that connects straight into
+            the NFT studio, pre-filled from the tier they actually earned. On-chain minting stays
+            external, by design — not overclaimed here.
+          </p>
+          <a class="try" href="/operative">Try it → /operative (needs login + a filed report)</a>
+        </div>
+      </div>
+
+      <div class="note">
+        This page is a static, offline storytelling layer — not a replacement for the application.
+        Every "Try it" link opens the real, running product.
+      </div>
+
+      <footer>OOH Earth · Protocol One</footer>
+    </div>
+  </body>
+</html>
