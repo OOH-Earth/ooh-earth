@@ -1,4 +1,14 @@
-import { Ban, SprayCan, Palette, Leaf, Sprout, AlertTriangle, Waves, Radio } from 'lucide-react';
+import {
+  Ban,
+  SprayCan,
+  Palette,
+  Leaf,
+  Sprout,
+  AlertTriangle,
+  Waves,
+  Radio,
+  Flame,
+} from 'lucide-react';
 
 // Layer groups — ordered by campaign priority.
 // STREET     → Adbusting, Graffiti, Ad Spots & Art (base marker layer)
@@ -21,6 +31,12 @@ export const LAYER_GROUPS = [
       { id: 'graffiti', label: 'Graffiti', icon: SprayCan, color: '#FF5C00' },
       { id: 'ads', label: 'Ad Spots & Art', icon: Palette, color: '#EDFF00', defaultOn: true },
     ],
+  },
+  {
+    id: 'intel',
+    label: 'Intelligence',
+    color: '#EDFF00',
+    layers: [{ id: 'heat', label: 'Activity Heat', icon: Flame, color: '#FF5C00' }],
   },
   {
     id: 'ecology',

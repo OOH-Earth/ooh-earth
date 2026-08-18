@@ -1535,6 +1535,16 @@ body.map-fullscreen .ooh-mobile-nav {
   touch-action: none;
 }
 
+/* Leaflet heat layer — sits inside .leaflet-overlay-pane, an unsized
+   position:absolute pane. The site-wide `canvas { max-width: 100% }` reset
+   above resolves against that pane's own (auto/0) width instead of the real
+   map container, collapsing the canvas to 0x0. Leaflet already sizes this
+   canvas correctly via its width/height attributes, so it never needs the
+   reset's help. */
+.leaflet-heatmap-layer {
+  max-width: none;
+}
+
 /* MapLibre GL popup — terminal-styled chrome */
 .maplibregl-popup {
   --pp-bg: #0a0a0a;

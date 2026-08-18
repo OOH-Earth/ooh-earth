@@ -379,7 +379,11 @@ export default function Map() {
       const ext = ['rivers', 'mushrooms', 'flora', 'war', 'radio'].find((l) =>
         activeLayers.includes(l),
       );
-      return { primaryLayer: ext || null, layerFiltered: [] };
+      // Heat is built from the same Location data as the street layers, not
+      // a separate decorative layer -- it shouldn't be starved of markers
+      // just because no street sub-filter happens to also be active.
+      const heatOnly = !ext && activeLayers.includes('heat');
+      return { primaryLayer: ext || null, layerFiltered: heatOnly ? filtered : [] };
     }
 
     return { primaryLayer: streetLayer, layerFiltered: lf };
