@@ -505,7 +505,7 @@ export default function LocationMap({
         />
       )}
       <FutureLayer futures={futures} />
-      <LayerManager activeLayers={activeLayers} pins={pins} />
+      <LayerManager activeLayers={activeLayers} pins={pins} onExpandPin={onExpandPin} />
     </MapContainer>
   );
 }

@@ -19,13 +19,17 @@ const REGISTRY = {
 // Layers that need the current marker set rather than static decoration.
 const NEEDS_PINS = new Set(['heat']);
 
-export default function LayerManager({ activeLayers, pins = [] }) {
+export default function LayerManager({ activeLayers, pins = [], onExpandPin }) {
   return (
     <>
       {activeLayers.map((id) => {
         const Layer = REGISTRY[id];
         if (!Layer) return null;
-        return NEEDS_PINS.has(id) ? <Layer key={id} pins={pins} /> : <Layer key={id} />;
+        return NEEDS_PINS.has(id) ? (
+          <Layer key={id} pins={pins} onExpandPin={onExpandPin} />
+        ) : (
+          <Layer key={id} />
+        );
       })}
     </>
   );

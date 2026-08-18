@@ -3,14 +3,48 @@ import { useMap } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet.heat';
 
+// Screen-pixel search radius for "click a hotspot" -> nearest report. Pixels
+// (not meters) so the hit area feels the same size on screen at any zoom.
+const CLICK_HIT_RADIUS_PX = 32;
+
 // Report-density heat map -- a Leaflet canvas layer built directly from the
 // same marker data already loaded for the pins (no new entity, no backend
 // query). Answers "where is activity concentrated" at a glance; the existing
 // pins remain untouched underneath so a user can still open any individual
 // report. Toggled through the same activeLayers mechanism as every other
 // map layer (see LayerManager.jsx / MapLayerToggle.jsx).
-export default function HeatLayer({ pins = [] }) {
+//
+// The heat canvas itself has no click handling of its own (leaflet.heat is a
+// pure visualization) -- clicking it was previously a dead end. A map click
+// near a real point now opens that report the same way tapping its pin
+// directly already does (onExpandPin -- selects it, flies to it, and opens
+// the mobile detail sheet), so a hotspot is a way *into* the data, not just
+// a picture of it.
+export default function HeatLayer({ pins = [], onExpandPin }) {
   const map = useMap();
+
+  useEffect(() => {
+    if (!onExpandPin) return undefined;
+    const handleClick = (e) => {
+      const clickPt = map.latLngToContainerPoint(e.latlng);
+      let nearest = null;
+      let nearestDist = Infinity;
+      for (const m of pins) {
+        if (!isFinite(m.lat) || !isFinite(m.lng)) continue;
+        const p = map.latLngToContainerPoint([m.lat, m.lng]);
+        const d = Math.hypot(p.x - clickPt.x, p.y - clickPt.y);
+        if (d < nearestDist) {
+          nearestDist = d;
+          nearest = m;
+        }
+      }
+      if (nearest && nearestDist <= CLICK_HIT_RADIUS_PX) onExpandPin(nearest);
+    };
+    map.on('click', handleClick);
+    return () => {
+      map.off('click', handleClick);
+    };
+  }, [map, pins, onExpandPin]);
 
   useEffect(() => {
     /** @type {[number, number, number][]} */
@@ -54,7 +88,8 @@ export default function HeatLayer({ pins = [] }) {
         '<div style="margin-bottom:3px">Report density</div>' +
         '<div style="width:100px;height:6px;background:linear-gradient(90deg,#1F51FF,#EDFF00,#FF5C00,#FF0040);border:1px solid #000"></div>' +
         '<div style="display:flex;justify-content:space-between;margin-top:2px;color:#999;font-size:7px">' +
-        '<span>Low</span><span>High</span></div>';
+        '<span>Low</span><span>High</span></div>' +
+        '<div style="margin-top:4px;color:#999;font-size:7px;normal-case">Click a hotspot to open the nearest report</div>';
       return div;
     };
     legend.addTo(map);
