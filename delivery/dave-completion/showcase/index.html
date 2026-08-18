@@ -1,0 +1,298 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>OOH Earth — Product Delivery Checkpoint</title>
+<style>
+  :root {
+    --void: #050505;
+    --card: #0c0c0c;
+    --border: #262626;
+    --silver: #e8e8e8;
+    --dim: #888;
+    --ozone: #edff00;
+    --flare: #ff5c00;
+    --shipped: #39ff14;
+    --partial: #ffb300;
+    --blocked: #ff4d4d;
+    --verified: #1f9bff;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--void);
+    color: var(--silver);
+    font-family: 'IBM Plex Mono', 'SFMono-Regular', Consolas, monospace;
+    line-height: 1.55;
+  }
+  .wrap { max-width: 1100px; margin: 0 auto; padding: 40px 24px 100px; }
+  .hero {
+    border: 1px solid var(--border);
+    padding: 48px 32px;
+    text-align: center;
+    background: radial-gradient(circle at top, rgba(237,255,0,0.06), transparent 60%);
+  }
+  .hero .kicker {
+    font-size: 10px;
+    letter-spacing: 0.35em;
+    text-transform: uppercase;
+    color: var(--ozone);
+  }
+  .hero h1 {
+    font-size: 40px;
+    margin: 12px 0 8px;
+    letter-spacing: -0.01em;
+  }
+  .hero p.tag {
+    color: var(--dim);
+    font-size: 15px;
+    margin: 0;
+  }
+  .status-strip {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 1px;
+    background: var(--border);
+    border: 1px solid var(--border);
+    margin-top: 28px;
+  }
+  .status-strip .cell {
+    background: var(--card);
+    padding: 16px;
+    text-align: center;
+  }
+  .status-strip .cell .label {
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    color: var(--dim);
+  }
+  .status-strip .cell .value {
+    font-size: 15px;
+    font-weight: 700;
+    margin-top: 6px;
+    color: var(--shipped);
+  }
+  h2.section-title {
+    margin: 56px 0 20px;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.3em;
+    color: var(--dim);
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 10px;
+  }
+  .cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 16px;
+  }
+  .card {
+    border: 1px solid var(--border);
+    background: var(--card);
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .card .card-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  .card h3 {
+    margin: 0;
+    font-size: 15px;
+    color: var(--silver);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  .badge {
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    padding: 3px 8px;
+    border: 1px solid;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+  .badge.shipped { color: var(--shipped); border-color: var(--shipped); }
+  .badge.verified { color: var(--verified); border-color: var(--verified); }
+  .badge.partial { color: var(--partial); border-color: var(--partial); }
+  .badge.blocked { color: var(--blocked); border-color: var(--blocked); }
+  .card .row { font-size: 12.5px; }
+  .card .row .k {
+    display: block;
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    color: var(--dim);
+    margin-bottom: 3px;
+  }
+  .card .row .v { color: var(--silver); }
+  .card .try {
+    margin-top: 4px;
+    font-size: 12px;
+    color: var(--ozone);
+    border: 1px solid rgba(237,255,0,0.3);
+    padding: 8px 10px;
+    background: rgba(237,255,0,0.03);
+  }
+  .card .evidence {
+    font-size: 11px;
+    color: var(--dim);
+  }
+  .card .evidence a { color: var(--flare); }
+  footer {
+    margin-top: 60px;
+    padding-top: 20px;
+    border-top: 1px solid var(--border);
+    font-size: 11px;
+    color: var(--dim);
+    text-align: center;
+  }
+  .note {
+    font-size: 11px;
+    color: var(--dim);
+    background: var(--card);
+    border: 1px solid var(--border);
+    padding: 12px 16px;
+    margin-top: 20px;
+  }
+  .card .thumb {
+    width: 100%;
+    border: 1px solid var(--border);
+    display: block;
+    margin-bottom: 2px;
+  }
+  .card .thumb-caption {
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    color: var(--dim);
+    margin-bottom: 6px;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="hero">
+    <div class="kicker">OOH Earth</div>
+    <h1>Product Delivery Checkpoint</h1>
+    <p class="tag">Capture → Identify → Discover → Understand</p>
+
+    <div class="status-strip">
+      <div class="cell"><div class="label">Main SHA</div><div class="value">43bfe9d</div></div>
+      <div class="cell"><div class="label">Engineering Verification</div><div class="value">Clean</div></div>
+      <div class="cell"><div class="label">E2E Status</div><div class="value">14/14 Pass</div></div>
+      <div class="cell"><div class="label">Security</div><div class="value">0 Vulns</div></div>
+      <div class="cell"><div class="label">Delivery</div><div class="value">Complete</div></div>
+    </div>
+  </div>
+
+  <div class="note">
+    This showcase is a static, offline handoff document. Routes referenced
+    below (e.g. <code>/map</code>, <code>/report</code>) are paths inside the
+    OOH Earth application, not public links from this page — open them in
+    your own running instance of the app to try each feature live.
+  </div>
+
+  <h2 class="section-title">Feature Capabilities</h2>
+  <div class="cards">
+
+    <div class="card">
+      <div class="card-head"><h3>1. Adbusting</h3><span class="badge verified">Verified Existing</span></div>
+      <img class="thumb" src="screenshots/09_home_to_report.png" alt="Home screen leading into the Report flow" />
+      <div class="thumb-caption">Real screenshot — home → report entry point</div>
+      <div class="row"><span class="k">Dave asked for</span><span class="v">Fast, obvious capture of a billboard with real identification.</span></div>
+      <div class="row"><span class="k">What exists</span><span class="v">A 4-step wizard (/report) and a live camera capture (/ar), both running the same real AI scan. No login required to file a report.</span></div>
+      <div class="row"><span class="k">Why it matters</span><span class="v">This is the core loop everything else strengthens — if this isn't fast and obvious, nothing else matters.</span></div>
+      <div class="try">Try it → <code>/report</code> or <code>/ar</code></div>
+      <div class="evidence">Evidence: EVIDENCE_INDEX.md #01, #09 · Test: e2e/report-scan-dedup.spec.ts, e2e/ar-lens-brand-scan.spec.ts</div>
+    </div>
+
+    <div class="card">
+      <div class="card-head"><h3>2. Brand Intelligence</h3><span class="badge verified">Verified Existing</span></div>
+      <img class="thumb" src="screenshots/02_map_brand_search.png" alt="Map filtered by a brand/parent-corporation search" />
+      <div class="thumb-caption">Real screenshot — map filtered by brand search</div>
+      <div class="row"><span class="k">Dave asked for</span><span class="v">See the brand, agency, and corporation behind an ad, not just a photo.</span></div>
+      <div class="row"><span class="k">What exists</span><span class="v">Real logo lookup (60+ marks), brand/agency/parent-corp/operator/sector shown on every location.</span></div>
+      <div class="row"><span class="k">Why it matters</span><span class="v">This is the "who's actually behind this" moment — the product's stated differentiator.</span></div>
+      <div class="try">Try it → any <code>/location/:id</code></div>
+      <div class="evidence">Evidence: EVIDENCE_INDEX.md #01 · Test: e2e/advertiser-sector-inference.spec.ts</div>
+    </div>
+
+    <div class="card">
+      <div class="card-head"><h3>3. Corporate Footprint</h3><span class="badge shipped">Shipped</span></div>
+      <img class="thumb" src="screenshots/03_corporate_footprint.png" alt="Location detail page showing connected locations by parent corporation" />
+      <div class="thumb-caption">Real screenshot — connected locations by parent corp</div>
+      <div class="row"><span class="k">Dave asked for</span><span class="v">Map all corporate relationships across brands.</span></div>
+      <div class="row"><span class="k">What exists</span><span class="v">A location page now shows sibling locations under the same parent corporation, not just the same brand.</span></div>
+      <div class="row"><span class="k">Why it matters</span><span class="v">Two differently-branded surfaces owned by the same holding company were previously invisible to each other.</span></div>
+      <div class="try">Try it → any <code>/location/:id</code> → "Connected Locations"</div>
+      <div class="evidence">Evidence: EVIDENCE_INDEX.md #03 · PR #91 · Test: e2e/related-locations-parent-corp.spec.ts (2/2)</div>
+    </div>
+
+    <div class="card">
+      <div class="card-head"><h3>4. Activity Heat</h3><span class="badge shipped">Shipped</span></div>
+      <img class="thumb" src="screenshots/05_heat_to_report.png" alt="Heat layer with a hotspot clicked, opening the nearest report" />
+      <div class="thumb-caption">Real screenshot — hotspot click opens nearest report</div>
+      <div class="row"><span class="k">Dave asked for</span><span class="v">See where activity concentrates, not just a marker list.</span></div>
+      <div class="row"><span class="k">What exists</span><span class="v">A real report-density heat layer; clicking a hotspot opens the actual report behind it.</span></div>
+      <div class="row"><span class="k">Why it matters</span><span class="v">Turns the map from a picture of the data into a way to act on it.</span></div>
+      <div class="try">Try it → <code>/map</code> → toggle "Activity Heat" → click a hotspot</div>
+      <div class="evidence">Evidence: EVIDENCE_INDEX.md #04, #05 · PR #92, #96 · Test: e2e/heat-layer.spec.ts, e2e/heat-layer-click-handoff.spec.ts</div>
+    </div>
+
+    <div class="card">
+      <div class="card-head"><h3>5. AR Intelligence</h3><span class="badge shipped">Shipped</span></div>
+      <div class="row"><span class="k">Dave asked for</span><span class="v">AR billboard capture that carries brand + corporate context, not a gimmick.</span></div>
+      <div class="row"><span class="k">What exists</span><span class="v">AR uses the same real AI scan the report wizard uses, and now shows parent corporation alongside brand. The "lock on" reticle is honestly a manual gesture, not object detection.</span></div>
+      <div class="row"><span class="k">Why it matters</span><span class="v">AR feels like part of the intelligence system, not a separate toy.</span></div>
+      <div class="try">Try it → <code>/ar</code> (needs camera + HTTPS)</div>
+      <div class="evidence">Evidence: EVIDENCE_INDEX.md #06, #07 · PR #95 · Test: e2e/ar-lens-brand-scan.spec.ts</div>
+    </div>
+
+    <div class="card">
+      <div class="card-head"><h3>6. Contribution / Trophies</h3><span class="badge verified">Verified Existing</span></div>
+      <div class="row"><span class="k">Dave asked for</span><span class="v">Users collect points and trophies, displayed digitally.</span></div>
+      <div class="row"><span class="k">What exists</span><span class="v">A real XP/level/badge/quest system driven by actual contribution counts — not decorative.</span></div>
+      <div class="row"><span class="k">Why it matters</span><span class="v">The foundation for identity and gamification already exists and is real.</span></div>
+      <div class="try">Try it → <code>/operative</code> (needs login + ≥1 real report)</div>
+      <div class="evidence">Evidence: EVIDENCE_INDEX.md #08</div>
+    </div>
+
+    <div class="card">
+      <div class="card-head"><h3>7. NFT Studio</h3><span class="badge shipped">Shipped (connection)</span></div>
+      <img class="thumb" src="screenshots/08_trophy_nft_studio.png" alt="NFT Studio pre-filled from an earned badge" />
+      <div class="thumb-caption">Real screenshot — studio pre-filled from earned badge</div>
+      <div class="row"><span class="k">Dave asked for</span><span class="v">Trophies displayable as NFTs / collectibles.</span></div>
+      <div class="row"><span class="k">What exists</span><span class="v">An earned badge now offers "Mint as NFT," pre-filling the studio from that badge's real tier. On-chain minting itself remains external (Zora) by design — not faked.</span></div>
+      <div class="row"><span class="k">Why it matters</span><span class="v">Connects two previously disconnected real systems without inventing on-chain functionality that doesn't exist.</span></div>
+      <div class="try">Try it → <code>/operative</code> → hover an earned badge → "Mint as NFT"</div>
+      <div class="evidence">Evidence: EVIDENCE_INDEX.md #08 · PR #98 · Test: e2e/nft-badge-mint-prefill.spec.ts (3/3)</div>
+    </div>
+
+    <div class="card">
+      <div class="card-head"><h3>8. Engineering Quality</h3><span class="badge shipped">Shipped</span></div>
+      <div class="row"><span class="k">Dave asked for</span><span class="v">A product that's actually maintainable, not just demoable.</span></div>
+      <div class="row"><span class="k">What exists</span><span class="v">Every CI gate (tests, lint, typecheck, build, format) now produces a plain-English failure summary instead of requiring a raw-log read.</span></div>
+      <div class="row"><span class="k">Why it matters</span><span class="v">Future failures get diagnosed in seconds, not by scrolling hundreds of log lines.</span></div>
+      <div class="try">See it → .github/workflows/ci.yml + scripts/ci-*-summary.mjs</div>
+      <div class="evidence">Evidence: 07_TEST_EVIDENCE.md · PR #85, #99</div>
+    </div>
+
+  </div>
+
+  <footer>
+    OOH Earth — Product Delivery Checkpoint · Main SHA 43bfe9d · Generated as
+    a static, offline artifact. See README_FOR_DAVE.md for the full narrative
+    and DAVE_COMPLETION_CHECKLIST.md for the complete status matrix.
+  </footer>
+
+</div>
+</body>
+</html>
