@@ -1,7 +1,7 @@
 // @ts-nocheck -- intentionally excluded from typecheck (jsconfig.json), see TECHNICAL_DEBT_REGISTER.md
 import React, { createContext, useState, useContext, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
-import { appParams } from '@/lib/app-params';
+import { appParams, clearAccessToken } from '@/lib/app-params';
 import { createAxiosClient } from '@base44/sdk/dist/utils/axios-client';
 
 const AuthContext = createContext();
@@ -57,6 +57,10 @@ export const AuthProvider = ({ children }) => {
         if (appError.status === 403 && appError.data?.extra_data?.reason) {
           const reason = appError.data.extra_data.reason;
           if (reason === 'auth_required') {
+            // A present-but-rejected token would otherwise stay in storage
+            // and get retried on every subsequent page load -- including
+            // /login itself -- compounding into a redirect loop.
+            clearAccessToken();
             setAuthError({
               type: 'auth_required',
               message: 'Authentication required',
@@ -107,8 +111,11 @@ export const AuthProvider = ({ children }) => {
       setIsAuthenticated(false);
       setAuthChecked(true);
 
-      // If user auth fails, it might be an expired token
+      // If user auth fails, it might be an expired token -- clear it so it
+      // isn't retried (and re-rejected) on every subsequent page load,
+      // including /login itself.
       if (error.status === 401 || error.status === 403) {
+        clearAccessToken();
         setAuthError({
           type: 'auth_required',
           message: 'Authentication required',
