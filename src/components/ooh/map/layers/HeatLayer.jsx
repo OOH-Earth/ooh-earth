@@ -41,7 +41,9 @@ export default function HeatLayer({ pins = [], onExpandPin }) {
       if (nearest && nearestDist <= CLICK_HIT_RADIUS_PX) onExpandPin(nearest);
     };
     map.on('click', handleClick);
-    return () => map.off('click', handleClick);
+    return () => {
+      map.off('click', handleClick);
+    };
   }, [map, pins, onExpandPin]);
 
   useEffect(() => {
