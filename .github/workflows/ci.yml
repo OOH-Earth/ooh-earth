@@ -38,9 +38,21 @@ jobs:
           cache: npm
       - run: npm ci
       - name: Typecheck
-        run: npm run typecheck
+        run: |
+          npm run typecheck > typecheck.log 2>&1; code=$?
+          cat typecheck.log
+          exit $code
+      - name: Job summary — typecheck
+        if: failure()
+        run: node scripts/ci-tool-summary.mjs tsc typecheck.log "Typecheck" >> "$GITHUB_STEP_SUMMARY"
       - name: Lint
-        run: npm run lint
+        run: |
+          npm run lint > lint.log 2>&1; code=$?
+          cat lint.log
+          exit $code
+      - name: Job summary — lint
+        if: failure()
+        run: node scripts/ci-tool-summary.mjs eslint lint.log "Lint" >> "$GITHUB_STEP_SUMMARY"
 
   format-check:
     name: Prettier
@@ -56,7 +68,14 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
           cache: npm
       - run: npm ci
-      - run: npm run format:check
+      - name: Prettier
+        run: |
+          npm run format:check > prettier.log 2>&1; code=$?
+          cat prettier.log
+          exit $code
+      - name: Job summary — prettier
+        if: failure()
+        run: node scripts/ci-tool-summary.mjs prettier prettier.log "Prettier" >> "$GITHUB_STEP_SUMMARY"
 
   build:
     name: Build
@@ -69,7 +88,13 @@ jobs:
           cache: npm
       - run: npm ci
       - name: Production build
-        run: npm run build
+        run: |
+          npm run build > build.log 2>&1; code=$?
+          cat build.log
+          exit $code
+      - name: Job summary — build
+        if: failure()
+        run: node scripts/ci-tool-summary.mjs vite build.log "Build" >> "$GITHUB_STEP_SUMMARY"
       - name: Record bundle size
         run: |
           mkdir -p bundle-report
