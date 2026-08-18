@@ -57,3 +57,12 @@ const getAppParams = () => {
 export const appParams = {
   ...getAppParams(),
 };
+
+// Same storage keys the `clear_access_token=true` branch above already
+// clears. A rejected/expired token must be removed here too -- otherwise it
+// stays in storage and every subsequent page load (including /login itself)
+// keeps retrying the same dead credential, redirecting again each time.
+export const clearAccessToken = () => {
+  storage.removeItem('base44_access_token');
+  storage.removeItem('token');
+};
