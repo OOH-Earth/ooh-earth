@@ -1,6 +1,6 @@
 # PR and Commit Index
 
-## This completion pass (merged, `main` @ `5877661`)
+## This completion pass (merged, `main` @ `0c22970`)
 
 | PR | Title | Merged |
 |---|---|---|
@@ -9,6 +9,9 @@
 | #93 | feat(map): make brand and parent corporation searchable/filterable | 2026-08-18 |
 | #95 | feat(ar): surface parent corporation in AR's done-state summary | 2026-08-18 |
 | #96 | feat(map): clicking a heat hotspot opens the nearest report | 2026-08-18 |
+| #97 | docs: Dave completion delivery package | 2026-08-18 |
+| #98 | feat(nft): connect earned merit badges to the NFT studio | 2026-08-18 |
+| #99 | ci: extend job-summary triage to Lint/Typecheck/Prettier/Build | 2026-08-18 |
 
 ## Preceding convergence effort (same overall product push, for continuity)
 
