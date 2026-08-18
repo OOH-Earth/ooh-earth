@@ -10,6 +10,18 @@ import NftMatrixStrip from '@/components/ooh/nft/NftMatrixStrip';
 import NftStudioPanel from '@/components/ooh/nft/NftStudioPanel';
 import { CASING_TYPES, LABEL_COLORS, PREMADE_DESIGNS } from '@/components/ooh/nft/nftPresets';
 import { useLabGate } from '@/components/ooh/LabGate';
+import { BADGES } from '@/components/ooh/gamification/gamification';
+
+// A merit badge earned on /operative has no tier-appropriate slab grade/colour
+// of its own -- map its existing tier to the nearest of this studio's fixed
+// grade enum and label palette so "mint your badge" produces a card that
+// visually reflects how rare the badge is.
+const TIER_TO_SLAB = {
+  bronze: { grade: '7', labelColor: 'flare' },
+  silver: { grade: '8', labelColor: 'stealth' },
+  gold: { grade: '9.5', labelColor: 'mint' },
+  diamond: { grade: '10', labelColor: 'signal' },
+};
 
 // OOH Earth — NFT Creator (Lab)
 // Subvertising / Adbusting NFT studio prototype. 3D slab viewer with casing
@@ -28,10 +40,28 @@ export default function NftCreator() {
   const [artworkUrl, setArtworkUrlState] = useState(null);
   const [generating, setGenerating] = useState(false);
   const [generateError, setGenerateError] = useState('');
+  const [prefilledBadge, setPrefilledBadge] = useState(null);
   const viewerRef = useRef(null);
   const artworkUrlRef = useRef(null);
   artworkUrlRef.current = artworkUrl;
   const { gate } = useLabGate();
+
+  // /operative links here as /lab/nft?badge=<id> from an earned merit badge --
+  // applied once so a later config edit isn't stomped.
+  useEffect(() => {
+    const badgeId = new URLSearchParams(window.location.search).get('badge');
+    if (!badgeId) return;
+    const badge = BADGES.find((b) => b.id === badgeId);
+    if (!badge) return;
+    const slab = TIER_TO_SLAB[badge.tier] || TIER_TO_SLAB.bronze;
+    setConfig((c) => ({
+      ...c,
+      title: badge.label,
+      grade: slab.grade,
+      labelColor: slab.labelColor,
+    }));
+    setPrefilledBadge(badge);
+  }, []);
 
   // Uploaded artwork arrives as a local blob: URL (see NftStudioPanel's
   // onUpload) -- generated/premade artwork is a remote URL. Only blob URLs
@@ -122,6 +152,13 @@ export default function NftCreator() {
           collectible cards. Choose a casing, finish and label, upload or generate artwork, then
           export or mint on Zora. Integrates with the Lab ecosystem and agency ops.
         </p>
+
+        {prefilledBadge && (
+          <div className="mb-6 flex items-center gap-2 border border-ozone/40 bg-ozone/[0.04] px-4 py-2.5 font-mono text-[10px] uppercase tracking-[0.15em] text-ozone">
+            <Coins className="h-3.5 w-3.5 shrink-0" /> Prefilled from your earned badge —{' '}
+            {prefilledBadge.label}
+          </div>
+        )}
 
         <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-[1.5fr_1fr]">
           <div className="flex flex-col gap-3">
