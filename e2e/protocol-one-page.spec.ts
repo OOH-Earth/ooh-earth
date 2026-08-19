@@ -21,6 +21,19 @@ test.describe('Protocol One — static product-story page', () => {
 
     expect(body).toContain('<title>Protocol One — OOH Earth</title>');
 
+    // Social-preview bots (Slack, Twitter/X, LinkedIn, iMessage) never
+    // execute JS -- they only see this raw HTML, so the share/demo surface
+    // needs its own Open Graph + Twitter Card tags baked in directly (this
+    // page sits outside the SPA's routeMeta.js / seoContext.jsx pipeline).
+    expect(body).toContain('rel="canonical" href="https://oohearth.app/protocol-one.html"');
+    expect(body).toContain('property="og:title" content="Protocol One — OOH Earth"');
+    expect(body).toContain('property="og:image"');
+    expect(body).toContain(
+      'content="https://oohearth.app/protocol-one/screenshots/02_identify.png"',
+    );
+    expect(body).toContain('name="twitter:card" content="summary_large_image"');
+    expect(body).toContain('name="twitter:title" content="Protocol One — OOH Earth"');
+
     const steps = [
       { num: '01 · Capture', img: '01_capture.png', href: '/report' },
       { num: '02 · Identify', img: '02_identify.png', href: '/report' },
