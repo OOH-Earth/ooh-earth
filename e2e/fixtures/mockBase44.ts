@@ -116,7 +116,12 @@ export async function mockBase44(page: Page, db: MockDb) {
       if (!idOrAction && method === 'POST') {
         const body = req.postDataJSON();
         const id = body.id ?? `mock-location-${Object.keys(store).length + 1}`;
-        store[id] = { id, status: 'pending', ...body };
+        // Real Base44 stamps created_by_id server-side from the auth
+        // context; the client payload never includes it. Mirror that here
+        // (defaulted, not overriding an explicit body value) so a report
+        // filed during a test attributes correctly to the mocked user's own
+        // gamification stats -- same as it would against the real backend.
+        store[id] = { id, status: 'pending', created_by_id: db.user?.id, ...body };
         return route.fulfill({ json: store[id] });
       }
     }
