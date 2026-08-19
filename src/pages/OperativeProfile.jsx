@@ -8,6 +8,7 @@ import {
   Target,
   Flame,
   Award,
+  Layers,
   ArrowLeft,
   LogIn,
 } from 'lucide-react';
@@ -16,6 +17,7 @@ import { useGamification } from '@/hooks/useGamification';
 import XpBar from '@/components/ooh/gamification/XpBar';
 import BadgeGrid from '@/components/ooh/gamification/BadgeGrid';
 import QuestTracker from '@/components/ooh/gamification/QuestTracker';
+import BrandCollection from '@/components/ooh/gamification/BrandCollection';
 
 const STAT_CARDS = [
   { key: 'reports', label: 'Reports', icon: FileText, color: 'text-silver' },
@@ -123,6 +125,17 @@ export default function OperativeProfile() {
                 />
               ))}
             </div>
+
+            {/* Brand collection */}
+            <section className="mt-12">
+              <div className="mb-4 flex items-center gap-2">
+                <Layers className="h-4 w-4 text-ozone" />
+                <h2 className="font-display text-2xl font-black uppercase tracking-tight text-silver">
+                  Brand Collection
+                </h2>
+              </div>
+              <BrandCollection brandCounts={stats?.brandCounts || []} />
+            </section>
 
             {/* Quests */}
             <section className="mt-12">

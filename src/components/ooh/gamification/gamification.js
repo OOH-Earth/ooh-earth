@@ -235,3 +235,21 @@ export function periodKey(type) {
   const week = Math.ceil((diff + start.getDay() + 1) / 7);
   return `${year}-W${String(week).padStart(2, '0')}`;
 }
+
+// ── Brand collection ─────────────────────────────────────────────────
+// Groups a set of Location records by brand_name (case-insensitive, as
+// RelatedLocations.jsx already does for "same advertiser" matching),
+// counting repeat discoveries. Records with a missing/blank brand_name are
+// excluded — an ad the AI scanner couldn't identify isn't a collected brand.
+export function deriveBrandCounts(locations) {
+  const counts = new Map();
+  (locations || []).forEach((r) => {
+    const brand = (r?.brand_name || '').trim();
+    if (!brand) return;
+    const key = brand.toLowerCase();
+    const existing = counts.get(key);
+    if (existing) existing.count += 1;
+    else counts.set(key, { brand, count: 1 });
+  });
+  return [...counts.values()].sort((a, b) => b.count - a.count || a.brand.localeCompare(b.brand));
+}
