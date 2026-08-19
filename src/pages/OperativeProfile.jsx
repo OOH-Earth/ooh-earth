@@ -156,7 +156,7 @@ export default function OperativeProfile() {
                   Merit Badges
                 </h2>
               </div>
-              <BadgeGrid earnedIds={earnedBadges.map((b) => b.id)} />
+              <BadgeGrid earnedIds={earnedBadges.map((b) => b.id)} stats={stats} />
             </section>
 
             {/* XP breakdown */}

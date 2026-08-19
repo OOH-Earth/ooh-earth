@@ -31,9 +31,12 @@ const ICONS = {
   Award,
 };
 
-function Badge({ badge, earned }) {
+function Badge({ badge, earned, stats }) {
   const Icon = ICONS[badge.icon] || Award;
   const style = TIER_STYLES[badge.tier];
+  // Progress is only meaningful while a badge is still locked -- once
+  // earned, the tier glow + Mint as NFT link already say "done".
+  const progress = !earned && stats && badge.progress ? badge.progress(stats) : null;
   return (
     <div
       className={`group relative flex flex-col items-center gap-2 border p-3 text-center transition-all duration-200 ${
@@ -53,6 +56,11 @@ function Badge({ badge, earned }) {
         {badge.label}
       </div>
       <div className="font-mono text-[7px] uppercase tracking-[0.1em] text-dim">{badge.desc}</div>
+      {progress && (
+        <div className="font-mono text-[7px] font-bold tabular text-silver/70">
+          {Math.min(progress.current, progress.target)} / {progress.target}
+        </div>
+      )}
       <span
         className="absolute right-1.5 top-1.5 font-mono text-[6px] font-bold uppercase tracking-[0.15em]"
         style={{ color: style.color }}
@@ -71,7 +79,7 @@ function Badge({ badge, earned }) {
   );
 }
 
-export default function BadgeGrid({ earnedIds = [], showAll = true }) {
+export default function BadgeGrid({ earnedIds = [], showAll = true, stats = null }) {
   const earnedSet = new Set(earnedIds);
   const badges = showAll ? BADGES : BADGES.filter((b) => earnedSet.has(b.id));
   const earnedCount = BADGES.filter((b) => earnedSet.has(b.id)).length;
@@ -93,7 +101,7 @@ export default function BadgeGrid({ earnedIds = [], showAll = true }) {
       ) : (
         <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
           {badges.map((b) => (
-            <Badge key={b.id} badge={b} earned={earnedSet.has(b.id)} />
+            <Badge key={b.id} badge={b} earned={earnedSet.has(b.id)} stats={stats} />
           ))}
         </div>
       )}

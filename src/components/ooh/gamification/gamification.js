@@ -162,6 +162,7 @@ export const BADGES = [
     icon: 'Eye',
     tier: 'bronze',
     check: (s) => (s.brandCounts?.length || 0) >= 5,
+    progress: (s) => ({ current: s.brandCounts?.length || 0, target: 5 }),
   },
   {
     id: 'brand_explorer_2',
@@ -170,6 +171,7 @@ export const BADGES = [
     icon: 'Eye',
     tier: 'silver',
     check: (s) => (s.brandCounts?.length || 0) >= 10,
+    progress: (s) => ({ current: s.brandCounts?.length || 0, target: 10 }),
   },
   {
     id: 'brand_explorer_3',
@@ -178,6 +180,7 @@ export const BADGES = [
     icon: 'Eye',
     tier: 'gold',
     check: (s) => (s.brandCounts?.length || 0) >= 25,
+    progress: (s) => ({ current: s.brandCounts?.length || 0, target: 25 }),
   },
   {
     id: 'brand_collector',
@@ -186,6 +189,7 @@ export const BADGES = [
     icon: 'Target',
     tier: 'bronze',
     check: (s) => (s.brandCounts?.[0]?.count || 0) >= 5,
+    progress: (s) => ({ current: s.brandCounts?.[0]?.count || 0, target: 5 }),
   },
   {
     id: 'brand_collector_2',
@@ -194,6 +198,7 @@ export const BADGES = [
     icon: 'Target',
     tier: 'silver',
     check: (s) => (s.brandCounts?.[0]?.count || 0) >= 10,
+    progress: (s) => ({ current: s.brandCounts?.[0]?.count || 0, target: 10 }),
   },
   {
     id: 'brand_collector_3',
@@ -202,6 +207,7 @@ export const BADGES = [
     icon: 'Target',
     tier: 'gold',
     check: (s) => (s.brandCounts?.[0]?.count || 0) >= 25,
+    progress: (s) => ({ current: s.brandCounts?.[0]?.count || 0, target: 25 }),
   },
 ];
 
