@@ -40,6 +40,27 @@ test.describe('NftCreator — prefilled from an earned merit badge', () => {
       timeout: 20_000,
     });
   });
+
+  // Collector milestone badges (brand_explorer, added by the collector-badge
+  // domino) are just more BADGES entries -- this proves the existing
+  // deep-link/prefill mechanism above needed zero NftCreator.jsx changes to
+  // support them.
+  test('a collector badge (Brand Explorer) prefills the same way as any other badge', async ({
+    page,
+  }) => {
+    await mockBase44(page, { user: ADMIN_USER });
+    await page.goto('/lab/nft?access_token=mock-admin-token&badge=brand_explorer');
+
+    await expect(page.getByRole('heading', { name: 'NFT Creator' })).toBeVisible({
+      timeout: 20_000,
+    });
+    await expect(page.getByText(/Prefilled from your earned badge.*Brand Explorer/i)).toBeVisible();
+    await expect(page.getByPlaceholder('Subvertising title')).toHaveValue('Brand Explorer', {
+      timeout: 20_000,
+    });
+    // brand_explorer is a 'bronze' badge -> TIER_TO_SLAB maps it to grade 7
+    await expect(page.locator('select').first()).toHaveValue('7');
+  });
 });
 
 test.describe('BadgeGrid — an earned badge offers a way to mint it', () => {
