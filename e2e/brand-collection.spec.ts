@@ -136,3 +136,53 @@ test.describe('OperativeProfile — Collector Milestone Badges', () => {
     await expect(explorerTile.getByRole('link', { name: /mint as nft/i })).toHaveCount(0);
   });
 });
+
+// A locked collector badge shows live "current / target" progress so the
+// grid itself reads as a progress bar, not just a locked/unlocked flag.
+// badge.progress(stats) (gamification.js) is optional and only the 6
+// collector badges define it -- the other 13 badges render unchanged.
+test.describe('BadgeGrid — collector milestone progress', () => {
+  test('shows live X / Y progress toward locked collector milestones', async ({ page }) => {
+    await mockBase44(page, {
+      user: ADMIN_USER,
+      locations: {
+        'loc-1': { id: 'loc-1', created_by_id: ADMIN_USER.id, brand_name: 'Shell' },
+        'loc-2': { id: 'loc-2', created_by_id: ADMIN_USER.id, brand_name: 'Nike' },
+        'loc-3': { id: 'loc-3', created_by_id: ADMIN_USER.id, brand_name: 'Adidas' },
+      },
+    });
+    await page.goto('/operative?access_token=mock-admin-token');
+    await expect(page.getByRole('heading', { name: 'Merit Badges' })).toBeVisible({
+      timeout: 20_000,
+    });
+
+    // 3 distinct brands, max 1 discovery of any single brand.
+    const explorerTile = page.getByText('Brand Explorer', { exact: true }).locator('..');
+    await expect(explorerTile.getByText('3 / 5')).toBeVisible();
+    const explorer2Tile = page.getByText('Brand Explorer II', { exact: true }).locator('..');
+    await expect(explorer2Tile.getByText('3 / 10')).toBeVisible();
+    const collectorTile = page.getByText('Brand Collector', { exact: true }).locator('..');
+    await expect(collectorTile.getByText('1 / 5')).toBeVisible();
+  });
+
+  test('an earned badge does not show a redundant progress line', async ({ page }) => {
+    const locations: Record<string, unknown> = {};
+    for (let i = 1; i <= 5; i++) {
+      locations[`loc-${i}`] = {
+        id: `loc-${i}`,
+        created_by_id: ADMIN_USER.id,
+        brand_name: `Brand ${i}`,
+      };
+    }
+    await mockBase44(page, { user: ADMIN_USER, locations });
+    await page.goto('/operative?access_token=mock-admin-token');
+    await expect(page.getByRole('heading', { name: 'Merit Badges' })).toBeVisible({
+      timeout: 20_000,
+    });
+
+    // Brand Explorer (target 5) is earned by these 5 distinct brands.
+    const explorerTile = page.getByText('Brand Explorer', { exact: true }).locator('..');
+    await expect(explorerTile.getByRole('link', { name: /mint as nft/i })).toBeVisible();
+    await expect(explorerTile.getByText(/^\d+ \/ \d+$/)).toHaveCount(0);
+  });
+});
