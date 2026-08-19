@@ -56,3 +56,83 @@ test.describe('OperativeProfile — Brand Collection', () => {
     await expect(section.getByText(/No brands identified yet/i)).toBeVisible();
   });
 });
+
+// Collector milestone badges (gamification.js BADGES: brand_explorer[_2/_3],
+// brand_collector[_2/_3]) are pure predicates over the same brandCounts
+// derived above -- no new entity, no new stats field. "Earned" is asserted
+// via the existing generic BadgeGrid "Mint as NFT" link (only rendered for
+// earned badges), the same signal e2e/nft-badge-mint-prefill.spec.ts already
+// uses for first_blood/surveyor -- proving the new badges plug into that
+// existing mechanism unchanged.
+test.describe('OperativeProfile — Collector Milestone Badges', () => {
+  test('fewer than 5 distinct brands, and fewer than 5 of the same brand, earns neither track', async ({
+    page,
+  }) => {
+    await mockBase44(page, {
+      user: ADMIN_USER,
+      locations: {
+        'loc-1': { id: 'loc-1', created_by_id: ADMIN_USER.id, brand_name: 'Shell' },
+        'loc-2': { id: 'loc-2', created_by_id: ADMIN_USER.id, brand_name: 'Nike' },
+        'loc-3': { id: 'loc-3', created_by_id: ADMIN_USER.id, brand_name: 'Adidas' },
+        'loc-4': { id: 'loc-4', created_by_id: ADMIN_USER.id, brand_name: 'Puma' },
+      },
+    });
+    await page.goto('/operative?access_token=mock-admin-token');
+    await expect(page.getByRole('heading', { name: 'Merit Badges' })).toBeVisible({
+      timeout: 20_000,
+    });
+
+    for (const label of ['Brand Explorer', 'Brand Collector']) {
+      const tile = page.getByText(label, { exact: true }).locator('..');
+      await expect(tile.getByRole('link', { name: /mint as nft/i })).toHaveCount(0);
+    }
+  });
+
+  test('reaching 5, 10, and 25 distinct brands unlocks Brand Explorer I/II/III; same-brand track stays locked', async ({
+    page,
+  }) => {
+    const locations: Record<string, unknown> = {};
+    for (let i = 1; i <= 25; i++) {
+      locations[`loc-${i}`] = {
+        id: `loc-${i}`,
+        created_by_id: ADMIN_USER.id,
+        brand_name: `Brand ${i}`,
+      };
+    }
+    await mockBase44(page, { user: ADMIN_USER, locations });
+    await page.goto('/operative?access_token=mock-admin-token');
+    await expect(page.getByRole('heading', { name: 'Merit Badges' })).toBeVisible({
+      timeout: 20_000,
+    });
+
+    for (const label of ['Brand Explorer', 'Brand Explorer II', 'Brand Explorer III']) {
+      const tile = page.getByText(label, { exact: true }).locator('..');
+      await expect(tile.getByRole('link', { name: /mint as nft/i })).toBeVisible();
+    }
+    // Every one of the 25 brands here was discovered exactly once.
+    const collectorTile = page.getByText('Brand Collector', { exact: true }).locator('..');
+    await expect(collectorTile.getByRole('link', { name: /mint as nft/i })).toHaveCount(0);
+  });
+
+  test('reaching 5, 10, and 25 discoveries of the same brand unlocks Brand Collector I/II/III; distinct-brand track stays locked', async ({
+    page,
+  }) => {
+    const locations: Record<string, unknown> = {};
+    for (let i = 1; i <= 25; i++) {
+      locations[`loc-${i}`] = { id: `loc-${i}`, created_by_id: ADMIN_USER.id, brand_name: 'Shell' };
+    }
+    await mockBase44(page, { user: ADMIN_USER, locations });
+    await page.goto('/operative?access_token=mock-admin-token');
+    await expect(page.getByRole('heading', { name: 'Merit Badges' })).toBeVisible({
+      timeout: 20_000,
+    });
+
+    for (const label of ['Brand Collector', 'Brand Collector II', 'Brand Collector III']) {
+      const tile = page.getByText(label, { exact: true }).locator('..');
+      await expect(tile.getByRole('link', { name: /mint as nft/i })).toBeVisible();
+    }
+    // Only one distinct brand (Shell) was discovered here.
+    const explorerTile = page.getByText('Brand Explorer', { exact: true }).locator('..');
+    await expect(explorerTile.getByRole('link', { name: /mint as nft/i })).toHaveCount(0);
+  });
+});

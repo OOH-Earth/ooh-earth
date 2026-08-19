@@ -151,6 +151,58 @@ export const BADGES = [
     tier: 'diamond',
     check: (s) => s.xp >= 5000,
   },
+  // Collector tracks — derived from brandCounts (see deriveBrandCounts
+  // above), which is already sorted by count descending. Distinct-brand
+  // progression starts at 5 (not 1) since 'first_blood' already covers the
+  // first discovery.
+  {
+    id: 'brand_explorer',
+    label: 'Brand Explorer',
+    desc: 'Discover 5 distinct brands',
+    icon: 'Eye',
+    tier: 'bronze',
+    check: (s) => (s.brandCounts?.length || 0) >= 5,
+  },
+  {
+    id: 'brand_explorer_2',
+    label: 'Brand Explorer II',
+    desc: 'Discover 10 distinct brands',
+    icon: 'Eye',
+    tier: 'silver',
+    check: (s) => (s.brandCounts?.length || 0) >= 10,
+  },
+  {
+    id: 'brand_explorer_3',
+    label: 'Brand Explorer III',
+    desc: 'Discover 25 distinct brands',
+    icon: 'Eye',
+    tier: 'gold',
+    check: (s) => (s.brandCounts?.length || 0) >= 25,
+  },
+  {
+    id: 'brand_collector',
+    label: 'Brand Collector',
+    desc: 'Spot the same brand 5 times',
+    icon: 'Target',
+    tier: 'bronze',
+    check: (s) => (s.brandCounts?.[0]?.count || 0) >= 5,
+  },
+  {
+    id: 'brand_collector_2',
+    label: 'Brand Collector II',
+    desc: 'Spot the same brand 10 times',
+    icon: 'Target',
+    tier: 'silver',
+    check: (s) => (s.brandCounts?.[0]?.count || 0) >= 10,
+  },
+  {
+    id: 'brand_collector_3',
+    label: 'Brand Collector III',
+    desc: 'Spot the same brand 25 times',
+    icon: 'Target',
+    tier: 'gold',
+    check: (s) => (s.brandCounts?.[0]?.count || 0) >= 25,
+  },
 ];
 
 export const TIER_STYLES = {
