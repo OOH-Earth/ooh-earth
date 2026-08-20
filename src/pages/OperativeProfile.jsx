@@ -13,6 +13,7 @@ import {
   Radar,
   ArrowLeft,
   LogIn,
+  RefreshCw,
 } from 'lucide-react';
 import Nav from '@/components/ooh/Nav';
 import { useGamification } from '@/hooks/useGamification';
@@ -34,6 +35,7 @@ const STAT_CARDS = [
   { key: 'busts', label: 'Busts', icon: Zap, color: 'text-flare' },
   { key: 'mints', label: 'Mints', icon: Coins, color: 'text-ozone' },
   { key: 'leads', label: 'Leads', icon: Target, color: 'text-ozone' },
+  { key: 'rechecks', label: 'Re-checks', icon: RefreshCw, color: 'text-ozone' },
 ];
 
 function StatCard({ label, value, Icon, color }) {
