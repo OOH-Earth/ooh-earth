@@ -4,41 +4,7 @@ import { Image } from '@/components/ui/image';
 import { RefreshCw, Clock, MapPin, Loader2, Ban, AlertCircle, ArrowRight } from 'lucide-react';
 import FieldCheckCamera from '@/components/ooh/FieldCheckCamera';
 import TimeSinceTag from '@/components/ooh/TimeSinceTag';
-import { computeFreshness } from '@/lib/fieldCheckFreshness';
-
-const CONDITION_LABELS = {
-  functional: 'Functional',
-  neglected: 'Neglected',
-  damaged: 'Damaged',
-  abandoned: 'Abandoned',
-  reclaimed: 'Reclaimed',
-  upgraded: 'Upgraded',
-};
-
-// Compares the two most recent VERIFIED observations of this exact spot
-// (falling back to the original location record as the "before" when only
-// one verified check exists yet — same population FieldCheckPanel already
-// uses for its Before/After image comparison, kept consistent rather than
-// introducing a second trust tier). Only fields present on BOTH sides and
-// genuinely different are reported -- never an invented "unset -> X" line,
-// never a claim from an unverified check.
-function detectChanges(latest, earlier) {
-  if (!latest || !earlier) return [];
-  const fields = [
-    { key: 'brand_name', label: 'Brand' },
-    { key: 'condition', label: 'Condition', display: (v) => CONDITION_LABELS[v] || v },
-    { key: 'adbust_type', label: 'Intervention', display: (v) => v.replace(/_/g, ' ') },
-  ];
-  const changes = [];
-  for (const { key, label, display = (v) => v } of fields) {
-    const before = String(earlier[key] || '').trim();
-    const after = String(latest[key] || '').trim();
-    if (!before || !after) continue;
-    if (before.toLowerCase() === after.toLowerCase()) continue;
-    changes.push({ key, label, before: display(before), after: display(after) });
-  }
-  return changes;
-}
+import { computeFreshness, detectChanges, CONDITION_LABELS } from '@/lib/fieldCheckFreshness';
 
 function timeAgo(iso) {
   if (!iso) return '';
