@@ -16,7 +16,7 @@ import {
 } from 'lucide-react';
 import { BADGES, TIER_STYLES } from '@/components/ooh/gamification/gamification';
 
-const ICONS = {
+export const ICONS = {
   FileText,
   Eye,
   MapPin,
