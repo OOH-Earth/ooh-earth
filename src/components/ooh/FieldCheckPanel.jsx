@@ -4,6 +4,7 @@ import { Image } from '@/components/ui/image';
 import { RefreshCw, Clock, MapPin, Loader2, Ban, AlertCircle, ArrowRight } from 'lucide-react';
 import FieldCheckCamera from '@/components/ooh/FieldCheckCamera';
 import TimeSinceTag from '@/components/ooh/TimeSinceTag';
+import { computeFreshness } from '@/lib/fieldCheckFreshness';
 
 const CONDITION_LABELS = {
   functional: 'Functional',
@@ -37,42 +38,6 @@ function detectChanges(latest, earlier) {
     changes.push({ key, label, before: display(before), after: display(after) });
   }
   return changes;
-}
-
-// Honest "when was this last actually confirmed" signal -- deliberately NOT
-// a fabricated stale/fresh verdict with an invented day threshold. Follows
-// the same philosophy as TimeSinceTag (src/components/ooh/TimeSinceTag.jsx,
-// already used elsewhere in this app): show the real elapsed time and let
-// the reader judge, rather than assert a cutoff nothing in this dataset can
-// justify (OOH campaign/rotation length varies enormously by market,
-// operator, and unit type -- there's no real number to anchor a threshold
-// to here). "Confirmed" = either this location's own verified intake
-// (status_updated_at) or a later VERIFIED re-check, whichever is more
-// recent -- a re-check genuinely re-confirms the spot, so it should count.
-function computeFreshness(location, checks) {
-  const verified = checks.filter((c) => c.status === 'verified');
-  let lastConfirmedAt =
-    location.status === 'verified' && location.status_updated_at
-      ? location.status_updated_at
-      : null;
-  let source = lastConfirmedAt ? 'report' : null;
-  const latestVerifiedCheck = verified[0];
-  if (
-    latestVerifiedCheck?.created_date &&
-    (!lastConfirmedAt || new Date(latestVerifiedCheck.created_date) > new Date(lastConfirmedAt))
-  ) {
-    lastConfirmedAt = latestVerifiedCheck.created_date;
-    source = 'recheck';
-  }
-  if (!lastConfirmedAt) return null;
-
-  const mostRecentSubmission = checks[0];
-  const pendingNewer =
-    Boolean(mostRecentSubmission) &&
-    mostRecentSubmission.status === 'pending' &&
-    new Date(mostRecentSubmission.created_date) > new Date(lastConfirmedAt);
-
-  return { lastConfirmedAt, source, pendingNewer, hasAnyCheck: checks.length > 0 };
 }
 
 function timeAgo(iso) {
