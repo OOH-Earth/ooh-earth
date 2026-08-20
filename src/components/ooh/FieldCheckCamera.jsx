@@ -14,6 +14,7 @@ import {
   Sparkles,
 } from 'lucide-react';
 import { submitFieldCheck } from '@/lib/offlineQueue';
+import { trackEvent } from '@/lib/trackEvent';
 import CameraViewfinder from '@/components/ooh/CameraViewfinder';
 import { useKeyboardFilePicker } from '@/hooks/useKeyboardFilePicker';
 
@@ -165,8 +166,12 @@ Respond in JSON only.`,
     };
     try {
       const res = await submitFieldCheck(payload);
-      if (res.status === 'synced') setDone(res.rec);
-      else setDone({ queued: true });
+      if (res.status === 'synced') {
+        setDone(res.rec);
+        // A genuinely transmitted re-check only -- an offline-queued one
+        // hasn't actually reached the server yet.
+        trackEvent('recheck_submitted', { check_type: location.type });
+      } else setDone({ queued: true });
     } catch (err) {
       setError(err?.message || 'Transmission failed.');
     } finally {

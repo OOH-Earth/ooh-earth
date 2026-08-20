@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { trackEvent } from '@/lib/trackEvent';
 
 const KEY_PREFIX = 'ooh-seen-badges-';
 
@@ -39,7 +40,16 @@ export function useNewBadgeRecognition(user, earnedBadges, loading) {
       }
       const seenIds = new Set(JSON.parse(stored));
       const fresh = earnedBadges.filter((b) => !seenIds.has(b.id));
-      if (fresh.length) setNewBadges(fresh);
+      if (fresh.length) {
+        setNewBadges(fresh);
+        // One event per genuinely-new badge -- this diff already guarantees
+        // "unearned -> earned since the stored snapshot", never a badge
+        // that was already earned last visit. Deliberately the only
+        // badge_unlocked call site (FieldReport's own newlyUnlocked is NOT
+        // separately instrumented) to avoid double-counting the same real
+        // crossing once here and once there.
+        fresh.forEach((b) => trackEvent('badge_unlocked', { badge_id: b.id }));
+      }
       localStorage.setItem(key, JSON.stringify(currentIds));
     } catch {
       // localStorage unavailable/blocked -- fail silently, no recognition,

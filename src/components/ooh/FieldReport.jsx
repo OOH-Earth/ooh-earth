@@ -17,6 +17,7 @@ import ReportStep3Classify from '@/components/ooh/report/ReportStep3Classify';
 import ReportStep4Adbust from '@/components/ooh/report/ReportStep4Adbust';
 import DiscoveryPanel from '@/components/ooh/report/DiscoveryPanel';
 import { useGamification } from '@/hooks/useGamification';
+import { trackEvent } from '@/lib/trackEvent';
 import {
   pointsForReport,
   levelFromXp,
@@ -165,6 +166,12 @@ export default function FieldReport() {
       });
       if (res.status === 'synced') {
         setDone(res.rec);
+        // A genuinely transmitted report only -- an offline-queued one
+        // (res.status === 'queued') hasn't actually reached the server yet.
+        trackEvent('report_submitted', {
+          authenticated: Boolean(user),
+          report_type: res.rec.type,
+        });
         if (data.extraPhotos?.length)
           uploadLocationPhotos(data.extraPhotos, res.rec.id).catch(() => {});
         // Discovery Intelligence panel -- authenticated + a brand was
