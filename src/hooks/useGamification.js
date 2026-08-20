@@ -14,6 +14,7 @@ import {
 export function useGamification() {
   const [user, setUser] = useState(null);
   const [stats, setStats] = useState(null);
+  const [locations, setLocations] = useState([]);
   const [completions, setCompletions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [claiming, setClaiming] = useState(null);
@@ -64,6 +65,12 @@ export function useGamification() {
         if (activeDates.has(d.toISOString().slice(0, 10))) streak++;
         else if (i > 0) break;
       }
+
+      // Same already-fetched, already-filtered array every stat above is
+      // derived from -- exposed as-is so callers (e.g. a "recent
+      // discoveries" feed) can reuse it instead of issuing a second
+      // Location fetch.
+      setLocations(myLocs);
 
       setStats({
         reports: myLocs.length,
@@ -139,6 +146,7 @@ export function useGamification() {
   return {
     user,
     stats,
+    locations,
     level,
     earnedBadges,
     allBadges: BADGES,

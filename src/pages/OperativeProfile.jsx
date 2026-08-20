@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import {
   FileText,
@@ -9,15 +10,20 @@ import {
   Flame,
   Award,
   Layers,
+  Radar,
   ArrowLeft,
   LogIn,
 } from 'lucide-react';
 import Nav from '@/components/ooh/Nav';
 import { useGamification } from '@/hooks/useGamification';
+import { nearestBrandMilestone } from '@/components/ooh/gamification/gamification';
 import XpBar from '@/components/ooh/gamification/XpBar';
 import BadgeGrid from '@/components/ooh/gamification/BadgeGrid';
 import QuestTracker from '@/components/ooh/gamification/QuestTracker';
 import BrandCollection from '@/components/ooh/gamification/BrandCollection';
+import DiscoveryFeed from '@/components/ooh/gamification/DiscoveryFeed';
+
+const RECENT_DISCOVERIES_LIMIT = 5;
 
 const STAT_CARDS = [
   { key: 'reports', label: 'Reports', icon: FileText, color: 'text-silver' },
@@ -39,8 +45,37 @@ function StatCard({ label, value, Icon, color }) {
 }
 
 export default function OperativeProfile() {
-  const { user, stats, level, earnedBadges, questStatus, claimQuest, claiming, loading } =
-    useGamification();
+  const {
+    user,
+    stats,
+    locations,
+    level,
+    earnedBadges,
+    allBadges,
+    questStatus,
+    claimQuest,
+    claiming,
+    loading,
+  } = useGamification();
+
+  const recentDiscoveries = useMemo(() => {
+    if (!stats || !locations) return [];
+    const earnedIds = new Set(earnedBadges.map((b) => b.id));
+    return [...locations]
+      .filter((l) => l.brand_name?.trim())
+      .sort((a, b) => new Date(b.created_date).getTime() - new Date(a.created_date).getTime())
+      .slice(0, RECENT_DISCOVERIES_LIMIT)
+      .map((location) => {
+        const brandKey = location.brand_name.trim().toLowerCase();
+        const brandEntry = stats.brandCounts.find((b) => b.brand.toLowerCase() === brandKey);
+        const count = brandEntry?.count || 1;
+        return {
+          location,
+          count,
+          milestone: nearestBrandMilestone(allBadges, stats, count, earnedIds),
+        };
+      });
+  }, [stats, locations, earnedBadges, allBadges]);
 
   return (
     <div className="min-h-screen bg-void">
@@ -125,6 +160,17 @@ export default function OperativeProfile() {
                 />
               ))}
             </div>
+
+            {/* Discovery feed */}
+            <section className="mt-12">
+              <div className="mb-4 flex items-center gap-2">
+                <Radar className="h-4 w-4 text-ozone" />
+                <h2 className="font-display text-2xl font-black uppercase tracking-tight text-silver">
+                  Recent Discoveries
+                </h2>
+              </div>
+              <DiscoveryFeed items={recentDiscoveries} />
+            </section>
 
             {/* Brand collection */}
             <section className="mt-12">

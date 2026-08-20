@@ -311,3 +311,27 @@ export function deriveBrandCounts(locations) {
   });
   return [...counts.values()].sort((a, b) => b.count - a.count || a.brand.localeCompare(b.brand));
 }
+
+// ── Per-brand milestone lookup ───────────────────────────────────────
+// Finds the nearest not-yet-earned collector milestone relevant to ONE
+// specific brand. Same-brand (Brand Collector) tiers are evaluated against
+// that brand's own count via a synthetic single-entry brandCounts (each
+// tier's progress() only ever reads brandCounts[0].count) -- never the
+// user's globally most-collected brand, which could be a different brand
+// entirely. Distinct-brand (Brand Explorer) tiers use the real stats as-is.
+export function nearestBrandMilestone(allBadges, stats, brandCount, earnedIds) {
+  const candidates = (allBadges || [])
+    .filter((b) => b.progress && !earnedIds.has(b.id))
+    .map((b) => {
+      const p = b.id.startsWith('brand_collector')
+        ? b.progress({ brandCounts: [{ count: brandCount }] })
+        : b.progress(stats);
+      return { badge: b, ...p };
+    })
+    .filter((m) => m.current < m.target)
+    .sort((a, b) => a.target - a.current - (b.target - b.current));
+  const nearest = candidates[0];
+  return nearest
+    ? { label: nearest.badge.label, current: nearest.current, target: nearest.target }
+    : null;
+}
