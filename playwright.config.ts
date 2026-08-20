@@ -43,6 +43,7 @@ export default defineConfig({
         'verify-reject-workflow.spec.ts',
         'focus-trap.spec.ts',
         'nav-menu-disclosure.spec.ts',
+        'dashboard-location-links.spec.ts',
       ],
     },
   ],

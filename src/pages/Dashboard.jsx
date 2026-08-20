@@ -120,10 +120,15 @@ function Row({
   selected = false,
   onToggle = null,
 }) {
-  return (
-    <div
-      className={`flex items-center gap-3 border bg-card p-3 ${selected ? 'border-ozone/60' : 'border-slate2/50'}`}
-    >
+  // "My field captures" rows (no onVerify/selectable) are real Location
+  // records the user can drill into -- link to the canonical detail page.
+  // Queue rows (onVerify present, Approve/Reject buttons rendered inside)
+  // stay a plain div: a <Link>/<a> wrapping <button> elements is invalid,
+  // ambiguous-activation HTML, out of scope for this fix.
+  const canLinkToDetail = !onVerify && !selectable && n._entity === 'Location' && n.id;
+
+  const content = (
+    <>
       {selectable && (
         <button
           onClick={onToggle}
@@ -187,6 +192,24 @@ function Row({
           </button>
         </div>
       )}
+    </>
+  );
+
+  if (canLinkToDetail) {
+    return (
+      <Link
+        to={`/location/${n.id}`}
+        className={`flex items-center gap-3 border bg-card p-3 transition-colors hover:border-ozone/40 ${selected ? 'border-ozone/60' : 'border-slate2/50'}`}
+      >
+        {content}
+      </Link>
+    );
+  }
+  return (
+    <div
+      className={`flex items-center gap-3 border bg-card p-3 ${selected ? 'border-ozone/60' : 'border-slate2/50'}`}
+    >
+      {content}
     </div>
   );
 }
@@ -483,25 +506,40 @@ export default function Dashboard() {
               </div>
               <div className="mt-3 space-y-2">
                 {mine.length ? (
-                  mine.slice(0, 5).map((n) => (
-                    <div
-                      key={n.id}
-                      className="flex items-center gap-2 border-b border-slate2/30 pb-2 last:border-0 last:pb-0"
-                    >
-                      <span
-                        className={`h-1.5 w-1.5 shrink-0 rounded-full ${n.status === 'verified' ? 'bg-brand-green' : n.status === 'rejected' ? 'bg-flare' : 'bg-ozone'}`}
-                      />
-                      <span className="min-w-0 flex-1 truncate font-mono text-[10px] text-silver/80">
-                        {n._title}
-                      </span>
-                      <span className="shrink-0 font-mono text-[9px] uppercase tracking-[0.15em] text-dim">
-                        {n.status}
-                      </span>
-                      <span className="shrink-0 font-mono text-[9px] text-darkgray">
-                        {timeAgo(n.created_date)}
-                      </span>
-                    </div>
-                  ))
+                  mine.slice(0, 5).map((n) => {
+                    const activityContent = (
+                      <>
+                        <span
+                          className={`h-1.5 w-1.5 shrink-0 rounded-full ${n.status === 'verified' ? 'bg-brand-green' : n.status === 'rejected' ? 'bg-flare' : 'bg-ozone'}`}
+                        />
+                        <span className="min-w-0 flex-1 truncate font-mono text-[10px] text-silver/80">
+                          {n._title}
+                        </span>
+                        <span className="shrink-0 font-mono text-[9px] uppercase tracking-[0.15em] text-dim">
+                          {n.status}
+                        </span>
+                        <span className="shrink-0 font-mono text-[9px] text-darkgray">
+                          {timeAgo(n.created_date)}
+                        </span>
+                      </>
+                    );
+                    return n.id ? (
+                      <Link
+                        key={n.id}
+                        to={`/location/${n.id}`}
+                        className="flex items-center gap-2 border-b border-slate2/30 pb-2 transition-colors last:border-0 last:pb-0 hover:text-ozone"
+                      >
+                        {activityContent}
+                      </Link>
+                    ) : (
+                      <div
+                        key={n.id}
+                        className="flex items-center gap-2 border-b border-slate2/30 pb-2 last:border-0 last:pb-0"
+                      >
+                        {activityContent}
+                      </div>
+                    );
+                  })
                 ) : (
                   <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-dim">
                     // No activity yet
