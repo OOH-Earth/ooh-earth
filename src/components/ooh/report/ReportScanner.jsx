@@ -36,6 +36,10 @@ export default function ReportScanner({ data, onChange }) {
         onChange({
           type: scannedType,
           ai_scanned: true,
+          // Kept client-side only (never sent to Location.create -- no
+          // matching schema field) so the post-submit Discovery panel can
+          // show the real scan confidence instead of omitting it entirely.
+          ai_confidence: typeof det.confidence === 'number' ? det.confidence : data.ai_confidence,
           brand_name:
             det.brand_name && det.brand_name !== 'Unknown' ? det.brand_name : data.brand_name,
           ad_agency: det.ad_agency || data.ad_agency,
