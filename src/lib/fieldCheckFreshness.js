@@ -1,7 +1,38 @@
-// Shared by FieldCheckPanel (src/components/ooh/FieldCheckPanel.jsx) and the
-// map's LocationCard (src/components/ooh/map/LocationCard.jsx) -- a single
-// pure derivation so both surfaces agree on what "confirmed" means, instead
-// of two copies of the same date-comparison logic drifting apart.
+// Shared by FieldCheckPanel (src/components/ooh/FieldCheckPanel.jsx), the
+// map's LocationCard (src/components/ooh/map/LocationCard.jsx), and the
+// Recently Changed feed (src/hooks/useRecentFieldChanges.js) -- a single
+// pure derivation so every surface agrees on what "confirmed" and "changed"
+// mean, instead of copies of the same logic drifting apart.
+
+export const CONDITION_LABELS = {
+  functional: 'Functional',
+  neglected: 'Neglected',
+  damaged: 'Damaged',
+  abandoned: 'Abandoned',
+  reclaimed: 'Reclaimed',
+  upgraded: 'Upgraded',
+};
+
+// Compares two VERIFIED observations of the same spot. Only fields present
+// on BOTH sides and genuinely different are reported -- never an invented
+// "unset -> X" line, never a claim sourced from an unverified check.
+export function detectChanges(latest, earlier) {
+  if (!latest || !earlier) return [];
+  const fields = [
+    { key: 'brand_name', label: 'Brand' },
+    { key: 'condition', label: 'Condition', display: (v) => CONDITION_LABELS[v] || v },
+    { key: 'adbust_type', label: 'Intervention', display: (v) => v.replace(/_/g, ' ') },
+  ];
+  const changes = [];
+  for (const { key, label, display = (v) => v } of fields) {
+    const before = String(earlier[key] || '').trim();
+    const after = String(latest[key] || '').trim();
+    if (!before || !after) continue;
+    if (before.toLowerCase() === after.toLowerCase()) continue;
+    changes.push({ key, label, before: display(before), after: display(after) });
+  }
+  return changes;
+}
 //
 // Deliberately NOT a fabricated stale/fresh verdict with an invented day
 // threshold. Follows the same philosophy as TimeSinceTag

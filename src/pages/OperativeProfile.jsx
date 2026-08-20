@@ -25,6 +25,7 @@ import QuestTracker from '@/components/ooh/gamification/QuestTracker';
 import BrandCollection from '@/components/ooh/gamification/BrandCollection';
 import DiscoveryFeed from '@/components/ooh/gamification/DiscoveryFeed';
 import NewBadgeRecognition from '@/components/ooh/gamification/NewBadgeRecognition';
+import RecentChangesFeed from '@/components/ooh/RecentChangesFeed';
 
 const RECENT_DISCOVERIES_LIMIT = 5;
 
@@ -123,6 +124,10 @@ export default function OperativeProfile() {
         >
           <ArrowLeft className="h-3.5 w-3.5" /> Back to base
         </Link>
+
+        {/* Platform-wide field intelligence -- public, not gated behind
+            login: this is real accountability data, not a personal stat. */}
+        <RecentChangesFeed />
 
         {loading ? (
           <div className="flex items-center gap-3 font-mono text-[10px] uppercase tracking-[0.3em] text-dim">
