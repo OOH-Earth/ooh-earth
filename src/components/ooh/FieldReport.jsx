@@ -92,7 +92,12 @@ export default function FieldReport() {
     const afterEarnedIds = new Set(earnedBadges.map((b) => b.id));
     const newlyUnlockedId = [...afterEarnedIds].find((id) => !pending.beforeEarnedIds.has(id));
     const newlyUnlocked = newlyUnlockedId ? allBadges.find((b) => b.id === newlyUnlockedId) : null;
-    const milestone = nearestBrandMilestone(allBadges, stats, myBrand.count, afterEarnedIds);
+    // The first-ever discovery of a brand is what actually moves the
+    // distinct-brand (Explorer) count -- a repeat discovery only moves that
+    // brand's own (Collector) count. Show whichever track this specific
+    // report genuinely contributed to.
+    const track = myBrand.count === 1 ? 'explorer' : 'collector';
+    const milestone = nearestBrandMilestone(allBadges, stats, myBrand.count, afterEarnedIds, track);
 
     setDiscovery({
       brand: pending.brand,

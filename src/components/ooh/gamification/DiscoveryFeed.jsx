@@ -1,8 +1,9 @@
 import { Link } from 'react-router-dom';
 import TimeSinceTag from '@/components/ooh/TimeSinceTag';
+import { ordinal } from '@/components/ooh/gamification/gamification';
 
 function DiscoveryCard({ item }) {
-  const { location, count, milestone } = item;
+  const { location, ordinalForBrand, discoveryNumber, milestone } = item;
   const chain = [location.parent_corp, location.ad_agency, location.ooh_operator].filter(Boolean);
 
   return (
@@ -12,6 +13,11 @@ function DiscoveryCard({ item }) {
     >
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
+          {typeof discoveryNumber === 'number' && (
+            <div className="font-mono text-[8px] uppercase tracking-[0.2em] text-dim">
+              Discovery #{discoveryNumber}
+            </div>
+          )}
           <div className="truncate font-display text-base font-bold text-silver">
             {location.brand_name}
           </div>
@@ -26,8 +32,11 @@ function DiscoveryCard({ item }) {
         )}
       </div>
 
+      {/* A distinct ordinal per card -- even repeat discoveries of the same
+          brand read as individually meaningful ("1st"/"2nd"/"3rd" Nike),
+          not an identical aggregate total repeated on every one of them. */}
       <div className="mt-3 font-mono text-[9px] uppercase tracking-[0.15em] text-dim">
-        {count} total {count === 1 ? 'discovery' : 'discoveries'}
+        Your {ordinal(ordinalForBrand)} {location.brand_name} discovery
       </div>
 
       {milestone && (

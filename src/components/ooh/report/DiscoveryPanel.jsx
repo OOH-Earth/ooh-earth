@@ -1,13 +1,7 @@
 import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Radar, Award } from 'lucide-react';
-import { TIER_STYLES } from '@/components/ooh/gamification/gamification';
-
-function ordinal(n) {
-  const s = ['th', 'st', 'nd', 'rd'];
-  const v = n % 100;
-  return `${n}${s[(v - 20) % 10] || s[v] || s[0]}`;
-}
+import { TIER_STYLES, ordinal } from '@/components/ooh/gamification/gamification';
 
 // Compact "field intelligence" readout appended to FieldReport's existing
 // success card once a synced, authenticated, brand-identified report's
