@@ -16,12 +16,14 @@ import {
 } from 'lucide-react';
 import Nav from '@/components/ooh/Nav';
 import { useGamification } from '@/hooks/useGamification';
+import { useNewBadgeRecognition } from '@/hooks/useNewBadgeRecognition';
 import { nearestBrandMilestone } from '@/components/ooh/gamification/gamification';
 import XpBar from '@/components/ooh/gamification/XpBar';
 import BadgeGrid from '@/components/ooh/gamification/BadgeGrid';
 import QuestTracker from '@/components/ooh/gamification/QuestTracker';
 import BrandCollection from '@/components/ooh/gamification/BrandCollection';
 import DiscoveryFeed from '@/components/ooh/gamification/DiscoveryFeed';
+import NewBadgeRecognition from '@/components/ooh/gamification/NewBadgeRecognition';
 
 const RECENT_DISCOVERIES_LIMIT = 5;
 
@@ -57,6 +59,8 @@ export default function OperativeProfile() {
     claiming,
     loading,
   } = useGamification();
+
+  const newBadges = useNewBadgeRecognition(user, earnedBadges, loading);
 
   const recentDiscoveries = useMemo(() => {
     if (!stats || !locations) return [];
@@ -161,6 +165,8 @@ export default function OperativeProfile() {
                 {user.email} · Rank #{level?.level} {level?.title}
               </p>
             </div>
+
+            <NewBadgeRecognition badges={newBadges} />
 
             {/* XP Bar */}
             <div className="mt-8">
