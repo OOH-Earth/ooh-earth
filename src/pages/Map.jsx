@@ -9,6 +9,7 @@ import MapSearch from '@/components/ooh/map/MapSearch';
 import LocationCard from '@/components/ooh/map/LocationCard';
 import seedMarkers from '@/components/ooh/mapSeed';
 import { toMarker } from '@/components/ooh/map/markerUtils';
+import { computeFreshness } from '@/lib/fieldCheckFreshness';
 import {
   Loader2,
   FileDown,
@@ -235,21 +236,39 @@ export default function Map() {
 
   const reloadLocations = useCallback(async () => {
     try {
-      const [recs, verifiedChecks] = await Promise.all([
+      // One global query, no status filter -- RLS already limits what
+      // comes back to all verified checks plus the caller's own
+      // pending/rejected ones, same as it always did for the "living
+      // record" flag below. Widened (not duplicated) so the same fetch
+      // also covers the freshness signal (src/lib/fieldCheckFreshness.js,
+      // shared with FieldCheckPanel), which needs pending checks too, to
+      // detect a genuinely newer unverified re-check.
+      const [recs, checks] = await Promise.all([
         base44.listAllLocations(),
-        base44.entities.FieldCheck.filter({ status: 'verified' }, '-created_date', 2000).catch(
-          () => [],
-        ),
+        base44.entities.FieldCheck.filter({}, '-created_date', 2000).catch(() => []),
       ]);
+      // Plain object, not `new Map()` -- this component is itself named
+      // `Map`, which shadows the global Map constructor in this scope.
+      const checksByLocation = {};
+      for (const c of checks || []) {
+        const key = String(c.location_id);
+        (checksByLocation[key] ??= []).push(c);
+      }
       // "Living record" = has at least one verified re-check, i.e. the same
       // eligibility PR #56's before/after comparison already uses. Computed
       // as one extra global query, not per-marker — a FieldCheck getting
       // verified doesn't fire a Location realtime event, so this flag only
       // refreshes on reload/pull-to-refresh, not instantly.
-      const livingRecordIds = new Set((verifiedChecks || []).map((c) => String(c.location_id)));
+      const livingRecordIds = new Set(
+        (checks || []).filter((c) => c.status === 'verified').map((c) => String(c.location_id)),
+      );
       const markers = (recs || [])
         .filter((r) => r.status !== 'rejected')
-        .map((r) => ({ ...toMarker(r), livingRecord: livingRecordIds.has(String(r.id)) }));
+        .map((r) => ({
+          ...toMarker(r),
+          livingRecord: livingRecordIds.has(String(r.id)),
+          freshness: computeFreshness(r, checksByLocation[String(r.id)] || []),
+        }));
       setRaw(markers.length ? { markers, live: true } : { markers: seedMarkers, live: false });
     } catch (e) {
       setRaw({ markers: seedMarkers, live: false });
@@ -266,12 +285,15 @@ export default function Map() {
         let markers = cur.markers;
         const m = toMarker(event.data);
         if (event.type === 'create')
-          markers = [{ ...m, livingRecord: false }, ...markers.filter((x) => x.id !== m.id)];
+          markers = [
+            { ...m, livingRecord: false, freshness: null },
+            ...markers.filter((x) => x.id !== m.id),
+          ];
         else if (event.type === 'update') {
           if (m.status === 'rejected') markers = markers.filter((x) => x.id !== m.id);
           else
             markers = markers.map((x) =>
-              x.id === m.id ? { ...m, livingRecord: x.livingRecord } : x,
+              x.id === m.id ? { ...m, livingRecord: x.livingRecord, freshness: x.freshness } : x,
             );
         } else if (event.type === 'delete') markers = markers.filter((x) => x.id !== m.id);
         return { ...cur, markers };

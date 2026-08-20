@@ -27,6 +27,7 @@ export const toMarker = (r) => ({
   image: r.image_url || null,
   link: r.source_link || '',
   status: r.status || 'pending',
+  status_updated_at: r.status_updated_at || null,
   // Already present on every raw Location record fetched for the map --
   // projected through so "My Discoveries" can filter by ownership without
   // a second Location fetch.

@@ -64,8 +64,17 @@ export default function LocationCard({
             {metaFor(m.type).label}
           </span>
           <span className="h-1 w-1 rounded-full" style={{ backgroundColor: dotColor }} />
-          {m.status !== 'pending' && m.status_updated_at && (
-            <TimeSinceTag since={m.status_updated_at} compact className="text-[8px] text-dim/70" />
+          {m.freshness && (
+            <TimeSinceTag
+              since={m.freshness.lastConfirmedAt}
+              compact
+              className="text-[8px] text-dim/70"
+            />
+          )}
+          {m.freshness?.pendingNewer && (
+            <span className="font-mono text-[8px] uppercase tracking-[0.15em] text-flare">
+              // re-check pending
+            </span>
           )}
           {m.adbust_type && m.adbust_type !== 'none' && (
             <span className="font-mono text-[8px] uppercase tracking-[0.15em] text-flare">
