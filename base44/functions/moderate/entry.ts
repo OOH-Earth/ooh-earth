@@ -13,7 +13,7 @@ const CAN_VIEW = (u) =>
 const CAN_ACT = (u) =>
   !!u && (roleOf(u) === 'admin' || ['admin', 'moderator'].includes(accessOf(u)));
 
-const ENTITIES = new Set(['Location', 'DigitalBust']);
+const ENTITIES = new Set(['Location', 'DigitalBust', 'FieldCheck']);
 const VERIFY_STATUS = new Set(['verified', 'rejected']);
 
 const ALLOWED_ORIGINS = new Set([
@@ -57,9 +57,14 @@ Deno.serve(async (req) => {
           { error: 'Forbidden — operator clearance required.' },
           { status: 403, headers },
         );
-      const [locations, digital_busts] = await Promise.all([
+      const [locations, digital_busts, field_checks] = await Promise.all([
         base44.asServiceRole.entities.Location.filter({ status: 'pending' }, '-created_date', 200),
         base44.asServiceRole.entities.DigitalBust.filter(
+          { status: 'pending' },
+          '-created_date',
+          200,
+        ),
+        base44.asServiceRole.entities.FieldCheck.filter(
           { status: 'pending' },
           '-created_date',
           200,
@@ -73,6 +78,7 @@ Deno.serve(async (req) => {
           moderator: { email: caller.email, role: roleOf(caller), access: accessOf(caller) },
           locations: locations || [],
           digital_busts: digital_busts || [],
+          field_checks: field_checks || [],
         },
         { headers },
       );

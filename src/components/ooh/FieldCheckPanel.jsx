@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { Image } from '@/components/ui/image';
-import { RefreshCw, Clock, MapPin, Loader2, Ban, AlertCircle } from 'lucide-react';
+import { RefreshCw, Clock, MapPin, Loader2, Ban, AlertCircle, ArrowRight } from 'lucide-react';
 import FieldCheckCamera from '@/components/ooh/FieldCheckCamera';
 
 const CONDITION_LABELS = {
@@ -12,6 +12,31 @@ const CONDITION_LABELS = {
   reclaimed: 'Reclaimed',
   upgraded: 'Upgraded',
 };
+
+// Compares the two most recent VERIFIED observations of this exact spot
+// (falling back to the original location record as the "before" when only
+// one verified check exists yet — same population FieldCheckPanel already
+// uses for its Before/After image comparison, kept consistent rather than
+// introducing a second trust tier). Only fields present on BOTH sides and
+// genuinely different are reported -- never an invented "unset -> X" line,
+// never a claim from an unverified check.
+function detectChanges(latest, earlier) {
+  if (!latest || !earlier) return [];
+  const fields = [
+    { key: 'brand_name', label: 'Brand' },
+    { key: 'condition', label: 'Condition', display: (v) => CONDITION_LABELS[v] || v },
+    { key: 'adbust_type', label: 'Intervention', display: (v) => v.replace(/_/g, ' ') },
+  ];
+  const changes = [];
+  for (const { key, label, display = (v) => v } of fields) {
+    const before = String(earlier[key] || '').trim();
+    const after = String(latest[key] || '').trim();
+    if (!before || !after) continue;
+    if (before.toLowerCase() === after.toLowerCase()) continue;
+    changes.push({ key, label, before: display(before), after: display(after) });
+  }
+  return changes;
+}
 
 function timeAgo(iso) {
   if (!iso) return '';
@@ -73,6 +98,7 @@ export default function FieldCheckPanel({ location }) {
   const earlierLabel = verified.length >= 2 ? 'Earlier' : 'Original report';
   const showComparison =
     Boolean(latestImage) && Boolean(earlierImage) && earlierImage !== latestImage;
+  const changes = detectChanges(verified[0], verified.length >= 2 ? verified[1] : location);
 
   return (
     <div className="mt-8 border border-ozone/30 bg-card">
@@ -115,6 +141,28 @@ export default function FieldCheckPanel({ location }) {
           </div>
         ) : (
           <>
+            {/* What changed */}
+            {changes.length > 0 && (
+              <div className="mb-5 border border-flare/30 bg-flare/5 p-3">
+                <span className="font-mono text-[9px] uppercase tracking-[0.3em] text-flare">
+                  // What changed
+                </span>
+                <div className="mt-2 space-y-1.5">
+                  {changes.map((c) => (
+                    <div
+                      key={c.key}
+                      className="flex flex-wrap items-center gap-1.5 font-mono text-[10px] uppercase tracking-[0.1em]"
+                    >
+                      <span className="text-dim">{c.label}:</span>
+                      <span className="text-darkgray">{c.before}</span>
+                      <ArrowRight className="h-2.5 w-2.5 text-flare" />
+                      <span className="font-bold text-silver">{c.after}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
             {/* Before / After comparison */}
             {showComparison && (
               <div className="mb-5">
