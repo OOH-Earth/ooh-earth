@@ -28,12 +28,13 @@ export function useGamification() {
       }
       setUser(me);
 
-      const [locations, busts, mints, leads, quests] = await Promise.all([
+      const [locations, busts, mints, leads, quests, fieldChecks] = await Promise.all([
         base44.listAllLocations().catch(() => []),
         base44.entities.DigitalBust.list('-created_date', 200).catch(() => []),
         base44.entities.Mint.list('-created_date', 100).catch(() => []),
         base44.entities.LeadClaim.list('-created_date', 200).catch(() => []),
         base44.entities.QuestCompletion.list('-created_date', 200).catch(() => []),
+        base44.entities.FieldCheck.list('-created_date', 200).catch(() => []),
       ]);
 
       setCompletions(quests || []);
@@ -44,6 +45,7 @@ export function useGamification() {
       const myMints = mine(mints);
       const myLeads = mine(leads);
       const myQuests = mine(quests);
+      const myFieldChecks = mine(fieldChecks);
 
       const baseXp =
         myLocs.reduce((s, r) => s + pointsForReport(r), 0) +
@@ -79,6 +81,12 @@ export function useGamification() {
         busts: myBusts.length,
         mints: myMints.length,
         leads: myLeads.length,
+        // Not folded into xp/baseXp -- no point value for a re-check has
+        // been product-validated yet (see the P2 freshness work's same
+        // "no invented threshold" stance). Pure visibility of real,
+        // already-stored FieldCheck activity, nothing fabricated.
+        rechecks: myFieldChecks.length,
+        rechecksVerified: myFieldChecks.filter((r) => r.status === 'verified').length,
         xp: baseXp + questXp,
         baseXp,
         questXp,
