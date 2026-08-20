@@ -27,6 +27,11 @@ export const toMarker = (r) => ({
   image: r.image_url || null,
   link: r.source_link || '',
   status: r.status || 'pending',
+  // Already present on every raw Location record fetched for the map --
+  // projected through so "My Discoveries" can filter by ownership without
+  // a second Location fetch.
+  created_by_id: r.created_by_id || null,
+  created_date: r.created_date || null,
   graffiti_medium: r.graffiti_medium || null,
   graffiti_style: r.graffiti_style || null,
   graffiti_surface_m2: r.graffiti_surface_m2 || null,

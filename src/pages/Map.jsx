@@ -23,6 +23,7 @@ import {
   Maximize2,
   ChevronLeft,
   ChevronRight,
+  Fingerprint,
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useWalkthrough } from '@/lib/walkthroughContext';
@@ -113,6 +114,7 @@ const TOUR = [
 
 export default function Map() {
   const [raw, setRaw] = useState(null);
+  const [user, setUser] = useState(null);
   const [mode, setMode] = usePersistentState('ooh-map-mode', 'split');
   const [searchCollapsed, setSearchCollapsed] = usePersistentState(
     'ooh-map-search-collapsed',
@@ -147,6 +149,25 @@ export default function Map() {
   useEffect(() => {
     registerSteps(TOUR);
   }, [registerSteps]);
+
+  // Lightweight identity check for the "My Discoveries" layer -- deliberately
+  // not useGamification() here, which would trigger its own full
+  // base44.listAllLocations() fetch duplicating the one reloadLocations()
+  // already does below for the exact same records.
+  useEffect(() => {
+    let cancelled = false;
+    base44.auth
+      .me()
+      .then((me) => {
+        if (!cancelled) setUser(me);
+      })
+      .catch(() => {
+        if (!cancelled) setUser(null);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   // Dispatch a resize event after panel transitions so Leaflet/MapLibre
   // recalculate their container dimensions (fixes gray tiles / misalignment).
@@ -328,6 +349,12 @@ export default function Map() {
     return map;
   }, [claims]);
 
+  // "My Discoveries" (Intelligence group) -- an ownership filter on the
+  // exact same markers already loaded for every other layer, not a second
+  // Location fetch. Malformed/missing coordinates are excluded rather than
+  // ever placed at a fallback point.
+  const mineOnly = activeLayers.includes('mine');
+
   const filtered = useMemo(() => {
     const list = raw?.markers || [];
     const q = query.trim().toLowerCase();
@@ -335,6 +362,8 @@ export default function Map() {
       .filter(
         (m) =>
           (typeFilter === 'all' || m.type === typeFilter) &&
+          (!mineOnly ||
+            (user && m.created_by_id === user.id && isFinite(m.lat) && isFinite(m.lng))) &&
           (!q ||
             `${m.title} ${m.address} ${m.brand_name || ''} ${m.parent_corp || ''}`
               .toLowerCase()
@@ -345,7 +374,7 @@ export default function Map() {
         const bPhoto = b.status === 'verified' && !!b.image ? 2 : b.image ? 1 : 0;
         return bPhoto - aPhoto;
       });
-  }, [raw, typeFilter, query]);
+  }, [raw, typeFilter, query, mineOnly, user]);
 
   // Street layers are overlapping views of the Location entity.
   // "ads" is the superset (all markers); "adbusting" and "graffiti" are
@@ -554,6 +583,21 @@ export default function Map() {
               <LayerResultCard key={`${primaryLayer}-${i}`} item={item} layer={primaryLayer} />
             ))
           )
+        ) : mineOnly && filtered.length === 0 ? (
+          <div className="p-6 text-center">
+            <div className="font-mono text-[10px] uppercase tracking-[0.25em] text-dim">
+              // No field discoveries yet
+            </div>
+            <p className="mt-1 font-mono text-[9px] uppercase tracking-[0.2em] text-dim/60">
+              File a report to begin your personal intelligence layer
+            </p>
+            <Link
+              to="/report"
+              className="mt-3 inline-flex items-center gap-1 border border-ozone bg-ozone px-3 py-1.5 font-mono text-[9px] font-bold uppercase tracking-[0.2em] text-void transition-colors hover:bg-flare"
+            >
+              Log a spot
+            </Link>
+          </div>
         ) : isStreet && followViewport && view === 'flat' ? (
           <div className="p-6 text-center">
             <div className="font-mono text-[10px] uppercase tracking-[0.25em] text-dim">
@@ -605,7 +649,11 @@ export default function Map() {
       )}
       {!fullscreen && (
         <div className="hidden lg:block">
-          <MapLayerToggle activeLayers={activeLayers} onToggle={toggleLayer} />
+          <MapLayerToggle
+            activeLayers={activeLayers}
+            onToggle={toggleLayer}
+            hiddenLayerIds={user ? [] : ['mine']}
+          />
         </div>
       )}
 
@@ -624,6 +672,25 @@ export default function Map() {
               }}
             />
           </div>
+          {/* The desktop layer toggle bar above is lg:hidden on mobile
+              (true for every layer, not something this feature changes) --
+              this is a dedicated mobile-reachable control for just this
+              one new layer rather than reworking mobile chrome for all of
+              them. */}
+          {user && (
+            <button
+              onClick={() => toggleLayer('mine')}
+              aria-label="My Discoveries"
+              aria-pressed={mineOnly}
+              className={`flex h-8 w-8 shrink-0 items-center justify-center border transition-colors ${
+                mineOnly
+                  ? 'border-ozone bg-ozone text-void'
+                  : 'border-slate2/60 text-dim hover:border-ozone hover:text-ozone'
+              }`}
+            >
+              <Fingerprint className="h-3.5 w-3.5" />
+            </button>
+          )}
           <button
             onClick={() => setFullscreen(true)}
             aria-label="Fullscreen map"
