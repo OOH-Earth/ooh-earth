@@ -313,19 +313,36 @@ export function deriveBrandCounts(locations) {
 }
 
 // ── Per-brand milestone lookup ───────────────────────────────────────
-// Finds the nearest not-yet-earned collector milestone relevant to ONE
-// specific brand. Same-brand (Brand Collector) tiers are evaluated against
-// that brand's own count via a synthetic single-entry brandCounts (each
-// tier's progress() only ever reads brandCounts[0].count) -- never the
-// user's globally most-collected brand, which could be a different brand
-// entirely. Distinct-brand (Brand Explorer) tiers use the real stats as-is.
-export function nearestBrandMilestone(allBadges, stats, brandCount, earnedIds) {
+// Finds the nearest not-yet-earned milestone on ONE specific track, scoped
+// to a single discovery -- never "whichever of the two tracks happens to
+// be globally closest", which can surface a milestone semantically
+// unrelated to the discovery being shown (e.g. a repeat Nike discovery
+// citing "2 more distinct brands to Brand Explorer", a stat that specific
+// report didn't move at all).
+//
+// track: 'collector' -- same-brand progress. Relevant when a discovery is a
+//   REPEAT of a brand the user already has (brandCount is that brand's own
+//   total); tiers evaluated via a synthetic single-entry brandCounts (each
+//   tier's progress() only ever reads brandCounts[0].count).
+// track: 'explorer' -- distinct-brand progress, using the real stats
+//   as-is. Relevant only when a discovery is the FIRST-ever occurrence of
+//   its brand for this user -- that specific report is what the distinct
+//   count actually moved.
+export function nearestBrandMilestone(
+  allBadges,
+  stats,
+  brandCount,
+  earnedIds,
+  track = 'collector',
+) {
+  const prefix = track === 'explorer' ? 'brand_explorer' : 'brand_collector';
   const candidates = (allBadges || [])
-    .filter((b) => b.progress && !earnedIds.has(b.id))
+    .filter((b) => b.progress && b.id.startsWith(prefix) && !earnedIds.has(b.id))
     .map((b) => {
-      const p = b.id.startsWith('brand_collector')
-        ? b.progress({ brandCounts: [{ count: brandCount }] })
-        : b.progress(stats);
+      const p =
+        track === 'explorer'
+          ? b.progress(stats)
+          : b.progress({ brandCounts: [{ count: brandCount }] });
       return { badge: b, ...p };
     })
     .filter((m) => m.current < m.target)
@@ -334,4 +351,13 @@ export function nearestBrandMilestone(allBadges, stats, brandCount, earnedIds) {
   return nearest
     ? { label: nearest.badge.label, current: nearest.current, target: nearest.target }
     : null;
+}
+
+// ── Ordinal formatting ───────────────────────────────────────────────
+// Shared by the live post-submit Discovery panel and the standing Recent
+// Discoveries feed -- "1st"/"2nd"/"3rd"/"4th"... one implementation.
+export function ordinal(n) {
+  const s = ['th', 'st', 'nd', 'rd'];
+  const v = n % 100;
+  return `${n}${s[(v - 20) % 10] || s[v] || s[0]}`;
 }

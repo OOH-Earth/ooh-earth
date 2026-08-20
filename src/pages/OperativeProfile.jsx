@@ -61,18 +61,48 @@ export default function OperativeProfile() {
   const recentDiscoveries = useMemo(() => {
     if (!stats || !locations) return [];
     const earnedIds = new Set(earnedBadges.map((b) => b.id));
-    return [...locations]
-      .filter((l) => l.brand_name?.trim())
+    const brandIdentified = locations.filter((l) => l.brand_name?.trim());
+
+    // Chronological (oldest -> newest) pass over every brand-identified
+    // report this user has ever filed, giving each one two real, derived
+    // (never fabricated) sequence numbers: its overall filing order
+    // ("Discovery #N") and its order within just its own brand ("this was
+    // my Kth Nike discovery"). Without this, repeat-brand cards previously
+    // rendered as near-identical -- same brand, same aggregate total,
+    // same milestone line -- differing only by timestamp.
+    const chronological = [...brandIdentified].sort(
+      (a, b) => new Date(a.created_date).getTime() - new Date(b.created_date).getTime(),
+    );
+    const brandRunningCount = new Map();
+    const ordinalForBrandById = new Map();
+    chronological.forEach((loc) => {
+      const key = loc.brand_name.trim().toLowerCase();
+      const next = (brandRunningCount.get(key) || 0) + 1;
+      brandRunningCount.set(key, next);
+      ordinalForBrandById.set(loc.id, next);
+    });
+    const discoveryNumberById = new Map(chronological.map((loc, i) => [loc.id, i + 1]));
+
+    return [...brandIdentified]
       .sort((a, b) => new Date(b.created_date).getTime() - new Date(a.created_date).getTime())
       .slice(0, RECENT_DISCOVERIES_LIMIT)
       .map((location) => {
         const brandKey = location.brand_name.trim().toLowerCase();
         const brandEntry = stats.brandCounts.find((b) => b.brand.toLowerCase() === brandKey);
-        const count = brandEntry?.count || 1;
+        const totalForBrand = brandEntry?.count || 1;
+        const ordinalForBrand = ordinalForBrandById.get(location.id) || 1;
+        // Same rule as FieldReport's live Discovery panel: a brand's FIRST
+        // discovery is what actually moved the distinct-brand (Explorer)
+        // count; every later repeat only moves that brand's own
+        // (Collector) count. Show the track this specific report
+        // genuinely contributed to, not whichever is globally closest.
+        const track = ordinalForBrand === 1 ? 'explorer' : 'collector';
         return {
           location,
-          count,
-          milestone: nearestBrandMilestone(allBadges, stats, count, earnedIds),
+          ordinalForBrand,
+          totalForBrand,
+          discoveryNumber: discoveryNumberById.get(location.id),
+          milestone: nearestBrandMilestone(allBadges, stats, totalForBrand, earnedIds, track),
         };
       });
   }, [stats, locations, earnedBadges, allBadges]);
