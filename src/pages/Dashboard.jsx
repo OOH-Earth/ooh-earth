@@ -70,6 +70,13 @@ const normBust = (b) => ({
   image_url: b.image_url || null,
   source_link: b.proof_url || null,
 });
+const normFieldCheck = (c) => ({
+  ...c,
+  _entity: 'FieldCheck',
+  _title: c.location_title || c.brand_name || 'Field check',
+  _sub: [c.brand_name, c.address].filter(Boolean).join(' · '),
+  _type: c.location_type,
+});
 
 const timeAgo = (iso) => {
   if (!iso) return '';
@@ -141,6 +148,11 @@ function Row({
           {n._entity === 'DigitalBust' && (
             <span className="shrink-0 border border-silver/30 px-1.5 py-0.5 font-mono text-[8px] uppercase tracking-[0.2em] text-silver/70">
               bust
+            </span>
+          )}
+          {n._entity === 'FieldCheck' && (
+            <span className="shrink-0 border border-ozone/30 px-1.5 py-0.5 font-mono text-[8px] uppercase tracking-[0.2em] text-ozone/70">
+              re-check
             </span>
           )}
           {triage && (
@@ -221,7 +233,11 @@ export default function Dashboard() {
           .invoke('moderate', { action: 'queue' })
           .then((res) => {
             const d = payload(res) || {};
-            return [...(d.locations || []).map(normLoc), ...(d.digital_busts || []).map(normBust)];
+            return [
+              ...(d.locations || []).map(normLoc),
+              ...(d.digital_busts || []).map(normBust),
+              ...(d.field_checks || []).map(normFieldCheck),
+            ];
           })
           .catch(() => [])
       : Promise.resolve([]);
@@ -254,9 +270,18 @@ export default function Dashboard() {
     } catch {
       u2 = null;
     }
+    let u3;
+    try {
+      u3 = base44.entities.FieldCheck?.subscribe?.(() => {
+        load();
+      });
+    } catch {
+      u3 = null;
+    }
     return () => {
       if (u1) u1();
       if (u2) u2();
+      if (u3) u3();
     };
   }, [load]);
 

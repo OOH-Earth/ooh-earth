@@ -23,6 +23,7 @@ export type MockDb = {
   locations?: Record<string, any>;
   locationPhotos?: any[];
   storeItems?: Record<string, any>;
+  fieldChecks?: Record<string, any>;
   uploadUrl?: string;
 };
 
@@ -57,9 +58,11 @@ export async function mockBase44(page: Page, db: MockDb) {
       const body = req.postDataJSON() ?? {};
       const store = db.locations ?? (db.locations = {});
       const photos = db.locationPhotos ?? (db.locationPhotos = []);
+      const checks = db.fieldChecks ?? (db.fieldChecks = {});
       if (body.action === 'queue') {
         const locations = Object.values(store).filter((l: any) => l.status === 'pending');
-        return route.fulfill({ json: { ok: true, locations, digital_busts: [] } });
+        const field_checks = Object.values(checks).filter((c: any) => c.status === 'pending');
+        return route.fulfill({ json: { ok: true, locations, digital_busts: [], field_checks } });
       }
       if (body.action === 'verify') {
         const { entity = 'Location', id, status } = body;
@@ -69,6 +72,9 @@ export async function mockBase44(page: Page, db: MockDb) {
           for (const p of photos) {
             if (p.location_id === String(id) && p.status === 'pending') p.status = status;
           }
+        }
+        if (entity === 'FieldCheck' && checks[id]) {
+          Object.assign(checks[id], { status, status_updated_at });
         }
         return route.fulfill({
           json: { ok: true, action: 'verify', changed: { entity, id, status } },
@@ -122,6 +128,42 @@ export async function mockBase44(page: Page, db: MockDb) {
         // filed during a test attributes correctly to the mocked user's own
         // gamification stats -- same as it would against the real backend.
         store[id] = { id, status: 'pending', created_by_id: db.user?.id, ...body };
+        return route.fulfill({ json: store[id] });
+      }
+    }
+
+    if (entity === 'FieldCheck') {
+      const store = db.fieldChecks ?? (db.fieldChecks = {});
+      if (idOrAction && method === 'GET') {
+        const rec = store[idOrAction];
+        if (!rec) return route.fulfill({ status: 404, json: { message: 'Not found' } });
+        return route.fulfill({ json: rec });
+      }
+      if (idOrAction && method === 'PUT') {
+        const body = req.postDataJSON();
+        store[idOrAction] = { ...(store[idOrAction] ?? { id: idOrAction }), ...body };
+        return route.fulfill({ json: store[idOrAction] });
+      }
+      if (!idOrAction && method === 'GET') {
+        const q = url.searchParams.get('q');
+        let list = Object.values(store);
+        if (q) list = list.filter((rec) => matchesQuery(rec, JSON.parse(q)));
+        list = [...list].sort(
+          (a: any, b: any) =>
+            new Date(b.created_date || 0).getTime() - new Date(a.created_date || 0).getTime(),
+        );
+        return route.fulfill({ json: list });
+      }
+      if (!idOrAction && method === 'POST') {
+        const body = req.postDataJSON();
+        const id = body.id ?? `mock-field-check-${Object.keys(store).length + 1}`;
+        store[id] = {
+          id,
+          status: 'pending',
+          created_by_id: db.user?.id,
+          created_date: new Date().toISOString(),
+          ...body,
+        };
         return route.fulfill({ json: store[id] });
       }
     }
