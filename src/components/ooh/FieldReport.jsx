@@ -17,7 +17,11 @@ import ReportStep3Classify from '@/components/ooh/report/ReportStep3Classify';
 import ReportStep4Adbust from '@/components/ooh/report/ReportStep4Adbust';
 import DiscoveryPanel from '@/components/ooh/report/DiscoveryPanel';
 import { useGamification } from '@/hooks/useGamification';
-import { pointsForReport, levelFromXp } from '@/components/ooh/gamification/gamification';
+import {
+  pointsForReport,
+  levelFromXp,
+  nearestBrandMilestone,
+} from '@/components/ooh/gamification/gamification';
 
 const STEPS = [
   { id: 1, label: 'Document', desc: 'Pin it, photograph it' },
@@ -88,23 +92,7 @@ export default function FieldReport() {
     const afterEarnedIds = new Set(earnedBadges.map((b) => b.id));
     const newlyUnlockedId = [...afterEarnedIds].find((id) => !pending.beforeEarnedIds.has(id));
     const newlyUnlocked = newlyUnlockedId ? allBadges.find((b) => b.id === newlyUnlockedId) : null;
-
-    // Nearest uncrossed collector milestone relevant to what was actually
-    // just discovered. Same-brand (Brand Collector) tiers are evaluated
-    // against THIS brand's count via a synthetic single-entry brandCounts
-    // (each tier's progress() only reads brandCounts[0].count) -- never the
-    // user's globally most-collected brand, which could be a different one.
-    const milestoneCandidates = allBadges
-      .filter((b) => b.progress && !afterEarnedIds.has(b.id))
-      .map((b) => {
-        const p = b.id.startsWith('brand_collector')
-          ? b.progress({ brandCounts: [{ count: myBrand.count }] })
-          : b.progress(stats);
-        return { badge: b, ...p };
-      })
-      .filter((m) => m.current < m.target)
-      .sort((a, b) => a.target - a.current - (b.target - b.current));
-    const nearest = milestoneCandidates[0];
+    const milestone = nearestBrandMilestone(allBadges, stats, myBrand.count, afterEarnedIds);
 
     setDiscovery({
       brand: pending.brand,
@@ -113,9 +101,7 @@ export default function FieldReport() {
       xpGained: pending.xpGained,
       level: levelFromXp(stats.xp),
       discoveryCount: myBrand.count,
-      milestone: nearest
-        ? { label: nearest.badge.label, current: nearest.current, target: nearest.target }
-        : null,
+      milestone,
       newlyUnlocked: newlyUnlocked
         ? { label: newlyUnlocked.label, tier: newlyUnlocked.tier }
         : null,
