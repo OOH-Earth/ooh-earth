@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { ScanLine, Loader2, CheckCircle2, AlertTriangle } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
+import { trackEvent } from '@/lib/trackEvent';
 
 const VALID_TYPES = [
   'billboard',
@@ -32,6 +33,11 @@ export default function ReportScanner({ data, onChange }) {
       const det = resp.data?.detection?.response || resp.data?.detection || resp.data;
       setResult(det);
       if (det.is_advertising) {
+        // A genuine identification only -- not a blank/unknown/default
+        // brand, and not merely re-rendering whatever was already there.
+        if (det.brand_name && det.brand_name !== 'Unknown') {
+          trackEvent('brand_identified', { brand_name: det.brand_name });
+        }
         const scannedType = VALID_TYPES.includes(det.surface_type) ? det.surface_type : 'other';
         onChange({
           type: scannedType,

@@ -39,6 +39,7 @@ import {
 import PullToRefresh from '@/components/ooh/PullToRefresh';
 import PersonaControl from '@/components/ooh/PersonaControl';
 import { STATUS_BADGE_CLASSES as STATUS_BADGE } from '@/lib/statusBadge';
+import { trackEvent } from '@/lib/trackEvent';
 
 const ACCESS_BADGE = {
   admin: 'border-ozone/50 text-ozone',
@@ -298,6 +299,12 @@ export default function Dashboard() {
     setBusy((b) => ({ ...b, [id]: true }));
     try {
       await base44.functions.invoke('moderate', { action: 'verify', entity, id, status });
+      // A genuine verification transition only -- never on reject, never
+      // for DigitalBust (not one of the approved analytics events).
+      if (status === 'verified') {
+        if (entity === 'Location') trackEvent('report_verified');
+        else if (entity === 'FieldCheck') trackEvent('recheck_verified');
+      }
       setPending((p) => p.filter((r) => !(r.id === id && r._entity === entity)));
       setSelected((s) => {
         const ns = new Set(s);
