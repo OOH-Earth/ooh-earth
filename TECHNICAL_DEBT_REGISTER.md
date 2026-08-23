@@ -71,3 +71,33 @@ All ~25 primitives imported anywhere in `src/` are now properly typed (see table
 ### 4. `useLocations.js`'s two marker shapes are genuinely different, not just loosely typed
 
 Seed markers (`mapSeed.js`) carry a `notes` field; live markers (`toMarker()` in `markerUtils.js`) carry a `status` field instead. The hook can return either shape depending on whether the live feed or the fallback seed is active — real, pre-existing inconsistency, typed loosely (`Record<string, any>`) to reflect reality rather than silently picking one shape and hiding the other's absence.
+
+---
+
+## Dependabot triage (2026-08-23)
+
+11 open Dependabot PRs, all `mergeStateStatus: BEHIND` (stale against current `main`), none carrying a security-advisory label — consistent with `npm audit` reporting 0 vulnerabilities in this session's baseline. Checked each individually (CI status + actual version delta, not just the PR title) rather than merging or dismissing on sight.
+
+**Verified low-risk, all CI green (Lint & Typecheck, Build, Prettier, both Playwright suites, CodeQL, Dependency audit/review), patch/minor only, ready to merge as-is — recommended, not merged (this session doesn't merge to `main` without explicit instruction, per `AGENTS.md` rule 3):**
+
+| PR | Bump | Notes |
+|---|---|---|
+| #94 | `baseline-browser-mapping` 2.11.12→2.11.13, `eslint-plugin-react-refresh` 0.5.3→0.5.4 | dev-only, patch |
+| #90 | `github/codeql-action/{init,analyze}` 4.37.6→4.37.7 | CI infra only, patch |
+| #87 | `react-hook-form` 7.84.0→7.85.0, `sonner` 2.0.7→2.0.8 | minor/patch, both already in active use |
+
+**Deliberately NOT recommended for a blind merge — every one of the other 8 is a major-version bump, not a routine update, despite Dependabot's own PR title making some read as small:**
+
+| PR | Bump | Why it's a real migration, not a bump |
+|---|---|---|
+| #88 + #39 | `react` 18.3.1→19.2.8, `react-dom` 18.3.1→19.2.8 (paired) | React 19 has real breaking changes (ref handling, removed legacy APIs) against a dependency surface this deep (`react-router-dom` v7, `framer-motion`, Radix UI, `react-leaflet`, `recharts`) — needs its own dedicated, tested migration, not a triage-pass merge |
+| #89 | `@eslint/js` 9.39.2→10.0.1 | Major — could change flat-config defaults/rule set; needs a full `npm run lint` diff review, not just "CI is green" (CI is currently failing on this PR, see below) |
+| #37 | `@stripe/react-stripe-js` 3.10.0→6.8.1 | Major (3→6) on the checkout payment path — the single highest-consequence integration in the app, explicitly flagged elsewhere in this repo's own docs as needing live-tested verification before any change |
+| #36 | `react-day-picker` 8.10.1→10.0.1 | Major (8→10) |
+| #35 | `zod` 3.25.76→4.4.3 | Major (3→4) — zod v4 has real breaking API changes; this repo has zero server-side zod usage today (noted in this session's security recon) but frontend form validation would need a real audit |
+| #23 | `date-fns` 3.6.0→4.4.0 | Major (3→4) |
+| #20 | `react-leaflet` 4.2.1→5.0.0 | Major (4→5) — the map is a P0 journey; a leaflet-family major bump needs live verification across all map views before merge |
+
+**Failing CI on 6 of the 8 majors (#89, #88, #39, #37, #23, #20)** — Lint & Typecheck / Prettier / Build / Dependency audit all show `FAILURE`. Not yet root-caused per-PR (would require checking out each branch individually, which starts to overlap with actually doing the migration) — plausibly genuine breakage from the version jump, or staleness against `main`. Either way, this is exactly why none of the 8 get a blind merge recommendation.
+
+**Recommended next action:** merge #94/#90/#87 (or ask Dependabot to rebase them first if GitHub requires an up-to-date branch before merge — they were last synced against an older `main`). Treat each of the 8 majors as its own future task with its own PR, its own test pass, and its own rollback plan — not a batch.
