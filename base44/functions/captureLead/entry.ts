@@ -57,7 +57,14 @@ Deno.serve(async (req) => {
       caller = null;
     }
 
-    const rec = { name, email, amount, channel: 'lead', message };
+    const rec: {
+      name: string;
+      email: string;
+      amount: number;
+      channel: string;
+      message: string;
+      created_by_id?: string;
+    } = { name, email, amount, channel: 'lead', message };
     if (caller?.id) rec.created_by_id = caller.id;
 
     await base44.asServiceRole.entities.FundingLead.create(rec);
