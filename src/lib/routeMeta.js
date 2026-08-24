@@ -309,6 +309,61 @@ export const META = {
     desc: 'Set a new password for your OOH Earth account.',
     image: OG_IMAGES.default,
   },
+  '/access-keys': {
+    title: 'Access Keys — OOH Earth',
+    desc: 'The open-access key registry — standard tools that open transit-shelter and ad-space housings worldwide, mapped to the bus-stop locations they likely fit. Keys are unconfirmed until a field check.',
+    image: OG_IMAGES.default,
+  },
+  '/brand': {
+    title: 'Brand — OOH Earth',
+    desc: 'Ad Free Streets brand standards — voice, identity, and visual system for the OOH Earth movement.',
+    image: OG_IMAGES.default,
+  },
+  '/contact': {
+    title: 'Contact — OOH Earth',
+    desc: 'Get in touch with the movement — join, collaborate, report a billboard, or support the work.',
+    image: OG_IMAGES.default,
+  },
+  '/graffiti': {
+    title: 'Graffiti Portal — OOH Earth',
+    desc: 'Street art and graffiti mapped alongside outdoor advertising — medium, style, and coverage logged on the public record.',
+    image: OG_IMAGES.adbusting,
+  },
+  '/media-corps': {
+    title: 'Media Corps Registry — OOH Earth',
+    desc: 'The global registry of out-of-home media operators — who owns the billboards, screens, and ad space in your city.',
+    image: OG_IMAGES.default,
+  },
+  '/lab/coin-poster': {
+    title: 'Genesis Coin Poster — OOH Earth Lab',
+    desc: 'Concept art — three faces, I Ching wheel, action-verb edge, the set.',
+    image: OG_IMAGES.lab,
+  },
+  '/lab/devices': {
+    title: 'Devices — OOH Earth Lab',
+    desc: 'Wearables & desktop apps — OOH Watch, NFC field tag, desktop console.',
+    image: OG_IMAGES.lab,
+  },
+  '/lab/graffiti-cam': {
+    title: 'Graffiti Camera — OOH Earth Lab',
+    desc: 'Field camera for graffiti and street art — point, shoot, classify, log to the graffiti portal and field map.',
+    image: OG_IMAGES.lab,
+  },
+  '/lab/scanner': {
+    title: 'Ad Scanner — OOH Earth Lab',
+    desc: 'Advertising detection camera — point, shoot, identify brands/logos/branding on any surface and catalog the hit.',
+    image: OG_IMAGES.lab,
+  },
+  '/lab/streetrunner': {
+    title: 'OE-1K/66 Streetrunner — OOH Earth Lab',
+    desc: 'Akira-class field bike concept — part of the Hex Engine Lab prototype area.',
+    image: OG_IMAGES.lab,
+  },
+  '/lab/token': {
+    title: 'Genesis Token — OOH Earth Lab',
+    desc: '$OOHEX fungible token — community currency, rewards, governance, burn.',
+    image: OG_IMAGES.lab,
+  },
 };
 
 // Dynamic-route fallbacks (prefix → meta)
@@ -320,6 +375,7 @@ const PREFIXES = [
   ['/category/', META['/categories']],
   ['/capital/', META['/campaign']],
   ['/agency/blog/', META['/agency/blog']],
+  ['/access-keys/', META['/access-keys']],
 ];
 
 export function getRouteMeta(pathname) {
