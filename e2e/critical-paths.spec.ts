@@ -18,19 +18,38 @@ function trackConsoleErrors(page: import('@playwright/test').Page) {
 
 test('primary navigation: home -> map -> report all render without crashing', async ({ page }) => {
   const consoleErrors = trackConsoleErrors(page);
+  const mapProjectionRequests: string[] = [];
+  page.on('request', (request) => {
+    const url = new URL(request.url());
+    if (
+      url.pathname.includes('/entities/FieldCheck') ||
+      url.pathname.includes('/entities/LeadClaim')
+    ) {
+      mapProjectionRequests.push(url.searchParams.get('fields') || '');
+    }
+  });
   await mockBase44(page, { user: null, locations: {}, locationPhotos: [] });
 
   await page.goto('/');
   await expect(page).toHaveTitle(/OOH/i);
 
+  const projectedMapRequest = page.waitForRequest((request) => {
+    const url = new URL(request.url());
+    return (
+      url.pathname.includes('/entities/FieldCheck') &&
+      url.searchParams.get('fields') === 'location_id,status,created_date'
+    );
+  });
   await page.getByRole('link', { name: 'Field map', exact: true }).click();
   await expect(page).toHaveURL(/\/map/);
   await expect(page.locator('#root')).not.toBeEmpty();
+  await projectedMapRequest;
 
   await page.goto('/report');
   await expect(page.getByRole('heading', { name: /Adbusting/i })).toBeVisible();
 
   expect(filterCrashes(consoleErrors), consoleErrors.join('\n')).toEqual([]);
+  expect(mapProjectionRequests).toContain('location_id,status,created_date');
 });
 
 test('donation/support page renders the Stripe donate panel', async ({ page }) => {

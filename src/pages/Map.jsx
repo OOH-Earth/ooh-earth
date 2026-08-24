@@ -245,7 +245,11 @@ export default function Map() {
       // detect a genuinely newer unverified re-check.
       const [recs, checks] = await Promise.all([
         base44.listAllLocations(),
-        base44.entities.FieldCheck.filter({}, '-created_date', 2000).catch(() => []),
+        base44.entities.FieldCheck.filter({}, '-created_date', 2000, 0, [
+          'location_id',
+          'status',
+          'created_date',
+        ]).catch(() => []),
       ]);
       // Plain object, not `new Map()` -- this component is itself named
       // `Map`, which shadows the global Map constructor in this scope.
@@ -347,7 +351,11 @@ export default function Map() {
     let cancelled = false;
     const loadClaims = async () => {
       try {
-        const recs = await base44.entities.LeadClaim.list('-created_date', 500);
+        const recs = await base44.entities.LeadClaim.list('-created_date', 500, 0, [
+          'location_id',
+          'status',
+          'created_date',
+        ]);
         if (!cancelled) setClaims(recs || []);
       } catch {
         if (!cancelled) setClaims([]);

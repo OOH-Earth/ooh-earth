@@ -2,6 +2,11 @@
   "name": "Location",
   "type": "object",
   "properties": {
+    "client_operation_id": {
+      "type": "string",
+      "description": "Client-generated idempotency token for offline/retry submissions",
+      "maxLength": 120
+    },
     "title": {
       "type": "string",
       "description": "Short label, e.g. 'Billboard \u00b7 1039 Pleonchit'"

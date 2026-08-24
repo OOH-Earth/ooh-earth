@@ -2,6 +2,11 @@
   "name": "FieldCheck",
   "type": "object",
   "properties": {
+    "client_operation_id": {
+      "type": "string",
+      "description": "Client-generated idempotency token for offline/retry submissions",
+      "maxLength": 120
+    },
     "location_id": {
       "type": "string",
       "description": "Location record being re-checked"

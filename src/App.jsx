@@ -49,7 +49,7 @@ const LabStreetRunner = lazy(() => import('@/pages/LabStreetRunner'));
 const AdScanLab = lazy(() => import('@/pages/AdScanLab'));
 const GraffitiCam = lazy(() => import('@/pages/GraffitiCam'));
 const NftCreator = lazy(() => import('@/pages/NftCreator'));
-import Home from '@/pages/Home';
+const Home = lazy(() => import('@/pages/Home'));
 const Map = lazy(() => import('@/pages/Map'));
 const Report = lazy(() => import('@/pages/Report'));
 const MediaCorps = lazy(() => import('@/pages/MediaCorps'));
