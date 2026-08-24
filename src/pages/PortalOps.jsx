@@ -144,14 +144,24 @@ const FNS = [
     'secret',
     'Stripe Checkout · secrets server-side',
   ],
-  ['cryptoWatch', 'Live on-chain treasury watcher: SOL/ETH/Polygon.', 'pub', 'no auth, read-only'],
+  [
+    'cryptoWatch',
+    'Live on-chain treasury watcher: SOL/ETH/Polygon.',
+    'pub',
+    'no auth, read-only · cached in IntelCache (60s)',
+  ],
   [
     'fetchMapLocations',
     'Live location markers from a published feed.',
     'pub',
-    'no auth, read-only',
+    'no auth, read-only · cached in IntelCache (120s)',
   ],
-  ['fieldStats', 'PII-free aggregate stats for the orbital HUD.', 'pub', 'no auth, read-only'],
+  [
+    'fieldStats',
+    'PII-free aggregate stats for the orbital HUD.',
+    'pub',
+    'no auth, read-only · cached in IntelCache (30s)',
+  ],
   [
     'importKmlLocations',
     'Admin-only bulk KML importer, SSRF-hardened.',
@@ -195,7 +205,6 @@ const PROPOSED = [
   ['secretsAudit', 'Reports secret age vs a rotation cadence.', 'R-06'],
   ['promoteBackup', 'Guarded release: records CHANGELOG + tags a version.', 'R-03'],
   ['riskRegister', 'CRUD for the risk items so the count is live-editable.', 'Risk Register'],
-  ['rateLimit', 'Per-IP throttle for public read functions.', 'R-05'],
 ];
 const EXT = [
   ['Etherscan', 'ETH tx links'],
@@ -293,7 +302,6 @@ const NODES = {
   ],
 };
 const EDGES = [
-  ['/campaign', 'fetchMapLocations'],
   ['/campaign', 'fieldStats'],
   ['/dashboard', 'fieldStats'],
   ['/portal/investor', 'investorAccess'],
