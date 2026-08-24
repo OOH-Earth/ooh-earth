@@ -1,15 +1,13 @@
-import { useEffect, useState } from 'react';
 import { Mail, ArrowUpRight, Users, Coins, ShieldCheck } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { base44 } from '@/api/base44Client';
 import { useAuth } from '@/lib/AuthContext';
 import { isAdmin } from '@/lib/clearance';
+import { useCareerRoles } from '@/hooks/useCareerRoles';
 import Nav from '@/components/ooh/Nav';
 import Reveal from '@/components/ooh/Reveal';
 import SiteFooter from '@/components/ooh/SiteFooter';
 import RoleCard from '@/components/ooh/careers/RoleCard';
 import {
-  ROLES as BASE_ROLES,
   VALUES,
   PROCESS,
   APPLY_EMAIL,
@@ -18,35 +16,8 @@ import {
   LOOK_FOR,
 } from '@/components/ooh/careers/roles';
 
-// Merge live status/visibility overrides from the CareerRoleStatus entity (edited
-// at /careers/admin) onto the code-defined role content. Falls back to roles.js
-// defaults until the console has provisioned records, or if the fetch fails.
-function useLiveRoles() {
-  const [roles, setRoles] = useState(BASE_ROLES);
-  useEffect(() => {
-    let alive = true;
-    (async () => {
-      try {
-        const recs = await base44.entities.CareerRoleStatus.list('sort_order');
-        if (!alive || !recs?.length) return;
-        const merged = BASE_ROLES.map((r) => {
-          const rec = recs.find((x) => x.role_id === r.id);
-          return rec ? { ...r, status: rec.status, visible: rec.visible !== false } : r;
-        }).filter((r) => r.visible !== false && r.status !== 'draft');
-        setRoles(merged);
-      } catch {
-        // keep static fallback
-      }
-    })();
-    return () => {
-      alive = false;
-    };
-  }, []);
-  return roles;
-}
-
 export default function Careers() {
-  const ROLES = useLiveRoles();
+  const ROLES = useCareerRoles().filter((r) => r.visible !== false && r.status !== 'draft');
   const { user } = useAuth();
   const admin = !!user && isAdmin(user);
   const mailto = `mailto:${APPLY_EMAIL}?subject=Joining OOH Earth`;

@@ -74,6 +74,57 @@ Seed markers (`mapSeed.js`) carry a `notes` field; live markers (`toMarker()` in
 
 ---
 
+## Server function type coverage (2026-08-23) — closed the `base44/functions/*.ts` gap
+
+`jsconfig.json`'s `typecheck` script only ever covered `src/` — the 28 Base44 server functions in `base44/functions/*/entry.ts` (Deno runtime, `npm:` specifiers) had **zero automated type coverage**, identified as a follow-up in this session's earlier audit pass.
+
+**Why `tsc` can't be pointed at them:** `tsc`/`jsconfig.json` don't understand Deno's `npm:` module specifiers or Deno's global APIs (`Deno.serve`, `Deno.env`) — attempting to include these files in the existing `jsconfig.json` would either fail to resolve imports or silently type them as `any` via `skipLibCheck`-style fallbacks, giving false confidence. The correct tool is Deno's own `deno check`, which understands `npm:` specifiers natively and resolves them against the real npm registry.
+
+**Verified runnable in this environment:** the `deno` npm package (published by the Deno company) downloads a real platform binary on `npm install` — added as a pinned devDependency (`deno@2.9.5`, exact version, matching this repo's pin-exact convention). `npm run typecheck:functions` (`cd base44/functions && deno check --node-modules-dir=none */entry.ts`) runs entirely offline against locally-resolved npm packages after the first run generates `base44/functions/deno.lock` (committed, same rationale as `package-lock.json`).
+
+**Baseline found:** first clean run against all 28 functions surfaced **92 real type errors** — two mechanical, repeated classes (43× implicit-`any` parameters, 21× accessing `.message` on a `catch`-block variable typed `unknown`) plus 6 genuine ones.
+
+**Config decision:** `base44/functions/deno.json` sets `noImplicitAny: false` and `useUnknownInCatchVariables: false`, matching `jsconfig.json`'s existing (non-`strict`) behavior for the frontend — same risk tolerance across both type-checked surfaces, not a new one invented for this. That alone reduced 92 → 6 errors with zero code changes.
+
+**The remaining 6, fixed with real TS type annotations (not JSDoc — these are genuine `.ts` files, so `@type` comments are not honored the way they are under the frontend's `checkJs`, confirmed by testing both):**
+
+| File | Issue | Fix |
+|---|---|---|
+| `cachedIntel/entry.ts` | `REGISTRY.skyIntel.model: 'gemini_3_flash'` widened to `string`, didn't satisfy `InvokeLLMParams.model`'s literal union | `as const` at the declaration |
+| `captureLead/entry.ts` | `rec.created_by_id = caller.id` assigned onto an object literal with no such field in its inferred type | explicit inline type annotation on `rec` including `created_by_id?: string` |
+| `personaCtl/entry.ts` (×4 errors, 1 root cause) | `const patch = {}` then `patch.role =` / `.access =` / `.agency =` — same class as `captureLead` | explicit inline type annotation on `patch` |
+
+**What is and isn't covered:** `deno check` gives real type/syntax checking for all 28 functions using the same lenient rules the frontend already accepts. It does **not** verify runtime behavior against Base44's actual deployed Deno version (unknown from this repo, unverifiable without live Base44 access) — it's a static check on a current, independently-obtained Deno 2.9.5 toolchain. Not yet wired into CI (`.github/workflows/ci.yml`) — recommended as a follow-up `informational` check first (matching how Prettier and dependency-audit were introduced), promoted to required once proven stable, per `BRANCHING_STRATEGY.md`'s existing pattern.
+
+Verified: `npm run typecheck:functions` exits 0 across all 28 functions; frontend `npm run lint` / `npm run typecheck` / `npm run build` / `npm audit` (full + prod) all still pass unaffected.
+
+---
+
+## R-05 rate limiting (2026-08-23) — shipped as caching, not a per-IP throttle
+
+`opsIntel`'s own risk register and `PortalOps.jsx`'s roadmap both named this "per-IP throttle on fieldStats/cryptoWatch/fetchMapLocations." Investigated before implementing anything, per this session's mandate not to build a rate limiter merely because a checklist named one.
+
+**Investigation:**
+- **Call sites:** all three are invoked from live, frequently-rendered components — `fieldStats` from `HeroConsole`, `MetroKit`, `Campaign`, `Dashboard`; `cryptoWatch` from `DonationMomentum`, `TreasuryBalances`, `AtariPortfolio`, `campaign/DonationWatcher`. `fetchMapLocations` has **no live call site anywhere in `src/`** despite being documented as reachable from `/campaign` — either stale docs or a direct-URL-only exposure; lower urgency than the other two, but a public Base44 function is invocable by URL regardless of frontend wiring, so still worth covering.
+- **Auth:** all three are fully public, no auth check, by design (public trust/HUD data).
+- **Base44's own mechanism:** checked the official docs (`docs.base44.com`) directly rather than assuming — confirmed no built-in rate limiting, abuse protection, or response caching exists for custom backend functions (Base44's only published rate-limit docs are for its own Monitoring/Audit-Logs management APIs, unrelated). Confirmed via `docs.base44.com/developers/backend/resources/backend-functions/overview.md`.
+- **Existing entity patterns:** `AccessLog` is role-change-audit-only, wrong shape/purpose to repurpose. `cachedIntel/entry.ts` already solves the *identical* structural problem (expensive work re-done per visitor) using a generic `IntelCache` entity (`cache_key`, `period_key`, `payload`) keyed by a day-granularity window — directly reusable with a shorter window, no new entity needed.
+- **The real risk, re-examined:** R-05's stated concern is public functions "redoing expensive work" (DB scans, 3-4 external API calls per `cryptoWatch` hit, up to 10 scraped pages per `fetchMapLocations` fallback) — a cost/reliability risk, not specifically an identity-based abuse risk. A **shared cache caps the real work at once per window regardless of caller count or identity**, which addresses the stated risk more directly than counting requests per IP would.
+- **Why not a per-IP counter:** would need a new entity, a read-then-conditional-write per request (a race identical in kind to `claimLead`'s own acknowledged non-atomic check), and — critically — **cannot be verified in this environment** (no live Base44 backend). Worse, all three functions are called by legitimate traffic on nearly every pageview; a wrongly-tuned threshold could silently throttle real users, and I have no way to test that live. A caching bug's worst case is "always computes live" (today's exact behavior, zero regression); a rate-limiter bug's worst case is "blocks real users" — asymmetric risk that favors caching.
+- **Fail-open, not fail-closed:** every cache read/write is wrapped in try/catch that swallows errors and falls through to the normal live computation — a broken cache can only ever degrade to today's behavior, never break a response.
+
+**Implemented** (`fieldStats` 30s window, `cryptoWatch` 60s, `fetchMapLocations` 120s — chosen per function based on how expensive/volatile its underlying data is): each function checks `IntelCache` for a hit on `(cache_key, period_key)` before doing its real work, and best-effort writes the result back on a miss. `cryptoWatch` only caches a fully-healthy result (a transient per-chain RPC failure retries next request instead of staying stuck for a minute); `fetchMapLocations` only caches a non-empty result for the same reason. Verified with `npm run typecheck:functions` (0 errors) and a full manual trace of every return path in all three files.
+
+**Known limitations, stated plainly rather than glossed over:**
+- This is **not** literal per-IP throttling — raw request *volume*/bandwidth against these endpoints is still unbounded; what's now bounded is the expensive work each request could trigger. If Base44 bills or limits by raw function-invocation count, that's a separate, unaddressed concern.
+- **Unbounded `IntelCache` row growth**: under constant traffic, worst case is roughly one new row per window per function (~5,000 rows/day combined across all three if hit continuously) — there is no cleanup/TTL mechanism anywhere in this codebase. Needs a follow-up pruning function (or a Base44-side TTL feature, unknown/unverified from this repo) before this runs unattended for months.
+- **A benign, bounded race at window boundaries**: concurrent requests arriving in the same window before the first cache write completes can each independently do the expensive work once — bounded by that one burst, not unlimited, and never worse than today's uncached behavior.
+- **UNVERIFIED — requires live Base44 access**: actual cache hit rate, real latency improvement, and whether `IntelCache.create`/`.filter()` behave under real concurrent load exactly as assumed here. Static type-checking and manual trace-through are as far as this environment can verify.
+
+`opsIntel/entry.ts`'s R-05 register entry and `PortalOps.jsx`'s `PROPOSED`/`FNS` lists were updated to reflect what actually shipped, so the in-app ops dashboard doesn't keep advertising a stale roadmap item.
+
+---
+
 ## IntelCache growth — investigated, cleanup drafted but deliberately not activated (2026-08-24)
 
 Follow-up to the R-05 caching work (`feat/r05-cache-not-throttle`, PR #127), which itself flagged unbounded `IntelCache` row growth as a known limitation. Investigated properly rather than either ignoring it or bolting on cleanup blindly.

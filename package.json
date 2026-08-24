@@ -15,7 +15,8 @@
     "format:check": "prettier --check .",
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
-    "test:a11y": "playwright test a11y.spec.ts"
+    "test:a11y": "playwright test a11y.spec.ts",
+    "typecheck:functions": "cd base44/functions && deno check --node-modules-dir=none */entry.ts"
   },
   "dependencies": {
     "@base44/sdk": "^0.8.41",
@@ -101,6 +102,7 @@
     "@vitejs/plugin-react": "^4.3.4",
     "autoprefixer": "^10.5.4",
     "baseline-browser-mapping": "^2.8.32",
+    "deno": "2.9.5",
     "eslint": "^9.19.0",
     "eslint-plugin-react": "^7.37.4",
     "eslint-plugin-react-hooks": "^5.0.0",

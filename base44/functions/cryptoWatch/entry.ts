@@ -1,3 +1,5 @@
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
+
 // Live on-chain activity watcher for the OOH treasury wallets.
 // Public read-only — no auth required (public app). Returns recent signatures/txs.
 //
@@ -5,6 +7,41 @@
 // Promise.allSettled, so one dependency hiccup (Solana RPC, Blockchair, or the
 // Polygon RPC / CoinGecko) degrades only that chain's data and is reported via a
 // per-chain `status` field — instead of failing the whole response.
+//
+// R-05 mitigation: every call fans out to 3-4 third-party APIs (Solana RPC,
+// Blockchair, Polygon RPC, CoinGecko) — CoinGecko's free tier in particular
+// rate-limits hard, and a real hit there degrades maticUsd for every visitor,
+// not just an abusive one. A shared 60s cache (IntelCache, same entity/pattern
+// cachedIntel already uses) caps the real fan-out at once per window regardless
+// of caller count. Fail-open on any cache read/write error.
+const CACHE_KEY = 'cryptoWatch';
+const CACHE_WINDOW_MS = 60_000;
+
+async function readCache(base44, periodKey) {
+  try {
+    const hits = await base44.asServiceRole.entities.IntelCache.filter({
+      cache_key: CACHE_KEY,
+      period_key: periodKey,
+    });
+    if (hits && hits.length && hits[0].payload) return JSON.parse(hits[0].payload);
+  } catch {
+    /* cache read failure must never block a response */
+  }
+  return null;
+}
+
+async function writeCache(base44, periodKey, payload) {
+  try {
+    await base44.asServiceRole.entities.IntelCache.create({
+      cache_key: CACHE_KEY,
+      period_key: periodKey,
+      payload: JSON.stringify(payload),
+    });
+  } catch {
+    /* cache write failure must never block a response */
+  }
+}
+
 const SOL_TREASURY = 'EusJyb6R7vZEnmCLoJXBXui6inozZguAFjkKJNGEaafx';
 const ETH_TREASURY = '0xe286EB19b5a64DC41Ca76f58D8fd6d7F114C1c12'.toLowerCase();
 
@@ -98,8 +135,13 @@ async function fetchPolygon() {
   return { matic, usdc, usdce, maticUsd, totalUsd };
 }
 
-Deno.serve(async (_req) => {
+Deno.serve(async (req) => {
   try {
+    const base44 = createClientFromRequest(req);
+    const periodKey = String(Math.floor(Date.now() / CACHE_WINDOW_MS));
+    const cached = await readCache(base44, periodKey);
+    if (cached) return Response.json(cached);
+
     const [solR, ethR, polR] = await Promise.allSettled([fetchSol(), fetchEth(), fetchPolygon()]);
 
     const sol = solR.status === 'fulfilled' ? solR.value : [];
@@ -118,7 +160,13 @@ Deno.serve(async (_req) => {
     if (polR.status === 'rejected')
       console.error('cryptoWatch polygon:', polR.reason?.message || polR.reason);
 
-    return Response.json({ sol, eth, polygon, status, ts: Date.now() });
+    const payload = { sol, eth, polygon, status, ts: Date.now() };
+    // Only cache a fully-healthy result -- a transient per-chain failure should
+    // retry on the very next request, not stay stuck in the cache for a minute.
+    if (status.sol === 'ok' && status.eth === 'ok' && status.polygon === 'ok') {
+      await writeCache(base44, periodKey, payload);
+    }
+    return Response.json(payload);
   } catch (error) {
     return Response.json(
       {
