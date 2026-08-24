@@ -11,6 +11,7 @@ import { handleClaimQuest } from '../claimQuest/handler.ts';
 import { handlePersonaCtl } from '../personaCtl/handler.ts';
 import { handleDeleteMyAccount } from '../deleteMyAccount/handler.ts';
 import { handleFieldStats, resetFieldStatsCache } from '../fieldStats/handler.ts';
+import { handleSubmitOffline } from '../submitOffline/handler.ts';
 
 const assert = (condition: unknown, message: string) => {
   if (!condition) throw new Error(message);
@@ -143,6 +144,59 @@ Deno.test('fieldStats coalesces and caches aggregate reads', async () => {
   await handleFieldStats(request(), deps);
   assertEquals(listCalls, 6, 'fieldStats refreshes after TTL');
 });
+
+Deno.test(
+  'submitOffline validates operation ids and returns existing records on replay',
+  async () => {
+    const records: any[] = [];
+    const client = {
+      entities: {
+        Location: {
+          filter: async () => records,
+          create: async (payload: any) => {
+            const record = { id: 'location-1', ...payload };
+            records.push(record);
+            return record;
+          },
+        },
+      },
+    };
+    const deps = { createClientFromRequest: () => client };
+    assertEquals(
+      (await handleSubmitOffline(request('GET'), deps)).status,
+      405,
+      'offline method status',
+    );
+    assertEquals(
+      (await handleSubmitOffline(request('POST', { entity_type: 'Location', payload: {} }), deps))
+        .status,
+      400,
+      'offline operation validation status',
+    );
+    const payload = {
+      client_operation_id: 'capture.test-1',
+      title: 'A capture',
+      id: 'client-forged-id',
+      created_by_id: 'client-forged-user',
+    };
+    const first = await handleSubmitOffline(
+      request('POST', { entity_type: 'Location', payload }),
+      deps,
+    );
+    assertEquals(first.status, 200, 'offline first status');
+    const firstBody = await json(first);
+    assert(firstBody.duplicate === false, 'first submission must not be marked duplicate');
+    assert(!firstBody.record.id.includes('client-forged'), 'server owns record id');
+    const replay = await handleSubmitOffline(
+      request('POST', { entity_type: 'Location', payload }),
+      deps,
+    );
+    assertEquals(replay.status, 200, 'offline replay status');
+    const replayBody = await json(replay);
+    assert(replayBody.duplicate === true, 'replay must return existing record');
+    assertEquals(records.length, 1, 'replay must not create a second record');
+  },
+);
 
 Deno.test('migrateLocationImages permits an admin and hides failures', async () => {
   const fake = migrationClient({ data: { role: 'admin' } }, [

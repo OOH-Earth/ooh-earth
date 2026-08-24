@@ -1,6 +1,10 @@
 import { useState, useEffect, useCallback } from 'react';
-import { base44 } from '@/api/base44Client';
-import { listCaptures, removeCapture, incrementRetries } from '@/lib/offlineQueue';
+import {
+  listCaptures,
+  removeCapture,
+  incrementRetries,
+  submitQueuedCapture,
+} from '@/lib/offlineQueue';
 
 export function useOfflineSync() {
   const [pending, setPending] = useState([]);
@@ -22,9 +26,7 @@ export function useOfflineSync() {
     let changed = false;
     for (const item of items) {
       try {
-        const entity =
-          item.entityType === 'FieldCheck' ? base44.entities.FieldCheck : base44.entities.Location;
-        await entity.create(item.payload);
+        await submitQueuedCapture(item.payload, item.entityType);
         await removeCapture(item.id);
         changed = true;
       } catch (err) {

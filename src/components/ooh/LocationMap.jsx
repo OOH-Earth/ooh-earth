@@ -436,6 +436,7 @@ export default function LocationMap({
   futures,
   activeLayers = [],
   onBoundsChange = null,
+  fitBounds = true,
   flyTo = null,
   compactPopup = false,
   onExpandPin = null,
@@ -459,7 +460,7 @@ export default function LocationMap({
         maxZoom={style.maxZoom}
       />
       <ZoomControl position="bottomright" />
-      <FitBounds markers={pins} />
+      {fitBounds && <FitBounds markers={pins} />}
       <BoundsWatcher onBoundsChange={onBoundsChange} />
       <FlyTo selectedId={selectedId} markers={pins} />
       <FlyToHover hoverId={hoverId} selectedId={selectedId} markers={pins} />

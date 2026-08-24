@@ -39,6 +39,16 @@ function withOperationId(payload) {
   return target;
 }
 
+async function submitRemote(payload, entityType) {
+  const response = await base44.functions.invoke('submitOffline', {
+    entity_type: entityType,
+    payload,
+  });
+  const result = response?.data ?? response;
+  if (!result?.ok || !result.record) throw new Error('Submission unavailable');
+  return result.record;
+}
+
 export async function enqueueCapture(payload, entityType = 'Location') {
   const normalized = withOperationId(payload);
   const db = await openDB();
@@ -120,7 +130,7 @@ export async function submitCapture(payload) {
     return { status: 'queued' };
   }
   try {
-    const rec = await base44.entities.Location.create(normalized);
+    const rec = await submitRemote(normalized, 'Location');
     return { status: 'synced', rec };
   } catch (err) {
     console.warn('Capture failed, queuing:', err?.message);
@@ -136,13 +146,17 @@ export async function submitFieldCheck(payload) {
     return { status: 'queued' };
   }
   try {
-    const rec = await base44.entities.FieldCheck.create(normalized);
+    const rec = await submitRemote(normalized, 'FieldCheck');
     return { status: 'synced', rec };
   } catch (err) {
     console.warn('Field check failed, queuing:', err?.message);
     await enqueueCapture(normalized, 'FieldCheck');
     return { status: 'queued' };
   }
+}
+
+export async function submitQueuedCapture(payload, entityType) {
+  return submitRemote(withOperationId(payload), entityType);
 }
 
 export { MAX_RETRIES };

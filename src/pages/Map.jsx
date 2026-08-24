@@ -209,6 +209,9 @@ export default function Map() {
   const [detailItem, setDetailItem] = useState(null);
   const [isMobile, setIsMobile] = useState(false);
   const [globeClusters, setGlobeClusters] = useState(0);
+  const viewportTimerRef = useRef(null);
+  const viewportRequestRef = useRef(0);
+  const requestedViewportRef = useRef('');
 
   // Mobile detection — lg breakpoint (1024px) separates the mobile sheet
   // layout from the desktop split layout.
@@ -279,9 +282,74 @@ export default function Map() {
     }
   }, []);
 
+  const loadViewportLocations = useCallback(async (viewport) => {
+    const viewportKey = JSON.stringify(viewport);
+    if (requestedViewportRef.current === viewportKey) return;
+    requestedViewportRef.current = viewportKey;
+    const requestId = ++viewportRequestRef.current;
+    try {
+      const recs = await /** @type {any} */ (base44).listViewportLocations(viewport);
+      const ids = (recs || []).map((r) => String(r.id)).filter(Boolean);
+      const checks = ids.length
+        ? await base44.entities.FieldCheck.filter(
+            { location_id: { $in: ids } },
+            '-created_date',
+            2000,
+            0,
+            ['location_id', 'status', 'created_date'],
+          ).catch(() => [])
+        : [];
+      if (requestId !== viewportRequestRef.current) return;
+      const checksByLocation = {};
+      for (const c of checks || []) {
+        const key = String(c.location_id);
+        (checksByLocation[key] ??= []).push(c);
+      }
+      const livingRecordIds = new Set(
+        (checks || []).filter((c) => c.status === 'verified').map((c) => String(c.location_id)),
+      );
+      const markers = (recs || [])
+        .filter((r) => r.status !== 'rejected')
+        .map((r) => ({
+          ...toMarker(r),
+          livingRecord: livingRecordIds.has(String(r.id)),
+          freshness: computeFreshness(r, checksByLocation[String(r.id)] || []),
+        }));
+      setRaw({ markers, live: true });
+    } catch {
+      if (requestId === viewportRequestRef.current) setRaw({ markers: [], live: false });
+    }
+  }, []);
+
+  useEffect(() => {
+    if (view === 'flat' && bounds) loadViewportLocations(bounds);
+  }, [bounds, loadViewportLocations, view]);
+
+  const handleBoundsChange = useCallback(
+    (nextBounds) => {
+      setBounds(nextBounds);
+      if (view !== 'flat') return;
+      if (viewportTimerRef.current) clearTimeout(viewportTimerRef.current);
+      viewportTimerRef.current = setTimeout(() => {
+        loadViewportLocations(nextBounds);
+      }, 250);
+    },
+    [loadViewportLocations, view],
+  );
+
+  useEffect(() => {
+    return () => {
+      if (viewportTimerRef.current) clearTimeout(viewportTimerRef.current);
+    };
+  }, []);
+
   useEffect(() => {
     let cancelled = false;
-    reloadLocations().then(() => {});
+    if (view === 'globe') reloadLocations().then(() => {});
+    else {
+      viewportRequestRef.current += 1;
+      setRaw({ markers: [], live: false });
+    }
 
     const unsub = base44.entities.Location.subscribe((event) => {
       setRaw((cur) => {
@@ -307,7 +375,7 @@ export default function Map() {
       cancelled = true;
       if (unsub) unsub();
     };
-  }, []);
+  }, [reloadLocations, view]);
 
   // Contribution deep-link: /map?highlight=<locationId>, used by the report
   // wizard's and AR's "View on map" links so a user's own new submission is
@@ -862,7 +930,8 @@ export default function Map() {
                 userLoc={userLoc}
                 futures={OOH_FUTURES}
                 activeLayers={activeLayers}
-                onBoundsChange={setBounds}
+                onBoundsChange={handleBoundsChange}
+                fitBounds={false}
                 flyTo={flyTo}
                 compactPopup={isMobile}
                 onExpandPin={handleExpandPin}
