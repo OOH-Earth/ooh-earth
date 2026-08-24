@@ -46,6 +46,19 @@ export default function AccountMenu() {
   const { user, isAuthenticated } = useAuth();
   const [open, setOpen] = useState(false);
   const ref = useRef(null);
+  const triggerRef = useRef(null);
+
+  // Escape has no other focus target, so closing it must return focus to
+  // the trigger -- otherwise a keyboard user loses their position entirely
+  // (focus falls back to document.body). An outside click is different: the
+  // user's click already has its own target (another link, the map, empty
+  // space), so stealing focus back to the trigger there would fight the
+  // interaction they were actually making -- just close and let the
+  // browser's normal focus behavior for that click proceed.
+  const closeViaKeyboard = () => {
+    setOpen(false);
+    triggerRef.current?.focus();
+  };
 
   useEffect(() => {
     if (!open) return;
@@ -53,7 +66,7 @@ export default function AccountMenu() {
       if (ref.current && !ref.current.contains(e.target)) setOpen(false);
     };
     const onKey = (e) => {
-      if (e.key === 'Escape') setOpen(false);
+      if (e.key === 'Escape') closeViaKeyboard();
     };
     document.addEventListener('mousedown', onDown);
     document.addEventListener('keydown', onKey);
@@ -67,6 +80,7 @@ export default function AccountMenu() {
     return (
       <div className="relative" ref={ref}>
         <button
+          ref={triggerRef}
           onClick={() => setOpen((o) => !o)}
           aria-label="Account"
           aria-expanded={open}
@@ -134,6 +148,7 @@ export default function AccountMenu() {
   return (
     <div className="relative" ref={ref}>
       <button
+        ref={triggerRef}
         onClick={() => setOpen((o) => !o)}
         aria-label="Account menu"
         aria-expanded={open}
