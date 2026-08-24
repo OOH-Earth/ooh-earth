@@ -97,3 +97,82 @@ Seed markers (`mapSeed.js`) carry a `notes` field; live markers (`toMarker()` in
 **What is and isn't covered:** `deno check` gives real type/syntax checking for all 28 functions using the same lenient rules the frontend already accepts. It does **not** verify runtime behavior against Base44's actual deployed Deno version (unknown from this repo, unverifiable without live Base44 access) — it's a static check on a current, independently-obtained Deno 2.9.5 toolchain. Not yet wired into CI (`.github/workflows/ci.yml`) — recommended as a follow-up `informational` check first (matching how Prettier and dependency-audit were introduced), promoted to required once proven stable, per `BRANCHING_STRATEGY.md`'s existing pattern.
 
 Verified: `npm run typecheck:functions` exits 0 across all 28 functions; frontend `npm run lint` / `npm run typecheck` / `npm run build` / `npm audit` (full + prod) all still pass unaffected.
+
+---
+
+## R-05 rate limiting (2026-08-23) — shipped as caching, not a per-IP throttle
+
+`opsIntel`'s own risk register and `PortalOps.jsx`'s roadmap both named this "per-IP throttle on fieldStats/cryptoWatch/fetchMapLocations." Investigated before implementing anything, per this session's mandate not to build a rate limiter merely because a checklist named one.
+
+**Investigation:**
+- **Call sites:** all three are invoked from live, frequently-rendered components — `fieldStats` from `HeroConsole`, `MetroKit`, `Campaign`, `Dashboard`; `cryptoWatch` from `DonationMomentum`, `TreasuryBalances`, `AtariPortfolio`, `campaign/DonationWatcher`. `fetchMapLocations` has **no live call site anywhere in `src/`** despite being documented as reachable from `/campaign` — either stale docs or a direct-URL-only exposure; lower urgency than the other two, but a public Base44 function is invocable by URL regardless of frontend wiring, so still worth covering.
+- **Auth:** all three are fully public, no auth check, by design (public trust/HUD data).
+- **Base44's own mechanism:** checked the official docs (`docs.base44.com`) directly rather than assuming — confirmed no built-in rate limiting, abuse protection, or response caching exists for custom backend functions (Base44's only published rate-limit docs are for its own Monitoring/Audit-Logs management APIs, unrelated). Confirmed via `docs.base44.com/developers/backend/resources/backend-functions/overview.md`.
+- **Existing entity patterns:** `AccessLog` is role-change-audit-only, wrong shape/purpose to repurpose. `cachedIntel/entry.ts` already solves the *identical* structural problem (expensive work re-done per visitor) using a generic `IntelCache` entity (`cache_key`, `period_key`, `payload`) keyed by a day-granularity window — directly reusable with a shorter window, no new entity needed.
+- **The real risk, re-examined:** R-05's stated concern is public functions "redoing expensive work" (DB scans, 3-4 external API calls per `cryptoWatch` hit, up to 10 scraped pages per `fetchMapLocations` fallback) — a cost/reliability risk, not specifically an identity-based abuse risk. A **shared cache caps the real work at once per window regardless of caller count or identity**, which addresses the stated risk more directly than counting requests per IP would.
+- **Why not a per-IP counter:** would need a new entity, a read-then-conditional-write per request (a race identical in kind to `claimLead`'s own acknowledged non-atomic check), and — critically — **cannot be verified in this environment** (no live Base44 backend). Worse, all three functions are called by legitimate traffic on nearly every pageview; a wrongly-tuned threshold could silently throttle real users, and I have no way to test that live. A caching bug's worst case is "always computes live" (today's exact behavior, zero regression); a rate-limiter bug's worst case is "blocks real users" — asymmetric risk that favors caching.
+- **Fail-open, not fail-closed:** every cache read/write is wrapped in try/catch that swallows errors and falls through to the normal live computation — a broken cache can only ever degrade to today's behavior, never break a response.
+
+**Implemented** (`fieldStats` 30s window, `cryptoWatch` 60s, `fetchMapLocations` 120s — chosen per function based on how expensive/volatile its underlying data is): each function checks `IntelCache` for a hit on `(cache_key, period_key)` before doing its real work, and best-effort writes the result back on a miss. `cryptoWatch` only caches a fully-healthy result (a transient per-chain RPC failure retries next request instead of staying stuck for a minute); `fetchMapLocations` only caches a non-empty result for the same reason. Verified with `npm run typecheck:functions` (0 errors) and a full manual trace of every return path in all three files.
+
+**Known limitations, stated plainly rather than glossed over:**
+- This is **not** literal per-IP throttling — raw request *volume*/bandwidth against these endpoints is still unbounded; what's now bounded is the expensive work each request could trigger. If Base44 bills or limits by raw function-invocation count, that's a separate, unaddressed concern.
+- **Unbounded `IntelCache` row growth**: under constant traffic, worst case is roughly one new row per window per function (~5,000 rows/day combined across all three if hit continuously) — there is no cleanup/TTL mechanism anywhere in this codebase. Needs a follow-up pruning function (or a Base44-side TTL feature, unknown/unverified from this repo) before this runs unattended for months.
+- **A benign, bounded race at window boundaries**: concurrent requests arriving in the same window before the first cache write completes can each independently do the expensive work once — bounded by that one burst, not unlimited, and never worse than today's uncached behavior.
+- **UNVERIFIED — requires live Base44 access**: actual cache hit rate, real latency improvement, and whether `IntelCache.create`/`.filter()` behave under real concurrent load exactly as assumed here. Static type-checking and manual trace-through are as far as this environment can verify.
+
+`opsIntel/entry.ts`'s R-05 register entry and `PortalOps.jsx`'s `PROPOSED`/`FNS` lists were updated to reflect what actually shipped, so the in-app ops dashboard doesn't keep advertising a stale roadmap item.
+
+---
+
+## IntelCache growth — investigated, cleanup drafted but deliberately not activated (2026-08-24)
+
+Follow-up to the R-05 caching work (`feat/r05-cache-not-throttle`, PR #127), which itself flagged unbounded `IntelCache` row growth as a known limitation. Investigated properly rather than either ignoring it or bolting on cleanup blindly.
+
+**What's already true, confirmed by reading the code, not assumed:** every current `IntelCache` writer — `cachedIntel/entry.ts`, `fieldNews/entry.ts` (pre-existing, predates this session), and this session's `fieldStats`/`cryptoWatch`/`fetchMapLocations` caching — always `.create()`s a fresh row on a cache miss and never updates or deletes the previous one for that `cache_key`. This is an existing codebase-wide pattern, not something introduced by the R-05 work; the R-05 additions just use much shorter windows (30-120s vs. `fieldNews`'s 6-hour bucket and `cachedIntel`'s 24-hour bucket), so they dominate the growth rate.
+
+**Expected growth:** worst case (the 30s/60s-window caches hit continuously) is on the order of 1.5M rows/year combined — real, but the actual rate depends on real traffic patterns this environment can't observe.
+
+**Whether this is actually a meaningful problem — partially verifiable, partially not:**
+- No `IntelCache` reader anywhere in this codebase does a full-table scan — every read is either a narrow `{cache_key, period_key}` filter or a "most recent row for this key" lookup (`fieldNews`'s pattern). So growth is a storage/hygiene concern, not a proven public-facing latency one, as far as this repo's own read patterns go.
+- **Genuinely unverifiable from here:** whether Base44's underlying query engine indexes these lookups such that they stay fast regardless of table size, and what Base44's storage pricing/limits look like. Both require live Base44 access or platform documentation this repo doesn't have.
+
+**Cleanup mechanism — real and git-committable, confirmed via Base44's own docs (not guessed):** `docs.base44.com`'s backend-functions automations page documents scheduled ("cron") functions configured via a `function.jsonc` file alongside a function's `entry.ts`, deployed atomically with `functions deploy` — the dashboard is explicitly documented as NOT the source of truth (local files win). Fetched the literal example JSON from that page rather than inventing field names.
+
+**Drafted, not activated:** `base44/functions/cleanupIntelCache/` (`entry.ts` + `function.jsonc`). Design decisions:
+- Uses only SDK methods already proven working elsewhere in this codebase — paginated `.list()` (same helper shape as `fieldStats/entry.ts`'s `listAll`) and per-id `.delete()` (same as `deleteMyAccount/entry.ts`). Base44's `.filter()` does **not** have documented support for date-range/comparison operators (checked the SDK's own type declarations and the docs — neither shows one), so rather than guess at unverified syntax, this pages through every row and compares `created_date` in plain JS. Runs entirely off the public request path (a scheduled job, not a route any client calls), so an O(n) page-through here doesn't carry the cost concern the old `fieldStats` unbounded-scan issue did.
+- 14-day retention, capped at 5000 deletions per run (defensive — catches up over multiple daily runs rather than risking the platform's execution-time limit on an unexpectedly large backlog).
+- One bad row's delete failure never aborts the rest of the pass.
+- `function.jsonc`'s `is_active` is deliberately `false`. This is the **first scheduled automation used anywhere in this repo** — whether this exact schema deploys correctly and the cron actually fires cannot be verified without a live Base44 project. Flip to `true` only after confirming live: `functions deploy` accepts the file, the automation shows active in the dashboard, and ideally a manual/dashboard-triggered run returns a sane `{scanned, stale, deleted}` payload.
+
+Verified in this environment: `deno check` clean, `function.jsonc` is valid JSON once comments are stripped (this repo's other `.jsonc` files carry no comments, so this wasn't pre-verified by an existing convention — checked directly).
+
+---
+
+## Dependabot triage (2026-08-23, corrected 2026-08-24)
+
+**2026-08-24 correction:** #94 and #87 (2 of the original 3 "safe to merge" picks below) were auto-closed by Dependabot overnight, superseded by fresh grouped-update PRs #132 and #133 respectively — Dependabot does this when a newer version lands before the old PR merges. Re-verified live rather than trusting yesterday's numbers: **#90, #132, #133 are the current 3 low-risk, ready-to-merge PRs** (all `mergeStateStatus: CLEAN`, 10/10 CI checks green, re-checked 2026-08-24):
+
+| PR | Bump | Notes |
+|---|---|---|
+| #90 | `github/codeql-action/{init,analyze}` 4.37.6→4.37.7 | CI infra only, patch |
+| #132 | `@axe-core/playwright` 4.12.1→4.13.0, `baseline-browser-mapping` 2.11.12→2.11.14, `eslint-plugin-react-refresh` 0.5.3→0.5.4 | dev-only, patch |
+| #133 | `@base44/sdk` 0.8.41→0.8.42, `react-hook-form` 7.84.0→7.85.0, `sonner` 2.0.7→2.0.8 | `@base44/sdk` is a patch bump but worth a beat of extra attention given how central it is (every entity/function call goes through it) — still CI-green including full Playwright, no evidence of an issue |
+
+Not merged — this session doesn't merge to `main` without explicit instruction, per `AGENTS.md` rule 3. If this list is read again later, re-verify live: Dependabot may have superseded these too by then.
+
+**Deliberately NOT recommended for a blind merge — every one of the other 8 is a major-version bump, not a routine update.** 2026-08-24 update: checked actual usage breadth in `src/` for each (not just the version-jump size), which meaningfully changes the risk picture from a pure "major = risky" read:
+
+| PR | Bump | Actual blast radius (verified via grep, not assumed) | Risk |
+|---|---|---|---|
+| #88 + #39 | `react` 18.3.1→19.2.8, `react-dom` (paired) | Every component in the app; `react-router-dom` v7, `framer-motion`, Radix UI, `react-leaflet`, `recharts`, `react-hook-form`, `react-day-picker` all must be React-19-compatible. Already uses `createRoot` (not the legacy `ReactDOM.render`), one real blocker already cleared | **Highest** — full-app surface |
+| #20 | `react-leaflet` 4.2.1→5.0.0 | 14 files import it; the map is a P0 journey | **High** — broad + consequential |
+| #36 | `react-day-picker` 8.10.1→10.0.1 | Only 1 file imports it (v8→v9 was a real breaking rewrite, v9→v10 less so) | **Medium** — real breaking-change surface, narrow blast radius |
+| #89 | `@eslint/js` 9.39.2→10.0.1 | Dev-tooling only, zero production risk — but CI is currently failing on this PR (see below), meaning the new rule set likely already trips something real | **Medium** — contained, but not free |
+| #37 | `@stripe/react-stripe-js` 3.10.0→6.8.1 | **Corrected finding, differs from this row's original framing:** grepped for `@stripe/react-stripe-js`, `@stripe/stripe-js`, `loadStripe`, and `Elements` across all of `src/` — **zero real imports found** (the one `Elements` hit is prose copy in `guildBookData.js`, unrelated). `StripeDonate.jsx` confirmed to do a plain `window.location.href = res.data.url` redirect to a server-created Stripe Checkout Session — the embedded Elements library this package provides isn't used anywhere in the actual checkout flow | **Low** — likely near-zero actual risk despite the major version number; still worth a CI-green + smoke-test pass on `/support`/`/plans` before merging, simply because it's still a major bump, but not the highest-consequence item on this list the way its version number suggests |
+| #35 | `zod` 3.25.76→4.4.3 | Grepped all of `src/` for any `zod` import (direct or via `@hookform/resolvers`) — **zero usage found anywhere**, frontend or backend (backend absence already noted in this session's security recon) | **Lowest** — appears to be an entirely unused dependency; the bump itself is closer to a no-op than a migration. Worth asking whether it should just be removed instead of upgraded |
+| #23 | `date-fns` 3.6.0→4.4.0 | Not re-audited this pass — usage breadth unknown, flagged for next investigation before scheduling | **Unknown** — needs its own quick usage check |
+
+**Failing CI on 6 of the 8 majors (#89, #88, #39, #37, #23, #20)** as of 2026-08-23 — Lint & Typecheck / Prettier / Build / Dependency audit showed `FAILURE`. Not yet root-caused per-PR (would mean starting the actual migration).
+
+**Revised recommended migration order** (by actual verified risk, not version-number optics): 1) `zod` (#35) — confirm truly unused, then either take the bump for free or remove the dependency entirely, either way a same-day task; 2) `@stripe/react-stripe-js` (#37) — verify CI-green + a manual smoke pass on the two checkout pages, low effort given confirmed non-usage; 3) `react-day-picker` (#36) — narrow, one file, but needs to actually read v9/v10's migration notes given the real API rewrite; 4) `date-fns` (#23) — usage-audit first; 5) `@eslint/js` (#89) — see what new rules actually fire, fix or configure around them; 6) `react-leaflet` (#20) — dedicated PR, full map-page regression pass; 7) `react` + `react-dom` (#88+#39) — its own sprint, not a slot in a triage pass, do last so every other dependency it might interact with is already current.

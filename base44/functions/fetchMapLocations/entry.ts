@@ -1,8 +1,44 @@
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
+
 // Preferred live source: a static JSON feed you publish on oohearth.app.
 // Static files aren't routed through the SG captcha, so this works from the
 // backend the moment the file exists. Expected shape:
 // [{ "title","address","lat","lng","link","image" }, ...]
 const FEED_URL = 'https://oohearth.app/wp-content/uploads/ooh-locations.json';
+
+// R-05 mitigation: the fallback path scrapes up to 10 pages of a third-party
+// site per call. A shared 2min cache (IntelCache, same entity/pattern
+// cachedIntel already uses) caps that work at once per window regardless of
+// caller count. Only non-empty results are cached -- an empty/failed result
+// should retry on the next request, not stay stuck for the full window.
+// Fail-open on any cache read/write error.
+const CACHE_KEY = 'fetchMapLocations';
+const CACHE_WINDOW_MS = 120_000;
+
+async function readCache(base44, periodKey) {
+  try {
+    const hits = await base44.asServiceRole.entities.IntelCache.filter({
+      cache_key: CACHE_KEY,
+      period_key: periodKey,
+    });
+    if (hits && hits.length && hits[0].payload) return JSON.parse(hits[0].payload);
+  } catch {
+    /* cache read failure must never block a response */
+  }
+  return null;
+}
+
+async function writeCache(base44, periodKey, payload) {
+  try {
+    await base44.asServiceRole.entities.IntelCache.create({
+      cache_key: CACHE_KEY,
+      period_key: periodKey,
+      payload: JSON.stringify(payload),
+    });
+  } catch {
+    /* cache write failure must never block a response */
+  }
+}
 
 // Strips HTML tags to a fixed point (loops until a pass makes no further
 // change) rather than a single regex pass -- a single pass can leave
@@ -21,6 +57,11 @@ function stripTags(s: string) {
 
 Deno.serve(async (req) => {
   try {
+    const base44 = createClientFromRequest(req);
+    const periodKey = String(Math.floor(Date.now() / CACHE_WINDOW_MS));
+    const cached = await readCache(base44, periodKey);
+    if (cached) return Response.json(cached);
+
     // 1) JSON feed (live, no captcha).
     try {
       const res = await fetch(FEED_URL, { headers: { accept: 'application/json' } });
@@ -43,7 +84,11 @@ Deno.serve(async (req) => {
                   : 'https://oohearth.app/location/'),
             }))
             .filter((m) => isFinite(m.lat) && isFinite(m.lng));
-          if (markers.length) return Response.json({ count: markers.length, markers, live: true });
+          if (markers.length) {
+            const payload = { count: markers.length, markers, live: true };
+            await writeCache(base44, periodKey, payload);
+            return Response.json(payload);
+          }
         }
       }
     } catch (_) {}
@@ -130,7 +175,9 @@ Deno.serve(async (req) => {
       if (added === 0) break;
     }
 
-    return Response.json({ count: markers.length, markers, live: markers.length > 0 });
+    const payload = { count: markers.length, markers, live: markers.length > 0 };
+    if (markers.length > 0) await writeCache(base44, periodKey, payload);
+    return Response.json(payload);
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });
   }

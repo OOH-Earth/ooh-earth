@@ -3,6 +3,40 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
 // Public, PII-free aggregate field stats for the orbital HUD.
 // Returns counts/totals only — never exposes donor or operative records.
 
+// R-05 mitigation: this function pages through every Location/FundingLead/
+// DigitalBust record on every call, so repeated hits (legitimate concurrent
+// pageviews or abuse) each redo the full scan. A shared 30s cache (reusing
+// IntelCache, the same entity/pattern cachedIntel already uses) caps that
+// work at once per window regardless of caller count -- fail-open on any
+// cache read/write error, since a broken cache must never block a response.
+const CACHE_KEY = 'fieldStats';
+const CACHE_WINDOW_MS = 30_000;
+
+async function readCache(base44, periodKey) {
+  try {
+    const hits = await base44.asServiceRole.entities.IntelCache.filter({
+      cache_key: CACHE_KEY,
+      period_key: periodKey,
+    });
+    if (hits && hits.length && hits[0].payload) return JSON.parse(hits[0].payload);
+  } catch {
+    /* cache read failure must never block a response */
+  }
+  return null;
+}
+
+async function writeCache(base44, periodKey, payload) {
+  try {
+    await base44.asServiceRole.entities.IntelCache.create({
+      cache_key: CACHE_KEY,
+      period_key: periodKey,
+      payload: JSON.stringify(payload),
+    });
+  } catch {
+    /* cache write failure must never block a response */
+  }
+}
+
 // Page through an entity so counts aren't silently capped. The previous
 // version fetched a flat 500, which undercounted once the London import
 // pushed Location past 700 records.
@@ -34,6 +68,10 @@ const AI_AGENTS = [
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
+    const periodKey = String(Math.floor(Date.now() / CACHE_WINDOW_MS));
+    const cached = await readCache(base44, periodKey);
+    if (cached) return Response.json(cached);
+
     const [locs, leads, busts] = await Promise.all([
       listAll(base44.asServiceRole.entities.Location, '-created_date'),
       listAll(base44.asServiceRole.entities.FundingLead, '-created_date'),
@@ -67,7 +105,7 @@ Deno.serve(async (req) => {
     const raised = confirmed.reduce((s, l) => s + (Number(l.amount) || 0), 0);
     const digitalBusts = (busts || []).filter((r) => r.status !== 'rejected').length;
 
-    return Response.json({
+    const payload = {
       reports: active.length,
       verified,
       operatives: ops.size,
@@ -78,7 +116,9 @@ Deno.serve(async (req) => {
       raised,
       donors: confirmed.length,
       digital_busts: digitalBusts,
-    });
+    };
+    await writeCache(base44, periodKey, payload);
+    return Response.json(payload);
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });
   }
