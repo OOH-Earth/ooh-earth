@@ -1,4 +1,5 @@
-import { useEffect, useState } from 'react';
+import { useMemo } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import {
   Coins,
@@ -151,37 +152,39 @@ export default function LabHub() {
   const { isAuthenticated } = useLabGate();
   const { user } = useAuth();
   const admin = !!user && isAdmin(user);
-  const [items, setItems] = useState(null);
+  // query key deliberately shared-shaped ('lab-prototypes') so NavMenu.jsx's
+  // and LabAccessRoute.jsx's own independent LabPrototype reads (found during
+  // this migration, not touched here — see KNOWN_ISSUES.md #16) can adopt the
+  // same cache key later without a raw-fetch shape change.
+  const {
+    data: recs,
+    isLoading,
+    isError,
+  } = useQuery({
+    queryKey: ['lab-prototypes'],
+    queryFn: () => base44.entities.LabPrototype.list('sort_order'),
+  });
 
-  useEffect(() => {
-    let alive = true;
-    (async () => {
-      try {
-        const recs = await base44.entities.LabPrototype.list('sort_order');
-        const list = recs.filter((r) => r.visible !== false);
-        // Surface a registry project ONLY when it has no record yet. Once the console
-        // has provisioned a row, respect it fully — including visible:false. (Checking
-        // the filtered `list` here would re-add hidden projects and defeat the toggle.)
-        LAB_PROJECTS.forEach((p) => {
-          if (!recs.some((r) => r.path === p.path)) {
-            list.unshift({
-              path: p.path,
-              title: p.title,
-              status: p.status || 'in_build',
-              access: p.access || 'restricted',
-              sort_order: -1,
-            });
-          }
+  const items = useMemo(() => {
+    if (isLoading) return null;
+    if (isError) return [];
+    const list = (recs || []).filter((r) => r.visible !== false);
+    // Surface a registry project ONLY when it has no record yet. Once the console
+    // has provisioned a row, respect it fully — including visible:false. (Checking
+    // the filtered `list` here would re-add hidden projects and defeat the toggle.)
+    LAB_PROJECTS.forEach((p) => {
+      if (!(recs || []).some((r) => r.path === p.path)) {
+        list.unshift({
+          path: p.path,
+          title: p.title,
+          status: p.status || 'in_build',
+          access: p.access || 'restricted',
+          sort_order: -1,
         });
-        if (alive) setItems(list);
-      } catch {
-        if (alive) setItems([]);
       }
-    })();
-    return () => {
-      alive = false;
-    };
-  }, []);
+    });
+    return list;
+  }, [recs, isLoading, isError]);
 
   return (
     <div className="min-h-screen bg-void grid-bg text-silver">
