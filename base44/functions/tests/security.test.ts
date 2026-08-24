@@ -2,6 +2,9 @@ import { handleMigrateLocationImages } from '../migrateLocationImages/handler.ts
 import { handleN8nPing } from '../n8nPing/handler.ts';
 import { handleScanAd } from '../scanAd/handler.ts';
 import { handleCachedIntel } from '../cachedIntel/handler.ts';
+import { handleCreateDonationCheckout } from '../createDonationCheckout/handler.ts';
+import { handleClaimLead } from '../claimLead/handler.ts';
+import { handleStripeWebhook } from '../stripeWebhook/handler.ts';
 
 const assert = (condition: unknown, message: string) => {
   if (!condition) throw new Error(message);
@@ -150,6 +153,333 @@ Deno.test(
       await json(failed),
       { ok: false, error: 'Webhook unavailable' },
       'n8n failure body',
+    );
+  },
+);
+
+Deno.test(
+  'createDonationCheckout preserves public donations while bounding Stripe input',
+  async () => {
+    let calls = 0;
+    let forwardedIdempotencyKey = '';
+    const fetchImpl = async (_url: string | URL | Request, init?: RequestInit) => {
+      calls++;
+      forwardedIdempotencyKey = new Headers(init?.headers).get('Idempotency-Key') || '';
+      const params = new URLSearchParams(String(init?.body));
+      assertEquals(params.get('line_items[0][price_data][unit_amount]'), '5000', 'Stripe amount');
+      assertEquals(params.get('line_items[0][price_data][currency]'), 'usd', 'Stripe currency');
+      return new Response(JSON.stringify({ url: 'https://checkout.stripe.test/session' }), {
+        status: 200,
+      });
+    };
+    const deps = {
+      fetchImpl,
+      getEnv: (name: string) => ({ STRIPE_SECRET_KEY: 'sk_test', BASE44_APP_ID: 'app' })[name],
+    };
+    assertEquals(
+      (await handleCreateDonationCheckout(request('GET', { amount: 50 }), deps)).status,
+      405,
+      'donation method',
+    );
+    const malformed = new Request('https://example.test', { method: 'POST', body: '{' });
+    assertEquals(
+      (await handleCreateDonationCheckout(malformed, deps)).status,
+      400,
+      'donation malformed body',
+    );
+    for (const amount of [Number.NaN, Number.POSITIVE_INFINITY, 0, 10_001]) {
+      assertEquals(
+        (await handleCreateDonationCheckout(request('POST', { amount }), deps)).status,
+        400,
+        'donation invalid amount',
+      );
+    }
+    const invalidKey = await handleCreateDonationCheckout(
+      new Request('https://example.test', {
+        method: 'POST',
+        headers: { 'idempotency-key': 'bad key' },
+        body: JSON.stringify({ amount: 50 }),
+      }),
+      deps,
+    );
+    assertEquals(invalidKey.status, 400, 'donation invalid idempotency key');
+    const success = await handleCreateDonationCheckout(
+      new Request('https://example.test', {
+        method: 'POST',
+        headers: { 'idempotency-key': 'donation-1' },
+        body: JSON.stringify({ amount: 50, ignored: 'field' }),
+      }),
+      deps,
+    );
+    assertEquals(success.status, 200, 'donation success');
+    assertEquals(calls, 1, 'donation Stripe calls');
+    assertEquals(forwardedIdempotencyKey, 'donation-1', 'donation idempotency forwarding');
+    const failed = await handleCreateDonationCheckout(request('POST', { amount: 50 }), {
+      ...deps,
+      fetchImpl: async () => {
+        throw new Error('secret Stripe detail');
+      },
+    });
+    assertEquals(failed.status, 502, 'donation provider failure');
+    assertEquals(
+      await json(failed),
+      { error: 'Checkout unavailable' },
+      'donation sanitized failure',
+    );
+  },
+);
+
+Deno.test(
+  'claimLead validates bounded anonymous claims and suppresses local concurrent duplicates',
+  async () => {
+    let creates = 0;
+    let release: (() => void) | undefined;
+    const gate = new Promise<void>((resolve) => {
+      release = resolve;
+    });
+    const claims: any[] = [];
+    const client = {
+      asServiceRole: {
+        entities: {
+          Location: {
+            filter: async () => {
+              await gate;
+              return [{ id: 'loc-1', title: 'Test location' }];
+            },
+          },
+          LeadClaim: {
+            filter: async () => claims,
+            create: async (value: unknown) => {
+              creates++;
+              claims.push({ ...(value as object), status: 'pending' });
+              return value;
+            },
+          },
+        },
+      },
+    };
+    const inFlight = new Map();
+    const deps = { createClientFromRequest: () => client, inFlight };
+    assertEquals((await handleClaimLead(request('GET'), deps)).status, 405, 'claim method');
+    assertEquals(
+      (
+        await handleClaimLead(
+          new Request('https://example.test', { method: 'POST', body: '{' }),
+          deps,
+        )
+      ).status,
+      400,
+      'claim malformed body',
+    );
+    assertEquals(
+      (await handleClaimLead(request('POST', { location_id: {}, operative_handle: 'x' }), deps))
+        .status,
+      400,
+      'claim malformed identity',
+    );
+    assertEquals(
+      (
+        await handleClaimLead(
+          request('POST', { location_id: 'loc-1', operative_handle: 'x'.repeat(81) }),
+          deps,
+        )
+      ).status,
+      400,
+      'claim oversized handle',
+    );
+    const first = handleClaimLead(
+      request('POST', { location_id: 'loc-1', operative_handle: '@ghost', note: 'observe' }),
+      deps,
+    );
+    const second = handleClaimLead(
+      request('POST', { location_id: 'loc-1', operative_handle: '@other' }),
+      deps,
+    );
+    release?.();
+    const [one, two] = await Promise.all([first, second]);
+    assertEquals(one.status, 200, 'claim first success');
+    assertEquals(two.status, 200, 'claim concurrent replay response');
+    assertEquals(creates, 1, 'claim create count');
+    const duplicate = await handleClaimLead(
+      request('POST', { location_id: 'loc-1', operative_handle: '@third' }),
+      {
+        createClientFromRequest: () => ({
+          asServiceRole: {
+            entities: {
+              Location: { filter: async () => [{ title: 'Test' }] },
+              LeadClaim: {
+                filter: async () => [{ status: 'accepted' }],
+                create: async () => {
+                  throw new Error('must not create');
+                },
+              },
+            },
+          },
+        }),
+        inFlight: new Map(),
+      },
+    );
+    assertEquals(duplicate.status, 409, 'claim active duplicate');
+  },
+);
+
+async function stripeSignature(body: string, secret: string, timestamp: number) {
+  const key = await crypto.subtle.importKey(
+    'raw',
+    new TextEncoder().encode(secret),
+    { name: 'HMAC', hash: 'SHA-256' },
+    false,
+    ['sign'],
+  );
+  const mac = await crypto.subtle.sign(
+    'HMAC',
+    key,
+    new TextEncoder().encode(`${timestamp}.${body}`),
+  );
+  return `t=${timestamp},v1=${Array.from(new Uint8Array(mac))
+    .map((byte) => byte.toString(16).padStart(2, '0'))
+    .join('')}`;
+}
+
+Deno.test(
+  'stripeWebhook verifies signatures and makes replay-safe best-effort mutations',
+  async () => {
+    const secret = 'whsec_test';
+    const now = 1_700_000_000_000;
+    const funding: any[] = [];
+    const purchases: any[] = [];
+    const updates: any[] = [];
+    const client = {
+      asServiceRole: {
+        entities: {
+          FundingLead: {
+            filter: async ({ ext_ref }: any) => funding.filter((item) => item.ext_ref === ext_ref),
+            create: async (value: any) => {
+              funding.push(value);
+            },
+          },
+          Purchase: {
+            filter: async ({ stripe_session_id }: any) =>
+              purchases.filter((item) => item.stripe_session_id === stripe_session_id),
+            create: async (value: any) => {
+              purchases.push(value);
+            },
+          },
+          StoreItem: {
+            get: async () => ({ edition_sold: 2 }),
+            update: async (...args: any[]) => updates.push(args),
+          },
+          Subscription: { filter: async () => [], create: async () => {}, update: async () => {} },
+        },
+      },
+    };
+    const fetchImpl = async (url: string | URL | Request) =>
+      url.toString().startsWith('https://n8n')
+        ? new Response('{}', { status: 200 })
+        : new Response('{}', { status: 200 });
+    const deps = {
+      createClientFromRequest: () => client,
+      getEnv: (name: string) =>
+        name === 'STRIPE_WEBHOOK_SECRET'
+          ? secret
+          : name === 'N8N_WEBHOOK_URL'
+            ? 'https://n8n.test/hook'
+            : undefined,
+      fetchImpl,
+      now: () => now,
+      inFlight: new Map<string, Promise<unknown>>(),
+    };
+    const invalid = await handleStripeWebhook(
+      new Request('https://example.test', { method: 'POST', body: '{}' }),
+      deps,
+    );
+    assertEquals(invalid.status, 401, 'Stripe invalid signature');
+    const event = {
+      id: 'evt_1',
+      type: 'checkout.session.completed',
+      data: {
+        object: {
+          id: 'cs_1',
+          mode: 'payment',
+          amount_total: 5000,
+          customer_email: 'donor@example.com',
+          metadata: { item_id: 'item_1', item_title: 'Field book', user_id: 'user_1' },
+        },
+      },
+    };
+    const body = JSON.stringify(event);
+    const headers = { 'stripe-signature': await stripeSignature(body, secret, now / 1000) };
+    const first = await handleStripeWebhook(
+      new Request('https://example.test', { method: 'POST', body, headers }),
+      deps,
+    );
+    assertEquals(first.status, 200, 'Stripe first delivery');
+    assertEquals(funding.length, 1, 'FundingLead creation');
+    assertEquals(purchases.length, 1, 'Purchase creation');
+    assertEquals(updates.length, 1, 'inventory update');
+    const replay = await handleStripeWebhook(
+      new Request('https://example.test', { method: 'POST', body, headers }),
+      deps,
+    );
+    assertEquals(replay.status, 200, 'Stripe replay');
+    assertEquals(funding.length, 1, 'FundingLead replay suppression');
+    assertEquals(purchases.length, 1, 'Purchase replay suppression');
+    assertEquals(updates.length, 1, 'inventory replay suppression');
+    const secondEvent = { ...event, id: 'evt_2' };
+    const secondBody = JSON.stringify(secondEvent);
+    const secondReplay = await handleStripeWebhook(
+      new Request('https://example.test', {
+        method: 'POST',
+        body: secondBody,
+        headers: { 'stripe-signature': await stripeSignature(secondBody, secret, now / 1000) },
+      }),
+      deps,
+    );
+    assertEquals(secondReplay.status, 200, 'Stripe session replay with new event id');
+    assertEquals(funding.length, 1, 'session-level FundingLead dedupe');
+    assertEquals(purchases.length, 1, 'session-level Purchase dedupe');
+    assertEquals(updates.length, 1, 'session-level inventory dedupe');
+    const ignoredEvent = {
+      id: 'evt_ignored',
+      type: 'charge.refunded',
+      data: { object: { id: 'ch_1' } },
+    };
+    const ignoredBody = JSON.stringify(ignoredEvent);
+    const ignored = await handleStripeWebhook(
+      new Request('https://example.test', {
+        method: 'POST',
+        body: ignoredBody,
+        headers: { 'stripe-signature': await stripeSignature(ignoredBody, secret, now / 1000) },
+      }),
+      deps,
+    );
+    assertEquals(ignored.status, 200, 'Stripe ignored event');
+    const failed = await handleStripeWebhook(
+      new Request('https://example.test', { method: 'POST', body, headers }),
+      {
+        ...deps,
+        inFlight: new Map(),
+        createClientFromRequest: () => ({
+          asServiceRole: {
+            entities: {
+              FundingLead: {
+                filter: async () => [],
+                create: async () => {
+                  throw new Error('secret database');
+                },
+              },
+              Purchase: { filter: async () => [], create: async () => {} },
+              StoreItem: { get: async () => ({ edition_sold: 0 }), update: async () => {} },
+            },
+          },
+        }),
+      },
+    );
+    assertEquals(failed.status, 500, 'Stripe partial failure retry signal');
+    assertEquals(
+      await json(failed),
+      { error: 'Webhook processing unavailable' },
+      'Stripe sanitized failure',
     );
   },
 );

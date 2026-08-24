@@ -10,6 +10,9 @@ const migrationEntry = read('migrateLocationImages');
 const n8nEntry = read('n8nPing');
 const scanEntry = read('scanAd');
 const cachedIntel = read('cachedIntel', 'handler.ts');
+const donation = read('createDonationCheckout', 'handler.ts');
+const claim = read('claimLead', 'handler.ts');
+const stripe = read('stripeWebhook', 'handler.ts');
 
 // These dependency-free checks complement the behavioral Deno harness. They
 // guard the source-level boundaries even when the Base44 runtime is unavailable.
@@ -45,5 +48,17 @@ assert.match(scanEntry, /handleScanAd/, 'scanAd entry must delegate to handler')
 assert.match(cachedIntel, /POST only/, 'cachedIntel must reject non-POST requests');
 assert.match(cachedIntel, /inFlight/, 'cachedIntel must coalesce concurrent cache misses');
 assert.match(cachedIntel, /Intel unavailable/, 'cachedIntel must sanitize provider errors');
+
+assert.match(donation, /POST only/, 'donation checkout must reject non-POST requests');
+assert.match(donation, /Number\.isFinite/, 'donation checkout must reject non-finite amounts');
+assert.match(donation, /MAX_DONATION_USD/, 'donation checkout must bound amounts');
+assert.match(donation, /Idempotency-Key/, 'donation checkout must forward Stripe idempotency');
+assert.match(claim, /POST only/, 'claimLead must reject non-POST requests');
+assert.match(claim, /HANDLE_MAX/, 'claimLead must bound handles');
+assert.match(claim, /inFlight/, 'claimLead must guard local concurrent claims');
+assert.match(stripe, /verifyStripeSignature/, 'stripeWebhook must verify signatures');
+assert.match(stripe, /FundingLead/, 'stripeWebhook must persist funding records');
+assert.match(stripe, /Purchase/, 'stripeWebhook must dedupe purchases');
+assert.match(stripe, /Webhook processing unavailable/, 'stripeWebhook must sanitize failures');
 
 console.log('server-function security boundary checks: passed');
