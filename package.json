@@ -19,7 +19,7 @@
     "typecheck:functions": "cd base44/functions && deno check --node-modules-dir=none */entry.ts"
   },
   "dependencies": {
-    "@base44/sdk": "^0.8.41",
+    "@base44/sdk": "^0.8.42",
     "@base44/vite-plugin": "^1.0.30",
     "@hello-pangea/dnd": "^17.0.0",
     "@hookform/resolvers": "^4.1.2",
@@ -74,7 +74,7 @@
     "react": "^18.2.0",
     "react-day-picker": "^8.10.1",
     "react-dom": "^18.2.0",
-    "react-hook-form": "^7.84.0",
+    "react-hook-form": "^7.85.0",
     "react-hot-toast": "^2.6.0",
     "react-is": "^18.3.1",
     "react-leaflet": "^4.2.1",
@@ -82,7 +82,7 @@
     "react-resizable-panels": "^2.1.7",
     "react-router-dom": "^7.18.2",
     "recharts": "^3.10.1",
-    "sonner": "^2.0.1",
+    "sonner": "^2.0.8",
     "tailwind-merge": "^3.6.0",
     "tailwindcss-animate": "^1.0.7",
     "three": "^0.185.1",
