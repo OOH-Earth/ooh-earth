@@ -1,4 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
+import { handleScanAd } from './handler.ts';
 
 // ── Advertising Detection Engine ────────────────────────────────────────────
 // Receives an uploaded image file_url, passes it to a vision-capable LLM, and
@@ -102,25 +103,5 @@ If no advertising is present, set is_advertising=false and leave string fields e
 If you can identify the brand but not the agency or parent corp, leave those empty — do not guess.`;
 
 export default async function (req) {
-  try {
-    const body = await req.json().catch(() => ({}));
-    const { file_url } = body;
-
-    if (!file_url || typeof file_url !== 'string') {
-      return Response.json({ error: 'file_url is required' }, { status: 400 });
-    }
-
-    const base44 = createClientFromRequest(req);
-
-    const result = await base44.asServiceRole.integrations.Core.InvokeLLM({
-      prompt: PROMPT,
-      file_urls: [file_url],
-      model: 'claude_sonnet_4_6',
-      response_json_schema: DETECTION_SCHEMA,
-    });
-
-    return Response.json({ detection: result });
-  } catch (error) {
-    return Response.json({ error: error.message }, { status: 500 });
-  }
+  return handleScanAd(req, { createClientFromRequest }, DETECTION_SCHEMA, PROMPT);
 }
