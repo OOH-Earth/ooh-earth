@@ -74,7 +74,31 @@ Seed markers (`mapSeed.js`) carry a `notes` field; live markers (`toMarker()` in
 
 ---
 
-_Note: a companion "Server function type coverage" section lives on `feat/server-function-typecheck` (PR #126), landing `deno check` for `base44/functions/*.ts`. That PR is independent of this one — this section only covers R-05._
+## Server function type coverage (2026-08-23) — closed the `base44/functions/*.ts` gap
+
+`jsconfig.json`'s `typecheck` script only ever covered `src/` — the 28 Base44 server functions in `base44/functions/*/entry.ts` (Deno runtime, `npm:` specifiers) had **zero automated type coverage**, identified as a follow-up in this session's earlier audit pass.
+
+**Why `tsc` can't be pointed at them:** `tsc`/`jsconfig.json` don't understand Deno's `npm:` module specifiers or Deno's global APIs (`Deno.serve`, `Deno.env`) — attempting to include these files in the existing `jsconfig.json` would either fail to resolve imports or silently type them as `any` via `skipLibCheck`-style fallbacks, giving false confidence. The correct tool is Deno's own `deno check`, which understands `npm:` specifiers natively and resolves them against the real npm registry.
+
+**Verified runnable in this environment:** the `deno` npm package (published by the Deno company) downloads a real platform binary on `npm install` — added as a pinned devDependency (`deno@2.9.5`, exact version, matching this repo's pin-exact convention). `npm run typecheck:functions` (`cd base44/functions && deno check --node-modules-dir=none */entry.ts`) runs entirely offline against locally-resolved npm packages after the first run generates `base44/functions/deno.lock` (committed, same rationale as `package-lock.json`).
+
+**Baseline found:** first clean run against all 28 functions surfaced **92 real type errors** — two mechanical, repeated classes (43× implicit-`any` parameters, 21× accessing `.message` on a `catch`-block variable typed `unknown`) plus 6 genuine ones.
+
+**Config decision:** `base44/functions/deno.json` sets `noImplicitAny: false` and `useUnknownInCatchVariables: false`, matching `jsconfig.json`'s existing (non-`strict`) behavior for the frontend — same risk tolerance across both type-checked surfaces, not a new one invented for this. That alone reduced 92 → 6 errors with zero code changes.
+
+**The remaining 6, fixed with real TS type annotations (not JSDoc — these are genuine `.ts` files, so `@type` comments are not honored the way they are under the frontend's `checkJs`, confirmed by testing both):**
+
+| File | Issue | Fix |
+|---|---|---|
+| `cachedIntel/entry.ts` | `REGISTRY.skyIntel.model: 'gemini_3_flash'` widened to `string`, didn't satisfy `InvokeLLMParams.model`'s literal union | `as const` at the declaration |
+| `captureLead/entry.ts` | `rec.created_by_id = caller.id` assigned onto an object literal with no such field in its inferred type | explicit inline type annotation on `rec` including `created_by_id?: string` |
+| `personaCtl/entry.ts` (×4 errors, 1 root cause) | `const patch = {}` then `patch.role =` / `.access =` / `.agency =` — same class as `captureLead` | explicit inline type annotation on `patch` |
+
+**What is and isn't covered:** `deno check` gives real type/syntax checking for all 28 functions using the same lenient rules the frontend already accepts. It does **not** verify runtime behavior against Base44's actual deployed Deno version (unknown from this repo, unverifiable without live Base44 access) — it's a static check on a current, independently-obtained Deno 2.9.5 toolchain. Not yet wired into CI (`.github/workflows/ci.yml`) — recommended as a follow-up `informational` check first (matching how Prettier and dependency-audit were introduced), promoted to required once proven stable, per `BRANCHING_STRATEGY.md`'s existing pattern.
+
+Verified: `npm run typecheck:functions` exits 0 across all 28 functions; frontend `npm run lint` / `npm run typecheck` / `npm run build` / `npm audit` (full + prod) all still pass unaffected.
+
+---
 
 ## R-05 rate limiting (2026-08-23) — shipped as caching, not a per-IP throttle
 

@@ -302,7 +302,6 @@ const NODES = {
   ],
 };
 const EDGES = [
-  ['/campaign', 'fetchMapLocations'],
   ['/campaign', 'fieldStats'],
   ['/dashboard', 'fieldStats'],
   ['/portal/investor', 'investorAccess'],
