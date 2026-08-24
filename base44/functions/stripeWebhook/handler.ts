@@ -6,6 +6,8 @@ type Dependencies = {
   inFlight?: Map<string, Promise<unknown>>;
 };
 
+const LEDGER_STALE_MS = 10 * 60 * 1000;
+
 export async function verifyStripeSignature(
   rawBody: string,
   signatureHeader: string,
@@ -102,6 +104,102 @@ function subRecord(userId: string, email: string, tier: string, period: string, 
   };
 }
 
+function eventBusinessKey(event: any) {
+  const object = event.data?.object || {};
+  if (event.type === 'checkout.session.completed' && typeof object.id === 'string')
+    return `checkout:${object.id}`;
+  return `event:${event.id}`;
+}
+
+function ledgerEntity(base44: any) {
+  const entity = base44.asServiceRole?.entities?.StripeEvent;
+  if (!entity) throw new Error('stripe ledger unavailable');
+  return entity;
+}
+
+async function updateLedger(ledger: any, id: string, patch: Record<string, unknown>) {
+  await ledger.update(id, patch);
+}
+
+async function beginLedger(base44: any, event: any, now: number) {
+  const ledger = ledgerEntity(base44);
+  const eventId = String(event.id);
+  const businessKey = eventBusinessKey(event);
+  const existing = (
+    await ledger.filter({ provider: 'stripe', event_id: eventId }, '-created_date', 1)
+  )?.[0];
+  if (existing?.status === 'completed') return { ledger, record: existing, duplicate: true };
+  if (
+    existing?.status === 'processing' &&
+    Number(existing.processing_started_at || 0) > now - LEDGER_STALE_MS
+  )
+    return { ledger, record: existing, retryable: true };
+
+  const priorBusiness =
+    (
+      await ledger.filter({ provider: 'stripe', business_key: businessKey }, '-created_date', 1)
+    )?.[0] || null;
+  const canonical = priorBusiness?.status === 'completed' ? priorBusiness : null;
+  if (canonical && canonical.event_id !== eventId) {
+    const record =
+      existing ||
+      (await ledger.create({
+        provider: 'stripe',
+        event_id: eventId,
+        event_type: String(event.type || ''),
+        business_key: businessKey,
+        status: 'completed',
+        canonical_event_id: canonical.event_id,
+        processed_at: now,
+      }));
+    if (existing)
+      await updateLedger(ledger, existing.id, { status: 'completed', processed_at: now });
+    return { ledger, record, duplicate: true };
+  }
+
+  const prior = priorBusiness && priorBusiness.event_id !== eventId ? priorBusiness : null;
+  const record =
+    existing ||
+    (await ledger.create({
+      provider: 'stripe',
+      event_id: eventId,
+      event_type: String(event.type || ''),
+      business_key: businessKey,
+      session_id: businessKey.startsWith('checkout:') ? businessKey.slice(9) : undefined,
+      status: 'processing',
+      purchase_status: prior?.purchase_status || 'pending',
+      inventory_status: prior?.inventory_status || 'pending',
+      funding_status: prior?.funding_status || 'pending',
+      subscription_status: prior?.subscription_status || 'pending',
+      canonical_event_id: prior?.event_id,
+      processing_started_at: now,
+      retry_count: 0,
+    }));
+  if (existing)
+    await updateLedger(ledger, existing.id, {
+      status: 'processing',
+      processing_started_at: now,
+      retry_count: Number(existing.retry_count || 0) + 1,
+      last_error_code: undefined,
+    });
+  return { ledger, record, canonical: prior, duplicate: false };
+}
+
+async function failLedger(ledger: any, record: any, error: unknown, now: number) {
+  try {
+    await updateLedger(ledger, record.id, {
+      status: 'failed_retryable',
+      failed_at: now,
+      last_error_code: error instanceof Error ? error.name.slice(0, 80) : 'processing_failed',
+    });
+  } catch (ledgerError) {
+    console.error(
+      'stripe ledger failure update:',
+      ledgerError instanceof Error ? ledgerError.name : 'unknown',
+    );
+  }
+}
+
 async function grantSubscription(
   base44: any,
   userId: string,
@@ -150,13 +248,18 @@ async function processEvent(
   base44: any,
   getEnv: (name: string) => string | undefined,
   fetchImpl: typeof fetch,
+  ledger: any,
+  record: any,
 ) {
   if (
     event.type === 'customer.subscription.updated' ||
     event.type === 'customer.subscription.deleted'
   ) {
     const sub = event.data?.object || {};
-    if (sub.id) await syncSubscription(base44, sub);
+    if (sub.id) {
+      await syncSubscription(base44, sub);
+      await updateLedger(ledger, record.id, { subscription_status: 'completed' });
+    }
     return { received: true };
   }
   if (event.type !== 'checkout.session.completed') return { received: true, ignored: true };
@@ -176,15 +279,21 @@ async function processEvent(
           : '';
     const email = session.customer_details?.email || session.customer_email || '';
     if (!subscriptionId || !userId) return { received: true, ignored: true };
-    const sub = await getStripeSub(subscriptionId, getEnv, fetchImpl);
-    await grantSubscription(
-      base44,
-      userId,
-      email,
-      metadata.plan_tier || '',
-      metadata.plan_period || '',
-      sub,
-    );
+    if (record.subscription_status !== 'completed') {
+      const sub = await getStripeSub(subscriptionId, getEnv, fetchImpl);
+      await grantSubscription(
+        base44,
+        userId,
+        email,
+        metadata.plan_tier || '',
+        metadata.plan_period || '',
+        sub,
+      );
+      await updateLedger(ledger, record.id, {
+        subscription_id: subscriptionId,
+        subscription_status: 'completed',
+      });
+    }
     await forwardToN8n(
       {
         source: 'base44',
@@ -214,41 +323,52 @@ async function processEvent(
   const funding = base44.asServiceRole.entities.FundingLead;
   const purchase = base44.asServiceRole.entities.Purchase;
   const duplicateFunding = await funding.filter({ ext_ref: sessionId }, '-created_date', 1);
-  if (duplicateFunding?.length) return { received: true, duplicate: true };
-  const existingPurchases = metadata.item_id
-    ? await purchase.filter({ stripe_session_id: sessionId }, '-created_date', 1)
-    : [];
-  const hasPurchase = !!existingPurchases?.length;
+  if (record.funding_status !== 'completed' && duplicateFunding?.length)
+    await updateLedger(ledger, record.id, { funding_status: 'completed' });
 
   if (metadata.item_id) {
-    if (metadata.user_id && !hasPurchase) {
-      await purchase.create({
-        user_id: metadata.user_id,
-        item_id: metadata.item_id,
-        item_title: typeof metadata.item_title === 'string' ? metadata.item_title : undefined,
-        amount_usd: amountUsd || undefined,
-        stripe_session_id: sessionId,
-        status: 'paid',
-      });
+    const existingPurchases = await purchase.filter(
+      { stripe_session_id: sessionId },
+      '-created_date',
+      1,
+    );
+    if (record.purchase_status !== 'completed') {
+      if (!existingPurchases?.length && metadata.user_id) {
+        await purchase.create({
+          user_id: metadata.user_id,
+          item_id: metadata.item_id,
+          item_title: typeof metadata.item_title === 'string' ? metadata.item_title : undefined,
+          amount_usd: amountUsd || undefined,
+          stripe_session_id: sessionId,
+          status: 'paid',
+        });
+      }
+      await updateLedger(ledger, record.id, { purchase_status: 'completed' });
     }
-    if (!hasPurchase) {
+    if (record.inventory_status !== 'completed') {
       const item = await base44.asServiceRole.entities.StoreItem.get(metadata.item_id);
       if (!item) throw new Error('store item not found');
       await base44.asServiceRole.entities.StoreItem.update(metadata.item_id, {
         edition_sold: (Number(item.edition_sold) || 0) + 1,
       });
+      await updateLedger(ledger, record.id, { inventory_status: 'completed' });
     }
   }
 
-  await funding.create({
-    email: email || 'unknown',
-    amount: amountUsd || undefined,
-    channel: 'stripe',
-    message: metadata.item_id
-      ? `Purchase: ${metadata.item_title || metadata.item_id}`
-      : 'Donation — Field Offensive',
-    ext_ref: sessionId,
-  });
+  if (record.funding_status !== 'completed') {
+    if (!duplicateFunding?.length) {
+      await funding.create({
+        email: email || 'unknown',
+        amount: amountUsd || undefined,
+        channel: 'stripe',
+        message: metadata.item_id
+          ? `Purchase: ${metadata.item_title || metadata.item_id}`
+          : 'Donation — Field Offensive',
+        ext_ref: sessionId,
+      });
+    }
+    await updateLedger(ledger, record.id, { funding_status: 'completed' });
+  }
   await forwardToN8n(
     {
       source: 'base44',
@@ -278,11 +398,12 @@ export async function handleStripeWebhook(
 ) {
   if (req.method !== 'POST') return Response.json({ error: 'POST only' }, { status: 405 });
   const rawBody = await req.text();
+  const currentTime = now();
   const timestamp = await verifyStripeSignature(
     rawBody,
     req.headers.get('stripe-signature') || '',
     getEnv('STRIPE_WEBHOOK_SECRET') || '',
-    now(),
+    currentTime,
   );
   if (!timestamp) return Response.json({ error: 'Invalid signature' }, { status: 401 });
   let event: any;
@@ -291,16 +412,31 @@ export async function handleStripeWebhook(
   } catch {
     return Response.json({ error: 'Invalid event body' }, { status: 400 });
   }
-  const key =
-    typeof event.id === 'string' ? event.id : `${event.type || ''}:${event.data?.object?.id || ''}`;
-  if (!key || key === ':') return Response.json({ error: 'Invalid event' }, { status: 400 });
+  const key = typeof event.id === 'string' ? event.id : '';
+  if (!key || typeof event.type !== 'string')
+    return Response.json({ error: 'Invalid event' }, { status: 400 });
   const existing = inFlight.get(key);
   if (existing) return Response.json(await existing);
   const operation = (async () => {
+    let ledger: any;
+    let record: any;
+    let canonical: any;
     try {
-      const result = await processEvent(event, createClientFromRequest(req), getEnv, fetchImpl);
+      const base44 = createClientFromRequest(req);
+      const started = await beginLedger(base44, event, currentTime);
+      ledger = started.ledger;
+      record = started.record;
+      canonical = started.canonical;
+      if (started.duplicate) return { status: 200, body: { received: true, duplicate: true } };
+      if (started.retryable)
+        return { status: 500, body: { error: 'Webhook processing unavailable' } };
+      const result = await processEvent(event, base44, getEnv, fetchImpl, ledger, record);
+      await updateLedger(ledger, record.id, { status: 'completed', processed_at: now() });
+      if (canonical)
+        await updateLedger(ledger, canonical.id, { status: 'completed', processed_at: now() });
       return { status: 200, body: result };
     } catch (error) {
+      if (ledger && record) await failLedger(ledger, record, error, now());
       console.error('stripeWebhook failed:', error instanceof Error ? error.name : 'unknown');
       return { status: 500, body: { error: 'Webhook processing unavailable' } };
     }
