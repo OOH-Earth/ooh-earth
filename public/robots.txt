@@ -1,4 +1,12 @@
 User-agent: *
 Allow: /
+Disallow: /lab/admin
+Disallow: /store/admin
+Disallow: /careers/admin
+Disallow: /portal/ops
+Disallow: /portal/investor
+Disallow: /portal/client
+Disallow: /dashboard
+Disallow: /account
 
 Sitemap: https://oohearth.app/sitemap.xml
