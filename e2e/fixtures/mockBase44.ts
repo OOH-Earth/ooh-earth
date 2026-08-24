@@ -28,7 +28,22 @@ export type MockDb = {
 };
 
 function matchesQuery(rec: Record<string, any>, query: Record<string, any>) {
-  return Object.entries(query).every(([k, v]) => rec[k] === v);
+  if ('$or' in query) return query.$or.some((part: Record<string, any>) => matchesQuery(rec, part));
+  return Object.entries(query).every(([k, v]) => {
+    if (k === '$or') return true;
+    if (v && typeof v === 'object' && !Array.isArray(v)) {
+      return Object.entries(v).every(([operator, expected]) => {
+        if (operator === '$gte') return rec[k] >= expected;
+        if (operator === '$lte') return rec[k] <= expected;
+        if (operator === '$gt') return rec[k] > expected;
+        if (operator === '$lt') return rec[k] < expected;
+        if (operator === '$in') return expected.includes(rec[k]);
+        if (operator === '$ne') return rec[k] !== expected;
+        return false;
+      });
+    }
+    return Array.isArray(v) ? v.includes(rec[k]) : rec[k] === v;
+  });
 }
 
 export async function mockBase44(page: Page, db: MockDb) {

@@ -28,7 +28,20 @@ test('primary navigation: home -> map -> report all render without crashing', as
       mapProjectionRequests.push(url.searchParams.get('fields') || '');
     }
   });
-  await mockBase44(page, { user: null, locations: {}, locationPhotos: [] });
+  await page.addInitScript(() => localStorage.setItem('ooh-map-view', JSON.stringify('flat')));
+  await mockBase44(page, {
+    user: null,
+    locations: {
+      'fixture-location-1': {
+        id: 'fixture-location-1',
+        title: 'Fixture location',
+        lat: 13.746,
+        lng: 100.55,
+        status: 'verified',
+      },
+    },
+    locationPhotos: [],
+  });
 
   await page.goto('/');
   await expect(page).toHaveTitle(/OOH/i);
@@ -40,10 +53,26 @@ test('primary navigation: home -> map -> report all render without crashing', as
       url.searchParams.get('fields') === 'location_id,status,created_date'
     );
   });
+  const viewportLocationRequest = page.waitForRequest((request) => {
+    const url = new URL(request.url());
+    return (
+      url.pathname.includes('/entities/Location') &&
+      (url.searchParams.get('q') || '').includes('"lat"')
+    );
+  });
   await page.getByRole('link', { name: 'Field map', exact: true }).click();
   await expect(page).toHaveURL(/\/map/);
   await expect(page.locator('#root')).not.toBeEmpty();
+  const map = page.locator('.leaflet-container');
+  await map.hover();
+  await page.mouse.down();
+  await page.mouse.move(720, 420, { steps: 2 });
+  await page.mouse.up();
   await projectedMapRequest;
+  const viewportQuery = JSON.parse(
+    new URL((await viewportLocationRequest).url()).searchParams.get('q')!,
+  );
+  expect(viewportQuery.lat).toMatchObject({ $gte: expect.any(Number), $lte: expect.any(Number) });
 
   await page.goto('/report');
   await expect(page.getByRole('heading', { name: /Adbusting/i })).toBeVisible();

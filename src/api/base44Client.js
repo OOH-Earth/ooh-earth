@@ -31,3 +31,57 @@ base44.listAllLocations = async (sort = '-created_date', pageSize = 500, hardCap
   }
   return out;
 };
+
+// Query only the visible geographic window for the flat map. Base44 documents
+// Mongo-style comparison/logical operators, so this is a server-side filter;
+// it is not a client-side slice of listAllLocations().
+const MAP_FIELDS = [
+  'id',
+  'title',
+  'type',
+  'address',
+  'lat',
+  'lng',
+  'image_url',
+  'source_link',
+  'status',
+  'status_updated_at',
+  'created_by_id',
+  'created_date',
+  'graffiti_medium',
+  'graffiti_style',
+  'graffiti_surface_m2',
+  'graffiti_coverage_pct',
+  'adbust_type',
+  'brand_name',
+  'industry_sector',
+  'harm_tags',
+  'condition',
+  'campaign_name',
+  'ad_agency',
+  'parent_corp',
+  'ooh_operator',
+  'adbust_image_url',
+];
+
+base44.listViewportLocations = async ({ n, s, e, w }, limit = 1000) => {
+  const north = Math.min(90, Number(n));
+  const south = Math.max(-90, Number(s));
+  const rawEast = Number(e);
+  const rawWest = Number(w);
+  if (![north, south, rawEast, rawWest].every(Number.isFinite) || north < south) return [];
+  const normalizeLng = (value) => ((((value + 180) % 360) + 360) % 360) - 180;
+  const east = normalizeLng(rawEast);
+  const west = normalizeLng(rawWest);
+
+  const latitude = { $gte: south, $lte: north };
+  const longitudeSpan = Math.abs(rawEast - rawWest);
+  const longitude =
+    longitudeSpan >= 359
+      ? undefined
+      : west <= east
+        ? { $gte: west, $lte: east }
+        : { $or: [{ $gte: west }, { $lte: east }] };
+  const query = longitude ? { lat: latitude, lng: longitude } : { lat: latitude };
+  return base44.entities.Location.filter(query, '-created_date', limit, 0, MAP_FIELDS);
+};
