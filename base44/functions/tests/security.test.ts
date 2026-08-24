@@ -32,6 +32,32 @@ const request = (method = 'POST', body?: unknown) =>
         : JSON.stringify(body),
   });
 
+const signedStripeRequest = async (body: string, secret: string, now: number) => {
+  const key = await crypto.subtle.importKey(
+    'raw',
+    new TextEncoder().encode(secret),
+    { name: 'HMAC', hash: 'SHA-256' },
+    false,
+    ['sign'],
+  );
+  const mac = await crypto.subtle.sign(
+    'HMAC',
+    key,
+    new TextEncoder().encode(`${now / 1000}.${body}`),
+  );
+  const signature = Array.from(new Uint8Array(mac))
+    .map((byte) => byte.toString(16).padStart(2, '0'))
+    .join('');
+  return new Request('https://example.test/function', {
+    method: 'POST',
+    headers: {
+      'content-type': 'application/json',
+      'stripe-signature': `t=${now / 1000},v1=${signature}`,
+    },
+    body,
+  });
+};
+
 const migrationClient = (user: unknown, locations: unknown[] = []) => {
   const updates: unknown[] = [];
   const uploads: unknown[] = [];
@@ -354,6 +380,7 @@ Deno.test(
     const funding: any[] = [];
     const purchases: any[] = [];
     const updates: any[] = [];
+    const ledgers: any[] = [];
     const client = {
       asServiceRole: {
         entities: {
@@ -373,6 +400,22 @@ Deno.test(
           StoreItem: {
             get: async () => ({ edition_sold: 2 }),
             update: async (...args: any[]) => updates.push(args),
+          },
+          StripeEvent: {
+            filter: async (query: any) =>
+              ledgers.filter((item) =>
+                Object.entries(query).every(([key, value]) => item[key] === value),
+              ),
+            create: async (value: any) => {
+              const record = { id: `ledger-${ledgers.length + 1}`, ...value };
+              ledgers.push(record);
+              return record;
+            },
+            update: async (id: string, patch: any) => {
+              const record = ledgers.find((item) => item.id === id);
+              if (record) Object.assign(record, patch);
+              return record;
+            },
           },
           Subscription: { filter: async () => [], create: async () => {}, update: async () => {} },
         },
@@ -488,6 +531,181 @@ Deno.test(
     );
   },
 );
+
+Deno.test('stripeWebhook records retryable ledger state across partial failures', async () => {
+  const secret = 'whsec_retry';
+  const now = 1_700_000_000_000;
+  const ledgers: any[] = [];
+  const purchases: any[] = [];
+  const funding: any[] = [];
+  const item = { edition_sold: 0 };
+  let failInventory = true;
+  const entities = {
+    StripeEvent: {
+      filter: async (query: any) =>
+        ledgers.filter((record) =>
+          Object.entries(query).every(([key, value]) => record[key] === value),
+        ),
+      create: async (value: any) => {
+        const record = { id: `evt-ledger-${ledgers.length + 1}`, ...value };
+        ledgers.push(record);
+        return record;
+      },
+      update: async (id: string, patch: any) => {
+        const record = ledgers.find((candidate) => candidate.id === id);
+        if (record) Object.assign(record, patch);
+        return record;
+      },
+    },
+    Purchase: {
+      filter: async ({ stripe_session_id }: any) =>
+        purchases.filter((record) => record.stripe_session_id === stripe_session_id),
+      create: async (record: any) => purchases.push(record),
+    },
+    FundingLead: {
+      filter: async ({ ext_ref }: any) => funding.filter((record) => record.ext_ref === ext_ref),
+      create: async (record: any) => funding.push(record),
+    },
+    StoreItem: {
+      get: async () => item,
+      update: async (_id: string, patch: any) => {
+        if (failInventory) {
+          failInventory = false;
+          throw new Error('inventory unavailable');
+        }
+        Object.assign(item, patch);
+      },
+    },
+    Subscription: { filter: async () => [], create: async () => {}, update: async () => {} },
+  };
+  const event = {
+    id: 'evt_retry',
+    type: 'checkout.session.completed',
+    data: {
+      object: {
+        id: 'cs_retry',
+        mode: 'payment',
+        amount_total: 2500,
+        customer_email: 'retry@example.com',
+        metadata: { item_id: 'item_retry', item_title: 'Retry item', user_id: 'user_retry' },
+      },
+    },
+  };
+  const body = JSON.stringify(event);
+  const deps = {
+    createClientFromRequest: () => ({ asServiceRole: { entities } }),
+    getEnv: (name: string) => (name === 'STRIPE_WEBHOOK_SECRET' ? secret : undefined),
+    now: () => now,
+    inFlight: new Map<string, Promise<unknown>>(),
+  };
+  const first = await handleStripeWebhook(await signedStripeRequest(body, secret, now), deps);
+  assertEquals(first.status, 500, 'partial inventory failure is retryable');
+  assertEquals(ledgers[0].status, 'failed_retryable', 'failed ledger state');
+  assertEquals(ledgers[0].purchase_status, 'completed', 'purchase stage retained');
+  assertEquals(purchases.length, 1, 'purchase created once before inventory failure');
+  const alternateEventBody = JSON.stringify({ ...event, id: 'evt_retry_2' });
+  const retry = await handleStripeWebhook(
+    await signedStripeRequest(alternateEventBody, secret, now),
+    {
+      ...deps,
+      inFlight: new Map(),
+    },
+  );
+  assertEquals(retry.status, 200, 'different event id retries the same business operation');
+  assertEquals(ledgers.length, 2, 'alternate event gets its own ledger row');
+  assertEquals(ledgers[0].status, 'completed', 'canonical failed ledger is repaired');
+  const replay = await handleStripeWebhook(await signedStripeRequest(body, secret, now), {
+    ...deps,
+    inFlight: new Map(),
+  });
+  assertEquals(replay.status, 200, 'same event replay is completed');
+  assertEquals(item.edition_sold, 1, 'inventory applied on retry');
+  assertEquals(purchases.length, 1, 'retry does not duplicate purchase');
+  assertEquals(funding.length, 1, 'retry creates funding once');
+  assertEquals(ledgers[0].status, 'completed', 'ledger completed after retry');
+});
+
+Deno.test('stripeWebhook fails closed when the durable ledger is unavailable', async () => {
+  const secret = 'whsec_missing_ledger';
+  const now = 1_700_000_000_000;
+  const event = { id: 'evt_no_ledger', type: 'charge.refunded', data: { object: { id: 'ch_1' } } };
+  const body = JSON.stringify(event);
+  const response = await handleStripeWebhook(await signedStripeRequest(body, secret, now), {
+    createClientFromRequest: () => ({ asServiceRole: { entities: {} } }),
+    getEnv: (name: string) => (name === 'STRIPE_WEBHOOK_SECRET' ? secret : undefined),
+    now: () => now,
+    inFlight: new Map(),
+  });
+  assertEquals(response.status, 500, 'missing ledger is retryable');
+  assertEquals(
+    await json(response),
+    { error: 'Webhook processing unavailable' },
+    'sanitized ledger failure',
+  );
+});
+
+Deno.test('stripeWebhook deduplicates subscription event replays durably', async () => {
+  const secret = 'whsec_subscription';
+  const now = 1_700_000_000_000;
+  const ledgers: any[] = [];
+  const subscriptions: any[] = [];
+  const entities = {
+    StripeEvent: {
+      filter: async (query: any) =>
+        ledgers.filter((record) =>
+          Object.entries(query).every(([key, value]) => record[key] === value),
+        ),
+      create: async (value: any) => {
+        const record = { id: `subscription-ledger-${ledgers.length + 1}`, ...value };
+        ledgers.push(record);
+        return record;
+      },
+      update: async (id: string, patch: any) => {
+        const record = ledgers.find((candidate) => candidate.id === id);
+        if (record) Object.assign(record, patch);
+        return record;
+      },
+    },
+    Subscription: {
+      filter: async ({ stripe_subscription_id }: any) =>
+        subscriptions.filter((record) => record.stripe_subscription_id === stripe_subscription_id),
+      create: async (record: any) => subscriptions.push(record),
+      update: async (_id: string, patch: any) => Object.assign(subscriptions[0], patch),
+    },
+  };
+  const event = {
+    id: 'evt_subscription',
+    type: 'customer.subscription.updated',
+    data: {
+      object: {
+        id: 'sub_1',
+        status: 'active',
+        current_period_end: 123,
+        cancel_at_period_end: false,
+      },
+    },
+  };
+  const body = JSON.stringify(event);
+  const deps = {
+    createClientFromRequest: () => ({ asServiceRole: { entities } }),
+    getEnv: (name: string) => (name === 'STRIPE_WEBHOOK_SECRET' ? secret : undefined),
+    now: () => now,
+    inFlight: new Map<string, Promise<unknown>>(),
+  };
+  const first = await handleStripeWebhook(await signedStripeRequest(body, secret, now), deps);
+  assertEquals(first.status, 200, 'subscription update accepted');
+  const replay = await handleStripeWebhook(await signedStripeRequest(body, secret, now), {
+    ...deps,
+    inFlight: new Map(),
+  });
+  assertEquals(replay.status, 200, 'subscription replay accepted');
+  assertEquals(ledgers.length, 1, 'subscription replay reuses ledger');
+  assertEquals(
+    subscriptions.length,
+    0,
+    'update without existing subscription does not invent ownership',
+  );
+});
 
 Deno.test('scanAd requires authenticated callers and Base44 media URLs', async () => {
   let llmCalls = 0;
