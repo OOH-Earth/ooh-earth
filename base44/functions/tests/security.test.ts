@@ -5,6 +5,11 @@ import { handleCachedIntel } from '../cachedIntel/handler.ts';
 import { handleCreateDonationCheckout } from '../createDonationCheckout/handler.ts';
 import { handleClaimLead } from '../claimLead/handler.ts';
 import { handleStripeWebhook } from '../stripeWebhook/handler.ts';
+import { handleCreateProductCheckout } from '../createProductCheckout/handler.ts';
+import { handleCreatePlanCheckout } from '../createPlanCheckout/handler.ts';
+import { handleClaimQuest } from '../claimQuest/handler.ts';
+import { handlePersonaCtl } from '../personaCtl/handler.ts';
+import { handleDeleteMyAccount } from '../deleteMyAccount/handler.ts';
 
 const assert = (condition: unknown, message: string) => {
   if (!condition) throw new Error(message);
@@ -598,5 +603,474 @@ Deno.test(
     assertEquals(one.status, 200, 'cached intel first status');
     assertEquals(two.status, 200, 'cached intel second status');
     assertEquals(creates, 1, 'cache write count');
+  },
+);
+
+Deno.test('createProductCheckout keeps price and metadata server-authoritative', async () => {
+  let stripeCalls = 0;
+  let stripeParams: URLSearchParams | undefined;
+  let forwardedIdempotencyKey = '';
+  const client = (user: unknown, item: any) => ({
+    auth: { me: async () => user },
+    asServiceRole: { entities: { StoreItem: { get: async () => item } } },
+  });
+  const deps = {
+    createClientFromRequest: () =>
+      client(
+        { id: 'user-1' },
+        {
+          id: 'item-1',
+          title: 'Field book',
+          status: 'available',
+          price_usd: 25,
+          edition_size: 10,
+          edition_sold: 1,
+        },
+      ),
+    getEnv: (name: string) => ({ STRIPE_SECRET_KEY: 'sk_test', BASE44_APP_ID: 'app-1' })[name],
+    fetchImpl: async (_url: string | URL | Request, init?: RequestInit) => {
+      stripeCalls++;
+      forwardedIdempotencyKey = new Headers(init?.headers).get('Idempotency-Key') || '';
+      stripeParams = new URLSearchParams(String(init?.body));
+      return new Response(JSON.stringify({ url: 'https://checkout.stripe.test/product' }), {
+        status: 200,
+      });
+    },
+  };
+  assertEquals(
+    (await handleCreateProductCheckout(request('GET', { item_id: 'item-1' }), deps)).status,
+    405,
+    'product method',
+  );
+  assertEquals(
+    (await handleCreateProductCheckout(request('POST', { item_id: '../bad' }), deps)).status,
+    400,
+    'product id validation',
+  );
+  assertEquals(
+    (
+      await handleCreateProductCheckout(request('POST', { item_id: 'item-1' }), {
+        ...deps,
+        createClientFromRequest: () => client(null, {}),
+      })
+    ).status,
+    401,
+    'product auth',
+  );
+  const success = await handleCreateProductCheckout(
+    new Request('https://example.test', {
+      method: 'POST',
+      headers: { 'idempotency-key': 'product-1' },
+      body: JSON.stringify({ item_id: 'item-1', price_usd: 0.01, user_id: 'attacker' }),
+    }),
+    deps,
+  );
+  assertEquals(success.status, 200, 'product success');
+  assertEquals(
+    stripeParams?.get('line_items[0][price_data][unit_amount]'),
+    '2500',
+    'product server price',
+  );
+  assertEquals(stripeParams?.get('metadata[user_id]'), 'user-1', 'product server user metadata');
+  assertEquals(forwardedIdempotencyKey, 'product-1', 'product idempotency forwarding');
+  const soldOut = await handleCreateProductCheckout(request('POST', { item_id: 'item-1' }), {
+    ...deps,
+    createClientFromRequest: () =>
+      client(
+        { id: 'user-1' },
+        { status: 'available', price_usd: 25, edition_size: 1, edition_sold: 1 },
+      ),
+  });
+  assertEquals(soldOut.status, 409, 'product sold out');
+  const failed = await handleCreateProductCheckout(request('POST', { item_id: 'item-1' }), {
+    ...deps,
+    fetchImpl: async () => {
+      throw new Error('secret stripe');
+    },
+  });
+  assertEquals(failed.status, 502, 'product provider failure');
+  assertEquals(await json(failed), { error: 'Checkout unavailable' }, 'product sanitized failure');
+});
+
+Deno.test('createPlanCheckout validates plan selection and preserves server pricing', async () => {
+  let params: URLSearchParams | undefined;
+  const client = (user: unknown) => ({ auth: { me: async () => user } });
+  const deps = {
+    createClientFromRequest: () => client({ id: 'user-1', email: 'user@example.com' }),
+    getEnv: (name: string) => ({ STRIPE_SECRET_KEY: 'sk_test', BASE44_APP_ID: 'app-1' })[name],
+    fetchImpl: async (_url: string | URL | Request, init?: RequestInit) => {
+      params = new URLSearchParams(String(init?.body));
+      return new Response(JSON.stringify({ url: 'https://checkout.stripe.test/plan' }), {
+        status: 200,
+      });
+    },
+  };
+  assertEquals(
+    (await handleCreatePlanCheckout(request('GET', { tier: 'patron', period: 'year' }), deps))
+      .status,
+    405,
+    'plan method',
+  );
+  assertEquals(
+    (
+      await handleCreatePlanCheckout(
+        new Request('https://example.test', { method: 'POST', body: '{' }),
+        deps,
+      )
+    ).status,
+    400,
+    'plan malformed',
+  );
+  assertEquals(
+    (await handleCreatePlanCheckout(request('POST', { tier: 'arbitrary', period: 'year' }), deps))
+      .status,
+    400,
+    'plan tier validation',
+  );
+  assertEquals(
+    (await handleCreatePlanCheckout(request('POST', { tier: 'patron', period: 'week' }), deps))
+      .status,
+    400,
+    'plan period validation',
+  );
+  assertEquals(
+    (
+      await handleCreatePlanCheckout(
+        request('POST', { tier: 'patron', period: 'year', amount: 1 }),
+        { ...deps, createClientFromRequest: () => client(null) },
+      )
+    ).status,
+    401,
+    'plan auth',
+  );
+  const success = await handleCreatePlanCheckout(
+    new Request('https://example.test', {
+      method: 'POST',
+      headers: { 'idempotency-key': 'plan-1' },
+      body: JSON.stringify({ tier: 'patron', period: 'year', amount: 1 }),
+    }),
+    deps,
+  );
+  assertEquals(success.status, 200, 'plan success');
+  assertEquals(params?.get('line_items[0][price_data][unit_amount]'), '50000', 'plan server price');
+  assertEquals(params?.get('metadata[plan_tier]'), 'patron', 'plan metadata');
+  const failed = await handleCreatePlanCheckout(
+    request('POST', { tier: 'patron', period: 'year' }),
+    {
+      ...deps,
+      fetchImpl: async () => {
+        throw new Error('secret stripe');
+      },
+    },
+  );
+  assertEquals(failed.status, 502, 'plan provider failure');
+  assertEquals(await json(failed), { error: 'Checkout unavailable' }, 'plan sanitized failure');
+});
+
+Deno.test(
+  'claimQuest recomputes eligibility and prevents replay/concurrent reward claims',
+  async () => {
+    const now = new Date('2026-08-24T12:00:00.000Z');
+    let createCount = 0;
+    const completions: any[] = [];
+    const client = (user: unknown, locations: any[] = []) => ({
+      auth: { me: async () => user },
+      asServiceRole: {
+        entities: {
+          QuestCompletion: {
+            filter: async (query: any) =>
+              completions.filter(
+                (item) =>
+                  item.quest_id === query.quest_id &&
+                  item.period_key === query.period_key &&
+                  item.created_by_id === query.created_by_id,
+              ),
+            create: async (value: any) => {
+              createCount++;
+              completions.push(value);
+            },
+          },
+          Location: { filter: async () => locations },
+          DigitalBust: { filter: async () => [] },
+          Mint: { filter: async () => [] },
+        },
+      },
+    });
+    const inFlight = new Map();
+    const deps = {
+      createClientFromRequest: () =>
+        client({ id: 'user-1' }, [
+          { created_date: now.toISOString(), image_url: 'https://media.base44.com/a.jpg' },
+        ]),
+      now: () => now,
+      inFlight,
+    };
+    assertEquals(
+      (await handleClaimQuest(request('GET', { quest_id: 'daily_report' }), deps)).status,
+      405,
+      'quest method',
+    );
+    assertEquals(
+      (
+        await handleClaimQuest(
+          new Request('https://example.test', { method: 'POST', body: '{' }),
+          deps,
+        )
+      ).status,
+      400,
+      'quest malformed',
+    );
+    assertEquals(
+      (await handleClaimQuest(request('POST', { quest_id: 'unknown' }), deps)).status,
+      400,
+      'quest unknown',
+    );
+    assertEquals(
+      (
+        await handleClaimQuest(request('POST', { quest_id: 'weekly_reports' }), {
+          ...deps,
+          createClientFromRequest: () => client({ id: 'user-1' }, []),
+        })
+      ).status,
+      403,
+      'quest incomplete',
+    );
+    const first = await handleClaimQuest(
+      request('POST', { quest_id: 'daily_report', xp_awarded: 999999 }),
+      deps,
+    );
+    assertEquals(first.status, 200, 'quest valid claim');
+    assertEquals((await json(first)).xp_awarded, 50, 'quest server reward');
+    const replay = await handleClaimQuest(request('POST', { quest_id: 'daily_report' }), deps);
+    assertEquals((await json(replay)).already, true, 'quest replay');
+    assertEquals(createCount, 1, 'quest duplicate suppression');
+    const concurrentMap = new Map();
+    const concurrentDeps = {
+      ...deps,
+      inFlight: concurrentMap,
+      createClientFromRequest: () =>
+        client({ id: 'user-2' }, [
+          { created_date: now.toISOString(), image_url: 'https://media.base44.com/a.jpg' },
+        ]),
+    };
+    const [concurrentA, concurrentB] = await Promise.all([
+      handleClaimQuest(request('POST', { quest_id: 'daily_photo' }), concurrentDeps),
+      handleClaimQuest(request('POST', { quest_id: 'daily_photo' }), concurrentDeps),
+    ]);
+    assertEquals(concurrentA.status, 200, 'quest concurrent first response');
+    assertEquals(concurrentB.status, 200, 'quest concurrent replay response');
+    assertEquals(createCount, 2, 'quest same-runtime concurrent suppression');
+    const rollover = new Date('2026-08-25T12:00:00.000Z');
+    const nextPeriod = await handleClaimQuest(request('POST', { quest_id: 'daily_report' }), {
+      ...deps,
+      now: () => rollover,
+      inFlight: new Map(),
+      createClientFromRequest: () =>
+        client({ id: 'user-1' }, [{ created_date: rollover.toISOString() }]),
+    });
+    assertEquals(nextPeriod.status, 200, 'quest period rollover');
+    assertEquals(createCount, 3, 'quest new period reward');
+    const unauth = await handleClaimQuest(request('POST', { quest_id: 'daily_report' }), {
+      ...deps,
+      createClientFromRequest: () => client(null),
+    });
+    assertEquals(unauth.status, 401, 'quest unauthenticated');
+  },
+);
+
+Deno.test(
+  'personaCtl enforces normalized admin/key authorization and bounded transitions',
+  async () => {
+    const updates: any[] = [];
+    const audit: any[] = [];
+    const users = [
+      { id: 'admin-1', email: 'admin@example.com', role: 'admin', access: 'admin' },
+      { id: 'user-1', email: 'user@example.com', role: 'user', access: 'member' },
+    ];
+    const client = (caller: unknown) => ({
+      auth: { me: async () => caller },
+      asServiceRole: {
+        entities: {
+          User: {
+            list: async () => users,
+            get: async (id: string) => users.find((user) => user.id === id),
+            filter: async ({ email }: any) => users.filter((user) => user.email === email),
+            update: async (id: string, patch: any) => {
+              updates.push([id, patch]);
+              Object.assign(users.find((user) => user.id === id) || {}, patch);
+            },
+          },
+          AccessLog: { create: async (value: any) => audit.push(value) },
+        },
+      },
+    });
+    const deps = {
+      createClientFromRequest: () => client({ role: 'admin' }),
+      getEnv: () => 'secret-key',
+    };
+    assertEquals((await handlePersonaCtl(request('GET'), deps)).status, 405, 'persona method');
+    assertEquals(
+      (
+        await handlePersonaCtl(request('POST', { action: 'list' }), {
+          ...deps,
+          createClientFromRequest: () => client(null),
+          getEnv: () => '',
+        })
+      ).status,
+      403,
+      'persona unauth',
+    );
+    assertEquals(
+      (
+        await handlePersonaCtl(
+          request('POST', { action: 'set', id: 'user-1', role: 'superuser' }),
+          deps,
+        )
+      ).status,
+      400,
+      'persona invalid role',
+    );
+    assertEquals(
+      (
+        await handlePersonaCtl(
+          request('POST', { action: 'set', id: 'missing', access: 'member' }),
+          deps,
+        )
+      ).status,
+      404,
+      'persona invalid target',
+    );
+    const success = await handlePersonaCtl(
+      request('POST', {
+        action: 'set',
+        id: 'user-1',
+        role: 'user',
+        access: 'moderator',
+        agency: true,
+      }),
+      deps,
+    );
+    assertEquals(success.status, 200, 'persona admin set');
+    assertEquals(updates.length, 1, 'persona update count');
+    assertEquals(audit.length, 1, 'persona audit count');
+    const lastAdmin = await handlePersonaCtl(
+      request('POST', { action: 'set', id: 'admin-1', role: 'user' }),
+      deps,
+    );
+    assertEquals(lastAdmin.status, 409, 'persona last-admin guard');
+    const keyAccess = await handlePersonaCtl(
+      new Request('https://example.test', {
+        method: 'POST',
+        headers: { 'x-persona-key': 'secret-key' },
+        body: JSON.stringify({ action: 'list' }),
+      }),
+      {
+        createClientFromRequest: () => client(null),
+        getEnv: () => 'secret-key',
+      },
+    );
+    assertEquals(keyAccess.status, 200, 'persona secret-key path');
+    const failed = await handlePersonaCtl(
+      request('POST', { action: 'set', id: 'user-1', access: 'member' }),
+      {
+        ...deps,
+        createClientFromRequest: () => ({
+          auth: { me: async () => ({ role: 'admin' }) },
+          asServiceRole: {
+            entities: {
+              User: {
+                list: async () => users,
+                get: async () => users[1],
+                update: async () => {
+                  throw new Error('secret database');
+                },
+              },
+              AccessLog: { create: async () => {} },
+            },
+          },
+        }),
+      },
+    );
+    assertEquals(failed.status, 500, 'persona sanitized failure');
+    assertEquals(
+      (await json(failed)).error,
+      'Persona operation unavailable',
+      'persona failure body',
+    );
+  },
+);
+
+Deno.test(
+  'deleteMyAccount reports partial/blocked deletion and retains financial history',
+  async () => {
+    const deleted: string[] = [];
+    const makeClient = (user: unknown, mode = 'success') => ({
+      auth: { me: async () => user },
+      asServiceRole: {
+        entities: {
+          Location: {
+            filter: async () => [{ id: 'loc-1' }],
+            delete: async () => deleted.push('Location'),
+          },
+          DigitalBust: { filter: async () => [], delete: async () => {} },
+          FieldCheck: {
+            filter: async () => [{ id: 'check-1' }],
+            delete: async () => {
+              if (mode === 'partial') throw new Error('delete failed');
+              deleted.push('FieldCheck');
+            },
+          },
+          LocationPhoto: { filter: async () => [], delete: async () => {} },
+          QuestCompletion: { filter: async () => [], delete: async () => {} },
+          LeadClaim: { filter: async () => [], delete: async () => {} },
+          User: {
+            delete: async () => {
+              if (mode !== 'success') throw new Error('blocked');
+            },
+            update: async () => {
+              if (mode === 'blocked') throw new Error('blocked');
+            },
+          },
+        },
+      },
+    });
+    const deps = { createClientFromRequest: () => makeClient({ id: 'user-1' }) };
+    assertEquals(
+      (await handleDeleteMyAccount(request('GET', { confirm: true }), deps)).status,
+      405,
+      'delete method',
+    );
+    assertEquals(
+      (await handleDeleteMyAccount(request('POST', {}), deps)).status,
+      400,
+      'delete confirmation',
+    );
+    assertEquals(
+      (
+        await handleDeleteMyAccount(request('POST', { confirm: true }), {
+          createClientFromRequest: () => makeClient(null),
+        })
+      ).status,
+      401,
+      'delete auth',
+    );
+    const complete = await handleDeleteMyAccount(request('POST', { confirm: true }), deps);
+    assertEquals(complete.status, 200, 'delete complete');
+    const completeBody = await json(complete);
+    assertEquals(completeBody.status, 'completed', 'delete complete state');
+    assert(
+      completeBody.retained_by_policy.some((item: string) => item.startsWith('Purchase')),
+      'financial history retained',
+    );
+    assertEquals(deleted.sort(), ['FieldCheck', 'Location'], 'delete owned entities');
+    const partial = await handleDeleteMyAccount(request('POST', { confirm: true }), {
+      createClientFromRequest: () => makeClient({ id: 'user-1' }, 'partial'),
+    });
+    assertEquals(partial.status, 207, 'delete partial status');
+    assertEquals((await json(partial)).status, 'partial', 'delete partial state');
+    const blocked = await handleDeleteMyAccount(request('POST', { confirm: true }), {
+      createClientFromRequest: () => makeClient({ id: 'user-1' }, 'blocked'),
+    });
+    assertEquals(blocked.status, 207, 'delete blocked fallback state');
   },
 );

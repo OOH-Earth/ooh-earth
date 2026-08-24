@@ -13,6 +13,11 @@ const cachedIntel = read('cachedIntel', 'handler.ts');
 const donation = read('createDonationCheckout', 'handler.ts');
 const claim = read('claimLead', 'handler.ts');
 const stripe = read('stripeWebhook', 'handler.ts');
+const productCheckout = read('createProductCheckout', 'handler.ts');
+const planCheckout = read('createPlanCheckout', 'handler.ts');
+const quest = read('claimQuest', 'handler.ts');
+const persona = read('personaCtl', 'handler.ts');
+const deletion = read('deleteMyAccount', 'handler.ts');
 
 // These dependency-free checks complement the behavioral Deno harness. They
 // guard the source-level boundaries even when the Base44 runtime is unavailable.
@@ -60,5 +65,21 @@ assert.match(stripe, /verifyStripeSignature/, 'stripeWebhook must verify signatu
 assert.match(stripe, /FundingLead/, 'stripeWebhook must persist funding records');
 assert.match(stripe, /Purchase/, 'stripeWebhook must dedupe purchases');
 assert.match(stripe, /Webhook processing unavailable/, 'stripeWebhook must sanitize failures');
+assert.match(productCheckout, /POST only/, 'product checkout must reject non-POST requests');
+assert.match(productCheckout, /edition_sold/, 'product checkout must check inventory');
+assert.match(productCheckout, /Idempotency-Key/, 'product checkout must forward idempotency');
+assert.match(planCheckout, /POST only/, 'plan checkout must reject non-POST requests');
+assert.match(planCheckout, /PLANS/, 'plan checkout must use server pricing');
+assert.match(planCheckout, /Checkout unavailable/, 'plan checkout must sanitize provider failures');
+assert.match(quest, /calculateProgress/, 'claimQuest must recompute server-side eligibility');
+assert.match(
+  quest,
+  /Quest requirements are not complete/,
+  'claimQuest must reject incomplete quests',
+);
+assert.match(persona, /constantTimeEqual/, 'personaCtl must compare secret keys safely');
+assert.match(persona, /Cannot remove the last platform admin/, 'personaCtl must guard last admin');
+assert.match(deletion, /status === 'completed'/, 'account deletion must report partial completion');
+assert.match(deletion, /retained_by_policy/, 'account deletion must disclose retained categories');
 
 console.log('server-function security boundary checks: passed');
