@@ -71,3 +71,27 @@ All ~25 primitives imported anywhere in `src/` are now properly typed (see table
 ### 4. `useLocations.js`'s two marker shapes are genuinely different, not just loosely typed
 
 Seed markers (`mapSeed.js`) carry a `notes` field; live markers (`toMarker()` in `markerUtils.js`) carry a `status` field instead. The hook can return either shape depending on whether the live feed or the fallback seed is active — real, pre-existing inconsistency, typed loosely (`Record<string, any>`) to reflect reality rather than silently picking one shape and hiding the other's absence.
+
+---
+
+## IntelCache growth — investigated, cleanup drafted but deliberately not activated (2026-08-24)
+
+Follow-up to the R-05 caching work (`feat/r05-cache-not-throttle`, PR #127), which itself flagged unbounded `IntelCache` row growth as a known limitation. Investigated properly rather than either ignoring it or bolting on cleanup blindly.
+
+**What's already true, confirmed by reading the code, not assumed:** every current `IntelCache` writer — `cachedIntel/entry.ts`, `fieldNews/entry.ts` (pre-existing, predates this session), and this session's `fieldStats`/`cryptoWatch`/`fetchMapLocations` caching — always `.create()`s a fresh row on a cache miss and never updates or deletes the previous one for that `cache_key`. This is an existing codebase-wide pattern, not something introduced by the R-05 work; the R-05 additions just use much shorter windows (30-120s vs. `fieldNews`'s 6-hour bucket and `cachedIntel`'s 24-hour bucket), so they dominate the growth rate.
+
+**Expected growth:** worst case (the 30s/60s-window caches hit continuously) is on the order of 1.5M rows/year combined — real, but the actual rate depends on real traffic patterns this environment can't observe.
+
+**Whether this is actually a meaningful problem — partially verifiable, partially not:**
+- No `IntelCache` reader anywhere in this codebase does a full-table scan — every read is either a narrow `{cache_key, period_key}` filter or a "most recent row for this key" lookup (`fieldNews`'s pattern). So growth is a storage/hygiene concern, not a proven public-facing latency one, as far as this repo's own read patterns go.
+- **Genuinely unverifiable from here:** whether Base44's underlying query engine indexes these lookups such that they stay fast regardless of table size, and what Base44's storage pricing/limits look like. Both require live Base44 access or platform documentation this repo doesn't have.
+
+**Cleanup mechanism — real and git-committable, confirmed via Base44's own docs (not guessed):** `docs.base44.com`'s backend-functions automations page documents scheduled ("cron") functions configured via a `function.jsonc` file alongside a function's `entry.ts`, deployed atomically with `functions deploy` — the dashboard is explicitly documented as NOT the source of truth (local files win). Fetched the literal example JSON from that page rather than inventing field names.
+
+**Drafted, not activated:** `base44/functions/cleanupIntelCache/` (`entry.ts` + `function.jsonc`). Design decisions:
+- Uses only SDK methods already proven working elsewhere in this codebase — paginated `.list()` (same helper shape as `fieldStats/entry.ts`'s `listAll`) and per-id `.delete()` (same as `deleteMyAccount/entry.ts`). Base44's `.filter()` does **not** have documented support for date-range/comparison operators (checked the SDK's own type declarations and the docs — neither shows one), so rather than guess at unverified syntax, this pages through every row and compares `created_date` in plain JS. Runs entirely off the public request path (a scheduled job, not a route any client calls), so an O(n) page-through here doesn't carry the cost concern the old `fieldStats` unbounded-scan issue did.
+- 14-day retention, capped at 5000 deletions per run (defensive — catches up over multiple daily runs rather than risking the platform's execution-time limit on an unexpectedly large backlog).
+- One bad row's delete failure never aborts the rest of the pass.
+- `function.jsonc`'s `is_active` is deliberately `false`. This is the **first scheduled automation used anywhere in this repo** — whether this exact schema deploys correctly and the cron actually fires cannot be verified without a live Base44 project. Flip to `true` only after confirming live: `functions deploy` accepts the file, the automation shows active in the dashboard, and ideally a manual/dashboard-triggered run returns a sane `{scanned, stale, deleted}` payload.
+
+Verified in this environment: `deno check` clean, `function.jsonc` is valid JSON once comments are stripped (this repo's other `.jsonc` files carry no comments, so this wasn't pre-verified by an existing convention — checked directly).
