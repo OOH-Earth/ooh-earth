@@ -10,6 +10,7 @@ import { handleCreatePlanCheckout } from '../createPlanCheckout/handler.ts';
 import { handleClaimQuest } from '../claimQuest/handler.ts';
 import { handlePersonaCtl } from '../personaCtl/handler.ts';
 import { handleDeleteMyAccount } from '../deleteMyAccount/handler.ts';
+import { handleFieldStats, resetFieldStatsCache } from '../fieldStats/handler.ts';
 
 const assert = (condition: unknown, message: string) => {
   if (!condition) throw new Error(message);
@@ -99,6 +100,48 @@ Deno.test('migrateLocationImages rejects unauthenticated and non-admin callers',
   const method = await handleMigrateLocationImages(request('GET'), deps);
   assertEquals(method.status, 405, 'migration method status');
   assertEquals(created, 1, 'non-POST must not create a client');
+});
+
+Deno.test('fieldStats coalesces and caches aggregate reads', async () => {
+  resetFieldStatsCache();
+  let listCalls = 0;
+  const entity = (rows: any[]) => ({
+    list: async () => {
+      listCalls++;
+      return rows;
+    },
+  });
+  const client = {
+    asServiceRole: {
+      entities: {
+        Location: entity([
+          {
+            status: 'verified',
+            image_url: 'https://media.base44.com/a.jpg',
+            created_by_id: 'u1',
+            address: 'London, UK',
+          },
+        ]),
+        FundingLead: entity([{ channel: 'stripe', amount: 25 }]),
+        DigitalBust: entity([{ status: 'verified' }]),
+      },
+    },
+  };
+  let now = 1_700_000_000_000;
+  const deps = { createClientFromRequest: () => client, now: () => now };
+  const [first, concurrent] = await Promise.all([
+    handleFieldStats(request(), deps),
+    handleFieldStats(request(), deps),
+  ]);
+  assertEquals(first.status, 200, 'fieldStats first response');
+  assertEquals(concurrent.status, 200, 'fieldStats concurrent response');
+  assertEquals(listCalls, 3, 'fieldStats coalesces concurrent entity reads');
+  const cached = await handleFieldStats(request(), deps);
+  assertEquals(cached.status, 200, 'fieldStats cached response');
+  assertEquals(listCalls, 3, 'fieldStats cache avoids repeated reads');
+  now += 30_001;
+  await handleFieldStats(request(), deps);
+  assertEquals(listCalls, 6, 'fieldStats refreshes after TTL');
 });
 
 Deno.test('migrateLocationImages permits an admin and hides failures', async () => {

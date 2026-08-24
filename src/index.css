@@ -193,9 +193,9 @@
     font-variant-numeric: tabular-nums;
   }
   .matrix small,
-  .matrix .text-[8px],
-  .matrix .text-[9px],
-  .matrix .text-[10px] {
+  .matrix .text-\[8px\],
+  .matrix .text-\[9px\],
+  .matrix .text-\[10px\] {
     letter-spacing: 0.12em;
   }
   .matrix ::-webkit-scrollbar {

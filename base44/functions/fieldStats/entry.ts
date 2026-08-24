@@ -1,4 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
+import { handleFieldStats } from './handler.ts';
 
 // Public, PII-free aggregate field stats for the orbital HUD.
 // Returns counts/totals only — never exposes donor or operative records.
