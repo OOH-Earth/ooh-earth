@@ -1,0 +1,25 @@
+{
+  "name": "cleanupIntelCache",
+  "entry": "entry.ts",
+  "automations": [
+    {
+      "type": "scheduled",
+      "name": "daily_intelcache_cleanup",
+      "description": "Deletes IntelCache rows older than 14 days. See entry.ts for why this exists and TECHNICAL_DEBT_REGISTER.md for the full investigation.",
+      "function_args": {},
+      // Deliberately inactive. This is the first scheduled automation used
+      // anywhere in this repo -- whether this function.jsonc schema deploys
+      // correctly and the cron actually fires cannot be verified without a
+      // live Base44 project. Flip to true only after confirming, in a real
+      // Base44 environment, that: (1) `functions deploy` accepts this file,
+      // (2) the automation appears active in the dashboard, and ideally
+      // (3) a manual/dashboard-triggered run completes and returns a sane
+      // {scanned, stale, deleted} payload before trusting the cron schedule.
+      "is_active": false,
+
+      "schedule_mode": "recurring",
+      "schedule_type": "cron",
+      "cron_expression": "0 3 * * ?"
+    }
+  ]
+}
