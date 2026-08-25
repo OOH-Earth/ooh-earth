@@ -62,6 +62,48 @@ export async function mockBase44(page: Page, db: MockDb) {
       });
     }
 
+    if (url.pathname.includes('/functions/submitOffline')) {
+      const body = req.postDataJSON() ?? {};
+      const entityType = body.entity_type;
+      const payload = body.payload ?? {};
+      if (entityType === 'Location') {
+        const store = db.locations ?? (db.locations = {});
+        const existing = Object.values(store).find(
+          (record: any) => record.client_operation_id === payload.client_operation_id,
+        );
+        if (existing)
+          return route.fulfill({ json: { ok: true, duplicate: true, record: existing } });
+        const id = payload.id ?? `mock-location-${Object.keys(store).length + 1}`;
+        const record = {
+          id,
+          status: 'pending',
+          created_by_id: db.user?.id,
+          ...payload,
+        };
+        store[id] = record;
+        return route.fulfill({ json: { ok: true, duplicate: false, record } });
+      }
+      if (entityType === 'FieldCheck') {
+        const store = db.fieldChecks ?? (db.fieldChecks = {});
+        const existing = Object.values(store).find(
+          (record: any) => record.client_operation_id === payload.client_operation_id,
+        );
+        if (existing)
+          return route.fulfill({ json: { ok: true, duplicate: true, record: existing } });
+        const id = payload.id ?? `mock-field-check-${Object.keys(store).length + 1}`;
+        const record = {
+          id,
+          status: 'pending',
+          created_by_id: db.user?.id,
+          created_date: new Date().toISOString(),
+          ...payload,
+        };
+        store[id] = record;
+        return route.fulfill({ json: { ok: true, duplicate: false, record } });
+      }
+      return route.fulfill({ status: 400, json: { error: 'Invalid submission' } });
+    }
+
     // base44.functions.invoke('moderate', body) -> POST /functions/moderate.
     // Dashboard.jsx now routes ALL verify/reject (and even the pending-queue
     // read, for every clearance level) through this function — there's no
