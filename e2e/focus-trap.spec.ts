@@ -21,11 +21,14 @@ test.describe('Focus trap — CommandCenter', () => {
 
     // Focus entered the dialog, not left on <body> or the trigger.
     await expect(dialog).toContainText(''); // dialog resolved
-    const activeInsideDialog = await page.evaluate(() => {
-      const dlg = document.querySelector('[role="dialog"][aria-label="Command Center"]');
-      return !!dlg && dlg.contains(document.activeElement);
-    });
-    expect(activeInsideDialog).toBe(true);
+    await expect
+      .poll(() =>
+        page.evaluate(() => {
+          const dlg = document.querySelector('[role="dialog"][aria-label="Command Center"]');
+          return !!dlg && dlg.contains(document.activeElement);
+        }),
+      )
+      .toBe(true);
 
     // Shift+Tab from the first focusable should wrap to the last one within
     // the dialog, never escaping to the page behind it.
@@ -90,11 +93,16 @@ test.describe('Focus trap — QuickCapture', () => {
     const dialog = page.getByRole('dialog', { name: 'Anonymous field capture' });
     await expect(dialog).toBeVisible();
 
-    const activeInsideDialog = await page.evaluate(() => {
-      const dlg = document.querySelector('[role="dialog"][aria-label="Anonymous field capture"]');
-      return !!dlg && dlg.contains(document.activeElement);
-    });
-    expect(activeInsideDialog).toBe(true);
+    await expect
+      .poll(() =>
+        page.evaluate(() => {
+          const dlg = document.querySelector(
+            '[role="dialog"][aria-label="Anonymous field capture"]',
+          );
+          return !!dlg && dlg.contains(document.activeElement);
+        }),
+      )
+      .toBe(true);
 
     await page.keyboard.press('Escape');
     await expect(dialog).toBeHidden();
