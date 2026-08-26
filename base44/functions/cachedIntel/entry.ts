@@ -1,5 +1,4 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
-import { handleCachedIntel } from './handler.ts';
 
 // Daily-cached LLM intel. Prompts live server-side (never client-supplied)
 // so this endpoint can't be abused to spend credits on arbitrary prompts.

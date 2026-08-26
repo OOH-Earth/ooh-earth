@@ -1,5 +1,4 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
-import { handlePersonaCtl } from './handler.ts';
 
 // personaCtl — admin-only identity/clearance controller.
 //   role   : Base44 built-in platform gate   [admin | user]
