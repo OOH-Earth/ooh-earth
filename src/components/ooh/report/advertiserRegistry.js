@@ -226,3 +226,21 @@ export function lookupParentCorpSector(name) {
   }
   return null;
 }
+
+// Single source of truth for sector display labels -- shared by
+// AdvertiserInfo.jsx (read-time) and ReportScanner.jsx (capture-time) so a
+// sector value renders identically wherever it's shown.
+export const SECTOR_LABELS = {
+  fossil_fuel: 'Fossil Fuel',
+  tobacco: 'Tobacco',
+  alcohol: 'Alcohol',
+  gambling: 'Gambling',
+  ultra_processed_food: 'Ultra-processed Food',
+  surveillance: 'Surveillance',
+  finance: 'Finance',
+  real_estate: 'Real Estate',
+  fashion: 'Fashion',
+  automotive: 'Automotive',
+  pharma: 'Pharma',
+  other: 'Other',
+};
