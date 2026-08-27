@@ -1,3 +1,5 @@
+import { correlationHeaders, telemetryFor } from '../_shared/telemetry.ts';
+
 const CACHE_TTL_MS = 30_000;
 let cached: { expiresAt: number; body: Record<string, unknown> } | null = null;
 let inFlight: Promise<Record<string, unknown>> | null = null;
@@ -80,8 +82,14 @@ export async function handleFieldStats(
   _req: Request,
   { createClientFromRequest, now = () => Date.now() }: Dependencies,
 ) {
+  const telemetry = telemetryFor(_req, { functionName: 'fieldStats', now });
+  telemetry.emit('received');
   const current = now();
-  if (cached && cached.expiresAt > current) return Response.json(cached.body);
+  if (cached && cached.expiresAt > current) {
+    telemetry.finish('success', { operation: 'cache_hit' });
+    return Response.json(cached.body, { headers: correlationHeaders(telemetry) });
+  }
+  const wasInFlight = Boolean(inFlight);
   if (!inFlight) {
     inFlight = (async () => {
       const result = await compute(createClientFromRequest(_req));
@@ -92,9 +100,15 @@ export async function handleFieldStats(
     });
   }
   try {
-    return Response.json(await inFlight);
+    const result = await inFlight;
+    telemetry.finish('success', { operation: wasInFlight ? 'coalesced' : 'compute' });
+    return Response.json(result, { headers: correlationHeaders(telemetry) });
   } catch (error) {
+    telemetry.finish('failed', { error_code: 'DEPENDENCY_FAILURE' });
     console.error('fieldStats failed:', error instanceof Error ? error.name : 'unknown');
-    return Response.json({ error: 'Stats unavailable' }, { status: 500 });
+    return Response.json(
+      { error: 'Stats unavailable' },
+      { status: 500, headers: correlationHeaders(telemetry) },
+    );
   }
 }

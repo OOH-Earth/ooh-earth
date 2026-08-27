@@ -47,7 +47,11 @@ assert.match(
   /MEDIA_HOST\s*=\s*['"]media\.base44\.com['"]/,
   'scanAd must use a media host allowlist',
 );
-assert.match(scan, /url\.protocol\s*===\s*['"]https:['"]/, 'scanAd must require HTTPS');
+assert(
+  /url\.protocol\s*===\s*['"]https:['"]/.test(scan) ||
+    /url\.protocol\s*!==\s*['"]https:['"]/.test(scan),
+  'scanAd must require HTTPS',
+);
 assert.match(scan, /Scan unavailable/, 'scanAd must sanitize provider errors');
 assert.match(scanEntry, /handleScanAd/, 'scanAd entry must delegate to handler');
 
