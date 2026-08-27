@@ -1,6 +1,6 @@
 import { handleMigrateLocationImages } from '../migrateLocationImages/handler.ts';
 import { handleN8nPing } from '../n8nPing/handler.ts';
-import { handleScanAd } from '../scanAd/handler.ts';
+import { handleScanAd, validateMediaUrl } from '../scanAd/handler.ts';
 import { handleCachedIntel } from '../cachedIntel/handler.ts';
 import { handleCreateDonationCheckout } from '../createDonationCheckout/handler.ts';
 import { handleClaimLead } from '../claimLead/handler.ts';
@@ -821,35 +821,57 @@ Deno.test('scanAd requires authenticated callers and Base44 media URLs', async (
       },
     },
   });
+  const testAppId = '6a6748e009b947cb29591871';
+  const otherAppId = '6a62213cff3ccbca88c04ff5';
+  const getEnv = (name: string) => (name === 'BASE44_APP_ID' ? testAppId : undefined);
+  const apiFileUrl = (appId: string) =>
+    `https://base44.app/api/apps/${appId}/files/mp/public/${appId}/photo.jpg`;
+
   const unauth = await handleScanAd(
     request('POST', { file_url: 'https://media.base44.com/x.jpg' }),
-    { createClientFromRequest: () => client(null) },
+    { createClientFromRequest: () => client(null), getEnv },
     schema,
     prompt,
   );
   assertEquals(unauth.status, 401, 'scan unauth status');
   const invalid = await handleScanAd(
     request('POST', { file_url: 'https://attacker.example/x.jpg' }),
-    { createClientFromRequest: () => client({ id: 'u1' }) },
+    { createClientFromRequest: () => client({ id: 'u1' }), getEnv },
     schema,
     prompt,
   );
   assertEquals(invalid.status, 400, 'scan invalid URL status');
   const oversized = await handleScanAd(
     request('POST', { file_url: 'https://media.base44.com/' + 'x'.repeat(2048) }),
-    { createClientFromRequest: () => client({ id: 'u1' }) },
+    { createClientFromRequest: () => client({ id: 'u1' }), getEnv },
     schema,
     prompt,
   );
   assertEquals(oversized.status, 400, 'scan oversized URL status');
   const success = await handleScanAd(
     request('POST', { file_url: 'https://media.base44.com/images/test.jpg' }),
-    { createClientFromRequest: () => client({ id: 'u1' }) },
+    { createClientFromRequest: () => client({ id: 'u1' }), getEnv },
     schema,
     prompt,
   );
   assertEquals(success.status, 200, 'scan success status');
   assertEquals(llmCalls, 1, 'scan LLM call count');
+  const apiUrlSuccess = await handleScanAd(
+    request('POST', { file_url: apiFileUrl(testAppId) }),
+    { createClientFromRequest: () => client({ id: 'u1' }), getEnv },
+    schema,
+    prompt,
+  );
+  assertEquals(apiUrlSuccess.status, 200, 'scan accepts current-app base44.app file URL');
+  assertEquals(llmCalls, 2, 'scan LLM call count after base44.app URL');
+  const apiUrlCrossTenant = await handleScanAd(
+    request('POST', { file_url: apiFileUrl(otherAppId) }),
+    { createClientFromRequest: () => client({ id: 'u1' }), getEnv },
+    schema,
+    prompt,
+  );
+  assertEquals(apiUrlCrossTenant.status, 400, 'scan rejects cross-tenant base44.app file URL');
+  assertEquals(llmCalls, 2, 'scan LLM not called for cross-tenant URL');
   const failed = await handleScanAd(
     request('POST', { file_url: 'https://media.base44.com/images/test.jpg' }),
     {
@@ -865,12 +887,86 @@ Deno.test('scanAd requires authenticated callers and Base44 media URLs', async (
           },
         },
       }),
+      getEnv,
     },
     schema,
     prompt,
   );
   assertEquals(failed.status, 502, 'scan failure status');
   assertEquals(await json(failed), { error: 'Scan unavailable' }, 'scan failure body');
+});
+
+Deno.test('validateMediaUrl accepts trusted Base44 media hosts and rejects everything else', () => {
+  const appId = '6a6748e009b947cb29591871';
+  const otherAppId = '6a62213cff3ccbca88c04ff5';
+  const apiFileUrl = (routeAppId: string, fileAppId: string, file = 'photo.jpg') =>
+    `https://base44.app/api/apps/${routeAppId}/files/mp/public/${fileAppId}/${file}`;
+
+  // PASS
+  assert(
+    validateMediaUrl('https://media.base44.com/images/test.jpg', appId),
+    'existing media.base44.com URL is accepted',
+  );
+  assert(
+    validateMediaUrl('https://media.base44.com/images/test.jpg'),
+    'media.base44.com URL is accepted even with no current app id',
+  );
+  assert(
+    validateMediaUrl(apiFileUrl(appId, appId), appId),
+    'base44.app public-file URL for the current app id is accepted',
+  );
+
+  // FAIL
+  assert(
+    !validateMediaUrl(apiFileUrl(otherAppId, otherAppId), appId),
+    'base44.app URL for a different app id is rejected',
+  );
+  assert(
+    !validateMediaUrl(apiFileUrl(appId, otherAppId), appId),
+    'mismatched duplicated app ids in the path are rejected',
+  );
+  assert(
+    !validateMediaUrl(apiFileUrl(otherAppId, appId), appId),
+    'mismatched duplicated app ids in the path are rejected (reversed)',
+  );
+  assert(
+    !validateMediaUrl(`https://base44.app/api/apps/${appId}/entities/Location`, appId),
+    'unrelated base44.app API route is rejected',
+  );
+  assert(
+    !validateMediaUrl(apiFileUrl(appId, appId).replace('https://', 'http://'), appId),
+    'non-HTTPS base44.app URL is rejected',
+  );
+  assert(
+    !validateMediaUrl(apiFileUrl(appId, appId), undefined),
+    'base44.app URL is rejected when the current app id is unknown (fail closed)',
+  );
+  assert(
+    !validateMediaUrl('https://user:pass@media.base44.com/images/test.jpg', appId),
+    'URL with credentials is rejected',
+  );
+  assert(
+    !validateMediaUrl(
+      apiFileUrl(appId, appId).replace('https://base44.app', 'https://user:pass@base44.app'),
+      appId,
+    ),
+    'base44.app URL with credentials is rejected',
+  );
+  assert(
+    !validateMediaUrl('https://attacker.example/images/test.jpg', appId),
+    'arbitrary external host is rejected',
+  );
+  assert(
+    !validateMediaUrl('https://media.base44.com.evil.example/images/test.jpg', appId),
+    'media.base44.com lookalike suffix host is rejected',
+  );
+  assert(
+    !validateMediaUrl(
+      apiFileUrl(appId, appId).replace('base44.app', 'base44.app.evil.example'),
+      appId,
+    ),
+    'base44.app lookalike suffix host is rejected',
+  );
 });
 
 Deno.test(
