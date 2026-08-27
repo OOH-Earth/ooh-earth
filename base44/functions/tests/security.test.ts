@@ -12,6 +12,8 @@ import { handlePersonaCtl } from '../personaCtl/handler.ts';
 import { handleDeleteMyAccount } from '../deleteMyAccount/handler.ts';
 import { handleFieldStats, resetFieldStatsCache } from '../fieldStats/handler.ts';
 import { handleSubmitOffline } from '../submitOffline/handler.ts';
+import { isValidCorrelationId, telemetryFor } from '../_shared/telemetry.ts';
+import { handleRuntimeHealth } from '../runtimeHealth/handler.ts';
 
 const assert = (condition: unknown, message: string) => {
   if (!condition) throw new Error(message);
@@ -59,6 +61,69 @@ const signedStripeRequest = async (body: string, secret: string, now: number) =>
     body,
   });
 };
+
+Deno.test('telemetry is bounded, correlatable, and fail-open', () => {
+  const events: string[] = [];
+  const req = new Request('https://example.test/function', {
+    headers: { 'x-request-id': 'release.test-42' },
+  });
+  const telemetry = telemetryFor(req, {
+    functionName: 'testFunction',
+    now: () => 1_700_000_000_000,
+    getEnv: () => 'test-release',
+    logger: {
+      info: (line: string) => {
+        events.push(line);
+        throw new Error('logger unavailable');
+      },
+      error: () => undefined,
+    },
+  });
+  assertEquals(telemetry.correlationId, 'release.test-42', 'valid correlation id accepted');
+  telemetry.finish('failed', {
+    error_code: 'NOT_ALLOWED',
+    secret: 'should-not-be-serialized',
+    nested: { email: 'person@example.test' },
+  });
+  assertEquals(events.length, 1, 'telemetry attempted once');
+  assert(isValidCorrelationId(telemetry.correlationId), 'correlation format');
+  assert(!isValidCorrelationId('x'.repeat(200)), 'oversized correlation rejected');
+  const lines: string[] = [];
+  const safe = telemetryFor(new Request('https://example.test/function'), {
+    functionName: 'testFunction',
+    now: () => 1_700_000_000_000,
+    getEnv: () => 'test-release',
+    logger: { info: (line: string) => lines.push(line), error: () => undefined },
+  });
+  safe.finish('success', { error_code: 'INVALID_INPUT', user_email: 'hidden@example.test' });
+  const record = JSON.parse(lines[0]);
+  assertEquals(record.release, 'test-release', 'release identity');
+  assertEquals(record.error_code, 'INVALID_INPUT', 'bounded error code');
+  assert(!('user_email' in record), 'PII fields are not accepted');
+  assert(!('secret' in record), 'secret fields are not accepted');
+  safe.finish('failed', { error_code: 'attacker-controlled-value' });
+  const secondRecord = JSON.parse(lines[1]);
+  assertEquals(secondRecord.error_code, 'INTERNAL_FAILURE', 'error codes are bounded');
+});
+
+Deno.test('runtimeHealth is bounded and admin-only', async () => {
+  const requestFor = (method = 'GET') => new Request('https://example.test/health', { method });
+  const deps = (user: unknown) => ({
+    createClientFromRequest: () => ({ auth: { me: async () => user } }),
+    getEnv: () => undefined,
+  });
+  assertEquals((await handleRuntimeHealth(requestFor(), deps(null))).status, 403, 'health auth');
+  assertEquals(
+    (await handleRuntimeHealth(requestFor('POST'), deps({ role: 'admin' }))).status,
+    405,
+    'health method',
+  );
+  const response = await handleRuntimeHealth(requestFor(), deps({ role: 'admin' }));
+  assertEquals(response.status, 200, 'health admin response');
+  const body = await response.json();
+  assertEquals(Object.keys(body).sort(), ['release', 'status', 'timestamp'], 'health fields');
+  assert(!JSON.stringify(body).includes('SECRET'), 'health does not expose secrets');
+});
 
 const migrationClient = (user: unknown, locations: unknown[] = []) => {
   const updates: unknown[] = [];
@@ -823,28 +888,28 @@ Deno.test('scanAd requires authenticated callers and Base44 media URLs', async (
   });
   const unauth = await handleScanAd(
     request('POST', { file_url: 'https://media.base44.com/x.jpg' }),
-    { createClientFromRequest: () => client(null) },
+    { createClientFromRequest: () => client(null), getEnv: () => undefined },
     schema,
     prompt,
   );
   assertEquals(unauth.status, 401, 'scan unauth status');
   const invalid = await handleScanAd(
     request('POST', { file_url: 'https://attacker.example/x.jpg' }),
-    { createClientFromRequest: () => client({ id: 'u1' }) },
+    { createClientFromRequest: () => client({ id: 'u1' }), getEnv: () => undefined },
     schema,
     prompt,
   );
   assertEquals(invalid.status, 400, 'scan invalid URL status');
   const oversized = await handleScanAd(
     request('POST', { file_url: 'https://media.base44.com/' + 'x'.repeat(2048) }),
-    { createClientFromRequest: () => client({ id: 'u1' }) },
+    { createClientFromRequest: () => client({ id: 'u1' }), getEnv: () => undefined },
     schema,
     prompt,
   );
   assertEquals(oversized.status, 400, 'scan oversized URL status');
   const success = await handleScanAd(
     request('POST', { file_url: 'https://media.base44.com/images/test.jpg' }),
-    { createClientFromRequest: () => client({ id: 'u1' }) },
+    { createClientFromRequest: () => client({ id: 'u1' }), getEnv: () => undefined },
     schema,
     prompt,
   );

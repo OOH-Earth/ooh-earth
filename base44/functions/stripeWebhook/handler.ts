@@ -1,3 +1,5 @@
+import { correlationHeaders, telemetryFor } from '../_shared/telemetry.ts';
+
 type Dependencies = {
   createClientFromRequest: (req: Request) => any;
   getEnv?: (name: string) => string | undefined;
@@ -7,6 +9,15 @@ type Dependencies = {
 };
 
 const LEDGER_STALE_MS = 10 * 60 * 1000;
+const TELEMETRY_EVENT_TYPES = new Set([
+  'checkout.session.completed',
+  'customer.subscription.updated',
+  'customer.subscription.deleted',
+]);
+
+function telemetryEventType(value: unknown) {
+  return typeof value === 'string' && TELEMETRY_EVENT_TYPES.has(value) ? value : 'other';
+}
 
 export async function verifyStripeSignature(
   rawBody: string,
@@ -396,7 +407,15 @@ export async function handleStripeWebhook(
     inFlight = new Map(),
   }: Dependencies,
 ) {
-  if (req.method !== 'POST') return Response.json({ error: 'POST only' }, { status: 405 });
+  const telemetry = telemetryFor(req, { functionName: 'stripeWebhook', now, getEnv });
+  telemetry.emit('received');
+  if (req.method !== 'POST') {
+    telemetry.finish('rejected', { error_code: 'INVALID_METHOD' });
+    return Response.json(
+      { error: 'POST only' },
+      { status: 405, headers: correlationHeaders(telemetry) },
+    );
+  }
   const rawBody = await req.text();
   const currentTime = now();
   const timestamp = await verifyStripeSignature(
@@ -405,18 +424,44 @@ export async function handleStripeWebhook(
     getEnv('STRIPE_WEBHOOK_SECRET') || '',
     currentTime,
   );
-  if (!timestamp) return Response.json({ error: 'Invalid signature' }, { status: 401 });
+  if (!timestamp) {
+    telemetry.finish('rejected', { error_code: 'AUTH_REQUIRED' });
+    return Response.json(
+      { error: 'Invalid signature' },
+      { status: 401, headers: correlationHeaders(telemetry) },
+    );
+  }
   let event: any;
   try {
     event = JSON.parse(rawBody);
   } catch {
-    return Response.json({ error: 'Invalid event body' }, { status: 400 });
+    telemetry.finish('rejected', { error_code: 'INVALID_INPUT' });
+    return Response.json(
+      { error: 'Invalid event body' },
+      { status: 400, headers: correlationHeaders(telemetry) },
+    );
   }
   const key = typeof event.id === 'string' ? event.id : '';
-  if (!key || typeof event.type !== 'string')
-    return Response.json({ error: 'Invalid event' }, { status: 400 });
+  if (!key || typeof event.type !== 'string') {
+    telemetry.finish('rejected', { error_code: 'INVALID_INPUT' });
+    return Response.json(
+      { error: 'Invalid event' },
+      { status: 400, headers: correlationHeaders(telemetry) },
+    );
+  }
   const existing = inFlight.get(key);
-  if (existing) return Response.json(await existing);
+  if (existing) {
+    const result: any = await existing;
+    telemetry.finish(result.status === 200 ? 'success' : 'failed', {
+      operation: 'replay',
+      event_type: telemetryEventType(event.type),
+      error_code: result.status === 200 ? undefined : 'REPLAY_CONFLICT',
+    });
+    return Response.json(result.body, {
+      status: result.status,
+      headers: correlationHeaders(telemetry),
+    });
+  }
   const operation = (async () => {
     let ledger: any;
     let record: any;
@@ -443,8 +488,17 @@ export async function handleStripeWebhook(
   })();
   inFlight.set(key, operation);
   try {
-    const result = await operation;
-    return Response.json(result.body, { status: result.status });
+    const result: any = await operation;
+    telemetry.finish(result.status === 200 ? 'success' : 'failed', {
+      operation: result.status === 200 ? 'process' : 'retry',
+      event_type: telemetryEventType(event.type),
+      error_code: result.status === 200 ? undefined : 'DEPENDENCY_FAILURE',
+      retryable: result.status >= 500,
+    });
+    return Response.json(result.body, {
+      status: result.status,
+      headers: correlationHeaders(telemetry),
+    });
   } finally {
     inFlight.delete(key);
   }
