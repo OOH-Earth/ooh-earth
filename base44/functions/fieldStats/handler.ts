@@ -1,4 +1,4 @@
-import { correlationHeaders, telemetryFor } from '../_shared/telemetry.ts';
+import { correlationHeaders, telemetryFor } from './telemetry.ts';
 
 const CACHE_TTL_MS = 30_000;
 let cached: { expiresAt: number; body: Record<string, unknown> } | null = null;
