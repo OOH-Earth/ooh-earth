@@ -1,29 +1,44 @@
 const MAX_FILE_URL_LENGTH = 2048;
 const MEDIA_HOST = 'media.base44.com';
+// Base44's UploadFile integration returns files under this API host, which
+// redirects to MEDIA_HOST — the redirect isn't followed here, so the API
+// shape itself is allowlisted, scoped tightly to this app's own public files.
+const API_HOST = 'base44.app';
+const API_FILE_PATH = /^\/api\/apps\/([^/]+)\/files\/mp\/public\/([^/]+)\/[^/]+$/;
 
 const isAuthenticated = (user: any) => !!user?.id;
 
-export function validateMediaUrl(value: unknown) {
+export function validateMediaUrl(value: unknown, currentAppId?: string) {
   if (typeof value !== 'string' || value.length === 0 || value.length > MAX_FILE_URL_LENGTH) {
     return false;
   }
+  let url: URL;
   try {
-    const url = new URL(value);
-    return (
-      url.protocol === 'https:' && url.hostname === MEDIA_HOST && !url.username && !url.password
-    );
+    url = new URL(value);
   } catch {
     return false;
   }
+  const isHttps = url.protocol === 'https:';
+  if (!isHttps || url.username || url.password) return false;
+  if (url.hostname === MEDIA_HOST) return true;
+  if (url.hostname === API_HOST) {
+    if (!currentAppId) return false;
+    const match = url.pathname.match(API_FILE_PATH);
+    if (!match) return false;
+    const [, routeAppId, fileAppId] = match;
+    return routeAppId === currentAppId && fileAppId === currentAppId;
+  }
+  return false;
 }
 
 type Dependencies = {
   createClientFromRequest: (req: Request) => any;
+  getEnv?: (name: string) => string | undefined;
 };
 
 export async function handleScanAd(
   req: Request,
-  { createClientFromRequest }: Dependencies,
+  { createClientFromRequest, getEnv = (name) => Deno.env.get(name) }: Dependencies,
   detectionSchema: unknown,
   prompt: string,
 ) {
@@ -45,7 +60,7 @@ export async function handleScanAd(
 
     const body = await req.json().catch(() => ({}));
     const { file_url } = body;
-    if (!validateMediaUrl(file_url)) {
+    if (!validateMediaUrl(file_url, getEnv('BASE44_APP_ID'))) {
       return Response.json(
         { error: 'file_url must be an HTTPS Base44 media image URL' },
         { status: 400 },
