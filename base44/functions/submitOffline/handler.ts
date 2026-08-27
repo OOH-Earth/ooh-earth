@@ -1,4 +1,4 @@
-import { correlationHeaders, telemetryFor } from '../_shared/telemetry.ts';
+import { correlationHeaders, telemetryFor } from './telemetry.ts';
 
 const OPERATION_ID = /^[A-Za-z0-9][A-Za-z0-9._:-]{0,119}$/;
 const ENTITY_NAMES = new Set(['Location', 'FieldCheck']);
