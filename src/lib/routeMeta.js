@@ -189,6 +189,11 @@ export const META = {
     desc: 'Platform architecture operations and build management.',
     image: OG_IMAGES.lab,
   },
+  '/mission-control': {
+    title: 'Mission Control — OOH Earth',
+    desc: 'Authenticated operations cockpit for bounded OOH Earth health evidence, release truth, and service state.',
+    image: OG_IMAGES.lab,
+  },
   '/portfolio': {
     title: 'Treasury Console — OOH Earth',
     desc: 'On-chain treasury, assets, and portfolio management.',

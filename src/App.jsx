@@ -60,6 +60,7 @@ const Plans = lazy(() => import('@/pages/Plans'));
 const Dashboard = lazy(() => import('@/pages/Dashboard'));
 const FdePortal = lazy(() => import('@/pages/FdePortal'));
 const PortalOps = lazy(() => import('@/pages/PortalOps'));
+const MissionControl = lazy(() => import('@/pages/MissionControl'));
 const AtariPortfolio = lazy(() => import('@/pages/AtariPortfolio'));
 const Sitemap = lazy(() => import('@/pages/Sitemap'));
 const Blog = lazy(() => import('@/pages/Blog'));
@@ -211,6 +212,7 @@ const AuthenticatedApp = () => {
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/fde" element={<FdePortal />} />
               <Route path="/portal/ops" element={<PortalOps />} />
+              <Route path="/mission-control" element={<MissionControl />} />
               <Route path="/portfolio" element={<AtariPortfolio />} />
               <Route path="/radio-ops" element={<RadioOps />} />
               <Route path="/sitemap" element={<Sitemap />} />
