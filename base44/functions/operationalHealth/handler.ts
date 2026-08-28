@@ -1,5 +1,5 @@
-import { isAppAdmin } from '../_shared/auth.ts';
-import { correlationHeaders, telemetryFor } from '../_shared/telemetry.ts';
+import { isAppAdmin } from './auth.ts';
+import { correlationHeaders, telemetryFor } from './telemetry.ts';
 
 const ALLOWED_ENVIRONMENTS = new Set(['backup', 'production', 'unknown']);
 
