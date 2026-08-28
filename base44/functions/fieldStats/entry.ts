@@ -1,4 +1,9 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
+import { handleFieldStats } from './handler.ts';
+
+Deno.serve((req) => handleFieldStats(req, { createClientFromRequest }));
+
+/*
 
 // Public, PII-free aggregate field stats for the orbital HUD.
 // Returns counts/totals only — never exposes donor or operative records.
@@ -123,3 +128,4 @@ Deno.serve(async (req) => {
     return Response.json({ error: error.message }, { status: 500 });
   }
 });
+*/
