@@ -111,6 +111,7 @@ const Register = lazy(() => import('@/pages/Register'));
 const ForgotPassword = lazy(() => import('@/pages/ForgotPassword'));
 const ResetPassword = lazy(() => import('@/pages/ResetPassword'));
 const OAuthConsent = lazy(() => import('@/pages/OAuthConsent'));
+import FunnelObserver from '@/components/FunnelObserver';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -272,6 +273,7 @@ function App() {
                   <CommandCenterProvider>
                     <LabGateProvider>
                       <ScrollToTop />
+                      <FunnelObserver />
                       <StageBanner />
                       <ErrorBoundary>
                         <AuthenticatedApp />

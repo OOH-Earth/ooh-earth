@@ -10,6 +10,7 @@
     "lint": "eslint . --quiet",
     "test:production-binding": "node scripts/test-production-binding.mjs",
     "test:blog-markdown": "node scripts/test-blog-markdown.mjs",
+    "test:attribution": "node scripts/test-attribution.mjs",
     "lint:fix": "eslint . --fix",
     "typecheck": "tsc -p ./jsconfig.json",
     "preview": "vite preview",
