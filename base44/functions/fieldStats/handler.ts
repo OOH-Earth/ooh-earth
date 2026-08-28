@@ -12,6 +12,11 @@ export function resetFieldStatsCache() {
 type Dependencies = {
   createClientFromRequest: (req: Request) => any;
   now?: () => number;
+  recordHealth?: (
+    outcome: 'success' | 'failed',
+    durationMs: number,
+    errorCode?: string,
+  ) => Promise<void> | void;
 };
 
 async function listAll(entity: any, sort: string, pageSize = 500, hardCap = 50_000) {
@@ -80,13 +85,15 @@ async function compute(base44: any) {
 
 export async function handleFieldStats(
   _req: Request,
-  { createClientFromRequest, now = () => Date.now() }: Dependencies,
+  { createClientFromRequest, now = () => Date.now(), recordHealth }: Dependencies,
 ) {
   const telemetry = telemetryFor(_req, { functionName: 'fieldStats', now });
   telemetry.emit('received');
+  const startedAt = now();
   const current = now();
   if (cached && cached.expiresAt > current) {
     telemetry.finish('success', { operation: 'cache_hit' });
+    await recordHealth?.('success', now() - startedAt);
     return Response.json(cached.body, { headers: correlationHeaders(telemetry) });
   }
   const wasInFlight = Boolean(inFlight);
@@ -102,9 +109,11 @@ export async function handleFieldStats(
   try {
     const result = await inFlight;
     telemetry.finish('success', { operation: wasInFlight ? 'coalesced' : 'compute' });
+    await recordHealth?.('success', now() - startedAt);
     return Response.json(result, { headers: correlationHeaders(telemetry) });
   } catch (error) {
     telemetry.finish('failed', { error_code: 'DEPENDENCY_FAILURE' });
+    await recordHealth?.('failed', now() - startedAt, 'DEPENDENCY_FAILURE');
     console.error('fieldStats failed:', error instanceof Error ? error.name : 'unknown');
     return Response.json(
       { error: 'Stats unavailable' },

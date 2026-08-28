@@ -15,6 +15,11 @@ import { handleFieldStats, resetFieldStatsCache } from '../fieldStats/handler.ts
 import { handleSubmitOffline } from '../submitOffline/handler.ts';
 import { isValidCorrelationId, telemetryFor } from '../_shared/telemetry.ts';
 import { handleRuntimeHealth } from '../runtimeHealth/handler.ts';
+import { handleOperationalHealth } from '../operationalHealth/handler.ts';
+import {
+  recordOperationalHealth,
+  resetOperationalStateCooldown,
+} from '../_shared/operationalState.ts';
 
 const assert = (condition: unknown, message: string) => {
   if (!condition) throw new Error(message);
@@ -125,6 +130,93 @@ Deno.test('runtimeHealth is bounded and admin-only', async () => {
   assertEquals(Object.keys(body).sort(), ['release', 'status', 'timestamp'], 'health fields');
   assert(!JSON.stringify(body).includes('SECRET'), 'health does not expose secrets');
 });
+
+Deno.test('operational state is bounded, throttled, and fail-open', async () => {
+  resetOperationalStateCooldown();
+  let now = 1_700_000_000_000;
+  const rows: any[] = [];
+  let writes = 0;
+  const entity = {
+    filter: async () => rows,
+    create: async (value: any) => {
+      writes++;
+      rows.push({ id: 'state-1', ...value });
+    },
+    update: async (_id: string, value: any) => {
+      writes++;
+      Object.assign(rows[0], value);
+    },
+  };
+  const client = () => ({ asServiceRole: { entities: { OperationalHealth: entity } } });
+  const req = new Request('https://oohearth.base44.app/functions/fieldStats');
+  await recordOperationalHealth(req, 'fieldStats', 'success', 42, {
+    createClientFromRequest: client,
+    now: () => now,
+    getEnv: () => undefined,
+  });
+  await recordOperationalHealth(req, 'fieldStats', 'success', 43, {
+    createClientFromRequest: client,
+    now: () => now + 1_000,
+    getEnv: () => undefined,
+  });
+  assertEquals(writes, 1, 'same-status snapshot throttled');
+  assertEquals(rows[0].environment, 'production', 'environment bounded');
+  assertEquals(rows[0].status, 'HEALTHY', 'success state');
+  assertEquals(rows[0].success_count_window, 1, 'success count bounded');
+  assert(!('correlation_id' in rows[0]), 'no correlation id persisted');
+  now += 2_000;
+  await recordOperationalHealth(req, 'fieldStats', 'failed', 999999, {
+    createClientFromRequest: client,
+    now: () => now,
+    getEnv: () => undefined,
+    error_code: 'not-a-real-code',
+  });
+  assertEquals(writes, 2, 'status transition persisted');
+  assertEquals(rows[0].status, 'DEGRADED', 'failure state');
+  assertEquals(rows[0].last_error_code, 'INTERNAL_FAILURE', 'error code bounded');
+  assert(rows[0].last_duration_ms <= 120000, 'duration bounded');
+  const failing = () => ({
+    asServiceRole: {
+      entities: {
+        OperationalHealth: {
+          filter: async () => {
+            throw new Error('down');
+          },
+        },
+      },
+    },
+  });
+  await recordOperationalHealth(req, 'fieldStats', 'success', 10, {
+    createClientFromRequest: failing,
+    now: () => now + 61_000,
+  });
+});
+
+Deno.test(
+  'operational health read is admin-only and exposes explicit missing evidence',
+  async () => {
+    const requestFor = (method = 'GET') => new Request('https://example.test/health', { method });
+    const client = (user: unknown) => ({
+      auth: { me: async () => user },
+      asServiceRole: { entities: { OperationalHealth: { filter: async () => [] } } },
+    });
+    assertEquals(
+      (await handleOperationalHealth(requestFor(), { createClientFromRequest: () => client(null) }))
+        .status,
+      403,
+      'operational health auth',
+    );
+    const response = await handleOperationalHealth(requestFor(), {
+      createClientFromRequest: () => client({ role: 'admin' }),
+      now: () => 1_700_000_000_000,
+    });
+    assertEquals(response.status, 200, 'operational health response');
+    const body = await response.json();
+    assertEquals(body.status, 'UNKNOWN', 'empty state is unknown');
+    assertEquals(body.evidence_status, 'INSUFFICIENT_DATA', 'missing evidence is explicit');
+    assertEquals(body.services, [], 'empty service list');
+  },
+);
 
 const migrationClient = (user: unknown, locations: unknown[] = []) => {
   const updates: unknown[] = [];
