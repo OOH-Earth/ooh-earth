@@ -36,13 +36,21 @@ const getAppParamValue = (paramName, { defaultValue = undefined, removeFromUrl =
   return null;
 };
 
+// Base44's hosted production build is expected to inject VITE_BASE44_APP_ID.
+// Keep local/preview behavior environment-driven, but fail safe for the
+// verified production app when that public build variable is omitted.
+export const PRODUCTION_APP_ID = '6a62213cff3ccbca88c04ff5';
+
 const getAppParams = () => {
   if (getAppParamValue('clear_access_token') === 'true') {
     storage.removeItem('base44_access_token');
     storage.removeItem('token');
   }
   return {
-    appId: getAppParamValue('app_id', { defaultValue: import.meta.env.VITE_BASE44_APP_ID }),
+    appId: getAppParamValue('app_id', {
+      defaultValue: import.meta.env.VITE_BASE44_APP_ID ||
+        (import.meta.env.PROD ? PRODUCTION_APP_ID : undefined),
+    }),
     token: getAppParamValue('access_token', { removeFromUrl: true }),
     fromUrl: getAppParamValue('from_url', { defaultValue: window.location.href }),
     functionsVersion: getAppParamValue('functions_version', {
