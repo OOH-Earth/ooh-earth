@@ -5,6 +5,7 @@ import {
   QUESTS,
   levelFromXp,
   pointsForReport,
+  pointsForRecheck,
   deriveBrandCounts,
   isToday,
   isThisWeek,
@@ -49,14 +50,16 @@ export function useGamification() {
 
       const baseXp =
         myLocs.reduce((s, r) => s + pointsForReport(r), 0) +
+        myFieldChecks.reduce((s, r) => s + pointsForRecheck(r), 0) +
         myBusts.length * 15 +
         myMints.length * 100 +
         myLeads.length * 5;
       const questXp = myQuests.reduce((s, q) => s + (q.xp_awarded || 0), 0);
 
-      // Streak — consecutive days with any contribution
+      // Streak — consecutive days with any contribution, including re-checks
+      // (a re-check is a genuine field visit, not a lesser action)
       const activeDates = new Set();
-      [...myLocs, ...myBusts].forEach((r) => {
+      [...myLocs, ...myBusts, ...myFieldChecks].forEach((r) => {
         if (r.created_date) activeDates.add(r.created_date.slice(0, 10));
       });
       let streak = 0;
@@ -81,10 +84,8 @@ export function useGamification() {
         busts: myBusts.length,
         mints: myMints.length,
         leads: myLeads.length,
-        // Not folded into xp/baseXp -- no point value for a re-check has
-        // been product-validated yet (see the P2 freshness work's same
-        // "no invented threshold" stance). Pure visibility of real,
-        // already-stored FieldCheck activity, nothing fabricated.
+        // Folded into baseXp via pointsForRecheck() -- deliberately smaller
+        // than a new report (see pointsConfig.js), previously exactly 0.
         rechecks: myFieldChecks.length,
         rechecksVerified: myFieldChecks.filter((r) => r.status === 'verified').length,
         xp: baseXp + questXp,
