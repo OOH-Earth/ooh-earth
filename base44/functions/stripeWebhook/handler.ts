@@ -1,4 +1,4 @@
-import { correlationHeaders, telemetryFor } from '../_shared/telemetry.ts';
+import { correlationHeaders, telemetryFor } from './telemetry.ts';
 
 type Dependencies = {
   createClientFromRequest: (req: Request) => any;
