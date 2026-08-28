@@ -225,7 +225,12 @@ export const BADGES = [
   {
     id: 'timeline_builder',
     label: 'Timeline Builder',
-    desc: 'Get 5 verified re-checks',
+    // Deliberately avoids the literal substring "re-checks" -- the
+    // OperativeProfile stats grid already has a "Re-checks" stat card on
+    // the same page, and Playwright's getByText('Re-checks') matches
+    // substrings case-insensitively, so this text and that stat card's
+    // label must never collide.
+    desc: 'Confirm 5 known placements',
     icon: 'MapPin',
     tier: 'silver',
     check: (s) => (s.rechecksVerified || 0) >= 5,
