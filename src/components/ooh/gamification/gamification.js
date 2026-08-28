@@ -217,10 +217,13 @@ export const BADGES = [
   {
     id: 'first_recheck',
     label: 'Timeline Starter',
-    desc: 'File your first re-check',
+    // Gated on rechecksVerified, not the raw rechecks submission count --
+    // same verified-only invariant as pointsForRecheck(). A pending or
+    // rejected submission must not earn recognition, only a confirmed one.
+    desc: 'Get your first re-check verified',
     icon: 'MapPin',
     tier: 'bronze',
-    check: (s) => (s.rechecks || 0) >= 1,
+    check: (s) => (s.rechecksVerified || 0) >= 1,
   },
   {
     id: 'timeline_builder',

@@ -14,13 +14,18 @@ const timelineBuilder = BADGES.find((b) => b.id === 'timeline_builder');
 assert.ok(firstRecheck, 'first_recheck badge must exist');
 assert.ok(timelineBuilder, 'timeline_builder badge must exist');
 
-// first_recheck
-assert.equal(firstRecheck.check({ rechecks: 0 }), false);
-assert.equal(firstRecheck.check({ rechecks: 1 }), true);
+// first_recheck -- verified-only invariant: a merely-submitted (pending)
+// re-check must NOT earn this badge, only a verified one.
+assert.equal(
+  firstRecheck.check({ rechecks: 1, rechecksVerified: 0 }),
+  false,
+  'a pending-only re-check must not earn the badge',
+);
+assert.equal(firstRecheck.check({ rechecks: 1, rechecksVerified: 1 }), true);
 assert.equal(
   firstRecheck.check({}),
   false,
-  'missing stats.rechecks must not throw or default to earned',
+  'missing stats.rechecksVerified must not throw or default to earned',
 );
 
 // timeline_builder

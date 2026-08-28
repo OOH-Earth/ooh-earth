@@ -12,20 +12,15 @@ assert.equal(pointsForReport({ status: 'pending', image_url: 'x' }), 60);
 assert.equal(pointsForReport({ status: 'verified', image_url: 'x' }), 100);
 
 // New: a re-check previously earned exactly 0 XP everywhere in this app.
-assert.equal(
-  pointsForRecheck({ status: 'pending' }),
-  5,
-  'pending re-check should earn base credit',
-);
+// Verified-only invariant: unlike a report, an unverified or rejected
+// re-check must earn NOTHING -- the goal is verified repeated evidence,
+// not raw submission activity.
+assert.equal(pointsForRecheck({ status: 'pending' }), 0, 'pending re-check must earn nothing yet');
+assert.equal(pointsForRecheck({ status: 'rejected' }), 0, 'rejected re-check must earn nothing');
 assert.equal(
   pointsForRecheck({ status: 'verified' }),
   20,
-  'verified re-check should earn base + verified bonus',
-);
-assert.equal(
-  pointsForRecheck({ status: 'rejected' }),
-  5,
-  'rejected re-check still earns base credit, same as a rejected report',
+  'verified re-check earns the full reward',
 );
 
 // A re-check must never be worth more than a fresh verified+photo report --

@@ -24,13 +24,15 @@ export function pointsForReport(r) {
   return p;
 }
 
-// Points earned by a single FieldCheck (re-check) record. No photo_bonus
-// branch -- FieldCheckCamera already requires a photo before submit, so
-// every FieldCheck carries one; a separate bonus for it would be a no-op.
+// Points earned by a single FieldCheck (re-check) record. Verified-only,
+// unlike pointsForReport's base-credit-always shape: a pending or rejected
+// re-check earns nothing at all. The goal here is specifically VERIFIED
+// repeated evidence, not raw submission activity -- rewarding mere
+// submission would incentivize exactly the noise this feature exists to
+// avoid. No separate photo_bonus branch -- FieldCheckCamera already
+// requires a photo before submit, so every FieldCheck carries one.
 export function pointsForRecheck(fc) {
-  let p = POINTS.recheck_filed;
-  if (fc.status === 'verified') p += POINTS.recheck_verified_bonus;
-  return p;
+  return fc.status === 'verified' ? POINTS.recheck_filed + POINTS.recheck_verified_bonus : 0;
 }
 
 // Rank tier derived from cumulative operative points.
