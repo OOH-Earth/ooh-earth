@@ -6,6 +6,7 @@ import HorizonProgress from '@/components/ooh/HorizonProgress';
 import Breadcrumbs from '@/components/ooh/Breadcrumbs';
 import { Loader2, Lock, ArrowLeft, Copy, Check } from 'lucide-react';
 import { useSeo } from '@/lib/seoContext';
+import { parseInlineMarkdown } from '@/lib/safeMarkdown';
 
 const payload = (res) => (res && typeof res === 'object' && 'data' in res ? res.data : res);
 
@@ -38,7 +39,7 @@ function Body({ text }) {
               key={i}
               className="mt-8 font-display text-xl font-bold tracking-[-0.01em] text-silver"
             >
-              {b.slice(3)}
+              {renderInline(b.slice(3), `${i}-heading`)}
             </h2>
           );
         const lines = b.split('\n');
@@ -51,7 +52,7 @@ function Body({ text }) {
                   className="flex gap-2 font-display text-[14px] leading-[1.6] text-darkgray"
                 >
                   <span className="mt-2 h-1 w-1 shrink-0 bg-ozone" />
-                  <span>{l.trim().slice(2)}</span>
+                  <span>{renderInline(l.trim().slice(2), `${i}-${j}`)}</span>
                 </li>
               ))}
             </ul>
@@ -59,12 +60,30 @@ function Body({ text }) {
         }
         return (
           <p key={i} className="font-display text-[14px] leading-[1.7] text-darkgray">
-            {b}
+            {renderInline(b, i)}
           </p>
         );
       })}
     </div>
   );
+}
+
+function renderInline(text, keyPrefix) {
+  return parseInlineMarkdown(text).map((token, index) => {
+    if (token.type === 'link') {
+      return (
+        <a
+          key={`${keyPrefix}-link-${index}`}
+          href={token.href}
+          className="text-ozone underline decoration-ozone/50 underline-offset-2 hover:decoration-ozone"
+        >
+          {token.value}
+        </a>
+      );
+    }
+    if (token.type === 'em') return <em key={`${keyPrefix}-em-${index}`}>{token.value}</em>;
+    return <span key={`${keyPrefix}-text-${index}`}>{token.value}</span>;
+  });
 }
 
 export default function BlogArticle({ scope = 'public' }) {

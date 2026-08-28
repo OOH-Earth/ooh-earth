@@ -9,6 +9,7 @@
     "build:analyze": "ANALYZE=true vite build",
     "lint": "eslint . --quiet",
     "test:production-binding": "node scripts/test-production-binding.mjs",
+    "test:blog-markdown": "node scripts/test-blog-markdown.mjs",
     "lint:fix": "eslint . --fix",
     "typecheck": "tsc -p ./jsconfig.json",
     "preview": "vite preview",
