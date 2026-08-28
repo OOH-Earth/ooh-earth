@@ -3,6 +3,7 @@ import { handleN8nPing } from '../n8nPing/handler.ts';
 import { handleScanAd, validateMediaUrl } from '../scanAd/handler.ts';
 import { handleCachedIntel } from '../cachedIntel/handler.ts';
 import { handleCreateDonationCheckout } from '../createDonationCheckout/handler.ts';
+import { handleDonationStatus } from '../donationStatus/handler.ts';
 import { handleClaimLead } from '../claimLead/handler.ts';
 import { handleStripeWebhook } from '../stripeWebhook/handler.ts';
 import { handleCreateProductCheckout } from '../createProductCheckout/handler.ts';
@@ -361,6 +362,10 @@ Deno.test(
       const params = new URLSearchParams(String(init?.body));
       assertEquals(params.get('line_items[0][price_data][unit_amount]'), '5000', 'Stripe amount');
       assertEquals(params.get('line_items[0][price_data][currency]'), 'usd', 'Stripe currency');
+      assert(
+        (params.get('success_url') || '').includes('session_id={CHECKOUT_SESSION_ID}'),
+        'donation success_url carries the Stripe session id placeholder',
+      );
       return new Response(JSON.stringify({ url: 'https://checkout.stripe.test/session' }), {
         status: 200,
       });
@@ -418,6 +423,133 @@ Deno.test(
       await json(failed),
       { error: 'Checkout unavailable' },
       'donation sanitized failure',
+    );
+  },
+);
+
+Deno.test(
+  'donationStatus reports only a boolean, sourced from FundingLead, never from the request alone',
+  async () => {
+    const fundingClient = (rows: any[]) => ({
+      createClientFromRequest: () => ({
+        asServiceRole: {
+          entities: {
+            FundingLead: {
+              filter: async (query: any) => rows.filter((row) => row.ext_ref === query.ext_ref),
+            },
+          },
+        },
+      }),
+    });
+
+    const confirmedSessionId = 'cs_test_confirmed1234567890';
+    const unconfirmedSessionId = 'cs_test_unconfirmed1234567';
+    const unknownSessionId = 'cs_test_neverseenbefore123';
+    const rows = [
+      {
+        ext_ref: confirmedSessionId,
+        email: 'donor@example.com',
+        amount: 50,
+        channel: 'stripe',
+      },
+    ];
+
+    // method
+    assertEquals(
+      (
+        await handleDonationStatus(
+          request('GET', { session_id: confirmedSessionId }),
+          fundingClient(rows),
+        )
+      ).status,
+      405,
+      'donationStatus method',
+    );
+
+    // malformed body
+    const malformed = new Request('https://example.test', { method: 'POST', body: '{' });
+    const malformedResp = await handleDonationStatus(malformed, fundingClient(rows));
+    assertEquals(malformedResp.status, 400, 'donationStatus malformed body');
+
+    // missing session id
+    assertEquals(
+      (await handleDonationStatus(request('POST', {}), fundingClient(rows))).status,
+      400,
+      'donationStatus missing session id',
+    );
+
+    // malformed session id shapes (not a real Stripe session id)
+    for (const bad of [
+      '',
+      'not-a-session',
+      'cs_short',
+      "cs_test_'; DROP TABLE--",
+      'x'.repeat(300),
+    ]) {
+      assertEquals(
+        (await handleDonationStatus(request('POST', { session_id: bad }), fundingClient(rows)))
+          .status,
+        400,
+        `donationStatus rejects malformed session id: ${bad.slice(0, 20)}`,
+      );
+    }
+
+    // unknown session id -- never seen by the webhook
+    const unknownResp = await handleDonationStatus(
+      request('POST', { session_id: unknownSessionId }),
+      fundingClient(rows),
+    );
+    assertEquals(unknownResp.status, 200, 'donationStatus unknown status');
+    assertEquals(await json(unknownResp), { confirmed: false }, 'donationStatus unknown body');
+
+    // unconfirmed session id -- webhook hasn't landed yet (simulates the race)
+    const unconfirmedResp = await handleDonationStatus(
+      request('POST', { session_id: unconfirmedSessionId }),
+      fundingClient(rows),
+    );
+    assertEquals(unconfirmedResp.status, 200, 'donationStatus unconfirmed status');
+    assertEquals(
+      await json(unconfirmedResp),
+      { confirmed: false },
+      'donationStatus unconfirmed body',
+    );
+
+    // confirmed session id -- webhook already created the FundingLead row
+    const confirmedResp = await handleDonationStatus(
+      request('POST', { session_id: confirmedSessionId }),
+      fundingClient(rows),
+    );
+    assertEquals(confirmedResp.status, 200, 'donationStatus confirmed status');
+    const confirmedBody = await json(confirmedResp);
+    assertEquals(confirmedBody, { confirmed: true }, 'donationStatus confirmed body');
+    assertEquals(
+      Object.keys(confirmedBody as object),
+      ['confirmed'],
+      'donationStatus never returns fields beyond confirmed (no email/amount/FundingLead object)',
+    );
+
+    // backend failure fails closed, never leaks the underlying error
+    const brokenResp = await handleDonationStatus(
+      request('POST', { session_id: confirmedSessionId }),
+      {
+        createClientFromRequest: () => ({
+          asServiceRole: {
+            entities: {
+              FundingLead: {
+                filter: async () => {
+                  throw new Error('secret database detail');
+                },
+              },
+            },
+          },
+        }),
+      },
+    );
+    assertEquals(brokenResp.status, 200, 'donationStatus fails closed on backend error');
+    assertEquals(
+      await json(brokenResp),
+      { confirmed: false },
+      'donationStatus sanitized failure body',
     );
   },
 );
