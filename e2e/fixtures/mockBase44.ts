@@ -20,6 +20,7 @@ import type { Page, Route } from '@playwright/test';
 
 export type MockDb = {
   user?: Record<string, unknown> | null;
+  operationalHealth?: Record<string, unknown>;
   locations?: Record<string, any>;
   locationPhotos?: any[];
   storeItems?: Record<string, any>;
@@ -102,6 +103,31 @@ export async function mockBase44(page: Page, db: MockDb) {
         return route.fulfill({ json: { ok: true, duplicate: false, record } });
       }
       return route.fulfill({ status: 400, json: { error: 'Invalid submission' } });
+    }
+
+    if (url.pathname.includes('/functions/operationalHealth')) {
+      return route.fulfill({
+        json: db.operationalHealth ?? {
+          status: 'HEALTHY',
+          evidence_status: 'VERIFIED',
+          generated_at: 1760000000000,
+          services: [
+            {
+              state_key: 'fieldStats:production',
+              service: 'fieldStats',
+              environment: 'production',
+              status: 'HEALTHY',
+              evidence_status: 'VERIFIED',
+              last_success_at: 1760000000000,
+              last_duration_ms: 381,
+              success_count_window: 1,
+              failure_count_window: 0,
+              release: 'unknown',
+              updated_at: 1760000000000,
+            },
+          ],
+        },
+      });
     }
 
     // base44.functions.invoke('moderate', body) -> POST /functions/moderate.
