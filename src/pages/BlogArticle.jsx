@@ -7,6 +7,7 @@ import Breadcrumbs from '@/components/ooh/Breadcrumbs';
 import { Loader2, Lock, ArrowLeft, Copy, Check } from 'lucide-react';
 import { useSeo } from '@/lib/seoContext';
 import { parseInlineMarkdown } from '@/lib/safeMarkdown';
+import { trackEvent } from '@/lib/trackEvent';
 
 const payload = (res) => (res && typeof res === 'object' && 'data' in res ? res.data : res);
 
@@ -253,6 +254,23 @@ export default function BlogArticle({ scope = 'public' }) {
                   {post.cta}
                 </div>
               )}
+
+              <div className="mt-8 border border-slate2/50 bg-card p-5">
+                <h2 className="font-display text-lg font-bold text-silver">
+                  Working on a research or public-space question?
+                </h2>
+                <p className="mt-2 max-w-2xl font-display text-[13px] leading-relaxed text-darkgray">
+                  OOH Earth can discuss a scoped evidence question using its public-space mapping
+                  and evidence workflow. Coverage, findings, and delivery are agreed case by case.
+                </p>
+                <Link
+                  to="/contact?utm_source=owned&utm_medium=content&utm_campaign=transit_evidence"
+                  onClick={() => trackEvent('professional_intent', { route: '/contact' })}
+                  className="mt-4 inline-flex border border-ozone px-4 py-2 font-mono text-[10px] font-bold uppercase tracking-[0.2em] text-ozone transition-colors hover:bg-ozone hover:text-void"
+                >
+                  Discuss an evidence question
+                </Link>
+              </div>
 
               <div className="mt-10 flex flex-wrap items-center gap-2 border-t border-slate2/50 pt-6">
                 <Link

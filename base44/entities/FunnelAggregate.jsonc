@@ -1,0 +1,20 @@
+{
+  "name": "FunnelAggregate",
+  "type": "object",
+  "properties": {
+    "day": { "type": "string" },
+    "source": { "type": "string" },
+    "medium": { "type": "string" },
+    "campaign": { "type": "string" },
+    "event_name": { "type": "string" },
+    "count": { "type": "number", "default": 0 },
+    "synthetic_count": { "type": "number", "default": 0 }
+  },
+  "required": ["day", "source", "medium", "campaign", "event_name", "count", "synthetic_count"],
+  "rls": {
+    "create": { "user_condition": { "role": "admin" } },
+    "read": { "user_condition": { "role": "admin" } },
+    "update": { "user_condition": { "role": "admin" } },
+    "delete": { "user_condition": { "role": "admin" } }
+  }
+}
