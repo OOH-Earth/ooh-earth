@@ -2,9 +2,9 @@
 // All state is computed client-side from contribution records (Location,
 // DigitalBust, Mint, LeadClaim) plus QuestCompletion bonus claims.
 
-import { POINTS, pointsForReport } from '../pointsConfig';
+import { POINTS, pointsForReport, pointsForRecheck } from '../pointsConfig';
 
-export { POINTS, pointsForReport };
+export { POINTS, pointsForReport, pointsForRecheck };
 
 // ── Level curve ──────────────────────────────────────────────────────
 export const LEVELS = [
@@ -208,6 +208,36 @@ export const BADGES = [
     tier: 'gold',
     check: (s) => (s.brandCounts?.[0]?.count || 0) >= 25,
     progress: (s) => ({ current: s.brandCounts?.[0]?.count || 0, target: 25 }),
+  },
+  // Repeat-observation tracks -- reuses stats.rechecks/rechecksVerified,
+  // already computed in useGamification.js from real FieldCheck records
+  // but previously unused by any badge. A first-of-its-kind incentive for
+  // the specific behavior (re-photographing a known spot) that builds the
+  // longitudinal timeline FieldCheckPanel.jsx already displays.
+  {
+    id: 'first_recheck',
+    label: 'Timeline Starter',
+    // Gated on rechecksVerified, not the raw rechecks submission count --
+    // same verified-only invariant as pointsForRecheck(). A pending or
+    // rejected submission must not earn recognition, only a confirmed one.
+    desc: 'Get your first re-check verified',
+    icon: 'MapPin',
+    tier: 'bronze',
+    check: (s) => (s.rechecksVerified || 0) >= 1,
+  },
+  {
+    id: 'timeline_builder',
+    label: 'Timeline Builder',
+    // Deliberately avoids the literal substring "re-checks" -- the
+    // OperativeProfile stats grid already has a "Re-checks" stat card on
+    // the same page, and Playwright's getByText('Re-checks') matches
+    // substrings case-insensitively, so this text and that stat card's
+    // label must never collide.
+    desc: 'Confirm 5 known placements',
+    icon: 'MapPin',
+    tier: 'silver',
+    check: (s) => (s.rechecksVerified || 0) >= 5,
+    progress: (s) => ({ current: s.rechecksVerified || 0, target: 5 }),
   },
 ];
 
