@@ -1,0 +1,60 @@
+{
+  "name": "OperationalHealth",
+  "type": "object",
+  "description": "Bounded operational snapshots; never a request or event log.",
+  "properties": {
+    "state_key": { "type": "string", "maxLength": 96 },
+    "service": { "type": "string", "maxLength": 64 },
+    "environment": {
+      "type": "string",
+      "enum": ["backup", "production", "unknown"]
+    },
+    "status": {
+      "type": "string",
+      "enum": ["HEALTHY", "DEGRADED", "UNKNOWN"]
+    },
+    "last_success_at": { "type": "number" },
+    "last_failure_at": { "type": "number" },
+    "last_error_code": {
+      "type": "string",
+      "enum": [
+        "AUTH_REQUIRED",
+        "INVALID_METHOD",
+        "INVALID_INPUT",
+        "DEPENDENCY_TIMEOUT",
+        "DEPENDENCY_FAILURE",
+        "SCHEMA_UNAVAILABLE",
+        "REPLAY_CONFLICT",
+        "INTERNAL_FAILURE"
+      ]
+    },
+    "last_duration_ms": { "type": "number" },
+    "success_count_window": { "type": "number" },
+    "failure_count_window": { "type": "number" },
+    "window_started_at": { "type": "number" },
+    "release": { "type": "string", "maxLength": 96 },
+    "evidence_status": {
+      "type": "string",
+      "enum": ["VERIFIED", "INSUFFICIENT_DATA", "NOT_VERIFIED"]
+    },
+    "updated_at": { "type": "number" }
+  },
+  "required": [
+    "state_key",
+    "service",
+    "environment",
+    "status",
+    "success_count_window",
+    "failure_count_window",
+    "window_started_at",
+    "release",
+    "evidence_status",
+    "updated_at"
+  ],
+  "rls": {
+    "create": { "user_condition": { "role": "admin" } },
+    "read": { "user_condition": { "role": "admin" } },
+    "update": { "user_condition": { "role": "admin" } },
+    "delete": { "user_condition": { "role": "admin" } }
+  }
+}
