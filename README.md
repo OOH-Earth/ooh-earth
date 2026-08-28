@@ -6,7 +6,15 @@ OOH Earth maps the corporate outdoor advertising you never agreed to — the bil
 
 It's a civic platform, not a startup. Community-funded, copyleft, and not for sale. Every pound goes to the movement.
 
-🌍 [oohearth.app](https://oohearth.app) · [ooh.earth](https://ooh.earth) · ✉️ hello@outofhell.org
+🌍 [oohearth.app](https://oohearth.app) · [ooh.earth](https://ooh.earth) · ✉️ [oohearth@proton.me](mailto:oohearth@proton.me)
+
+## Try it now
+
+- **[Explore the live atlas](https://oohearth.app/map?utm_source=github&utm_medium=referral&utm_campaign=github_readme)** — inspect mapped public-space advertising evidence.
+- **[Report a genuine observation](https://oohearth.app/report?utm_source=github&utm_medium=referral&utm_campaign=github_readme)** — document what you actually see, without private information.
+- **[Read the field guide](https://oohearth.app/guides?utm_source=github&utm_medium=referral&utm_campaign=github_readme)** — understand the workflow and its limits.
+- **[Research or collaborate](https://oohearth.app/contact?utm_source=github&utm_medium=referral&utm_campaign=github_readme)** — discuss a bounded question or project.
+- **[Support the open project](https://oohearth.app/support?utm_source=github&utm_medium=referral&utm_campaign=github_readme)** — optional support; the public map remains open.
 
 ---
 
