@@ -223,20 +223,23 @@ export default function Globe3D({
         map.setProjection({ type: 'globe' });
       } catch (e) {}
       try {
-        // setFog() doesn't exist on the installed maplibre-gl (5.24.0) Map
-        // class — only setSky(SkySpecification) does now. This throws and is
-        // caught below, so the space-fog/atmosphere effect is currently
-        // non-functional. Restoring it means porting to setSky() (a
-        // different param shape) and confirming the visual result — a
-        // design call, not a type fix. See KNOWN_ISSUES.md.
-        // @ts-expect-error — see comment above
-        map.setFog({
-          range: [1, 10],
-          color: '#0a0a0a',
-          'high-color': '#1a1a1a',
-          'horizon-blend': 0.12,
-          'space-color': '#000000',
-          'star-intensity': 0.45,
+        // Ported from the old (non-existent on installed maplibre-gl
+        // 5.24.0) setFog() call -- SkySpecification's real field set is
+        // smaller (confirmed against this repo's own installed
+        // @maplibre/maplibre-gl-style-spec types, not guessed): no
+        // range/star-intensity/space-color equivalent exists in this
+        // version's sky API, so those are dropped rather than faked.
+        // space-color (deep void) -> sky-color; high-color (dim
+        // near-horizon tone) -> horizon-color; horizon-blend -> the
+        // directly-equivalent sky-horizon-blend. atmosphere-blend has no
+        // prior value to port from -- kept low (default is 0.8) to match
+        // the original's understated, mostly-dark intent rather than a
+        // bright default glow.
+        map.setSky({
+          'sky-color': '#000000',
+          'horizon-color': '#1a1a1a',
+          'sky-horizon-blend': 0.12,
+          'atmosphere-blend': 0.3,
         });
       } catch (e) {}
     };
