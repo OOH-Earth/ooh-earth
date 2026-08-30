@@ -54,8 +54,22 @@ export default function LocationDetail() {
   // location no longer re-fetches from scratch. "Not found" (rec stays
   // null) is a valid, cacheable result here -- the page below already
   // renders a dedicated empty state for it, not an error.
+  //
+  // staleTime matters here the same way it did for FieldId's Operative
+  // query (see that file's comment / KNOWN_ISSUES #16): the default (0)
+  // means refetchOnMount:true still refetches on a genuine remount, so
+  // without this the "revisiting doesn't re-fetch" claim in this PR's
+  // description was unproven -- verified with the same real-remount test
+  // methodology used for FieldId. 30s, not FieldId's 60s: unlike a
+  // read-only credential roster, this record's status/notes can change
+  // out from under the viewer via a moderator's verify/reject action
+  // elsewhere in the app, and this page has no subscribe/invalidate path
+  // for that -- only this component's own edits refresh the cache (see
+  // onUpdated below). 30s matches this codebase's existing precedent for
+  // status-sensitive data (MissionControl's operational-health query).
   const { data: loc = null, isLoading: loading } = useQuery({
     queryKey: ['location', id],
+    staleTime: 30_000,
     queryFn: async () => {
       let rec = null;
       try {
