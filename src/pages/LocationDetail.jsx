@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useParams, Link } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import {
@@ -47,13 +47,16 @@ function normalizeSeed(rec) {
 
 export default function LocationDetail() {
   const { id } = useParams();
-  const [loc, setLoc] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const queryClient = useQueryClient();
 
-  useEffect(() => {
-    let alive = true;
-    (async () => {
-      setLoading(true);
+  // Same fallback chain as before (get by id -> filter by legacy source_link
+  // -> static seed data), just wrapped as one queryFn so revisiting a
+  // location no longer re-fetches from scratch. "Not found" (rec stays
+  // null) is a valid, cacheable result here -- the page below already
+  // renders a dedicated empty state for it, not an error.
+  const { data: loc = null, isLoading: loading } = useQuery({
+    queryKey: ['location', id],
+    queryFn: async () => {
       let rec = null;
       try {
         rec = await base44.entities.Location.get(id);
@@ -74,15 +77,9 @@ export default function LocationDetail() {
         const s = seed.find((x) => String(x.id) === String(id));
         if (s) rec = normalizeSeed(s);
       }
-      if (alive) {
-        setLoc(rec);
-        setLoading(false);
-      }
-    })();
-    return () => {
-      alive = false;
-    };
-  }, [id]);
+      return rec;
+    },
+  });
 
   useSeo(
     loc
@@ -456,7 +453,10 @@ export default function LocationDetail() {
 
         {/* ── Admin zone ── */}
         <section className="mb-8 space-y-px">
-          <LocationEditPanel loc={loc} onUpdated={setLoc} />
+          <LocationEditPanel
+            loc={loc}
+            onUpdated={(updated) => queryClient.setQueryData(['location', id], updated)}
+          />
           <MintLocationPanel loc={loc} />
         </section>
 
