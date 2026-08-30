@@ -13,15 +13,25 @@ if (gitSha === 'UNKNOWN') {
   }
 }
 const manifest = {
-  schema: 'ooh-earth.release-manifest.v1',
+  schema: 'ooh-earth.release-manifest.v2',
+  release_state: read('RELEASE_STATE', 'CANDIDATE'),
+  candidate_id: read('RELEASE_ID', gitSha),
   git_sha: gitSha,
   pr: read('RELEASE_PR', 'UNKNOWN'),
   timestamp: new Date().toISOString(),
+  runtime_revision: 'UNKNOWN',
+  required_schema_changes: read('RELEASE_SCHEMA_CHANGES', 'NONE_DECLARED'),
+  required_functions: read('RELEASE_FUNCTIONS', 'NONE_DECLARED'),
+  frontend_required: read('RELEASE_FRONTEND', 'true'),
   ci: read('RELEASE_CI'),
   backup_verification: read('RELEASE_BACKUP_VERIFICATION'),
   production_verification: read('RELEASE_PRODUCTION_VERIFICATION'),
   observability_status: read('RELEASE_OBSERVABILITY_STATUS'),
   rollback_readiness: read('RELEASE_ROLLBACK_READINESS'),
+  previous_known_good: read('RELEASE_PREVIOUS_KNOWN_GOOD'),
+  backup: { state: read('RELEASE_BACKUP_STATE', 'UNKNOWN') },
+  production: { state: read('RELEASE_PRODUCTION_STATE', 'UNKNOWN') },
+  evidence: {},
 };
 
 const output = process.argv[2];

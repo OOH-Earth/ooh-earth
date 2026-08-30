@@ -181,6 +181,10 @@ export default function CommandCenter({ open, onClose }) {
       <div
         className={`fixed inset-0 z-[2000] transition-opacity duration-300 ${open ? 'opacity-100' : 'pointer-events-none opacity-0'}`}
         aria-hidden={!open}
+        // `inert` is set imperatively by useFocusTrap on panelRef below
+        // (all focusable content lives inside that panel, so it's a
+        // sufficient ancestor) -- see that hook for why (React 18 doesn't
+        // support `inert` as a JSX prop).
       >
         <div className="absolute inset-0 bg-void/80 backdrop-blur-xl" onClick={onClose} />
 
