@@ -37,14 +37,26 @@ export default function FieldId() {
     verified: false,
   });
   // Read-only roster for the handle-picker below -- no writes happen
-  // against it from this page, so a shared cache is safe. Previously
-  // re-fetched the full Operative list every time this page mounted.
+  // against it from this page, so a shared cache is safe.
+  //
+  // staleTime matters here, not just the queryFn wrapper: the default
+  // (0, from queryClientInstance's defaultOptions, which sets no override)
+  // marks data stale immediately, and react-query's default
+  // refetchOnMount:true means a genuine remount still refetches -- verified
+  // live, not assumed: a real client-side nav away + wait for this app's
+  // actual (multi-second, AnimatePresence-driven) unmount, then back,
+  // produced the identical request count with and without this migration
+  // until staleTime was added. 60s is chosen for what this data actually
+  // is -- a contributor roster for a printable credential card, where a
+  // stats snapshot up to a minute old is indistinguishable from perfectly
+  // fresh for that purpose -- not picked to make a test pass.
   const { data: ops = [] } = useQuery({
     queryKey: ['operatives'],
     queryFn: async () => {
       const list = await base44.entities.Operative.list();
       return Array.isArray(list) ? list : [];
     },
+    staleTime: 60_000,
   });
 
   const set = (k, v) => setOp((o) => ({ ...o, [k]: v }));
