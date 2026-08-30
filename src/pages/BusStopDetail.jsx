@@ -74,9 +74,10 @@ export default function BusStopDetail() {
   }, [stop, verifiedLocations]);
 
   const handleLocUpdated = (updated) => {
-    queryClient.setQueryData(VERIFIED_LOCATIONS_QUERY_KEY, (old = []) =>
-      old.map((r) => (r.id === updated.id ? updated : r)),
-    );
+    queryClient.setQueryData(VERIFIED_LOCATIONS_QUERY_KEY, (old) => {
+      const list = /** @type {any[]} */ (old) || [];
+      return list.map((r) => (r.id === updated.id ? updated : r));
+    });
   };
 
   if (!stop) {
