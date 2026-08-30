@@ -96,6 +96,7 @@ export function normalizeEvidence({
       current_main_sha: bounded(manifest.current_main_sha),
       current_main_relation: bounded(manifest.current_main_relation),
       certification: bounded(manifest.certification),
+      certified_at: timestamp(manifest.certified_at),
     },
     limitations: [
       'Base44 runtime identity is not exposed as verified metadata.',
@@ -265,6 +266,8 @@ export function buildSystemBrief(evidence) {
     attention.unshift(
       `Overall system health is unknown: core coverage is missing for ${coverage.missing_core.map((row) => row.service).join(', ')}.`,
     );
+  if (evidence.release.certification !== 'VERIFIED')
+    attention.unshift('This environment has no verified published certification evidence.');
   const status =
     coverage.missing_core.length && health.status === 'HEALTHY' ? 'UNKNOWN' : health.status;
   const risk =
