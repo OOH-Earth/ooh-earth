@@ -262,8 +262,15 @@ test.describe('LocationDetail — react-query migration regression', () => {
     // FieldId investigation (KNOWN_ISSUES #16). A short wait here would
     // pass regardless of staleTime, for the wrong reason (the component
     // simply hasn't unmounted yet).
-    await page.getByLabel('Field map').click();
-    await page.waitForURL('**/map', { timeout: 5000 });
+    //
+    // Nav target is Home ("OOH Earth — Home console"), not the "Field map"
+    // icon link -- that link is `hidden md:flex` in Nav.jsx, invisible (and
+    // unclickable) on the mobile-chromium viewport this suite also runs
+    // under. Home is safe here unlike in field-id.spec.ts: Location.get(id)
+    // hits a per-record URL no other page/widget shares, so there's no
+    // FieldIdGenerator-style confound to isolate away from.
+    await page.getByLabel('OOH Earth — Home console').click();
+    await page.waitForURL('**/', { timeout: 5000 });
     await page.waitForTimeout(6000);
     await page.goBack();
     await expect(page.getByRole('heading', { name: /Cache Regression Check/i })).toBeVisible();
