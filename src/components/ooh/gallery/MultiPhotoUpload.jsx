@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Images, Plus, X } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { validateImageFile } from '@/lib/validateUpload';
+import { compressImage } from '@/lib/imageCompress';
 
 const MAX_EXTRA_PHOTOS = 8;
 
@@ -14,6 +15,15 @@ const MAX_EXTRA_PHOTOS = 8;
  * Re-validates each file at the actual upload boundary (not just relying on
  * addFiles' selection-time check below) -- a defense-in-depth check for
  * whatever ends up in the `files` array this was called with.
+ *
+ * compressImage() here too, same as every other field-evidence upload site
+ * (see imageCompress.js) -- these "extra photos" bypassed it entirely
+ * before, uploading a picked file's original EXIF GPS/device metadata
+ * unmodified even after the cover-photo upload was fixed to strip it. A
+ * compressImage() failure for one photo here is caught by the same
+ * Promise.allSettled that already drops any invalid photo -- consistent
+ * with this function's existing "one bad photo doesn't block the rest"
+ * design, and still never uploads a metadata-bearing original.
  */
 export async function uploadLocationPhotos(files, locationId) {
   if (!files?.length || !locationId) return [];
@@ -21,7 +31,9 @@ export async function uploadLocationPhotos(files, locationId) {
     files.map(async (file, i) => {
       const check = await validateImageFile(file);
       if (!check.ok) throw new Error(check.error);
-      const { file_url } = await base44.integrations.Core.UploadFile({ file });
+      const { file_url } = await base44.integrations.Core.UploadFile({
+        file: await compressImage(file),
+      });
       return base44.entities.LocationPhoto.create({
         location_id: String(locationId),
         url: file_url,
