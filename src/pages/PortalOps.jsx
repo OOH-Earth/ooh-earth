@@ -1259,6 +1259,35 @@ function DeployView() {
   );
 }
 
+// Deterministic outcome classification for a Console function call. A
+// resolved axios promise only proves the round trip completed -- it says
+// nothing about whether the function's own answer is good news. n8nPing in
+// particular returns HTTP 200 with `{ok:false, reason:...}` by design (see
+// base44/functions/n8nPing/handler.ts) when N8N_WEBHOOK_URL isn't
+// configured, specifically so callers CAN tell transport success apart from
+// integration health -- rendering that as a flat "ok" green throws that
+// distinction away. Bad-request statuses (a caller sending the wrong body
+// shape) are also a different situation than a dependency actually being
+// down, so they get their own bucket rather than one generic "err".
+function classifyOutcome(data, err) {
+  if (err) {
+    const status = err?.response?.status;
+    if (status === 400 || status === 405) return 'INVALID_REQUEST';
+    if (status === 401 || status === 403) return 'UNAVAILABLE';
+    return 'ERROR';
+  }
+  if (data && typeof data === 'object' && data.ok === false) return 'MISCONFIGURED';
+  return 'HEALTHY';
+}
+
+const OUTCOME_STYLE = {
+  HEALTHY: 'text-[#39FF14]',
+  MISCONFIGURED: 'text-[#FFC107]',
+  INVALID_REQUEST: 'text-[#FFC107]',
+  UNAVAILABLE: 'text-dim',
+  ERROR: 'text-[#FF0040]',
+};
+
 function ConsoleView({ queue, onVerify, busy }) {
   const [outs, setOuts] = useState({});
   const run = useCallback(async (key, fn, args) => {
@@ -1269,9 +1298,15 @@ function ConsoleView({ queue, onVerify, busy }) {
       const dt = Math.round(performance.now() - t0);
       const data = payload(res);
       const preview = JSON.stringify(data)?.slice(0, 220);
-      setOuts((o) => ({ ...o, [key]: { state: 'ok', dt, preview } }));
+      const outcome = classifyOutcome(data, null);
+      setOuts((o) => ({ ...o, [key]: { state: 'ok', outcome, dt, preview } }));
     } catch (e) {
-      setOuts((o) => ({ ...o, [key]: { state: 'err', msg: e?.message || 'call failed' } }));
+      const outcome = classifyOutcome(null, e);
+      const bodyMsg = e?.response?.data?.error || e?.response?.data?.reason;
+      setOuts((o) => ({
+        ...o,
+        [key]: { state: 'err', outcome, msg: bodyMsg || e?.message || 'call failed' },
+      }));
     }
   }, []);
   const ACTIONS = [
@@ -1289,7 +1324,11 @@ function ConsoleView({ queue, onVerify, busy }) {
       desc: 'Re-pull the daily-cached LLM intel (skyIntel).',
       btn: 'Run cachedIntel',
       fn: 'cachedIntel',
-      args: {},
+      // cachedIntel's REGISTRY currently has exactly one entry ("skyIntel");
+      // an empty body resolves REGISTRY[undefined] and 400s with "unknown
+      // intel key" (base44/functions/cachedIntel/entry.ts) -- this was the
+      // console's own bug, not the function's.
+      args: { key: 'skyIntel' },
     },
     {
       key: 'stats',
@@ -1345,12 +1384,18 @@ function ConsoleView({ queue, onVerify, busy }) {
                     {o.state === 'run' && <span className="text-ozone">→ dispatching…</span>}
                     {o.state === 'ok' && (
                       <>
-                        <span className="text-[#39FF14]">→ ok · {o.dt} ms</span>
+                        <span className={OUTCOME_STYLE[o.outcome]}>
+                          → {o.outcome} · {o.dt} ms
+                        </span>
                         <br />
                         {o.preview}
                       </>
                     )}
-                    {o.state === 'err' && <span className="text-[#FF0040]">→ {o.msg}</span>}
+                    {o.state === 'err' && (
+                      <span className={OUTCOME_STYLE[o.outcome]}>
+                        → {o.outcome} · {o.msg}
+                      </span>
+                    )}
                   </pre>
                 )}
               </div>
