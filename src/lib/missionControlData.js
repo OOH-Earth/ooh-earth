@@ -104,7 +104,30 @@ async function fetchHealth(environment) {
     });
     throw error;
   }
-  return normalizeOperationalHealth(payload, environment);
+  let release = null;
+  try {
+    const releaseResponse = await fetch('/release-manifest.json', { cache: 'no-store' });
+    if (releaseResponse.ok) {
+      const candidate = await releaseResponse.json();
+      if (
+        candidate &&
+        typeof candidate === 'object' &&
+        candidate.schema === 'ooh-earth.release-manifest.v2'
+      ) {
+        release = {
+          git_sha: typeof candidate.git_sha === 'string' ? candidate.git_sha : 'UNKNOWN',
+          release_state:
+            typeof candidate.release_state === 'string' ? candidate.release_state : 'UNKNOWN',
+          runtime_revision:
+            typeof candidate.runtime_revision === 'string' ? candidate.runtime_revision : 'UNKNOWN',
+          source: 'deployed static release manifest',
+        };
+      }
+    }
+  } catch {
+    // Release metadata is supplemental; operational health remains readable.
+  }
+  return { ...normalizeOperationalHealth(payload, environment), release };
 }
 
 export async function fetchMissionControlHealth(environment) {
