@@ -13,7 +13,7 @@ if (gitSha === 'UNKNOWN') {
   }
 }
 const manifest = {
-  schema: 'ooh-earth.release-manifest.v2',
+  schema: 'ooh-earth.release-manifest.v3',
   release_state: read('RELEASE_STATE', 'CANDIDATE'),
   candidate_id: read('RELEASE_ID', gitSha),
   git_sha: gitSha,
@@ -32,6 +32,46 @@ const manifest = {
   backup: { state: read('RELEASE_BACKUP_STATE', 'UNKNOWN') },
   production: { state: read('RELEASE_PRODUCTION_STATE', 'UNKNOWN') },
   evidence: {},
+  build_identity: {
+    candidate_sha: gitSha,
+    created_at: new Date().toISOString(),
+    ci_status: read('RELEASE_CI'),
+  },
+  deployment_intent: {
+    frontend_required: read('RELEASE_FRONTEND', 'true'),
+    required_schema_changes: read('RELEASE_SCHEMA_CHANGES', 'NONE_DECLARED'),
+    required_functions: read('RELEASE_FUNCTIONS', 'NONE_DECLARED'),
+  },
+  deployment_evidence: {
+    backup: {
+      candidate_sha: gitSha,
+      deployment_result: read('RELEASE_BACKUP_DEPLOYMENT'),
+      observed_at: read('RELEASE_BACKUP_DEPLOYED_AT'),
+    },
+    production: {
+      candidate_sha: gitSha,
+      deployment_result: read('RELEASE_PRODUCTION_DEPLOYMENT'),
+      observed_at: read('RELEASE_PRODUCTION_DEPLOYED_AT'),
+    },
+  },
+  certification_evidence: {
+    backup: {
+      candidate_sha: gitSha,
+      certification_result: read('RELEASE_BACKUP_CERTIFICATION'),
+      public_smoke_result: read('RELEASE_BACKUP_PUBLIC_SMOKE'),
+      operational_health_result: read('RELEASE_BACKUP_HEALTH'),
+      certified_at: read('RELEASE_BACKUP_CERTIFIED_AT'),
+    },
+    production: {
+      candidate_sha: gitSha,
+      certification_result: read('RELEASE_PRODUCTION_CERTIFICATION'),
+      public_smoke_result: read('RELEASE_PRODUCTION_PUBLIC_SMOKE'),
+      operational_health_result: read('RELEASE_PRODUCTION_HEALTH'),
+      certified_at: read('RELEASE_PRODUCTION_CERTIFIED_AT'),
+    },
+  },
+  runtime_identity: { runtime_sha: 'UNKNOWN', source: 'Base44 capability limitation' },
+  current_main: { sha: read('CURRENT_MAIN_SHA'), relation: read('CURRENT_MAIN_RELATION') },
 };
 
 const state = manifest.release_state;
