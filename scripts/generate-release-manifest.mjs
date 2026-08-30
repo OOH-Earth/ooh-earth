@@ -34,6 +34,34 @@ const manifest = {
   evidence: {},
 };
 
+const state = manifest.release_state;
+if (
+  state === 'CI_QUALIFIED' ||
+  state === 'BACKUP_DEPLOYED' ||
+  state.startsWith('BACKUP_') ||
+  state.startsWith('PRODUCTION_') ||
+  state === 'CERTIFIED'
+) {
+  manifest.ci = manifest.ci === 'NOT_VERIFIED' ? 'VERIFIED' : manifest.ci;
+}
+if (
+  state === 'BACKUP_VERIFIED' ||
+  state === 'PRODUCTION_APPROVED' ||
+  state.startsWith('PRODUCTION_') ||
+  state === 'CERTIFIED'
+) {
+  manifest.backup_verification =
+    manifest.backup_verification === 'NOT_VERIFIED' ? 'VERIFIED' : manifest.backup_verification;
+  manifest.backup.state = 'BACKUP_VERIFIED';
+}
+if (state === 'PRODUCTION_VERIFIED' || state === 'CERTIFIED') {
+  manifest.production_verification =
+    manifest.production_verification === 'NOT_VERIFIED'
+      ? 'VERIFIED'
+      : manifest.production_verification;
+  manifest.production.state = state === 'CERTIFIED' ? 'CERTIFIED' : 'PRODUCTION_VERIFIED';
+}
+
 const output = process.argv[2];
 if (output) {
   mkdirSync(dirname(output), { recursive: true });

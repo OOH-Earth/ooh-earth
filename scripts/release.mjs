@@ -3,6 +3,7 @@ import { execFileSync } from 'node:child_process';
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { assertProductionGate, transitionRelease, validState } from './release-state.mjs';
+import { assertBuildArtifact, redactCliOutput } from './release-utils.mjs';
 
 const args = process.argv.slice(2);
 const command = args[0] || 'status';
@@ -52,12 +53,19 @@ function deploy(target) {
     printPlan(target, sha);
     return;
   }
+  assertBuildArtifact(existsSync(resolve('dist/index.html')));
   const appId = target === 'backup' ? '6a6748e009b947cb29591871' : '6a62213cff3ccbca88c04ff5';
-  execFileSync(
-    'npx',
-    ['--yes', 'base44', '--app-id', appId, 'site', 'deploy', '--no-build', '--yes'],
-    { stdio: 'inherit' },
-  );
+  try {
+    const output = execFileSync(
+      'npx',
+      ['--yes', 'base44', '--app-id', appId, 'site', 'deploy', '--no-build', '--yes'],
+      { encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] },
+    );
+    const safeOutput = redactCliOutput(output).trim();
+    if (safeOutput) console.log(safeOutput);
+  } catch (error) {
+    throw new Error(redactCliOutput(`${error.stdout || ''}\n${error.stderr || ''}`).trim());
+  }
   console.log(`DEPLOYMENT_ATTEMPTED target=${target} candidate=${sha}`);
   console.log(
     'Deployment success is not runtime certification; run the corresponding verify command separately.',

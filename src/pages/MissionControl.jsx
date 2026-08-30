@@ -9,6 +9,7 @@ import {
   fetchMissionControlHealth,
   serviceRows,
 } from '@/lib/missionControlData';
+import { buildSystemBrief, normalizeEvidence, rollbackAssessment } from '@/lib/jarvisReasoning';
 import '@/styles/mission-control.css';
 
 const formatTime = (value) => {
@@ -57,6 +58,12 @@ function CommandPalette({ onClose, onCommand }) {
     ['security', 'Show Security', '⌘ 6'],
     ['evidence', 'Show Evidence', '⌘ 7'],
     ['refresh', 'Refresh health', 'R'],
+    ['jarvis', 'Ask: System status', '⌘ 8'],
+    ['evidence', 'Explain Production health', '⌘ 9'],
+    ['release', 'Explain release', '⌘ 0'],
+    ['security', 'Show unknowns', 'U'],
+    ['jarvis', 'Recommended next action', 'N'],
+    ['rollback', 'Assess rollback', 'B'],
   ];
   const filtered = commands.filter(([, label]) =>
     label.toLowerCase().includes(query.toLowerCase()),
@@ -113,12 +120,77 @@ function CommandPalette({ onClose, onCommand }) {
   );
 }
 
+function JarvisPanel({ environment, health }) {
+  const evidence = useMemo(
+    () => normalizeEvidence({ environment, health, release: health?.release }),
+    [environment, health],
+  );
+  const brief = useMemo(() => buildSystemBrief(evidence), [evidence]);
+  const rollback = useMemo(() => rollbackAssessment(brief), [brief]);
+  return (
+    <section id="jarvis" className="mc-panel mc-jarvis" aria-label="JARVIS read-only system brief">
+      <div className="mc-panel-pad">
+        <div className="mc-panel-title">
+          <div>
+            <h2>JARVIS / system brief</h2>
+            <p>Deterministic reasoning over bounded evidence · read-only</p>
+          </div>
+          <span className={`mc-pill ${brief.status === 'HEALTHY' ? 'verified' : 'missing'}`}>
+            {brief.risk}
+          </span>
+        </div>
+        <div className="mc-jarvis-grid">
+          <div>
+            <div className="mc-jarvis-label">HOW ARE WE?</div>
+            <p className="mc-jarvis-statement">{brief.statement}</p>
+            <div className="mc-jarvis-label">NEXT ACTION</div>
+            <p className="mc-jarvis-copy">{brief.recommendation}</p>
+          </div>
+          <div>
+            <div className="mc-jarvis-label">RELEASE TRUTH</div>
+            <p className="mc-jarvis-copy">
+              Candidate: <strong>{brief.release.candidate_sha}</strong>
+              <br />
+              State: <strong>{brief.release.release_state}</strong>
+              <br />
+              Runtime identity: <strong>{brief.release.runtime_revision}</strong>
+            </p>
+            <div className="mc-jarvis-label">ROLLBACK ADVISOR</div>
+            <p className="mc-jarvis-copy">
+              <strong>{rollback.classification}</strong> · {rollback.statement}
+            </p>
+          </div>
+        </div>
+        <div className="mc-jarvis-attention" aria-label="JARVIS limitations">
+          <div className="mc-jarvis-label">UNKNOWN / LIMITATIONS</div>
+          {brief.attention.map((item) => (
+            <p key={item}>— {item}</p>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
 function HealthPanel({ environment, health, isLoading, error, onRefresh }) {
   const target = ENVIRONMENTS[environment];
   const rows = serviceRows(health);
   const fieldStats = rows.find((row) => row.service === 'fieldStats')?.snapshot;
   const runtimeRelease =
     fieldStats?.release && fieldStats.release !== 'unknown' ? fieldStats.release : 'UNKNOWN';
+  const releaseCandidate = health?.release?.git_sha || 'UNKNOWN';
+  const releaseState = health?.release?.release_state || 'UNKNOWN';
+  const ciState = [
+    'CI_QUALIFIED',
+    'BACKUP_DEPLOYED',
+    'BACKUP_VERIFIED',
+    'PRODUCTION_APPROVED',
+    'PRODUCTION_DEPLOYED',
+    'PRODUCTION_VERIFIED',
+    'CERTIFIED',
+  ].includes(releaseState)
+    ? 'VERIFIED'
+    : 'NOT VERIFIED';
   return (
     <>
       <div className="mc-statusline">
@@ -200,7 +272,8 @@ function HealthPanel({ environment, health, isLoading, error, onRefresh }) {
                 <tr>
                   <td>Deployment candidate</td>
                   <td>
-                    UNKNOWN<small className="mc-muted">No build SHA exposed to this runtime</small>
+                    {releaseCandidate}
+                    <small className="mc-muted">Static artifact manifest</small>
                   </td>
                 </tr>
                 <tr>
@@ -213,7 +286,8 @@ function HealthPanel({ environment, health, isLoading, error, onRefresh }) {
                 <tr>
                   <td>CI / qualification</td>
                   <td>
-                    NOT VERIFIED<small className="mc-muted">See release evidence</small>
+                    {ciState}
+                    <small className="mc-muted">Manifest state: {releaseState}</small>
                   </td>
                 </tr>
                 <tr>
@@ -227,6 +301,7 @@ function HealthPanel({ environment, health, isLoading, error, onRefresh }) {
           </div>
         </div>
       </section>
+      <JarvisPanel environment={environment} health={health} />
       <section className="mc-panel" id="services" style={{ marginTop: 16 }}>
         <div className="mc-panel-pad">
           <div className="mc-panel-title">

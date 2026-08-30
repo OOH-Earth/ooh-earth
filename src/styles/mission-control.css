@@ -90,6 +90,52 @@
   color: #fff;
   font-weight: 500;
 }
+.mc-jarvis {
+  margin-top: 16px;
+  border-color: #39545a;
+}
+.mc-jarvis::before {
+  background: #d7f36b;
+}
+.mc-jarvis-grid {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr;
+  gap: 26px;
+}
+.mc-jarvis-label {
+  color: #80a5a4;
+  font-size: 9px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+.mc-jarvis-statement {
+  max-width: 60ch;
+  margin: 8px 0 20px;
+  color: #f2f7f4;
+  font-family: 'Inter Tight', sans-serif;
+  font-size: 21px;
+  line-height: 1.2;
+}
+.mc-jarvis-copy {
+  margin: 8px 0 20px;
+  color: #b4c5c5;
+  font-size: 11px;
+  line-height: 1.6;
+}
+.mc-jarvis-copy strong {
+  color: #e5eeee;
+  font-weight: 500;
+  overflow-wrap: anywhere;
+}
+.mc-jarvis-attention {
+  border-top: 1px solid #1e3034;
+  padding-top: 14px;
+}
+.mc-jarvis-attention p {
+  margin: 7px 0 0;
+  color: #a9baba;
+  font-size: 10px;
+}
 .mc-grid {
   display: grid;
   grid-template-columns: 1.35fr 0.85fr;
@@ -437,6 +483,7 @@ body:has(.mc-shell) nav[aria-label='Mobile navigation'] {
     flex: 1;
   }
   .mc-grid,
+  .mc-jarvis-grid,
   .mc-lower {
     grid-template-columns: 1fr;
   }
