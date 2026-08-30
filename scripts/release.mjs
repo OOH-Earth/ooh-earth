@@ -4,6 +4,7 @@ import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { assertProductionGate, transitionRelease, validState } from './release-state.mjs';
 import { assertBuildArtifact, redactCliOutput } from './release-utils.mjs';
+import { atomicWriteJson, publishCertification } from './release-evidence.mjs';
 
 const args = process.argv.slice(2);
 const command = args[0] || 'status';
@@ -72,6 +73,62 @@ function deploy(target) {
   );
 }
 
+function publish(target) {
+  const manifest = loadManifest();
+  const evidencePath = value('--evidence');
+  if (!manifest || !evidencePath)
+    throw new Error('Publication requires a manifest and --evidence file');
+  const expectedState = target === 'backup' ? 'BACKUP_VERIFIED' : 'PRODUCTION_VERIFIED';
+  if (target === 'backup' && manifest.backup?.state !== expectedState)
+    throw new Error('BACKUP evidence can only publish after BACKUP_VERIFIED');
+  if (
+    target === 'production' &&
+    !['PRODUCTION_VERIFIED', 'CERTIFIED'].includes(manifest.release_state)
+  )
+    throw new Error('Production evidence can only publish after PRODUCTION_VERIFIED');
+  const evidence = JSON.parse(readFileSync(resolve(evidencePath), 'utf8'));
+  if (evidence.environment !== target)
+    throw new Error(`Evidence environment does not match publish target: ${target}`);
+  const published = publishCertification(manifest, evidence);
+  if (target === 'production') {
+    published.release_state = 'CERTIFIED';
+    published.production = { ...(published.production || {}), state: 'CERTIFIED' };
+  }
+  if (!has('--execute')) {
+    console.log(
+      JSON.stringify(
+        {
+          mode: 'DRY_RUN',
+          target,
+          candidate_sha: published.git_sha,
+          certification: published.certification_evidence[target],
+          production_mutation: 'NOT_PERFORMED',
+        },
+        null,
+        2,
+      ),
+    );
+    return;
+  }
+  assertBuildArtifact(existsSync(resolve('dist/index.html')));
+  const originalManifest = readFileSync(manifestPath, 'utf8');
+  atomicWriteJson(manifestPath, published);
+  const appId = target === 'backup' ? '6a6748e009b947cb29591871' : '6a62213cff3ccbca88c04ff5';
+  try {
+    const output = execFileSync(
+      'npx',
+      ['--yes', 'base44', '--app-id', appId, 'site', 'deploy', '--no-build', '--yes'],
+      { encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] },
+    );
+    const safeOutput = redactCliOutput(output).trim();
+    if (safeOutput) console.log(safeOutput);
+  } catch (error) {
+    writeFileSync(manifestPath, originalManifest);
+    throw new Error(redactCliOutput(`${error.stdout || ''}\n${error.stderr || ''}`).trim());
+  }
+  console.log(`CERTIFICATION_PUBLISHED target=${target} candidate=${published.git_sha}`);
+}
+
 try {
   if (command === 'status') {
     const manifest = loadManifest();
@@ -99,8 +156,14 @@ try {
     deploy('backup');
   } else if (command === 'deploy:production') {
     deploy('production');
+  } else if (command === 'publish:backup') {
+    publish('backup');
+  } else if (command === 'publish:production') {
+    publish('production');
   } else {
-    throw new Error('Commands: status, plan, transition, deploy:backup, deploy:production');
+    throw new Error(
+      'Commands: status, plan, transition, deploy:backup, deploy:production, publish:backup, publish:production',
+    );
   }
 } catch (error) {
   console.error(`RELEASE_BLOCKED: ${error.message}`);
