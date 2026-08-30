@@ -213,3 +213,72 @@ test.describe('LocationDetail — rolling time-since-tag counter', () => {
     await expect(page.getByText(/tagged .* ago/i)).toHaveCount(0);
   });
 });
+
+test.describe('LocationDetail — react-query migration regression', () => {
+  test('revisiting via client-side nav does not re-fetch the record within staleTime', async ({
+    page,
+  }) => {
+    test.setTimeout(30_000);
+
+    await mockBase44(page, {
+      user: null,
+      locations: {
+        'loc-cache-1': {
+          id: 'loc-cache-1',
+          title: 'Billboard · Cache Regression Check',
+          type: 'billboard',
+          address: '1 Cache Way, Testville',
+          lat: 13.79,
+          lng: 100.54,
+          image_url: svg('%2339FF14', 'COVER'),
+          status: 'verified',
+          status_updated_at: null,
+          access_key: 'none',
+        },
+      },
+      locationPhotos: [],
+    });
+
+    // Exact match on this specific record's GET endpoint -- Location.get(id)
+    // hits /entities/Location/{id} directly, a different URL shape from any
+    // list/filter call (/entities/Location?...), so no other page or widget
+    // can produce a same-URL false positive the way FieldId's bare
+    // Operative.list() endpoint could (see field-id.spec.ts).
+    let locationGetCalls = 0;
+    page.on('request', (req) => {
+      if (req.url().endsWith('/entities/Location/loc-cache-1')) locationGetCalls++;
+    });
+
+    await page.goto('/location/loc-cache-1');
+    await expect(page.getByRole('heading', { name: /Cache Regression Check/i })).toBeVisible();
+    const afterFirstVisit = locationGetCalls;
+    expect(afterFirstVisit).toBe(1);
+
+    // Client-side nav away, then back -- same SPA session, same QueryClient
+    // instance, no full page reload. This app's route transition
+    // (AnimatePresence mode="wait" + React.lazy chunks) takes several
+    // seconds, not milliseconds, to actually unmount the previous route --
+    // verified live with mount/unmount console markers for the sibling
+    // FieldId investigation (KNOWN_ISSUES #16). A short wait here would
+    // pass regardless of staleTime, for the wrong reason (the component
+    // simply hasn't unmounted yet).
+    //
+    // Nav target is Home ("OOH Earth — Home console"), not the "Field map"
+    // icon link -- that link is `hidden md:flex` in Nav.jsx, invisible (and
+    // unclickable) on the mobile-chromium viewport this suite also runs
+    // under. Home is safe here unlike in field-id.spec.ts: Location.get(id)
+    // hits a per-record URL no other page/widget shares, so there's no
+    // FieldIdGenerator-style confound to isolate away from.
+    await page.getByLabel('OOH Earth — Home console').click();
+    await page.waitForURL('**/', { timeout: 5000 });
+    await page.waitForTimeout(6000);
+    await page.goBack();
+    await expect(page.getByRole('heading', { name: /Cache Regression Check/i })).toBeVisible();
+    await page.waitForTimeout(500);
+
+    expect(
+      locationGetCalls,
+      `Location.get() should not fire again within staleTime on a genuine remount (was ${afterFirstVisit}, now ${locationGetCalls})`,
+    ).toBe(afterFirstVisit);
+  });
+});
