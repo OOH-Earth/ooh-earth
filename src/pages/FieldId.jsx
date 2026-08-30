@@ -1,4 +1,5 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import Nav from '@/components/ooh/Nav';
 import FieldIdCard from '@/components/ooh/fieldid/FieldIdCard';
 import FieldIdBack from '@/components/ooh/fieldid/FieldIdBack';
@@ -35,13 +36,16 @@ export default function FieldId() {
     points: 0,
     verified: false,
   });
-  const [ops, setOps] = useState([]);
-
-  useEffect(() => {
-    base44.entities.Operative.list()
-      .then((list) => setOps(Array.isArray(list) ? list : []))
-      .catch(() => setOps([]));
-  }, []);
+  // Read-only roster for the handle-picker below -- no writes happen
+  // against it from this page, so a shared cache is safe. Previously
+  // re-fetched the full Operative list every time this page mounted.
+  const { data: ops = [] } = useQuery({
+    queryKey: ['operatives'],
+    queryFn: async () => {
+      const list = await base44.entities.Operative.list();
+      return Array.isArray(list) ? list : [];
+    },
+  });
 
   const set = (k, v) => setOp((o) => ({ ...o, [k]: v }));
 
