@@ -55,7 +55,9 @@ test('rejects cross-environment snapshots and malformed values safely', () => {
   });
   assert.equal(evidence.services.length, 0);
   assert.equal(evidence.environment_mismatches, 1);
-  assert.ok(buildSystemBrief(evidence).attention.some((item) => /different environment/.test(item)));
+  assert.ok(
+    buildSystemBrief(evidence).attention.some((item) => /different environment/.test(item)),
+  );
   assert.equal(buildSystemBrief(evidence).status, 'UNKNOWN');
 });
 test('does not treat future evidence as current', () => {
