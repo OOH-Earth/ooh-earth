@@ -1,5 +1,6 @@
-import { useEffect, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import {
   ArrowLeft,
@@ -33,38 +34,51 @@ function distM(a, b) {
   return R * 2 * Math.atan2(Math.sqrt(s), Math.sqrt(1 - s));
 }
 
+// Bulk verified-Location fetch, not scoped to any one bus stop -- the query
+// key is the fetch's own parameters, not this page's :id param, so this
+// cache is shared across every bus stop a visitor looks at in one session,
+// not just revisits of the same one.
+const VERIFIED_LOCATIONS_QUERY_KEY = ['locations', 'verified', '-created_date', 500];
+
 export default function BusStopDetail() {
   const { id } = useParams();
   const stop = getBusStop(id);
-  const [linkedLoc, setLinkedLoc] = useState(null);
-  const [searching, setSearching] = useState(true);
   const [cameraOpen, setCameraOpen] = useState(false);
+  const queryClient = useQueryClient();
 
-  useEffect(() => {
-    if (!stop) return;
-    let active = true;
-    (async () => {
-      setSearching(true);
-      try {
-        // Look for a Location record within ~50m of this bus stop
-        const all = await base44.entities.Location.filter(
-          { status: 'verified' },
-          '-created_date',
-          500,
-        );
-        if (!active) return;
-        const match = (all || []).find((r) => r.lat != null && distM(stop, r) < 50);
-        setLinkedLoc(match || null);
-      } catch {
-        if (active) setLinkedLoc(null);
-      } finally {
-        if (active) setSearching(false);
-      }
-    })();
-    return () => {
-      active = false;
-    };
-  }, [stop]);
+  // staleTime: 30_000, same value and justification as LocationDetail.jsx's
+  // ['location', id] query (KNOWN_ISSUES #16) -- these are Location records
+  // too, so the same moderator verify/reject staleness concern applies:
+  // status/notes can change out from under the viewer via an action
+  // elsewhere in the app, with no subscribe/invalidate path here to catch
+  // that. Only this page's own edits (via LocationEditPanel below) refresh
+  // the cache, same as LocationDetail's setQueryData pattern.
+  const { data: verifiedLocations = [], isLoading: searching } = useQuery({
+    queryKey: VERIFIED_LOCATIONS_QUERY_KEY,
+    queryFn: async () => {
+      const all = await base44.entities.Location.filter(
+        { status: 'verified' },
+        '-created_date',
+        500,
+      );
+      return Array.isArray(all) ? all : [];
+    },
+    enabled: !!stop,
+    staleTime: 30_000,
+  });
+
+  // Look for a Location record within ~50m of this bus stop
+  const linkedLoc = useMemo(() => {
+    if (!stop) return null;
+    return verifiedLocations.find((r) => r.lat != null && distM(stop, r) < 50) || null;
+  }, [stop, verifiedLocations]);
+
+  const handleLocUpdated = (updated) => {
+    queryClient.setQueryData(VERIFIED_LOCATIONS_QUERY_KEY, (old) => {
+      const list = /** @type {any[]} */ (old) || [];
+      return list.map((r) => (r.id === updated.id ? updated : r));
+    });
+  };
 
   if (!stop) {
     return (
@@ -262,7 +276,7 @@ export default function BusStopDetail() {
         <FieldCheckPanel location={checkLocation} />
 
         {/* If linked to a Location record, show edit panel */}
-        {linkedLoc && <LocationEditPanel loc={linkedLoc} onUpdated={setLinkedLoc} />}
+        {linkedLoc && <LocationEditPanel loc={linkedLoc} onUpdated={handleLocUpdated} />}
 
         {/* If no linked record, show CTA */}
         {!searching && !linkedLoc && (
