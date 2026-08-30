@@ -4,8 +4,12 @@ import {
   FRESHNESS,
   RISK,
   buildSystemBrief,
+  buildAttentionItems,
+  changeSummary,
+  DRIFT,
   freshnessOf,
   normalizeEvidence,
+  releaseDrift,
   rollbackAssessment,
 } from './jarvisReasoning.js';
 
@@ -28,8 +32,8 @@ test('classifies fresh verified health as healthy and low risk', () => {
   const brief = buildSystemBrief(
     normalizeEvidence({ environment: 'production', health: health(), now }),
   );
-  assert.equal(brief.status, 'HEALTHY');
-  assert.equal(brief.risk, RISK.LOW);
+  assert.equal(brief.status, 'UNKNOWN');
+  assert.equal(brief.risk, RISK.ATTENTION);
 });
 test('downgrades stale healthy evidence to unknown', () => {
   const evidence = normalizeEvidence({
@@ -66,4 +70,37 @@ test('does not treat future evidence as current', () => {
 test('does not recommend rollback from unknown evidence', () => {
   const brief = buildSystemBrief(normalizeEvidence({ environment: 'production', health: {}, now }));
   assert.equal(rollbackAssessment(brief).classification, 'INSUFFICIENT EVIDENCE');
+});
+
+test('requires explicit ancestry evidence for release drift', () => {
+  assert.equal(
+    releaseDrift({ currentMainSha: 'b', deployedCandidateSha: 'a' }).state,
+    DRIFT.UNKNOWN,
+  );
+  assert.equal(
+    releaseDrift({ currentMainSha: 'b', deployedCandidateSha: 'a', relation: 'DESCENDANT' }).state,
+    DRIFT.MAIN_AHEAD,
+  );
+  assert.equal(
+    releaseDrift({ currentMainSha: 'a', deployedCandidateSha: 'a' }).state,
+    DRIFT.ALIGNED,
+  );
+});
+
+test('reports missing core coverage and bounded attention', () => {
+  const evidence = normalizeEvidence({ environment: 'production', health: health(), now });
+  const brief = buildSystemBrief(evidence);
+  assert.equal(brief.coverage.verified_count, 1);
+  assert.ok(brief.coverage.missing_core.some((item) => item.service === 'stripeWebhook'));
+  assert.ok(
+    buildAttentionItems(evidence).some((item) => item.reason === 'SERVICE COVERAGE MISSING'),
+  );
+});
+
+test('change output is deterministic and does not invent history', () => {
+  assert.deepEqual(changeSummary({}), ['UNKNOWN']);
+  assert.deepEqual(changeSummary({ drift: { state: DRIFT.MAIN_AHEAD }, stale: true }), [
+    'SOURCE_CHANGED',
+    'EVIDENCE_AGED',
+  ]);
 });
