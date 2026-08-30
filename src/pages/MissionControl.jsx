@@ -64,6 +64,13 @@ function CommandPalette({ onClose, onCommand }) {
     ['security', 'Show unknowns', 'U'],
     ['jarvis', 'Recommended next action', 'N'],
     ['rollback', 'Assess rollback', 'B'],
+    ['release', 'Release status', ''],
+    ['jarvis', 'What changed?', ''],
+    ['jarvis', 'Show attention', ''],
+    ['evidence', 'Show stale evidence', ''],
+    ['jarvis', 'Compare environments', ''],
+    ['evidence', 'Why?', ''],
+    ['refresh', 'Refresh evidence', ''],
   ];
   const filtered = commands.filter(([, label]) =>
     label.toLowerCase().includes(query.toLowerCase()),
@@ -159,6 +166,10 @@ function JarvisPanel({ environment, health }) {
             <p className="mc-jarvis-copy">
               <strong>{rollback.classification}</strong> · {rollback.statement}
             </p>
+            <div className="mc-jarvis-label">RELEASE DRIFT</div>
+            <p className="mc-jarvis-copy">
+              <strong>{brief.drift.state}</strong> · {brief.drift.statement}
+            </p>
           </div>
         </div>
         <div className="mc-jarvis-attention" aria-label="JARVIS limitations">
@@ -166,6 +177,27 @@ function JarvisPanel({ environment, health }) {
           {brief.attention.map((item) => (
             <p key={item}>— {item}</p>
           ))}
+        </div>
+        <div className="mc-jarvis-grid mc-jarvis-detail-grid">
+          <div>
+            <div className="mc-jarvis-label">SERVICE COVERAGE</div>
+            <p className="mc-jarvis-copy">
+              {brief.coverage.verified_count} verified · {brief.coverage.stale_count} stale ·{' '}
+              {brief.coverage.unknown_count} unknown
+            </p>
+          </div>
+          <div>
+            <div className="mc-jarvis-label">ATTENTION</div>
+            {brief.attention_items.length ? (
+              brief.attention_items.slice(0, 3).map((item) => (
+                <p className="mc-jarvis-copy" key={item.reason}>
+                  <strong>{item.priority}</strong> {item.reason}
+                </p>
+              ))
+            ) : (
+              <p className="mc-jarvis-copy">No deterministic attention items.</p>
+            )}
+          </div>
         </div>
       </div>
     </section>

@@ -14,6 +14,7 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "release:manifest": "node scripts/generate-release-manifest.mjs",
+    "release:evidence": "node scripts/release-evidence.mjs",
     "release:status": "node scripts/release.mjs status",
     "release:plan": "node scripts/release.mjs plan",
     "release:transition": "node scripts/release.mjs transition",

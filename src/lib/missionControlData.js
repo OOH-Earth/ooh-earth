@@ -10,7 +10,7 @@ export const ENVIRONMENTS = {
 
 const STATUS = new Set(['HEALTHY', 'DEGRADED', 'UNKNOWN']);
 const EVIDENCE = new Set(['VERIFIED', 'INSUFFICIENT_DATA', 'NOT_VERIFIED']);
-const SERVICES = ['fieldStats', 'submitOffline', 'stripeWebhook'];
+const SERVICES = ['fieldStats', 'submitOffline', 'stripeWebhook', 'map', 'authentication'];
 
 function safeSnapshot(value) {
   if (!value || typeof value !== 'object') return null;
@@ -110,9 +110,10 @@ async function fetchHealth(environment) {
     if (releaseResponse.ok) {
       const candidate = await releaseResponse.json();
       if (
-        candidate &&
-        typeof candidate === 'object' &&
-        candidate.schema === 'ooh-earth.release-manifest.v2'
+        (candidate &&
+          typeof candidate === 'object' &&
+          candidate.schema === 'ooh-earth.release-manifest.v2') ||
+        candidate.schema === 'ooh-earth.release-manifest.v3'
       ) {
         release = {
           git_sha: typeof candidate.git_sha === 'string' ? candidate.git_sha : 'UNKNOWN',
@@ -121,6 +122,10 @@ async function fetchHealth(environment) {
           runtime_revision:
             typeof candidate.runtime_revision === 'string' ? candidate.runtime_revision : 'UNKNOWN',
           source: 'deployed static release manifest',
+          current_main_sha: candidate.current_main?.sha || 'UNKNOWN',
+          current_main_relation: candidate.current_main?.relation || 'UNKNOWN',
+          certification:
+            candidate.certification_evidence?.production?.certification_result || 'UNKNOWN',
         };
       }
     }
