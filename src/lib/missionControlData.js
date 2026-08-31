@@ -110,10 +110,11 @@ async function fetchHealth(environment) {
     if (releaseResponse.ok) {
       const candidate = await releaseResponse.json();
       if (
-        (candidate &&
-          typeof candidate === 'object' &&
-          candidate.schema === 'ooh-earth.release-manifest.v2') ||
-        candidate.schema === 'ooh-earth.release-manifest.v3'
+        candidate &&
+        typeof candidate === 'object' &&
+        ['ooh-earth.release-manifest.v2', 'ooh-earth.release-manifest.v3'].includes(
+          candidate.schema,
+        )
       ) {
         release = {
           git_sha: typeof candidate.git_sha === 'string' ? candidate.git_sha : 'UNKNOWN',
@@ -125,7 +126,8 @@ async function fetchHealth(environment) {
           current_main_sha: candidate.current_main?.sha || 'UNKNOWN',
           current_main_relation: candidate.current_main?.relation || 'UNKNOWN',
           certification:
-            candidate.certification_evidence?.production?.certification_result || 'UNKNOWN',
+            candidate.certification_evidence?.[environment]?.certification_result || 'UNKNOWN',
+          certified_at: candidate.certification_evidence?.[environment]?.certified_at || null,
         };
       }
     }
