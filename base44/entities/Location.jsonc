@@ -71,12 +71,64 @@
         "verified",
         "rejected"
       ],
-      "default": "pending"
+      "default": "pending",
+      "rls": {
+        "write": {
+          "$or": [
+            {
+              "user_condition": {
+                "role": "admin"
+              }
+            },
+            {
+              "user_condition": {
+                "data.access": "admin"
+              }
+            },
+            {
+              "user_condition": {
+                "data.access": "moderator"
+              }
+            },
+            {
+              "user_condition": {
+                "data.agency": true
+              }
+            }
+          ]
+        }
+      }
     },
     "status_updated_at": {
       "type": "string",
       "format": "date-time",
-      "description": "Timestamp of the last verify/reject action — drives the time-since-last-tag counter"
+      "description": "Timestamp of the last verify/reject action — drives the time-since-last-tag counter",
+      "rls": {
+        "write": {
+          "$or": [
+            {
+              "user_condition": {
+                "role": "admin"
+              }
+            },
+            {
+              "user_condition": {
+                "data.access": "admin"
+              }
+            },
+            {
+              "user_condition": {
+                "data.access": "moderator"
+              }
+            },
+            {
+              "user_condition": {
+                "data.agency": true
+              }
+            }
+          ]
+        }
+      }
     },
     "brand_name": {
       "type": "string",

@@ -2,7 +2,25 @@ import { correlationHeaders, telemetryFor } from './telemetry.ts';
 
 const OPERATION_ID = /^[A-Za-z0-9][A-Za-z0-9._:-]{0,119}$/;
 const ENTITY_NAMES = new Set(['Location', 'FieldCheck']);
-const STRIPPED_FIELDS = new Set(['id', 'created_by_id', 'created_date', 'updated_date']);
+// `status`/`status_updated_at` are stripped for the same reason as the
+// identity/timestamp fields above: `moderate.ts` (asServiceRole) is the
+// only legitimate writer of a Location/FieldCheck's verification state,
+// after a human reviews it. Location and FieldCheck both have
+// `rls.create: null` (open, by design, so anyone can submit a report) with
+// no field-level restriction on `status` -- without stripping it here, an
+// unauthenticated POST to this function could set `status: "verified"`
+// directly on creation and skip moderation entirely. Every legitimate
+// caller (FieldCheckCamera, FieldReport, QuickCapture) already only ever
+// sends 'pending' or omits the field, so stripping it changes nothing for
+// real submissions; it only removes fields no honest client needs to set.
+const STRIPPED_FIELDS = new Set([
+  'id',
+  'created_by_id',
+  'created_date',
+  'updated_date',
+  'status',
+  'status_updated_at',
+]);
 
 type Dependencies = {
   createClientFromRequest: (req: Request) => any;
