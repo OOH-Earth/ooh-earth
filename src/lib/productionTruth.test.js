@@ -43,6 +43,17 @@ test('models real fieldStats and map evidence while keeping uncovered capabiliti
   );
 });
 
+test('published public smoke evidence supports public route availability only', () => {
+  const truth = buildProductionTruth({
+    health: health([snapshot('fieldStats'), snapshot('map')]),
+    release: { ...release, public_smoke_result: 'VERIFIED' },
+    now,
+  });
+  const publicWeb = truth.capabilities.find((item) => item.id === 'publicWeb');
+  assert.equal(publicWeb.verification, 'VERIFIED');
+  assert.match(publicWeb.does_not_prove, /frontend/);
+});
+
 test('current verified critical degradation dominates aggregate state', () => {
   const truth = buildProductionTruth({
     health: health([snapshot('fieldStats'), snapshot('map', 'DEGRADED')]),

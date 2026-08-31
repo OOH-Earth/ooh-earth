@@ -195,6 +195,26 @@ function releaseEvidence(release, environment, now) {
   };
 }
 
+function publicEvidenceFromRelease(release, environment, now) {
+  const definition = byId.get('publicWeb');
+  const verified = release?.public_smoke_result === 'VERIFIED';
+  const observedAt = time(release?.certified_at);
+  return {
+    id: 'publicWeb',
+    label: definition.label,
+    criticality: definition.criticality,
+    state: verified ? 'HEALTHY' : 'UNKNOWN',
+    verification: verified ? 'VERIFIED' : 'INSUFFICIENT_DATA',
+    freshness: verified ? freshnessFor(observedAt, 'certification', now) : 'UNKNOWN',
+    environment,
+    observed_at: observedAt,
+    duration_ms: null,
+    source: 'published release certification evidence',
+    proves: definition.proves,
+    does_not_prove: definition.doesNotProve,
+  };
+}
+
 /** @param {{environment?: string, health?: any, release?: any, evidence?: any, now?: number}} input */
 export function buildProductionTruth({
   environment = 'production',
@@ -210,7 +230,9 @@ export function buildProductionTruth({
       .map((item) => [item.service, item]),
   );
   const capabilities = [
-    snapshotEvidence(snapshots.get('publicWeb'), 'publicWeb', safeEnvironment, now),
+    snapshots.has('publicWeb')
+      ? snapshotEvidence(snapshots.get('publicWeb'), 'publicWeb', safeEnvironment, now)
+      : publicEvidenceFromRelease(release, safeEnvironment, now),
     snapshots.has('map') || snapshots.has('mapData')
       ? snapshotEvidence(
           snapshots.get('map') || snapshots.get('mapData'),
