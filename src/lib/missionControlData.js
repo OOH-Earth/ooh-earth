@@ -127,6 +127,10 @@ async function fetchHealth(environment) {
           current_main_relation: candidate.current_main?.relation || 'UNKNOWN',
           certification:
             candidate.certification_evidence?.[environment]?.certification_result || 'UNKNOWN',
+          public_smoke_result:
+            candidate.certification_evidence?.[environment]?.public_smoke_result || 'UNKNOWN',
+          operational_health_result:
+            candidate.certification_evidence?.[environment]?.operational_health_result || 'UNKNOWN',
           certified_at: candidate.certification_evidence?.[environment]?.certified_at || null,
         };
       }
