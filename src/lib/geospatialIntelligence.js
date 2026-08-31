@@ -151,8 +151,7 @@ function distanceMeters(a, b) {
   const lat2 = (b.lat * Math.PI) / 180;
   const dLat = lat2 - lat1;
   const dLng = ((b.lng - a.lng) * Math.PI) / 180;
-  const h =
-    Math.sin(dLat / 2) ** 2 + Math.cos(lat1) * Math.cos(lat2) * Math.sin(dLng / 2) ** 2;
+  const h = Math.sin(dLat / 2) ** 2 + Math.cos(lat1) * Math.cos(lat2) * Math.sin(dLng / 2) ** 2;
   return 2 * EARTH_RADIUS_M * Math.asin(Math.sqrt(Math.min(1, h)));
 }
 
@@ -160,7 +159,11 @@ function distanceMeters(a, b) {
  * Finds coordinate-nearby candidates for human review. This is deliberately
  * not a merge or delete operation and returns IDs plus bounded evidence only.
  */
-export function findPossibleDuplicates({ locations = [], maxDistanceMeters = 50, limit = 200 } = {}) {
+export function findPossibleDuplicates({
+  locations = [],
+  maxDistanceMeters = 50,
+  limit = 200,
+} = {}) {
   const distance = Math.min(1000, Math.max(1, Number(maxDistanceMeters) || 50));
   const cellSize = distance / 111_320;
   const items = boundedRows(locations)
