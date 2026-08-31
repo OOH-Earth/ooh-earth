@@ -3,7 +3,11 @@ import { execFileSync } from 'node:child_process';
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { assertProductionGate, transitionRelease, validState } from './release-state.mjs';
-import { assertBuildArtifact, redactCliOutput } from './release-utils.mjs';
+import {
+  assertBuildArtifact,
+  redactCliOutput,
+  writeReleaseManifestArtifact,
+} from './release-utils.mjs';
 import { atomicWriteJson, publishCertification } from './release-evidence.mjs';
 
 const args = process.argv.slice(2);
@@ -113,6 +117,7 @@ function publish(target) {
   assertBuildArtifact(existsSync(resolve('dist/index.html')));
   const originalManifest = readFileSync(manifestPath, 'utf8');
   atomicWriteJson(manifestPath, published);
+  writeReleaseManifestArtifact(resolve('dist/release-manifest.json'), published);
   const appId = target === 'backup' ? '6a6748e009b947cb29591871' : '6a62213cff3ccbca88c04ff5';
   try {
     const output = execFileSync(
