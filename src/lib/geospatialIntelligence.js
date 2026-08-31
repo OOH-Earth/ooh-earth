@@ -3,6 +3,7 @@ import { classifyLocationQuality, freshnessOf, validCoordinate } from './locatio
 const MAX_INPUT = 5000;
 const MAX_OUTPUT = 1000;
 const DEFAULT_FRESHNESS_MS = 365 * 24 * 60 * 60 * 1000;
+const EARTH_RADIUS_M = 6_371_000;
 
 const boundedRows = (rows) => (Array.isArray(rows) ? rows.slice(0, MAX_INPUT) : []);
 
@@ -147,6 +148,70 @@ export function queryLocationIntelligence(
     })
     .slice(0, boundedLimit);
   return { state: 'EVIDENCE_PRESENT', results };
+}
+
+function distanceMeters(a, b) {
+  const lat1 = (a.lat * Math.PI) / 180;
+  const lat2 = (b.lat * Math.PI) / 180;
+  const dLat = lat2 - lat1;
+  const dLng = ((b.lng - a.lng) * Math.PI) / 180;
+  const h = Math.sin(dLat / 2) ** 2 + Math.cos(lat1) * Math.cos(lat2) * Math.sin(dLng / 2) ** 2;
+  return 2 * EARTH_RADIUS_M * Math.asin(Math.sqrt(Math.min(1, h)));
+}
+
+/**
+ * Finds coordinate-nearby candidates for human review. This is deliberately
+ * not a merge or delete operation and returns IDs plus bounded evidence only.
+ */
+export function findPossibleDuplicates({
+  locations = [],
+  maxDistanceMeters = 50,
+  limit = 200,
+} = {}) {
+  const distance = Math.min(1000, Math.max(1, Number(maxDistanceMeters) || 50));
+  const cellSize = distance / 111_320;
+  const items = boundedRows(locations)
+    .map((record) => safeLocation(record, Date.now(), DEFAULT_FRESHNESS_MS))
+    .filter((item) => item && item.id !== 'UNKNOWN');
+  const buckets = new Map();
+  for (const [index, item] of items.entries()) {
+    const key = `${Math.floor(item.lat / cellSize)}:${Math.floor(item.lng / cellSize)}`;
+    const bucket = buckets.get(key) || [];
+    bucket.push(index);
+    buckets.set(key, bucket);
+  }
+  const candidates = [];
+  for (const [index, item] of items.entries()) {
+    const latCell = Math.floor(item.lat / cellSize);
+    const lngCell = Math.floor(item.lng / cellSize);
+    for (let latOffset = -1; latOffset <= 1; latOffset += 1) {
+      for (let lngOffset = -1; lngOffset <= 1; lngOffset += 1) {
+        const nearby = buckets.get(`${latCell + latOffset}:${lngCell + lngOffset}`) || [];
+        for (const otherIndex of nearby) {
+          if (otherIndex <= index) continue;
+          const other = items[otherIndex];
+          const distanceM = distanceMeters(item, other);
+          if (distanceM <= distance) {
+            candidates.push({
+              ids: [item.id, other.id].sort(),
+              distance_m: Math.round(distanceM * 10) / 10,
+              reason: 'coordinates are within the configured review radius',
+              next_action: 'Review both locations before any manual merge decision.',
+            });
+          }
+        }
+      }
+    }
+  }
+  candidates.sort(
+    (a, b) => a.distance_m - b.distance_m || a.ids.join(':').localeCompare(b.ids.join(':')),
+  );
+  return {
+    state: candidates.length ? 'POSSIBLE_DUPLICATES' : 'NO_DUPLICATES_DETECTED',
+    radius_m: distance,
+    candidates: candidates.slice(0, Math.min(MAX_OUTPUT, Math.max(1, Number(limit) || 200))),
+    caveat: 'Coordinate proximity is a review signal, not proof of duplicate identity.',
+  };
 }
 
 export function fieldIntelligenceRecommendations(profile) {
