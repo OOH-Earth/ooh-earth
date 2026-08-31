@@ -2,6 +2,11 @@ import { correlationHeaders, telemetryFor } from './telemetry.ts';
 
 type Dependencies = {
   createClientFromRequest: (req: Request) => any;
+  recordHealth?: (
+    outcome: 'success' | 'failed',
+    durationMs: number,
+    errorCode?: string,
+  ) => Promise<void> | void;
   getEnv?: (name: string) => string | undefined;
   fetchImpl?: typeof fetch;
   now?: () => number;
@@ -405,10 +410,12 @@ export async function handleStripeWebhook(
     fetchImpl = fetch,
     now = () => Date.now(),
     inFlight = new Map(),
+    recordHealth,
   }: Dependencies,
 ) {
   const telemetry = telemetryFor(req, { functionName: 'stripeWebhook', now, getEnv });
   telemetry.emit('received');
+  const startedAt = now();
   if (req.method !== 'POST') {
     telemetry.finish('rejected', { error_code: 'INVALID_METHOD' });
     return Response.json(
@@ -457,6 +464,11 @@ export async function handleStripeWebhook(
       event_type: telemetryEventType(event.type),
       error_code: result.status === 200 ? undefined : 'REPLAY_CONFLICT',
     });
+    await recordHealth?.(
+      result.status === 200 ? 'success' : 'failed',
+      now() - startedAt,
+      result.status === 200 ? undefined : 'DEPENDENCY_FAILURE',
+    );
     return Response.json(result.body, {
       status: result.status,
       headers: correlationHeaders(telemetry),
@@ -495,6 +507,11 @@ export async function handleStripeWebhook(
       error_code: result.status === 200 ? undefined : 'DEPENDENCY_FAILURE',
       retryable: result.status >= 500,
     });
+    await recordHealth?.(
+      result.status === 200 ? 'success' : 'failed',
+      now() - startedAt,
+      result.status === 200 ? undefined : 'DEPENDENCY_FAILURE',
+    );
     return Response.json(result.body, {
       status: result.status,
       headers: correlationHeaders(telemetry),

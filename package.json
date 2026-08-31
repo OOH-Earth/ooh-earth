@@ -26,6 +26,7 @@
     "test:release-utils": "node --test scripts/release-utils.test.mjs",
     "test:release-evidence": "node --test scripts/release-evidence.test.mjs",
     "test:jarvis": "node --test src/lib/jarvisReasoning.test.js",
+    "test:autopilot": "node --test src/lib/autopilotReasoning.test.js",
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
     "test:a11y": "playwright test a11y.spec.ts",

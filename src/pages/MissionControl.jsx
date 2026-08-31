@@ -10,6 +10,12 @@ import {
   serviceRows,
 } from '@/lib/missionControlData';
 import { buildSystemBrief, normalizeEvidence, rollbackAssessment } from '@/lib/jarvisReasoning';
+import {
+  assessAutopilotRollback,
+  buildRemediationPlan,
+  diagnoseAutopilot,
+  nextBestAction,
+} from '@/lib/autopilotReasoning';
 import '@/styles/mission-control.css';
 
 const formatTime = (value) => {
@@ -71,6 +77,12 @@ function CommandPalette({ onClose, onCommand }) {
     ['jarvis', 'Compare environments', ''],
     ['evidence', 'Why?', ''],
     ['refresh', 'Refresh evidence', ''],
+    ['autopilot', 'Critical capability health', ''],
+    ['autopilot', 'What needs attention?', ''],
+    ['autopilot', 'Diagnose Production', ''],
+    ['autopilot', 'Compare BACKUP and Production', ''],
+    ['autopilot', 'Generate remediation plan', ''],
+    ['autopilot', 'What should I check next?', ''],
   ];
   const filtered = commands.filter(([, label]) =>
     label.toLowerCase().includes(query.toLowerCase()),
@@ -134,6 +146,19 @@ function JarvisPanel({ environment, health }) {
   );
   const brief = useMemo(() => buildSystemBrief(evidence), [evidence]);
   const rollback = useMemo(() => rollbackAssessment(brief), [brief]);
+  const autopilot = useMemo(
+    () =>
+      diagnoseAutopilot({
+        evidence: {
+          production: environment === 'production' ? health?.services || [] : [],
+          backup: environment === 'backup' ? health?.services || [] : [],
+        },
+      }),
+    [environment, health],
+  );
+  const nextAction = useMemo(() => nextBestAction(autopilot), [autopilot]);
+  const remediationPlan = useMemo(() => buildRemediationPlan(autopilot), [autopilot]);
+  const autopilotRollback = useMemo(() => assessAutopilotRollback(autopilot), [autopilot]);
   return (
     <section id="jarvis" className="mc-panel mc-jarvis" aria-label="JARVIS read-only system brief">
       <div className="mc-panel-pad">
@@ -197,6 +222,27 @@ function JarvisPanel({ environment, health }) {
             ) : (
               <p className="mc-jarvis-copy">No deterministic attention items.</p>
             )}
+          </div>
+        </div>
+        <div className="mc-jarvis-grid mc-jarvis-detail-grid" id="autopilot">
+          <div>
+            <div className="mc-jarvis-label">AUTOPILOT DIAGNOSIS / READ-ONLY</div>
+            <p className="mc-jarvis-copy">
+              <strong>{autopilot.systemState}</strong> ·{' '}
+              {autopilot.diagnosis[0]?.statement || 'UNKNOWN'}
+            </p>
+            <div className="mc-jarvis-label">NEXT BEST ACTION</div>
+            <p className="mc-jarvis-copy">
+              <strong>{nextAction.classification}</strong> · {nextAction.action}
+            </p>
+          </div>
+          <div>
+            <div className="mc-jarvis-label">REMEDIATION PLAN</div>
+            <p className="mc-jarvis-copy">{remediationPlan.diagnostic_steps[0]}</p>
+            <div className="mc-jarvis-label">ROLLBACK INTELLIGENCE</div>
+            <p className="mc-jarvis-copy">
+              <strong>{autopilotRollback.classification}</strong> · {autopilotRollback.statement}
+            </p>
           </div>
         </div>
       </div>
