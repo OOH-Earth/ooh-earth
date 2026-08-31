@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { Image } from '@/components/ui/image';
 import {
@@ -14,6 +14,7 @@ import {
 import FieldCheckCamera from '@/components/ooh/FieldCheckCamera';
 import TimeSinceTag from '@/components/ooh/TimeSinceTag';
 import { computeFreshness, detectChanges, CONDITION_LABELS } from '@/lib/fieldCheckFreshness';
+import { trackEvent } from '@/lib/trackEvent';
 
 function timeAgo(iso) {
   if (!iso) return '';
@@ -32,6 +33,28 @@ export default function FieldCheckPanel({ location }) {
   const [checks, setChecks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [cameraOpen, setCameraOpen] = useState(false);
+  const ctaRef = useRef(null);
+
+  // Discoverability signal, not just a page-view: this panel sits well
+  // below the fold on mobile (measured ~1.6 viewport-heights down in
+  // Phase 7 recon), so "the page loaded" and "the CTA was actually seen"
+  // are different claims. Fires once, first time the button crosses 50%
+  // visible.
+  useEffect(() => {
+    const el = ctaRef.current;
+    if (!el || typeof IntersectionObserver !== 'function') return;
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          trackEvent('recheck_cta_viewed', { check_type: location?.type });
+          observer.disconnect();
+        }
+      },
+      { threshold: 0.5 },
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [location?.type]);
 
   useEffect(() => {
     if (!location?.id) return;
@@ -94,7 +117,11 @@ export default function FieldCheckPanel({ location }) {
           )}
         </span>
         <button
-          onClick={() => setCameraOpen(true)}
+          ref={ctaRef}
+          onClick={() => {
+            trackEvent('camera_opened', { check_type: location?.type });
+            setCameraOpen(true);
+          }}
           className="flex items-center gap-1.5 border border-ozone bg-ozone px-3 py-1.5 font-mono text-[9px] font-bold uppercase tracking-[0.2em] text-void transition-colors hover:bg-flare hover:border-flare"
         >
           <RefreshCw className="h-3 w-3" /> Re-check this spot
