@@ -3,6 +3,7 @@ import test from 'node:test';
 import {
   buildVerificationQueue,
   fieldIntelligenceRecommendations,
+  findPossibleDuplicates,
   profileGeospatialEvidence,
   queryLocationIntelligence,
 } from './geospatialIntelligence.js';
@@ -82,4 +83,21 @@ test('invalid viewport and empty evidence fail conservatively', () => {
   const profile = profileGeospatialEvidence({ locations: [] });
   assert.equal(profile.evidence_state, 'NO_EVIDENCE');
   assert.match(fieldIntelligenceRecommendations(profile)[0].action, /approved bounded inventory/);
+});
+
+test('duplicate detection is bounded, explainable, and never merges records', () => {
+  const result = findPossibleDuplicates({
+    maxDistanceMeters: 100,
+    locations: [
+      { id: 'b', lat: 51, lng: 0, status: 'pending' },
+      { id: 'a', lat: 51.0002, lng: 0, status: 'verified' },
+      { id: 'far', lat: 52, lng: 0, status: 'verified' },
+      { id: 'bad', lat: 91, lng: 0 },
+    ],
+  });
+  assert.equal(result.state, 'POSSIBLE_DUPLICATES');
+  assert.deepEqual(result.candidates[0].ids, ['a', 'b']);
+  assert.match(result.candidates[0].reason, /review radius/);
+  assert.match(result.candidates[0].next_action, /Review/);
+  assert.equal('merged' in result.candidates[0], false);
 });
