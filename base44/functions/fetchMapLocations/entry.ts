@@ -188,9 +188,12 @@ Deno.serve(async (req) => {
       if (added === 0) break;
     }
 
+    // An empty but valid HTTP-200 response is a functioning read with an
+    // empty dataset. It must not be treated as a provider failure merely
+    // because this legacy feed has no records in an environment.
     const payload = { count: markers.length, markers, live: markers.length > 0 };
     if (markers.length > 0) await writeCache(base44, periodKey, payload);
-    return respond(payload, undefined, markers.length > 0 ? 'success' : 'failed');
+    return respond(payload);
   } catch (error) {
     return respond({ error: 'Map data unavailable' }, { status: 500 }, 'failed');
   }
