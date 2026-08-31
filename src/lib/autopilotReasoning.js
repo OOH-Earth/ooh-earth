@@ -14,8 +14,6 @@ export const ACTION_CLASS = Object.freeze({
 
 const VALID_STATUS = new Set(['HEALTHY', 'DEGRADED', 'UNKNOWN']);
 const VALID_VERIFICATION = new Set(['VERIFIED', 'INSUFFICIENT_DATA', 'NOT_VERIFIED']);
-const CRITICALITY_ORDER = { CRITICAL: 0, HIGH: 1, STANDARD: 2 };
-
 const safeText = (value) => (typeof value === 'string' ? value.slice(0, 120) : 'UNKNOWN');
 const safeSnapshot = (snapshot, environment) => {
   if (!snapshot || typeof snapshot !== 'object') return null;
