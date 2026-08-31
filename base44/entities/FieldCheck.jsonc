@@ -110,7 +110,33 @@
         "verified",
         "rejected"
       ],
-      "default": "pending"
+      "default": "pending",
+      "rls": {
+        "write": {
+          "$or": [
+            {
+              "user_condition": {
+                "role": "admin"
+              }
+            },
+            {
+              "user_condition": {
+                "data.access": "admin"
+              }
+            },
+            {
+              "user_condition": {
+                "data.access": "moderator"
+              }
+            },
+            {
+              "user_condition": {
+                "data.agency": true
+              }
+            }
+          ]
+        }
+      }
     }
   },
   "required": [

@@ -154,7 +154,6 @@ export default function AdScanLab() {
         industry_sector: detection.industry_sector || 'other',
         harm_tags: detection.harm_tags || [],
         notes: detection.description || '',
-        status: 'pending',
       });
       setCataloged(rec);
       toast({ title: 'Cataloged to atlas' });

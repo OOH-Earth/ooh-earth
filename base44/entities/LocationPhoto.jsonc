@@ -30,7 +30,28 @@
         "rejected"
       ],
       "default": "pending",
-      "description": "Mirrors the parent Location's moderation state — set explicitly at create time (verified immediately when added to an already-verified location, pending when submitted alongside a new field report) and cascaded when the parent location is verified/rejected"
+      "description": "Mirrors the parent Location's moderation state — set explicitly at create time (verified immediately when added to an already-verified location, pending when submitted alongside a new field report) and cascaded when the parent location is verified/rejected",
+      "rls": {
+        "write": {
+          "$or": [
+            {
+              "user_condition": {
+                "role": "admin"
+              }
+            },
+            {
+              "user_condition": {
+                "data.access": "admin"
+              }
+            },
+            {
+              "user_condition": {
+                "data.access": "moderator"
+              }
+            }
+          ]
+        }
+      }
     }
   },
   "required": [

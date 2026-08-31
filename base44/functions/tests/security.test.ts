@@ -356,6 +356,54 @@ Deno.test(
   },
 );
 
+Deno.test(
+  'submitOffline strips a forged status, so a submission cannot self-verify past moderation',
+  async () => {
+    // Location and FieldCheck both have rls.create: null (open by design --
+    // anyone can submit a report) with no field-level restriction on
+    // `status`. Without server-side stripping, an unauthenticated caller
+    // could set status: "verified" directly and skip the moderate.ts queue
+    // entirely -- the exact bypass this test proves is now closed.
+    let createdPayload: any = null;
+    const client = {
+      entities: {
+        Location: {
+          filter: async () => [],
+          create: async (payload: any) => {
+            createdPayload = payload;
+            return { id: 'location-1', status: 'pending', ...payload };
+          },
+        },
+      },
+    };
+    const deps = { createClientFromRequest: () => client };
+    const payload = {
+      client_operation_id: 'capture.status-forge-1',
+      title: 'Forged verification attempt',
+      status: 'verified',
+      status_updated_at: '2020-01-01T00:00:00.000Z',
+    };
+    const res = await handleSubmitOffline(
+      request('POST', { entity_type: 'Location', payload }),
+      deps,
+    );
+    assertEquals(
+      res.status,
+      200,
+      'submission itself is accepted (fields are stripped, not rejected)',
+    );
+    assert(createdPayload !== null, 'entity.create must have been called');
+    assert(
+      !('status' in createdPayload),
+      'status must never reach entity.create() from the client',
+    );
+    assert(
+      !('status_updated_at' in createdPayload),
+      'status_updated_at must never reach entity.create() from the client',
+    );
+  },
+);
+
 Deno.test('migrateLocationImages permits an admin and hides failures', async () => {
   const fake = migrationClient({ data: { role: 'admin' } }, [
     { image_url: 'https://ooh.earth/old.jpg' },

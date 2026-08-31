@@ -38,7 +38,6 @@ export async function uploadLocationPhotos(files, locationId) {
         location_id: String(locationId),
         url: file_url,
         display_order: i,
-        status: 'pending',
       });
     }),
   );
