@@ -10,6 +10,7 @@ import LocationCard from '@/components/ooh/map/LocationCard';
 import seedMarkers from '@/components/ooh/mapSeed';
 import { toMarker } from '@/components/ooh/map/markerUtils';
 import { computeFreshness } from '@/lib/fieldCheckFreshness';
+import { classifyLocationQuality } from '@/lib/locationQuality';
 import {
   Loader2,
   FileDown,
@@ -275,6 +276,7 @@ export default function Map() {
           ...toMarker(r),
           livingRecord: livingRecordIds.has(String(r.id)),
           freshness: computeFreshness(r, checksByLocation[String(r.id)] || []),
+          intelligence: classifyLocationQuality(r),
         }));
       setRaw(markers.length ? { markers, live: true } : { markers: seedMarkers, live: false });
     } catch (e) {
@@ -314,6 +316,7 @@ export default function Map() {
           ...toMarker(r),
           livingRecord: livingRecordIds.has(String(r.id)),
           freshness: computeFreshness(r, checksByLocation[String(r.id)] || []),
+          intelligence: classifyLocationQuality(r),
         }));
       setRaw({ markers, live: true });
     } catch {

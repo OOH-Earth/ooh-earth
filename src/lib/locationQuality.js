@@ -22,6 +22,7 @@ export function freshnessOf(value, now = Date.now(), maxAgeMs = 365 * 24 * 60 * 
   return now - observed <= maxAgeMs ? 'CURRENT' : 'STALE';
 }
 
+/** @param {any} record @param {{ now?: number, maxAgeMs?: number }} options */
 export function classifyLocationQuality(record, { now = Date.now(), maxAgeMs } = {}) {
   if (!record || !validCoordinate(record))
     return {

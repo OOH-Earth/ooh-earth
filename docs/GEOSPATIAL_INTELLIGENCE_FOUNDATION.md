@@ -21,6 +21,14 @@ bounded geographic coverage. Results are explainable:
 These are classifications, not confidence scores. Duplicate detection only
 proposes coordinate-proximity pairs, is capped, and never merges or deletes.
 
+The bounded intelligence layer now turns these primitives into product
+decisions: aggregate evidence profiling, a deterministic verification queue,
+safe viewport queries (including dateline crossing), and next-best field
+verification recommendations. Outputs contain identifiers, coordinates, and
+evidence classifications only; they do not return addresses, notes, media,
+identity, or other user content. Inputs and outputs are capped to protect
+interactive paths.
+
 ## Freshness and coverage
 
 Freshness is policy-driven and must be supplied by the caller for a specific

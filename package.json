@@ -33,6 +33,7 @@
     "test:production-truth": "node --test src/lib/productionTruth.test.js",
     "test:transaction-integrity": "node --test src/lib/transactionIntegrity.test.js",
     "test:location-quality": "node --test src/lib/locationQuality.test.js",
+    "test:geospatial-intelligence": "node --test src/lib/geospatialIntelligence.test.js",
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
     "test:a11y": "playwright test a11y.spec.ts",
