@@ -1,5 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
-import { recordOperationalHealth } from '../_shared/operationalState.ts';
+import { recordOperationalHealth } from './operationalState.ts';
 
 // Preferred live source: a static JSON feed you publish on oohearth.app.
 // Static files aren't routed through the SG captcha, so this works from the
