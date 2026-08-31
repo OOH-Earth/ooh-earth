@@ -16,6 +16,7 @@ import {
   diagnoseAutopilot,
   nextBestAction,
 } from '@/lib/autopilotReasoning';
+import { buildProductionTruth } from '@/lib/productionTruth';
 import '@/styles/mission-control.css';
 
 const formatTime = (value) => {
@@ -159,6 +160,10 @@ function JarvisPanel({ environment, health }) {
   const nextAction = useMemo(() => nextBestAction(autopilot), [autopilot]);
   const remediationPlan = useMemo(() => buildRemediationPlan(autopilot), [autopilot]);
   const autopilotRollback = useMemo(() => assessAutopilotRollback(autopilot), [autopilot]);
+  const productionTruth = useMemo(
+    () => buildProductionTruth({ environment, health, release: health?.release }),
+    [environment, health],
+  );
   return (
     <section id="jarvis" className="mc-panel mc-jarvis" aria-label="JARVIS read-only system brief">
       <div className="mc-panel-pad">
@@ -243,6 +248,34 @@ function JarvisPanel({ environment, health }) {
             <p className="mc-jarvis-copy">
               <strong>{autopilotRollback.classification}</strong> · {autopilotRollback.statement}
             </p>
+          </div>
+        </div>
+        <div className="mc-jarvis-grid mc-jarvis-detail-grid" data-testid="production-truth">
+          <div>
+            <div className="mc-jarvis-label">PRODUCTION TRUTH</div>
+            <p className="mc-jarvis-copy">
+              <strong>{productionTruth.state}</strong> · {productionTruth.coverage.current_verified}
+              /{productionTruth.coverage.total} capabilities have current verified evidence.
+            </p>
+            <p className="mc-muted">
+              This aggregate does not treat missing payment processing or offline write evidence as
+              healthy.
+            </p>
+          </div>
+          <div>
+            <div className="mc-jarvis-label">CRITICAL GAPS</div>
+            {productionTruth.capabilities
+              .filter((item) => item.criticality === 'CRITICAL' && item.verification !== 'VERIFIED')
+              .map((item) => (
+                <p className="mc-jarvis-copy" key={item.id}>
+                  <strong>{item.label}</strong> · {item.verification}
+                </p>
+              ))}
+            {!productionTruth.capabilities.some(
+              (item) => item.criticality === 'CRITICAL' && item.verification !== 'VERIFIED',
+            ) ? (
+              <p className="mc-jarvis-copy">No critical evidence gaps.</p>
+            ) : null}
           </div>
         </div>
       </div>
