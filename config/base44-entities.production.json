@@ -1,0 +1,31 @@
+{
+  "app_id": "6a62213cff3ccbca88c04ff5",
+  "environment": "production",
+  "approved_at": "2026-08-31",
+  "evidence": "Reconstructed from a failed manual `entities push -y` run against this app from a stale local checkout (missing OperationalHealth.jsonc): Base44 reported 22 of these 23 names as already-existing entities to update, then refused to delete the 23rd ('OperationalHealth') because it has existing records -- proving all 23 names, including OperationalHealth, already exist on production. No entity beyond this list has been observed.",
+  "entities": [
+    "AccessLog",
+    "BlogPost",
+    "CareerRoleStatus",
+    "DigitalBust",
+    "FieldCheck",
+    "FundingLead",
+    "IntelCache",
+    "LabPrototype",
+    "LeadClaim",
+    "Location",
+    "LocationPhoto",
+    "MediaCorp",
+    "Mint",
+    "OperationalHealth",
+    "Operative",
+    "PageMeta",
+    "Purchase",
+    "QuestCompletion",
+    "SiteSetting",
+    "StoreItem",
+    "StripeEvent",
+    "Subscription",
+    "User"
+  ]
+}
