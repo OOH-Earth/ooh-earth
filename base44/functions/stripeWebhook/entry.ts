@@ -1,6 +1,6 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
 import { handleStripeWebhook } from './handler.ts';
-import { recordOperationalHealth } from '../_shared/operationalState.ts';
+import { recordOperationalHealth } from './operationalState.ts';
 
 const inFlight = new Map();
 
