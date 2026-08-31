@@ -1,3 +1,5 @@
+import { writeFileSync } from 'node:fs';
+
 export function redactCliOutput(value) {
   return String(value || '')
     .replace(/(Bearer\s+)[A-Za-z0-9._~+/=-]+/gi, '$1[REDACTED]')
@@ -9,4 +11,8 @@ export function assertBuildArtifact(exists) {
   if (!exists) {
     throw new Error('Build artifact missing: run `npm run build` before deployment');
   }
+}
+
+export function writeReleaseManifestArtifact(path, manifest) {
+  writeFileSync(path, `${JSON.stringify(manifest, null, 2)}\n`);
 }
