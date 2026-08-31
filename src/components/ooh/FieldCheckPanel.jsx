@@ -1,7 +1,16 @@
 import { useEffect, useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { Image } from '@/components/ui/image';
-import { RefreshCw, Clock, MapPin, Loader2, Ban, AlertCircle, ArrowRight } from 'lucide-react';
+import {
+  RefreshCw,
+  Clock,
+  MapPin,
+  Loader2,
+  Ban,
+  AlertCircle,
+  ArrowRight,
+  XCircle,
+} from 'lucide-react';
 import FieldCheckCamera from '@/components/ooh/FieldCheckCamera';
 import TimeSinceTag from '@/components/ooh/TimeSinceTag';
 import { computeFreshness, detectChanges, CONDITION_LABELS } from '@/lib/fieldCheckFreshness';
@@ -230,6 +239,11 @@ export default function FieldCheckPanel({ location }) {
                           Verified
                         </span>
                       )}
+                      {check.status === 'rejected' && (
+                        <span className="flex items-center gap-1 border border-dim/40 px-1 py-0.5 font-mono text-[7px] uppercase tracking-[0.15em] text-dim">
+                          <XCircle className="h-2 w-2" /> Rejected — not used in evidence above
+                        </span>
+                      )}
                     </div>
                     <div className="mt-1 flex flex-wrap gap-1.5">
                       {check.condition && (
@@ -260,9 +274,8 @@ export default function FieldCheckPanel({ location }) {
 
             {latest && (
               <p className="mt-4 border-t border-slate2/30 pt-3 font-mono text-[9px] leading-relaxed text-dim">
-                // Last checked {timeAgo(latest.created_date)}
-                {latest.checked_by ? ` by ${latest.checked_by}` : ''}. Each check builds the record
-                — re-photograph to track changes over time.
+                // Last checked {timeAgo(latest.created_date)}. Each check builds the record —
+                re-photograph to track changes over time.
               </p>
             )}
           </>
