@@ -98,6 +98,10 @@ export function buildVerificationQueue({
     .slice(0, Math.min(MAX_OUTPUT, Math.max(1, Number(limit) || 100)));
 }
 
+/**
+ * @param {Array} locations
+ * @param {{ north?: number, south?: number, east?: number, west?: number, quality?: string, status?: string, limit?: number, now?: number, freshnessMs?: number }} [options]
+ */
 export function queryLocationIntelligence(
   locations = [],
   {

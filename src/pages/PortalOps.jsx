@@ -29,9 +29,18 @@ import { Loader2, Lock, Copy, Check, ArrowUpRight } from 'lucide-react';
      · fieldStats  → executive stats + client-latency readout
      · cryptoWatch → live Polygon balances + recent SOL/ETH tx
      · Location    → real moderation queue (filter + update)
+     · Location,
+       FieldCheck  → bounded read for deterministic Geospatial Intelligence
+                     (src/lib/locationQuality.js, src/lib/geospatialIntelligence.js)
 ──────────────────────────────────────────────────────────── */
 
 import { roleOf, accessOf, agencyOf, payload } from '@/lib/clearance';
+import {
+  profileGeospatialEvidence,
+  buildVerificationQueue,
+  fieldIntelligenceRecommendations,
+} from '@/lib/geospatialIntelligence';
+import { geographicCoverage, possibleDuplicatePairs } from '@/lib/locationQuality';
 const fmt = (n) => (typeof n === 'number' && Number.isFinite(n) ? n.toLocaleString() : '—');
 const num = (v) => {
   const n = Number(v);
@@ -55,8 +64,17 @@ const SECTIONS = [
   { id: 'risk', label: 'Risk Register', min: 2, isNew: true },
   { id: 'deploy', label: 'Deploy & Releases', min: 3, isNew: true },
   { id: 'console', label: 'Ops Console', min: 3, isNew: true },
+  { id: 'geo', label: 'Geospatial Intelligence', min: 2, isNew: true },
   { id: 'roster', label: 'Access Roster', min: 2, isNew: true },
 ];
+
+// Bounded, field-minimized read used only for deterministic evidence
+// classification (src/lib/locationQuality.js, src/lib/geospatialIntelligence.js).
+// Never requests address/notes/image_url/created_by or any other
+// content-bearing or identity field.
+const GEO_CAP = 2000;
+const GEO_LOCATION_FIELDS = ['id', 'lat', 'lng', 'status', 'status_updated_at', 'created_date'];
+const GEO_FIELDCHECK_FIELDS = ['id', 'location_id'];
 
 /* ── data (non-sensitive; sensitive metadata lives in opsIntel) ─ */
 const PROTOCOLS = [
@@ -1288,6 +1306,154 @@ const OUTCOME_STYLE = {
   ERROR: 'text-[#FF0040]',
 };
 
+function GeoIntelligenceView({ geo }) {
+  const profile = useMemo(
+    () =>
+      geo
+        ? profileGeospatialEvidence({ locations: geo.locations, fieldChecks: geo.fieldChecks })
+        : null,
+    [geo],
+  );
+  const queue = useMemo(
+    () =>
+      geo
+        ? buildVerificationQueue({
+            locations: geo.locations,
+            fieldChecks: geo.fieldChecks,
+            limit: 15,
+          })
+        : [],
+    [geo],
+  );
+  const coverage = useMemo(() => (geo ? geographicCoverage(geo.locations) : null), [geo]);
+  const duplicates = useMemo(() => (geo ? possibleDuplicatePairs(geo.locations) : []), [geo]);
+  const recommendation = useMemo(
+    () => (profile ? fieldIntelligenceRecommendations(profile)[0] : null),
+    [profile],
+  );
+  const priorityTone = { P1: 'high', P2: 'warn', P3: 'mute' };
+
+  if (!geo) {
+    return (
+      <Block
+        title="Geospatial Intelligence"
+        desc="Deterministic evidence profiling over bounded Location/FieldCheck reads (src/lib/geospatialIntelligence.js, src/lib/locationQuality.js). No AI, no scoring — classifications only."
+      >
+        <p className="font-mono text-[11px] text-dim">— loading bounded evidence read…</p>
+      </Block>
+    );
+  }
+
+  return (
+    <>
+      <Block
+        title="Geospatial Intelligence"
+        desc={`Deterministic evidence profile over a bounded read (cap ${GEO_CAP}/entity): ${profile.locations_seen} Location, ${profile.field_checks_seen} FieldCheck rows. ${profile.caveat}`}
+      >
+        <div className="grid grid-cols-2 gap-2.5 md:grid-cols-4">
+          <Stat
+            k="Valid coordinates"
+            v={String(profile.valid_coordinates)}
+            sub={`of ${profile.locations_seen} seen`}
+          />
+          <Stat k="Verified" v={String(profile.verified_locations)} accent="text-ozone" />
+          <Stat
+            k="Stale evidence"
+            v={String(profile.stale_locations)}
+            accent={profile.stale_locations ? 'text-flare' : ''}
+          />
+          <Stat
+            k="Never verified"
+            v={String(profile.never_verified_locations)}
+            accent={profile.never_verified_locations ? 'text-flare' : ''}
+          />
+        </div>
+        {recommendation && (
+          <p className="mt-4 border border-dashed border-ozone/40 bg-ozone/[0.03] p-3 font-mono text-[11px] text-ozone">
+            <span className="text-dim">[{recommendation.priority}]</span> {recommendation.action}
+          </p>
+        )}
+      </Block>
+
+      <Block
+        title="Verification Priority Queue"
+        desc="Deterministic, reason-backed, capped, excludes rejected records. Never auto-corrects coordinates or auto-merges anything — always a human field action."
+      >
+        {queue.length === 0 ? (
+          <p className="font-mono text-[11px] text-dim">
+            — no locations currently flagged for verification.
+          </p>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full border-collapse">
+              <thead>
+                <tr>
+                  <Th>Location</Th>
+                  <Th>Priority</Th>
+                  <Th>Quality</Th>
+                  <Th>Freshness</Th>
+                  <Th>Why</Th>
+                  <Th>Next action</Th>
+                </tr>
+              </thead>
+              <tbody>
+                {queue.map((row) => (
+                  <tr key={row.id}>
+                    <Td mono>{short(row.id)}</Td>
+                    <Td>
+                      <Badge tone={priorityTone[row.priority] || 'mute'}>{row.priority}</Badge>
+                    </Td>
+                    <Td>{row.quality}</Td>
+                    <Td>{row.freshness}</Td>
+                    <Td>{row.reasons.join('; ')}</Td>
+                    <Td>{row.next_action}</Td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </Block>
+
+      <div className="grid gap-2.5 md:grid-cols-2">
+        <Block title="Geographic Coverage" desc={coverage.caveat}>
+          <div className="grid grid-cols-3 gap-2.5">
+            <Stat k="Seen" v={String(coverage.total_seen)} />
+            <Stat k="Valid coords" v={String(coverage.valid_coordinates)} />
+            <Stat k="Verified coords" v={String(coverage.verified_coordinates)} />
+          </div>
+          <p className="mt-3 font-mono text-[10px] uppercase tracking-[0.12em] text-dim">
+            state: {coverage.state}
+          </p>
+        </Block>
+        <Block
+          title="Possible Duplicate Evidence"
+          desc="Coordinate-proximity candidates only, capped. Never auto-merged or auto-deleted — always a human decision."
+        >
+          {duplicates.length === 0 ? (
+            <p className="font-mono text-[11px] text-dim">
+              — no proximate coordinate pairs found in this bounded read.
+            </p>
+          ) : (
+            <ul className="space-y-1.5 font-mono text-[11px] text-dim">
+              {duplicates.slice(0, 10).map((pair) => (
+                <li key={`${pair.first}-${pair.second}`}>
+                  {short(pair.first)} ↔ {short(pair.second)} — {pair.reason}
+                </li>
+              ))}
+            </ul>
+          )}
+          {duplicates.length > 10 && (
+            <p className="mt-2 font-mono text-[10px] text-dim">
+              +{duplicates.length - 10} more (bounded read; not exhaustive).
+            </p>
+          )}
+        </Block>
+      </div>
+    </>
+  );
+}
+
 function ConsoleView({ queue, onVerify, busy }) {
   const [outs, setOuts] = useState({});
   const run = useCallback(async (key, fn, args) => {
@@ -1559,6 +1725,7 @@ export default function PortalOps() {
   const [lat, setLat] = useState({});
   const [queue, setQueue] = useState(null);
   const [busy, setBusy] = useState({});
+  const [geo, setGeo] = useState(null); // bounded { locations, fieldChecks } for geospatial intelligence
 
   const isAdmin = roleOf(user) === 'admin' || accessOf(user) === 'admin';
   const isAgency = isAdmin || agencyOf(user);
@@ -1601,6 +1768,15 @@ export default function PortalOps() {
         if (alive) setQueue(q || []);
       } catch {
         if (alive) setQueue([]);
+      }
+      try {
+        const [locations, fieldChecks] = await Promise.all([
+          base44.entities.Location.filter({}, '-created_date', GEO_CAP, 0, GEO_LOCATION_FIELDS),
+          base44.entities.FieldCheck.filter({}, '-created_date', GEO_CAP, 0, GEO_FIELDCHECK_FIELDS),
+        ]);
+        if (alive) setGeo({ locations: locations || [], fieldChecks: fieldChecks || [] });
+      } catch {
+        if (alive) setGeo({ locations: [], fieldChecks: [] });
       }
     })();
     return () => {
@@ -1690,6 +1866,8 @@ export default function PortalOps() {
         return <DeployView />;
       case 'console':
         return <ConsoleView queue={queue} onVerify={verify} busy={busy} />;
+      case 'geo':
+        return <GeoIntelligenceView geo={geo} />;
       case 'roster':
         return <RosterView />;
       default:
