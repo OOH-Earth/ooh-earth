@@ -6,15 +6,25 @@ const STRIPPED_FIELDS = new Set(['id', 'created_by_id', 'created_date', 'updated
 
 type Dependencies = {
   createClientFromRequest: (req: Request) => any;
+  now?: () => number;
+  recordHealth?: (
+    outcome: 'success' | 'failed',
+    durationMs: number,
+    errorCode?: string,
+  ) => Promise<void> | void;
 };
 
 function jsonError(error: string, status: number, headers?: Record<string, string>) {
   return Response.json({ error }, { status, headers });
 }
 
-export async function handleSubmitOffline(req: Request, { createClientFromRequest }: Dependencies) {
+export async function handleSubmitOffline(
+  req: Request,
+  { createClientFromRequest, now = () => Date.now(), recordHealth }: Dependencies,
+) {
   const telemetry = telemetryFor(req, { functionName: 'submitOffline' });
   telemetry.emit('received');
+  const startedAt = now();
   if (req.method !== 'POST') {
     telemetry.finish('rejected', { error_code: 'INVALID_METHOD' });
     return jsonError('POST only', 405, correlationHeaders(telemetry));
@@ -54,6 +64,7 @@ export async function handleSubmitOffline(req: Request, { createClientFromReques
     const existing = await entity.filter({ client_operation_id: operationId }, '-created_date', 1);
     if (existing?.[0]) {
       telemetry.finish('success', { operation: 'replay', entity: entityType });
+      await recordHealth?.('success', now() - startedAt);
       return Response.json(
         { ok: true, duplicate: true, record: existing[0] },
         { headers: correlationHeaders(telemetry) },
@@ -61,12 +72,14 @@ export async function handleSubmitOffline(req: Request, { createClientFromReques
     }
     const record = await entity.create(safePayload);
     telemetry.finish('success', { operation: 'create', entity: entityType });
+    await recordHealth?.('success', now() - startedAt);
     return Response.json(
       { ok: true, duplicate: false, record },
       { headers: correlationHeaders(telemetry) },
     );
   } catch (error) {
     telemetry.finish('failed', { error_code: 'DEPENDENCY_FAILURE' });
+    await recordHealth?.('failed', now() - startedAt, 'DEPENDENCY_FAILURE');
     console.error('submitOffline failed:', error instanceof Error ? error.name : 'unknown');
     return jsonError('Submission unavailable', 503, correlationHeaders(telemetry));
   }
