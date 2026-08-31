@@ -145,3 +145,23 @@ test('capability graph is bounded and explicit', () => {
   assert.equal(graph.length, 6);
   assert.deepEqual(graph.find((item) => item.id === 'mapData').depends_on, ['publicWeb']);
 });
+
+test('transaction guarantees remain separate from capability health', () => {
+  const truth = buildProductionTruth({
+    health: health([snapshot('fieldStats')]),
+    release,
+    evidence: {
+      transactionIntegrity: {
+        offline: { boundary: 'VERIFIED', replay: 'VERIFIED' },
+        payment: { signature: 'VERIFIED', replay: 'VERIFIED', ledger: 'VERIFIED' },
+      },
+    },
+    now,
+  });
+  assert.equal(
+    truth.transaction_integrity.offline.guarantee,
+    'AT_LEAST_ONCE_WITH_IDEMPOTENT_REPLAY',
+  );
+  assert.equal(truth.transaction_integrity.offline.exactly_once, 'NOT_GUARANTEED');
+  assert.equal(truth.transaction_integrity.payment.production_successful_payment, 'NOT_VERIFIED');
+});
