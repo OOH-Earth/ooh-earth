@@ -4,6 +4,7 @@
  * This module deliberately consumes allowlisted evidence only. It is a
  * reasoning contract, not a metrics store and not a source of runtime facts.
  */
+import { transactionIntegritySummary } from './transactionIntegrity.js';
 export const TRUTH_STATE = Object.freeze({
   OPERATIONAL: 'OPERATIONAL',
   OPERATIONAL_WITH_GAPS: 'OPERATIONAL_WITH_GAPS',
@@ -316,6 +317,7 @@ export function buildProductionTruth({
     next_action: degraded.length
       ? degraded[0].label
       : missing[0]?.label || 'No additional bounded verification selected.',
+    transaction_integrity: transactionIntegritySummary(evidence?.transactionIntegrity),
     evidence_source: 'deterministic aggregation of allowlisted evidence',
   };
 }
