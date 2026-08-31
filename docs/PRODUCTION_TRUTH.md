@@ -58,3 +58,30 @@ grep -A2 'name="description"' index.html
 - **Shipping more engineering on the assumption that `main` = production is unverified and could be wrong.** Everything built this pass (PR #102's metadata fix included) is proven correct *in this repository's own build output* — not proven live, because the live site may not even be running this code.
 - **Continuing to build product features without closing this gap risks a growing, invisible drift** between what's tested/demoed from this repo and what real users/crawlers actually see at `oohearth.app`.
 - **No rollback/staging visibility** means any future production-facing change (this one included) cannot be verified end-to-end without Base44/Render access — only build-output-level verification is possible from inside this repo today.
+
+## Critical capability coverage v1
+
+The protected Mission Control surface also consumes a bounded, deterministic
+capability model. It is not a request log, analytics store, uptime calculator,
+or source of fabricated health claims.
+
+| Capability | Criticality | Evidence | HEALTHY proves | It does not prove |
+| --- | --- | --- | --- | --- |
+| `publicWeb` | CRITICAL | bounded GET certification | required public routes responded | all frontend interactions or authenticated flows |
+| `mapData` | HIGH | bounded Map read / `map` snapshot | the bounded data path responded; a valid empty dataset is functional | dataset completeness or marker population |
+| `fieldStats` | HIGH | existing OperationalHealth snapshot | the aggregate response and bounded state path | historical availability or every upstream dependency |
+| `offlineSubmission` | HIGH | validation/security-boundary evidence | only the tested boundary | successful write, replay, or user-record persistence |
+| `paymentSecurity` | CRITICAL | invalid-signature rejection and security evidence | webhook signature/replay boundary | successful payment processing or provider health |
+| `releaseCertification` | CRITICAL | published release manifest | the recorded candidate passed recorded release checks | Base44 runtime SHA |
+
+The aggregate is one of `OPERATIONAL`, `OPERATIONAL_WITH_GAPS`, `DEGRADED`,
+`UNKNOWN`, or `CERTIFICATION_REQUIRED`. Verified, fresh degradation dominates;
+missing or stale evidence is never silently treated as healthy. Interactive
+observations use a 15-minute freshness window and release certification uses
+24 hours. A stale healthy observation means `LAST KNOWN HEALTHY / CURRENT
+UNKNOWN`.
+
+Payment security and payment processing are intentionally separate. No real
+Stripe charge or subscription is used for certification. Offline write/replay
+is not claimed without a safe disposable path. Historical SLO percentages and
+error budgets remain unavailable without measured time series.
