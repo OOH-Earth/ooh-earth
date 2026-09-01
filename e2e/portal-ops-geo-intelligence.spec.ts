@@ -4,12 +4,14 @@ import { mockBase44, type MockDb } from './fixtures/mockBase44';
 // PortalOps.jsx's "Geospatial Intelligence" tab wires the deterministic
 // primitives in src/lib/geospatialIntelligence.js / src/lib/locationQuality.js
 // (bounded Location + FieldCheck reads -> quality/freshness classification,
-// verification queue, coverage, possible-duplicate detection) into a real,
-// admin-facing decision surface. This asserts it renders real classifications
-// derived from fixture data, not placeholder/fabricated numbers.
+// verification queue, coverage, true-distance possible-duplicate detection)
+// into a real, admin-facing decision surface. This asserts it renders real
+// classifications derived from fixture data, not placeholder/fabricated
+// numbers, and that the duplicate panel is the meter-based findPossibleDuplicates
+// path (PR #207), not the retired degree-bounding-box heuristic.
 
 test.describe('PortalOps — Geospatial Intelligence', () => {
-  test('classifies verified/stale/pending evidence and flags a coordinate-proximity duplicate', async ({
+  test('classifies verified/stale/pending evidence and flags a true-distance duplicate candidate', async ({
     page,
   }) => {
     test.setTimeout(30_000);
@@ -31,7 +33,10 @@ test.describe('PortalOps — Geospatial Intelligence', () => {
         },
         'loc-stale': {
           id: 'loc-stale',
-          lat: 1,
+          // ~5.5m from loc-verified-fresh: within the 50m default radius,
+          // but not coordinate-identical -- proves true-distance detection
+          // rather than an exact-match or degree-bounding-box heuristic.
+          lat: 1.00005,
           lng: 2,
           status: 'verified',
           status_updated_at: old,
@@ -74,8 +79,15 @@ test.describe('PortalOps — Geospatial Intelligence', () => {
     await expect(page.getByText('Geographic Coverage')).toBeVisible();
     await expect(page.getByText('Verified coords')).toBeVisible();
 
-    // Possible duplicates: loc-verified-fresh and loc-stale share coordinates.
+    // Possible duplicates: loc-verified-fresh and loc-stale are ~5.5m apart,
+    // surfaced by the true-distance findPossibleDuplicates path with a
+    // review-only "POSSIBLE DUPLICATE" label (never "confirmed"), a real
+    // meter distance, and each record's already-fetched status -- and never
+    // an address/notes/image/created_by field the bounded read excludes.
     await expect(page.getByText('Possible Duplicate Evidence')).toBeVisible();
-    await expect(page.getByText(/coordinates within bounded proximity/)).toBeVisible();
+    await expect(page.getByText(/within 50m/)).toBeVisible();
+    await expect(page.getByText(/POSSIBLE DUPLICATE/)).toBeVisible();
+    await expect(page.getByText(/Distance: 5\.\d+ m/)).toBeVisible();
+    await expect(page.getByText('DUPLICATE CONFIRMED')).toHaveCount(0);
   });
 });

@@ -1,11 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import {
-  classifyLocationQuality,
-  geographicCoverage,
-  possibleDuplicatePairs,
-  validCoordinate,
-} from './locationQuality.js';
+import { classifyLocationQuality, geographicCoverage, validCoordinate } from './locationQuality.js';
 
 const now = Date.parse('2026-08-31T12:00:00Z');
 const current = new Date(now - 60_000).toISOString();
@@ -39,16 +34,6 @@ test('quality remains explainable and conservative', () => {
     'STALE',
   );
   assert.equal(classifyLocationQuality({ lat: 200, lng: 2 }, { now }).quality, 'INSUFFICIENT_DATA');
-});
-
-test('duplicate intelligence only proposes bounded coordinate candidates', () => {
-  assert.deepEqual(
-    possibleDuplicatePairs([
-      { id: 'a', lat: 1, lng: 2 },
-      { id: 'b', lat: 1.0001, lng: 2.0001 },
-    ]),
-    [{ first: 'a', second: 'b', reason: 'coordinates within bounded proximity' }],
-  );
 });
 
 test('empty geography is no evidence, not no inventory', () => {

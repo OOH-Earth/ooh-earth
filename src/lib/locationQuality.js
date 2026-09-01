@@ -59,31 +59,6 @@ export function classifyLocationQuality(record, { now = Date.now(), maxAgeMs } =
   };
 }
 
-export function possibleDuplicatePairs(records = [], radiusDegrees = 0.0005) {
-  const bounded = Array.isArray(records) ? records.slice(0, MAX_RECORDS) : [];
-  const pairs = [];
-  for (let i = 0; i < bounded.length; i++) {
-    const a = bounded[i];
-    const alat = toNumber(a?.lat),
-      alng = toNumber(a?.lng);
-    if (alat === null || alng === null) continue;
-    for (let j = i + 1; j < bounded.length; j++) {
-      const b = bounded[j];
-      const blat = toNumber(b?.lat),
-        blng = toNumber(b?.lng);
-      if (blat === null || blng === null) continue;
-      if (Math.abs(alat - blat) <= radiusDegrees && Math.abs(alng - blng) <= radiusDegrees) {
-        pairs.push({
-          first: String(a.id || i),
-          second: String(b.id || j),
-          reason: 'coordinates within bounded proximity',
-        });
-      }
-    }
-  }
-  return pairs.slice(0, 1000);
-}
-
 export function geographicCoverage(records = []) {
   const bounded = Array.isArray(records) ? records.slice(0, MAX_RECORDS) : [];
   const valid = bounded.filter(validCoordinate);
