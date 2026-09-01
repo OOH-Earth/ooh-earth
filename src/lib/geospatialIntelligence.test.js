@@ -85,19 +85,76 @@ test('invalid viewport and empty evidence fail conservatively', () => {
   assert.match(fieldIntelligenceRecommendations(profile)[0].action, /approved bounded inventory/);
 });
 
-test('duplicate detection is bounded, explainable, and never merges records', () => {
-  const result = findPossibleDuplicates({
-    maxDistanceMeters: 100,
-    locations: [
-      { id: 'b', lat: 51, lng: 0, status: 'pending' },
-      { id: 'a', lat: 51.0002, lng: 0, status: 'verified' },
-      { id: 'far', lat: 52, lng: 0, status: 'verified' },
-      { id: 'bad', lat: 91, lng: 0 },
-    ],
-  });
+test('duplicate detection is bounded, explainable, never merges records, and excludes out-of-radius pairs', () => {
+  const locations = Object.freeze([
+    { id: 'b', lat: 51, lng: 0, status: 'pending' },
+    { id: 'a', lat: 51.0002, lng: 0, status: 'verified' },
+    { id: 'far', lat: 52, lng: 0, status: 'verified' },
+    { id: 'bad', lat: 91, lng: 0 },
+  ]);
+  const result = findPossibleDuplicates({ maxDistanceMeters: 100, locations });
   assert.equal(result.state, 'POSSIBLE_DUPLICATES');
+  assert.equal(result.radius_m, 100);
+  assert.equal(result.candidates.length, 1);
   assert.deepEqual(result.candidates[0].ids, ['a', 'b']);
+  assert.equal(typeof result.candidates[0].distance_m, 'number');
+  assert.ok(result.candidates[0].distance_m > 0 && result.candidates[0].distance_m <= 100);
   assert.match(result.candidates[0].reason, /review radius/);
   assert.match(result.candidates[0].next_action, /Review/);
   assert.equal('merged' in result.candidates[0], false);
+  // 'far' (~111km away) and 'bad' (invalid coordinate) must not appear.
+  const allIds = result.candidates.flatMap((c) => c.ids);
+  assert.equal(allIds.includes('far'), false);
+  assert.equal(allIds.includes('bad'), false);
+  // Input array is never mutated by a read-only detection call.
+  assert.equal(locations.length, 4);
+});
+
+test('duplicate detection reuses its own justified default radius when unset', () => {
+  const result = findPossibleDuplicates({
+    locations: [
+      { id: 'a', lat: 51, lng: 0, status: 'verified' },
+      { id: 'b', lat: 51.0001, lng: 0, status: 'verified' },
+    ],
+  });
+  assert.equal(result.radius_m, 50);
+});
+
+test('duplicate detection returns an honest empty state for no evidence', () => {
+  const result = findPossibleDuplicates({ locations: [] });
+  assert.equal(result.state, 'NO_DUPLICATES_DETECTED');
+  assert.deepEqual(result.candidates, []);
+});
+
+test('a single location can never be its own duplicate', () => {
+  const result = findPossibleDuplicates({
+    locations: [{ id: 'only', lat: 51, lng: 0, status: 'verified' }],
+  });
+  assert.equal(result.state, 'NO_DUPLICATES_DETECTED');
+  assert.deepEqual(result.candidates, []);
+});
+
+test('duplicate candidates are capped and deterministically ordered by distance then id', () => {
+  // Five locations at 0m, ~11m, ~22m, ~33m, ~44m spacing (well under the 100m radius);
+  // this produces 10 candidate pairs, capped by `limit`.
+  const locations = Array.from({ length: 5 }, (_, i) => ({
+    id: `loc-${i}`,
+    lat: 51 + i * 0.0001,
+    lng: 0,
+    status: 'verified',
+  }));
+  const result = findPossibleDuplicates({ maxDistanceMeters: 100, locations, limit: 3 });
+  assert.equal(result.candidates.length, 3);
+  for (let i = 1; i < result.candidates.length; i++) {
+    const prev = result.candidates[i - 1];
+    const curr = result.candidates[i];
+    assert.ok(
+      prev.distance_m < curr.distance_m ||
+        (prev.distance_m === curr.distance_m &&
+          prev.ids.join(':').localeCompare(curr.ids.join(':')) <= 0),
+    );
+  }
+  // Re-running is deterministic: identical input yields identical output.
+  const rerun = findPossibleDuplicates({ maxDistanceMeters: 100, locations, limit: 3 });
+  assert.deepEqual(result.candidates, rerun.candidates);
 });

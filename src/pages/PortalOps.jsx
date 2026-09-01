@@ -39,8 +39,9 @@ import {
   profileGeospatialEvidence,
   buildVerificationQueue,
   fieldIntelligenceRecommendations,
+  findPossibleDuplicates,
 } from '@/lib/geospatialIntelligence';
-import { geographicCoverage, possibleDuplicatePairs } from '@/lib/locationQuality';
+import { geographicCoverage } from '@/lib/locationQuality';
 const fmt = (n) => (typeof n === 'number' && Number.isFinite(n) ? n.toLocaleString() : '—');
 const num = (v) => {
   const n = Number(v);
@@ -1326,7 +1327,17 @@ function GeoIntelligenceView({ geo }) {
     [geo],
   );
   const coverage = useMemo(() => (geo ? geographicCoverage(geo.locations) : null), [geo]);
-  const duplicates = useMemo(() => (geo ? possibleDuplicatePairs(geo.locations) : []), [geo]);
+  const duplicateResult = useMemo(
+    () => (geo ? findPossibleDuplicates({ locations: geo.locations, limit: 200 }) : null),
+    [geo],
+  );
+  const statusById = useMemo(() => {
+    const map = new Map();
+    for (const record of geo?.locations || []) {
+      if (typeof record?.id === 'string') map.set(record.id, record.status);
+    }
+    return map;
+  }, [geo]);
   const recommendation = useMemo(
     () => (profile ? fieldIntelligenceRecommendations(profile)[0] : null),
     [profile],
@@ -1428,24 +1439,42 @@ function GeoIntelligenceView({ geo }) {
         </Block>
         <Block
           title="Possible Duplicate Evidence"
-          desc="Coordinate-proximity candidates only, capped. Never auto-merged or auto-deleted — always a human decision."
+          desc={
+            duplicateResult
+              ? `True-distance candidates within ${duplicateResult.radius_m}m, capped. ${duplicateResult.caveat} Never auto-merged, auto-deleted, or auto-corrected — always a human decision.`
+              : 'True-distance candidates, capped. Never auto-merged, auto-deleted, or auto-corrected — always a human decision.'
+          }
         >
-          {duplicates.length === 0 ? (
+          {!duplicateResult || duplicateResult.candidates.length === 0 ? (
             <p className="font-mono text-[11px] text-dim">
-              — no proximate coordinate pairs found in this bounded read.
+              — no coordinate pairs found within {duplicateResult?.radius_m ?? ''}m in this bounded
+              read.
             </p>
           ) : (
-            <ul className="space-y-1.5 font-mono text-[11px] text-dim">
-              {duplicates.slice(0, 10).map((pair) => (
-                <li key={`${pair.first}-${pair.second}`}>
-                  {short(pair.first)} ↔ {short(pair.second)} — {pair.reason}
-                </li>
-              ))}
+            <ul className="space-y-2 font-mono text-[11px] text-dim">
+              {duplicateResult.candidates.slice(0, 10).map((candidate) => {
+                const [first, second] = candidate.ids;
+                const firstStatus = statusById.get(first);
+                const secondStatus = statusById.get(second);
+                return (
+                  <li key={candidate.ids.join('-')} className="border-b border-white/5 pb-2">
+                    <p className="text-ozone">
+                      <span className="text-dim">POSSIBLE DUPLICATE — </span>
+                      {short(first)}
+                      {firstStatus ? ` (${firstStatus})` : ''} ↔ {short(second)}
+                      {secondStatus ? ` (${secondStatus})` : ''}
+                    </p>
+                    <p>Distance: {candidate.distance_m} m</p>
+                    <p>Reason: {candidate.reason}</p>
+                    <p>Action: {candidate.next_action}</p>
+                  </li>
+                );
+              })}
             </ul>
           )}
-          {duplicates.length > 10 && (
+          {duplicateResult && duplicateResult.candidates.length > 10 && (
             <p className="mt-2 font-mono text-[10px] text-dim">
-              +{duplicates.length - 10} more (bounded read; not exhaustive).
+              +{duplicateResult.candidates.length - 10} more (bounded read; not exhaustive).
             </p>
           )}
         </Block>
