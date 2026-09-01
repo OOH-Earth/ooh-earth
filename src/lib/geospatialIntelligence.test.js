@@ -85,6 +85,74 @@ test('invalid viewport and empty evidence fail conservatively', () => {
   assert.match(fieldIntelligenceRecommendations(profile)[0].action, /approved bounded inventory/);
 });
 
+test('malformed bounds (out-of-range lat) are rejected the same as inverted bounds', () => {
+  const result = queryLocationIntelligence(
+    [{ id: 'a', lat: 0, lng: 0, status: 'verified', status_updated_at: current }],
+    { north: 91, south: -1, east: 1, west: -1, now },
+  );
+  assert.equal(result.state, 'INSUFFICIENT_DATA');
+  assert.deepEqual(result.results, []);
+});
+
+test('a valid viewport with zero matching locations is EVIDENCE_PRESENT with an empty list, not INSUFFICIENT_DATA -- absence in a real query is not the same as a malformed query', () => {
+  const result = queryLocationIntelligence([], { north: 1, south: -1, east: 1, west: -1, now });
+  assert.equal(result.state, 'EVIDENCE_PRESENT');
+  assert.deepEqual(result.results, []);
+});
+
+test('quality and status filters are explainable and exact -- no fuzzy scoring', () => {
+  const locations = [
+    { id: 'verified-fresh', lat: 0, lng: 0, status: 'verified', status_updated_at: current },
+    { id: 'verified-old', lat: 0, lng: 0, status: 'verified', status_updated_at: old },
+    { id: 'still-pending', lat: 0, lng: 0, status: 'pending', status_updated_at: current },
+  ];
+  const bounds = { north: 1, south: -1, east: 1, west: -1, now };
+  const stale = queryLocationIntelligence(locations, { ...bounds, quality: 'STALE' });
+  assert.deepEqual(
+    stale.results.map((r) => r.id),
+    ['verified-old'],
+  );
+  const pendingOnly = queryLocationIntelligence(locations, { ...bounds, status: 'pending' });
+  assert.deepEqual(
+    pendingOnly.results.map((r) => r.id),
+    ['still-pending'],
+  );
+});
+
+test('an explicit limit caps results without changing which records are eligible', () => {
+  const locations = Array.from({ length: 10 }, (_, i) => ({
+    id: `loc-${i}`,
+    lat: 0,
+    lng: 0,
+    status: 'verified',
+    status_updated_at: current,
+  }));
+  const result = queryLocationIntelligence(locations, {
+    north: 1,
+    south: -1,
+    east: 1,
+    west: -1,
+    now,
+    limit: 3,
+  });
+  assert.equal(result.results.length, 3);
+});
+
+test('repeated identical queries over frozen input are deterministic and never mutate the source', () => {
+  const locations = Object.freeze([
+    { id: 'b', lat: 0, lng: 0, status: 'verified', status_updated_at: current },
+    { id: 'a', lat: 0.5, lng: 0, status: 'verified', status_updated_at: current },
+  ]);
+  const bounds = { north: 1, south: -1, east: 1, west: -1, now };
+  const first = queryLocationIntelligence(locations, bounds);
+  const second = queryLocationIntelligence(locations, bounds);
+  assert.deepEqual(
+    first.results.map((r) => r.id),
+    second.results.map((r) => r.id),
+  );
+  assert.equal(locations.length, 2);
+});
+
 test('duplicate detection is bounded, explainable, never merges records, and excludes out-of-radius pairs', () => {
   const locations = Object.freeze([
     { id: 'b', lat: 51, lng: 0, status: 'pending' },

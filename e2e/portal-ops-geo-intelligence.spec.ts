@@ -90,4 +90,91 @@ test.describe('PortalOps — Geospatial Intelligence', () => {
     await expect(page.getByText(/Distance: 5\.\d+ m/)).toBeVisible();
     await expect(page.getByText('DUPLICATE CONFIRMED')).toHaveCount(0);
   });
+
+  // Bounded Viewport Query wires queryLocationIntelligence (merged, previously
+  // zero real consumers) into the same tab: an operator planning a field-work
+  // route can scope the already-fetched bounded read to a lat/lng box and an
+  // evidence filter, and see each location's existing verification priority
+  // in context -- without any additional network read.
+  test('Bounded Viewport Query scopes the same bounded read by lat/lng box and evidence filter', async ({
+    page,
+  }) => {
+    test.setTimeout(30_000);
+
+    const now = Date.now();
+    const recent = new Date(now - 60_000).toISOString();
+    const old = '2020-01-01T00:00:00.000Z';
+
+    const db: MockDb = {
+      user: { id: 'admin-1', role: 'admin', email: 'admin@example.com' },
+      locations: {
+        'loc-in-box-stale': {
+          id: 'loc-in-box-stale',
+          lat: 10,
+          lng: 10,
+          status: 'verified',
+          status_updated_at: old,
+          created_date: old,
+        },
+        'loc-in-box-fresh': {
+          id: 'loc-in-box-fresh',
+          lat: 10.2,
+          lng: 10.2,
+          status: 'verified',
+          status_updated_at: recent,
+          created_date: recent,
+          // Not part of GEO_LOCATION_FIELDS -- proves the viewport panel
+          // never leaks it even though the underlying record carries it.
+          address: '221B Secret Street',
+        },
+        'loc-outside-box': {
+          id: 'loc-outside-box',
+          lat: 50,
+          lng: 50,
+          status: 'verified',
+          status_updated_at: recent,
+          created_date: recent,
+        },
+      },
+      fieldChecks: {},
+    };
+    await mockBase44(page, db);
+
+    await page.goto('/portal/ops?access_token=mock-admin-token');
+    await page.getByRole('button', { name: 'Geospatial Intelligence' }).click();
+    await expect(page.getByText('Bounded Viewport Query')).toBeVisible();
+
+    // Before any bounds are entered: an explicit input-state message, never
+    // conflated with "no inventory" or a silent empty table.
+    await expect(page.getByText(/enter all four bounds/)).toBeVisible();
+
+    await page.getByLabel('North').fill('11');
+    await page.getByLabel('South').fill('9');
+    await page.getByLabel('East').fill('11');
+    await page.getByLabel('West').fill('9');
+
+    // Only the two in-box locations appear; the one at (50, 50) does not.
+    const vpBlock = page.locator('h2', { hasText: 'Bounded Viewport Query' }).locator('..');
+    const vpRows = vpBlock.locator('table tbody tr');
+    await expect(vpRows).toHaveCount(2);
+    await expect(vpBlock.getByText('50.00000')).toHaveCount(0);
+
+    // The stale in-box record already carries a P1 verification priority
+    // from the same Verification Priority Queue computed above -- the
+    // viewport query surfaces existing evidence, it does not invent new
+    // classifications.
+    await expect(vpBlock.getByText('P1')).toBeVisible();
+
+    // Narrowing by status to something no in-box record has -> valid
+    // bounds, zero matches: an honest "not in this viewport" message, not
+    // an "INSUFFICIENT_DATA" input-state message.
+    await page.getByLabel('Status').selectOption('pending');
+    await expect(page.getByText(/does not prove no inventory exists/)).toBeVisible();
+    await page.getByLabel('Status').selectOption('');
+
+    // Safe projection: the underlying record carries an address, but the
+    // bounded read (GEO_LOCATION_FIELDS) never requests it, so it can never
+    // reach this panel.
+    await expect(page.getByText('221B Secret Street')).toHaveCount(0);
+  });
 });

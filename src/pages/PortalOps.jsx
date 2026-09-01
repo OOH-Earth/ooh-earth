@@ -40,8 +40,9 @@ import {
   buildVerificationQueue,
   fieldIntelligenceRecommendations,
   findPossibleDuplicates,
+  queryLocationIntelligence,
 } from '@/lib/geospatialIntelligence';
-import { geographicCoverage } from '@/lib/locationQuality';
+import { geographicCoverage, LOCATION_QUALITY } from '@/lib/locationQuality';
 const fmt = (n) => (typeof n === 'number' && Number.isFinite(n) ? n.toLocaleString() : '—');
 const num = (v) => {
   const n = Number(v);
@@ -447,6 +448,19 @@ const Td = ({ children, name = false, right = false, mono = false }) => (
   >
     {children}
   </td>
+);
+const VpInput = ({ label, value, onChange }) => (
+  <label className="flex flex-col gap-1">
+    <span className="font-mono text-[9px] uppercase tracking-[0.14em] text-dim">{label}</span>
+    <input
+      type="number"
+      inputMode="decimal"
+      step="any"
+      value={value}
+      onChange={onChange}
+      className="border border-slate2/60 bg-black px-2 py-1.5 font-mono text-[11px] text-silver"
+    />
+  </label>
 );
 
 /* ── section renderers ────────────────────────────────────── */
@@ -1344,6 +1358,36 @@ function GeoIntelligenceView({ geo }) {
   );
   const priorityTone = { P1: 'high', P2: 'warn', P3: 'mute' };
 
+  // Reuses the same already-fetched, already-bounded `geo.locations` read
+  // (no additional network call, no additional FieldCheck retrieval) — this
+  // is a pure client-side filter over data the tab already holds, so a
+  // keystroke here is a sub-millisecond in-memory recompute, not a request.
+  const [vp, setVp] = useState({
+    north: '',
+    south: '',
+    east: '',
+    west: '',
+    quality: '',
+    status: '',
+  });
+  const setVpField = (field) => (e) => setVp((v) => ({ ...v, [field]: e.target.value }));
+  const viewportResult = useMemo(
+    () =>
+      geo
+        ? queryLocationIntelligence(geo.locations, {
+            north: vp.north === '' ? undefined : Number(vp.north),
+            south: vp.south === '' ? undefined : Number(vp.south),
+            east: vp.east === '' ? undefined : Number(vp.east),
+            west: vp.west === '' ? undefined : Number(vp.west),
+            quality: vp.quality || undefined,
+            status: vp.status || undefined,
+            limit: 200,
+          })
+        : null,
+    [geo, vp.north, vp.south, vp.east, vp.west, vp.quality, vp.status],
+  );
+  const queueById = useMemo(() => new Map(queue.map((row) => [row.id, row])), [queue]);
+
   if (!geo) {
     return (
       <Block
@@ -1422,6 +1466,110 @@ function GeoIntelligenceView({ geo }) {
                 ))}
               </tbody>
             </table>
+          </div>
+        )}
+      </Block>
+
+      <Block
+        title="Bounded Viewport Query"
+        desc="Scope the same bounded read above to a lat/lng box (e.g. today's field-work area) and an evidence filter — for planning a verification route by geography instead of scanning the full queue. No additional read: filters the Location rows already fetched for this tab."
+      >
+        <div className="grid grid-cols-2 gap-2.5 md:grid-cols-6">
+          <VpInput label="North" value={vp.north} onChange={setVpField('north')} />
+          <VpInput label="South" value={vp.south} onChange={setVpField('south')} />
+          <VpInput label="East" value={vp.east} onChange={setVpField('east')} />
+          <VpInput label="West" value={vp.west} onChange={setVpField('west')} />
+          <label className="flex flex-col gap-1">
+            <span className="font-mono text-[9px] uppercase tracking-[0.14em] text-dim">
+              Quality
+            </span>
+            <select
+              value={vp.quality}
+              onChange={setVpField('quality')}
+              className="border border-slate2/60 bg-black px-2 py-1.5 font-mono text-[11px] text-silver"
+            >
+              <option value="">any</option>
+              {Object.values(LOCATION_QUALITY).map((q) => (
+                <option key={q} value={q}>
+                  {q}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label className="flex flex-col gap-1">
+            <span className="font-mono text-[9px] uppercase tracking-[0.14em] text-dim">
+              Status
+            </span>
+            <select
+              value={vp.status}
+              onChange={setVpField('status')}
+              className="border border-slate2/60 bg-black px-2 py-1.5 font-mono text-[11px] text-silver"
+            >
+              <option value="">any</option>
+              <option value="verified">verified</option>
+              <option value="pending">pending</option>
+              <option value="rejected">rejected</option>
+              <option value="unknown">unknown</option>
+            </select>
+          </label>
+        </div>
+
+        {!viewportResult || viewportResult.state === 'INSUFFICIENT_DATA' ? (
+          <p className="mt-4 font-mono text-[11px] text-dim">
+            — enter all four bounds (North ≥ South, each within valid lat/lng range) to query this
+            bounded read by viewport.
+          </p>
+        ) : viewportResult.results.length === 0 ? (
+          <p className="mt-4 font-mono text-[11px] text-dim">
+            — no locations in this bounded read fall within that viewport. This does not prove no
+            inventory exists there — only that none appear in the current bounded read.
+          </p>
+        ) : (
+          <div className="mt-4 overflow-x-auto">
+            <table className="w-full border-collapse">
+              <thead>
+                <tr>
+                  <Th>Location</Th>
+                  <Th>Lat</Th>
+                  <Th>Lng</Th>
+                  <Th>Status</Th>
+                  <Th>Quality</Th>
+                  <Th>Freshness</Th>
+                  <Th>Priority</Th>
+                  <Th>Next action</Th>
+                </tr>
+              </thead>
+              <tbody>
+                {viewportResult.results.map((row) => {
+                  const queued = queueById.get(row.id);
+                  return (
+                    <tr key={row.id}>
+                      <Td mono>{short(row.id)}</Td>
+                      <Td mono>{row.lat.toFixed(5)}</Td>
+                      <Td mono>{row.lng.toFixed(5)}</Td>
+                      <Td>{row.status}</Td>
+                      <Td>{row.quality}</Td>
+                      <Td>{row.freshness}</Td>
+                      <Td>
+                        {queued ? (
+                          <Badge tone={priorityTone[queued.priority] || 'mute'}>
+                            {queued.priority}
+                          </Badge>
+                        ) : (
+                          <span className="text-dim">—</span>
+                        )}
+                      </Td>
+                      <Td>{queued ? queued.next_action : 'No open verification action.'}</Td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+            {viewportResult.results.length >= 200 && (
+              <p className="mt-2 font-mono text-[10px] text-dim">
+                Result cap reached (200); narrow the viewport for a complete list.
+              </p>
+            )}
           </div>
         )}
       </Block>
