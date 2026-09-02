@@ -29,11 +29,17 @@ function timeAgo(iso) {
   return new Date(iso).toLocaleDateString();
 }
 
-export default function FieldCheckPanel({ location }) {
+export default function FieldCheckPanel({ location, focusRecheck = false }) {
   const [checks, setChecks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [cameraOpen, setCameraOpen] = useState(false);
   const ctaRef = useRef(null);
+  const panelRef = useRef(null);
+  // Guards the deep-link scroll/track so it fires exactly once per mount,
+  // even though `checks`/`loading` change again on the FieldCheck.subscribe
+  // callback below -- without this, every live update while the operator is
+  // reading the panel would re-scroll them back to the top of it.
+  const contextReachedRef = useRef(false);
 
   // Discoverability signal, not just a page-view: this panel sits well
   // below the fold on mobile (measured ~1.6 viewport-heights down in
@@ -87,6 +93,23 @@ export default function FieldCheckPanel({ location }) {
     };
   }, [location?.id]);
 
+  // Deep-link arrival: distinct from `recheck_cta_viewed` above (which only
+  // proves the button was seen) -- this proves the operator actually landed
+  // in field-check context from a Geospatial Intelligence recommendation.
+  // Deliberately does NOT open the camera or request any permission; it only
+  // scrolls the existing panel into view once real data has loaded, so the
+  // freshness/never-checked line and the (unchanged) "Re-check this spot"
+  // button are what greets them, not the top of the page.
+  useEffect(() => {
+    if (!focusRecheck || loading || contextReachedRef.current) return;
+    contextReachedRef.current = true;
+    panelRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    trackEvent('recheck_context_reached', {
+      check_type: location?.type,
+      has_evidence: checks.length > 0,
+    });
+  }, [focusRecheck, loading, checks.length, location?.type]);
+
   const verified = checks.filter((c) => c.status === 'verified');
   const latest = checks[0];
   // With 2+ verified checks, compare the two most recent. Otherwise fall back
@@ -102,7 +125,20 @@ export default function FieldCheckPanel({ location }) {
   const freshness = computeFreshness(location, checks);
 
   return (
-    <div className="mt-8 border border-ozone/30 bg-card">
+    <div ref={panelRef} className="mt-8 border border-ozone/30 bg-card scroll-mt-20">
+      {/* Deep-link banner: only when arriving from a Geospatial Intelligence
+          recommendation (PortalOps' Verification Priority Queue today).
+          Reuses freshness/checks already computed above -- no extra fetch,
+          no invented confidence score, just the same reason the queue used. */}
+      {focusRecheck && !loading && (
+        <div className="border-b border-ozone/30 bg-ozone/5 px-4 py-2.5 font-mono text-[9px] uppercase tracking-[0.15em] text-ozone">
+          // Flagged for field verification —{' '}
+          {checks.length === 0
+            ? 'no field evidence on record yet'
+            : 'existing evidence may be out of date'}
+          . Re-check below to update it.
+        </div>
+      )}
       {/* Header */}
       <div className="flex items-center justify-between gap-3 border-b border-slate2/40 px-4 py-3">
         <span className="flex items-center gap-2">

@@ -1,4 +1,4 @@
-import { useMemo, useState, useEffect, useCallback } from 'react';
+import { useMemo, useState, useEffect, useCallback, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import Nav from '@/components/ooh/Nav';
@@ -43,6 +43,7 @@ import {
   queryLocationIntelligence,
 } from '@/lib/geospatialIntelligence';
 import { geographicCoverage, LOCATION_QUALITY } from '@/lib/locationQuality';
+import { trackEvent } from '@/lib/trackEvent';
 const fmt = (n) => (typeof n === 'number' && Number.isFinite(n) ? n.toLocaleString() : '—');
 const num = (v) => {
   const n = Number(v);
@@ -1358,6 +1359,23 @@ function GeoIntelligenceView({ geo }) {
   );
   const priorityTone = { P1: 'high', P2: 'warn', P3: 'mute' };
 
+  // Top of the field-action funnel: fires once, the first time this operator
+  // actually sees a non-empty, reason-backed queue -- distinct from
+  // 'recheck_action_selected' below (clicking one row) and from the panel-
+  // level 'recheck_context_reached' (landing on the location page). No
+  // per-row impression tracking here: this is an internal, already-gated
+  // ops table, not a public discoverability surface like FieldCheckPanel's
+  // IntersectionObserver -- the tab being open already is the "viewed" signal.
+  const queueViewedRef = useRef(false);
+  useEffect(() => {
+    if (queueViewedRef.current || queue.length === 0) return;
+    queueViewedRef.current = true;
+    trackEvent('verification_queue_viewed', {
+      count: queue.length,
+      top_priority: queue[0]?.priority,
+    });
+  }, [queue]);
+
   // Reuses the same already-fetched, already-bounded `geo.locations` read
   // (no additional network call, no additional FieldCheck retrieval) — this
   // is a pure client-side filter over data the tab already holds, so a
@@ -1448,7 +1466,7 @@ function GeoIntelligenceView({ geo }) {
                   <Th>Quality</Th>
                   <Th>Freshness</Th>
                   <Th>Why</Th>
-                  <Th>Next action</Th>
+                  <Th>Action</Th>
                 </tr>
               </thead>
               <tbody>
@@ -1461,7 +1479,28 @@ function GeoIntelligenceView({ geo }) {
                     <Td>{row.quality}</Td>
                     <Td>{row.freshness}</Td>
                     <Td>{row.reasons.join('; ')}</Td>
-                    <Td>{row.next_action}</Td>
+                    <Td>
+                      {/* Closes the one verified gap in the field-evidence flywheel: this
+                          queue already knows exactly what needs checking and why (see the
+                          Why column, sourced from buildVerificationQueue's deterministic
+                          reasons) -- it just never let anyone act on that. `?action=recheck`
+                          is a pure navigation hint (see LocationDetail.jsx): it never mutates
+                          anything, never opens the camera automatically, and any other/missing
+                          value falls back to LocationDetail's normal, unchanged behavior. */}
+                      <Link
+                        to={`/location/${row.id}?action=recheck`}
+                        onClick={() =>
+                          trackEvent('recheck_action_selected', {
+                            priority: row.priority,
+                            quality: row.quality,
+                          })
+                        }
+                        title={row.next_action}
+                        className="inline-flex items-center gap-1.5 border border-ozone/50 px-2 py-1 font-mono text-[9px] font-bold uppercase tracking-[0.15em] text-ozone transition-colors hover:border-ozone hover:bg-ozone hover:text-void"
+                      >
+                        Verify in field <ArrowUpRight className="h-3 w-3" />
+                      </Link>
+                    </Td>
                   </tr>
                 ))}
               </tbody>
