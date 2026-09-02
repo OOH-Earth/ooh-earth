@@ -1,5 +1,5 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, useSearchParams, Link } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import {
   ArrowLeft,
@@ -48,6 +48,16 @@ function normalizeSeed(rec) {
 export default function LocationDetail() {
   const { id } = useParams();
   const queryClient = useQueryClient();
+  const [searchParams] = useSearchParams();
+  // Deep-link hint from PortalOps' Verification Priority Queue (or any other
+  // future caller) -- a pure navigation signal, nothing else. Any value other
+  // than exactly 'recheck' (missing, misspelled, tampered) is silently
+  // ignored and this page renders exactly as it always has: no mutation, no
+  // auto-opened camera, no permission prompts, no branching in the fetch
+  // above. See FieldCheckPanel's `focusRecheck` prop for what this actually
+  // does (scroll the existing field-check section into view + a bit of
+  // context copy) -- deliberately not more than that.
+  const isRecheckDeepLink = searchParams.get('action') === 'recheck';
 
   // Same fallback chain as before (get by id -> filter by legacy source_link
   // -> static seed data), just wrapped as one queryFn so revisiting a
@@ -457,7 +467,7 @@ export default function LocationDetail() {
 
         {/* ── Field activity ── */}
         <section className="mb-8">
-          <FieldCheckPanel location={loc} />
+          <FieldCheckPanel location={loc} focusRecheck={isRecheckDeepLink} />
         </section>
 
         {/* ── Network ── */}
