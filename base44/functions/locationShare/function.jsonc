@@ -1,0 +1,4 @@
+{
+  "name": "locationShare",
+  "entry": "base44/functions/locationShare/entry.ts"
+}

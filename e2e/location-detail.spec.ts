@@ -1,5 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { mockBase44, filterCrashes } from './fixtures/mockBase44';
+import { shareLocationUrl } from '../src/lib/shareLocation.js';
 
 // LocationDetail (src/pages/LocationDetail.jsx) plus the components it wires
 // in: PhotoGallery, TimeSinceTag. Network is mocked at the @base44/sdk REST
@@ -284,7 +285,7 @@ test.describe('LocationDetail — react-query migration regression', () => {
 });
 
 test.describe('LocationDetail — mobile actions and sharing', () => {
-  test('mobile header has one stable action row and native share uses the canonical public URL', async ({
+  test('mobile header has one stable action row and native share uses the crawler-readable share URL', async ({
     page,
   }) => {
     await page.addInitScript(() => {
@@ -318,13 +319,13 @@ test.describe('LocationDetail — mobile actions and sharing', () => {
     await page.getByRole('button', { name: 'Share location' }).click();
     await expect
       .poll(() => page.evaluate(() => (window as any).sharedData?.url))
-      .toBe('https://oohearth.app/location/loc-share-1');
+      .toBe(shareLocationUrl('loc-share-1'));
     await expect(page.evaluate(() => (window as any).sharedData?.text)).resolves.toContain(
       'Digital display · Share regression',
     );
   });
 
-  test('copy fallback shares only the canonical URL and exposes feedback', async ({ page }) => {
+  test('copy fallback shares the crawler-readable URL and exposes feedback', async ({ page }) => {
     await page.addInitScript(() => {
       Object.defineProperty(navigator, 'share', { configurable: true, value: undefined });
       Object.defineProperty(navigator, 'clipboard', {
@@ -353,6 +354,6 @@ test.describe('LocationDetail — mobile actions and sharing', () => {
     await expect(page.getByRole('status')).toHaveText('Link copied');
     await expect
       .poll(() => page.evaluate(() => (window as any).copied))
-      .toBe('https://oohearth.app/location/loc-copy-1');
+      .toBe(shareLocationUrl('loc-copy-1'));
   });
 });
