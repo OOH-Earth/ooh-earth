@@ -26,6 +26,7 @@ export type MockDb = {
   storeItems?: Record<string, any>;
   fieldChecks?: Record<string, any>;
   uploadUrl?: string;
+  locationPhotoFailuresRemaining?: number;
 };
 
 function matchesQuery(rec: Record<string, any>, query: Record<string, any>) {
@@ -267,6 +268,10 @@ export async function mockBase44(page: Page, db: MockDb) {
         return route.fulfill({ json: rows });
       }
       if (!idOrAction && method === 'POST') {
+        if ((db.locationPhotoFailuresRemaining ?? 0) > 0) {
+          db.locationPhotoFailuresRemaining = (db.locationPhotoFailuresRemaining ?? 0) - 1;
+          return route.fulfill({ status: 500, json: { message: 'Mock photo row failure' } });
+        }
         const body = req.postDataJSON();
         photoSeq += 1;
         const rec = { id: `mock-photo-${photoSeq}`, status: 'pending', ...body };

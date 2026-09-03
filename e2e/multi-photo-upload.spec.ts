@@ -107,6 +107,45 @@ test.describe('FieldReport (/report) — multi-photo upload', () => {
 
     expect(filterCrashes(consoleErrors), consoleErrors.join('\n')).toEqual([]);
   });
+
+  test('partial extra-photo failure stays visible and retries without duplicating the Location', async ({
+    page,
+  }) => {
+    const db = { user: null, locations: {}, locationPhotos: [], locationPhotoFailuresRemaining: 1 };
+    await mockBase44(page, db);
+    await page.goto('/report');
+
+    await page
+      .getByRole('button', { name: 'Upload' })
+      .locator('input[type="file"]')
+      .setInputFiles(IMG1);
+    await page.locator('input[type="file"][multiple]').setInputFiles([IMG1, IMG2]);
+    await page.getByPlaceholder('Street, district, city').fill('900 Retry Ave, Testville');
+    await page.getByText('Enter coordinates manually').click();
+    await page.getByPlaceholder('Latitude').fill('13.75');
+    await page.getByPlaceholder('Longitude').fill('100.50');
+
+    const submitBtn = page.locator('button[type="submit"]');
+    await submitBtn.click();
+    await submitBtn.click();
+    await submitBtn.click();
+    await expect(submitBtn).toHaveText(/Transmit report/i);
+    await submitBtn.click();
+
+    await expect(page.getByText(/additional photo/i).filter({ hasText: /failed/i })).toBeVisible({
+      timeout: 10_000,
+    });
+    expect(Object.keys(db.locations)).toHaveLength(1);
+    expect(db.locationPhotos).toHaveLength(1);
+
+    await page.getByRole('button', { name: 'Retry failed photos' }).click();
+    await expect.poll(() => db.locationPhotos.length, { timeout: 10_000 }).toBe(2);
+    expect(Object.keys(db.locations)).toHaveLength(1);
+    expect(db.locationPhotos.map((photo) => photo.location_id)).toEqual([
+      'mock-location-1',
+      'mock-location-1',
+    ]);
+  });
 });
 
 test.describe('QuickCapture modal (/map) — multi-photo upload widget', () => {
