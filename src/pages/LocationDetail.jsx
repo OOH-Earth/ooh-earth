@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useParams, useSearchParams, Link } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
@@ -11,13 +12,13 @@ import {
   AlertTriangle,
   Navigation,
   SprayCan,
+  Share2,
 } from 'lucide-react';
 import { metaFor } from '@/components/ooh/map/LocationThumb';
 import { keyInfo, isKeyedType, ACCESS_KEYS } from '@/components/ooh/accessKeys';
 import seed from '@/components/ooh/mapSeed';
 import Nav from '@/components/ooh/Nav';
 import Breadcrumbs from '@/components/ooh/Breadcrumbs';
-import MobileHeader from '@/components/ooh/MobileHeader';
 import MintLocationPanel from '@/components/ooh/mint/MintLocationPanel';
 import PhotoGallery from '@/components/ooh/gallery/PhotoGallery';
 import TimeSinceTag from '@/components/ooh/TimeSinceTag';
@@ -28,6 +29,7 @@ import FieldCheckPanel from '@/components/ooh/FieldCheckPanel';
 import RelatedLocations from '@/components/ooh/RelatedLocations';
 import { useSeo } from '@/lib/seoContext';
 import { getStatusBadgeClasses } from '@/lib/statusBadge';
+import { shareLocation } from '@/lib/shareLocation';
 
 function normalizeSeed(rec) {
   return {
@@ -49,6 +51,7 @@ export default function LocationDetail() {
   const { id } = useParams();
   const queryClient = useQueryClient();
   const [searchParams] = useSearchParams();
+  const [shareState, setShareState] = useState('');
   // Deep-link hint from PortalOps' Verification Priority Queue (or any other
   // future caller) -- a pure navigation signal, nothing else. Any value other
   // than exactly 'recheck' (missing, misspelled, tampered) is silently
@@ -194,10 +197,23 @@ export default function LocationDetail() {
       ? `https://www.google.com/maps/dir/?api=1&destination=${loc.lat},${loc.lng}`
       : null;
 
+  const onShare = async () => {
+    setShareState('sharing');
+    try {
+      const result = await shareLocation({ id: loc.id, title: loc.title, address: loc.address });
+      setShareState(
+        result.method === 'native' ? 'shared' : result.method === 'copy' ? 'copied' : '',
+      );
+    } catch {
+      setShareState('failed');
+    } finally {
+      window.setTimeout(() => setShareState(''), 2400);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-void text-silver">
       <Nav />
-      <MobileHeader to="/map" label="Atlas" />
       <div className="mx-auto max-w-5xl px-5 pt-4">
         <Breadcrumbs items={[{ label: 'Atlas', to: '/map' }, { label: 'Location' }]} />
       </div>
@@ -221,34 +237,68 @@ export default function LocationDetail() {
 
         {/* ── Header zone ── */}
         <header className="mb-6">
-          <div className="flex flex-wrap items-center gap-2">
-            <span
-              className="flex items-center gap-1.5 border border-slate2 px-2.5 py-1 font-mono text-[9px] uppercase tracking-[0.25em]"
-              style={{ color: meta.accent }}
-            >
-              <Icon className="h-3.5 w-3.5" /> {meta.label}
-            </span>
-            <span
-              className="flex items-center gap-1.5 border px-2.5 py-1 font-mono text-[9px] font-bold uppercase tracking-[0.25em]"
-              style={{ color: category.accent, borderColor: category.accent }}
-            >
-              {category.label}
-            </span>
-            <span
-              className={`flex items-center gap-1.5 border px-2.5 py-1 font-mono text-[9px] uppercase tracking-[0.25em] ${getStatusBadgeClasses(loc.status || 'pending')}`}
-            >
-              {loc.status === 'verified' ? <BadgeCheck className="h-3.5 w-3.5 text-ozone" /> : null}
-              {loc.status || 'pending'}
-            </span>
-            {!isPending && <TimeSinceTag since={loc.status_updated_at} />}
-            {loc.industry_sector && (
-              <span className="border border-slate2 px-2.5 py-1 font-mono text-[9px] uppercase tracking-[0.25em] text-darkgray">
-                {loc.industry_sector.replace(/_/g, ' ')}
+          <div className="flex items-start justify-between gap-3">
+            <div className="flex min-w-0 flex-wrap items-center gap-2">
+              <span
+                className="flex items-center gap-1.5 border border-slate2 px-2.5 py-1 font-mono text-[9px] uppercase tracking-[0.25em]"
+                style={{ color: meta.accent }}
+              >
+                <Icon className="h-3.5 w-3.5" /> {meta.label}
               </span>
-            )}
-            <span className="font-mono text-[9px] uppercase tracking-[0.25em] text-dim/60">
-              id · {loc.id}
-            </span>
+              <span
+                className="flex items-center gap-1.5 border px-2.5 py-1 font-mono text-[9px] font-bold uppercase tracking-[0.25em]"
+                style={{ color: category.accent, borderColor: category.accent }}
+              >
+                {category.label}
+              </span>
+              <span
+                className={`flex items-center gap-1.5 border px-2.5 py-1 font-mono text-[9px] uppercase tracking-[0.25em] ${getStatusBadgeClasses(loc.status || 'pending')}`}
+              >
+                {loc.status === 'verified' ? (
+                  <BadgeCheck className="h-3.5 w-3.5 text-ozone" />
+                ) : null}
+                {loc.status || 'pending'}
+              </span>
+              {!isPending && <TimeSinceTag since={loc.status_updated_at} />}
+              {loc.industry_sector && (
+                <span className="border border-slate2 px-2.5 py-1 font-mono text-[9px] uppercase tracking-[0.25em] text-darkgray">
+                  {loc.industry_sector.replace(/_/g, ' ')}
+                </span>
+              )}
+              <span className="font-mono text-[9px] uppercase tracking-[0.25em] text-dim/60">
+                id · {loc.id}
+              </span>
+            </div>
+            <div className="flex shrink-0 flex-col items-end gap-1">
+              <Link
+                to="/map"
+                aria-label="Back to Atlas"
+                className="inline-flex h-9 items-center gap-1.5 border border-slate2 px-3 font-mono text-[9px] font-bold uppercase tracking-[0.18em] text-silver transition-colors hover:border-ozone hover:text-ozone lg:hidden"
+              >
+                <ArrowLeft className="h-3.5 w-3.5" /> Atlas
+              </Link>
+              <button
+                type="button"
+                onClick={onShare}
+                disabled={shareState === 'sharing'}
+                aria-label="Share location"
+                className="inline-flex h-9 items-center gap-1.5 border border-ozone/60 px-3 font-mono text-[9px] font-bold uppercase tracking-[0.18em] text-ozone transition-colors hover:bg-ozone hover:text-void disabled:opacity-50"
+              >
+                <Share2 className="h-3.5 w-3.5" /> Share
+              </button>
+              {shareState && shareState !== 'sharing' && (
+                <span
+                  role="status"
+                  className="font-mono text-[8px] uppercase tracking-[0.16em] text-dim"
+                >
+                  {shareState === 'shared'
+                    ? 'Shared'
+                    : shareState === 'copied'
+                      ? 'Link copied'
+                      : 'Share failed'}
+                </span>
+              )}
+            </div>
           </div>
 
           <h1 className="mt-3 font-display text-3xl font-bold tracking-[-0.02em] text-silver md:text-4xl">

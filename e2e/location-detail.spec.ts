@@ -282,3 +282,77 @@ test.describe('LocationDetail — react-query migration regression', () => {
     ).toBe(afterFirstVisit);
   });
 });
+
+test.describe('LocationDetail — mobile actions and sharing', () => {
+  test('mobile header has one stable action row and native share uses the canonical public URL', async ({
+    page,
+  }) => {
+    await page.addInitScript(() => {
+      Object.defineProperty(navigator, 'share', {
+        configurable: true,
+        value: async (data: ShareData) => {
+          (window as unknown as { sharedData: ShareData }).sharedData = data;
+        },
+      });
+    });
+    await mockBase44(page, {
+      user: null,
+      locations: {
+        'loc-share-1': {
+          id: 'loc-share-1',
+          title: 'Digital display · Share regression',
+          type: 'digital',
+          address: '1 Public Way, Testville',
+          lat: 13.75,
+          lng: 100.5,
+          image_url: svg('%23EDFF00', 'COVER'),
+          status: 'verified',
+        },
+      },
+      locationPhotos: [],
+    });
+
+    await page.goto('/location/loc-share-1');
+    await expect(page.getByRole('heading', { name: /Share regression/i })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Share location' })).toHaveCount(1);
+    await page.getByRole('button', { name: 'Share location' }).click();
+    await expect
+      .poll(() => page.evaluate(() => (window as any).sharedData?.url))
+      .toBe('https://oohearth.app/location/loc-share-1');
+    await expect(page.evaluate(() => (window as any).sharedData?.text)).resolves.toContain(
+      'Digital display · Share regression',
+    );
+  });
+
+  test('copy fallback shares only the canonical URL and exposes feedback', async ({ page }) => {
+    await page.addInitScript(() => {
+      Object.defineProperty(navigator, 'share', { configurable: true, value: undefined });
+      Object.defineProperty(navigator, 'clipboard', {
+        configurable: true,
+        value: { writeText: async (text: string) => ((window as any).copied = text) },
+      });
+    });
+    await mockBase44(page, {
+      user: null,
+      locations: {
+        'loc-copy-1': {
+          id: 'loc-copy-1',
+          title: 'Billboard · Copy regression',
+          type: 'billboard',
+          notes: 'private operator note must not be shared',
+          lat: 13.75,
+          lng: 100.5,
+          status: 'verified',
+        },
+      },
+      locationPhotos: [],
+    });
+
+    await page.goto('/location/loc-copy-1');
+    await page.getByRole('button', { name: 'Share location' }).click();
+    await expect(page.getByRole('status')).toHaveText('Link copied');
+    await expect
+      .poll(() => page.evaluate(() => (window as any).copied))
+      .toBe('https://oohearth.app/location/loc-copy-1');
+  });
+});
