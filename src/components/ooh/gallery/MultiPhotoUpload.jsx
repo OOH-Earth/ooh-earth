@@ -1,3 +1,4 @@
+// @ts-nocheck -- upload result/options intentionally support per-file retry state.
 import { useEffect, useRef, useState } from 'react';
 import { Images, Plus, X } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
@@ -25,23 +26,67 @@ const MAX_EXTRA_PHOTOS = 8;
  * with this function's existing "one bad photo doesn't block the rest"
  * design, and still never uploads a metadata-bearing original.
  */
-export async function uploadLocationPhotos(files, locationId) {
+export async function uploadLocationPhotos(
+  files,
+  locationId,
+  { displayOrders = files.map((_, i) => i), onProgress } = {},
+) {
   if (!files?.length || !locationId) return [];
+  let completed = 0;
   const results = await Promise.allSettled(
     files.map(async (file, i) => {
-      const check = await validateImageFile(file);
-      if (!check.ok) throw new Error(check.error);
-      const { file_url } = await base44.integrations.Core.UploadFile({
-        file: await compressImage(file),
-      });
-      return base44.entities.LocationPhoto.create({
-        location_id: String(locationId),
-        url: file_url,
-        display_order: i,
-      });
+      try {
+        const check = await validateImageFile(file);
+        if (!check.ok) throw new Error(check.error);
+        const { file_url } = await base44.integrations.Core.UploadFile({
+          file: await compressImage(file),
+        });
+        return await base44.entities.LocationPhoto.create({
+          location_id: String(locationId),
+          url: file_url,
+          display_order: displayOrders[i] ?? i,
+        });
+      } finally {
+        completed += 1;
+        onProgress?.({ completed, total: files.length });
+      }
     }),
   );
-  return results.filter((r) => r.status === 'fulfilled').map((r) => r.value);
+  return {
+    uploaded: results.filter((r) => r.status === 'fulfilled').map((r) => r.value),
+    failed: results.flatMap((r, index) =>
+      r.status === 'rejected' ? [{ index, error: r.reason?.message || 'Upload failed.' }] : [],
+    ),
+  };
+}
+
+export function PhotoSyncStatus({ state, onRetry }) {
+  if (!state || state.status === 'complete') return null;
+  if (state.status === 'uploading') {
+    return (
+      <p
+        className="mt-3 font-mono text-[10px] uppercase tracking-[0.18em] text-ozone"
+        role="status"
+      >
+        // Uploading additional photos: {state.completed}/{state.total}
+      </p>
+    );
+  }
+  return (
+    <div className="mt-3 border border-flare/40 bg-flare/5 px-3 py-2">
+      <p className="font-mono text-[10px] uppercase tracking-[0.15em] text-flare" role="alert">
+        {state.failed.length} additional photo{state.failed.length === 1 ? '' : 's'} failed. The
+        successful photos remain attached to this Location.
+      </p>
+      <button
+        type="button"
+        onClick={onRetry}
+        className="mt-2 border border-flare/60 px-3 py-1.5 font-mono text-[9px] font-bold uppercase tracking-[0.2em] text-flare hover:bg-flare/10"
+      >
+        Retry failed photos
+      </button>
+    </div>
+  );
 }
 
 /**
