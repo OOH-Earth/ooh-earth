@@ -13,16 +13,16 @@ function QuestRow({ quest, onClaim, claiming, claimed }) {
       <div className="flex items-start justify-between gap-2">
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-1.5">
-            <span className="font-mono text-[9px] font-bold uppercase tracking-[0.15em] text-silver">
+            <span className="font-mono text-[0.6875rem] font-bold uppercase tracking-[0.15em] text-silver">
               {quest.label}
             </span>
             {claimed && <Check className="h-3 w-3 text-brand-green" />}
           </div>
-          <div className="font-mono text-[8px] uppercase tracking-[0.1em] text-dim">
+          <div className="font-mono text-[0.6875rem] uppercase tracking-[0.1em] text-dim">
             {quest.desc}
           </div>
         </div>
-        <span className="shrink-0 font-mono text-[9px] tabular text-ozone">
+        <span className="shrink-0 font-mono text-[0.6875rem] tabular text-ozone">
           +{quest.reward_xp} XP
         </span>
       </div>
@@ -34,18 +34,18 @@ function QuestRow({ quest, onClaim, claiming, claimed }) {
             style={{ width: `${pct}%` }}
           />
         </div>
-        <span className="shrink-0 font-mono text-[9px] tabular text-dim">
+        <span className="shrink-0 font-mono text-[0.6875rem] tabular text-dim">
           {quest.progress}/{quest.target}
         </span>
         {canClaim ? (
           <button
             onClick={onClaim}
-            className="shrink-0 border border-ozone bg-ozone px-2.5 py-1 font-mono text-[8px] font-bold uppercase tracking-[0.15em] text-void transition-colors hover:bg-flare hover:border-flare active:scale-95"
+            className="shrink-0 border border-ozone bg-ozone px-2.5 py-1 font-mono text-[0.625rem] font-bold uppercase tracking-[0.15em] text-void transition-colors hover:bg-flare hover:border-flare active:scale-95"
           >
             Claim
           </button>
         ) : claimed ? (
-          <span className="shrink-0 flex items-center gap-1 font-mono text-[8px] uppercase tracking-[0.15em] text-brand-green">
+          <span className="shrink-0 flex items-center gap-1 font-mono text-[0.625rem] uppercase tracking-[0.15em] text-brand-green">
             <Check className="h-3 w-3" /> Done
           </span>
         ) : claiming ? (
@@ -110,7 +110,7 @@ export default function QuestTracker({ quests, onClaim, claiming }) {
 
       <div className="flex items-center gap-2 border border-slate2/40 bg-void p-3">
         <Gift className="h-4 w-4 shrink-0 text-ozone" />
-        <p className="font-mono text-[9px] leading-relaxed text-dim">
+        <p className="font-mono text-[0.6875rem] leading-relaxed text-dim">
           Quests reset daily at midnight and weekly on Monday. Claim completed quests to bank bonus
           XP — unclaimed quests expire when the period rolls over.
         </p>

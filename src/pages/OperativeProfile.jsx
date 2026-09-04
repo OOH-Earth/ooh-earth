@@ -44,7 +44,7 @@ function StatCard({ label, value, Icon, color }) {
     <div className="border border-slate2/60 bg-card p-3 text-center">
       <Icon className={`mx-auto h-4 w-4 ${color}`} />
       <div className="mt-1.5 font-mono text-xl font-bold tabular text-silver">{value}</div>
-      <div className="font-mono text-[8px] uppercase tracking-[0.2em] text-dim">{label}</div>
+      <div className="font-mono text-[0.625rem] uppercase tracking-[0.2em] text-dim">{label}</div>
     </div>
   );
 }
@@ -140,7 +140,7 @@ export default function OperativeProfile() {
             <h1 className="mt-4 font-display text-2xl font-black uppercase text-silver">
               Authentication Required
             </h1>
-            <p className="mt-2 font-display text-sm text-darkgray">
+            <p className="mt-2 font-display text-[0.875rem] text-darkgray">
               Log in to view your operative profile, badges, and quest progress.
             </p>
             <div className="mt-6 flex justify-center gap-2">
@@ -168,7 +168,7 @@ export default function OperativeProfile() {
               <h1 className="font-display text-4xl font-black uppercase tracking-tight2 text-silver md:text-6xl">
                 {user.full_name || user.email?.split('@')[0] || 'Anonymous'}
               </h1>
-              <p className="mt-1 font-mono text-[10px] uppercase tracking-[0.2em] text-dim">
+              <p className="mt-1 font-mono text-[0.6875rem] uppercase tracking-[0.2em] text-dim">
                 {user.email} · Rank #{level?.level} {level?.title}
               </p>
             </div>
@@ -188,7 +188,7 @@ export default function OperativeProfile() {
                   <div className="font-mono text-2xl font-bold tabular text-flare">
                     {stats?.streak || 0}
                   </div>
-                  <div className="font-mono text-[8px] uppercase tracking-[0.2em] text-dim">
+                  <div className="font-mono text-[0.6875rem] uppercase tracking-[0.2em] text-dim">
                     Day streak
                   </div>
                 </div>
@@ -258,7 +258,7 @@ export default function OperativeProfile() {
               </div>
               <div className="grid gap-3 sm:grid-cols-3">
                 <div className="border border-slate2/60 bg-card p-4">
-                  <div className="font-mono text-[8px] uppercase tracking-[0.2em] text-dim">
+                  <div className="font-mono text-[0.6875rem] uppercase tracking-[0.2em] text-dim">
                     Field contributions
                   </div>
                   <div className="mt-1 font-mono text-xl font-bold tabular text-silver">
@@ -266,7 +266,7 @@ export default function OperativeProfile() {
                   </div>
                 </div>
                 <div className="border border-slate2/60 bg-card p-4">
-                  <div className="font-mono text-[8px] uppercase tracking-[0.2em] text-dim">
+                  <div className="font-mono text-[0.6875rem] uppercase tracking-[0.2em] text-dim">
                     Quest bonuses
                   </div>
                   <div className="mt-1 font-mono text-xl font-bold tabular text-ozone">

@@ -44,6 +44,8 @@ export default defineConfig({
         'focus-trap.spec.ts',
         'nav-menu-disclosure.spec.ts',
         'dashboard-location-links.spec.ts',
+        'metro-slider.spec.ts',
+        'operative-typography.spec.ts',
       ],
     },
   ],
