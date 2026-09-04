@@ -17,8 +17,8 @@ Deno.test(
   'locationShare emits crawler-readable safe metadata for verified public locations',
   async () => {
     const response = await handleLocationShare(
-      request('/api/apps/x/functions/locationShare?id=loc-1'),
-      deps({ id: 'loc-1', title: 'Billboard <Central>', type: 'billboard', status: 'verified' }, [
+      request('/api/apps/x/functions/locationShare?id=loc1'),
+      deps({ id: 'loc1', title: 'Billboard <Central>', type: 'billboard', status: 'verified' }, [
         {
           url: 'https://media.base44.com/images/public/photo.jpg',
           status: 'verified',
@@ -46,11 +46,16 @@ Deno.test('locationShare hides non-public locations and invalid ids', async () =
   const invalid = await handleLocationShare(request('/locationShare?id=<script>'), deps(null));
   assertEquals(invalid.status, 404);
   assertStringIncludes(await invalid.text(), 'Location not found');
+  const punctuation = await handleLocationShare(
+    request('/locationShare?id=not-a-real-location'),
+    deps(null),
+  );
+  assertEquals(punctuation.status, 404);
 });
 
 Deno.test('locationShare uses the fallback for unsafe image URLs', async () => {
   const response = await handleLocationShare(
-    request('/locationShare?id=loc-2'),
+    request('/locationShare?id=loc2'),
     deps({
       id: 'loc-2',
       title: 'Wall',
