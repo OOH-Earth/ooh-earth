@@ -2,7 +2,6 @@ const CANONICAL_ORIGIN = 'https://oohearth.app';
 const FALLBACK_IMAGE =
   'https://media.base44.com/images/public/6a62213cff3ccbca88c04ff5/1625fc4b1_Screenshot2026-08-19at155752.png/v1/fill/w_1200,h_630/1625fc4b1_Screenshot2026-08-19at155752.png';
 const APP_IDS = new Set(['6a62213cff3ccbca88c04ff5', '6a6748e009b947cb29591871']);
-const LOCATION_FIELDS = ['id', 'title', 'type', 'status', 'image_url'];
 const PHOTO_FIELDS = ['url', 'status', 'display_order'];
 // Base44 record ids are alphanumeric; reject punctuation before it reaches the
 // entity filter so deterministic malformed ids return 404 instead of provider 503.
@@ -29,6 +28,19 @@ function publicImage(value: unknown) {
   if (parsed.hostname !== 'base44.app') return null;
   const match = parsed.pathname.match(/^\/api\/apps\/([^/]+)\/files\/mp\/public\//);
   return match && APP_IDS.has(match[1]) ? parsed.toString() : null;
+}
+
+function isNotFoundError(error: unknown) {
+  const candidate = error as {
+    status?: number;
+    code?: string;
+    originalError?: { response?: { status?: number } };
+  };
+  return (
+    candidate?.status === 404 ||
+    candidate?.code === 'NOT_FOUND' ||
+    candidate?.originalError?.response?.status === 404
+  );
 }
 
 function htmlDocument({ title, description, image, canonical, status = 200 }: any) {
@@ -82,14 +94,15 @@ export async function handleLocationShare(
 
   try {
     const client = createClientFromRequest(req).asServiceRole;
-    const locations = await client.entities.Location.filter(
-      { id },
-      undefined,
-      1,
-      0,
-      LOCATION_FIELDS,
-    );
-    const location = locations?.[0];
+    let location;
+    try {
+      // A single-record get has a deterministic 404 contract in Base44. A
+      // filtered empty result can surface as a provider exception instead.
+      location = await client.entities.Location.get(id);
+    } catch (error) {
+      if (isNotFoundError(error)) location = null;
+      else throw error;
+    }
     if (!location || location.status !== 'verified')
       return htmlDocument({
         title: 'Location not found | OOH Earth',
