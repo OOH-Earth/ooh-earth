@@ -39,7 +39,9 @@ function htmlDocument({ title, description, image, canonical, status = 200 }: an
       ? `<main><h1>${safeTitle}</h1><p>${safeDescription}</p><p><a href="${safeCanonical}">Open this Location in OOH Earth</a></p></main>`
       : `<main><h1>${safeTitle}</h1><p>${safeDescription}</p><p><a href="${CANONICAL_ORIGIN}/">Open OOH Earth</a></p></main>`;
   const redirect =
-    status === 200 ? `<script>location.replace(${JSON.stringify(canonical)})</script>` : '';
+    status === 200
+      ? `<meta http-equiv="refresh" content="0;url=${escapeHtml(canonical)}">`
+      : '';
   return new Response(
     `<!doctype html><html lang="en"><head><meta charset="utf-8"><title>${safeTitle}</title><meta name="description" content="${safeDescription}"><meta property="og:title" content="${safeTitle}"><meta property="og:description" content="${safeDescription}"><meta property="og:image" content="${safeImage}"><meta property="og:url" content="${safeCanonical}"><meta property="og:type" content="article"><meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="${safeTitle}"><meta name="twitter:description" content="${safeDescription}"><meta name="twitter:image" content="${safeImage}"><link rel="canonical" href="${safeCanonical}"></head><body>${body}${redirect}</body></html>`,
     {
