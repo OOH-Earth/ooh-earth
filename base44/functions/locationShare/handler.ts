@@ -4,7 +4,9 @@ const FALLBACK_IMAGE =
 const APP_IDS = new Set(['6a62213cff3ccbca88c04ff5', '6a6748e009b947cb29591871']);
 const LOCATION_FIELDS = ['id', 'title', 'type', 'status', 'image_url'];
 const PHOTO_FIELDS = ['url', 'status', 'display_order'];
-const ID_PATTERN = /^[A-Za-z0-9_-]{1,128}$/;
+// Base44 record ids are alphanumeric; reject punctuation before it reaches the
+// entity filter so deterministic malformed ids return 404 instead of provider 503.
+const ID_PATTERN = /^[A-Za-z0-9]{1,128}$/;
 
 const escapeHtml = (value: unknown) =>
   String(value ?? '')
