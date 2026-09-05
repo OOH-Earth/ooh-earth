@@ -120,7 +120,7 @@
     "@types/three": "^0.185.4",
     "@vitejs/plugin-react": "^4.3.4",
     "autoprefixer": "^10.5.4",
-    "baseline-browser-mapping": "^2.11.14",
+    "baseline-browser-mapping": "^2.11.19",
     "deno": "2.9.5",
     "eslint": "^9.19.0",
     "eslint-plugin-react": "^7.37.4",
