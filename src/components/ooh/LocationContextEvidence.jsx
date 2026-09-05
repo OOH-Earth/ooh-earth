@@ -58,6 +58,16 @@ function EvidenceCard({ evidence }) {
             <dd className="mt-0.5 text-silver/80">{evidence.distance_m} m</dd>
           </div>
         )}
+        {evidence.coordinate_uncertainty_m != null && (
+          <div>
+            <dt className="font-mono uppercase tracking-[0.15em] text-dim">
+              coordinate uncertainty
+            </dt>
+            <dd className="mt-0.5 text-silver/80">
+              {Math.round(evidence.coordinate_uncertainty_m)} m
+            </dd>
+          </div>
+        )}
         <div>
           <dt className="font-mono uppercase tracking-[0.15em] text-dim">scope</dt>
           <dd className="mt-0.5 break-words text-silver/80">{evidence.geographic_scope}</dd>

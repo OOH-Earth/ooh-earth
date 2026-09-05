@@ -34,17 +34,32 @@ export function useLocationContext(location) {
     retry: false,
     queryFn: () => invokeContext('weatherContext', queryInput),
   });
+  const biodiversity = useQuery({
+    queryKey: ['location-context', 'biodiversity', location?.id, location?.lat, location?.lng],
+    enabled,
+    staleTime: 60 * 60_000,
+    retry: false,
+    queryFn: () => invokeContext('biodiversityContext', queryInput),
+  });
   return {
     data: {
       status:
-        heritage.data?.status === 'available' || weather.data?.status === 'available'
+        heritage.data?.status === 'available' ||
+        weather.data?.status === 'available' ||
+        biodiversity.data?.status === 'available'
           ? 'available'
-          : heritage.data?.status === 'empty' && weather.data?.status === 'empty'
+          : heritage.data?.status === 'empty' &&
+              weather.data?.status === 'empty' &&
+              biodiversity.data?.status === 'empty'
             ? 'empty'
             : 'unavailable',
-      evidence: [...(heritage.data?.evidence || []), ...(weather.data?.evidence || [])],
+      evidence: [
+        ...(heritage.data?.evidence || []),
+        ...(weather.data?.evidence || []),
+        ...(biodiversity.data?.evidence || []),
+      ],
     },
-    isFetching: heritage.isFetching || weather.isFetching,
+    isFetching: heritage.isFetching || weather.isFetching || biodiversity.isFetching,
   };
 }
 
