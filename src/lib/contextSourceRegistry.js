@@ -30,7 +30,7 @@ export const CONTEXT_SOURCE_REGISTRY = Object.freeze([
     name: 'Wikidata structured data',
     url: 'https://www.wikidata.org/wiki/Wikidata:Licensing',
     category: 'landmarks and cultural context',
-    status: SOURCE_STATUSES.APPROVED_FREE,
+    status: SOURCE_STATUSES.FREE_WITH_RESTRICTIONS,
     coverage: 'Global, community-maintained structured entities',
     license: 'CC0 for main structured data namespace',
     attribution: 'Wikidata recommended',

@@ -1,6 +1,7 @@
 import { ExternalLink, Info, MapPin } from 'lucide-react';
 import { contextEvidenceFor } from '@/lib/locationContextEvidence';
 import { isSafeSourceUrl } from '@/lib/contextSourceRegistry';
+import { useLocationContext } from '@/lib/locationContextResolver';
 
 const STATUS_CLASSES = {
   OBSERVED: 'border-ozone/50 text-ozone',
@@ -83,7 +84,9 @@ function EvidenceCard({ evidence }) {
 }
 
 export default function LocationContextEvidence({ location }) {
-  const evidence = contextEvidenceFor(location?.id);
+  const staticEvidence = contextEvidenceFor(location?.id);
+  const { data, isFetching } = useLocationContext(location);
+  const evidence = staticEvidence.length ? staticEvidence : data?.evidence || [];
   return (
     <section className="mb-8 border border-slate2/60" data-testid="location-context-evidence">
       <div className="flex items-start gap-3 border-b border-slate2/40 p-4 md:p-5">
@@ -105,7 +108,13 @@ export default function LocationContextEvidence({ location }) {
         </div>
       </div>
 
-      {evidence.length ? (
+      {isFetching ? (
+        <div className="p-5" data-testid="context-evidence-loading">
+          <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-dim">
+            // retrieving approved context
+          </p>
+        </div>
+      ) : evidence.length ? (
         <div className="grid gap-3 p-4 md:grid-cols-3 md:p-5">
           {evidence.map((item) => (
             <EvidenceCard evidence={item} key={`${item.category}-${item.label}`} />
