@@ -50,6 +50,7 @@ const AdScanLab = lazy(() => import('@/pages/AdScanLab'));
 const GraffitiCam = lazy(() => import('@/pages/GraffitiCam'));
 const NftCreator = lazy(() => import('@/pages/NftCreator'));
 const Home = lazy(() => import('@/pages/Home'));
+const EvidenceReview = lazy(() => import('@/pages/EvidenceReview'));
 const Map = lazy(() => import('@/pages/Map'));
 const Report = lazy(() => import('@/pages/Report'));
 const MediaCorps = lazy(() => import('@/pages/MediaCorps'));
@@ -174,6 +175,7 @@ const AuthenticatedApp = () => {
             <Route path="/about" element={<About />} />
             <Route path="/support" element={<Support />} />
             <Route path="/contact" element={<Contact />} />
+            <Route path="/evidence-review" element={<EvidenceReview />} />
             <Route path="/plans" element={<Plans />} />
             <Route path="/campaign" element={<Campaign />} />
             <Route path="/store" element={<Store />} />
