@@ -17,6 +17,8 @@
  * @property {string} license
  * @property {string} attribution
  * @property {string} freshness
+ * @property {number|null} [coordinate_uncertainty_m]
+ * @property {string} [basis_of_record]
  */
 
 const DEMO_LOCATION_ID = 'context-demo-location';
