@@ -16,23 +16,45 @@ function validCoordinates(location) {
 export function useLocationContext(location) {
   const staticEvidence = contextEvidenceFor(location?.id);
   const enabled = Boolean(location?.id) && !staticEvidence.length && validCoordinates(location);
-  return useQuery({
-    queryKey: ['location-context', location?.id, location?.lat, location?.lng],
+  const queryInput = {
+    lat: Number(location?.lat),
+    lng: Number(location?.lng),
+  };
+  const heritage = useQuery({
+    queryKey: ['location-context', 'heritage', location?.id, location?.lat, location?.lng],
     enabled,
     staleTime: 300_000,
     retry: false,
-    queryFn: async () => {
-      try {
-        const result = await base44.functions.invoke('heritageContext', {
-          lat: Number(location.lat),
-          lng: Number(location.lng),
-        });
-        return result && Array.isArray(result.evidence)
-          ? result
-          : { status: 'unavailable', evidence: [] };
-      } catch {
-        return { status: 'unavailable', evidence: [] };
-      }
-    },
+    queryFn: () => invokeContext('heritageContext', queryInput),
   });
+  const weather = useQuery({
+    queryKey: ['location-context', 'weather', location?.id, location?.lat, location?.lng],
+    enabled,
+    staleTime: 15 * 60_000,
+    retry: false,
+    queryFn: () => invokeContext('weatherContext', queryInput),
+  });
+  return {
+    data: {
+      status:
+        heritage.data?.status === 'available' || weather.data?.status === 'available'
+          ? 'available'
+          : heritage.data?.status === 'empty' && weather.data?.status === 'empty'
+            ? 'empty'
+            : 'unavailable',
+      evidence: [...(heritage.data?.evidence || []), ...(weather.data?.evidence || [])],
+    },
+    isFetching: heritage.isFetching || weather.isFetching,
+  };
+}
+
+async function invokeContext(functionName, queryInput) {
+  try {
+    const result = await base44.functions.invoke(functionName, queryInput);
+    return result && Array.isArray(result.evidence)
+      ? result
+      : { status: 'unavailable', evidence: [] };
+  } catch {
+    return { status: 'unavailable', evidence: [] };
+  }
 }

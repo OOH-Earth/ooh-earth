@@ -1,5 +1,5 @@
 /**
- * @typedef {'OBSERVED'|'REPORTED'|'DERIVED'|'ESTIMATED'|'UNKNOWN'} EvidenceStatus
+ * @typedef {'OBSERVED'|'REPORTED'|'DERIVED'|'ESTIMATED'|'FORECAST'|'UNKNOWN'} EvidenceStatus
  * @typedef {Object} ContextEvidence
  * @property {string} source
  * @property {string} source_id
