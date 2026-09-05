@@ -27,6 +27,7 @@ import SubvertisingPanel from '@/components/ooh/SubvertisingPanel';
 import AdvertiserInfo from '@/components/ooh/AdvertiserInfo';
 import FieldCheckPanel from '@/components/ooh/FieldCheckPanel';
 import RelatedLocations from '@/components/ooh/RelatedLocations';
+import LocationContextEvidence from '@/components/ooh/LocationContextEvidence';
 import { useSeo } from '@/lib/seoContext';
 import { getStatusBadgeClasses } from '@/lib/statusBadge';
 import { shareLocation } from '@/lib/shareLocation';
@@ -514,6 +515,8 @@ export default function LocationDetail() {
             )}
           </div>
         </section>
+
+        <LocationContextEvidence location={loc} />
 
         {/* ── Field activity ── */}
         <section className="mb-8">
