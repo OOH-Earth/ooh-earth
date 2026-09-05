@@ -8,6 +8,7 @@ const STATUS_CLASSES = {
   REPORTED: 'border-sky-400/50 text-sky-300',
   DERIVED: 'border-amber-300/50 text-amber-200',
   ESTIMATED: 'border-flare/50 text-flare',
+  FORECAST: 'border-violet-300/50 text-violet-200',
   UNKNOWN: 'border-slate2 text-dim',
 };
 

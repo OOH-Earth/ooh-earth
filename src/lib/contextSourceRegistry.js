@@ -105,6 +105,20 @@ export const CONTEXT_SOURCE_REGISTRY = Object.freeze([
     reviewedAt: '2026-09-05',
   },
   {
+    name: 'National Weather Service API',
+    url: 'https://www.weather.gov/documentation/services-web-api',
+    category: 'weather forecasts',
+    status: SOURCE_STATUSES.APPROVED_FREE,
+    coverage: 'United States and U.S. territories supported by NWS forecast offices',
+    license: 'U.S. Government open data; source terms and operational limits apply',
+    attribution: 'National Weather Service / NOAA',
+    rateLimits: 'Reasonable rate limits; identify requests with a descriptive User-Agent',
+    caching:
+      'Cache according to response headers and the data lifecycle; no persistent cache in V1',
+    commercialUse: 'Official documentation states open data, free to use for any purpose',
+    reviewedAt: '2026-09-05',
+  },
+  {
     name: 'Paid routing, weather, product and CV providers',
     url: null,
     category: 'external services',
