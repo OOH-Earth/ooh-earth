@@ -68,6 +68,18 @@ function EvidenceCard({ evidence }) {
             </dd>
           </div>
         )}
+        {evidence.relationship && (
+          <div>
+            <dt className="font-mono uppercase tracking-[0.15em] text-dim">relationship</dt>
+            <dd className="mt-0.5 text-silver/80">{evidence.relationship}</dd>
+          </div>
+        )}
+        {evidence.historical_period && (
+          <div>
+            <dt className="font-mono uppercase tracking-[0.15em] text-dim">historical period</dt>
+            <dd className="mt-0.5 break-words text-silver/80">{evidence.historical_period}</dd>
+          </div>
+        )}
         <div>
           <dt className="font-mono uppercase tracking-[0.15em] text-dim">scope</dt>
           <dd className="mt-0.5 break-words text-silver/80">{evidence.geographic_scope}</dd>
@@ -95,9 +107,11 @@ function EvidenceCard({ evidence }) {
 }
 
 export default function LocationContextEvidence({ location }) {
-  const staticEvidence = contextEvidenceFor(location?.id);
+  const controlledFixtureEvidence = contextEvidenceFor(location?.id);
   const { data, isFetching } = useLocationContext(location);
-  const evidence = staticEvidence.length ? staticEvidence : data?.evidence || [];
+  const evidence = controlledFixtureEvidence.length
+    ? controlledFixtureEvidence
+    : data?.evidence || [];
   return (
     <section className="mb-8 border border-slate2/60" data-testid="location-context-evidence">
       <div className="flex items-start gap-3 border-b border-slate2/40 p-4 md:p-5">
@@ -119,7 +133,7 @@ export default function LocationContextEvidence({ location }) {
         </div>
       </div>
 
-      {isFetching ? (
+      {isFetching && !evidence.length ? (
         <div className="p-5" data-testid="context-evidence-loading">
           <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-dim">
             // retrieving approved context
