@@ -1,3 +1,5 @@
+import { famousAdEvidenceFor } from './famousAdLocations.js';
+
 /**
  * @typedef {'OBSERVED'|'REPORTED'|'DERIVED'|'ESTIMATED'|'FORECAST'|'UNKNOWN'} EvidenceStatus
  * @typedef {Object} ContextEvidence
@@ -17,6 +19,8 @@
  * @property {string} license
  * @property {string} attribution
  * @property {string} freshness
+ * @property {string} [relationship]
+ * @property {string} [historical_period]
  * @property {number|null} [coordinate_uncertainty_m]
  * @property {string} [basis_of_record]
  */
@@ -89,6 +93,10 @@ export const LOCATION_CONTEXT_FIXTURES = Object.freeze({
 
 export function contextEvidenceFor(locationId) {
   return LOCATION_CONTEXT_FIXTURES[String(locationId)] || [];
+}
+
+export function staticContextEvidenceFor(location) {
+  return contextEvidenceFor(location?.id).concat(famousAdEvidenceFor(location));
 }
 
 export { DEMO_LOCATION_ID };

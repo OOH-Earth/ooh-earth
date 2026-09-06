@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { contextEvidenceFor } from '@/lib/locationContextEvidence';
+import { contextEvidenceFor, staticContextEvidenceFor } from '@/lib/locationContextEvidence';
 
 function validCoordinates(location) {
   return (
@@ -14,8 +14,10 @@ function validCoordinates(location) {
 }
 
 export function useLocationContext(location) {
-  const staticEvidence = contextEvidenceFor(location?.id);
-  const enabled = Boolean(location?.id) && !staticEvidence.length && validCoordinates(location);
+  const controlledFixtureEvidence = contextEvidenceFor(location?.id);
+  const staticEvidence = staticContextEvidenceFor(location);
+  const enabled =
+    Boolean(location?.id) && !controlledFixtureEvidence.length && validCoordinates(location);
   const queryInput = {
     lat: Number(location?.lat),
     lng: Number(location?.lng),
@@ -54,6 +56,7 @@ export function useLocationContext(location) {
             ? 'empty'
             : 'unavailable',
       evidence: [
+        ...staticEvidence,
         ...(heritage.data?.evidence || []),
         ...(weather.data?.evidence || []),
         ...(biodiversity.data?.evidence || []),
