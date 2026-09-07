@@ -191,7 +191,7 @@ export default function MultiPhotoUpload({ files, onChange, disabled = false, on
           {files.length} / {MAX_EXTRA_PHOTOS} selected
         </span>
       </label>
-      <p className="mb-2 font-mono text-[9px] uppercase tracking-[0.15em] text-dim/70">
+      <p className="mb-2 font-mono text-[9px] uppercase tracking-[0.15em] text-silver/70">
         Add from gallery or camera repeatedly; these attach after submission.
       </p>
       <div className="flex flex-wrap gap-2">
