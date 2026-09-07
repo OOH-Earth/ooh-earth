@@ -8,7 +8,11 @@ import {
   redactCliOutput,
   writeReleaseManifestArtifact,
 } from './release-utils.mjs';
-import { atomicWriteJson, publishCertification } from './release-evidence.mjs';
+import {
+  atomicWriteJson,
+  publishCertification,
+  requiredFunctionsFromManifest,
+} from './release-evidence.mjs';
 
 const args = process.argv.slice(2);
 const command = args[0] || 'status';
@@ -61,6 +65,14 @@ function deploy(target) {
   assertBuildArtifact(existsSync(resolve('dist/index.html')));
   const appId = target === 'backup' ? '6a6748e009b947cb29591871' : '6a62213cff3ccbca88c04ff5';
   try {
+    const requiredFunctions = requiredFunctionsFromManifest(manifest);
+    if (requiredFunctions.length) {
+      execFileSync(
+        'npx',
+        ['--yes', 'base44', '--app-id', appId, 'functions', 'deploy', ...requiredFunctions],
+        { encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] },
+      );
+    }
     const output = execFileSync(
       'npx',
       ['--yes', 'base44', '--app-id', appId, 'site', 'deploy', '--no-build', '--yes'],
