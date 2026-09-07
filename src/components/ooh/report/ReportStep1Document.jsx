@@ -97,7 +97,7 @@ export default function ReportStep1Document({ data, onChange }) {
       {/* Photo — capture or upload */}
       <div>
         <label className="mb-2 block font-mono text-[10px] uppercase tracking-[0.3em] text-dim">
-          Field photograph
+          Cover photo <span className="text-silver/70">(required)</span>
         </label>
         {data.image_url ? (
           <div className="relative overflow-hidden border border-slate2 bg-card">

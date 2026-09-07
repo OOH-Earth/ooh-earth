@@ -250,6 +250,9 @@ export default function QuickCapture({ open, onClose }) {
             <h3 className="mt-2 font-display text-xl font-bold tracking-[-0.02em] text-silver">
               Photograph the offense
             </h3>
+            <p className="mt-1 font-mono text-[9px] uppercase tracking-[0.18em] text-dim">
+              Cover photo first · add supporting views below
+            </p>
 
             {image_url ? (
               <div className="relative mt-4 aspect-[4/3] overflow-hidden border border-slate2 bg-card">

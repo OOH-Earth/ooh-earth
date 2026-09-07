@@ -133,6 +133,7 @@ export default function MultiPhotoUpload({ files, onChange, disabled = false, on
   const filesRef = useRef(files);
   const selectionQueueRef = useRef(Promise.resolve());
   const [previews, setPreviews] = useState([]);
+  const [selectionNotice, setSelectionNotice] = useState('');
 
   useEffect(() => {
     filesRef.current = files;
@@ -154,6 +155,20 @@ export default function MultiPhotoUpload({ files, onChange, disabled = false, on
       const rejected = checked.filter((c) => !c.check.ok);
       if (rejected.length) onRejected?.(rejected.map((c) => c.check.error));
       if (!incoming.length) return;
+      const seen = new Set(filesRef.current.map(fileKey));
+      const newFiles = incoming.filter((file) => !seen.has(fileKey(file)));
+      const remaining = Math.max(0, MAX_EXTRA_PHOTOS - filesRef.current.length);
+      const skippedDuplicates = incoming.length - newFiles.length;
+      const skippedForCap = Math.max(0, newFiles.length - remaining);
+      if (skippedDuplicates || skippedForCap) {
+        setSelectionNotice(
+          skippedForCap
+            ? `Maximum ${MAX_EXTRA_PHOTOS} additional photos reached — remove one to replace it.`
+            : 'Already selected photos were skipped.',
+        );
+      } else {
+        setSelectionNotice('');
+      }
       const next = mergePhotoFiles(filesRef.current, incoming);
       filesRef.current = next;
       onChange(next);
@@ -171,9 +186,14 @@ export default function MultiPhotoUpload({ files, onChange, disabled = false, on
   return (
     <div>
       <label className="mb-2 flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-[0.3em] text-dim">
-        <Images className="h-3.5 w-3.5" /> Additional photos{' '}
-        <span className="text-dim/60">(optional, up to {MAX_EXTRA_PHOTOS})</span>
+        <Images className="h-3.5 w-3.5" /> Additional photos
+        <span className="text-ozone">
+          {files.length} / {MAX_EXTRA_PHOTOS} selected
+        </span>
       </label>
+      <p className="mb-2 font-mono text-[9px] uppercase tracking-[0.15em] text-silver/70">
+        Add from gallery or camera repeatedly; these attach after submission.
+      </p>
       <div className="flex flex-wrap gap-2">
         {previews.map((src, i) => (
           <div key={src} className="relative h-16 w-16 overflow-hidden border border-slate2">
@@ -183,7 +203,8 @@ export default function MultiPhotoUpload({ files, onChange, disabled = false, on
               onClick={() => remove(i)}
               disabled={disabled}
               aria-label="Remove photo"
-              className="absolute right-0.5 top-0.5 flex h-4 w-4 items-center justify-center bg-void/80 text-silver transition-colors hover:text-flare disabled:opacity-40"
+              title={`Remove additional photo ${i + 1}`}
+              className="absolute right-0 top-0 flex min-h-10 min-w-10 items-center justify-center bg-void/85 text-silver transition-colors hover:text-flare disabled:opacity-40"
             >
               <X className="h-2.5 w-2.5" />
             </button>
@@ -214,6 +235,14 @@ export default function MultiPhotoUpload({ files, onChange, disabled = false, on
           </div>
         )}
       </div>
+      {selectionNotice && (
+        <p
+          className="mt-2 font-mono text-[9px] uppercase tracking-[0.15em] text-amber-200"
+          role="status"
+        >
+          {selectionNotice}
+        </p>
+      )}
       <input
         ref={galleryInputRef}
         type="file"
