@@ -46,6 +46,7 @@ export default defineConfig({
         'dashboard-location-links.spec.ts',
         'metro-slider.spec.ts',
         'operative-typography.spec.ts',
+        'protocol-one-scanner.spec.ts',
       ],
     },
   ],

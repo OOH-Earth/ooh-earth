@@ -11,10 +11,12 @@ export default function TrueCost() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [history, setHistory] = useState([]);
+  const [contextPoint, setContextPoint] = useState(null);
 
   const analyze = async (identifier) => {
     setUpc(identifier.canonical);
     setResult(null);
+    setContextPoint(null);
     setError('');
     setLoading(true);
     try {
@@ -65,7 +67,13 @@ export default function TrueCost() {
             <div className="mb-2 flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.25em] text-dim">
               <Barcode className="h-3.5 w-3.5 text-ozone" /> Decoding {upc}
             </div>
-            <TrueCostResult data={result} loading={loading} error={error} />
+            <TrueCostResult
+              data={result}
+              loading={loading}
+              error={error}
+              contextPoint={contextPoint}
+              onContextPointChange={setContextPoint}
+            />
           </div>
         )}
 

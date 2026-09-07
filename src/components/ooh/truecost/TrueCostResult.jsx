@@ -1,4 +1,6 @@
 import { AlertTriangle, BadgeCheck, Loader2 } from 'lucide-react';
+import LogisticsEvidence from './LogisticsEvidence';
+import { deriveLogisticsEvidence } from '@/lib/logisticsEvidence';
 
 const FIELD_ORDER = [
   'product_name',
@@ -38,7 +40,13 @@ function Assertion({ assertion }) {
   );
 }
 
-export default function TrueCostResult({ data, loading, error }) {
+export default function TrueCostResult({
+  data,
+  loading,
+  error,
+  contextPoint,
+  onContextPointChange,
+}) {
   if (loading) {
     return (
       <div className="flex flex-col items-center gap-3 border border-slate2/60 bg-card p-12">
@@ -88,6 +96,7 @@ export default function TrueCostResult({ data, loading, error }) {
 
   const fields = data.product.fields || {};
   const name = fields.product_name?.value || 'Unknown product';
+  const logistics = deriveLogisticsEvidence(fields, contextPoint);
   return (
     <div className="border border-slate2/60 bg-card">
       <div className="border-b border-slate2/60 p-4">
@@ -109,14 +118,51 @@ export default function TrueCostResult({ data, loading, error }) {
         ))}
       </div>
 
+      <LogisticsEvidence
+        fields={fields}
+        contextPoint={contextPoint}
+        onContextPointChange={onContextPointChange}
+      />
+
       <div className="border-t border-amber-300/30 bg-amber-300/5 p-4">
         <div className="font-mono text-[10px] font-bold uppercase tracking-[0.2em] text-amber-200">
           True cost evidence
         </div>
-        <p className="mt-2 font-display text-sm leading-relaxed text-silver/90">
-          No defensible total cost is available from this scan. Transport route, shipping mode,
-          carbon impact, labour conditions, price, and externalities remain UNKNOWN unless
-          separately supported by attributable evidence.
+        <div className="mt-3 grid gap-2 sm:grid-cols-2">
+          {[
+            ['Price', 'UNKNOWN'],
+            ['Origin', fields.origins?.value ?? 'UNKNOWN'],
+            ['Manufacturing', fields.manufacturing_places?.value ?? 'UNKNOWN'],
+            [
+              'Logistics',
+              logistics.distanceKm == null
+                ? 'UNKNOWN'
+                : `${logistics.distanceKm.toLocaleString()} km geodesic separation`,
+            ],
+            ['Carbon', 'UNKNOWN'],
+            ['Labour', 'UNKNOWN'],
+            ['Externalities', 'UNKNOWN'],
+          ].map(([label, value]) => (
+            <div
+              key={label}
+              className="flex items-baseline justify-between gap-3 border-b border-amber-300/15 py-2 font-mono text-[9px] uppercase tracking-[0.12em]"
+            >
+              <span className="text-dim">{label}</span>
+              <span className="text-silver">{value}</span>
+            </div>
+          ))}
+        </div>
+        <div className="mt-4 border border-amber-300/30 p-3">
+          <div className="font-mono text-[9px] uppercase tracking-[0.15em] text-dim">
+            Total true cost
+          </div>
+          <div className="mt-1 font-display text-base font-bold uppercase text-amber-200">
+            Insufficient evidence
+          </div>
+        </div>
+        <p className="mt-3 font-display text-sm leading-relaxed text-silver/90">
+          No defensible total cost is available from this scan. Missing price, carbon, labour, and
+          externality evidence stays UNKNOWN.
         </p>
       </div>
     </div>
