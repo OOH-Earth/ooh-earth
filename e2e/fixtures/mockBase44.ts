@@ -26,6 +26,7 @@ export type MockDb = {
   storeItems?: Record<string, any>;
   fieldChecks?: Record<string, any>;
   uploadUrl?: string;
+  productLookup?: Record<string, unknown>;
   locationPhotoFailuresRemaining?: number;
 };
 
@@ -128,6 +129,12 @@ export async function mockBase44(page: Page, db: MockDb) {
             },
           ],
         },
+      });
+    }
+
+    if (url.pathname.includes('/functions/productLookup')) {
+      return route.fulfill({
+        json: db.productLookup ?? { status: 'empty', product: null, reason: 'product_not_found' },
       });
     }
 

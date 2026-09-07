@@ -1,47 +1,9 @@
 import { useState } from 'react';
-import { base44 } from '@/api/base44Client';
 import Nav from '@/components/ooh/Nav';
 import UpcScanner from '@/components/ooh/truecost/UpcScanner';
 import TrueCostResult from '@/components/ooh/truecost/TrueCostResult';
 import { History, Barcode } from 'lucide-react';
-
-const SCHEMA = {
-  type: 'object',
-  properties: {
-    identified: { type: 'boolean' },
-    product_name: { type: 'string' },
-    brand_owner: { type: 'string' },
-    retail_price_usd: { type: 'number' },
-    true_cost_usd: { type: 'number' },
-    externality_usd: { type: 'number' },
-    carbon_kg: { type: 'number' },
-    water_liters: { type: 'number' },
-    labor_risk: { type: 'string', enum: ['low', 'moderate', 'high', 'critical'] },
-    packaging: { type: 'string' },
-    packaging_recyclable: { type: 'boolean' },
-    greenwashing_flags: { type: 'array', items: { type: 'string' } },
-    brand_accountability: { type: 'string' },
-    verdict: { type: 'string' },
-  },
-  required: [
-    'identified',
-    'product_name',
-    'brand_owner',
-    'retail_price_usd',
-    'true_cost_usd',
-    'externality_usd',
-    'labor_risk',
-    'verdict',
-  ],
-};
-
-const buildPrompt = (upc, product) =>
-  `You are a true-cost economist auditing a consumer product for the OOH.EARTH resistance platform ("OOH Earth"). Estimate the full social and environmental TRUE COST — what the product actually costs society once externalities are priced in: carbon emissions, water depletion, labor exploitation, packaging waste, brand greenwashing, and supply-chain harm.
-
-UPC/EAN: ${upc}
-Known product data: ${product ? JSON.stringify(product) : 'none — identify the product from the barcode via web research'}
-
-Provide confident, realistic USD estimates. Name the actual brand owner (parent company). Call out any known greenwashing or labor/supply-chain controversies for that brand. End with a sharp one-line verdict.`;
+import { resolveProductEvidence } from '@/lib/productResolver';
 
 export default function TrueCost() {
   const [upc, setUpc] = useState('');
@@ -50,41 +12,20 @@ export default function TrueCost() {
   const [error, setError] = useState('');
   const [history, setHistory] = useState([]);
 
-  const analyze = async (code) => {
-    setUpc(code);
+  const analyze = async (identifier) => {
+    setUpc(identifier.canonical);
     setResult(null);
     setError('');
     setLoading(true);
-    let product = null;
     try {
-      const r = await fetch(`https://world.openfoodfacts.org/api/v2/product/${code}.json`);
-      const d = await r.json();
-      if (d.status === 1 && d.product) {
-        const p = d.product;
-        product = {
-          name: p.product_name,
-          brand: p.brands,
-          image: p.image_front_small_url || p.image_small_url,
-          quantity: p.quantity,
-          categories: p.categories,
-          ecoscore: p.ecoscore_grade,
-          nutriscore: p.nutriscore_grade,
-        };
-      }
-    } catch (e) {
-      /* OFF unreachable — fall through to LLM-only */
-    }
-
-    try {
-      const useWeb = !product;
-      const res = await base44.integrations.Core.InvokeLLM({
-        prompt: buildPrompt(code, product),
-        response_json_schema: SCHEMA,
-        ...(useWeb ? { add_context_from_internet: true, model: 'gemini_3_flash' } : {}),
-      });
-      const out = { upc: code, ...(product || {}), .../** @type {object} */ (res) };
-      setResult(out);
-      setHistory((h) => [out, ...h.filter((x) => x.upc !== code)].slice(0, 12));
+      const resolved = await resolveProductEvidence(identifier);
+      setResult({ identifier, ...resolved });
+      setHistory((h) =>
+        [
+          { identifier, ...resolved },
+          ...h.filter((x) => x.identifier.canonical !== identifier.canonical),
+        ].slice(0, 12),
+      );
     } catch (e) {
       setError(e.message || 'Analysis failed — try again.');
     } finally {
@@ -103,12 +44,12 @@ export default function TrueCost() {
           <h1 className="font-display text-3xl font-black uppercase tracking-tight2 text-silver md:text-5xl">
             Scan a product.
             <br />
-            Reveal the true cost.
+            Reveal what is known.
           </h1>
           <p className="mt-2 max-w-xl font-display text-sm leading-relaxed text-darkgray">
-            Point the camera at any in-store barcode. We decode the UPC, identify the brand, and
-            price the externalities capitalism leaves off the tag — carbon, water, labor, packaging,
-            greenwashing.
+            Point the camera at a product barcode. We validate the identifier and show only
+            source-backed product evidence. Missing provenance stays unknown; no total true-cost
+            number is invented.
           </p>
         </div>
 
@@ -138,7 +79,7 @@ export default function TrueCost() {
                 <button
                   key={i}
                   onClick={() => {
-                    setUpc(h.upc);
+                    setUpc(h.identifier.canonical);
                     setResult(h);
                     setError('');
                   }}
@@ -146,23 +87,16 @@ export default function TrueCost() {
                 >
                   <div className="min-w-0">
                     <div className="truncate font-display text-sm font-bold text-silver">
-                      {h.product_name || h.name || 'Unknown product'}
+                      {h.product?.fields?.product_name?.value || 'Unknown product'}
                     </div>
                     <div className="font-mono text-[9px] uppercase tracking-[0.2em] text-dim">
-                      {h.brand_owner || h.brand || '—'} · UPC {h.upc}
+                      {h.product?.fields?.brand?.value || '—'} · GTIN {h.identifier.canonical}
                     </div>
                   </div>
                   <div className="shrink-0 text-right">
-                    {h.true_cost_usd != null && (
-                      <div className="font-display text-sm font-black tabular text-flare">
-                        ${Number(h.true_cost_usd).toFixed(2)}
-                      </div>
-                    )}
-                    {h.externality_usd != null && (
-                      <div className="font-mono text-[8px] uppercase tracking-[0.2em] text-dim">
-                        +${Number(h.externality_usd).toFixed(2)} ext
-                      </div>
-                    )}
+                    <div className="font-mono text-[8px] uppercase tracking-[0.2em] text-dim">
+                      evidence ledger
+                    </div>
                   </div>
                 </button>
               ))}
