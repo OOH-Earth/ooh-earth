@@ -50,7 +50,8 @@ test.describe('FieldReport (/report) — multi-photo upload', () => {
     await input.setInputFiles(files.slice(7));
 
     await expect(page.locator('button[aria-label="Remove photo"]')).toHaveCount(11);
-    await expect(page.getByText(/up to 11/i)).toBeVisible();
+    await expect(page.getByText('11 / 11 selected')).toBeVisible();
+    await expect(page.getByText(/add from gallery or camera repeatedly/i)).toBeVisible();
   });
 
   test('camera and library actions keep distinct mobile input semantics', async ({ page }) => {
@@ -67,6 +68,34 @@ test.describe('FieldReport (/report) — multi-photo upload', () => {
     await expect(page.getByRole('button', { name: 'Take photo' })).toBeVisible();
   });
 
+  test('adds camera photos after gallery photos without replacing the set', async ({ page }) => {
+    await mockBase44(page, { user: null });
+    await page.goto('/report');
+    await page.locator('input[type="file"][multiple]').setInputFiles(IMG1);
+    await page.locator('input[type="file"][capture="environment"]').last().setInputFiles(IMG2);
+    await expect(page.locator('button[aria-label="Remove photo"]')).toHaveCount(2);
+    await expect(page.getByText('2 / 11 selected')).toBeVisible();
+    expect(
+      await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth),
+    ).toBe(true);
+  });
+
+  test('explains the cap when a later selection exceeds eleven additional photos', async ({
+    page,
+  }) => {
+    await mockBase44(page, { user: null });
+    await page.goto('/report');
+    const input = page.locator('input[type="file"][multiple]');
+    await input.setInputFiles(imageBatch(11));
+    await input.setInputFiles({
+      name: 'field-photo-over-cap.png',
+      mimeType: 'image/png',
+      buffer: IMAGE_BYTES,
+    });
+    await expect(page.locator('button[aria-label="Remove photo"]')).toHaveCount(11);
+    await expect(page.getByText(/maximum 11 additional photos reached/i)).toBeVisible();
+  });
+
   test('does not duplicate a photo selected again in a later batch', async ({ page }) => {
     await mockBase44(page, { user: null });
     await page.goto('/report');
@@ -74,6 +103,7 @@ test.describe('FieldReport (/report) — multi-photo upload', () => {
     await input.setInputFiles(IMG1);
     await input.setInputFiles([IMG1, IMG2]);
     await expect(page.locator('button[aria-label="Remove photo"]')).toHaveCount(2);
+    await expect(page.getByText('Already selected photos were skipped.')).toBeVisible();
   });
 
   test('uploads an 11-photo documentation batch to one Location with bounded workers', async ({
@@ -128,6 +158,7 @@ test.describe('FieldReport (/report) — multi-photo upload', () => {
 
     await page.getByRole('button', { name: 'Remove photo' }).first().click();
     await expect(thumbs).toHaveCount(1);
+    await expect(page.getByText('1 / 11 selected')).toBeVisible();
 
     expect(filterCrashes(consoleErrors), consoleErrors.join('\n')).toEqual([]);
   });
