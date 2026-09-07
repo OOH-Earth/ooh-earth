@@ -111,7 +111,12 @@ export async function resolveProductLookup({
       signal: controller.signal,
     });
     const parsed = await readJson(response);
-    if (!parsed.payload) return unavailable(parsed.status || 'provider_unavailable');
+    if (!parsed.payload) {
+      if (parsed.status === 'provider_status_404') {
+        return { status: 'empty', product: null, reason: 'product_not_found' } as const;
+      }
+      return unavailable(parsed.status || 'provider_unavailable');
+    }
     if (parsed.payload.status !== 'success' || !parsed.payload.product) {
       return { status: 'empty', product: null, reason: 'product_not_found' } as const;
     }

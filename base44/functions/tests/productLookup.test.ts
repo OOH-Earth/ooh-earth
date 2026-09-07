@@ -43,6 +43,16 @@ Deno.test('returns empty without inventing a product', async () => {
   assertEquals(result.product, null);
 });
 
+Deno.test('normalizes provider 404 as product-not-found', async () => {
+  const result = await resolveProductLookup({
+    code: '3017620422003',
+    fetchImpl: async () => response({ error: 'not found' }, 404),
+  });
+  assertEquals(result.status, 'empty');
+  assertEquals(result.reason, 'product_not_found');
+  assertEquals(result.product, null);
+});
+
 Deno.test('rejects invalid identifiers before any provider request', async () => {
   let called = false;
   const result = await resolveProductLookup({
