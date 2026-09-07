@@ -72,9 +72,21 @@ function deploy(target) {
     throw new Error(redactCliOutput(`${error.stdout || ''}\n${error.stderr || ''}`).trim());
   }
   console.log(`DEPLOYMENT_ATTEMPTED target=${target} candidate=${sha}`);
-  console.log(
-    'Deployment success is not runtime certification; run the corresponding verify command separately.',
-  );
+  if (target === 'backup') {
+    const deployed = transitionRelease(manifest, 'BACKUP_DEPLOYED', {
+      BACKUP_DEPLOYED: { source: 'release-cli', candidate_sha: sha },
+    });
+    atomicWriteJson(manifestPath, deployed);
+    execFileSync(
+      'node',
+      ['scripts/release-certification.mjs', '--manifest', manifestPath, '--execute'],
+      { stdio: 'inherit' },
+    );
+  } else {
+    console.log(
+      'Production deployment success is not runtime certification; run certification separately.',
+    );
+  }
 }
 
 function publish(target) {
@@ -191,6 +203,17 @@ try {
     deploy('backup');
   } else if (command === 'deploy:production') {
     deploy('production');
+  } else if (command === 'certify:backup') {
+    execFileSync(
+      'node',
+      [
+        'scripts/release-certification.mjs',
+        '--manifest',
+        manifestPath,
+        ...(has('--execute') ? ['--execute'] : []),
+      ],
+      { stdio: 'inherit' },
+    );
   } else if (command === 'publish:backup') {
     publish('backup');
   } else if (command === 'publish:production') {
