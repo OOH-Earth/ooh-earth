@@ -4,7 +4,7 @@ import { resolve } from 'node:path';
 import { publishCertification } from './release-evidence.mjs';
 import { transitionRelease } from './release-state.mjs';
 import { assertBuildArtifact, writeReleaseManifestArtifact } from './release-utils.mjs';
-import { atomicWriteJson } from './release-evidence.mjs';
+import { atomicWriteJson, requiredFunctionsFromManifest } from './release-evidence.mjs';
 
 const APP_IDS = Object.freeze({
   backup: '6a6748e009b947cb29591871',
@@ -34,15 +34,30 @@ function runBase44Script(environment, source) {
   return JSON.parse(line);
 }
 
-export function classifyServiceChecks(result, candidateSha) {
+export function classifyServiceChecks(
+  result,
+  candidateSha,
+  environment = 'backup',
+  requiredFunctions = [],
+) {
   const checks = result?.checks || {};
+  const requiredResources = checks.required_resources || [];
+  const requiredResourcesHealthy = requiredFunctions.every((name) => {
+    const resource = requiredResources.find((item) => item.name === name);
+    return (
+      resource?.environment === environment &&
+      resource?.candidate_sha === candidateSha &&
+      resource?.status === 'VERIFIED'
+    );
+  });
   const healthy =
     checks.fieldStats?.status === 200 &&
     checks.map?.status === 200 &&
     checks.submitOffline?.status === 400 &&
     checks.submitOffline?.validation_boundary === true &&
     checks.runtimeHealth?.status === 200 &&
-    checks.runtimeHealth?.release === candidateSha;
+    checks.runtimeHealth?.release === candidateSha &&
+    requiredResourcesHealthy;
   return {
     healthy,
     reason: healthy ? 'ALL_REQUIRED_READ_ONLY_CHECKS_PASSED' : 'SERVICE_CHECK_FAILED',
@@ -60,6 +75,7 @@ export function buildCertificationEvidence({ candidateSha, environment, certifie
     operational_health_result: 'VERIFIED',
     certified_at: certifiedAt,
     service_checks: checks,
+    required_resources: checks.required_resources || [],
   };
 }
 
@@ -102,7 +118,7 @@ async function publicSmoke(environment, candidateSha) {
   return responses;
 }
 
-function runServiceChecks(environment, candidateSha) {
+function runServiceChecks(environment, candidateSha, requiredFunctions) {
   return runBase44Script(
     environment,
     `
@@ -128,6 +144,12 @@ result.checks.submitOffline = {
 };
 result.checks.runtimeHealth = await read('/runtimeHealth', { method: 'GET' });
 result.checks.runtimeHealth.release = result.checks.runtimeHealth.body?.release || 'unknown';
+result.checks.required_resources = ${JSON.stringify(requiredFunctions)}.map((name) => ({ name, environment: '${environment}', candidate_sha: '${candidateSha}', status: 'PENDING' }));
+for (const resource of result.checks.required_resources) {
+  const response = await read('/' + resource.name, { method: 'GET' });
+  resource.http_status = response.status;
+  resource.status = response.status >= 200 && response.status < 500 && response.status !== 404 ? 'VERIFIED' : 'MISSING';
+}
 const now = Date.now();
 const snapshots = {
   fieldStats: result.checks.fieldStats.status === 200,
@@ -164,6 +186,7 @@ console.log(JSON.stringify(result));`,
 export async function certifyBackup({ manifestPath, execute = false } = {}) {
   const manifest = JSON.parse(readFileSync(resolve(manifestPath), 'utf8'));
   const candidateSha = manifest.git_sha;
+  const requiredFunctions = requiredFunctionsFromManifest(manifest);
   if (!SHA_PATTERN.test(candidateSha))
     throw new Error('Certification requires a valid candidate SHA');
   if (manifest.release_state !== 'BACKUP_DEPLOYED')
@@ -173,13 +196,18 @@ export async function certifyBackup({ manifestPath, execute = false } = {}) {
       mode: 'DRY_RUN',
       target: 'backup',
       candidate_sha: candidateSha,
-      checks: REQUIRED_CHECKS,
+      checks: [...REQUIRED_CHECKS, ...requiredFunctions],
     };
   }
   bindRuntime('backup', candidateSha);
   const smoke = await publicSmoke('backup', candidateSha);
-  const serviceResult = runServiceChecks('backup', candidateSha);
-  const classification = classifyServiceChecks(serviceResult, candidateSha);
+  const serviceResult = runServiceChecks('backup', candidateSha, requiredFunctions);
+  const classification = classifyServiceChecks(
+    serviceResult,
+    candidateSha,
+    'backup',
+    requiredFunctions,
+  );
   if (!classification.healthy)
     throw new Error(`BACKUP certification blocked: ${classification.reason}`);
   const now = new Date().toISOString();
