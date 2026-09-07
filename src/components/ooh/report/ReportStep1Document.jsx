@@ -45,6 +45,7 @@ export default function ReportStep1Document({ data, onChange }) {
 
   const onPhoto = async (e) => {
     const file = e.target.files?.[0];
+    e.target.value = '';
     if (!file) return;
     setUploadError('');
     const check = await validateImageFile(file);

@@ -112,7 +112,11 @@ export default function QuickCapture({ open, onClose }) {
     }
   };
 
-  const onPhoto = (e) => uploadFile(e.target.files?.[0]);
+  const onPhoto = (e) => {
+    const file = e.target.files?.[0];
+    e.target.value = '';
+    uploadFile(file);
+  };
 
   const onCapture = (file) => uploadFile(file);
 
