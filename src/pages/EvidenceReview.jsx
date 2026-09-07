@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { ArrowUpRight, Check, Mail } from 'lucide-react';
+import { Check, Mail } from 'lucide-react';
 import Nav from '@/components/ooh/Nav';
 import SiteFooter from '@/components/ooh/SiteFooter';
 import HorizonProgress from '@/components/ooh/HorizonProgress';
@@ -42,12 +42,13 @@ export default function EvidenceReview() {
                 in one bounded handover.
               </p>
               <div className="mt-8 flex flex-wrap gap-3">
-                <Link
-                  to="/contact?subject=Evidence%20review%20question"
+                <a
+                  href="mailto:hello@ooh.earth?subject=Evidence%20review%20question"
                   className="inline-flex items-center gap-2 bg-ozone px-5 py-3 font-mono text-[10px] font-bold uppercase tracking-[0.25em] text-void transition-colors hover:bg-flare"
                 >
-                  Discuss a question <ArrowUpRight className="h-3.5 w-3.5" />
-                </Link>
+                  Discuss a question <Mail className="h-3.5 w-3.5" />
+                  <span className="sr-only"> (opens your email app)</span>
+                </a>
                 <Link
                   to="/map"
                   className="inline-flex items-center gap-2 border border-slate2/70 px-5 py-3 font-mono text-[10px] font-bold uppercase tracking-[0.25em] text-silver transition-colors hover:border-ozone/60 hover:text-ozone"
