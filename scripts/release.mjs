@@ -138,12 +138,12 @@ async function diagnoseHealth() {
   const manifest = loadManifest();
   if (!manifest?.git_sha)
     throw new Error('Health diagnostics require a candidate release manifest');
-  const { fetchHealthWithRetry } = await import('./release-health.mjs');
+  const { fetchHealthWithRetry, fetchHealthViaBase44Cli } = await import('./release-health.mjs');
   const environment = value('--target', 'backup');
   const result = await fetchHealthWithRetry({
     environment,
     candidateSha: manifest.git_sha,
-    token: process.env.BASE44_ACCESS_TOKEN,
+    fetchImpl: () => fetchHealthViaBase44Cli(environment, manifest.git_sha),
   });
   console.log(
     JSON.stringify(
