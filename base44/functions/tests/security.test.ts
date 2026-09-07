@@ -15,7 +15,10 @@ import { handleFieldStats, resetFieldStatsCache } from '../fieldStats/handler.ts
 import { handleSubmitOffline } from '../submitOffline/handler.ts';
 import { isValidCorrelationId, telemetryFor } from '../_shared/telemetry.ts';
 import { handleRuntimeHealth } from '../runtimeHealth/handler.ts';
-import { handleOperationalHealth } from '../operationalHealth/handler.ts';
+import {
+  evaluateOperationalSnapshots,
+  handleOperationalHealth,
+} from '../operationalHealth/handler.ts';
 import {
   recordOperationalHealth,
   resetOperationalStateCooldown,
@@ -198,12 +201,12 @@ Deno.test(
     const requestFor = (method = 'GET') => new Request('https://example.test/health', { method });
     const client = (user: unknown) => ({
       auth: { me: async () => user },
-      asServiceRole: { entities: { OperationalHealth: { filter: async () => [] } } },
+      asServiceRole: { entities: { OperationalHealth: { list: async () => [] } } },
     });
     assertEquals(
       (await handleOperationalHealth(requestFor(), { createClientFromRequest: () => client(null) }))
         .status,
-      403,
+      401,
       'operational health auth',
     );
     const response = await handleOperationalHealth(requestFor(), {
@@ -217,6 +220,53 @@ Deno.test(
     assertEquals(body.services, [], 'empty service list');
   },
 );
+
+Deno.test('operational health distinguishes freshness, degradation, and candidate binding', () => {
+  const now = 1_700_000_000_000;
+  const base = {
+    state_key: 'fieldStats:backup',
+    service: 'fieldStats',
+    environment: 'backup',
+    status: 'HEALTHY',
+    evidence_status: 'VERIFIED',
+    release: 'abc1234',
+    updated_at: now,
+  };
+  assertEquals(
+    evaluateOperationalSnapshots([base], { now, environment: 'backup', candidateSha: 'abc1234' })
+      .reason_code,
+    'HEALTHY',
+    'fresh matching health is healthy',
+  );
+  assertEquals(
+    evaluateOperationalSnapshots([{ ...base, updated_at: now - 15 * 60_000 - 1 }], {
+      now,
+      environment: 'backup',
+    }).reason_code,
+    'SERVICE_SNAPSHOT_STALE',
+    'stale healthy evidence is unknown',
+  );
+  assertEquals(
+    evaluateOperationalSnapshots([{ ...base, status: 'DEGRADED' }], { now, environment: 'backup' })
+      .status,
+    'DEGRADED',
+    'degraded service is not healthy',
+  );
+  assertEquals(
+    evaluateOperationalSnapshots([{ ...base, release: 'deadbeef' }], {
+      now,
+      environment: 'backup',
+      candidateSha: 'abc1234',
+    }).reason_code,
+    'CANDIDATE_MISMATCH',
+    'old evidence cannot certify a new candidate',
+  );
+  assertEquals(
+    evaluateOperationalSnapshots([], { now, environment: 'backup' }).reason_code,
+    'NO_SERVICE_SNAPSHOT',
+    'missing evidence is explicit',
+  );
+});
 
 const migrationClient = (user: unknown, locations: unknown[] = []) => {
   const updates: unknown[] = [];

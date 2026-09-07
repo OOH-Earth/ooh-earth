@@ -134,6 +134,36 @@ function publish(target) {
   console.log(`CERTIFICATION_PUBLISHED target=${target} candidate=${published.git_sha}`);
 }
 
+async function diagnoseHealth() {
+  const manifest = loadManifest();
+  if (!manifest?.git_sha)
+    throw new Error('Health diagnostics require a candidate release manifest');
+  const { fetchHealthWithRetry } = await import('./release-health.mjs');
+  const environment = value('--target', 'backup');
+  const result = await fetchHealthWithRetry({
+    environment,
+    candidateSha: manifest.git_sha,
+    token: process.env.BASE44_ACCESS_TOKEN,
+  });
+  console.log(
+    JSON.stringify(
+      {
+        diagnostic: 'operational-health',
+        target: environment,
+        candidate_sha: manifest.git_sha,
+        ...result,
+      },
+      null,
+      2,
+    ),
+  );
+  if (result.status !== 'HEALTHY' || result.evidence_status !== 'VERIFIED') {
+    throw new Error(
+      `OperationalHealth ${result.status} (${result.reason_code}); release remains fail-closed`,
+    );
+  }
+}
+
 try {
   if (command === 'status') {
     const manifest = loadManifest();
@@ -165,9 +195,11 @@ try {
     publish('backup');
   } else if (command === 'publish:production') {
     publish('production');
+  } else if (command === 'diagnose') {
+    await diagnoseHealth();
   } else {
     throw new Error(
-      'Commands: status, plan, transition, deploy:backup, deploy:production, publish:backup, publish:production',
+      'Commands: status, plan, transition, deploy:backup, deploy:production, publish:backup, publish:production, diagnose',
     );
   }
 } catch (error) {
