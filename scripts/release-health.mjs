@@ -39,6 +39,28 @@ export function classifyHealthResponse({ status, payload, environment, candidate
   };
 }
 
+export function fetchHealthViaBase44Cli(environment, candidateSha) {
+  const query = new URLSearchParams({ environment });
+  if (candidateSha) query.set('candidate_sha', candidateSha);
+  const script = `const r = await base44.functions.fetch('/operationalHealth?${query}', { method: 'GET' }); console.log(JSON.stringify({ status: r.status, body: await r.text() }));`;
+  const output = execFileSync(
+    'npx',
+    ['--yes', 'base44', '--app-id', APP_IDS[environment], 'exec', '--privileged'],
+    { input: `${script}\n`, encoding: 'utf8' },
+  );
+  const line = output
+    .trim()
+    .split('\n')
+    .reverse()
+    .find((entry) => entry.trim().startsWith('{'));
+  if (!line) throw new Error('Base44 CLI health probe returned no machine-readable result');
+  const result = JSON.parse(line);
+  return new Response(result.body, {
+    status: result.status,
+    headers: { 'content-type': 'application/json' },
+  });
+}
+
 export async function fetchHealthWithRetry({
   environment,
   candidateSha,
@@ -47,7 +69,8 @@ export async function fetchHealthWithRetry({
   sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms)),
   attempts = 3,
 } = {}) {
-  if (!token) throw new Error('Health diagnostics require BASE44_ACCESS_TOKEN');
+  if (!token && fetchImpl === fetch)
+    throw new Error('Health diagnostics require an authenticated fetch path');
   const boundedAttempts = Math.max(1, Math.min(3, Number(attempts) || 1));
   let diagnostic;
   for (let attempt = 1; attempt <= boundedAttempts; attempt++) {
@@ -103,8 +126,9 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   const result = await fetchHealthWithRetry({
     environment,
     candidateSha,
-    token: process.env.BASE44_ACCESS_TOKEN,
+    fetchImpl: (url) => fetchHealthViaBase44Cli(environment, candidateSha),
   });
   console.log(JSON.stringify(result, null, 2));
   if (result.status !== 'HEALTHY' || result.evidence_status !== 'VERIFIED') process.exitCode = 1;
 }
+import { execFileSync } from 'node:child_process';
