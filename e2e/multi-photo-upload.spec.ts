@@ -1,4 +1,5 @@
 import path from 'node:path';
+import fs from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { test, expect } from '@playwright/test';
 import { mockBase44, filterCrashes } from './fixtures/mockBase44';
@@ -6,6 +7,15 @@ import { mockBase44, filterCrashes } from './fixtures/mockBase44';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const IMG1 = path.join(__dirname, 'fixtures', 'test-image.png');
 const IMG2 = path.join(__dirname, 'fixtures', 'test-image-2.png');
+const IMAGE_BYTES = fs.readFileSync(IMG1);
+
+function imageBatch(count: number) {
+  return Array.from({ length: count }, (_, index) => ({
+    name: `field-photo-${index + 1}.png`,
+    mimeType: 'image/png',
+    buffer: IMAGE_BYTES,
+  }));
+}
 
 function trackConsoleErrors(page: import('@playwright/test').Page) {
   const errors: string[] = [];
@@ -27,6 +37,79 @@ async function shot(
 }
 
 test.describe('FieldReport (/report) — multi-photo upload', () => {
+  test('real FileList path supports 11 photos and additive 3 + 4 + 4 selection', async ({
+    page,
+  }) => {
+    await mockBase44(page, { user: null });
+    await page.goto('/report');
+
+    const input = page.locator('input[type="file"][multiple]');
+    const files = imageBatch(11);
+    await input.setInputFiles(files.slice(0, 3));
+    await input.setInputFiles(files.slice(3, 7));
+    await input.setInputFiles(files.slice(7));
+
+    await expect(page.locator('button[aria-label="Remove photo"]')).toHaveCount(11);
+    await expect(page.getByText(/up to 11/i)).toBeVisible();
+  });
+
+  test('camera and library actions keep distinct mobile input semantics', async ({ page }) => {
+    await mockBase44(page, { user: null });
+    await page.goto('/report');
+
+    const gallery = page.locator('input[type="file"][multiple]');
+    const camera = page.locator('input[type="file"][capture="environment"]').last();
+    await expect(gallery).toHaveCount(1);
+    await expect(camera).toHaveCount(1);
+    await expect(gallery).not.toHaveAttribute('capture', /.+/);
+    await expect(camera).not.toHaveAttribute('multiple', /.+/);
+    await expect(page.getByRole('button', { name: 'Choose photos' })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Take photo' })).toBeVisible();
+  });
+
+  test('does not duplicate a photo selected again in a later batch', async ({ page }) => {
+    await mockBase44(page, { user: null });
+    await page.goto('/report');
+    const input = page.locator('input[type="file"][multiple]');
+    await input.setInputFiles(IMG1);
+    await input.setInputFiles([IMG1, IMG2]);
+    await expect(page.locator('button[aria-label="Remove photo"]')).toHaveCount(2);
+  });
+
+  test('uploads an 11-photo documentation batch to one Location with bounded workers', async ({
+    page,
+  }) => {
+    await mockBase44(page, { user: null, locations: {}, locationPhotos: [] });
+    const photoCreates: string[] = [];
+    page.on('request', (req) => {
+      if (req.method() === 'POST' && req.url().includes('/entities/LocationPhoto')) {
+        photoCreates.push(req.url());
+      }
+    });
+
+    await page.goto('/report');
+    await page
+      .getByRole('button', { name: 'Upload' })
+      .locator('input[type="file"]')
+      .setInputFiles(IMG1);
+    await expect(page.getByText(/Replace/i)).toBeVisible();
+    await page.locator('input[type="file"][multiple]').setInputFiles(imageBatch(11));
+    await expect(page.locator('button[aria-label="Remove photo"]')).toHaveCount(11);
+    await page.getByPlaceholder('Street, district, city').fill('900 Documentation Ave');
+    await page.getByText('Enter coordinates manually').click();
+    await page.getByPlaceholder('Latitude').fill('13.75');
+    await page.getByPlaceholder('Longitude').fill('100.50');
+
+    const submitBtn = page.locator('button[type="submit"]');
+    await submitBtn.click();
+    await submitBtn.click();
+    await submitBtn.click();
+    await expect(submitBtn).toHaveText(/Transmit report/i);
+    await submitBtn.click();
+    await expect(page.getByText(/Transmission received/i)).toBeVisible({ timeout: 10_000 });
+    await expect.poll(() => photoCreates.length, { timeout: 20_000 }).toBe(11);
+  });
+
   test('additional-photos picker: add, preview, and remove locally', async ({ page }, testInfo) => {
     const consoleErrors = trackConsoleErrors(page);
     await mockBase44(page, { user: null });
