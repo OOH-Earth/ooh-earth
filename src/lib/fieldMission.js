@@ -72,7 +72,10 @@ export function orderMissionItems(items, reference = null) {
   return ordered;
 }
 
-export function createFieldMission(items, { reference = null, cap = FIELD_MISSION_CAP } = {}) {
+export function createFieldMission(
+  items,
+  { reference = null, cap = FIELD_MISSION_CAP, progress = {} } = {},
+) {
   const selected = stableItems(items, cap);
   return {
     version: 1,
@@ -83,12 +86,28 @@ export function createFieldMission(items, { reference = null, cap = FIELD_MISSIO
     ordering: validMissionCoordinate(reference)
       ? 'NEAREST NEXT BY STRAIGHT-LINE DISTANCE'
       : 'PRIORITY THEN LOCATION ID',
+    progress: { ...(progress || {}) },
     items: orderMissionItems(selected, reference),
   };
 }
 
 export function missionProgress(value) {
   return Object.values(MISSION_PROGRESS).includes(value) ? value : MISSION_PROGRESS.NOT_STARTED;
+}
+
+export function missionItemProgress(mission, id) {
+  return missionProgress(mission?.progress?.[id]);
+}
+
+export function updateMissionProgress(mission, id, value) {
+  if (!mission?.items?.some((item) => item.id === id)) return mission;
+  return {
+    ...mission,
+    progress: {
+      ...(mission.progress || {}),
+      [id]: missionProgress(value),
+    },
+  };
 }
 
 export function loadFieldMission() {
@@ -109,6 +128,7 @@ export function addToFieldMission(item) {
   const mission = createFieldMission([...items, item], {
     reference: current?.reference || null,
     cap: current?.cap || FIELD_MISSION_CAP,
+    progress: current?.progress || {},
   });
   try {
     sessionStorage.setItem(FIELD_MISSION_STORAGE_KEY, JSON.stringify(mission));

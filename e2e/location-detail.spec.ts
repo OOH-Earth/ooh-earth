@@ -357,3 +357,41 @@ test.describe('LocationDetail — mobile actions and sharing', () => {
       .toBe(shareLocationUrl('loc-copy-1'));
   });
 });
+
+test('returns to an active mission only when the Location is in that session mission', async ({
+  page,
+}) => {
+  await mockBase44(page, {
+    user: null,
+    locations: {
+      'loc-mission-return': {
+        id: 'loc-mission-return',
+        title: 'Mission return check',
+        type: 'billboard',
+        lat: 13.7,
+        lng: 100.5,
+        status: 'verified',
+        image_url: svg('%23EDFF00', 'MISSION'),
+      },
+    },
+    fieldChecks: {},
+  });
+  await page.addInitScript(() => {
+    sessionStorage.setItem(
+      'ooh-field-mission-v1',
+      JSON.stringify({
+        version: 1,
+        cap: 20,
+        reference: null,
+        ordering: 'PRIORITY THEN LOCATION ID',
+        progress: {},
+        items: [{ id: 'loc-mission-return', priority: 'HIGH', next_action: 'VERIFY IN FIELD' }],
+      }),
+    );
+  });
+  await page.goto('/location/loc-mission-return?action=recheck&from=field-mission');
+  await expect(page.getByTestId('return-to-mission')).toHaveAttribute(
+    'href',
+    '/portal/ops?section=geo&missionLocation=loc-mission-return',
+  );
+});

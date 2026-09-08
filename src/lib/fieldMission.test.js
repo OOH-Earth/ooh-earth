@@ -4,8 +4,10 @@ import {
   createFieldMission,
   geodesicDistanceMeters,
   missionProgress,
+  missionItemProgress,
   MISSION_PROGRESS,
   orderMissionItems,
+  updateMissionProgress,
   validMissionCoordinate,
 } from './fieldMission.js';
 
@@ -48,4 +50,20 @@ test('invalid or missing coordinates never produce a distance or route claim', (
 test('progress is session-controlled and never inferred from opening a location', () => {
   assert.equal(missionProgress('opened'), MISSION_PROGRESS.NOT_STARTED);
   assert.equal(missionProgress(MISSION_PROGRESS.COMPLETED), MISSION_PROGRESS.COMPLETED);
+});
+
+test('progress survives mission navigation and selects the next actionable item', () => {
+  const mission = createFieldMission([item('a', 1, 1), item('b', 2, 2)]);
+  const updated = updateMissionProgress(mission, 'a', MISSION_PROGRESS.COMPLETED);
+  assert.equal(missionItemProgress(updated, 'a'), MISSION_PROGRESS.COMPLETED);
+  assert.equal(missionItemProgress(updated, 'b'), MISSION_PROGRESS.NOT_STARTED);
+  assert.deepEqual(createFieldMission(updated.items, { progress: updated.progress }).progress, {
+    a: MISSION_PROGRESS.COMPLETED,
+  });
+});
+
+test('invalid progress updates cannot create stale mission items', () => {
+  const mission = createFieldMission([item('a', 1, 1)]);
+  assert.equal(updateMissionProgress(mission, 'missing', MISSION_PROGRESS.COMPLETED), mission);
+  assert.equal(missionItemProgress(mission, 'a'), MISSION_PROGRESS.NOT_STARTED);
 });

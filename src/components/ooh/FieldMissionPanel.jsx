@@ -1,7 +1,13 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowUpRight, Map as MapIcon, RotateCcw } from 'lucide-react';
-import { createFieldMission, FIELD_MISSION_CAP, MISSION_PROGRESS } from '@/lib/fieldMission';
+import {
+  createFieldMission,
+  FIELD_MISSION_CAP,
+  MISSION_PROGRESS,
+  missionItemProgress,
+  updateMissionProgress,
+} from '@/lib/fieldMission';
 
 const STORAGE_KEY = 'ooh-field-mission-v1';
 
@@ -43,6 +49,7 @@ export default function FieldMissionPanel({ queue, locations }) {
     if (!saved) return;
     setMission(saved);
     setSelected(saved.items.map((item) => item.id));
+    setProgress(saved.progress || {});
   }, []);
 
   const candidates = useMemo(
@@ -67,7 +74,7 @@ export default function FieldMissionPanel({ queue, locations }) {
     const chosen = candidates.filter((item) => selected.includes(item.id));
     const next = createFieldMission(chosen);
     setMission(next);
-    setProgress({});
+    setProgress(next.progress);
     writeMission(next);
   };
 
@@ -81,6 +88,12 @@ export default function FieldMissionPanel({ queue, locations }) {
   const mapLink = mission
     ? `/map?mission=${encodeURIComponent(mission.items.map((item) => item.id).join(','))}`
     : '/map';
+  const nextItem = mission?.items.find(
+    (item) => missionItemProgress({ ...mission, progress }, item.id) !== MISSION_PROGRESS.COMPLETED,
+  );
+  const nextItemState = nextItem
+    ? missionItemProgress({ ...mission, progress }, nextItem.id)
+    : null;
   return (
     <div className="mb-5 border border-ozone/30 bg-ozone/[0.03] p-4" data-testid="field-mission">
       <div className="flex flex-wrap items-start justify-between gap-3">
@@ -152,9 +165,29 @@ export default function FieldMissionPanel({ queue, locations }) {
               <MapIcon className="h-3.5 w-3.5" /> View on map
             </Link>
           </div>
+          <div className="mt-3 flex flex-wrap items-center justify-between gap-3 border border-ozone/25 bg-ozone/[0.04] p-3">
+            <div className="min-w-0">
+              <div className="font-mono text-[9px] uppercase tracking-[0.16em] text-ozone">
+                {nextItem ? 'Next actionable location' : 'Mission complete'}
+              </div>
+              <p className="mt-1 truncate font-mono text-[11px] text-silver">
+                {nextItem
+                  ? `${nextItem.id} · ${nextItemState}`
+                  : 'All mission items are marked complete.'}
+              </p>
+            </div>
+            {nextItem && (
+              <Link
+                to={`/location/${nextItem.id}?action=recheck&from=field-mission`}
+                className="inline-flex min-h-9 shrink-0 items-center justify-center border border-ozone bg-ozone px-3 py-2 font-mono text-[9px] font-bold uppercase tracking-[0.1em] text-void hover:bg-flare"
+              >
+                Open next
+              </Link>
+            )}
+          </div>
           <div className="mt-3 grid gap-2">
             {mission.items.map((item, index) => {
-              const state = progress[item.id] || MISSION_PROGRESS.NOT_STARTED;
+              const state = missionItemProgress({ ...mission, progress }, item.id);
               return (
                 <div
                   key={item.id}
@@ -178,9 +211,12 @@ export default function FieldMissionPanel({ queue, locations }) {
                   <select
                     aria-label={`Mission status for ${item.id}`}
                     value={state}
-                    onChange={(event) =>
-                      setProgress((current) => ({ ...current, [item.id]: event.target.value }))
-                    }
+                    onChange={(event) => {
+                      const next = updateMissionProgress(mission, item.id, event.target.value);
+                      setMission(next);
+                      setProgress(next.progress);
+                      writeMission(next);
+                    }}
                     className="min-h-9 border border-slate2 bg-black px-2 font-mono text-[9px] uppercase tracking-[0.08em] text-silver"
                   >
                     {progressOptions.map((option) => (
