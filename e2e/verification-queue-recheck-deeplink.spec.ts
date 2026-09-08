@@ -47,6 +47,7 @@ test.describe('Verification Priority Queue → field-check deep link', () => {
           status: 'verified',
           status_updated_at: old,
           created_date: old,
+          image_url: 'https://example.com/stale.jpg',
         },
       },
       fieldChecks: {},
@@ -58,14 +59,14 @@ test.describe('Verification Priority Queue → field-check deep link', () => {
     await page.getByRole('button', { name: 'Geospatial Intelligence' }).click();
 
     const queueRow = page.locator('table tbody tr').first();
-    await expect(queueRow).toContainText('P1');
+    await expect(queueRow).toContainText('HIGH');
 
     // Top of the field-action funnel: fires once the queue actually renders
     // a real, non-empty recommendation -- not merely because the tab exists.
     await waitForEvent(events, 'verification_queue_viewed');
     const viewed = events.filter((e) => e.event_name === 'verification_queue_viewed');
     expect(viewed).toHaveLength(1);
-    expect(viewed[0].properties).toMatchObject({ count: 1, top_priority: 'P1' });
+    expect(viewed[0].properties).toMatchObject({ count: 1, top_priority: 'HIGH' });
 
     const action = queueRow.getByRole('link', { name: /Verify in field/i });
     await expect(action).toHaveAttribute('href', '/location/loc-stale-p1?action=recheck');
@@ -79,7 +80,7 @@ test.describe('Verification Priority Queue → field-check deep link', () => {
     await waitForEvent(events, 'recheck_action_selected');
     const selected = events.filter((e) => e.event_name === 'recheck_action_selected');
     expect(selected).toHaveLength(1);
-    expect(selected[0].properties).toMatchObject({ priority: 'P1' });
+    expect(selected[0].properties).toMatchObject({ priority: 'HIGH' });
     expect(Object.keys(selected[0].properties ?? {}).sort()).toEqual(['priority', 'quality']);
 
     // Browser back navigation remains sane: returns to a working /portal/ops

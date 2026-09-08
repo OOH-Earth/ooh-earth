@@ -5,6 +5,22 @@ const MAX_OUTPUT = 1000;
 const DEFAULT_FRESHNESS_MS = 365 * 24 * 60 * 60 * 1000;
 const EARTH_RADIUS_M = 6_371_000;
 
+export const FIELD_PRIORITY = Object.freeze({
+  HIGH: 'HIGH',
+  MEDIUM: 'MEDIUM',
+  LOW: 'LOW',
+  CURRENT: 'CURRENT',
+  UNKNOWN: 'UNKNOWN',
+});
+
+export const FIELD_ACTION = Object.freeze({
+  VERIFY: 'VERIFY IN FIELD',
+  RECHECK: 'RECHECK LOCATION',
+  PHOTO: 'ADD PHOTO EVIDENCE',
+  REVIEW: 'REVIEW PENDING RECORD',
+  NONE: 'NO ACTION CURRENTLY REQUIRED',
+});
+
 const boundedRows = (rows) => (Array.isArray(rows) ? rows.slice(0, MAX_INPUT) : []);
 
 function observedAt(record) {
@@ -22,6 +38,112 @@ function safeLocation(record, now, freshnessMs) {
     quality: quality.quality,
     freshness: quality.freshness || freshnessOf(observedAt(record), now, freshnessMs),
     observed_at: observedAt(record),
+  };
+}
+
+function checksForLocation(fieldChecks, locationId) {
+  return boundedRows(fieldChecks)
+    .filter((check) => String(check?.location_id || '') === String(locationId))
+    .sort((a, b) => String(b.created_date || '').localeCompare(String(a.created_date || '')));
+}
+
+function photoState(location, checks, now, freshnessMs) {
+  const verifiedPhoto = checks.find((check) => check.status === 'verified' && check.image_url);
+  const hasPhoto = Boolean(location?.image_url || verifiedPhoto?.image_url);
+  if (!hasPhoto) return { state: 'MISSING', freshness: 'UNKNOWN', observed_at: null };
+  const observedAt = verifiedPhoto?.created_date || location?.created_date || null;
+  const freshness = freshnessOf(observedAt, now, freshnessMs);
+  return { state: freshness === 'STALE' ? 'STALE' : freshness, freshness, observed_at: observedAt };
+}
+
+/**
+ * Derives a transparent field-work signal from already-authorized records.
+ * This is intentionally a rules table, not a score: every non-current result
+ * carries the exact evidence gaps that caused it and one bounded next action.
+ * @param {{ location?: any, fieldChecks?: any[], contextEvidence?: any[], now?: number, freshnessMs?: number }} options
+ */
+export function deriveFieldAttention({
+  location,
+  fieldChecks = [],
+  contextEvidence = [],
+  now = Date.now(),
+  freshnessMs = DEFAULT_FRESHNESS_MS,
+} = {}) {
+  const item = safeLocation(location, now, freshnessMs);
+  if (!item) {
+    return {
+      id: typeof location?.id === 'string' ? location.id : 'UNKNOWN',
+      priority: FIELD_PRIORITY.UNKNOWN,
+      reasons: ['valid coordinates unavailable'],
+      action: FIELD_ACTION.NONE,
+      field_evidence: 'UNKNOWN',
+      photo_state: 'UNKNOWN',
+      verification_state: 'UNKNOWN',
+      context_evidence: 'UNKNOWN',
+      last_field_evidence: null,
+      excluded: true,
+    };
+  }
+  const checks = checksForLocation(fieldChecks, item.id);
+  const latestVerified = checks.find((check) => check.status === 'verified');
+  const pending = item.status === 'pending' || checks.some((check) => check.status === 'pending');
+  const rejected = item.status === 'rejected';
+  const fieldEvidence = latestVerified
+    ? freshnessOf(latestVerified.created_date, now, freshnessMs)
+    : checks.length
+      ? 'UNKNOWN'
+      : item.status === 'verified'
+        ? item.freshness
+        : 'MISSING';
+  const photo = photoState(location, checks, now, freshnessMs);
+  const context =
+    Array.isArray(contextEvidence) && contextEvidence.length ? 'AVAILABLE' : 'UNAVAILABLE';
+  const reasons = [];
+  if (rejected) reasons.push('record rejected by moderation');
+  if (pending) reasons.push('verification pending');
+  if (!checks.length) reasons.push('never field checked');
+  if (fieldEvidence === 'STALE') reasons.push('field evidence is stale');
+  if (photo.state === 'MISSING') reasons.push('photo evidence missing');
+  if (photo.state === 'STALE') reasons.push('photo evidence is stale');
+  if (fieldEvidence === 'UNKNOWN' && latestVerified)
+    reasons.push('field evidence timestamp unknown');
+
+  /** @type {string} */
+  let priority = FIELD_PRIORITY.CURRENT;
+  /** @type {string} */
+  let action = FIELD_ACTION.NONE;
+  if (rejected) priority = FIELD_PRIORITY.UNKNOWN;
+  else if (pending) {
+    priority = FIELD_PRIORITY.HIGH;
+    action = FIELD_ACTION.REVIEW;
+  } else if (!checks.length) {
+    priority = FIELD_PRIORITY.HIGH;
+    action = FIELD_ACTION.VERIFY;
+  } else if (fieldEvidence === 'STALE') {
+    priority = FIELD_PRIORITY.MEDIUM;
+    action = FIELD_ACTION.RECHECK;
+  } else if (photo.state === 'MISSING' || photo.state === 'STALE') {
+    priority = FIELD_PRIORITY.MEDIUM;
+    action = FIELD_ACTION.PHOTO;
+  } else if (fieldEvidence === 'UNKNOWN' || photo.state === 'UNKNOWN') {
+    priority = FIELD_PRIORITY.UNKNOWN;
+    action = FIELD_ACTION.VERIFY;
+  } else if (item.status !== 'verified') {
+    priority = FIELD_PRIORITY.LOW;
+    action = FIELD_ACTION.REVIEW;
+  }
+
+  return {
+    id: item.id,
+    priority,
+    reasons,
+    action,
+    field_evidence: fieldEvidence,
+    photo_state: photo.state,
+    verification_state: item.status === 'verified' ? 'VERIFIED' : item.status.toUpperCase(),
+    context_evidence: context,
+    last_field_evidence: latestVerified?.created_date || null,
+    excluded: rejected,
   };
 }
 
@@ -62,38 +184,20 @@ export function buildVerificationQueue({
   freshnessMs = DEFAULT_FRESHNESS_MS,
   limit = 100,
 } = {}) {
-  const checks = new Set(
-    boundedRows(fieldChecks)
-      .filter((check) => typeof check?.location_id === 'string')
-      .map((check) => check.location_id),
-  );
   const queue = boundedRows(locations).flatMap((record) => {
-    const item = safeLocation(record, now, freshnessMs);
-    if (!item || item.status === 'rejected') return [];
-    const reasons = [];
-    let priority = 'P3';
-    if (item.quality === 'STALE') {
-      reasons.push('evidence is stale');
-      priority = 'P1';
-    }
-    if (item.status !== 'verified') {
-      reasons.push('location is not verified');
-      priority = priority === 'P1' ? 'P1' : 'P2';
-    }
-    if (!checks.has(item.id)) reasons.push('no linked FieldCheck evidence');
-    if (!reasons.length) return [];
+    const item = deriveFieldAttention({ location: record, fieldChecks, now, freshnessMs });
+    if (item.excluded || item.priority === FIELD_PRIORITY.CURRENT) return [];
+    const safe = safeLocation(record, now, freshnessMs);
     return [
       {
-        id: item.id,
-        priority,
-        quality: item.quality,
-        freshness: item.freshness,
-        reasons: reasons.slice(0, 3),
-        next_action: 'Perform a bounded field verification.',
+        ...item,
+        quality: safe?.quality || 'UNKNOWN',
+        freshness: safe?.freshness || 'UNKNOWN',
+        next_action: item.action,
       },
     ];
   });
-  const rank = { P1: 0, P2: 1, P3: 2 };
+  const rank = { HIGH: 0, MEDIUM: 1, LOW: 2, UNKNOWN: 3, CURRENT: 4 };
   return queue
     .sort((a, b) => rank[a.priority] - rank[b.priority] || a.id.localeCompare(b.id))
     .slice(0, Math.min(MAX_OUTPUT, Math.max(1, Number(limit) || 100)));

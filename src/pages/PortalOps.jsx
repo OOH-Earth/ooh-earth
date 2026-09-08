@@ -73,11 +73,19 @@ const SECTIONS = [
 
 // Bounded, field-minimized read used only for deterministic evidence
 // classification (src/lib/locationQuality.js, src/lib/geospatialIntelligence.js).
-// Never requests address/notes/image_url/created_by or any other
-// content-bearing or identity field.
+// Requests only the fields needed to derive bounded evidence state. Photo URLs
+// are used as presence signals and never rendered or sent to another provider.
 const GEO_CAP = 2000;
-const GEO_LOCATION_FIELDS = ['id', 'lat', 'lng', 'status', 'status_updated_at', 'created_date'];
-const GEO_FIELDCHECK_FIELDS = ['id', 'location_id'];
+const GEO_LOCATION_FIELDS = [
+  'id',
+  'lat',
+  'lng',
+  'status',
+  'status_updated_at',
+  'created_date',
+  'image_url',
+];
+const GEO_FIELDCHECK_FIELDS = ['id', 'location_id', 'status', 'image_url', 'created_date'];
 
 /* ── data (non-sensitive; sensitive metadata lives in opsIntel) ─ */
 const PROTOCOLS = [
@@ -1357,7 +1365,7 @@ function GeoIntelligenceView({ geo }) {
     () => (profile ? fieldIntelligenceRecommendations(profile)[0] : null),
     [profile],
   );
-  const priorityTone = { P1: 'high', P2: 'warn', P3: 'mute' };
+  const priorityTone = { HIGH: 'high', MEDIUM: 'warn', LOW: 'mute', UNKNOWN: 'mute' };
 
   // Top of the field-action funnel: fires once, the first time this operator
   // actually sees a non-empty, reason-backed queue -- distinct from
@@ -1449,8 +1457,8 @@ function GeoIntelligenceView({ geo }) {
       </Block>
 
       <Block
-        title="Verification Priority Queue"
-        desc="Deterministic, reason-backed, capped, excludes rejected records. Never auto-corrects coordinates or auto-merges anything — always a human field action."
+        title="Field Attention Queue"
+        desc="Bounded, deterministic evidence signals. Every item states what is known, why it needs attention, and the next human field action. Rejected records stay out of this actionable queue."
       >
         {queue.length === 0 ? (
           <p className="font-mono text-[11px] text-dim">
@@ -1463,8 +1471,10 @@ function GeoIntelligenceView({ geo }) {
                 <tr>
                   <Th>Location</Th>
                   <Th>Priority</Th>
-                  <Th>Quality</Th>
-                  <Th>Freshness</Th>
+                  <Th>Last field evidence</Th>
+                  <Th>Photo state</Th>
+                  <Th>Verification</Th>
+                  <Th>Context</Th>
                   <Th>Why</Th>
                   <Th>Action</Th>
                 </tr>
@@ -1476,8 +1486,10 @@ function GeoIntelligenceView({ geo }) {
                     <Td>
                       <Badge tone={priorityTone[row.priority] || 'mute'}>{row.priority}</Badge>
                     </Td>
-                    <Td>{row.quality}</Td>
-                    <Td>{row.freshness}</Td>
+                    <Td>{row.last_field_evidence || 'UNKNOWN'}</Td>
+                    <Td>{row.photo_state}</Td>
+                    <Td>{row.verification_state}</Td>
+                    <Td>{row.context_evidence}</Td>
                     <Td>{row.reasons.join('; ')}</Td>
                     <Td>
                       {/* Closes the one verified gap in the field-evidence flywheel: this
@@ -1498,7 +1510,7 @@ function GeoIntelligenceView({ geo }) {
                         title={row.next_action}
                         className="inline-flex items-center gap-1.5 border border-ozone/50 px-2 py-1 font-mono text-[9px] font-bold uppercase tracking-[0.15em] text-ozone transition-colors hover:border-ozone hover:bg-ozone hover:text-void"
                       >
-                        Verify in field <ArrowUpRight className="h-3 w-3" />
+                        {row.next_action} <ArrowUpRight className="h-3 w-3" />
                       </Link>
                     </Td>
                   </tr>
@@ -1598,7 +1610,7 @@ function GeoIntelligenceView({ geo }) {
                           <span className="text-dim">—</span>
                         )}
                       </Td>
-                      <Td>{queued ? queued.next_action : 'No open verification action.'}</Td>
+                      <Td>{queued ? queued.next_action : 'No open field action.'}</Td>
                     </tr>
                   );
                 })}

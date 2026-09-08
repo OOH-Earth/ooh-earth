@@ -30,6 +30,7 @@ test.describe('PortalOps — Geospatial Intelligence', () => {
           status: 'verified',
           status_updated_at: recent,
           created_date: recent,
+          image_url: 'https://example.com/fresh.jpg',
         },
         'loc-stale': {
           id: 'loc-stale',
@@ -41,6 +42,7 @@ test.describe('PortalOps — Geospatial Intelligence', () => {
           status: 'verified',
           status_updated_at: old,
           created_date: old,
+          image_url: 'https://example.com/stale.jpg',
         },
         'loc-pending': {
           id: 'loc-pending',
@@ -52,7 +54,13 @@ test.describe('PortalOps — Geospatial Intelligence', () => {
         },
       },
       fieldChecks: {
-        'fc-1': { id: 'fc-1', location_id: 'loc-verified-fresh', created_date: recent },
+        'fc-1': {
+          id: 'fc-1',
+          location_id: 'loc-verified-fresh',
+          status: 'verified',
+          created_date: recent,
+        },
+        'fc-2': { id: 'fc-2', location_id: 'loc-stale', status: 'verified', created_date: old },
       },
     };
     await mockBase44(page, db);
@@ -63,17 +71,17 @@ test.describe('PortalOps — Geospatial Intelligence', () => {
     // Evidence profile description embeds the exact bounded counts read
     // (3 Location, 1 FieldCheck) -- proves this is derived from the fixture
     // data, not a static placeholder.
-    await expect(page.getByText('3 Location, 1 FieldCheck rows')).toBeVisible();
+    await expect(page.getByText('3 Location, 2 FieldCheck rows')).toBeVisible();
 
-    // Verification queue: the stale-but-verified record outranks the
-    // unverified pending record (P1 before P2); the fresh/verified/checked
-    // record has no open reasons and is excluded entirely (2 rows, not 3).
+    // Verification queue: the pending record is the highest deterministic
+    // action, followed by stale-but-verified evidence; the fresh/verified/
+    // checked record has no open reasons and is excluded entirely.
     const queueRows = page.locator('table tbody tr');
     await expect(queueRows).toHaveCount(2);
-    await expect(queueRows.nth(0)).toContainText('P1');
-    await expect(queueRows.nth(0)).toContainText('evidence is stale');
-    await expect(queueRows.nth(1)).toContainText('P2');
-    await expect(queueRows.nth(1)).toContainText('location is not verified');
+    await expect(queueRows.nth(0)).toContainText('HIGH');
+    await expect(queueRows.nth(0)).toContainText('verification pending');
+    await expect(queueRows.nth(1)).toContainText('MEDIUM');
+    await expect(queueRows.nth(1)).toContainText('field evidence is stale');
 
     // Coverage: 2 of 3 valid-coordinate records carry status=verified.
     await expect(page.getByText('Geographic Coverage')).toBeVisible();
@@ -159,11 +167,12 @@ test.describe('PortalOps — Geospatial Intelligence', () => {
     await expect(vpRows).toHaveCount(2);
     await expect(vpBlock.getByText('50.00000')).toHaveCount(0);
 
-    // The stale in-box record already carries a P1 verification priority
+    // The stale in-box record has no linked FieldCheck, so its first
+    // deterministic action remains HIGH: verify it in the field.
     // from the same Verification Priority Queue computed above -- the
     // viewport query surfaces existing evidence, it does not invent new
     // classifications.
-    await expect(vpBlock.getByText('P1')).toBeVisible();
+    await expect(vpBlock.getByText('HIGH').first()).toBeVisible();
 
     // Narrowing by status to something no in-box record has -> valid
     // bounds, zero matches: an honest "not in this viewport" message, not

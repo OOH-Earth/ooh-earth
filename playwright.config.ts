@@ -47,6 +47,8 @@ export default defineConfig({
         'metro-slider.spec.ts',
         'operative-typography.spec.ts',
         'protocol-one-scanner.spec.ts',
+        'portal-ops-geo-intelligence.spec.ts',
+        'verification-queue-recheck-deeplink.spec.ts',
       ],
     },
   ],
