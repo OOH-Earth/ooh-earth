@@ -32,6 +32,7 @@ import EvidenceTimeline from '@/components/ooh/EvidenceTimeline';
 import { useSeo } from '@/lib/seoContext';
 import { getStatusBadgeClasses } from '@/lib/statusBadge';
 import { shareLocation } from '@/lib/shareLocation';
+import { loadFieldMission } from '@/lib/fieldMission';
 
 function normalizeSeed(rec) {
   return {
@@ -63,6 +64,14 @@ export default function LocationDetail() {
   // does (scroll the existing field-check section into view + a bit of
   // context copy) -- deliberately not more than that.
   const isRecheckDeepLink = searchParams.get('action') === 'recheck';
+  const mission = loadFieldMission();
+  const missionItem =
+    searchParams.get('from') === 'field-mission'
+      ? mission?.items?.find((item) => item.id === id)
+      : null;
+  const returnToMission = missionItem
+    ? `/portal/ops?section=geo&missionLocation=${encodeURIComponent(id)}`
+    : null;
 
   // Same fallback chain as before (get by id -> filter by legacy source_link
   // -> static seed data), just wrapped as one queryFn so revisiting a
@@ -279,6 +288,15 @@ export default function LocationDetail() {
               >
                 <ArrowLeft className="h-3.5 w-3.5" /> Atlas
               </Link>
+              {returnToMission && (
+                <Link
+                  to={returnToMission}
+                  aria-label="Return to mission"
+                  className="inline-flex min-h-9 items-center gap-1.5 border border-ozone bg-ozone px-3 py-2 font-mono text-[9px] font-bold uppercase tracking-[0.18em] text-void transition-colors hover:bg-flare"
+                >
+                  Return to mission
+                </Link>
+              )}
               <button
                 type="button"
                 onClick={onShare}
@@ -524,6 +542,20 @@ export default function LocationDetail() {
         {/* ── Field activity ── */}
         <section className="mb-8">
           <FieldCheckPanel location={loc} focusRecheck={isRecheckDeepLink} />
+          {returnToMission && (
+            <div className="mt-3 flex flex-wrap items-center justify-between gap-3 border border-ozone/30 bg-ozone/[0.04] p-3">
+              <p className="font-mono text-[10px] uppercase tracking-[0.14em] text-dim">
+                Working from a temporary field mission · status remains operator-controlled
+              </p>
+              <Link
+                to={returnToMission}
+                data-testid="return-to-mission"
+                className="inline-flex min-h-10 items-center justify-center border border-ozone bg-ozone px-4 py-2 font-mono text-[10px] font-bold uppercase tracking-[0.14em] text-void hover:bg-flare"
+              >
+                Return to mission
+              </Link>
+            </div>
+          )}
         </section>
 
         {/* ── Network ── */}
