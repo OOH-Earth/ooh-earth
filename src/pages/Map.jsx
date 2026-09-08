@@ -156,6 +156,7 @@ export default function Map() {
     /** @type {string} */ (MAP_ATTENTION_FILTERS.ALL),
   );
   const [missionNotice, setMissionNotice] = useState('');
+  const [missionLinkReady, setMissionLinkReady] = useState(false);
   const { style: mapStyle } = useMapStyle();
   const { spots: mushrooms, loading: mushLoading } = useMushroomData();
   const { spots: floraSpots, loading: floraLoading } = useFloraData();
@@ -692,6 +693,7 @@ export default function Map() {
   const selectedAttention = layerFiltered.find((m) => String(m.id) === String(selectedId));
   const addSelectedToMission = () => {
     const result = addToFieldMission(selectedAttention);
+    setMissionLinkReady(result.ok);
     setMissionNotice(
       result.ok
         ? result.added
@@ -1053,6 +1055,14 @@ export default function Map() {
                     className="mt-2 font-mono text-[9px] uppercase tracking-[0.12em] text-ozone"
                   >
                     {missionNotice}
+                    {missionLinkReady && (
+                      <Link
+                        to="/portal/ops?section=geo"
+                        className="ml-2 text-silver underline decoration-ozone underline-offset-2"
+                      >
+                        Open mission
+                      </Link>
+                    )}
                   </div>
                 )}
               </div>
