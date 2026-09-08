@@ -65,14 +65,25 @@ function pinFor(m, selected) {
   // (ozone already means "highlighted/AI/notable" elsewhere in the app)
   // instead of adding a new badge/element to an already-busy pin.
   const living = Boolean(m.livingRecord);
-  const ringColor = m.fieldMission ? '#FF5C00' : living ? '#EDFF00' : '#fff';
+  const ringColor = m.fieldMission
+    ? '#FF5C00'
+    : m.attention?.priority && m.attention.priority !== 'CURRENT'
+      ? '#5BE7FF'
+      : living
+        ? '#EDFF00'
+        : '#fff';
   const mc_color = GLYPH_COLORS[m.type] || GLYPH_COLORS.other;
   const mc_svg = glyphSVG(m.type, 10);
   const size = selected ? 62 : 52;
   const badge = selected ? 22 : 18;
   const glow = selected ? 'rgba(255,72,118,0.45)' : 'rgba(255,72,118,0.20)';
   const img = String(m.image).replace(/-\d+x\d+(?=\.\w+$)/, '');
-  const title = living ? ' title="Living record — documented over time"' : '';
+  const title =
+    m.attention?.priority && m.attention.priority !== 'CURRENT'
+      ? ` title="${m.attention.priority} field attention"`
+      : living
+        ? ' title="Living record — documented over time"'
+        : '';
   const html = `<div${title} style="position:relative;width:${size}px;height:${size}px"><span style="position:absolute;inset:-${selected ? 12 : 8}px;border-radius:50%;background:radial-gradient(circle,${glow},transparent 65%)"></span><span style="position:relative;display:block;width:${size}px;height:${size}px;border-radius:50%;border:3px solid ${ringColor};overflow:hidden;background:#000;box-shadow:0 2px 6px rgba(0,0,0,0.6)${selected ? ',0 0 0 2px ' + mc_color : ''}${living ? ',0 0 8px rgba(237,255,0,0.5)' : ''}"><img src="${img}" alt="" style="width:100%;height:100%;object-fit:cover;display:block"/></span><span style="position:absolute;right:-3px;bottom:-3px;width:${badge}px;height:${badge}px;border-radius:50%;background:${mc_color};border:2px solid #000;display:flex;align-items:center;justify-content:center;box-shadow:0 0 6px rgba(0,0,0,0.6)">${mc_svg}</span><span style="position:absolute;left:-2px;top:-2px;width:10px;height:10px;border-radius:50%;background:${dotColor};border:2px solid #000"></span></div>`;
   return L.divIcon({
     className: living ? 'ooh-pin ooh-pin--photo ooh-pin--living' : 'ooh-pin ooh-pin--photo',

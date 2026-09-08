@@ -51,6 +51,7 @@ export default defineConfig({
         'verification-queue-recheck-deeplink.spec.ts',
         'evidence-timeline.spec.ts',
         'field-missions.spec.ts',
+        'intelligent-map.spec.ts',
       ],
     },
   ],

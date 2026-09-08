@@ -120,6 +120,7 @@ function buildFC(markers, selectedId) {
           lat: m.lat,
           lng: m.lng,
           selected: m.id === selectedId,
+          attention: Boolean(m.attention && m.attention.priority !== 'CURRENT'),
         },
       })),
   };
@@ -138,6 +139,7 @@ export default function Globe3D({
   flyTo = null,
   onError = null,
   onCounts = null,
+  attentionMode = false,
 }) {
   const mapStyle = useMapStyle().style;
   const containerRef = useRef(null);
@@ -291,6 +293,18 @@ export default function Globe3D({
       });
       // individual field pins (unclustered only)
       map.addLayer({
+        id: 'ooh-attention',
+        type: 'circle',
+        source: 'ooh-markers',
+        filter: ['all', ['!', ['has', 'point_count']], ['==', ['get', 'attention'], true]],
+        paint: {
+          'circle-radius': 12,
+          'circle-color': 'rgba(91,231,255,0.12)',
+          'circle-stroke-color': '#5BE7FF',
+          'circle-stroke-width': 2,
+        },
+      });
+      map.addLayer({
         id: 'ooh-markers',
         type: 'symbol',
         source: 'ooh-markers',
@@ -374,10 +388,12 @@ export default function Globe3D({
     const vis = activeLayers.some((l) => l === 'ads' || l === 'adbusting' || l === 'graffiti')
       ? 'visible'
       : 'none';
-    ['ooh-markers', 'ooh-clusters', 'ooh-cluster-count'].forEach((id) => {
+    ['ooh-markers', 'ooh-attention', 'ooh-clusters', 'ooh-cluster-count'].forEach((id) => {
       if (map.getLayer(id)) map.setLayoutProperty(id, 'visibility', vis);
     });
-  }, [activeLayers, ready]);
+    if (map.getLayer('ooh-attention'))
+      map.setLayoutProperty('ooh-attention', 'visibility', attentionMode ? vis : 'none');
+  }, [activeLayers, attentionMode, ready]);
 
   useEffect(() => {
     dataRef.current = buildFC(markers, selectedId);
