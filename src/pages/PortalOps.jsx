@@ -1947,7 +1947,10 @@ function RosterView() {
 /* ── page ─────────────────────────────────────────────────── */
 export default function PortalOps() {
   const { user, isLoadingAuth, authChecked } = useAuth();
-  const [active, setActive] = useState('exec');
+  const [active, setActive] = useState(() => {
+    const requested = new URLSearchParams(window.location.search).get('section');
+    return SECTIONS.some((section) => section.id === requested) ? requested : 'exec';
+  });
   const [clr, setClr] = useState(3); // UI-only demo of the access matrix
   const [intel, setIntel] = useState(null); // { risks, secrets, fn_secrets } from opsIntel
   const [stats, setStats] = useState(null);
