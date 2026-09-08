@@ -65,7 +65,7 @@ function pinFor(m, selected) {
   // (ozone already means "highlighted/AI/notable" elsewhere in the app)
   // instead of adding a new badge/element to an already-busy pin.
   const living = Boolean(m.livingRecord);
-  const ringColor = living ? '#EDFF00' : '#fff';
+  const ringColor = m.fieldMission ? '#FF5C00' : living ? '#EDFF00' : '#fff';
   const mc_color = GLYPH_COLORS[m.type] || GLYPH_COLORS.other;
   const mc_svg = glyphSVG(m.type, 10);
   const size = selected ? 62 : 52;
@@ -180,7 +180,13 @@ function PinMarker({ m, selected, onSelect, compactPopup, onExpandPin }) {
   return (
     <Marker
       position={[m.lat, m.lng]}
-      icon={m.image ? pinFor(m, selected) : selected ? selIcon(m.type) : pinIcon(m.type)}
+      icon={
+        m.image
+          ? pinFor(m, selected)
+          : selected || m.fieldMission
+            ? selIcon(m.type)
+            : pinIcon(m.type)
+      }
       eventHandlers={{ click: () => onSelect?.(m.id) }}
     >
       <Popup>
