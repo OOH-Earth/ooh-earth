@@ -1,7 +1,10 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import {
+  FIELD_ACTION,
+  FIELD_PRIORITY,
   buildVerificationQueue,
+  deriveFieldAttention,
   fieldIntelligenceRecommendations,
   findPossibleDuplicates,
   profileGeospatialEvidence,
@@ -45,11 +48,91 @@ test('verification queue explains next action and excludes rejected records', ()
       { id: 'a', lat: 1, lng: 2, status: 'verified', status_updated_at: old },
       { id: 'x', lat: 1, lng: 2, status: 'rejected', status_updated_at: current },
     ],
+    fieldChecks: [{ location_id: 'a', status: 'verified', created_date: old }],
   });
   assert.equal(result.length, 2);
-  assert.equal(result[0].id, 'a');
-  assert.match(result[0].reasons.join(' '), /stale/);
-  assert.equal(result[1].next_action, 'Perform a bounded field verification.');
+  assert.equal(result[0].id, 'b');
+  assert.equal(result[0].priority, FIELD_PRIORITY.HIGH);
+  assert.equal(result[0].next_action, FIELD_ACTION.REVIEW);
+  assert.equal(result[1].id, 'a');
+  assert.equal(result[1].priority, FIELD_PRIORITY.MEDIUM);
+  assert.match(result[1].reasons.join(' '), /field evidence is stale/);
+});
+
+test('field attention exposes simultaneous reasons and deterministic actions', () => {
+  const result = deriveFieldAttention({
+    now,
+    location: { id: 'pending-no-photo', lat: 1, lng: 2, status: 'pending' },
+    fieldChecks: [{ location_id: 'pending-no-photo', status: 'pending', created_date: current }],
+  });
+  assert.equal(result.priority, FIELD_PRIORITY.HIGH);
+  assert.equal(result.action, FIELD_ACTION.REVIEW);
+  assert.deepEqual(result.reasons, ['verification pending', 'photo evidence missing']);
+  assert.equal(result.photo_state, 'MISSING');
+  assert.equal(result.verification_state, 'PENDING');
+  assert.equal(result.context_evidence, 'UNAVAILABLE');
+});
+
+test('field attention distinguishes current evidence, unknown timestamps, and stale photos', () => {
+  const fresh = deriveFieldAttention({
+    now,
+    location: {
+      id: 'fresh',
+      lat: 1,
+      lng: 2,
+      status: 'verified',
+      status_updated_at: current,
+      created_date: current,
+      image_url: 'https://example.test/fresh.jpg',
+    },
+    fieldChecks: [{ location_id: 'fresh', status: 'verified', created_date: current }],
+  });
+  assert.equal(fresh.priority, FIELD_PRIORITY.CURRENT);
+  assert.equal(fresh.action, FIELD_ACTION.NONE);
+  assert.equal(fresh.field_evidence, 'CURRENT');
+  assert.equal(fresh.photo_state, 'CURRENT');
+
+  const unknown = deriveFieldAttention({
+    now,
+    location: { id: 'unknown', lat: 1, lng: 2, status: 'verified', image_url: 'x' },
+    fieldChecks: [{ location_id: 'unknown', status: 'verified' }],
+  });
+  assert.equal(unknown.priority, FIELD_PRIORITY.UNKNOWN);
+  assert.equal(unknown.action, FIELD_ACTION.VERIFY);
+  assert.equal(unknown.field_evidence, 'UNKNOWN');
+
+  const stalePhoto = deriveFieldAttention({
+    now,
+    location: {
+      id: 'stale-photo',
+      lat: 1,
+      lng: 2,
+      status: 'verified',
+      image_url: 'x',
+      created_date: old,
+    },
+    fieldChecks: [{ location_id: 'stale-photo', status: 'verified', created_date: current }],
+  });
+  assert.equal(stalePhoto.priority, FIELD_PRIORITY.MEDIUM);
+  assert.equal(stalePhoto.action, FIELD_ACTION.PHOTO);
+  assert.equal(stalePhoto.photo_state, 'STALE');
+  assert.match(stalePhoto.reasons.join(' '), /photo evidence is stale/);
+});
+
+test('rejected records are classified but excluded from the actionable queue', () => {
+  const rejected = deriveFieldAttention({
+    now,
+    location: { id: 'rejected', lat: 1, lng: 2, status: 'rejected' },
+  });
+  assert.equal(rejected.priority, FIELD_PRIORITY.UNKNOWN);
+  assert.equal(rejected.action, FIELD_ACTION.NONE);
+  assert.equal(rejected.excluded, true);
+  assert.match(rejected.reasons[0], /rejected/);
+  assert.equal(
+    buildVerificationQueue({ locations: [{ id: 'rejected', lat: 1, lng: 2, status: 'rejected' }] })
+      .length,
+    0,
+  );
 });
 
 test('viewport query supports dateline crossing and returns safe projections only', () => {
