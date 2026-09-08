@@ -21,6 +21,7 @@ import {
   Camera,
   Key,
   Crosshair,
+  AlertTriangle,
   SprayCan,
   Maximize2,
   ChevronLeft,
@@ -50,6 +51,9 @@ import FieldTallyWidget from '@/components/ooh/map/FieldTallyWidget';
 import { useMapStyle } from '@/lib/mapStyleContext';
 import RadioStationCard from '@/components/ooh/map/RadioStationCard';
 import { RADIO_STATIONS } from '@/components/ooh/radio/radioStations';
+import { deriveFieldAttention } from '@/lib/geospatialIntelligence';
+import { addToFieldMission } from '@/lib/fieldMission';
+import { attentionMatchesFilter, MAP_ATTENTION_FILTERS } from '@/lib/mapAttention';
 
 const TOUR = [
   {
@@ -147,6 +151,11 @@ export default function Map() {
   const [flyTo, setFlyTo] = useState(null);
   const [activeLayers, setActiveLayers] = usePersistentState('ooh-map-layers-v2', DEFAULT_LAYERS);
   const [layerFilter, setLayerFilter] = useState('all');
+  const [attentionMode, setAttentionMode] = usePersistentState('ooh-map-attention-mode', false);
+  const [attentionFilter, setAttentionFilter] = useState(
+    /** @type {string} */ (MAP_ATTENTION_FILTERS.ALL),
+  );
+  const [missionNotice, setMissionNotice] = useState('');
   const { style: mapStyle } = useMapStyle();
   const { spots: mushrooms, loading: mushLoading } = useMushroomData();
   const { spots: floraSpots, loading: floraLoading } = useFloraData();
@@ -285,6 +294,10 @@ export default function Map() {
           livingRecord: livingRecordIds.has(String(r.id)),
           freshness: computeFreshness(r, checksByLocation[String(r.id)] || []),
           intelligence: classifyLocationQuality(r),
+          attention: deriveFieldAttention({
+            location: r,
+            fieldChecks: checksByLocation[String(r.id)] || [],
+          }),
         }));
       setRaw(markers.length ? { markers, live: true } : { markers: seedMarkers, live: false });
     } catch (e) {
@@ -325,6 +338,10 @@ export default function Map() {
           livingRecord: livingRecordIds.has(String(r.id)),
           freshness: computeFreshness(r, checksByLocation[String(r.id)] || []),
           intelligence: classifyLocationQuality(r),
+          attention: deriveFieldAttention({
+            location: r,
+            fieldChecks: checksByLocation[String(r.id)] || [],
+          }),
         }));
       setRaw({ markers, live: true });
     } catch {
@@ -369,14 +386,26 @@ export default function Map() {
         const m = toMarker(event.data);
         if (event.type === 'create')
           markers = [
-            { ...m, livingRecord: false, freshness: null },
+            {
+              ...m,
+              livingRecord: false,
+              freshness: null,
+              attention: deriveFieldAttention({ location: event.data }),
+            },
             ...markers.filter((x) => x.id !== m.id),
           ];
         else if (event.type === 'update') {
           if (m.status === 'rejected') markers = markers.filter((x) => x.id !== m.id);
           else
             markers = markers.map((x) =>
-              x.id === m.id ? { ...m, livingRecord: x.livingRecord, freshness: x.freshness } : x,
+              x.id === m.id
+                ? {
+                    ...m,
+                    livingRecord: x.livingRecord,
+                    freshness: x.freshness,
+                    attention: deriveFieldAttention({ location: event.data }),
+                  }
+                : x,
             );
         } else if (event.type === 'delete') markers = markers.filter((x) => x.id !== m.id);
         return { ...cur, markers };
@@ -483,7 +512,8 @@ export default function Map() {
           (!q ||
             `${m.title} ${m.address} ${m.brand_name || ''} ${m.parent_corp || ''}`
               .toLowerCase()
-              .includes(q)),
+              .includes(q)) &&
+          (!attentionMode || attentionMatchesFilter(m.attention, attentionFilter)),
       )
       .sort((a, b) => {
         const aMission = missionIds.has(String(a.id)) ? 1 : 0;
@@ -493,7 +523,7 @@ export default function Map() {
         const bPhoto = b.status === 'verified' && !!b.image ? 2 : b.image ? 1 : 0;
         return bPhoto - aPhoto;
       });
-  }, [raw, typeFilter, query, mineOnly, user, missionIds]);
+  }, [raw, typeFilter, query, mineOnly, user, missionIds, attentionMode, attentionFilter]);
 
   // Street layers are overlapping views of the Location entity.
   // "ads" is the superset (all markers); "adbusting" and "graffiti" are
@@ -659,6 +689,20 @@ export default function Map() {
   const leads = adsInView.filter((m) => !m.image && m.status !== 'verified').length;
   const isStreet =
     primaryLayer === 'ads' || primaryLayer === 'adbusting' || primaryLayer === 'graffiti';
+  const selectedAttention = layerFiltered.find((m) => String(m.id) === String(selectedId));
+  const addSelectedToMission = () => {
+    const result = addToFieldMission(selectedAttention);
+    setMissionNotice(
+      result.ok
+        ? result.added
+          ? 'Added to field mission'
+          : 'Already in field mission'
+        : result.reason === 'MISSION_CAP'
+          ? 'Mission cap reached'
+          : 'Mission unavailable',
+    );
+    window.setTimeout(() => setMissionNotice(''), 2200);
+  };
 
   // Mobile: map always visible, cards always hidden (bottom sheet replaces).
   // Desktop: mode controls split/list/map as before.
@@ -935,6 +979,84 @@ export default function Map() {
                 <Globe className="h-3.5 w-3.5" /> <span className="hidden sm:inline">Globe</span>
               </button>
             </div>
+            <div className="absolute left-3 top-14 z-[1000] max-w-[calc(100vw-1.5rem)]">
+              <button
+                type="button"
+                data-testid="field-attention-toggle"
+                aria-label="Field attention"
+                aria-pressed={attentionMode}
+                onClick={() => setAttentionMode(!attentionMode)}
+                className={`flex min-h-9 items-center gap-1.5 border px-2.5 py-2 font-mono text-[10px] font-bold uppercase tracking-[0.18em] backdrop-blur-md transition-colors ${attentionMode ? 'border-flare bg-flare text-void' : 'border-slate2 bg-void/80 text-darkgray hover:border-flare hover:text-flare'}`}
+              >
+                <AlertTriangle className="h-3.5 w-3.5" /> Field attention
+              </button>
+              {attentionMode && (
+                <div
+                  data-testid="attention-filters"
+                  className="mt-1 flex max-w-full gap-1 overflow-x-auto border border-slate2 bg-void/90 p-1 backdrop-blur-md"
+                >
+                  {Object.values(MAP_ATTENTION_FILTERS).map((filter) => (
+                    <button
+                      key={filter}
+                      type="button"
+                      aria-pressed={attentionFilter === filter}
+                      onClick={() => setAttentionFilter(filter)}
+                      className={`min-h-8 shrink-0 px-2 font-mono text-[9px] font-bold uppercase tracking-[0.12em] ${attentionFilter === filter ? 'bg-ozone text-void' : 'text-darkgray hover:text-ozone'}`}
+                    >
+                      {filter}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+            {attentionMode && selectedAttention?.attention && (
+              <div
+                data-testid="map-attention-card"
+                className="absolute bottom-[68px] left-2 right-2 z-[1000] max-w-md border border-flare/70 bg-void/95 p-3 shadow-xl backdrop-blur-md sm:left-auto sm:right-3"
+              >
+                <div className="flex items-center gap-2 font-mono text-[10px] font-bold uppercase tracking-[0.2em] text-flare">
+                  <AlertTriangle className="h-3 w-3" /> {selectedAttention.attention.priority}{' '}
+                  attention
+                </div>
+                <ul className="mt-2 space-y-1 font-mono text-[10px] uppercase tracking-[0.08em] text-darkgray">
+                  {selectedAttention.attention.reasons.map((reason) => (
+                    <li key={reason}>• {reason}</li>
+                  ))}
+                </ul>
+                <div className="mt-2 font-mono text-[10px] font-bold uppercase tracking-[0.12em] text-ozone">
+                  Next: {selectedAttention.attention.action}
+                </div>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  <Link
+                    to={`/location/${selectedAttention.id}`}
+                    className="border border-ozone px-2 py-1.5 font-mono text-[9px] font-bold uppercase tracking-[0.12em] text-ozone"
+                  >
+                    View location
+                  </Link>
+                  <Link
+                    to={`/location/${selectedAttention.id}?action=recheck&from=map-attention`}
+                    className="border border-flare px-2 py-1.5 font-mono text-[9px] font-bold uppercase tracking-[0.12em] text-flare"
+                  >
+                    Recheck
+                  </Link>
+                  <button
+                    type="button"
+                    onClick={addSelectedToMission}
+                    className="border border-slate2 px-2 py-1.5 font-mono text-[9px] font-bold uppercase tracking-[0.12em] text-darkgray hover:border-ozone hover:text-ozone"
+                  >
+                    Add to mission
+                  </button>
+                </div>
+                {missionNotice && (
+                  <div
+                    role="status"
+                    className="mt-2 font-mono text-[9px] uppercase tracking-[0.12em] text-ozone"
+                  >
+                    {missionNotice}
+                  </div>
+                )}
+              </div>
+            )}
             {view === 'globe' ? (
               <Globe3D
                 key={mapStyle.id}
@@ -944,6 +1066,7 @@ export default function Map() {
                 onSelect={setSelectedId}
                 userLoc={userLoc}
                 activeLayers={activeLayers}
+                attentionMode={attentionMode}
                 flyTo={flyTo}
                 onError={() => setView('flat')}
                 onCounts={(c) => setGlobeClusters(c.clusters)}

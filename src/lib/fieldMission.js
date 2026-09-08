@@ -8,6 +8,8 @@ export const MISSION_PROGRESS = Object.freeze({
   COMPLETED: 'COMPLETED',
 });
 
+export const FIELD_MISSION_STORAGE_KEY = 'ooh-field-mission-v1';
+
 const priorityRank = { HIGH: 0, MEDIUM: 1, LOW: 2, CURRENT: 3, UNKNOWN: 4 };
 
 export function validMissionCoordinate(value) {
@@ -87,4 +89,31 @@ export function createFieldMission(items, { reference = null, cap = FIELD_MISSIO
 
 export function missionProgress(value) {
   return Object.values(MISSION_PROGRESS).includes(value) ? value : MISSION_PROGRESS.NOT_STARTED;
+}
+
+export function loadFieldMission() {
+  try {
+    return JSON.parse(sessionStorage.getItem(FIELD_MISSION_STORAGE_KEY) || 'null');
+  } catch {
+    return null;
+  }
+}
+
+export function addToFieldMission(item) {
+  if (!item || typeof item.id !== 'string') return { ok: false, reason: 'INVALID_LOCATION' };
+  const current = loadFieldMission();
+  const items = current?.items || [];
+  if (items.some((entry) => entry.id === item.id))
+    return { ok: true, mission: current, added: false };
+  if (items.length >= FIELD_MISSION_CAP) return { ok: false, reason: 'MISSION_CAP' };
+  const mission = createFieldMission([...items, item], {
+    reference: current?.reference || null,
+    cap: current?.cap || FIELD_MISSION_CAP,
+  });
+  try {
+    sessionStorage.setItem(FIELD_MISSION_STORAGE_KEY, JSON.stringify(mission));
+  } catch {
+    return { ok: false, reason: 'SESSION_UNAVAILABLE' };
+  }
+  return { ok: true, mission, added: true };
 }
