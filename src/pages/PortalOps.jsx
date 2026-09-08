@@ -44,6 +44,7 @@ import {
 } from '@/lib/geospatialIntelligence';
 import { geographicCoverage, LOCATION_QUALITY } from '@/lib/locationQuality';
 import { trackEvent } from '@/lib/trackEvent';
+import FieldMissionPanel from '@/components/ooh/FieldMissionPanel';
 const fmt = (n) => (typeof n === 'number' && Number.isFinite(n) ? n.toLocaleString() : '—');
 const num = (v) => {
   const n = Number(v);
@@ -1460,6 +1461,7 @@ function GeoIntelligenceView({ geo }) {
         title="Field Attention Queue"
         desc="Bounded, deterministic evidence signals. Every item states what is known, why it needs attention, and the next human field action. Rejected records stay out of this actionable queue."
       >
+        <FieldMissionPanel queue={queue} locations={geo.locations} />
         {queue.length === 0 ? (
           <p className="font-mono text-[11px] text-dim">
             — no locations currently flagged for verification.

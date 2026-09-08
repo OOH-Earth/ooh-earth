@@ -129,6 +129,14 @@ export default function Map() {
   const [typeFilter, setTypeFilter] = useState('all');
   const [query, setQuery] = useState('');
   const [selectedId, setSelectedId] = useState(null);
+  const missionIds = useMemo(() => {
+    const rawMission = new URLSearchParams(window.location.search).get('mission');
+    return new Set(
+      decodeURIComponent(rawMission || '')
+        .split(',')
+        .filter(Boolean),
+    );
+  }, []);
   const [hoverId, setHoverId] = useState(null);
   const [view, setView] = usePersistentState('ooh-map-view', 'globe');
   const [bounds, setBounds] = useState(null);
@@ -404,6 +412,13 @@ export default function Map() {
   }, [raw, handleExpandPin]);
 
   useEffect(() => {
+    if (!missionIds.size || !raw?.markers?.length || selectedId) return;
+    const first = raw.markers.find((marker) => missionIds.has(String(marker.id)));
+    if (first) setSelectedId(first.id);
+  }, [missionIds, raw, selectedId]);
+
+  useEffect(() => {
+    if (missionIds.size) return;
     if (!navigator.geolocation) return;
     let cancelled = false;
     navigator.geolocation.getCurrentPosition(
@@ -416,7 +431,7 @@ export default function Map() {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [missionIds]);
 
   useEffect(() => {
     let cancelled = false;
@@ -471,11 +486,14 @@ export default function Map() {
               .includes(q)),
       )
       .sort((a, b) => {
+        const aMission = missionIds.has(String(a.id)) ? 1 : 0;
+        const bMission = missionIds.has(String(b.id)) ? 1 : 0;
+        if (aMission !== bMission) return bMission - aMission;
         const aPhoto = a.status === 'verified' && !!a.image ? 2 : a.image ? 1 : 0;
         const bPhoto = b.status === 'verified' && !!b.image ? 2 : b.image ? 1 : 0;
         return bPhoto - aPhoto;
       });
-  }, [raw, typeFilter, query, mineOnly, user]);
+  }, [raw, typeFilter, query, mineOnly, user, missionIds]);
 
   // Street layers are overlapping views of the Location entity.
   // "ads" is the superset (all markers); "adbusting" and "graffiti" are
@@ -519,8 +537,14 @@ export default function Map() {
       return { primaryLayer: ext || null, layerFiltered: heatOnly ? filtered : [] };
     }
 
-    return { primaryLayer: streetLayer, layerFiltered: lf };
-  }, [activeLayers, filtered]);
+    return {
+      primaryLayer: streetLayer,
+      layerFiltered: lf.map((m) => ({
+        ...m,
+        fieldMission: missionIds.has(String(m.id)),
+      })),
+    };
+  }, [activeLayers, filtered, missionIds]);
 
   // Results feed follows the map viewport (flat view): only spots inside the
   // visible bounds, nearest-to-centre first — the "search this area" pattern.

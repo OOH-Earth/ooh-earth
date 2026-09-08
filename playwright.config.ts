@@ -49,6 +49,7 @@ export default defineConfig({
         'protocol-one-scanner.spec.ts',
         'portal-ops-geo-intelligence.spec.ts',
         'verification-queue-recheck-deeplink.spec.ts',
+        'field-missions.spec.ts',
       ],
     },
   ],
