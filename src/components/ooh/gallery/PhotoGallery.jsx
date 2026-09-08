@@ -28,7 +28,13 @@ export default function PhotoGallery({ loc, icon: Icon, accent }) {
           'display_order',
           50,
         );
-        if (alive) setPhotos((rows || []).map((r) => ({ url: r.url, caption: r.caption || '' })));
+        if (alive)
+          setPhotos(
+            (rows || [])
+              .filter((r) => r.status === 'verified' && r.url)
+              .slice(0, 50)
+              .map((r) => ({ url: r.url, caption: r.caption || '' })),
+          );
       } catch {
         if (alive) setPhotos([]);
       } finally {
