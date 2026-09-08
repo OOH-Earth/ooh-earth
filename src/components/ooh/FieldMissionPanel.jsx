@@ -88,12 +88,19 @@ export default function FieldMissionPanel({ queue, locations }) {
   const mapLink = mission
     ? `/map?mission=${encodeURIComponent(mission.items.map((item) => item.id).join(','))}`
     : '/map';
-  const nextItem = mission?.items.find(
-    (item) => missionItemProgress({ ...mission, progress }, item.id) !== MISSION_PROGRESS.COMPLETED,
-  );
+  const nextItem = mission?.items.find((item) => {
+    const state = missionItemProgress({ ...mission, progress }, item.id);
+    return state !== MISSION_PROGRESS.COMPLETED && state !== MISSION_PROGRESS.CURRENT;
+  });
   const nextItemState = nextItem
     ? missionItemProgress({ ...mission, progress }, nextItem.id)
     : null;
+  const missionSettled =
+    mission?.items.length > 0 &&
+    mission.items.every((item) => {
+      const state = missionItemProgress({ ...mission, progress }, item.id);
+      return state === MISSION_PROGRESS.COMPLETED || state === MISSION_PROGRESS.CURRENT;
+    });
   return (
     <div className="mb-5 border border-ozone/30 bg-ozone/[0.03] p-4" data-testid="field-mission">
       <div className="flex flex-wrap items-start justify-between gap-3">
@@ -168,12 +175,18 @@ export default function FieldMissionPanel({ queue, locations }) {
           <div className="mt-3 flex flex-wrap items-center justify-between gap-3 border border-ozone/25 bg-ozone/[0.04] p-3">
             <div className="min-w-0">
               <div className="font-mono text-[9px] uppercase tracking-[0.16em] text-ozone">
-                {nextItem ? 'Next actionable location' : 'Mission complete'}
+                {nextItem
+                  ? 'Next actionable location'
+                  : missionSettled
+                    ? 'No action currently required'
+                    : 'Mission complete'}
               </div>
               <p className="mt-1 truncate font-mono text-[11px] text-silver">
                 {nextItem
                   ? `${nextItem.id} · ${nextItemState}`
-                  : 'All mission items are marked complete.'}
+                  : missionSettled
+                    ? 'All items are complete or current.'
+                    : 'All mission items are marked complete.'}
               </p>
             </div>
             {nextItem && (

@@ -112,4 +112,10 @@ test('restores mission progress and exposes the next actionable item after retur
     'href',
     '/location/mission-b?action=recheck&from=field-mission',
   );
+
+  await restored
+    .getByRole('combobox', { name: 'Mission status for mission-b' })
+    .selectOption('CURRENT');
+  await expect(restored).toContainText('No action currently required');
+  await expect(restored.getByRole('link', { name: 'Open next' })).toHaveCount(0);
 });
