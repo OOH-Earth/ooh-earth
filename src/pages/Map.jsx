@@ -749,7 +749,10 @@ export default function Map() {
             // Loading {primaryLayer} data…
           </div>
         ) : isStreet && raw?.locationState === 'loading' ? (
-          <div role="status" className="p-6 text-center font-mono text-[10px] uppercase tracking-[0.25em] text-dim">
+          <div
+            role="status"
+            className="p-6 text-center font-mono text-[10px] uppercase tracking-[0.25em] text-dim"
+          >
             // Reading evidence for this view…
           </div>
         ) : isStreet && raw?.locationState === 'unavailable' ? (
