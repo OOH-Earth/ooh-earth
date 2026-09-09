@@ -764,7 +764,8 @@ export default function Map() {
               type="button"
               onClick={() => {
                 requestedViewportRef.current = '';
-                if (bounds) loadViewportLocations(bounds);
+                if (view === 'globe') reloadLocations();
+                else if (bounds) loadViewportLocations(bounds);
               }}
               className="mt-3 inline-flex items-center border border-ozone px-3 py-1.5 font-mono text-[9px] font-bold uppercase tracking-[0.2em] text-ozone transition-colors hover:bg-ozone hover:text-void"
             >
