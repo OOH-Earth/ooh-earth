@@ -257,6 +257,11 @@ export default function Map() {
   }, []);
 
   const reloadLocations = useCallback(async () => {
+    setRaw((current) => ({
+      markers: current?.markers || [],
+      live: false,
+      locationState: 'loading',
+    }));
     try {
       // One global query, no status filter -- RLS already limits what
       // comes back to all verified checks plus the caller's own
@@ -300,9 +305,13 @@ export default function Map() {
             fieldChecks: checksByLocation[String(r.id)] || [],
           }),
         }));
-      setRaw(markers.length ? { markers, live: true } : { markers: seedMarkers, live: false });
+      setRaw(
+        markers.length
+          ? { markers, live: true, locationState: 'ready' }
+          : { markers: seedMarkers, live: false, locationState: 'empty' },
+      );
     } catch (e) {
-      setRaw({ markers: seedMarkers, live: false });
+      setRaw({ markers: seedMarkers, live: false, locationState: 'unavailable' });
     }
   }, []);
 
@@ -311,6 +320,11 @@ export default function Map() {
     if (requestedViewportRef.current === viewportKey) return;
     requestedViewportRef.current = viewportKey;
     const requestId = ++viewportRequestRef.current;
+    setRaw((current) => ({
+      markers: current?.markers || [],
+      live: false,
+      locationState: 'loading',
+    }));
     try {
       const recs = await /** @type {any} */ (base44).listViewportLocations(viewport);
       const ids = (recs || []).map((r) => String(r.id)).filter(Boolean);
@@ -344,9 +358,10 @@ export default function Map() {
             fieldChecks: checksByLocation[String(r.id)] || [],
           }),
         }));
-      setRaw({ markers, live: true });
+      setRaw({ markers, live: true, locationState: markers.length ? 'ready' : 'empty' });
     } catch {
-      if (requestId === viewportRequestRef.current) setRaw({ markers: [], live: false });
+      if (requestId === viewportRequestRef.current)
+        setRaw({ markers: [], live: false, locationState: 'unavailable' });
     }
   }, []);
 
@@ -377,7 +392,7 @@ export default function Map() {
     if (view === 'globe') reloadLocations().then(() => {});
     else {
       viewportRequestRef.current += 1;
-      setRaw({ markers: [], live: false });
+      setRaw({ markers: [], live: false, locationState: 'loading' });
     }
 
     const unsub = base44.entities.Location.subscribe((event) => {
@@ -732,6 +747,29 @@ export default function Map() {
         ) : layerLoading ? (
           <div className="p-6 text-center font-mono text-[10px] uppercase tracking-[0.25em] text-dim">
             // Loading {primaryLayer} data…
+          </div>
+        ) : isStreet && raw?.locationState === 'loading' ? (
+          <div role="status" className="p-6 text-center font-mono text-[10px] uppercase tracking-[0.25em] text-dim">
+            // Reading evidence for this view…
+          </div>
+        ) : isStreet && raw?.locationState === 'unavailable' ? (
+          <div role="alert" className="p-6 text-center">
+            <div className="font-mono text-[10px] uppercase tracking-[0.25em] text-flare">
+              // View evidence UNKNOWN
+            </div>
+            <p className="mt-1 font-mono text-[9px] uppercase tracking-[0.16em] text-dim/70">
+              The atlas could not read this geographic window. No absence is being claimed.
+            </p>
+            <button
+              type="button"
+              onClick={() => {
+                requestedViewportRef.current = '';
+                if (bounds) loadViewportLocations(bounds);
+              }}
+              className="mt-3 inline-flex items-center border border-ozone px-3 py-1.5 font-mono text-[9px] font-bold uppercase tracking-[0.2em] text-ozone transition-colors hover:bg-ozone hover:text-void"
+            >
+              Retry view
+            </button>
           </div>
         ) : layerResults.length ? (
           isStreet ? (
