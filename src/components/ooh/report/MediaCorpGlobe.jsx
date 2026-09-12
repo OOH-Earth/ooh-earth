@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import maplibregl from 'maplibre-gl';
+import * as maplibregl from 'maplibre-gl';
 import { ZoomIn, ZoomOut, Compass, RotateCw } from 'lucide-react';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import { useMapStyle } from '@/lib/mapStyleContext';
