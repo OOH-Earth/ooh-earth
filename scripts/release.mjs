@@ -222,6 +222,21 @@ try {
         'scripts/release-certification.mjs',
         '--manifest',
         manifestPath,
+        '--target',
+        'backup',
+        ...(has('--execute') ? ['--execute'] : []),
+      ],
+      { stdio: 'inherit' },
+    );
+  } else if (command === 'certify:production') {
+    execFileSync(
+      'node',
+      [
+        'scripts/release-certification.mjs',
+        '--manifest',
+        manifestPath,
+        '--target',
+        'production',
         ...(has('--execute') ? ['--execute'] : []),
       ],
       { stdio: 'inherit' },
@@ -234,7 +249,7 @@ try {
     await diagnoseHealth();
   } else {
     throw new Error(
-      'Commands: status, plan, transition, deploy:backup, deploy:production, publish:backup, publish:production, diagnose',
+      'Commands: status, plan, transition, deploy:backup, deploy:production, certify:backup, certify:production, publish:backup, publish:production, diagnose',
     );
   }
 } catch (error) {

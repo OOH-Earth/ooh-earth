@@ -19,6 +19,7 @@
     "release:health": "node scripts/release-health.mjs",
     "release:diagnose": "node scripts/release.mjs diagnose",
     "release:certify:backup": "node scripts/release.mjs certify:backup",
+    "release:certify:production": "node scripts/release.mjs certify:production",
     "release:plan": "node scripts/release.mjs plan",
     "release:transition": "node scripts/release.mjs transition",
     "release:backup": "node scripts/release.mjs deploy:backup",
