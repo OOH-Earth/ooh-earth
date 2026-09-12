@@ -206,7 +206,12 @@ export default function Globe3D({
     map.on('error', (e) => {
       // MapLibre fires error events for non-fatal things too; only bail if the
       // style itself hasn't loaded within a reasonable window.
-      if (!readyRef.current && !styleFailed && e?.error?.status === 404) {
+      if (
+        !readyRef.current &&
+        !styleFailed &&
+        e?.error instanceof maplibregl.AJAXError &&
+        e.error.status === 404
+      ) {
         styleFailed = true;
         onErrorRef.current?.();
       }
