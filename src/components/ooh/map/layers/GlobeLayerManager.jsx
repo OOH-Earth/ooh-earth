@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import maplibregl from 'maplibre-gl';
+import * as maplibregl from 'maplibre-gl';
 import { useMushroomData } from './useMushroomData';
 import { useFloraData } from './useFloraData';
 import { useWarZoneData } from './useWarZoneData';
