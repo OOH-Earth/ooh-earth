@@ -98,6 +98,12 @@ export default function Hero() {
                 Explore the map <ArrowUpRight className="h-3.5 w-3.5" />
               </Link>
               <Link
+                to="/evidence-review"
+                className="inline-flex items-center gap-2 border border-ozone/60 px-5 py-3 font-mono text-[10px] font-bold uppercase tracking-[0.25em] text-ozone transition-colors hover:bg-ozone hover:text-void"
+              >
+                Evidence review <ArrowUpRight className="h-3.5 w-3.5" />
+              </Link>
+              <Link
                 to="/report"
                 className="inline-flex items-center gap-2 border border-slate2/70 px-5 py-3 font-mono text-[10px] font-bold uppercase tracking-[0.25em] text-silver transition-colors hover:border-ozone/60 hover:text-ozone"
               >
