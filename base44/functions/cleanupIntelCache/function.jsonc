@@ -17,9 +17,11 @@
       // {scanned, stale, deleted} payload before trusting the cron schedule.
       "is_active": false,
 
+      // '?' is a Quartz-cron convention, not valid standard Unix cron; it
+      // fails `base44 functions deploy` for this function. Use '*' instead.
       "schedule_mode": "recurring",
       "schedule_type": "cron",
-      "cron_expression": "0 3 * * ?"
+      "cron_expression": "0 3 * * *"
     }
   ]
 }

@@ -61,3 +61,21 @@ test('Production gate and certification gate fail closed', () => {
     true,
   );
 });
+
+test('production deploy can only reach verified/certified through canonical transitions', () => {
+  const deployed = {
+    ...candidate,
+    release_state: 'PRODUCTION_DEPLOYED',
+    backup: { state: 'BACKUP_VERIFIED' },
+    production: { state: 'PRODUCTION_DEPLOYED' },
+  };
+  assert.throws(() => assertCertificationGate(deployed), /PRODUCTION_VERIFIED/);
+  const verified = transitionRelease(deployed, 'PRODUCTION_VERIFIED');
+  assert.equal(verified.release_state, 'PRODUCTION_VERIFIED');
+  assert.equal(verified.production.state, 'PRODUCTION_VERIFIED');
+  assert.equal(assertCertificationGate(verified), true);
+  const certified = transitionRelease(verified, 'CERTIFIED');
+  assert.equal(certified.production.state, 'CERTIFIED');
+  // Nothing can skip straight from a bare deploy to certified.
+  assert.equal(canTransition('PRODUCTION_DEPLOYED', 'CERTIFIED'), false);
+});

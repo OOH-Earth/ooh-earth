@@ -79,6 +79,40 @@ export function buildCertificationEvidence({ candidateSha, environment, certifie
   };
 }
 
+const ENVIRONMENT_CONFIG = Object.freeze({
+  backup: {
+    appId: APP_IDS.backup,
+    host: 'https://ooh-earth-backup.base44.app',
+    requiredState: 'BACKUP_DEPLOYED',
+    verifiedState: 'BACKUP_VERIFIED',
+  },
+  production: {
+    appId: APP_IDS.production,
+    host: 'https://oohearth.base44.app',
+    requiredState: 'PRODUCTION_DEPLOYED',
+    verifiedState: 'PRODUCTION_VERIFIED',
+  },
+});
+
+export function environmentConfig(environment) {
+  const config = ENVIRONMENT_CONFIG[environment];
+  if (!config) throw new Error(`Unknown release environment: ${environment}`);
+  return config;
+}
+
+export function assertCertificationPreconditions(manifest, environment) {
+  const config = environmentConfig(environment);
+  if (manifest.release_state !== config.requiredState) {
+    throw new Error(
+      `Certification requires ${config.requiredState}, got ${manifest.release_state}`,
+    );
+  }
+  if (environment === 'production' && manifest.backup?.state !== 'BACKUP_VERIFIED') {
+    throw new Error('Production certification requires backup.state=BACKUP_VERIFIED');
+  }
+  return config;
+}
+
 function bindRuntime(environment, candidateSha) {
   execFileSync(
     'npx',
@@ -97,10 +131,7 @@ function bindRuntime(environment, candidateSha) {
 }
 
 async function publicSmoke(environment, candidateSha) {
-  const host =
-    environment === 'backup'
-      ? 'https://ooh-earth-backup.base44.app'
-      : 'https://oohearth.base44.app';
+  const { host } = environmentConfig(environment);
   const paths = ['/', '/report', '/map', '/release-manifest.json'];
   const responses = {};
   for (const path of paths) {
@@ -183,42 +214,47 @@ console.log(JSON.stringify(result));`,
   );
 }
 
-export async function certifyBackup({ manifestPath, execute = false } = {}) {
+export async function certifyEnvironment({ manifestPath, environment, execute = false } = {}) {
   const manifest = JSON.parse(readFileSync(resolve(manifestPath), 'utf8'));
   const candidateSha = manifest.git_sha;
   const requiredFunctions = requiredFunctionsFromManifest(manifest);
   if (!SHA_PATTERN.test(candidateSha))
     throw new Error('Certification requires a valid candidate SHA');
-  if (manifest.release_state !== 'BACKUP_DEPLOYED')
-    throw new Error(`Certification requires BACKUP_DEPLOYED, got ${manifest.release_state}`);
+  const config = assertCertificationPreconditions(manifest, environment);
   if (!execute) {
     return {
       mode: 'DRY_RUN',
-      target: 'backup',
+      target: environment,
       candidate_sha: candidateSha,
       checks: [...REQUIRED_CHECKS, ...requiredFunctions],
     };
   }
-  bindRuntime('backup', candidateSha);
-  const smoke = await publicSmoke('backup', candidateSha);
-  const serviceResult = runServiceChecks('backup', candidateSha, requiredFunctions);
+  // Deterministic, non-destructive rebind: sets the runtime's declared release
+  // (read by operationalState.ts) independently of whether function CODE
+  // changed, so certification never has to wait on organic traffic to refresh
+  // a stale OperationalHealth snapshot. submitOffline is probed with a
+  // deliberately invalid payload (see runServiceChecks) so its deployed
+  // handler is exercised without ever writing a real business record.
+  bindRuntime(environment, candidateSha);
+  const smoke = await publicSmoke(environment, candidateSha);
+  const serviceResult = runServiceChecks(environment, candidateSha, requiredFunctions);
   const classification = classifyServiceChecks(
     serviceResult,
     candidateSha,
-    'backup',
+    environment,
     requiredFunctions,
   );
   if (!classification.healthy)
-    throw new Error(`BACKUP certification blocked: ${classification.reason}`);
+    throw new Error(`${environment.toUpperCase()} certification blocked: ${classification.reason}`);
   const now = new Date().toISOString();
   const evidence = buildCertificationEvidence({
     candidateSha,
-    environment: 'backup',
+    environment,
     certifiedAt: now,
     checks: { public_smoke: smoke, ...classification.checks },
   });
-  const certified = transitionRelease(manifest, 'BACKUP_VERIFIED', {
-    BACKUP_VERIFIED: { source: 'post-deploy-certification', candidate_sha: candidateSha },
+  const certified = transitionRelease(manifest, config.verifiedState, {
+    [config.verifiedState]: { source: 'post-deploy-certification', candidate_sha: candidateSha },
   });
   const published = publishCertification(certified, evidence);
   atomicWriteJson(manifestPath, published);
@@ -226,19 +262,32 @@ export async function certifyBackup({ manifestPath, execute = false } = {}) {
   writeReleaseManifestArtifact(resolve('dist/release-manifest.json'), published);
   execFileSync(
     'npx',
-    ['--yes', 'base44', '--app-id', APP_IDS.backup, 'site', 'deploy', '--no-build', '--yes'],
+    ['--yes', 'base44', '--app-id', config.appId, 'site', 'deploy', '--no-build', '--yes'],
     { stdio: 'inherit' },
   );
   return {
     mode: 'EXECUTE',
-    target: 'backup',
+    target: environment,
     candidate_sha: candidateSha,
-    evidence: published.certification_evidence.backup,
+    evidence: published.certification_evidence[environment],
   };
+}
+
+export function certifyBackup(options = {}) {
+  return certifyEnvironment({ ...options, environment: 'backup' });
+}
+
+export function certifyProduction(options = {}) {
+  return certifyEnvironment({ ...options, environment: 'production' });
 }
 
 if (import.meta.url === `file://${process.argv[1]}`) {
   const manifestPath = arg('manifest', 'release-manifest.json');
-  const result = await certifyBackup({ manifestPath, execute: process.argv.includes('--execute') });
+  const environment = arg('target', 'backup');
+  const result = await certifyEnvironment({
+    manifestPath,
+    environment,
+    execute: process.argv.includes('--execute'),
+  });
   console.log(JSON.stringify(result, null, 2));
 }
