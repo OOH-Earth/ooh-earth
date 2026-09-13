@@ -314,20 +314,16 @@ export default function AdScanLab() {
             )}
 
             {photos.length > 0 && (
+              // This block only renders while !scanning (see the outer
+              // guard above), so `scanning` is always false here -- no
+              // loading label needed on the button itself; the dedicated
+              // "Step 03 -- scanning" panel below covers that state.
               <button
                 onClick={runScan}
-                disabled={scanning || uploading}
+                disabled={uploading}
                 className="flex w-full items-center justify-center gap-2 border-2 border-ozone bg-ozone py-3 font-mono text-[11px] font-bold uppercase tracking-[0.2em] text-void transition-colors hover:bg-flare hover:border-flare disabled:opacity-40"
               >
-                {scanning ? (
-                  <>
-                    <Loader2 className="h-4 w-4 animate-spin" /> Scanning…
-                  </>
-                ) : (
-                  <>
-                    <ScanLine className="h-4 w-4" /> Run detection
-                  </>
-                )}
+                <ScanLine className="h-4 w-4" /> Run detection
               </button>
             )}
           </div>
