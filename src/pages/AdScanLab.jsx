@@ -15,6 +15,7 @@ import {
   Navigation,
   Crosshair,
   Flag,
+  X,
 } from 'lucide-react';
 import exifr from 'exifr';
 import { compressImage } from '@/lib/imageCompress';
@@ -45,32 +46,49 @@ const SECTOR_LABELS = {
   other: 'Other',
 };
 
-// Terminal-style field cell — compact bordered unit with mono label + value.
-// If `brand` is true, renders a BrandIcon next to the value (brand/operator/corp).
-function TerminalField({ icon: Icon, label, value, brand = false }) {
-  if (!value || (Array.isArray(value) && value.length === 0)) return null;
-  return (
-    <div className="border border-slate2/40 bg-void/50 px-3 py-2">
-      <div className="flex items-center gap-1 font-mono text-[8px] uppercase tracking-[0.15em] text-dim">
-        {Icon && <Icon className="h-2.5 w-2.5" />} {label}
-      </div>
-      <div className="mt-1 flex items-center gap-2">
-        {brand && <BrandIcon name={value} size={18} />}
-        <span className="font-mono text-[12px] text-silver break-words">
-          {Array.isArray(value) ? value.join(', ') : value}
-        </span>
-      </div>
-    </div>
-  );
+const MAX_PHOTOS = 9;
+
+const SURFACE_TYPES = [
+  'billboard',
+  'painted',
+  'digital',
+  'projection',
+  'sticker',
+  'mural',
+  'transit',
+  'other',
+];
+
+const REVIEW_TEXT_FIELDS = [
+  { key: 'brand_name', label: 'Brand', icon: Tag },
+  { key: 'campaign_name', label: 'Campaign', icon: FileText },
+  { key: 'ad_agency', label: 'Agency', icon: Building2 },
+  { key: 'parent_corp', label: 'Parent Corp', icon: Building2 },
+  { key: 'ooh_operator', label: 'OOH Operator', icon: Building2 },
+];
+
+function reviewFromDetection(det) {
+  return {
+    brand_name: det.brand_name && det.brand_name !== 'Unknown' ? det.brand_name : '',
+    campaign_name: det.campaign_name || '',
+    ad_agency: det.ad_agency || '',
+    parent_corp: det.parent_corp || '',
+    ooh_operator: det.ooh_operator || '',
+    industry_sector: det.industry_sector || 'other',
+    surface_type: SURFACE_TYPES.includes(det.surface_type) ? det.surface_type : 'other',
+    harm_tags: det.harm_tags || [],
+    notes: det.description || '',
+  };
 }
 
 export default function AdScanLab() {
   const { toast } = useToast();
-  const [capturedUrl, setCapturedUrl] = useState(null);
+  const [photos, setPhotos] = useState([]); // uploaded file_urls; photos[0] is the cover/scan target
   const [uploading, setUploading] = useState(false);
   const uploadTrigger = useKeyboardFilePicker(uploading);
   const [scanning, setScanning] = useState(false);
   const [detection, setDetection] = useState(null);
+  const [review, setReview] = useState(null); // user-editable copy of AI fields; null while no ad detected
   const [cataloging, setCataloging] = useState(false);
   const [cataloged, setCataloged] = useState(null);
   const [photoCoords, setPhotoCoords] = useState(null);
@@ -84,49 +102,62 @@ export default function AdScanLab() {
         return;
       }
       setUploading(true);
-      setPhotoCoords(null);
-      setPhotoSource(null);
-      // Try to read EXIF GPS from the photo
-      try {
-        const gps = await exifr.gps(file);
-        if (gps && isFinite(gps.latitude) && isFinite(gps.longitude)) {
-          setPhotoCoords({ lat: gps.latitude, lng: gps.longitude });
-          setPhotoSource('exif');
+      // Only the first photo of a session drives GPS/location detection.
+      const isFirst = photos.length === 0;
+      if (isFirst) {
+        try {
+          const gps = await exifr.gps(file);
+          if (gps && isFinite(gps.latitude) && isFinite(gps.longitude)) {
+            setPhotoCoords({ lat: gps.latitude, lng: gps.longitude });
+            setPhotoSource('exif');
+          }
+        } catch {
+          /* no EXIF or not an image with GPS */
         }
-      } catch {
-        /* no EXIF or not an image with GPS */
       }
       try {
         const { file_url } = await base44.integrations.Core.UploadFile({
           file: await compressImage(file),
         });
-        setCapturedUrl(file_url);
+        setPhotos((prev) => [...prev, file_url].slice(0, MAX_PHOTOS));
       } catch {
         toast({ title: 'Upload failed', variant: 'destructive' });
       } finally {
         setUploading(false);
       }
     },
-    [toast],
+    [toast, photos.length],
   );
 
   const handleFileSelect = useCallback(
-    (e) => {
-      const file = e.target.files?.[0];
-      if (file) handleCapture(file);
+    async (e) => {
+      const files = Array.from(e.target.files || []);
+      e.target.value = '';
+      for (const file of files) {
+        if (photos.length >= MAX_PHOTOS) break;
+        await handleCapture(file);
+      }
     },
-    [handleCapture],
+    [handleCapture, photos.length],
   );
 
+  const removePhoto = (i) => setPhotos((prev) => prev.filter((_, idx) => idx !== i));
+
   const runScan = async () => {
-    if (!capturedUrl) return;
+    if (!photos.length) return;
     setScanning(true);
     setDetection(null);
+    setReview(null);
     setCataloged(null);
     try {
-      const resp = await base44.functions.invoke('scanAd', { file_url: capturedUrl });
+      const resp = await base44.functions.invoke('scanAd', { file_url: photos[0] });
       const det = resp.data?.detection?.response || resp.data?.detection || resp.data;
       setDetection(det);
+      // AI output is a starting draft, not a fact — seed the editable review
+      // fields but require the user to hit "Catalog to atlas" themselves
+      // before anything is written. Only ad-classified scans get a review
+      // form; a "no ad detected" result has nothing worth editing.
+      setReview(det?.is_advertising ? reviewFromDetection(det) : null);
     } catch {
       toast({ title: 'Scan failed', variant: 'destructive' });
     } finally {
@@ -134,27 +165,42 @@ export default function AdScanLab() {
     }
   };
 
+  const setReviewField = (key, value) => setReview((r) => ({ ...r, [key]: value }));
+
   const catalogLocation = async () => {
-    if (!detection) return;
+    if (!detection || !photos.length) return;
     setCataloging(true);
     try {
+      const fields = review ?? reviewFromDetection(detection);
       const rec = await base44.entities.Location.create({
-        title: detection.brand_name
-          ? `Ad scan · ${detection.brand_name}`
+        title: fields.brand_name
+          ? `Ad scan · ${fields.brand_name}`
           : `Ad scan · ${new Date().toLocaleDateString()}`,
-        type: detection.surface_type || 'other',
-        image_url: capturedUrl,
+        type: fields.surface_type || 'other',
+        image_url: photos[0],
         lat: photoCoords?.lat,
         lng: photoCoords?.lng,
-        brand_name: detection.brand_name || '',
-        ad_agency: detection.ad_agency || '',
-        parent_corp: detection.parent_corp || '',
-        campaign_name: detection.campaign_name || '',
-        ooh_operator: detection.ooh_operator || '',
-        industry_sector: detection.industry_sector || 'other',
-        harm_tags: detection.harm_tags || [],
-        notes: detection.description || '',
+        brand_name: fields.brand_name || '',
+        ad_agency: fields.ad_agency || '',
+        parent_corp: fields.parent_corp || '',
+        campaign_name: fields.campaign_name || '',
+        ooh_operator: fields.ooh_operator || '',
+        industry_sector: fields.industry_sector || 'other',
+        harm_tags: fields.harm_tags || [],
+        notes: fields.notes || '',
       });
+      if (photos.length > 1) {
+        await Promise.allSettled(
+          photos.slice(1).map((url, i) =>
+            base44.entities.LocationPhoto.create({
+              location_id: String(rec.id),
+              url,
+              display_order: i + 1,
+              status: 'pending',
+            }),
+          ),
+        );
+      }
       setCataloged(rec);
       toast({ title: 'Cataloged to atlas' });
     } catch {
@@ -165,8 +211,9 @@ export default function AdScanLab() {
   };
 
   const reset = () => {
-    setCapturedUrl(null);
+    setPhotos([]);
     setDetection(null);
+    setReview(null);
     setCataloged(null);
     setPhotoCoords(null);
     setPhotoSource(null);
@@ -199,64 +246,86 @@ export default function AdScanLab() {
           the hit into the OOH Earth atlas for the normal reporting flow.
         </p>
 
-        {/* ── Step 1: Capture ──────────────────────────────────────────── */}
-        {!capturedUrl && (
-          <div className="space-y-4">
-            <div className="font-mono text-[10px] uppercase tracking-[0.2em] text-silver/40">
-              Step 01 — Capture or upload
-            </div>
-            <CameraViewfinder onCapture={handleCapture} uploading={uploading} />
-            <label
-              {...uploadTrigger.labelProps}
-              aria-label="Upload image"
-              className={`flex items-center justify-center gap-2 border border-slate2 py-3 font-mono text-[10px] uppercase tracking-[0.2em] text-silver/60 transition-colors ${uploading ? 'cursor-not-allowed opacity-60' : 'cursor-pointer hover:border-ozone hover:text-ozone'}`}
-            >
-              <Upload className="h-3.5 w-3.5" />
-              Upload image
-              <input
-                {...uploadTrigger.inputProps}
-                type="file"
-                accept="image/*"
-                className="hidden"
-                disabled={uploading}
-                onChange={handleFileSelect}
-              />
-            </label>
-          </div>
-        )}
-
-        {/* ── Step 2: Scan ─────────────────────────────────────────────── */}
-        {capturedUrl && (
+        {/* ── Step 1: Capture / upload (multi-photo) ──────────────────── */}
+        {!detection && !scanning && (
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <div className="font-mono text-[10px] uppercase tracking-[0.2em] text-silver/40">
-                Step 02 — Scan for advertising
+                Step 01 — Capture or upload{' '}
+                {photos.length > 0 && `(${photos.length}/${MAX_PHOTOS})`}
               </div>
-              <button
-                onClick={reset}
-                className="flex items-center gap-1.5 font-mono text-[9px] uppercase tracking-[0.2em] text-silver/40 transition-colors hover:text-ozone"
-              >
-                <RotateCcw className="h-3 w-3" /> New capture
-              </button>
+              {photos.length > 0 && (
+                <button
+                  onClick={reset}
+                  className="flex items-center gap-1.5 font-mono text-[9px] uppercase tracking-[0.2em] text-silver/40 transition-colors hover:text-ozone"
+                >
+                  <RotateCcw className="h-3 w-3" /> Clear all
+                </button>
+              )}
             </div>
 
-            <img src={capturedUrl} alt="Captured" className="w-full border border-slate2" />
+            {photos.length < MAX_PHOTOS && (
+              <>
+                <CameraViewfinder onCapture={handleCapture} uploading={uploading} />
+                <label
+                  {...uploadTrigger.labelProps}
+                  aria-label="Upload images"
+                  className={`flex items-center justify-center gap-2 border border-slate2 py-3 font-mono text-[10px] uppercase tracking-[0.2em] text-silver/60 transition-colors ${uploading ? 'cursor-not-allowed opacity-60' : 'cursor-pointer hover:border-ozone hover:text-ozone'}`}
+                >
+                  <Upload className="h-3.5 w-3.5" />
+                  Upload images
+                  <input
+                    {...uploadTrigger.inputProps}
+                    type="file"
+                    accept="image/*"
+                    multiple
+                    className="hidden"
+                    disabled={uploading}
+                    onChange={handleFileSelect}
+                  />
+                </label>
+              </>
+            )}
 
-            <button
-              onClick={runScan}
-              disabled={scanning}
-              className="flex w-full items-center justify-center gap-2 border-2 border-ozone bg-ozone py-3 font-mono text-[11px] font-bold uppercase tracking-[0.2em] text-void transition-colors hover:bg-flare hover:border-flare disabled:opacity-40"
-            >
-              {scanning ? (
-                <>
-                  <Loader2 className="h-4 w-4 animate-spin" /> Scanning…
-                </>
-              ) : (
-                <>
-                  <ScanLine className="h-4 w-4" /> Run detection
-                </>
-              )}
-            </button>
+            {photos.length > 0 && (
+              <div className="flex flex-wrap gap-2">
+                {photos.map((url, i) => (
+                  <div
+                    key={url}
+                    className="relative h-20 w-20 overflow-hidden border border-slate2"
+                  >
+                    <img src={url} alt="" className="h-full w-full object-cover" />
+                    {i === 0 && (
+                      <span className="absolute left-0 top-0 bg-ozone px-1 font-mono text-[7px] font-bold uppercase tracking-[0.1em] text-void">
+                        Cover
+                      </span>
+                    )}
+                    <button
+                      type="button"
+                      onClick={() => removePhoto(i)}
+                      aria-label="Remove photo"
+                      className="absolute right-0.5 top-0.5 flex h-4 w-4 items-center justify-center bg-void/80 text-silver transition-colors hover:text-flare"
+                    >
+                      <X className="h-2.5 w-2.5" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {photos.length > 0 && (
+              // This block only renders while !scanning (see the outer
+              // guard above), so `scanning` is always false here -- no
+              // loading label needed on the button itself; the dedicated
+              // "Step 03 -- scanning" panel below covers that state.
+              <button
+                onClick={runScan}
+                disabled={uploading}
+                className="flex w-full items-center justify-center gap-2 border-2 border-ozone bg-ozone py-3 font-mono text-[11px] font-bold uppercase tracking-[0.2em] text-void transition-colors hover:bg-flare hover:border-flare disabled:opacity-40"
+              >
+                <ScanLine className="h-4 w-4" /> Run detection
+              </button>
+            )}
           </div>
         )}
 
@@ -370,83 +439,108 @@ export default function AdScanLab() {
                 </div>
               </div>
 
-              {/* Fields grid */}
-              {detection.is_advertising && (
-                <div className="space-y-3 p-4">
+              {/* Editable review — AI output is a draft, never auto-cataloged.
+                  The user can correct any field before "Catalog to atlas". */}
+              {review && (
+                <div className="space-y-3 border-t border-slate2/60 p-4">
+                  <div className="font-mono text-[9px] uppercase tracking-[0.3em] text-ozone/70">
+                    // Review &amp; edit before cataloging
+                  </div>
                   <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-                    <TerminalField icon={Tag} label="Brand" value={detection.brand_name} brand />
-                    <TerminalField
-                      icon={FileText}
-                      label="Campaign"
-                      value={detection.campaign_name}
-                    />
-                    <TerminalField
-                      icon={Building2}
-                      label="Agency"
-                      value={detection.ad_agency}
-                      brand
-                    />
-                    <TerminalField
-                      icon={Building2}
-                      label="Parent Corp"
-                      value={detection.parent_corp}
-                      brand
-                    />
-                    <TerminalField
-                      icon={Building2}
-                      label="OOH Operator"
-                      value={detection.ooh_operator}
-                      brand
-                    />
-                    <TerminalField
-                      icon={MapPin}
-                      label="Surface"
-                      value={metaFor(detection.surface_type).label}
-                    />
+                    {REVIEW_TEXT_FIELDS.map(({ key, label, icon: Icon }) => (
+                      <label
+                        key={key}
+                        className="block border border-slate2/40 bg-void/50 px-3 py-2"
+                      >
+                        <span className="flex items-center gap-1 font-mono text-[8px] uppercase tracking-[0.15em] text-dim">
+                          <Icon className="h-2.5 w-2.5" /> {label}
+                        </span>
+                        <input
+                          type="text"
+                          value={review[key]}
+                          onChange={(e) => setReviewField(key, e.target.value)}
+                          placeholder="Unknown"
+                          className="mt-1 w-full bg-transparent font-mono text-[12px] text-silver outline-none placeholder:text-dim/40"
+                        />
+                      </label>
+                    ))}
+
+                    <label className="block border border-slate2/40 bg-void/50 px-3 py-2">
+                      <span className="flex items-center gap-1 font-mono text-[8px] uppercase tracking-[0.15em] text-dim">
+                        <AlertTriangle className="h-2.5 w-2.5" /> Sector
+                      </span>
+                      <select
+                        value={review.industry_sector}
+                        onChange={(e) => setReviewField('industry_sector', e.target.value)}
+                        className="mt-1 w-full bg-transparent font-mono text-[12px] text-silver outline-none"
+                      >
+                        {Object.entries(SECTOR_LABELS).map(([value, label]) => (
+                          <option key={value} value={value} className="bg-void text-silver">
+                            {label}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+
+                    <label className="block border border-slate2/40 bg-void/50 px-3 py-2">
+                      <span className="flex items-center gap-1 font-mono text-[8px] uppercase tracking-[0.15em] text-dim">
+                        <MapPin className="h-2.5 w-2.5" /> Surface
+                      </span>
+                      <select
+                        value={review.surface_type}
+                        onChange={(e) => setReviewField('surface_type', e.target.value)}
+                        className="mt-1 w-full bg-transparent font-mono text-[12px] text-silver outline-none"
+                      >
+                        {SURFACE_TYPES.map((value) => (
+                          <option key={value} value={value} className="bg-void text-silver">
+                            {metaFor(value).label}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
                   </div>
 
-                  {/* Harm tags — terminal chips */}
-                  {detection.harm_tags && detection.harm_tags.length > 0 && (
-                    <div>
-                      <div className="mb-1.5 font-mono text-[9px] uppercase tracking-[0.3em] text-flare/60">
-                        // Harm tags
-                      </div>
-                      <div className="flex flex-wrap gap-1.5">
-                        {detection.harm_tags.map((tag) => (
-                          <span
-                            key={tag}
-                            className="flex items-center gap-1 border border-flare/40 px-2 py-1 font-mono text-[9px] uppercase tracking-[0.1em] text-flare"
-                          >
-                            <Flag className="h-2.5 w-2.5" /> {tag.replace(/_/g, ' ')}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-                  )}
+                  <label className="block border border-slate2/40 bg-void/50 px-3 py-2">
+                    <span className="flex items-center gap-1 font-mono text-[8px] uppercase tracking-[0.15em] text-dim">
+                      <Flag className="h-2.5 w-2.5" /> Harm tags (comma-separated)
+                    </span>
+                    <input
+                      type="text"
+                      value={review.harm_tags.join(', ')}
+                      onChange={(e) =>
+                        setReviewField(
+                          'harm_tags',
+                          e.target.value
+                            .split(',')
+                            .map((t) => t.trim())
+                            .filter(Boolean),
+                        )
+                      }
+                      placeholder="e.g. greenwashing, predatory_targeting"
+                      className="mt-1 w-full bg-transparent font-mono text-[12px] text-silver outline-none placeholder:text-dim/40"
+                    />
+                  </label>
 
-                  {/* Description + visible text — full width */}
-                  {(detection.description || detection.visible_text) && (
-                    <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-                      {detection.description && (
-                        <div className="border border-slate2/40 bg-void/50 px-3 py-2">
-                          <div className="font-mono text-[8px] uppercase tracking-[0.15em] text-dim">
-                            // Description
-                          </div>
-                          <p className="mt-1 text-[12px] leading-relaxed text-silver/85">
-                            {detection.description}
-                          </p>
-                        </div>
-                      )}
-                      {detection.visible_text && (
-                        <div className="border border-slate2/40 bg-void/50 px-3 py-2">
-                          <div className="font-mono text-[8px] uppercase tracking-[0.15em] text-dim">
-                            // Visible text
-                          </div>
-                          <p className="mt-1 font-mono text-[11px] leading-relaxed text-silver/85">
-                            {detection.visible_text}
-                          </p>
-                        </div>
-                      )}
+                  <label className="block border border-slate2/40 bg-void/50 px-3 py-2">
+                    <span className="font-mono text-[8px] uppercase tracking-[0.15em] text-dim">
+                      Notes
+                    </span>
+                    <textarea
+                      value={review.notes}
+                      onChange={(e) => setReviewField('notes', e.target.value)}
+                      rows={3}
+                      className="mt-1 w-full resize-y bg-transparent font-mono text-[11px] leading-relaxed text-silver outline-none placeholder:text-dim/40"
+                    />
+                  </label>
+
+                  {detection.visible_text && (
+                    <div className="border border-slate2/40 bg-void/50 px-3 py-2">
+                      <div className="font-mono text-[8px] uppercase tracking-[0.15em] text-dim">
+                        // AI-read visible text (reference only)
+                      </div>
+                      <p className="mt-1 font-mono text-[11px] leading-relaxed text-silver/85">
+                        {detection.visible_text}
+                      </p>
                     </div>
                   )}
                 </div>

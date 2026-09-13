@@ -52,6 +52,7 @@ export default defineConfig({
         'evidence-timeline.spec.ts',
         'field-missions.spec.ts',
         'intelligent-map.spec.ts',
+        'ad-scanner.spec.ts',
       ],
     },
   ],

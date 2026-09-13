@@ -28,6 +28,7 @@ export type MockDb = {
   uploadUrl?: string;
   productLookup?: Record<string, unknown>;
   locationPhotoFailuresRemaining?: number;
+  scanAd?: Record<string, unknown>;
 };
 
 function matchesQuery(rec: Record<string, any>, query: Record<string, any>) {
@@ -51,6 +52,7 @@ function matchesQuery(rec: Record<string, any>, query: Record<string, any>) {
 
 export async function mockBase44(page: Page, db: MockDb) {
   let photoSeq = (db.locationPhotos ?? []).length;
+  let uploadSeq = 0;
 
   await page.route('**/api/apps/**', async (route: Route) => {
     const req = route.request();
@@ -60,8 +62,35 @@ export async function mockBase44(page: Page, db: MockDb) {
     const entityIdx = url.pathname.indexOf(marker);
 
     if (url.pathname.includes('/integration-endpoints/Core/UploadFile')) {
+      uploadSeq += 1;
       return route.fulfill({
-        json: { file_url: db.uploadUrl ?? 'https://example.com/mock-upload.jpg' },
+        json: { file_url: db.uploadUrl ?? `https://example.com/mock-upload-${uploadSeq}.jpg` },
+      });
+    }
+
+    // base44.functions.invoke('scanAd', { file_url }) -> POST /functions/scanAd.
+    // Real handler returns { detection: <InvokeLLM result> }; AdScanLab/
+    // ReportScanner both accept the detection fields either flat or nested
+    // under `.response`, so returning them flat here exercises the same
+    // `resp.data?.detection` fallback branch as production.
+    if (url.pathname.includes('/functions/scanAd')) {
+      return route.fulfill({
+        json: {
+          detection: db.scanAd ?? {
+            is_advertising: true,
+            brand_name: 'Mock Brand',
+            campaign_name: 'Mock Campaign',
+            ad_agency: 'Mock Agency',
+            parent_corp: 'Mock Corp',
+            ooh_operator: 'Mock Operator',
+            surface_type: 'billboard',
+            industry_sector: 'other',
+            harm_tags: [],
+            description: 'Mock detection description',
+            visible_text: 'MOCK BRAND',
+            confidence: 0.87,
+          },
+        },
       });
     }
 
