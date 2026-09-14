@@ -212,7 +212,8 @@ const PARENT_CORP_SECTOR_MAP = Object.entries(PARENT_CORP_SECTOR_GROUPS).reduce(
 
 /**
  * Looks up the known industry sector for a parent corp name, exact or
- * substring match (mirrors BrandBadge.jsx's lookupBrand). Returns null for
+ * substring match. Unrelated to entity-logo resolution (src/lib/entityLogos.js),
+ * which deliberately does NOT use substring matching. Returns null for
  * unrecognized names or holding companies (which don't map onto a sector).
  * @param {string} name
  * @returns {string | null}
