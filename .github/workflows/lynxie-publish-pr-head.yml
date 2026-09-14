@@ -19,7 +19,7 @@ on:
   workflow_dispatch:
     inputs:
       pr_number:
-        description: "Existing PR number on this repo"
+        description: 'Existing PR number on this repo'
         required: true
         type: number
       target_branch:
@@ -27,19 +27,19 @@ on:
         required: true
         type: string
       expected_remote_sha:
-        description: "The exact commit the target branch must currently be at"
+        description: 'The exact commit the target branch must currently be at'
         required: true
         type: string
       candidate_sha:
-        description: "Audit-only label for which locally-approved candidate this corresponds to — the actual content check is the patch digest below, not this string"
+        description: 'Audit-only label for which locally-approved candidate this corresponds to — the actual content check is the patch digest below, not this string'
         required: true
         type: string
       request_id:
-        description: "Selects .github/lynxie-patches/<request_id>.patch — must match [a-zA-Z0-9_-]+ only"
+        description: 'Selects .github/lynxie-patches/<request_id>.patch — must match [a-zA-Z0-9_-]+ only'
         required: true
         type: string
       dry_run:
-        description: "true = run every check and report the result, apply nothing, push nothing"
+        description: 'true = run every check and report the result, apply nothing, push nothing'
         required: false
         type: boolean
         default: true
