@@ -1,0 +1,197 @@
+name: lynxie-publish-pr-head
+
+# Constrained Lynxie PR publication executor. Publishes exactly one
+# pre-reviewed, pre-committed patch (never workflow-input patch text) to
+# an EXISTING, open, non-main/master PR head branch, iff the branch's
+# current remote head exactly matches the expected parent SHA this
+# request was approved against. Manual dispatch only: no schedule, no
+# pull_request trigger, no push trigger. Uses only this run's own
+# auto-issued GITHUB_TOKEN (permissions block below) — no PAT, no App
+# secret, nothing persisted or printed.
+#
+# The `patch` this applies is never arbitrary text: request_id resolves
+# only to a file already committed to THIS repo under
+# .github/lynxie-patches/, reviewed the same way any other repo change is
+# reviewed, with its expected sha256 recorded in manifest.json (also
+# committed, also reviewed) — the workflow_dispatch inputs are checked
+# AGAINST that manifest, never trusted on their own.
+on:
+  workflow_dispatch:
+    inputs:
+      pr_number:
+        description: 'Existing PR number on this repo'
+        required: true
+        type: number
+      target_branch:
+        description: "The PR's own head branch — never main/master"
+        required: true
+        type: string
+      expected_remote_sha:
+        description: 'The exact commit the target branch must currently be at'
+        required: true
+        type: string
+      candidate_sha:
+        description: 'Audit-only label for which locally-approved candidate this corresponds to — the actual content check is the patch digest below, not this string'
+        required: true
+        type: string
+      request_id:
+        description: 'Selects .github/lynxie-patches/<request_id>.patch — must match [a-zA-Z0-9_-]+ only'
+        required: true
+        type: string
+      dry_run:
+        description: 'true = run every check and report the result, apply nothing, push nothing'
+        required: false
+        type: boolean
+        default: true
+
+permissions:
+  contents: write
+  pull-requests: read
+  actions: read
+
+concurrency:
+  group: lynxie-publish-pr-head-${{ inputs.pr_number }}
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Validate request_id shape (defense in depth against path traversal)
+        run: |
+          set -euo pipefail
+          rid="${{ inputs.request_id }}"
+          if ! [[ "$rid" =~ ^[a-zA-Z0-9_-]+$ ]]; then
+            echo "::error::request_id must match [a-zA-Z0-9_-]+ only — refusing"
+            exit 1
+          fi
+
+      - name: Refuse a main/master target outright
+        run: |
+          set -euo pipefail
+          tb="${{ inputs.target_branch }}"
+          if [ "$tb" = "main" ] || [ "$tb" = "master" ]; then
+            echo "::error::target_branch may never be main or master — this capability only ever targets an existing, non-mainline PR head branch"
+            exit 1
+          fi
+
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.target_branch }}
+          fetch-depth: 0
+
+      - name: Look up the request in the committed, reviewed manifest (authoritative — inputs are checked AGAINST this, never trusted alone)
+        id: manifest
+        run: |
+          set -euo pipefail
+          rid="${{ inputs.request_id }}"
+          manifest=".github/lynxie-patches/manifest.json"
+          patch_file=".github/lynxie-patches/${rid}.patch"
+          if [ ! -f "$manifest" ]; then echo "::error::no manifest committed"; exit 1; fi
+          if [ ! -f "$patch_file" ]; then echo "::error::no patch file for request_id ${rid}"; exit 1; fi
+
+          entry=$(node -e "
+            const m = JSON.parse(require('fs').readFileSync('$manifest', 'utf8'));
+            const e = m['$rid'];
+            if (!e) { process.exit(1); }
+            console.log(JSON.stringify(e));
+          ") || { echo "::error::request_id ${rid} not present in manifest"; exit 1; }
+
+          echo "entry=$entry" >> "$GITHUB_OUTPUT"
+          echo "patch_file=$patch_file" >> "$GITHUB_OUTPUT"
+
+      - name: Verify workflow_dispatch inputs match the manifest entry exactly
+        run: |
+          set -euo pipefail
+          node -e "
+            const entry = JSON.parse(process.env.ENTRY);
+            const fail = (why) => { console.error('::error::' + why); process.exit(1); };
+            if (entry.expectedParentSha !== process.env.EXPECTED_REMOTE_SHA) fail('expected_remote_sha does not match manifest');
+            if (entry.candidateSha !== process.env.CANDIDATE_SHA) fail('candidate_sha does not match manifest');
+            if (entry.prNumber !== Number(process.env.PR_NUMBER)) fail('pr_number does not match manifest');
+            if (entry.targetBranch !== process.env.TARGET_BRANCH) fail('target_branch does not match manifest');
+          "
+        env:
+          ENTRY: ${{ steps.manifest.outputs.entry }}
+          EXPECTED_REMOTE_SHA: ${{ inputs.expected_remote_sha }}
+          CANDIDATE_SHA: ${{ inputs.candidate_sha }}
+          PR_NUMBER: ${{ inputs.pr_number }}
+          TARGET_BRANCH: ${{ inputs.target_branch }}
+
+      - name: Verify the patch file's digest matches the manifest (content-addressed integrity)
+        run: |
+          set -euo pipefail
+          patch_file="${{ steps.manifest.outputs.patch_file }}"
+          actual=$(sha256sum "$patch_file" | cut -d' ' -f1)
+          expected=$(node -e "console.log(JSON.parse(process.env.ENTRY).patchSha256)")
+          if [ "$actual" != "$expected" ]; then
+            echo "::error::patch file digest mismatch: expected $expected, got $actual"
+            exit 1
+          fi
+        env:
+          ENTRY: ${{ steps.manifest.outputs.entry }}
+
+      - name: Verify PR is open, on this exact repo, at the exact expected branch/SHA (server-side, live GitHub state)
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          pr_json=$(gh pr view "${{ inputs.pr_number }}" --repo "${{ github.repository }}" --json state,headRefName,headRefOid)
+          state=$(echo "$pr_json" | node -e "console.log(JSON.parse(require('fs').readFileSync(0,'utf8')).state)")
+          head_branch=$(echo "$pr_json" | node -e "console.log(JSON.parse(require('fs').readFileSync(0,'utf8')).headRefName)")
+          head_sha=$(echo "$pr_json" | node -e "console.log(JSON.parse(require('fs').readFileSync(0,'utf8')).headRefOid)")
+
+          [ "$state" = "OPEN" ] || { echo "::error::PR is not OPEN (state=$state)"; exit 1; }
+          [ "$head_branch" = "${{ inputs.target_branch }}" ] || { echo "::error::PR head branch mismatch: expected ${{ inputs.target_branch }}, got $head_branch"; exit 1; }
+          [ "$head_sha" = "${{ inputs.expected_remote_sha }}" ] || { echo "::error::remote head has moved since this request was approved: expected ${{ inputs.expected_remote_sha }}, got $head_sha"; exit 1; }
+
+          checked_out=$(git rev-parse HEAD)
+          [ "$checked_out" = "${{ inputs.expected_remote_sha }}" ] || { echo "::error::checkout HEAD does not match expected SHA"; exit 1; }
+
+      - name: Apply the pre-committed patch and verify the resulting diff exactly matches what was approved
+        id: apply
+        run: |
+          set -euo pipefail
+          patch_file="${{ steps.manifest.outputs.patch_file }}"
+          git apply --check "$patch_file"
+          git apply "$patch_file"
+
+          expected_diff_sha=$(node -e "console.log(JSON.parse(process.env.ENTRY).approvedDiffSha256)")
+          actual_diff_sha=$(git diff | sha256sum | cut -d' ' -f1)
+          if [ "$actual_diff_sha" != "$expected_diff_sha" ]; then
+            echo "::error::resulting working-tree diff does not match the approved diff digest"
+            git diff --stat
+            exit 1
+          fi
+
+          echo "diff-verified=true" >> "$GITHUB_OUTPUT"
+        env:
+          ENTRY: ${{ steps.manifest.outputs.entry }}
+
+      - name: Dry run — report and stop (no commit, no push)
+        if: ${{ inputs.dry_run == 'true' || inputs.dry_run == true }}
+        run: |
+          echo "### Lynxie publish — DRY RUN ###" >> "$GITHUB_STEP_SUMMARY"
+          echo "All checks passed. No commit was created, nothing was pushed." >> "$GITHUB_STEP_SUMMARY"
+          echo "pr_number=${{ inputs.pr_number }}" >> "$GITHUB_STEP_SUMMARY"
+          echo "target_branch=${{ inputs.target_branch }}" >> "$GITHUB_STEP_SUMMARY"
+          echo "expected_remote_sha=${{ inputs.expected_remote_sha }}" >> "$GITHUB_STEP_SUMMARY"
+          git diff --stat >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Commit and push (non-force, exact branch only) — real publication
+        if: ${{ inputs.dry_run != 'true' && inputs.dry_run != true }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          git config user.name "lynxie-publish-pr-head[bot]"
+          git config user.email "lynxie-publish-pr-head[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "Lynxie publish: request ${{ inputs.request_id }} (audit candidate ${{ inputs.candidate_sha }})"
+          new_sha=$(git rev-parse HEAD)
+          echo "new_sha=$new_sha" >> "$GITHUB_OUTPUT"
+          # Plain push, exact branch, no force flag anywhere in this file.
+          git push origin "HEAD:refs/heads/${{ inputs.target_branch }}"
+          echo "### Lynxie publish — LIVE ###" >> "$GITHUB_STEP_SUMMARY"
+          echo "Pushed $new_sha to ${{ inputs.target_branch }} on ${{ github.repository }}" >> "$GITHUB_STEP_SUMMARY"
+        id: publish
