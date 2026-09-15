@@ -123,6 +123,11 @@ export default function SiteFooter() {
             </div>
             <ul className="mt-3 space-y-2 font-mono text-[11px] text-silver/60">
               <li>
+                <a href="/protocol-one.html" className="transition-colors hover:text-ozone">
+                  Protocol One
+                </a>
+              </li>
+              <li>
                 <Link to="/map" className="transition-colors hover:text-ozone">
                   Map
                 </Link>
