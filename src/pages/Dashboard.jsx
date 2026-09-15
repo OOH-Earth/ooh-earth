@@ -25,6 +25,7 @@ import {
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import LocationThumb from '@/components/ooh/map/LocationThumb';
+import { relationshipTypeLabel } from '@/lib/publicSpace';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -77,6 +78,13 @@ const normFieldCheck = (c) => ({
   _title: c.location_title || c.brand_name || 'Field check',
   _sub: [c.brand_name, c.address].filter(Boolean).join(' · '),
   _type: c.location_type,
+});
+const normRelationship = (r) => ({
+  ...r,
+  _entity: 'LocationRelationship',
+  _title: r.location_title || r.brand_name || 'Relationship claim',
+  _sub: [r.brand_name, relationshipTypeLabel(r.relationship_type)].filter(Boolean).join(' · '),
+  _type: null,
 });
 
 const timeAgo = (iso) => {
@@ -159,6 +167,11 @@ function Row({
           {n._entity === 'FieldCheck' && (
             <span className="shrink-0 border border-ozone/30 px-1.5 py-0.5 font-mono text-[8px] uppercase tracking-[0.2em] text-ozone/70">
               re-check
+            </span>
+          )}
+          {n._entity === 'LocationRelationship' && (
+            <span className="shrink-0 border border-flare/30 px-1.5 py-0.5 font-mono text-[8px] uppercase tracking-[0.2em] text-flare/70">
+              claim
             </span>
           )}
           {triage && (
@@ -261,6 +274,7 @@ export default function Dashboard() {
               ...(d.locations || []).map(normLoc),
               ...(d.digital_busts || []).map(normBust),
               ...(d.field_checks || []).map(normFieldCheck),
+              ...(d.location_relationships || []).map(normRelationship),
             ];
           })
           .catch(() => [])
@@ -302,10 +316,19 @@ export default function Dashboard() {
     } catch {
       u3 = null;
     }
+    let u4;
+    try {
+      u4 = base44.entities.LocationRelationship?.subscribe?.(() => {
+        load();
+      });
+    } catch {
+      u4 = null;
+    }
     return () => {
       if (u1) u1();
       if (u2) u2();
       if (u3) u3();
+      if (u4) u4();
     };
   }, [load]);
 
