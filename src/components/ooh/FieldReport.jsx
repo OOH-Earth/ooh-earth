@@ -54,6 +54,8 @@ const EMPTY = {
   adbust_image_url: '',
   action_flags: [],
   extraPhotos: [],
+  setting: 'unknown',
+  public_access: 'unknown',
   // Client-side only -- never sent to Location.create (no matching schema
   // field). Preserved here just long enough to render in the post-submit
   // Discovery panel; never persisted, never fabricated if the scan didn't
@@ -165,6 +167,10 @@ export default function FieldReport() {
         adbust_type: data.adbust_type,
         adbust_image_url: data.adbust_image_url,
         action_flags: data.action_flags,
+        // Public-space facility metadata -- only ever set when Step 1/the
+        // scanner actually populated them; harmless undefined otherwise.
+        setting: data.setting,
+        public_access: data.public_access,
       });
       if (res.status === 'synced') {
         setDone(res.rec);

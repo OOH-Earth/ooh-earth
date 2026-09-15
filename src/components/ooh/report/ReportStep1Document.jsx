@@ -8,6 +8,7 @@ import { useState } from 'react';
 import ReportScanner from '@/components/ooh/report/ReportScanner';
 import MapPinDropper from '@/components/ooh/report/MapPinDropper';
 import MultiPhotoUpload from '@/components/ooh/gallery/MultiPhotoUpload';
+import { isPublicSpaceType, SETTING_OPTIONS, PUBLIC_ACCESS_OPTIONS } from '@/lib/publicSpace';
 
 const TYPES = [
   { value: 'billboard', label: 'Billboard' },
@@ -17,6 +18,9 @@ const TYPES = [
   { value: 'projection', label: 'Projection' },
   { value: 'sticker', label: 'Sticker / Paste' },
   { value: 'mural', label: 'Mural' },
+  { value: 'skatepark', label: 'Skatepark' },
+  { value: 'basketball_court', label: 'Basketball Court' },
+  { value: 'multi_use_court', label: 'Multi-Use Court' },
   { value: 'other', label: 'Other' },
 ];
 
@@ -93,6 +97,44 @@ export default function ReportStep1Document({ data, onChange }) {
           ))}
         </div>
       </div>
+
+      {/* Public-space facility metadata — only shown for facility types */}
+      {isPublicSpaceType(data.type) && (
+        <div className="grid gap-3 border border-ozone/30 bg-ozone/5 p-3 sm:grid-cols-2">
+          <label className="flex flex-col gap-1">
+            <span className="font-mono text-[9px] uppercase tracking-[0.15em] text-dim">
+              Setting
+            </span>
+            <select
+              value={data.setting || 'unknown'}
+              onChange={(e) => onChange({ setting: e.target.value })}
+              className="border border-slate2 bg-void px-3 py-2 text-sm text-silver outline-none focus:border-ozone"
+            >
+              {SETTING_OPTIONS.map((o) => (
+                <option key={o.value} value={o.value}>
+                  {o.label}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label className="flex flex-col gap-1">
+            <span className="font-mono text-[9px] uppercase tracking-[0.15em] text-dim">
+              Public Access
+            </span>
+            <select
+              value={data.public_access || 'unknown'}
+              onChange={(e) => onChange({ public_access: e.target.value })}
+              className="border border-slate2 bg-void px-3 py-2 text-sm text-silver outline-none focus:border-ozone"
+            >
+              {PUBLIC_ACCESS_OPTIONS.map((o) => (
+                <option key={o.value} value={o.value}>
+                  {o.label}
+                </option>
+              ))}
+            </select>
+          </label>
+        </div>
+      )}
 
       {/* Photo — capture or upload */}
       <div>

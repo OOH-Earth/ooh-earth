@@ -26,6 +26,8 @@ import LocationEditPanel from '@/components/ooh/LocationEditPanel';
 import SubvertisingPanel from '@/components/ooh/SubvertisingPanel';
 import AdvertiserInfo from '@/components/ooh/AdvertiserInfo';
 import FieldCheckPanel from '@/components/ooh/FieldCheckPanel';
+import PublicSpacePanel from '@/components/ooh/PublicSpacePanel';
+import { isPublicSpaceType } from '@/lib/publicSpace';
 import RelatedLocations from '@/components/ooh/RelatedLocations';
 import LocationContextEvidence from '@/components/ooh/LocationContextEvidence';
 import EvidenceTimeline from '@/components/ooh/EvidenceTimeline';
@@ -186,10 +188,18 @@ export default function LocationDetail() {
     loc.industry_sector ||
     (loc.adbust_type && loc.adbust_type !== 'none')
   );
+  // Public-space facilities get PublicSpacePanel's dedicated evidence framing
+  // instead — showing AdvertiserInfo's ad-industry framing (agency/campaign/
+  // harm tags) on a skatepark would imply an advertising relationship that
+  // was never claimed.
   const showSubvertising =
-    ['billboard', 'digital', 'projection', 'transit'].includes(loc.type) || hasAdData;
+    !isPublicSpaceType(loc.type) &&
+    (['billboard', 'digital', 'projection', 'transit'].includes(loc.type) || hasAdData);
   const isPending = loc.status === 'pending';
-  const isUnclassified = isPending && !loc.brand_name && !loc.industry_sector;
+  // A public-space facility with no visible branding is fully classified as
+  // itself -- it never needs an ad-industry brand/sector to be "complete".
+  const isUnclassified =
+    isPending && !isPublicSpaceType(loc.type) && !loc.brand_name && !loc.industry_sector;
 
   // Content classification — derived from graffiti_medium / adbust_type / type
   const category = loc.graffiti_medium
@@ -367,6 +377,9 @@ export default function LocationDetail() {
           <div className="flex flex-col gap-4">
             {/* Advertiser intelligence — moved up from SubvertisingPanel */}
             {showSubvertising && <AdvertiserInfo loc={loc} />}
+
+            {/* Public-space facility metadata + branding/relationship evidence */}
+            {isPublicSpaceType(loc.type) && <PublicSpacePanel location={loc} />}
 
             {/* Graffiti / street art classification — inline so the column is
                 always populated for graffiti-classified locations */}
