@@ -25,6 +25,7 @@ export type MockDb = {
   locationPhotos?: any[];
   storeItems?: Record<string, any>;
   fieldChecks?: Record<string, any>;
+  locationRelationships?: Record<string, any>;
   uploadUrl?: string;
   productLookup?: Record<string, unknown>;
   locationPhotoFailuresRemaining?: number;
@@ -179,10 +180,16 @@ export async function mockBase44(page: Page, db: MockDb) {
       const store = db.locations ?? (db.locations = {});
       const photos = db.locationPhotos ?? (db.locationPhotos = []);
       const checks = db.fieldChecks ?? (db.fieldChecks = {});
+      const relationships = db.locationRelationships ?? (db.locationRelationships = {});
       if (body.action === 'queue') {
         const locations = Object.values(store).filter((l: any) => l.status === 'pending');
         const field_checks = Object.values(checks).filter((c: any) => c.status === 'pending');
-        return route.fulfill({ json: { ok: true, locations, digital_busts: [], field_checks } });
+        const location_relationships = Object.values(relationships).filter(
+          (r: any) => r.status === 'pending',
+        );
+        return route.fulfill({
+          json: { ok: true, locations, digital_busts: [], field_checks, location_relationships },
+        });
       }
       if (body.action === 'verify') {
         const { entity = 'Location', id, status } = body;
@@ -195,6 +202,13 @@ export async function mockBase44(page: Page, db: MockDb) {
         }
         if (entity === 'FieldCheck' && checks[id]) {
           Object.assign(checks[id], { status, status_updated_at });
+        }
+        if (entity === 'LocationRelationship' && relationships[id]) {
+          Object.assign(relationships[id], {
+            status,
+            status_updated_at,
+            ...(status === 'verified' ? { verified_date: status_updated_at } : {}),
+          });
         }
         return route.fulfill({
           json: { ok: true, action: 'verify', changed: { entity, id, status } },
@@ -283,6 +297,46 @@ export async function mockBase44(page: Page, db: MockDb) {
           created_by_id: db.user?.id,
           created_date: new Date().toISOString(),
           ...body,
+        };
+        return route.fulfill({ json: store[id] });
+      }
+    }
+
+    if (entity === 'LocationRelationship') {
+      const store = db.locationRelationships ?? (db.locationRelationships = {});
+      if (idOrAction && method === 'GET') {
+        const rec = store[idOrAction];
+        if (!rec) return route.fulfill({ status: 404, json: { message: 'Not found' } });
+        return route.fulfill({ json: rec });
+      }
+      if (idOrAction && method === 'PUT') {
+        const body = req.postDataJSON();
+        store[idOrAction] = { ...(store[idOrAction] ?? { id: idOrAction }), ...body };
+        return route.fulfill({ json: store[idOrAction] });
+      }
+      if (!idOrAction && method === 'GET') {
+        const q = url.searchParams.get('q');
+        let list = Object.values(store);
+        if (q) list = list.filter((rec) => matchesQuery(rec, JSON.parse(q)));
+        list = [...list].sort(
+          (a: any, b: any) =>
+            new Date(b.created_date || 0).getTime() - new Date(a.created_date || 0).getTime(),
+        );
+        return route.fulfill({ json: list });
+      }
+      if (!idOrAction && method === 'POST') {
+        const body = req.postDataJSON();
+        const id = body.id ?? `mock-relationship-${Object.keys(store).length + 1}`;
+        // Real Location Relationship RLS locks `status` server-side -- a
+        // submitter's payload can never set it, so the mock always defaults
+        // to 'pending' here too, exactly like the real entity default.
+        const { status: _ignoredStatus, ...rest } = body;
+        store[id] = {
+          id,
+          status: 'pending',
+          created_by_id: db.user?.id,
+          created_date: new Date().toISOString(),
+          ...rest,
         };
         return route.fulfill({ json: store[id] });
       }
