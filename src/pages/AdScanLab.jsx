@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import {
   ScanLine,
@@ -90,6 +90,15 @@ export default function AdScanLab() {
   const [detection, setDetection] = useState(null);
   const [review, setReview] = useState(null); // user-editable copy of AI fields; null while no ad detected
   const [cataloging, setCataloging] = useState(false);
+  // The disabled={cataloging} attribute on the Catalog button only takes
+  // effect after React commits a re-render -- two click events dispatched
+  // in the same task (a fast real double-click/double-tap, or two
+  // synthetic events in the same tick) both run catalogLocation() before
+  // that commit happens, since `cataloging` state read at the top of the
+  // second invocation is still whatever it was at last render. A ref
+  // mutates synchronously and is visible to the second invocation
+  // immediately, closing that window. See e2e/ad-scanner-resilience.spec.ts.
+  const catalogingRef = useRef(false);
   const [cataloged, setCataloged] = useState(null);
   const [photoCoords, setPhotoCoords] = useState(null);
   const [photoSource, setPhotoSource] = useState(null);
@@ -169,6 +178,8 @@ export default function AdScanLab() {
 
   const catalogLocation = async () => {
     if (!detection || !photos.length) return;
+    if (catalogingRef.current) return;
+    catalogingRef.current = true;
     setCataloging(true);
     try {
       const fields = review ?? reviewFromDetection(detection);
@@ -219,6 +230,7 @@ export default function AdScanLab() {
     } catch {
       toast({ title: 'Catalog failed', variant: 'destructive' });
     } finally {
+      catalogingRef.current = false;
       setCataloging(false);
     }
   };
