@@ -9,6 +9,15 @@ import { ChevronLeft, ChevronRight, Images } from 'lucide-react';
  * for loc.id and merges them with the legacy single loc.image_url (kept as the cover
  * photo — see base44/entities/Location.jsonc). Falls back to the old single-image
  * layout when no gallery rows exist yet, so untouched locations render unchanged.
+ *
+ * Visibility is left entirely to LocationPhoto's own RLS (verified rows are public;
+ * pending/rejected rows are readable only by their creator or an admin) — the API
+ * only ever returns rows this viewer is already allowed to see, so no client-side
+ * status re-filtering happens here. A prior version filtered to status === 'verified'
+ * on top of that, which meant a contributor's own freshly-uploaded pending photos
+ * (RLS already grants them read access) were discarded before ever reaching this
+ * component — every multi-photo submission looked like a single-photo one to the
+ * very person who just uploaded it, until a moderator verified the location.
  */
 export default function PhotoGallery({ loc, icon: Icon, accent }) {
   const [photos, setPhotos] = useState([]);
@@ -31,8 +40,7 @@ export default function PhotoGallery({ loc, icon: Icon, accent }) {
         if (alive)
           setPhotos(
             (rows || [])
-              .filter((r) => r.status === 'verified' && r.url)
-              .slice(0, 50)
+              .filter((r) => r.url)
               .map((r) => ({ url: r.url, caption: r.caption || '' })),
           );
       } catch {
@@ -62,7 +70,7 @@ export default function PhotoGallery({ loc, icon: Icon, accent }) {
   }
 
   return (
-    <div className="flex flex-col gap-1.5">
+    <div className="flex flex-col gap-1.5" data-testid="photo-gallery">
       <button
         type="button"
         onClick={() => setOpenIndex(0)}

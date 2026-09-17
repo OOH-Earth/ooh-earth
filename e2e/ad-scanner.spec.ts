@@ -374,18 +374,118 @@ test.describe('Ad Scanner — catalog to atlas', () => {
     await expect(page).toHaveURL(/\/location\//);
     await expect(page.getByRole('heading', { name: /Shell/i })).toBeVisible();
 
-    // Cover persists as the single visible image. PhotoGallery.jsx (by
-    // design, matching /report's own uploadLocationPhotos()) only surfaces
-    // LocationPhoto rows once status is 'verified' -- ours are freshly
-    // cataloged as 'pending', so they correctly stay out of the public
-    // gallery until moderated. That they exist at all was already proven
-    // above via the captured LocationPhoto POST bodies (count, distinct
-    // URLs, shared location_id); asserting a gallery thumb count here would
-    // wrongly demand moderation-bypassing behavior.
+    // Cover persists as the single visible image. This session never
+    // authenticated (mockBase44 was given user: null, matching real
+    // anonymous field reporting), so LocationPhoto's own RLS
+    // (base44/entities/LocationPhoto.jsonc: verified OR own OR admin) has no
+    // created_by_id to match the pending extras against -- an anonymous
+    // viewer correctly can't read them back, same as production. That's
+    // enforced by the mock's RLS emulation (mockBase44.ts), not by
+    // PhotoGallery.jsx re-filtering on the client -- see the next test for
+    // the case that distinction actually matters: the *authenticated
+    // creator* of these same rows.
     await expect(page.locator('img[alt="Ad scan · Shell"]').first()).toBeVisible();
     await expect(page.getByText(/^\d+ \/ \d+$/)).toHaveCount(0);
 
     expect(filterCrashes(consoleErrors), consoleErrors.join('\n')).toEqual([]);
+  });
+
+  test('creator sees their own pending gallery photos immediately after cataloging, not just the cover', async ({
+    page,
+  }) => {
+    // Regression test for the confirmed production incident against
+    // location 6aabfdc021a942360f9b7e4a (2026-09-17): all 11 uploaded extra
+    // photos persisted correctly to LocationPhoto with the right
+    // location_id, but the location's own creator saw only the cover photo
+    // on /location/:id. Root cause: PhotoGallery.jsx filtered gallery rows
+    // to status === 'verified' on the client, discarding pending rows even
+    // when LocationPhoto's RLS already granted the viewer (its creator)
+    // read access to them. The old mock never caught this because it
+    // returned every fixture row to every viewer regardless of auth --
+    // mockBase44.ts now mirrors the real RLS predicate, so this test fails
+    // against the pre-fix PhotoGallery.jsx and passes against the fix.
+    const OWNER = { id: 'scout-1', email: 'scout@oohearth.test', role: 'user', access: 'member' };
+    await mockBase44(page, { user: OWNER, locations: {}, locationPhotos: [] });
+    await page.route('**/functions/scanAd', (route) =>
+      route.fulfill({
+        json: {
+          detection: {
+            is_advertising: true,
+            brand_name: 'Shell',
+            surface_type: 'billboard',
+            industry_sector: 'fossil_fuel',
+            confidence: 0.85,
+          },
+        },
+      }),
+    );
+
+    await openViaMenu(page);
+    // Cover + 2 extras, same shape as the production report (cover uploaded
+    // first, extras after).
+    await (await uploadInput(page)).setInputFiles([IMG1, IMG2, IMG1]);
+    await expect(page.locator('div:has(> button[aria-label="Remove photo"])')).toHaveCount(3);
+
+    await page.getByRole('button', { name: /Run detection/i }).click();
+    await expect(page.getByLabel('Brand', { exact: true })).toHaveValue('Shell');
+    await setLatLng(page, '13.75', '100.50');
+    await page.getByRole('button', { name: /Catalog to atlas/i }).click();
+    await expect(page.getByText('Cataloged to atlas').first()).toBeVisible();
+
+    const detailHref = await page.getByRole('link', { name: /page ·/i }).getAttribute('href');
+    await page.goto(detailHref!);
+    await expect(page).toHaveURL(/\/location\//);
+    await expect(page.getByRole('heading', { name: /Shell/i })).toBeVisible();
+
+    // All 3 photos (cover + 2 pending extras) render for the creator -- not
+    // just the cover.
+    await expect(page.getByTestId('photo-gallery').locator('img')).toHaveCount(3);
+  });
+
+  test('a failed extra-photo attach is surfaced to the user, not silently reported as a clean success', async ({
+    page,
+  }) => {
+    // catalogLocation() used to await Promise.allSettled(...) and ignore the
+    // result entirely -- a rejected LocationPhoto.create() vanished with no
+    // user-visible signal, and the success toast/panel claimed an
+    // unqualified "Cataloged to atlas" regardless. locationPhotoFailuresRemaining
+    // makes the mock's next N LocationPhoto POSTs fail server-side.
+    await mockBase44(page, {
+      user: { id: 'scout-3', email: 'scout3@oohearth.test', role: 'user', access: 'member' },
+      locations: {},
+      locationPhotos: [],
+      locationPhotoFailuresRemaining: 1,
+    });
+    await page.route('**/functions/scanAd', (route) =>
+      route.fulfill({
+        json: {
+          detection: {
+            is_advertising: true,
+            brand_name: 'Shell',
+            surface_type: 'billboard',
+            industry_sector: 'fossil_fuel',
+            confidence: 0.85,
+          },
+        },
+      }),
+    );
+
+    await openViaMenu(page);
+    await (await uploadInput(page)).setInputFiles([IMG1, IMG2]); // cover + 1 extra (the one that fails)
+    await page.getByRole('button', { name: /Run detection/i }).click();
+    await expect(page.getByLabel('Brand', { exact: true })).toHaveValue('Shell');
+    await setLatLng(page, '13.75', '100.50');
+    await page.getByRole('button', { name: /Catalog to atlas/i }).click();
+
+    // The location itself really was created -- that's still true and still said.
+    await expect(page.getByText('Cataloged to atlas').first()).toBeVisible();
+    // But the partial gallery failure has to be visible too, not swallowed
+    // (matched via testid, not text, since the toast can carry the same
+    // wording as the persistent panel notice and a loose text match would
+    // hit both).
+    await expect(page.getByTestId('photo-failure-notice')).toContainText(
+      /1 photo failed to attach/i,
+    );
   });
 });
 
