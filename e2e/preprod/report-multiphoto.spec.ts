@@ -1,13 +1,13 @@
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { test, expect } from '../fixtures/preprodAuth';
+import { test, expect } from './fixtures/preprodAuth';
 import {
   PREPROD_BACKUP_BASE_URL,
   PREPROD_BACKUP_APP_ID,
   gotoAsIdentity,
   preprodToken,
   requirePreprodTokens,
-} from '../fixtures/preprodAuth';
+} from './fixtures/preprodAuth';
 
 // REAL_BACKEND golden journey: /report (FieldReport.jsx) multi-photo submit
 // against the actually-deployed BACKUP app. No entity mocking. This proves

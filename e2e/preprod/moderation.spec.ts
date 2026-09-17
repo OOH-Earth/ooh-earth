@@ -1,10 +1,10 @@
-import { test, expect } from '../fixtures/preprodAuth';
+import { test, expect } from './fixtures/preprodAuth';
 import {
   PREPROD_BACKUP_BASE_URL,
   PREPROD_BACKUP_APP_ID,
   preprodToken,
   requirePreprodTokens,
-} from '../fixtures/preprodAuth';
+} from './fixtures/preprodAuth';
 
 // REAL_BACKEND golden journey: pending -> verified through the real
 // `moderate` function (base44/functions/moderate/entry.ts) against BACKUP,

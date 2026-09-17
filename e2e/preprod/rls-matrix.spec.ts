@@ -1,11 +1,11 @@
-import { test, expect } from '../fixtures/preprodAuth';
+import { test, expect } from './fixtures/preprodAuth';
 import {
   PREPROD_BACKUP_BASE_URL,
   PREPROD_BACKUP_APP_ID,
   gotoAsIdentity,
   preprodToken,
   requirePreprodTokens,
-} from '../fixtures/preprodAuth';
+} from './fixtures/preprodAuth';
 
 // REAL_BACKEND. Exercises actual Base44 RLS on the deployed BACKUP app --
 // no entity mocking anywhere in this file. This is the test that must fail
