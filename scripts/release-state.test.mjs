@@ -4,10 +4,13 @@ import {
   assertCertificationGate,
   assertProductionGate,
   canTransition,
+  recordPreprodE2eEvidence,
   transitionRelease,
 } from './release-state.mjs';
 
 const candidate = { git_sha: 'a'.repeat(40), release_state: 'CANDIDATE', evidence: {} };
+const withPreprodEvidence = (record) =>
+  recordPreprodE2eEvidence(record, { candidateSha: record.git_sha });
 
 test('allows only ordered release transitions', () => {
   assert.equal(canTransition('CANDIDATE', 'CI_QUALIFIED'), true);
@@ -50,15 +53,44 @@ test('Production gate and certification gate fail closed', () => {
     release_state: 'BACKUP_VERIFIED',
     backup: { state: 'BACKUP_VERIFIED' },
   };
-  assert.equal(assertProductionGate(backup), true);
+  assert.equal(assertProductionGate(withPreprodEvidence(backup)), true);
   assert.throws(() => assertCertificationGate(backup), /PRODUCTION_VERIFIED/);
   assert.equal(
     assertCertificationGate({
-      ...backup,
+      ...withPreprodEvidence(backup),
       release_state: 'PRODUCTION_VERIFIED',
       production: { state: 'PRODUCTION_VERIFIED' },
     }),
     true,
+  );
+});
+
+test('Production gate requires a real-backend preprod E2E pass for this exact candidate', () => {
+  const backup = {
+    ...candidate,
+    release_state: 'BACKUP_VERIFIED',
+    backup: { state: 'BACKUP_VERIFIED' },
+  };
+  // No preprod E2E evidence recorded at all -- BACKUP_VERIFIED alone is not
+  // enough, unlike before this candidate/gate hardening pass.
+  assert.throws(() => assertProductionGate(backup), /PREPROD_E2E_VERIFIED/);
+
+  // recordPreprodE2eEvidence() itself refuses to record evidence for a SHA
+  // that doesn't match the manifest's own candidate (see below) -- but a
+  // manifest could still be reused/mutated to point at a new git_sha after
+  // evidence for an older one was recorded (e.g. `git_sha` field edited
+  // without regenerating the manifest). Simulate that directly: evidence
+  // for the old candidate, git_sha now pointing at a newer one.
+  const withStaleEvidence = { ...withPreprodEvidence(backup), git_sha: 'b'.repeat(40) };
+  assert.throws(() => assertProductionGate(withStaleEvidence), /does not carry forward/);
+
+  // Evidence for the exact matching candidate SHA passes.
+  assert.equal(assertProductionGate(withPreprodEvidence(backup)), true);
+
+  // recordPreprodE2eEvidence itself refuses a SHA mismatch outright.
+  assert.throws(
+    () => recordPreprodE2eEvidence(backup, { candidateSha: 'wrong-sha' }),
+    /does not match the manifest's candidate/,
   );
 });
 

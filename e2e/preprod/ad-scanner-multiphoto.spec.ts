@@ -5,8 +5,8 @@ import {
   PREPROD_BACKUP_BASE_URL,
   PREPROD_BACKUP_APP_ID,
   gotoAsIdentity,
-  preprodToken,
-  requirePreprodTokens,
+  loginAsIdentity,
+  requirePreprodCredentials,
 } from './fixtures/preprodAuth';
 
 // REAL_BACKEND golden journey for the Ad Scanner multi-photo flow --
@@ -26,15 +26,16 @@ import {
 // ever needed -- not folded into every pipeline run silently.
 test.describe('REAL_BACKEND — Ad Scanner multi-photo golden journey', () => {
   test.beforeAll(async () => {
-    const reason = requirePreprodTokens('creator');
+    const reason = requirePreprodCredentials('creator');
     test.skip(!!reason, reason ?? undefined);
   });
 
   let locationId: string | null = null;
 
-  test.afterAll(async () => {
-    const creatorToken = preprodToken('creator');
-    if (!creatorToken || !locationId) return;
+  test.afterAll(async ({ browser }) => {
+    if (!locationId) return;
+    const page = await browser.newPage();
+    const creatorToken = await loginAsIdentity(page, 'creator').finally(() => page.close());
     await fetch(
       `${PREPROD_BACKUP_BASE_URL}/api/apps/${PREPROD_BACKUP_APP_ID}/entities/Location/${locationId}`,
       { method: 'DELETE', headers: { Authorization: `Bearer ${creatorToken}` } },
@@ -43,6 +44,7 @@ test.describe('REAL_BACKEND — Ad Scanner multi-photo golden journey', () => {
 
   test('cover + 2 extras persist for real, creator sees all 3 after a hard reload, AI review stays editable', async ({
     page,
+    browser,
     preprodRunTag,
   }) => {
     const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -93,7 +95,7 @@ test.describe('REAL_BACKEND — Ad Scanner multi-photo golden journey', () => {
     expect(detailHref).toBeTruthy();
     locationId = detailHref!.split('/').pop()!;
 
-    const creatorToken = preprodToken('creator')!;
+    const creatorToken = await loginAsIdentity(page, 'creator'); // cached, already logged in
     const loc = await fetch(
       `${PREPROD_BACKUP_BASE_URL}/api/apps/${PREPROD_BACKUP_APP_ID}/entities/Location/${locationId}`,
       { headers: { Authorization: `Bearer ${creatorToken}` } },
@@ -113,14 +115,29 @@ test.describe('REAL_BACKEND — Ad Scanner multi-photo golden journey', () => {
     }
     expect(photos.length, 'both extras must persist as real LocationPhoto rows').toBe(2);
 
-    // Hard reload (not a client-side Link navigation) as the creator --
-    // proves persistence against the backend itself, and proves the exact
-    // regression PR #256 fixed stays fixed on the real deployed code.
-    await page.goto(
-      `${PREPROD_BACKUP_BASE_URL}/location/${locationId}?access_token=${creatorToken}`,
-    );
+    // Hard reload (not a client-side Link navigation) as the already-
+    // authenticated creator -- proves persistence against the backend
+    // itself, and proves the exact regression PR #256 fixed stays fixed on
+    // the real deployed code.
+    await page.goto(`${PREPROD_BACKUP_BASE_URL}/location/${locationId}`);
     await expect(page.getByTestId('photo-gallery').locator('img')).toHaveCount(3, {
       timeout: 15_000,
     });
+
+    // Stronger persistence proof: a brand-new browser context (no shared
+    // cookies/localStorage with `page` at all -- not just a fresh
+    // navigation) logging in from scratch sees the identical state. This is
+    // what "the data survived, this wasn't just client-side cache" actually
+    // means.
+    const freshContext = await browser.newContext();
+    try {
+      const freshPage = await freshContext.newPage();
+      await gotoAsIdentity(freshPage, `/location/${locationId}`, 'creator');
+      await expect(freshPage.getByTestId('photo-gallery').locator('img')).toHaveCount(3, {
+        timeout: 15_000,
+      });
+    } finally {
+      await freshContext.close();
+    }
   });
 });
