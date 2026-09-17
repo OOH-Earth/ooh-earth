@@ -300,6 +300,18 @@ export async function mockBase44(page: Page, db: MockDb) {
         const q = url.searchParams.get('q');
         let rows = list;
         if (q) rows = rows.filter((rec) => matchesQuery(rec, JSON.parse(q)));
+        // Mirror base44/entities/LocationPhoto.jsonc's read RLS
+        // (verified OR created_by_id === caller OR admin) instead of handing
+        // back every fixture row regardless of who's asking. Without this, a
+        // client-side bug that re-filters (or fails to filter) what the real
+        // backend already gates is invisible here — the mock would "pass"
+        // either way. See e2e/ad-scanner.spec.ts's
+        // "creator sees their own pending gallery photos" test.
+        const isAdmin = !!db.user && (db.user.role === 'admin' || db.user.access === 'admin');
+        rows = rows.filter(
+          (rec) =>
+            rec.status === 'verified' || isAdmin || (!!db.user && rec.created_by_id === db.user.id),
+        );
         rows = [...rows].sort((a, b) => (a.display_order ?? 0) - (b.display_order ?? 0));
         return route.fulfill({ json: rows });
       }
@@ -310,7 +322,17 @@ export async function mockBase44(page: Page, db: MockDb) {
         }
         const body = req.postDataJSON();
         photoSeq += 1;
-        const rec = { id: `mock-photo-${photoSeq}`, status: 'pending', ...body };
+        // Real Base44 stamps created_by_id server-side from the auth context
+        // too (see the same comment on the Location POST handler above) --
+        // this was previously missing here, so every mocked LocationPhoto
+        // row came back with no owner and could never pass the RLS-style
+        // filter above for its own creator.
+        const rec = {
+          id: `mock-photo-${photoSeq}`,
+          status: 'pending',
+          created_by_id: db.user?.id,
+          ...body,
+        };
         list.push(rec);
         return route.fulfill({ json: rec });
       }

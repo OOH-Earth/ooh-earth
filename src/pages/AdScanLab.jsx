@@ -189,8 +189,9 @@ export default function AdScanLab() {
         harm_tags: fields.harm_tags || [],
         notes: fields.notes || '',
       });
+      let photoFailures = 0;
       if (photos.length > 1) {
-        await Promise.allSettled(
+        const results = await Promise.allSettled(
           photos.slice(1).map((url, i) =>
             base44.entities.LocationPhoto.create({
               location_id: String(rec.id),
@@ -200,9 +201,21 @@ export default function AdScanLab() {
             }),
           ),
         );
+        photoFailures = results.filter((r) => r.status === 'rejected').length;
       }
-      setCataloged(rec);
-      toast({ title: 'Cataloged to atlas' });
+      setCataloged({ ...rec, photoFailures });
+      // The Location record itself really was created — say so — but never
+      // claim a clean "Cataloged to atlas" when some gallery photos silently
+      // failed to attach; the failure has to reach the user, not just the
+      // console (see e2e/ad-scanner.spec.ts for the regression this guards).
+      toast(
+        photoFailures > 0
+          ? {
+              title: `Cataloged, but ${photoFailures} photo${photoFailures > 1 ? 's' : ''} failed to attach`,
+              variant: 'destructive',
+            }
+          : { title: 'Cataloged to atlas' },
+      );
     } catch {
       toast({ title: 'Catalog failed', variant: 'destructive' });
     } finally {
@@ -640,6 +653,16 @@ export default function AdScanLab() {
                 </span>
                 {cataloged.title && (
                   <span className="font-mono text-[10px] text-dim">{cataloged.title}</span>
+                )}
+                {cataloged.photoFailures > 0 && (
+                  <span
+                    data-testid="photo-failure-notice"
+                    className="flex items-center gap-1.5 border border-flare/40 bg-flare/5 px-3 py-1.5 font-mono text-[10px] uppercase tracking-[0.2em] text-flare"
+                  >
+                    <AlertTriangle className="h-3 w-3" />
+                    {cataloged.photoFailures} photo{cataloged.photoFailures > 1 ? 's' : ''} failed
+                    to attach to the gallery
+                  </span>
                 )}
                 <Link
                   to={`/location/${cataloged.id}`}
