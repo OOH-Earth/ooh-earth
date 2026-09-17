@@ -1,4 +1,5 @@
 import type { Page, Route } from '@playwright/test';
+import { canReadEntity } from './rlsEngine';
 
 // This sandbox has no live Base44 backend (VITE_BASE44_APP_BASE_URL is
 // intentionally unset — see CLAUDE.md rule #4 and e2e/smoke.spec.ts). The
@@ -300,18 +301,20 @@ export async function mockBase44(page: Page, db: MockDb) {
         const q = url.searchParams.get('q');
         let rows = list;
         if (q) rows = rows.filter((rec) => matchesQuery(rec, JSON.parse(q)));
-        // Mirror base44/entities/LocationPhoto.jsonc's read RLS
-        // (verified OR created_by_id === caller OR admin) instead of handing
-        // back every fixture row regardless of who's asking. Without this, a
-        // client-side bug that re-filters (or fails to filter) what the real
-        // backend already gates is invisible here — the mock would "pass"
-        // either way. See e2e/ad-scanner.spec.ts's
-        // "creator sees their own pending gallery photos" test.
-        const isAdmin = !!db.user && (db.user.role === 'admin' || db.user.access === 'admin');
-        rows = rows.filter(
-          (rec) =>
-            rec.status === 'verified' || isAdmin || (!!db.user && rec.created_by_id === db.user.id),
-        );
+        // Enforce base44/entities/LocationPhoto.jsonc's actual read RLS
+        // (verified OR created_by_id === caller OR role:admin) instead of
+        // handing back every fixture row regardless of who's asking.
+        // evaluateRlsRead() reads that .jsonc file directly (rlsEngine.ts)
+        // rather than re-describing the rule by hand here, so this can't
+        // silently drift from the real rule the way a hand-rolled predicate
+        // did before (that version wrongly also granted read to
+        // access==='admin', which the actual RLS rule does not — only
+        // role==='admin' does; see e2e/contracts/entityRls.spec.ts). Without
+        // RLS enforcement here at all, a client-side bug that re-filters (or
+        // fails to filter) what the real backend already gates is invisible
+        // to the mock — see e2e/ad-scanner.spec.ts's "creator sees their own
+        // pending gallery photos" test.
+        rows = rows.filter((rec) => canReadEntity('LocationPhoto', rec, db.user));
         rows = [...rows].sort((a, b) => (a.display_order ?? 0) - (b.display_order ?? 0));
         return route.fulfill({ json: rows });
       }

@@ -5,6 +5,13 @@ const BASE_URL = process.env.PLAYWRIGHT_BASE_URL ?? `http://localhost:${PORT}`;
 
 export default defineConfig({
   testDir: './e2e',
+  // e2e/preprod/* is a separate suite with its own config
+  // (playwright.preprod.config.ts) -- real BACKUP backend, no mocking, run
+  // deliberately via the Preprod Real-Backend E2E workflow, never as part
+  // of this hermetic per-PR suite. e2e/contracts/* stays IN this suite: it
+  // never touches a network, it's fast, and it's exactly the kind of test
+  // that should gate every PR (see docs/TESTING_AND_RELEASE.md).
+  testIgnore: ['**/preprod/**'],
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
@@ -20,6 +27,7 @@ export default defineConfig({
     baseURL: BASE_URL,
     trace: 'on-first-retry',
     screenshot: 'only-on-failure',
+    video: 'retain-on-failure',
   },
   projects: [
     {
