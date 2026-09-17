@@ -99,34 +99,96 @@ environment:
 | `PREPROD_OTHER_USER_TOKEN` | A second, unrelated authenticated user | Confirms cross-user denial |
 | `PREPROD_ADMIN_TOKEN` | `role: admin` on BACKUP | Confirms admin visibility + used by cleanup.mjs |
 
-**This repository does not have a way to mint these, and this document does
-not invent one.** Base44's actual token-issuance mechanism (login flow,
-account settings, or a platform-side API-key feature) wasn't discoverable
-without live access to a real login session — `base44 auth --help` only
-exposes *app-level* auth configuration (enabling password/social/SSO login
-for the app), not per-user token minting. To provision these:
+**This repository does not have a way to mint these itself, and nothing
+here fabricates one.** `base44 auth --help` only exposes *app-level* auth
+configuration (enabling password/social/SSO login for the app as a whole),
+not per-user token minting — there is no CLI subcommand that issues an
+end-user session token for an arbitrary identity. Confirmed instead, via
+`base44 auth pull --app-id 6a6748e009b947cb29591871` (read-only against
+BACKUP, config only — no user data): BACKUP has real username/password
+signup enabled (`enableUsernamePassword: true`), alongside Google/
+Microsoft/Facebook/Apple social login. That's the legitimate path — an
+actual person signing into the actual app, the same way any real user
+would.
 
-1. Create three real user accounts on BACKUP specifically for this purpose
-   — never reuse a real person's account, and never a Production account.
-2. Sign in as each, through whatever auth method BACKUP has enabled
-   (password/social/SSO), in a real browser.
-3. Give the `admin` identity's User record `role: "admin"` (via the
-   BACKUP Dashboard or a privileged `base44 exec`, the same mechanism
-   used elsewhere in this repo's release tooling).
-4. Capture each identity's resulting Base44 session/access token — however
-   Base44 surfaces it once authenticated (the app reads it from a URL
-   `?access_token=` param on first load per `src/lib/app-params.js`; check
-   whether Base44's own account/session UI exposes it more directly).
-5. Store the three tokens as `PREPROD_CREATOR_TOKEN`,
-   `PREPROD_OTHER_USER_TOKEN`, `PREPROD_ADMIN_TOKEN` secrets on a `preprod`
-   GitHub Environment (Settings → Environments → New environment → add
-   secrets). Using an Environment (not repo-level secrets) lets required
-   reviewers be added later if desired, and keeps these tokens out of
-   every other workflow's scope.
+**A separate, already-logged-in Base44 CLI session (`~/.base44/auth/`) is
+NOT the same credential type as one of these tokens** — it authenticates a
+developer to the Base44 *platform* (workspace/app management, `base44
+exec`, `base44 deploy`, …), not as an end-user of the deployed BACKUP
+*application* with a `User` entity record and a `role`/`access`. Do not
+reuse it here, and do not reuse any real person's own account either (that
+account may hold real privileges elsewhere) — three dedicated, disposable
+BACKUP-only accounts are what these three secrets are supposed to be.
 
-Until these exist, `.github/workflows/preprod.yml`'s `check-secrets` job
-fails fast with an explicit error — it will never silently skip and report
-green.
+To provision:
+
+1. **Create three new accounts on BACKUP itself**, via
+   `https://ooh-earth-backup.base44.app`'s own sign-up (username + password
+   — no special tooling needed). Use throwaway emails dedicated to this
+   purpose, e.g. `preprod-creator@…`, `preprod-other@…`, `preprod-admin@…`
+   — never a real person's own account, never anything that also exists on
+   Production.
+2. **Capture each account's session token** after signing in: open browser
+   DevTools → Application (Chrome) / Storage (Firefox) → Local Storage →
+   `https://ooh-earth-backup.base44.app` → key `base44_access_token`, copy
+   the value. (`src/lib/app-params.js` reads it once from a `?access_token=`
+   URL param and immediately strips it from the URL into this key — the
+   URL bar itself won't have it after the first page load.)
+3. **Promote the `preprod-admin` account to `role: admin`.** This needs
+   privileged access — tell me (or whoever has CLI access to this
+   workspace) that account's email once it exists, and it can be set via a
+   privileged `base44 exec --app-id 6a6748e009b947cb29591871 --privileged`
+   call (the same sanctioned, RLS-bypassing mechanism this repo's release
+   tooling already uses elsewhere) — no token or password needs to be
+   shared for this step, only the email address to look up.
+4. **Create the `preprod` GitHub Environment** (repo Settings →
+   Environments → New environment → name exactly `preprod`) and add the
+   three secrets there: `PREPROD_CREATOR_TOKEN`, `PREPROD_OTHER_USER_TOKEN`,
+   `PREPROD_ADMIN_TOKEN`. Using an Environment (not repo-level secrets)
+   scopes them to jobs that explicitly declare `environment: preprod` —
+   `.github/workflows/preprod.yml`'s jobs already do.
+5. **Recommended (not yet configured — no `preprod` environment exists in
+   this repo as of this writing):** on that Environment's settings, enable
+   "Required reviewers" (a second person must approve before the job reads
+   the secrets, even for a legitimate `workflow_dispatch`) and restrict
+   "Deployment branches" to `main`. Neither is strictly required for the
+   fork-PR-exfiltration threat this workflow is already immune to (see
+   "Security model" below), but both add real defense-in-depth against a
+   compromised or careless dispatch.
+
+Until the environment and secrets exist, `.github/workflows/preprod.yml`'s
+`check-secrets` job fails fast with an explicit error — it will never
+silently skip and report green.
+
+## Security model — why an untrusted PR can't reach these secrets
+
+- `preprod.yml` triggers **only** on `workflow_dispatch` — never
+  `pull_request` or `pull_request_target`. A PR, including one from an
+  untrusted fork, cannot cause this workflow to run at all; only a human
+  with write access, manually dispatching it, can.
+- Even if a fork PR *modified* `preprod.yml` to add a `pull_request`
+  trigger, GitHub evaluates `pull_request`-triggered workflows using the
+  workflow file as it exists on the **base** branch, not the fork's — a
+  fork can't smuggle in a new trigger this way. It would need to be
+  reviewed and merged first, same as any other change to `main`.
+- Both jobs declare `environment: preprod`; secrets are scoped to that
+  Environment and only released to jobs that reference it, whether or not
+  protection rules are also configured.
+- `permissions: contents: read` at the workflow level — no write scope
+  anywhere, on any job.
+- The checked-out `ref` is `inputs.candidate_sha`, a `workflow_dispatch`
+  input only a trusted dispatcher controls — never derived from PR content.
+- Only official, SHA-pinned `actions/*` actions are used; no third-party
+  Actions.
+- **Trace capture is deliberately `off`** in `playwright.preprod.config.ts`
+  (unlike the hermetic config). Every authenticated request in this suite
+  carries a real `Authorization: Bearer <token>` header (`@base44/sdk`
+  attaches it to every API call) — Playwright's trace format records full
+  request/response headers for every network call, so a `trace.zip`
+  artifact from this suite would put a live token into a file downloadable
+  by anyone with read access to the workflow run. Video and screenshots
+  stay on (rendered pixels only — no header/network data) for failure
+  diagnosis.
 
 ## Test data safety on BACKUP
 

@@ -106,7 +106,7 @@ jobs:
         run: node e2e/preprod/cleanup.mjs --run-id "${{ github.run_id }}-${{ github.run_attempt }}-${{ matrix.project }}"
         env:
           PREPROD_ADMIN_TOKEN: ${{ secrets.PREPROD_ADMIN_TOKEN }}
-      - name: Upload Playwright report (traces, screenshots, video)
+      - name: Upload Playwright report (screenshots, video -- trace is OFF for this suite; see playwright.preprod.config.ts for why)
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:

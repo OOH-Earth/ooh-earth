@@ -28,7 +28,17 @@ export default defineConfig({
     : [['html', { outputFolder: 'playwright-report-preprod', open: 'never' }]],
   use: {
     baseURL: PREPROD_BACKUP_BASE_URL,
-    trace: 'retain-on-failure',
+    // trace is deliberately OFF here, unlike playwright.config.ts. Every
+    // authenticated request in this suite carries a real
+    // `Authorization: Bearer <token>` header (see @base44/sdk's
+    // axios-client.js) for one of the real PREPROD_*_TOKEN secrets --
+    // Playwright's trace format records full request/response headers for
+    // every network call, so a trace.zip artifact from this suite would
+    // embed the live token in a file anyone with read access to the
+    // workflow run's artifacts could download. Video/screenshot are safe
+    // (rendered pixels only, no header/network data) and stay on for
+    // failure diagnosis.
+    trace: 'off',
     screenshot: 'only-on-failure',
     video: 'retain-on-failure',
   },

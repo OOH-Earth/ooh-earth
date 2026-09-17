@@ -18,6 +18,8 @@
 
 const BACKUP_BASE_URL = 'https://ooh-earth-backup.base44.app';
 const BACKUP_APP_ID = '6a6748e009b947cb29591871';
+const PRODUCTION_APP_ID = '6a62213cff3ccbca88c04ff5'; // asserted against, never used
+const FORBIDDEN_HOSTS = ['oohearth.app', 'www.oohearth.app', 'ooh.earth', 'oohearth.base44.app'];
 const ENTITIES = ['Location', 'LocationPhoto', 'FieldCheck', 'DigitalBust'];
 
 function arg(name) {
@@ -25,7 +27,17 @@ function arg(name) {
   return index >= 0 ? process.argv[index + 1] : undefined;
 }
 
+function assertBackupTarget() {
+  const host = new URL(BACKUP_BASE_URL).hostname;
+  if (FORBIDDEN_HOSTS.includes(host) || BACKUP_APP_ID === PRODUCTION_APP_ID) {
+    console.error('REFUSING TO RUN: target resolves to Production or a Production-like host.');
+    process.exit(1);
+  }
+}
+
 async function main() {
+  assertBackupTarget();
+
   const runId = arg('run-id') || process.env.PREPROD_RUN_ID;
   if (!runId) {
     console.error('Refusing to run: --run-id (or PREPROD_RUN_ID) is required.');

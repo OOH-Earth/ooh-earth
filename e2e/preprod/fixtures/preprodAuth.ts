@@ -16,8 +16,43 @@ import { test as base } from '@playwright/test';
 // an explanation instead of failing or fabricating a session, and instead
 // of silently reporting a false pass.
 
-export const PREPROD_BACKUP_BASE_URL = 'https://ooh-earth-backup.base44.app';
 export const PREPROD_BACKUP_APP_ID = '6a6748e009b947cb29591871';
+const PREPROD_BACKUP_BASE_URL_RAW = 'https://ooh-earth-backup.base44.app';
+
+// PRODUCTION_APP_ID is the real production Base44 app
+// (base44/entities/*.jsonc's own docs cite it, and it's the id used by
+// scripts/release.mjs / release-certification.mjs for the production
+// target). Listed here ONLY to assert against, never to talk to.
+const PRODUCTION_APP_ID = '6a62213cff3ccbca88c04ff5';
+const FORBIDDEN_HOSTS = ['oohearth.app', 'www.oohearth.app', 'ooh.earth', 'oohearth.base44.app'];
+
+// Hard, synchronous, import-time guard: this whole real-backend suite exists
+// specifically to write test data and (in cleanup.mjs) delete records. If a
+// future edit ever pointed PREPROD_BACKUP_APP_ID/BASE_URL at Production --
+// by mistake, by a bad merge, by copy-paste -- that would be a destructive-
+// data incident, not a test failure to shrug off. Fail before a single
+// request is made, not after.
+function assertNotProduction(baseUrl: string, appId: string): void {
+  const host = new URL(baseUrl).hostname;
+  if (FORBIDDEN_HOSTS.includes(host)) {
+    throw new Error(
+      `REFUSING TO RUN: preprod base URL resolves to a forbidden (Production-or-production-like) host "${host}". This suite must only ever target BACKUP.`,
+    );
+  }
+  if (appId === PRODUCTION_APP_ID) {
+    throw new Error(
+      `REFUSING TO RUN: preprod app id equals the real Production app id (${PRODUCTION_APP_ID}). This suite must only ever target BACKUP.`,
+    );
+  }
+  if (appId !== '6a6748e009b947cb29591871') {
+    throw new Error(
+      `REFUSING TO RUN: preprod app id "${appId}" does not match the known BACKUP app id. Refusing to guess.`,
+    );
+  }
+}
+assertNotProduction(PREPROD_BACKUP_BASE_URL_RAW, PREPROD_BACKUP_APP_ID);
+
+export const PREPROD_BACKUP_BASE_URL = PREPROD_BACKUP_BASE_URL_RAW;
 
 export type PreprodIdentity = 'creator' | 'otherUser' | 'admin';
 
