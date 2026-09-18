@@ -9,7 +9,14 @@
 // matches on that exact string and refuses to run without one.
 //
 // Usage:
-//   PREPROD_ADMIN_TOKEN=... node e2e/preprod/cleanup.mjs --run-id <runId>
+//   PREPROD_ADMIN_PASSWORD=... node e2e/preprod/cleanup.mjs --run-id <runId>
+//
+// AUTH: same runtime-login strategy as fixtures/preprodAuth.ts -- logs in
+// for real against BACKUP's own /api/apps/:appId/auth/login endpoint (the
+// same one @base44/sdk's loginViaEmailPassword posts to) with the admin
+// identity's email + a password read from the environment, rather than
+// holding a long-lived bearer token secret. The resulting session token is
+// held only in a local variable for this process's lifetime.
 //
 // Each preprod spec file also does its own afterAll() cleanup already --
 // this script exists for the case a run crashed/was killed before its
@@ -21,6 +28,7 @@ const BACKUP_APP_ID = '6a6748e009b947cb29591871';
 const PRODUCTION_APP_ID = '6a62213cff3ccbca88c04ff5'; // asserted against, never used
 const FORBIDDEN_HOSTS = ['oohearth.app', 'www.oohearth.app', 'ooh.earth', 'oohearth.base44.app'];
 const ENTITIES = ['Location', 'LocationPhoto', 'FieldCheck', 'DigitalBust'];
+const ADMIN_EMAIL = 'preprod-admin@outofhell.org';
 
 function arg(name) {
   const index = process.argv.indexOf(`--${name}`);
@@ -45,9 +53,23 @@ async function main() {
   }
   const tag = `[e2e_run_id:${runId}]`;
 
-  const token = process.env.PREPROD_ADMIN_TOKEN;
+  const password = process.env.PREPROD_ADMIN_PASSWORD;
+  if (!password) {
+    console.error('Refusing to run: PREPROD_ADMIN_PASSWORD is required.');
+    process.exit(1);
+  }
+  const loginRes = await fetch(`${BACKUP_BASE_URL}/api/apps/${BACKUP_APP_ID}/auth/login`, {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({ email: ADMIN_EMAIL, password }),
+  });
+  if (!loginRes.ok) {
+    console.error(`Refusing to run: admin login failed (${loginRes.status}).`);
+    process.exit(1);
+  }
+  const { access_token: token } = await loginRes.json();
   if (!token) {
-    console.error('Refusing to run: PREPROD_ADMIN_TOKEN is required.');
+    console.error('Refusing to run: login succeeded but no access_token was returned.');
     process.exit(1);
   }
   const headers = { Authorization: `Bearer ${token}` };

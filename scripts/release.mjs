@@ -2,7 +2,12 @@
 import { execFileSync } from 'node:child_process';
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
-import { assertProductionGate, transitionRelease, validState } from './release-state.mjs';
+import {
+  assertProductionGate,
+  recordPreprodE2eEvidence,
+  transitionRelease,
+  validState,
+} from './release-state.mjs';
 import {
   assertBuildArtifact,
   redactCliOutput,
@@ -211,6 +216,18 @@ try {
     const next = transitionRelease(current, to, { [to]: { source: 'release-cli' } });
     writeFileSync(manifestPath, `${JSON.stringify(next, null, 2)}\n`);
     console.log(`RELEASE_STATE ${current.release_state || 'CANDIDATE'} -> ${to}`);
+  } else if (command === 'record-preprod-e2e') {
+    // Called by .github/workflows/preprod.yml after e2e/preprod/* passes
+    // against BACKUP. This is evidence, not a release_state transition
+    // (docs/RELEASE_RELIABILITY_SYSTEM.md prefers an evidence gate over
+    // state-machine complexity here) -- assertProductionGate() in
+    // release-state.mjs refuses PRODUCTION_APPROVED without it, and refuses
+    // evidence recorded for any candidate SHA other than the manifest's own.
+    const current = loadManifest();
+    if (!current) throw new Error(`Manifest not found: ${manifestPath}`);
+    const next = recordPreprodE2eEvidence(current, { candidateSha: value('--sha', gitSha()) });
+    writeFileSync(manifestPath, `${JSON.stringify(next, null, 2)}\n`);
+    console.log(`PREPROD_E2E_VERIFIED recorded for candidate=${next.git_sha}`);
   } else if (command === 'deploy:backup') {
     deploy('backup');
   } else if (command === 'deploy:production') {
@@ -249,7 +266,7 @@ try {
     await diagnoseHealth();
   } else {
     throw new Error(
-      'Commands: status, plan, transition, deploy:backup, deploy:production, certify:backup, certify:production, publish:backup, publish:production, diagnose',
+      'Commands: status, plan, transition, record-preprod-e2e, deploy:backup, deploy:production, certify:backup, certify:production, publish:backup, publish:production, diagnose',
     );
   }
 } catch (error) {

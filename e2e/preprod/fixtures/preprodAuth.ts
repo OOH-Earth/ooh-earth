@@ -6,15 +6,26 @@ import { test as base } from '@playwright/test';
 // hits the actually-deployed BACKUP Base44 app (see docs/TESTING_AND_RELEASE.md
 // for why that distinction matters and what each layer does/does not prove).
 //
-// Test identities are never fabricated here. Each token below must be a
-// real, already-authenticated Base44 session token for a BACKUP-only test
-// account, supplied via GitHub Environment secrets (see
-// docs/TESTING_AND_RELEASE.md "Pre-production test identities" for exactly
-// what to create and how to obtain each token). If a required token is
-// missing -- e.g. running locally without the env vars set, or before the
-// secrets have been provisioned -- the affected tests call test.skip() with
-// an explanation instead of failing or fabricating a session, and instead
-// of silently reporting a false pass.
+// AUTH STRATEGY: runtime login, not long-lived bearer tokens. Each identity
+// is a real BACKUP-only account authenticated at test time through the
+// app's own /login form (src/pages/Login.jsx ->
+// base44.auth.loginViaEmailPassword) using an email + password pair. The
+// resulting session token is read back from localStorage immediately after
+// a successful login, held only in memory for the life of the test, and
+// never persisted, logged, or printed. This replaced an earlier design that
+// stored a long-lived PREPROD_*_TOKEN secret directly -- runtime login
+// means a leaked/rotated password is trivially revocable by the account
+// owner, and there's no standing bearer credential sitting in GitHub for
+// the suite's entire deployment lifetime.
+//
+// Test identities are never fabricated. Creating a BACKUP account requires
+// completing Base44's own email-OTP verification (src/pages/Register.jsx)
+// -- an irreducible human step, since nothing in this session can read a
+// real inbox. See docs/TESTING_AND_RELEASE.md "Pre-production test
+// identities" for exactly what a human needs to do once, and how these
+// email/password pairs get into GitHub Environment secrets after that (the
+// human sets them directly; this repo's tooling never sees or prints a
+// password).
 
 export const PREPROD_BACKUP_APP_ID = '6a6748e009b947cb29591871';
 const PREPROD_BACKUP_BASE_URL_RAW = 'https://ooh-earth-backup.base44.app';
@@ -56,39 +67,104 @@ export const PREPROD_BACKUP_BASE_URL = PREPROD_BACKUP_BASE_URL_RAW;
 
 export type PreprodIdentity = 'creator' | 'otherUser' | 'admin';
 
-const ENV_VAR_BY_IDENTITY: Record<PreprodIdentity, string> = {
-  creator: 'PREPROD_CREATOR_TOKEN',
-  otherUser: 'PREPROD_OTHER_USER_TOKEN',
-  admin: 'PREPROD_ADMIN_TOKEN',
+// Email is a namespaced identifier, not a secret -- safe to keep as a plain
+// constant. Only the password is credential material, read from the
+// environment (a GitHub Environment secret in CI; a local .env for a human
+// operator running this suite by hand -- never committed).
+const EMAIL_BY_IDENTITY: Record<PreprodIdentity, string> = {
+  creator: 'preprod-creator@outofhell.org',
+  otherUser: 'preprod-other@outofhell.org',
+  admin: 'preprod-admin@outofhell.org',
 };
 
-export function preprodToken(identity: PreprodIdentity): string | undefined {
-  return process.env[ENV_VAR_BY_IDENTITY[identity]];
+const PASSWORD_ENV_VAR_BY_IDENTITY: Record<PreprodIdentity, string> = {
+  creator: 'PREPROD_CREATOR_PASSWORD',
+  otherUser: 'PREPROD_OTHER_USER_PASSWORD',
+  admin: 'PREPROD_ADMIN_PASSWORD',
+};
+
+export function preprodEmail(identity: PreprodIdentity): string {
+  return EMAIL_BY_IDENTITY[identity];
 }
 
-export function requirePreprodTokens(...identities: PreprodIdentity[]): string | null {
-  const missing = identities.filter((identity) => !preprodToken(identity));
+function preprodPassword(identity: PreprodIdentity): string | undefined {
+  return process.env[PASSWORD_ENV_VAR_BY_IDENTITY[identity]];
+}
+
+export function requirePreprodCredentials(...identities: PreprodIdentity[]): string | null {
+  const missing = identities.filter((identity) => !preprodPassword(identity));
   if (!missing.length) return null;
-  const vars = missing.map((identity) => ENV_VAR_BY_IDENTITY[identity]).join(', ');
+  const vars = missing.map((identity) => PASSWORD_ENV_VAR_BY_IDENTITY[identity]).join(', ');
   return `Missing preprod credentials: ${vars}. See docs/TESTING_AND_RELEASE.md "Pre-production test identities" for setup.`;
 }
 
+// One real login per (page, identity) -- cached per test's own Page object,
+// never written to disk. A second call for the same identity on the same
+// page reuses the session already established in that browser context
+// rather than logging in again.
+const sessionTokenCache = new WeakMap<Page, Map<PreprodIdentity, string>>();
+
 /**
- * Navigates to a BACKUP path authenticated as the given identity by
- * appending Base44's own ?access_token= URL param (see src/lib/app-params.js
- * -- the app reads and persists it to localStorage, then strips it from the
- * URL on the very first load). `identity: null` navigates unauthenticated
- * (the anonymous case).
+ * Performs a real login through the app's own /login form
+ * (base44.auth.loginViaEmailPassword — no OTP required for login, only for
+ * initial registration) and returns the resulting session token, read back
+ * from localStorage immediately after Base44 issues it. Held in memory
+ * only; never logged.
+ */
+export async function loginAsIdentity(page: Page, identity: PreprodIdentity): Promise<string> {
+  let cache = sessionTokenCache.get(page);
+  if (!cache) {
+    cache = new Map();
+    sessionTokenCache.set(page, cache);
+  }
+  const cached = cache.get(identity);
+  if (cached) return cached;
+
+  const password = preprodPassword(identity);
+  if (!password) {
+    throw new Error(
+      `No password available for preprod identity "${identity}" (expected env var ${PASSWORD_ENV_VAR_BY_IDENTITY[identity]}). Call requirePreprodCredentials() and test.skip() first.`,
+    );
+  }
+
+  await page.goto(new URL('/login', PREPROD_BACKUP_BASE_URL).toString());
+  await page.getByLabel('Email', { exact: true }).fill(EMAIL_BY_IDENTITY[identity]);
+  await page.getByLabel('Password', { exact: true }).fill(password);
+  await page.getByRole('button', { name: /^Log in$/ }).click();
+  // Login.jsx does a hard `window.location.href = returnTo` on success (not
+  // a client-side route change) -- wait for that navigation away from
+  // /login, then confirm a token actually landed in storage rather than
+  // trusting the URL change alone.
+  await page.waitForURL((url) => !url.pathname.startsWith('/login'), { timeout: 20_000 });
+  const token = await page.evaluate(() => window.localStorage.getItem('base44_access_token'));
+  if (!token) {
+    throw new Error(
+      `Login for preprod identity "${identity}" appeared to succeed (left /login) but no session token was found in localStorage afterward.`,
+    );
+  }
+  cache.set(identity, token);
+  return token;
+}
+
+/**
+ * Navigates to a BACKUP path as the given identity, logging in for real
+ * first if this page hasn't already authenticated as that identity.
+ * `identity: null` navigates unauthenticated (the anonymous case) --
+ * clears any prior session on this page first, so a test can go from an
+ * authenticated identity to genuinely anonymous within the same test.
  */
 export async function gotoAsIdentity(
   page: Page,
   path: string,
   identity: PreprodIdentity | null,
 ): Promise<void> {
-  const token = identity ? preprodToken(identity) : null;
-  const url = new URL(path, PREPROD_BACKUP_BASE_URL);
-  if (token) url.searchParams.set('access_token', token);
-  await page.goto(url.toString());
+  if (identity) {
+    await loginAsIdentity(page, identity);
+  } else {
+    await page.goto(PREPROD_BACKUP_BASE_URL);
+    await page.evaluate(() => window.localStorage.clear());
+  }
+  await page.goto(new URL(path, PREPROD_BACKUP_BASE_URL).toString());
 }
 
 // A unique tag stamped into every record these tests create, so cleanup can

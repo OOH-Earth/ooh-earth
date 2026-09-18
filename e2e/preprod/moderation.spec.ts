@@ -2,8 +2,8 @@ import { test, expect } from './fixtures/preprodAuth';
 import {
   PREPROD_BACKUP_BASE_URL,
   PREPROD_BACKUP_APP_ID,
-  preprodToken,
-  requirePreprodTokens,
+  loginAsIdentity,
+  requirePreprodCredentials,
 } from './fixtures/preprodAuth';
 
 // REAL_BACKEND golden journey: pending -> verified through the real
@@ -14,16 +14,17 @@ import {
 
 test.describe('REAL_BACKEND — moderation cascade (pending -> verified) on BACKUP', () => {
   test.beforeAll(async () => {
-    const reason = requirePreprodTokens('creator', 'otherUser', 'admin');
+    const reason = requirePreprodCredentials('creator', 'otherUser', 'admin');
     test.skip(!!reason, reason ?? undefined);
   });
 
   let locationId: string | null = null;
   let photoId: string | null = null;
 
-  test.afterAll(async () => {
-    const adminToken = preprodToken('admin');
-    if (!adminToken) return;
+  test.afterAll(async ({ browser }) => {
+    if (!locationId && !photoId) return;
+    const page = await browser.newPage();
+    const adminToken = await loginAsIdentity(page, 'admin').finally(() => page.close());
     const headers = { Authorization: `Bearer ${adminToken}` };
     if (photoId) {
       await fetch(
@@ -41,9 +42,10 @@ test.describe('REAL_BACKEND — moderation cascade (pending -> verified) on BACK
 
   test('verifying the Location cascades to its pending LocationPhoto rows and flips public visibility', async ({
     page,
+    browser,
     preprodRunTag,
   }) => {
-    const creatorToken = preprodToken('creator')!;
+    const creatorToken = await loginAsIdentity(page, 'creator');
     const jsonHeaders = {
       Authorization: `Bearer ${creatorToken}`,
       'content-type': 'application/json',
@@ -88,8 +90,11 @@ test.describe('REAL_BACKEND — moderation cascade (pending -> verified) on BACK
     expect(anonLocBefore.status).toBe(404);
 
     // Verify through the real `moderate` function, as admin -- not a raw
-    // entity PUT, matching how the app's own Dashboard does it.
-    const adminToken = preprodToken('admin')!;
+    // entity PUT, matching how the app's own Dashboard does it. A separate
+    // page: logging in as admin on `page` would replace the creator session
+    // this test still needs below.
+    const adminPage = await browser.newPage();
+    const adminToken = await loginAsIdentity(adminPage, 'admin').finally(() => adminPage.close());
     const verifyRes = await fetch(
       `${PREPROD_BACKUP_BASE_URL}/api/apps/${PREPROD_BACKUP_APP_ID}/functions/moderate`,
       {
@@ -127,12 +132,18 @@ test.describe('REAL_BACKEND — moderation cascade (pending -> verified) on BACK
     );
     expect(anonLocAfter.ok).toBe(true);
 
-    await page.goto(`${PREPROD_BACKUP_BASE_URL}/location/${locationId}`); // anonymous
+    // `page` was authenticated as creator above -- clear that session
+    // before checking anonymous visibility on it.
+    await page.evaluate(() => window.localStorage.clear());
+    await page.goto(`${PREPROD_BACKUP_BASE_URL}/location/${locationId}`);
     await expect(page.getByTestId('photo-gallery').locator('img')).toHaveCount(1, {
       timeout: 15_000,
     });
 
-    const otherToken = preprodToken('otherUser')!;
+    const otherPage = await browser.newPage();
+    const otherToken = await loginAsIdentity(otherPage, 'otherUser').finally(() =>
+      otherPage.close(),
+    );
     const asOther = await fetch(
       `${PREPROD_BACKUP_BASE_URL}/api/apps/${PREPROD_BACKUP_APP_ID}/entities/LocationPhoto?q=` +
         encodeURIComponent(JSON.stringify({ location_id: String(locationId) })),

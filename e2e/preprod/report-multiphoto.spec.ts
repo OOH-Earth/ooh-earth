@@ -5,8 +5,8 @@ import {
   PREPROD_BACKUP_BASE_URL,
   PREPROD_BACKUP_APP_ID,
   gotoAsIdentity,
-  preprodToken,
-  requirePreprodTokens,
+  loginAsIdentity,
+  requirePreprodCredentials,
 } from './fixtures/preprodAuth';
 
 // REAL_BACKEND golden journey: /report (FieldReport.jsx) multi-photo submit
@@ -22,21 +22,22 @@ const IMG2 = path.join(__dirname, '..', 'fixtures', 'test-image-2.png');
 
 test.describe('REAL_BACKEND — /report multi-photo golden journey', () => {
   test.beforeAll(async () => {
-    const reason = requirePreprodTokens('creator', 'otherUser');
+    const reason = requirePreprodCredentials('creator', 'otherUser');
     test.skip(!!reason, reason ?? undefined);
   });
 
   let locationId: string | null = null;
 
-  test.afterAll(async () => {
-    const creatorToken = preprodToken('creator');
-    if (!creatorToken || !locationId) return;
+  test.afterAll(async ({ browser }) => {
+    if (!locationId) return;
+    const page = await browser.newPage();
     // Photos cascade-delete is not guaranteed by the API; clean up what we
-    // can reach with the creator's own token (LocationPhoto delete is
+    // can reach with the creator's own session (LocationPhoto delete is
     // admin-only per LocationPhoto.jsonc, so extras created here are left
-    // for an admin-token cleanup pass -- see e2e/preprod/cleanup.mjs, which
-    // is the sanctioned mechanism for that, run out-of-band with an admin
-    // token rather than duplicated inline here).
+    // for an admin cleanup pass -- see e2e/preprod/cleanup.mjs, the
+    // sanctioned mechanism for that, run out-of-band rather than duplicated
+    // inline here).
+    const creatorToken = await loginAsIdentity(page, 'creator').finally(() => page.close());
     await fetch(
       `${PREPROD_BACKUP_BASE_URL}/api/apps/${PREPROD_BACKUP_APP_ID}/entities/Location/${locationId}`,
       {
@@ -48,6 +49,7 @@ test.describe('REAL_BACKEND — /report multi-photo golden journey', () => {
 
   test('creator: cover + extras persist, creator sees pending extras after reload; other user does not', async ({
     page,
+    browser,
     preprodRunTag,
   }) => {
     await gotoAsIdentity(page, '/report', 'creator');
@@ -79,7 +81,7 @@ test.describe('REAL_BACKEND — /report multi-photo golden journey', () => {
 
     // Find the created Location by its unique tag in notes (real backend --
     // no client-side request interception to read the POST body from).
-    const creatorToken = preprodToken('creator')!;
+    const creatorToken = await loginAsIdentity(page, 'creator'); // cached, already logged in
     const found = await fetch(
       `${PREPROD_BACKUP_BASE_URL}/api/apps/${PREPROD_BACKUP_APP_ID}/entities/Location?q=` +
         encodeURIComponent(
@@ -106,22 +108,24 @@ test.describe('REAL_BACKEND — /report multi-photo golden journey', () => {
     expect(photos.length, 'the extra photo must persist as a real LocationPhoto row').toBe(1);
     expect((photos[0] as { status: string }).status).toBe('pending');
 
-    // Creator reloads and sees the extra in the gallery (the exact
-    // behavior PR #256 fixed).
-    await page.goto(
-      `${PREPROD_BACKUP_BASE_URL}/location/${locationId}?access_token=${creatorToken}`,
-    );
+    // Creator hard-reloads (fresh navigation, same authenticated page) and
+    // sees the extra in the gallery -- the exact behavior PR #256 fixed.
+    await page.goto(`${PREPROD_BACKUP_BASE_URL}/location/${locationId}`);
     await expect(page.getByTestId('photo-gallery').locator('img')).toHaveCount(2, {
       timeout: 15_000,
     });
 
-    // A different authenticated user reloading the same page must NOT see
-    // the pending extra (only the cover, via loc.image_url which isn't
-    // gated the same way).
-    const otherToken = preprodToken('otherUser')!;
-    await page.goto(`${PREPROD_BACKUP_BASE_URL}/location/${locationId}?access_token=${otherToken}`);
-    await expect(page.getByTestId('photo-gallery').locator('img')).toHaveCount(1, {
-      timeout: 15_000,
-    });
+    // A different authenticated user, in a separate browser context/page,
+    // reloading the same location must NOT see the pending extra (only the
+    // cover, via loc.image_url which isn't gated the same way).
+    const otherPage = await browser.newPage();
+    try {
+      await gotoAsIdentity(otherPage, `/location/${locationId}`, 'otherUser');
+      await expect(otherPage.getByTestId('photo-gallery').locator('img')).toHaveCount(1, {
+        timeout: 15_000,
+      });
+    } finally {
+      await otherPage.close();
+    }
   });
 });
