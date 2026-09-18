@@ -48,7 +48,7 @@ jobs:
     steps:
       - id: check
         run: |
-          if [ -z "${{ secrets.PREPROD_CREATOR_TOKEN }}" ] || [ -z "${{ secrets.PREPROD_OTHER_USER_TOKEN }}" ] || [ -z "${{ secrets.PREPROD_ADMIN_TOKEN }}" ]; then
+          if [ -z "${{ secrets.PREPROD_CREATOR_PASSWORD }}" ] || [ -z "${{ secrets.PREPROD_OTHER_USER_PASSWORD }}" ] || [ -z "${{ secrets.PREPROD_ADMIN_PASSWORD }}" ]; then
             echo "configured=false" >> "$GITHUB_OUTPUT"
             echo "::error::Preprod test identities are not configured. See docs/TESTING_AND_RELEASE.md 'Pre-production test identities' -- this workflow cannot run real-backend E2E without them, and will not report a false pass."
             exit 1
@@ -98,14 +98,14 @@ jobs:
         env:
           CI: 'true'
           PREPROD_RUN_ID: ${{ github.run_id }}-${{ github.run_attempt }}-${{ matrix.project }}
-          PREPROD_CREATOR_TOKEN: ${{ secrets.PREPROD_CREATOR_TOKEN }}
-          PREPROD_OTHER_USER_TOKEN: ${{ secrets.PREPROD_OTHER_USER_TOKEN }}
-          PREPROD_ADMIN_TOKEN: ${{ secrets.PREPROD_ADMIN_TOKEN }}
+          PREPROD_CREATOR_PASSWORD: ${{ secrets.PREPROD_CREATOR_PASSWORD }}
+          PREPROD_OTHER_USER_PASSWORD: ${{ secrets.PREPROD_OTHER_USER_PASSWORD }}
+          PREPROD_ADMIN_PASSWORD: ${{ secrets.PREPROD_ADMIN_PASSWORD }}
       - name: Cleanup any orphaned test-owned BACKUP records
         if: always()
         run: node e2e/preprod/cleanup.mjs --run-id "${{ github.run_id }}-${{ github.run_attempt }}-${{ matrix.project }}"
         env:
-          PREPROD_ADMIN_TOKEN: ${{ secrets.PREPROD_ADMIN_TOKEN }}
+          PREPROD_ADMIN_PASSWORD: ${{ secrets.PREPROD_ADMIN_PASSWORD }}
       - name: Upload Playwright report (screenshots, video -- trace is OFF for this suite; see playwright.preprod.config.ts for why)
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7

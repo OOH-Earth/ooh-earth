@@ -89,72 +89,98 @@ is not evidence the backend actually does that.
 
 ## Pre-production test identities
 
-`e2e/preprod/*` needs three real, already-authenticated BACKUP-only Base44
-session tokens, supplied as GitHub Environment secrets on the `preprod`
-environment:
+**Auth strategy: runtime login, not long-lived bearer tokens.** An earlier
+version of this document described extracting a session token from
+localStorage after a one-time manual login and storing that token itself as
+a GitHub secret. That's been replaced: `e2e/preprod/fixtures/preprodAuth.ts`
+now performs a real login through the app's own `/login` form
+(`base44.auth.loginViaEmailPassword`) at the start of every test run, using
+an email + password pair. The session token Base44 issues is read back from
+localStorage immediately after, held only in memory for that test process,
+and discarded — never written to disk, logged, or stored anywhere. A leaked
+or rotated password is trivially revocable by the account owner; a
+long-lived bearer token sitting in GitHub for the workflow's entire
+deployment lifetime is a materially larger standing risk. This was a
+deliberate design change, not an oversight — see the `AUTH_STRATEGY` field
+in this project's own activation report for the reasoning.
 
-| Secret | Identity | Used for |
+`e2e/preprod/*` needs three real, disposable BACKUP-only accounts. Their
+emails are plain, non-secret constants in `preprodAuth.ts`; only the
+passwords are GitHub Environment secrets on the `preprod` environment:
+
+| Secret | Identity (email) | Used for |
 |---|---|---|
-| `PREPROD_CREATOR_TOKEN` | Creates test records | Read/write as the record owner |
-| `PREPROD_OTHER_USER_TOKEN` | A second, unrelated authenticated user | Confirms cross-user denial |
-| `PREPROD_ADMIN_TOKEN` | `role: admin` on BACKUP | Confirms admin visibility + used by cleanup.mjs |
+| `PREPROD_CREATOR_PASSWORD` | `preprod-creator@outofhell.org` | Read/write as the record owner |
+| `PREPROD_OTHER_USER_PASSWORD` | `preprod-other@outofhell.org` | Confirms cross-user denial |
+| `PREPROD_ADMIN_PASSWORD` | `preprod-admin@outofhell.org` (`role: admin` on BACKUP) | Confirms admin visibility + used by `cleanup.mjs` |
 
-**This repository does not have a way to mint these itself, and nothing
-here fabricates one.** `base44 auth --help` only exposes *app-level* auth
-configuration (enabling password/social/SSO login for the app as a whole),
-not per-user token minting — there is no CLI subcommand that issues an
-end-user session token for an arbitrary identity. Confirmed instead, via
-`base44 auth pull --app-id 6a6748e009b947cb29591871` (read-only against
-BACKUP, config only — no user data): BACKUP has real username/password
-signup enabled (`enableUsernamePassword: true`), alongside Google/
-Microsoft/Facebook/Apple social login. That's the legitimate path — an
-actual person signing into the actual app, the same way any real user
-would.
+**This repository has no way to create these accounts itself, and nothing
+here bypasses that.** Investigated, in order:
+
+- `base44 auth --help` / MCP: no Base44 MCP server is connected to this
+  environment (confirmed via tool discovery — there is no such capability
+  available, contrary to an earlier assumption). The CLI itself only
+  exposes *app-level* auth configuration (enabling password/social/SSO
+  login for the app as a whole, `base44 auth pull`/`push`), never per-user
+  account creation or token issuance.
+- `base44 auth pull --app-id 6a6748e009b947cb29591871` (read-only against
+  BACKUP, config flags only — no user data) confirmed BACKUP has real
+  username/password signup enabled.
+- `@base44/sdk`'s own `register()` (`src/pages/Register.jsx`) requires
+  **email OTP verification** — a 6-digit code sent to the real inbox —
+  before an account becomes usable. `inviteUser()` and the password-reset
+  flow are similarly email-token-gated. There is no email-reading
+  capability in this session, and using a third-party disposable-inbox
+  service to fake one would not be a legitimate account — it would be
+  exactly the kind of workaround this project was told not to attempt.
+
+**This is the one irreducible human step.** Everything downstream of an
+account existing (logging in, promoting to admin, running the suite,
+cleanup) is automated; creating the account is not, because Base44's own
+signup flow requires it not to be.
 
 **A separate, already-logged-in Base44 CLI session (`~/.base44/auth/`) is
-NOT the same credential type as one of these tokens** — it authenticates a
-developer to the Base44 *platform* (workspace/app management, `base44
+NOT the same credential type as one of these accounts** — it authenticates
+a developer to the Base44 *platform* (workspace/app management, `base44
 exec`, `base44 deploy`, …), not as an end-user of the deployed BACKUP
 *application* with a `User` entity record and a `role`/`access`. Do not
 reuse it here, and do not reuse any real person's own account either (that
-account may hold real privileges elsewhere) — three dedicated, disposable
-BACKUP-only accounts are what these three secrets are supposed to be.
+account may hold real privileges elsewhere).
 
 To provision:
 
-1. **Create three new accounts on BACKUP itself**, via
-   `https://ooh-earth-backup.base44.app`'s own sign-up (username + password
-   — no special tooling needed). Use throwaway emails dedicated to this
-   purpose, e.g. `preprod-creator@…`, `preprod-other@…`, `preprod-admin@…`
-   — never a real person's own account, never anything that also exists on
-   Production.
-2. **Capture each account's session token** after signing in: open browser
-   DevTools → Application (Chrome) / Storage (Firefox) → Local Storage →
-   `https://ooh-earth-backup.base44.app` → key `base44_access_token`, copy
-   the value. (`src/lib/app-params.js` reads it once from a `?access_token=`
-   URL param and immediately strips it from the URL into this key — the
-   URL bar itself won't have it after the first page load.)
-3. **Promote the `preprod-admin` account to `role: admin`.** This needs
-   privileged access — tell me (or whoever has CLI access to this
-   workspace) that account's email once it exists, and it can be set via a
-   privileged `base44 exec --app-id 6a6748e009b947cb29591871 --privileged`
-   call (the same sanctioned, RLS-bypassing mechanism this repo's release
-   tooling already uses elsewhere) — no token or password needs to be
-   shared for this step, only the email address to look up.
-4. **Create the `preprod` GitHub Environment** (repo Settings →
+1. **Create the three accounts** at `https://ooh-earth-backup.base44.app/register`
+   using exactly these emails — `preprodAuth.ts` and `cleanup.mjs` are
+   hardcoded to them: `preprod-creator@outofhell.org`,
+   `preprod-other@outofhell.org`, `preprod-admin@outofhell.org`. Choose a
+   strong password for each yourself (a password manager's generator is
+   fine) — this repo's tooling never needs to know or see it, only that
+   it's stored correctly in step 4. Complete the email-OTP step for each.
+2. **Tell me each account's email once created** (already known — the
+   fixed addresses above) so the `preprod-admin` identity can be promoted
+   to `role: admin` via a privileged `base44 exec --app-id
+   6a6748e009b947cb29591871 --privileged` call — no password needs to be
+   shared for this step.
+3. **Create the `preprod` GitHub Environment** (repo Settings →
    Environments → New environment → name exactly `preprod`) and add the
-   three secrets there: `PREPROD_CREATOR_TOKEN`, `PREPROD_OTHER_USER_TOKEN`,
-   `PREPROD_ADMIN_TOKEN`. Using an Environment (not repo-level secrets)
-   scopes them to jobs that explicitly declare `environment: preprod` —
-   `.github/workflows/preprod.yml`'s jobs already do.
-5. **Recommended (not yet configured — no `preprod` environment exists in
-   this repo as of this writing):** on that Environment's settings, enable
-   "Required reviewers" (a second person must approve before the job reads
-   the secrets, even for a legitimate `workflow_dispatch`) and restrict
-   "Deployment branches" to `main`. Neither is strictly required for the
-   fork-PR-exfiltration threat this workflow is already immune to (see
-   "Security model" below), but both add real defense-in-depth against a
-   compromised or careless dispatch.
+   three secrets there: `PREPROD_CREATOR_PASSWORD`,
+   `PREPROD_OTHER_USER_PASSWORD`, `PREPROD_ADMIN_PASSWORD`. Using an
+   Environment (not repo-level secrets) scopes them to jobs that explicitly
+   declare `environment: preprod` — `.github/workflows/preprod.yml`'s jobs
+   already do. (This step and the branch restriction below can be done via
+   `gh api`/`gh secret set` by whoever has repo admin access, without ever
+   putting a password value in a chat or a shell history that gets logged
+   — `gh secret set` reads from stdin or a `--body`/prompt, not a command-
+   line argument that would land in shell history.)
+4. **Recommended: "Required reviewers."** No `preprod` GitHub Environment
+   exists in this repo as of this writing, so this hasn't been configured.
+   Deployment-branch restriction (to `main`) can be set programmatically;
+   required-reviewer approval needs a specific GitHub username/team to
+   name as the reviewer, which isn't unambiguous from inside this repo —
+   name one when creating the Environment. Neither is strictly required
+   for the fork-PR-exfiltration threat this workflow is already immune to
+   (see "Security model" below), but both add real defense-in-depth
+   against a compromised or careless dispatch.
 
 Until the environment and secrets exist, `.github/workflows/preprod.yml`'s
 `check-secrets` job fails fast with an explicit error — it will never
@@ -223,32 +249,45 @@ cost-aware test — not folded silently into every pipeline run.
 
 ```
 candidate (PR merged to main)
-  → CI_QUALIFIED         (hermetic CI green: Layer A + contracts)
-  → BACKUP_DEPLOYED       (npm run release:backup -- --execute)
-  → BACKUP_VERIFIED       (automated: public smoke + runtimeHealth SHA match)
-  → Preprod / Real Backend E2E   (.github/workflows/preprod.yml, Layer B, manual dispatch)
-  → PRODUCTION_APPROVED   (human authorization)
+  → CI_QUALIFIED           (hermetic CI green: Layer A + contracts)
+  → BACKUP_DEPLOYED        (npm run release:backup -- --execute)
+  → BACKUP_VERIFIED        (automated: public smoke + runtimeHealth SHA match)
+  → PREPROD_E2E_VERIFIED   (.github/workflows/preprod.yml passes for this exact SHA,
+                             then npm run release:record-preprod-e2e -- --manifest ... --sha <candidate>)
+  → PRODUCTION_APPROVED    (human authorization -- now REQUIRES the evidence above)
   → PRODUCTION_DEPLOYED
-  → PRODUCTION_VERIFIED   (automated: same smoke/health checks against Production)
+  → PRODUCTION_VERIFIED    (automated: same smoke/health checks against Production)
 ```
 
-The state machine (`scripts/release-state.mjs`) already enforces
-`BACKUP_VERIFIED` before Production; this document does not add a new
-state for the preprod E2E step (`docs/RELEASE_RELIABILITY_SYSTEM.md`'s own
-guidance: prefer an evidence gate over unnecessary state-machine
-complexity). Preprod E2E is a **required human input to the Production
-approval decision** — the operator authorizing `PRODUCTION_APPROVED` should
-have a green `preprod.yml` run for the exact candidate SHA in hand first,
-the same way they already have `BACKUP_VERIFIED` in hand. Wiring preprod
-E2E as a hard, automatic gate that blocks `PRODUCTION_APPROVED` outright is
-a reasonable future step once the `preprod` environment's secrets exist and
-the suite has run clean for a while — not done here, since it can't be
-proven to work without those secrets.
+**This is a real, enforced gate, not just documented practice.**
+`assertProductionGate()` (`scripts/release-state.mjs`) refuses to let
+`deploy:production` or a `transition --to PRODUCTION_APPROVED` proceed
+unless `manifest.evidence.PREPROD_E2E_VERIFIED.candidate_sha` exactly
+equals the manifest's own `git_sha` — `BACKUP_VERIFIED` alone is no longer
+sufficient (see `scripts/release-state.test.mjs`'s "Production gate
+requires a real-backend preprod E2E pass for this exact candidate" for the
+three cases this proves: no evidence at all, evidence for a stale/different
+SHA, and evidence for the exact right one). `docs/RELEASE_RELIABILITY_SYSTEM.md`'s
+own guidance (prefer an evidence gate over unnecessary state-machine
+complexity) is why this is a required *evidence key*, not a new
+`RELEASE_STATES` entry — the ordered state machine itself is unchanged.
 
-`preprod.yml` verifies BACKUP is actually serving the candidate SHA it was
-asked to test *before* running anything against it (`release-manifest.json`
-check) — the same "don't test SHA A and imply SHA B is safe" principle
-`release-certification.mjs` already applies to Production certification.
+Because `preprod.yml` runs in an ephemeral GitHub Actions runner with no
+manifest of its own (deploy/certification/evidence recording deliberately
+stay in the authenticated operator's local session — see
+`docs/RELEASE_RELIABILITY_SYSTEM.md`'s "Automation boundary"), recording
+the evidence is a separate, explicit step the operator runs locally after
+confirming the workflow run passed (`gh run list --workflow=preprod.yml`
+or the Actions UI) — not something the workflow does to the operator's
+manifest automatically. Until that step runs, the candidate simply cannot
+reach `PRODUCTION_APPROVED`, regardless of how green everything else looks.
+
+`preprod.yml` also verifies BACKUP is actually serving the candidate SHA it
+was asked to test *before* running anything against it
+(`release-manifest.json` check) — the same "don't test SHA A and imply SHA
+B is safe" principle `release-certification.mjs` already applies to
+Production certification, and the same principle `assertProductionGate()`
+now applies to the evidence itself.
 
 ## Debugging a failure
 
