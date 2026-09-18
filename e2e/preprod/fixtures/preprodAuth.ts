@@ -72,9 +72,9 @@ export type PreprodIdentity = 'creator' | 'otherUser' | 'admin';
 // environment (a GitHub Environment secret in CI; a local .env for a human
 // operator running this suite by hand -- never committed).
 const EMAIL_BY_IDENTITY: Record<PreprodIdentity, string> = {
-  creator: 'preprod-creator@outofhell.org',
-  otherUser: 'preprod-other@outofhell.org',
-  admin: 'preprod-admin@outofhell.org',
+  creator: 'runner@ooh.earth',
+  otherUser: 'casper@advertisersanonymous.org',
+  admin: 'gonzo@ooh.earth',
 };
 
 const PASSWORD_ENV_VAR_BY_IDENTITY: Record<PreprodIdentity, string> = {
