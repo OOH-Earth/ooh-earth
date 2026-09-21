@@ -75,7 +75,12 @@ Deno.serve(async (req) => {
       return Response.json({ taken, mine }, { headers });
     }
 
-    if (!match) return Response.json({ found: false }, { headers });
+    // A handle that exists but isn't explicitly public responds identically
+    // to one that doesn't exist at all -- profile_public is the ONLY gate,
+    // checked here regardless of who's asking (including the owner: this
+    // endpoint is the PUBLIC view, not a preview -- Account.jsx already has
+    // the owner's own data from auth.me() and doesn't need this to show it).
+    if (!match || !match.profile_public) return Response.json({ found: false }, { headers });
 
     const [verifiedReports, verifiedRechecks] = await Promise.all([
       countVerified(base44.asServiceRole.entities.Location, match.id),

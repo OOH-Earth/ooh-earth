@@ -20,6 +20,7 @@ const MEMBER = {
   region: 'London, UK',
   focus_areas: ['mapping', 'activism'],
   founding_member: true,
+  profile_public: true,
   created_date: '2026-01-15T00:00:00.000Z',
 };
 
@@ -72,6 +73,41 @@ test.describe('Founding Profiles — edit (Account.jsx)', () => {
       'href',
       '/founders/ghostsignal',
     );
+  });
+
+  test('a member with a complete profile but no explicit opt-in shows "private" and no public link', async ({
+    page,
+  }) => {
+    const db: MockDb = { user: { ...MEMBER, profile_public: false } };
+    await mockBase44(page, db);
+    await page.goto('/account?access_token=mock-member-token');
+    await expect(page.getByRole('heading', { name: 'Identity' })).toBeVisible({ timeout: 10_000 });
+
+    await expect(page.getByRole('link', { name: /View public profile/i })).toHaveCount(0);
+    await expect(page.getByText(/Your profile is private/i)).toBeVisible();
+    await expect(page.getByRole('button', { name: /Public Founding Profile/ })).toBeVisible();
+  });
+
+  test('explicit publish then unpublish round-trips through the visibility toggle', async ({
+    page,
+  }) => {
+    const db: MockDb = { user: { ...MEMBER, profile_public: false } };
+    await mockBase44(page, db);
+    await page.goto('/account?access_token=mock-member-token');
+    await expect(page.getByRole('heading', { name: 'Identity' })).toBeVisible({ timeout: 10_000 });
+
+    const toggle = page.getByRole('button', { name: /Public Founding Profile/ });
+    await toggle.click();
+    await page.getByRole('button', { name: 'Save profile' }).click();
+    await expect(page.getByRole('button', { name: 'Saved' })).toBeVisible({ timeout: 10_000 });
+    expect(db.user!.profile_public).toBe(true);
+    await expect(page.getByRole('link', { name: /View public profile/i })).toBeVisible();
+
+    await toggle.click();
+    await page.getByRole('button', { name: 'Save profile' }).click();
+    await expect(page.getByRole('button', { name: 'Saved' })).toBeVisible({ timeout: 10_000 });
+    expect(db.user!.profile_public).toBe(false);
+    await expect(page.getByRole('link', { name: /View public profile/i })).toHaveCount(0);
   });
 
   test('founding_member and role/access/agency can never be self-granted, even by a crafted payload', async ({
@@ -194,6 +230,39 @@ test.describe('Founding Profiles — edit (Account.jsx)', () => {
 });
 
 test.describe('Founding Profiles — public view (/founders/:handle)', () => {
+  test('a handle that exists but was never made public is indistinguishable from nonexistent', async ({
+    page,
+  }) => {
+    const db: MockDb = {
+      user: null,
+      otherUsers: { ghostsignal: { ...MEMBER, profile_public: false } },
+    };
+    await mockBase44(page, db);
+    await page.goto('/founders/ghostsignal');
+    await expect(page.getByText(/Profile not found/i)).toBeVisible({ timeout: 10_000 });
+    // No leak whatsoever of the private profile's content.
+    const bodyText = await page.locator('body').innerText();
+    expect(bodyText).not.toContain('Mapping the visual commons');
+    expect(bodyText).not.toContain('London, UK');
+  });
+
+  test('a profile that is unpublished after being public stops being publicly retrievable', async ({
+    page,
+  }) => {
+    const db: MockDb = { user: null, otherUsers: { ghostsignal: { ...MEMBER } } };
+    await mockBase44(page, db);
+    await page.goto('/founders/ghostsignal');
+    await expect(page.getByRole('heading', { name: 'Ghost Signal' })).toBeVisible({
+      timeout: 10_000,
+    });
+
+    // The owner unpublishes (server-side truth is what matters here, not UI).
+    (db.otherUsers!.ghostsignal as Record<string, any>).profile_public = false;
+
+    await page.reload();
+    await expect(page.getByText(/Profile not found/i)).toBeVisible({ timeout: 10_000 });
+  });
+
   test('a visitor sees a complete, populated public profile', async ({ page }) => {
     const db: MockDb = {
       user: null,
@@ -250,6 +319,7 @@ test.describe('Founding Profiles — public view (/founders/:handle)', () => {
           region: '',
           focus_areas: [],
           founding_member: false,
+          profile_public: true,
         },
       },
     };

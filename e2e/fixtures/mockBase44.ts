@@ -95,7 +95,10 @@ export async function mockBase44(page: Page, db: MockDb) {
         return route.fulfill({ json: { taken, mine } });
       }
 
-      if (!match) return route.fulfill({ json: { found: false } });
+      // profile_public is the only visibility gate -- a private profile
+      // responds identically to a nonexistent one, for anyone including
+      // the owner (this mirrors the real function exactly).
+      if (!match || !match.profile_public) return route.fulfill({ json: { found: false } });
 
       const store = db.locations ?? {};
       const checks = db.fieldChecks ?? {};
