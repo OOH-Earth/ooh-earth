@@ -31,6 +31,9 @@ export type MockDb = {
   productLookup?: Record<string, unknown>;
   locationPhotoFailuresRemaining?: number;
   scanAd?: Record<string, unknown>;
+  // Other members' public-shaped User records, for public-profile tests
+  // that view someone other than db.user. Keyed by handle.
+  otherUsers?: Record<string, any>;
 };
 
 function matchesQuery(rec: Record<string, any>, query: Record<string, any>) {
@@ -67,6 +70,60 @@ export async function mockBase44(page: Page, db: MockDb) {
       uploadSeq += 1;
       return route.fulfill({
         json: { file_url: db.uploadUrl ?? `https://example.com/mock-upload-${uploadSeq}.jpg` },
+      });
+    }
+
+    // base44.functions.invoke('getPublicProfile', { handle, mode? }) ->
+    // POST /functions/getPublicProfile. Mirrors the real function: looks the
+    // handle up across db.user (the authenticated test user) and
+    // db.otherUsers, never returns id/email/role/access/agency, and 'check'
+    // mode compares against the CALLER's own id only.
+    if (url.pathname.includes('/functions/getPublicProfile')) {
+      const body = req.postDataJSON() ?? {};
+      const handle = String(body.handle || '')
+        .trim()
+        .replace(/^@/, '');
+      const mode = body.mode === 'check' ? 'check' : 'view';
+      const candidates: Record<string, any>[] = [];
+      if (db.user) candidates.push(db.user as Record<string, any>);
+      if (db.otherUsers) candidates.push(...Object.values(db.otherUsers));
+      const match = candidates.find((u) => u.handle === handle) || null;
+
+      if (mode === 'check') {
+        const taken = !!match;
+        const mine = !!(match && db.user && match.id === (db.user as Record<string, any>).id);
+        return route.fulfill({ json: { taken, mine } });
+      }
+
+      if (!match) return route.fulfill({ json: { found: false } });
+
+      const store = db.locations ?? {};
+      const checks = db.fieldChecks ?? {};
+      const verifiedReports = Object.values(store).filter(
+        (r: any) => r.created_by_id === match.id && r.status === 'verified',
+      ).length;
+      const verifiedRechecks = Object.values(checks).filter(
+        (r: any) => r.created_by_id === match.id && r.status === 'verified',
+      ).length;
+
+      return route.fulfill({
+        json: {
+          found: true,
+          profile: {
+            handle: match.handle || '',
+            full_name: match.full_name || '',
+            avatar_url: match.avatar_url || '',
+            bio: match.bio || '',
+            region: match.region || '',
+            focus_areas: Array.isArray(match.focus_areas) ? match.focus_areas : [],
+            founding_member: !!match.founding_member,
+            member_since: match.created_date || null,
+          },
+          contributions: {
+            verified_reports: verifiedReports,
+            verified_rechecks: verifiedRechecks,
+          },
+        },
       });
     }
 
@@ -233,6 +290,19 @@ export async function mockBase44(page: Page, db: MockDb) {
 
     if (entity === 'User' && idOrAction === 'me' && method === 'GET') {
       if (!db.user) return route.fulfill({ status: 401, json: { message: 'Not authenticated' } });
+      return route.fulfill({ json: db.user });
+    }
+
+    // base44.auth.updateMe(data) -> PUT /entities/User/me. Mirrors the real
+    // RLS: role/access/agency/founding_member are schema-declared,
+    // admin-write-locked fields on User.jsonc, so even a payload that
+    // includes them must never actually change them here -- a permissive
+    // mock would hide a real self-escalation bug.
+    if (entity === 'User' && idOrAction === 'me' && method === 'PUT') {
+      if (!db.user) return route.fulfill({ status: 401, json: { message: 'Not authenticated' } });
+      const body = req.postDataJSON() ?? {};
+      const { role, access, agency, founding_member, id, email, ...safe } = body;
+      Object.assign(db.user as Record<string, any>, safe);
       return route.fulfill({ json: db.user });
     }
 

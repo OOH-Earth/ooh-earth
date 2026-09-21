@@ -65,6 +65,7 @@ export default defineConfig({
         'public-space-scanner.spec.ts',
         'public-space-discovery.spec.ts',
         'public-space-moderation.spec.ts',
+        'founding-profile.spec.ts',
       ],
     },
   ],
