@@ -43,6 +43,18 @@
           }
         }
       }
+    },
+    "founding_member": {
+      "type": "boolean",
+      "description": "Founding Member status for the public profile. Admin-granted only -- a member can author their own bio/region/focus_areas via auth.updateMe, but can never self-declare founding status.",
+      "default": false,
+      "rls": {
+        "write": {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      }
     }
   },
   "required": [
