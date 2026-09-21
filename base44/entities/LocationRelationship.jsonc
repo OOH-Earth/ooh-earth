@@ -1,5 +1,5 @@
 {
-  "name": "FieldCheck",
+  "name": "LocationRelationship",
   "type": "object",
   "properties": {
     "client_operation_id": {
@@ -9,102 +9,46 @@
     },
     "location_id": {
       "type": "string",
-      "description": "Location record being re-checked"
+      "description": "Location record this relationship claim is about"
     },
     "location_title": {
       "type": "string",
       "description": "Denormalized title of the parent location"
     },
-    "location_type": {
-      "type": "string",
-      "enum": [
-        "billboard",
-        "painted",
-        "digital",
-        "projection",
-        "sticker",
-        "mural",
-        "transit",
-        "skatepark",
-        "basketball_court",
-        "multi_use_court",
-        "other"
-      ],
-      "default": "other"
-    },
-    "image_url": {
-      "type": "string",
-      "description": "Photo from this field check"
-    },
-    "lat": {
-      "type": "number"
-    },
-    "lng": {
-      "type": "number"
-    },
-    "address": {
-      "type": "string"
-    },
-    "condition": {
-      "type": "string",
-      "enum": [
-        "functional",
-        "neglected",
-        "damaged",
-        "abandoned",
-        "reclaimed",
-        "upgraded"
-      ],
-      "default": "functional",
-      "description": "Infrastructure condition observed during this check"
-    },
-    "access_key": {
-      "type": "string",
-      "enum": [
-        "none",
-        "4-way-utility",
-        "cemusapin",
-        "circle",
-        "circle-set",
-        "circle-wall",
-        "h60",
-        "jcd-superlock",
-        "large-square",
-        "small-square",
-        "t-handle",
-        "tx30",
-        "tri38",
-        "unknown"
-      ],
-      "default": "none",
-      "description": "Confirmed key type (transit/bus shelters only)"
-    },
     "brand_name": {
       "type": "string",
-      "description": "Brand being advertised at time of check"
+      "description": "Brand/organization the relationship claim is about, e.g. Nike, a local council"
     },
-    "adbust_type": {
+    "relationship_type": {
       "type": "string",
       "enum": [
-        "none",
-        "subverted",
-        "painted_over",
-        "stickered",
-        "projected",
-        "wheatpasted",
-        "removed",
-        "other"
+        "unknown",
+        "sponsor",
+        "funder",
+        "operator",
+        "owner",
+        "delivery_partner",
+        "naming_rights",
+        "community_partner"
       ],
-      "default": "none",
-      "description": "Intervention state observed at time of check"
+      "default": "unknown",
+      "description": "What this brand's relationship to the facility actually is. Stays 'unknown' — a visible logo alone is never sufficient — until evidence_source is reviewed and status is set to verified."
+    },
+    "evidence_source": {
+      "type": "string",
+      "description": "What supports this claim beyond a bare logo sighting: plaque/signage text, naming-rights signage, regeneration/project board, an official announcement URL, etc. Required for anything to be promoted past 'unknown'/pending."
+    },
+    "evidence_field_check_id": {
+      "type": "string",
+      "description": "Optional link to the FieldCheck row (photo/observation) this claim is grounded in"
+    },
+    "verified_date": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When this relationship was last confirmed true, if verified"
     },
     "notes": {
-      "type": "string",
-      "description": "Field observations from this check"
-    },
-    "checked_by": {
-      "type": "string",
-      "description": "Operative handle or name"
+      "type": "string"
     },
     "status": {
       "type": "string",
@@ -114,6 +58,7 @@
         "rejected"
       ],
       "default": "pending",
+      "description": "pending = proposed, unverified claim. verified = a moderator reviewed evidence_source and confirmed it. rejected = evidence didn't support the claim.",
       "rls": {
         "write": {
           "$or": [
@@ -144,8 +89,7 @@
   },
   "required": [
     "location_id",
-    "lat",
-    "lng"
+    "brand_name"
   ],
   "rls": {
     "create": null,
@@ -176,6 +120,11 @@
         },
         {
           "user_condition": {
+            "data.access": "admin"
+          }
+        },
+        {
+          "user_condition": {
             "data.access": "moderator"
           }
         },
@@ -187,9 +136,18 @@
       ]
     },
     "delete": {
-      "user_condition": {
-        "role": "admin"
-      }
+      "$or": [
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        },
+        {
+          "user_condition": {
+            "data.access": "admin"
+          }
+        }
+      ]
     }
   }
 }
