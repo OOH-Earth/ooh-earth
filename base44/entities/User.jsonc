@@ -55,6 +55,22 @@
           }
         }
       }
+    },
+    "region": {
+      "type": "string",
+      "description": "Optional, human-entered public label (e.g. a city) for the Founding Profile -- never a precise or automatically-derived location. Formalized here (rather than left as an undeclared field) so its self-editable-via-auth.updateMe permission is explicit, not inferred. No write RLS override: self-editable, same tier as the existing bio/avatar_url/handle/full_name fields."
+    },
+    "focus_areas": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Small, member-chosen taxonomy (see src/lib/founderProfile.js FOCUS_AREAS) of what part of the OOH Earth network they're building. Formalized here for the same reason as region -- self-editable via auth.updateMe, no write RLS override."
+    },
+    "profile_public": {
+      "type": "boolean",
+      "description": "Explicit opt-in to publish this member's Founding Profile at /founders/:handle. Defaults to false -- setting a handle, bio, region, or focus_areas alone never publishes a profile; the member must separately turn this on. getPublicProfile MUST check this before returning any field and must respond identically (found: false) whether a handle doesn't exist or belongs to a profile that isn't public, so a handle's mere existence and its private/public status are never distinguishable from the outside. Self-editable via auth.updateMe, same tier as region/focus_areas -- an owner turning their own profile on/off is not a privileged action.",
+      "default": false
     }
   },
   "required": [

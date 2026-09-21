@@ -125,6 +125,7 @@ export default function Account() {
     avatar_url: '',
     region: '',
     focus_areas: [],
+    profile_public: false,
   });
   const [prefs, setPrefs] = useState(PREF_DEFAULTS);
   const [savingP, setSavingP] = useState(false);
@@ -145,6 +146,9 @@ export default function Account() {
       avatar_url: u.avatar_url || '',
       region: u.region || '',
       focus_areas: Array.isArray(u.focus_areas) ? u.focus_areas : [],
+      // Explicit opt-in, defaults to false -- a handle/bio/etc. existing
+      // does not publish a profile. See User.jsonc's profile_public.
+      profile_public: !!u.profile_public,
     });
     let stored = null;
     try {
@@ -216,6 +220,7 @@ export default function Account() {
         avatar_url: form.avatar_url,
         region: form.region.slice(0, MAX_REGION_LENGTH),
         focus_areas: form.focus_areas.slice(0, MAX_FOCUS_AREAS),
+        profile_public: !!form.profile_public,
       });
       // Deliberately NOT calling checkUserAuth() here (pre-existing code
       // used to): it flips AuthContext's isLoadingAuth to true, which makes
@@ -549,6 +554,14 @@ export default function Account() {
                   })}
                 </div>
               </div>
+              <div className="mt-5 border border-slate2/60 bg-card/60 px-3 py-1">
+                <Toggle
+                  on={form.profile_public}
+                  onClick={() => setForm((f) => ({ ...f, profile_public: !f.profile_public }))}
+                  label="Public Founding Profile"
+                  desc="Off by default. Turn this on to publish your name, handle, bio, region, focus areas, and verified-contribution counts at a public URL anyone can view. Turn it off any time to stop anyone from seeing it — this takes effect immediately on save."
+                />
+              </div>
               {me?.founding_member && (
                 <div className="mt-5 flex items-center gap-2 border border-ozone/30 bg-ozone/5 px-3 py-2.5">
                   <Star className="h-3.5 w-3.5 shrink-0 text-ozone" />
@@ -584,14 +597,20 @@ export default function Account() {
                   Email is your login — managed under Security.
                 </span>
               </div>
-              {isValidHandle(me?.handle) && (
-                <Link
-                  to={`/founders/${normalizeHandle(me.handle)}`}
-                  className="mt-4 inline-flex items-center gap-1.5 font-mono text-[10px] font-bold uppercase tracking-[0.15em] text-ozone transition-colors hover:text-flare"
-                >
-                  View public profile <ExternalLink className="h-3 w-3" />
-                </Link>
-              )}
+              {isValidHandle(me?.handle) &&
+                (me?.profile_public ? (
+                  <Link
+                    to={`/founders/${normalizeHandle(me.handle)}`}
+                    className="mt-4 inline-flex items-center gap-1.5 font-mono text-[10px] font-bold uppercase tracking-[0.15em] text-ozone transition-colors hover:text-flare"
+                  >
+                    View public profile <ExternalLink className="h-3 w-3" />
+                  </Link>
+                ) : (
+                  <p className="mt-4 font-mono text-[10px] uppercase tracking-[0.15em] text-dim">
+                    Your profile is private — turn on "Public Founding Profile" above and save to
+                    publish it.
+                  </p>
+                ))}
             </div>
           )}
 
