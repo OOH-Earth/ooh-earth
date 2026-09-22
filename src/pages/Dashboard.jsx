@@ -1,5 +1,6 @@
 import { useEffect, useState, useCallback } from 'react';
 import { base44 } from '@/api/base44Client';
+import { useAuthGatedSubscribe } from '@/hooks/useAuthGatedSubscribe';
 import { roleOf, accessOf, payload } from '@/lib/clearance';
 import Nav from '@/components/ooh/Nav';
 import HorizonProgress from '@/components/ooh/HorizonProgress';
@@ -296,41 +297,10 @@ export default function Dashboard() {
     })();
   }, [load]);
 
-  useEffect(() => {
-    const u1 = base44.entities.Location.subscribe(() => {
-      load();
-    });
-    let u2;
-    try {
-      u2 = base44.entities.DigitalBust?.subscribe?.(() => {
-        load();
-      });
-    } catch {
-      u2 = null;
-    }
-    let u3;
-    try {
-      u3 = base44.entities.FieldCheck?.subscribe?.(() => {
-        load();
-      });
-    } catch {
-      u3 = null;
-    }
-    let u4;
-    try {
-      u4 = base44.entities.LocationRelationship?.subscribe?.(() => {
-        load();
-      });
-    } catch {
-      u4 = null;
-    }
-    return () => {
-      if (u1) u1();
-      if (u2) u2();
-      if (u3) u3();
-      if (u4) u4();
-    };
-  }, [load]);
+  useAuthGatedSubscribe('Location', () => load());
+  useAuthGatedSubscribe('DigitalBust', () => load());
+  useAuthGatedSubscribe('FieldCheck', () => load());
+  useAuthGatedSubscribe('LocationRelationship', () => load());
 
   const refresh = async () => {
     setRefreshing(true);

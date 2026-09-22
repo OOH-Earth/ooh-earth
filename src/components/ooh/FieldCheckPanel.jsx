@@ -1,5 +1,6 @@
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { base44 } from '@/api/base44Client';
+import { useAuthGatedSubscribe } from '@/hooks/useAuthGatedSubscribe';
 import { Image } from '@/components/ui/image';
 import {
   RefreshCw,
@@ -62,36 +63,35 @@ export default function FieldCheckPanel({ location, focusRecheck = false }) {
     return () => observer.disconnect();
   }, [location?.type]);
 
-  useEffect(() => {
-    if (!location?.id) return;
-    let active = true;
-    const load = async () => {
-      setLoading(true);
-      try {
-        const recs = await base44.entities.FieldCheck.filter(
-          { location_id: location.id },
-          '-created_date',
-          50,
-        );
-        if (active) setChecks(recs || []);
-      } catch {
-        if (active) setChecks([]);
-      } finally {
-        if (active) setLoading(false);
-      }
-    };
-    load();
-    let unsub;
+  // Guards against a late-arriving response for a location the panel has
+  // since navigated away from (e.g. rapid location switching) clobbering
+  // fresher state -- equivalent to the `active`-flag pattern this replaces,
+  // but also covers the realtime-triggered refetch below.
+  const latestLocationIdRef = useRef(null);
+  const loadFieldChecks = useCallback(async () => {
+    const id = location?.id;
+    if (!id) return;
+    latestLocationIdRef.current = id;
+    setLoading(true);
     try {
-      unsub = base44.entities.FieldCheck?.subscribe?.(load);
+      const recs = await base44.entities.FieldCheck.filter(
+        { location_id: id },
+        '-created_date',
+        50,
+      );
+      if (latestLocationIdRef.current === id) setChecks(recs || []);
     } catch {
-      unsub = null;
+      if (latestLocationIdRef.current === id) setChecks([]);
+    } finally {
+      if (latestLocationIdRef.current === id) setLoading(false);
     }
-    return () => {
-      active = false;
-      if (unsub) unsub();
-    };
   }, [location?.id]);
+
+  useEffect(() => {
+    loadFieldChecks();
+  }, [loadFieldChecks]);
+
+  useAuthGatedSubscribe(location?.id ? 'FieldCheck' : null, () => loadFieldChecks());
 
   // Deep-link arrival: distinct from `recheck_cta_viewed` above (which only
   // proves the button was seen) -- this proves the operator actually landed

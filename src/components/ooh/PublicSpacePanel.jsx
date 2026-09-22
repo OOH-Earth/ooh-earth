@@ -1,5 +1,6 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { base44 } from '@/api/base44Client';
+import { useAuthGatedSubscribe } from '@/hooks/useAuthGatedSubscribe';
 import { MapPin, ShieldQuestion, ShieldCheck, ShieldX, Send, Loader2 } from 'lucide-react';
 import { BrandIcon } from '@/components/ooh/BrandBadge';
 import {
@@ -180,36 +181,35 @@ export default function PublicSpacePanel({ location }) {
   const [relationships, setRelationships] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    if (!location?.id) return;
-    let active = true;
-    const load = async () => {
-      setLoading(true);
-      try {
-        const recs = await base44.entities.LocationRelationship.filter(
-          { location_id: location.id },
-          '-created_date',
-          50,
-        );
-        if (active) setRelationships(recs || []);
-      } catch {
-        if (active) setRelationships([]);
-      } finally {
-        if (active) setLoading(false);
-      }
-    };
-    load();
-    let unsub;
+  // Guards against a late-arriving response for a location the panel has
+  // since navigated away from (e.g. rapid location switching) clobbering
+  // fresher state -- equivalent to the `active`-flag pattern this replaces,
+  // but also covers the realtime-triggered refetch below.
+  const latestLocationIdRef = useRef(null);
+  const loadRelationships = useCallback(async () => {
+    const id = location?.id;
+    if (!id) return;
+    latestLocationIdRef.current = id;
+    setLoading(true);
     try {
-      unsub = base44.entities.LocationRelationship?.subscribe?.(load);
+      const recs = await base44.entities.LocationRelationship.filter(
+        { location_id: id },
+        '-created_date',
+        50,
+      );
+      if (latestLocationIdRef.current === id) setRelationships(recs || []);
     } catch {
-      unsub = null;
+      if (latestLocationIdRef.current === id) setRelationships([]);
+    } finally {
+      if (latestLocationIdRef.current === id) setLoading(false);
     }
-    return () => {
-      active = false;
-      if (unsub) unsub();
-    };
   }, [location?.id]);
+
+  useEffect(() => {
+    loadRelationships();
+  }, [loadRelationships]);
+
+  useAuthGatedSubscribe(location?.id ? 'LocationRelationship' : null, () => loadRelationships());
 
   const typeLabel = PUBLIC_SPACE_TYPE_LABELS[location.type] || location.type;
 
