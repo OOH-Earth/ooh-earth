@@ -1,4 +1,5 @@
-import { useState, useMemo, useEffect, useCallback } from 'react';
+import { useState, useMemo, useCallback } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import Nav from '@/components/ooh/Nav';
 import MediaCorpsMap from '@/components/ooh/report/MediaCorpsMap';
 import MediaCorpGlobe from '@/components/ooh/report/MediaCorpGlobe';
@@ -39,7 +40,6 @@ export default function MediaCorps() {
   const [scopeFilter, setScopeFilter] = useState('all');
   const [search, setSearch] = useState('');
   const [selected, setSelected] = useState(null);
-  const [corps, setCorps] = useState(null);
   const [viewMode, setViewMode] = useState('map');
   const [searchAsMove, setSearchAsMove] = useState(false);
   const [mapBounds, setMapBounds] = useState(null);
@@ -47,20 +47,14 @@ export default function MediaCorps() {
   const [globalSouthOnly, setGlobalSouthOnly] = useState(false);
   const [fitAllNonce, setFitAllNonce] = useState(0);
 
-  useEffect(() => {
-    let alive = true;
-    (async () => {
-      try {
-        const recs = await base44.entities.MediaCorp.list('name');
-        if (alive) setCorps(recs);
-      } catch {
-        if (alive) setCorps([]);
-      }
-    })();
-    return () => {
-      alive = false;
-    };
-  }, []);
+  // null while loading, [] once loaded (empty or errored) -- matches the
+  // two Loader2 checks below (`corps === null`), unchanged from the
+  // previous plain useEffect/useState fetch.
+  const { data: corpsData, isLoading: corpsLoading } = useQuery({
+    queryKey: ['media-corps'],
+    queryFn: () => base44.entities.MediaCorp.list('name'),
+  });
+  const corps = corpsLoading ? null : corpsData || [];
 
   const handleBoundsChange = useCallback((b) => setMapBounds(b), []);
 
