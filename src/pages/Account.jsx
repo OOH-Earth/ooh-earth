@@ -230,6 +230,13 @@ export default function Account() {
       // us the fresh record for local state; that's all a save needs.
       const u = await base44.auth.me();
       setMe(u);
+      // Re-sync the form from the authoritative post-save record, not just
+      // `me` -- at least one field (full_name) is silently ignored by the
+      // platform's own updateMe endpoint (it returns 200 but never persists
+      // a change to it, confirmed live 2026-09-22), so without this the form
+      // -- and the "Saved" confirmation right below -- would keep showing
+      // whatever the user locally typed even though it was never written.
+      hydrate(u);
       setSavedP(true);
       setTimeout(() => setSavedP(false), 2200);
     } catch (e) {
