@@ -47,7 +47,11 @@ await run('a settled call (success) does not block a later fresh call', async ()
   const first = await make();
   const second = await make();
   assert.equal(first, 1);
-  assert.equal(second, 2, 'a call made after the first one settled must run fresh, not reuse the old result');
+  assert.equal(
+    second,
+    2,
+    'a call made after the first one settled must run fresh, not reuse the old result',
+  );
 });
 
 await run('a rejected in-flight call clears so the next call gets a fresh attempt', async () => {

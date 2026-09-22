@@ -26,19 +26,22 @@ await run('succeeds immediately without retrying on a first-try success', async 
   assert.equal(calls, 1, 'must not retry when the first call succeeds');
 });
 
-await run('retries a 401 once and returns the retry result (the diagnosed session race)', async () => {
-  let calls = 0;
-  const result = await withRetry(
-    async () => {
-      calls++;
-      if (calls === 1) throw statusError(401);
-      return 'recovered';
-    },
-    { delayMs: 5 },
-  );
-  assert.equal(result, 'recovered');
-  assert.equal(calls, 2, 'must call exactly twice: the original attempt plus one retry');
-});
+await run(
+  'retries a 401 once and returns the retry result (the diagnosed session race)',
+  async () => {
+    let calls = 0;
+    const result = await withRetry(
+      async () => {
+        calls++;
+        if (calls === 1) throw statusError(401);
+        return 'recovered';
+      },
+      { delayMs: 5 },
+    );
+    assert.equal(result, 'recovered');
+    assert.equal(calls, 2, 'must call exactly twice: the original attempt plus one retry');
+  },
+);
 
 await run('retries a plain network error with no status at all', async () => {
   let calls = 0;
@@ -82,7 +85,11 @@ for (const status of [400, 403, 404, 422]) {
         { delayMs: 5 },
       ),
     );
-    assert.equal(calls, 1, 'a deterministic client error must fail on the first attempt, never retried');
+    assert.equal(
+      calls,
+      1,
+      'a deterministic client error must fail on the first attempt, never retried',
+    );
   });
 }
 
@@ -104,15 +111,14 @@ await run('gives up and rethrows after exhausting the configured retries', async
 
 await run('retries: 0 means no retry at all, even for a retryable status', async () => {
   let calls = 0;
-  await assert.rejects(
-    () =>
-      withRetry(
-        async () => {
-          calls++;
-          throw statusError(401);
-        },
-        { retries: 0 },
-      ),
+  await assert.rejects(() =>
+    withRetry(
+      async () => {
+        calls++;
+        throw statusError(401);
+      },
+      { retries: 0 },
+    ),
   );
   assert.equal(calls, 1);
 });
@@ -131,19 +137,22 @@ await run('waits at least delayMs before retrying', async () => {
   assert.ok(Date.now() - started >= 45, 'should have waited close to delayMs before the retry');
 });
 
-await run('respects a Retry-After header (seconds) on a 429 instead of the default delay', async () => {
-  let calls = 0;
-  const started = Date.now();
-  const err = statusError(429);
-  err.originalError = { response: { headers: { 'retry-after': '1' } } };
-  await withRetry(
-    async () => {
-      calls++;
-      if (calls === 1) throw err;
-      return 'ok';
-    },
-    { delayMs: 5 }, // deliberately much shorter than Retry-After, to prove it's overridden
-  );
-  const elapsed = Date.now() - started;
-  assert.ok(elapsed >= 950, `expected to wait ~1000ms per Retry-After, only waited ${elapsed}ms`);
-});
+await run(
+  'respects a Retry-After header (seconds) on a 429 instead of the default delay',
+  async () => {
+    let calls = 0;
+    const started = Date.now();
+    const err = statusError(429);
+    err.originalError = { response: { headers: { 'retry-after': '1' } } };
+    await withRetry(
+      async () => {
+        calls++;
+        if (calls === 1) throw err;
+        return 'ok';
+      },
+      { delayMs: 5 }, // deliberately much shorter than Retry-After, to prove it's overridden
+    );
+    const elapsed = Date.now() - started;
+    assert.ok(elapsed >= 950, `expected to wait ~1000ms per Retry-After, only waited ${elapsed}ms`);
+  },
+);

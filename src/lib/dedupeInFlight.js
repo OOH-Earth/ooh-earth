@@ -21,9 +21,11 @@ export function createDedupeInFlight() {
     // must be given its own no-op .catch() or a rejection here becomes an
     // unhandled rejection. The original `promise` returned below is
     // untouched and still rejects normally for real callers.
-    promise.finally(() => {
-      if (inFlight.get(key) === promise) inFlight.delete(key);
-    }).catch(() => {});
+    promise
+      .finally(() => {
+        if (inFlight.get(key) === promise) inFlight.delete(key);
+      })
+      .catch(() => {});
     return promise;
   };
 }
