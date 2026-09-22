@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { base44 } from '@/api/base44Client';
+import { useAuthGatedSubscribe } from '@/hooks/useAuthGatedSubscribe';
 import {
   BADGES,
   QUESTS,
@@ -108,11 +109,9 @@ export function useGamification() {
 
   useEffect(() => {
     loadData();
-    const unsub = base44.entities.Location.subscribe(() => loadData());
-    return () => {
-      if (unsub) unsub();
-    };
   }, [loadData]);
+
+  useAuthGatedSubscribe('Location', () => loadData());
 
   const level = stats ? levelFromXp(stats.xp) : null;
   const earnedBadges = stats ? BADGES.filter((b) => b.check(stats)) : [];
