@@ -1,4 +1,5 @@
 import type { Page, Route } from '@playwright/test';
+import { canReadEntity } from './rlsEngine';
 
 // This sandbox has no live Base44 backend (VITE_BASE44_APP_BASE_URL is
 // intentionally unset — see CLAUDE.md rule #4 and e2e/smoke.spec.ts). The
@@ -25,10 +26,14 @@ export type MockDb = {
   locationPhotos?: any[];
   storeItems?: Record<string, any>;
   fieldChecks?: Record<string, any>;
+  locationRelationships?: Record<string, any>;
   uploadUrl?: string;
   productLookup?: Record<string, unknown>;
   locationPhotoFailuresRemaining?: number;
   scanAd?: Record<string, unknown>;
+  // Other members' public-shaped User records, for public-profile tests
+  // that view someone other than db.user. Keyed by handle.
+  otherUsers?: Record<string, any>;
 };
 
 function matchesQuery(rec: Record<string, any>, query: Record<string, any>) {
@@ -65,6 +70,63 @@ export async function mockBase44(page: Page, db: MockDb) {
       uploadSeq += 1;
       return route.fulfill({
         json: { file_url: db.uploadUrl ?? `https://example.com/mock-upload-${uploadSeq}.jpg` },
+      });
+    }
+
+    // base44.functions.invoke('getPublicProfile', { handle, mode? }) ->
+    // POST /functions/getPublicProfile. Mirrors the real function: looks the
+    // handle up across db.user (the authenticated test user) and
+    // db.otherUsers, never returns id/email/role/access/agency, and 'check'
+    // mode compares against the CALLER's own id only.
+    if (url.pathname.includes('/functions/getPublicProfile')) {
+      const body = req.postDataJSON() ?? {};
+      const handle = String(body.handle || '')
+        .trim()
+        .replace(/^@/, '');
+      const mode = body.mode === 'check' ? 'check' : 'view';
+      const candidates: Record<string, any>[] = [];
+      if (db.user) candidates.push(db.user as Record<string, any>);
+      if (db.otherUsers) candidates.push(...Object.values(db.otherUsers));
+      const match = candidates.find((u) => u.handle === handle) || null;
+
+      if (mode === 'check') {
+        const taken = !!match;
+        const mine = !!(match && db.user && match.id === (db.user as Record<string, any>).id);
+        return route.fulfill({ json: { taken, mine } });
+      }
+
+      // profile_public is the only visibility gate -- a private profile
+      // responds identically to a nonexistent one, for anyone including
+      // the owner (this mirrors the real function exactly).
+      if (!match || !match.profile_public) return route.fulfill({ json: { found: false } });
+
+      const store = db.locations ?? {};
+      const checks = db.fieldChecks ?? {};
+      const verifiedReports = Object.values(store).filter(
+        (r: any) => r.created_by_id === match.id && r.status === 'verified',
+      ).length;
+      const verifiedRechecks = Object.values(checks).filter(
+        (r: any) => r.created_by_id === match.id && r.status === 'verified',
+      ).length;
+
+      return route.fulfill({
+        json: {
+          found: true,
+          profile: {
+            handle: match.handle || '',
+            full_name: match.full_name || '',
+            avatar_url: match.avatar_url || '',
+            bio: match.bio || '',
+            region: match.region || '',
+            focus_areas: Array.isArray(match.focus_areas) ? match.focus_areas : [],
+            founding_member: !!match.founding_member,
+            member_since: match.created_date || null,
+          },
+          contributions: {
+            verified_reports: verifiedReports,
+            verified_rechecks: verifiedRechecks,
+          },
+        },
       });
     }
 
@@ -179,10 +241,16 @@ export async function mockBase44(page: Page, db: MockDb) {
       const store = db.locations ?? (db.locations = {});
       const photos = db.locationPhotos ?? (db.locationPhotos = []);
       const checks = db.fieldChecks ?? (db.fieldChecks = {});
+      const relationships = db.locationRelationships ?? (db.locationRelationships = {});
       if (body.action === 'queue') {
         const locations = Object.values(store).filter((l: any) => l.status === 'pending');
         const field_checks = Object.values(checks).filter((c: any) => c.status === 'pending');
-        return route.fulfill({ json: { ok: true, locations, digital_busts: [], field_checks } });
+        const location_relationships = Object.values(relationships).filter(
+          (r: any) => r.status === 'pending',
+        );
+        return route.fulfill({
+          json: { ok: true, locations, digital_busts: [], field_checks, location_relationships },
+        });
       }
       if (body.action === 'verify') {
         const { entity = 'Location', id, status } = body;
@@ -195,6 +263,13 @@ export async function mockBase44(page: Page, db: MockDb) {
         }
         if (entity === 'FieldCheck' && checks[id]) {
           Object.assign(checks[id], { status, status_updated_at });
+        }
+        if (entity === 'LocationRelationship' && relationships[id]) {
+          Object.assign(relationships[id], {
+            status,
+            status_updated_at,
+            ...(status === 'verified' ? { verified_date: status_updated_at } : {}),
+          });
         }
         return route.fulfill({
           json: { ok: true, action: 'verify', changed: { entity, id, status } },
@@ -218,6 +293,19 @@ export async function mockBase44(page: Page, db: MockDb) {
 
     if (entity === 'User' && idOrAction === 'me' && method === 'GET') {
       if (!db.user) return route.fulfill({ status: 401, json: { message: 'Not authenticated' } });
+      return route.fulfill({ json: db.user });
+    }
+
+    // base44.auth.updateMe(data) -> PUT /entities/User/me. Mirrors the real
+    // RLS: role/access/agency/founding_member are schema-declared,
+    // admin-write-locked fields on User.jsonc, so even a payload that
+    // includes them must never actually change them here -- a permissive
+    // mock would hide a real self-escalation bug.
+    if (entity === 'User' && idOrAction === 'me' && method === 'PUT') {
+      if (!db.user) return route.fulfill({ status: 401, json: { message: 'Not authenticated' } });
+      const body = req.postDataJSON() ?? {};
+      const { role, access, agency, founding_member, id, email, ...safe } = body;
+      Object.assign(db.user as Record<string, any>, safe);
       return route.fulfill({ json: db.user });
     }
 
@@ -288,6 +376,46 @@ export async function mockBase44(page: Page, db: MockDb) {
       }
     }
 
+    if (entity === 'LocationRelationship') {
+      const store = db.locationRelationships ?? (db.locationRelationships = {});
+      if (idOrAction && method === 'GET') {
+        const rec = store[idOrAction];
+        if (!rec) return route.fulfill({ status: 404, json: { message: 'Not found' } });
+        return route.fulfill({ json: rec });
+      }
+      if (idOrAction && method === 'PUT') {
+        const body = req.postDataJSON();
+        store[idOrAction] = { ...(store[idOrAction] ?? { id: idOrAction }), ...body };
+        return route.fulfill({ json: store[idOrAction] });
+      }
+      if (!idOrAction && method === 'GET') {
+        const q = url.searchParams.get('q');
+        let list = Object.values(store);
+        if (q) list = list.filter((rec) => matchesQuery(rec, JSON.parse(q)));
+        list = [...list].sort(
+          (a: any, b: any) =>
+            new Date(b.created_date || 0).getTime() - new Date(a.created_date || 0).getTime(),
+        );
+        return route.fulfill({ json: list });
+      }
+      if (!idOrAction && method === 'POST') {
+        const body = req.postDataJSON();
+        const id = body.id ?? `mock-relationship-${Object.keys(store).length + 1}`;
+        // Real Location Relationship RLS locks `status` server-side -- a
+        // submitter's payload can never set it, so the mock always defaults
+        // to 'pending' here too, exactly like the real entity default.
+        const { status: _ignoredStatus, ...rest } = body;
+        store[id] = {
+          id,
+          status: 'pending',
+          created_by_id: db.user?.id,
+          created_date: new Date().toISOString(),
+          ...rest,
+        };
+        return route.fulfill({ json: store[id] });
+      }
+    }
+
     if (entity === 'LocationPhoto') {
       const list = db.locationPhotos ?? (db.locationPhotos = []);
       if (idOrAction && method === 'PUT') {
@@ -300,6 +428,20 @@ export async function mockBase44(page: Page, db: MockDb) {
         const q = url.searchParams.get('q');
         let rows = list;
         if (q) rows = rows.filter((rec) => matchesQuery(rec, JSON.parse(q)));
+        // Enforce base44/entities/LocationPhoto.jsonc's actual read RLS
+        // (verified OR created_by_id === caller OR role:admin) instead of
+        // handing back every fixture row regardless of who's asking.
+        // evaluateRlsRead() reads that .jsonc file directly (rlsEngine.ts)
+        // rather than re-describing the rule by hand here, so this can't
+        // silently drift from the real rule the way a hand-rolled predicate
+        // did before (that version wrongly also granted read to
+        // access==='admin', which the actual RLS rule does not — only
+        // role==='admin' does; see e2e/contracts/entityRls.spec.ts). Without
+        // RLS enforcement here at all, a client-side bug that re-filters (or
+        // fails to filter) what the real backend already gates is invisible
+        // to the mock — see e2e/ad-scanner.spec.ts's "creator sees their own
+        // pending gallery photos" test.
+        rows = rows.filter((rec) => canReadEntity('LocationPhoto', rec, db.user));
         rows = [...rows].sort((a, b) => (a.display_order ?? 0) - (b.display_order ?? 0));
         return route.fulfill({ json: rows });
       }
@@ -310,7 +452,17 @@ export async function mockBase44(page: Page, db: MockDb) {
         }
         const body = req.postDataJSON();
         photoSeq += 1;
-        const rec = { id: `mock-photo-${photoSeq}`, status: 'pending', ...body };
+        // Real Base44 stamps created_by_id server-side from the auth context
+        // too (see the same comment on the Location POST handler above) --
+        // this was previously missing here, so every mocked LocationPhoto
+        // row came back with no owner and could never pass the RLS-style
+        // filter above for its own creator.
+        const rec = {
+          id: `mock-photo-${photoSeq}`,
+          status: 'pending',
+          created_by_id: db.user?.id,
+          ...body,
+        };
         list.push(rec);
         return route.fulfill({ json: rec });
       }
