@@ -16,23 +16,26 @@ import 'leaflet/dist/leaflet.css';
 // Category-specific pin icons — yellow disc + per-type glyph.
 // Each location type (billboard, digital, transit, mural, etc.) gets its
 // own distinct iconography from the shared pinGlyphs library.
+// Sized to clear the 24px minimum touch-target guideline (was 22px/30px —
+// the 22px unselected size was the one case that fell under it; see the same
+// guideline already applied to SiteFooter's links).
 function pinIcon(type) {
   return L.divIcon({
     className: 'ooh-pin',
-    html: `<div style="position:relative;width:22px;height:22px"><span style="position:absolute;inset:-7px;border-radius:50%;background:radial-gradient(circle,rgba(255,72,118,0.26),transparent 65%)"></span><span style="position:relative;display:flex;width:22px;height:22px;border-radius:50%;background:#EDFF00;border:1.5px solid #000;box-shadow:0 0 0 2px rgba(237,255,0,0.20),0 0 12px rgba(237,255,0,0.5);align-items:center;justify-content:center">${glyphSVG(type, 11)}</span></div>`,
-    iconSize: [22, 22],
-    iconAnchor: [11, 11],
-    popupAnchor: [0, -12],
+    html: `<div style="position:relative;width:28px;height:28px"><span style="position:absolute;inset:-7px;border-radius:50%;background:radial-gradient(circle,rgba(255,72,118,0.26),transparent 65%)"></span><span style="position:relative;display:flex;width:28px;height:28px;border-radius:50%;background:#EDFF00;border:1.5px solid #000;box-shadow:0 0 0 2px rgba(237,255,0,0.20),0 0 12px rgba(237,255,0,0.5);align-items:center;justify-content:center">${glyphSVG(type, 14)}</span></div>`,
+    iconSize: [28, 28],
+    iconAnchor: [14, 14],
+    popupAnchor: [0, -15],
   });
 }
 
 function selIcon(type) {
   return L.divIcon({
     className: 'ooh-pin ooh-pin--sel',
-    html: `<div style="position:relative;width:30px;height:30px"><span style="position:absolute;inset:-12px;border-radius:50%;background:radial-gradient(circle,rgba(255,72,118,0.45),transparent 65%)"></span><span style="position:absolute;inset:0;border-radius:50%;border:2px solid #FF5C00;animation:ooh-pinpulse 1.4s ease-out infinite"></span><span style="position:relative;display:flex;width:30px;height:30px;border-radius:50%;background:#EDFF00;border:2px solid #000;box-shadow:0 0 0 3px rgba(255,92,0,0.25),0 0 18px rgba(255,92,0,0.55);align-items:center;justify-content:center">${glyphSVG(type, 14)}</span></div>`,
-    iconSize: [30, 30],
-    iconAnchor: [15, 15],
-    popupAnchor: [0, -16],
+    html: `<div style="position:relative;width:36px;height:36px"><span style="position:absolute;inset:-12px;border-radius:50%;background:radial-gradient(circle,rgba(255,72,118,0.45),transparent 65%)"></span><span style="position:absolute;inset:0;border-radius:50%;border:2px solid #FF5C00;animation:ooh-pinpulse 1.4s ease-out infinite"></span><span style="position:relative;display:flex;width:36px;height:36px;border-radius:50%;background:#EDFF00;border:2px solid #000;box-shadow:0 0 0 3px rgba(255,92,0,0.25),0 0 18px rgba(255,92,0,0.55);align-items:center;justify-content:center">${glyphSVG(type, 17)}</span></div>`,
+    iconSize: [36, 36],
+    iconAnchor: [18, 18],
+    popupAnchor: [0, -19],
   });
 }
 
