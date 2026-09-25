@@ -64,7 +64,7 @@ function readGlobeMarkerState() {
     let hookIdx = 0;
     while (hook && hookIdx < 40) {
       const ms = hook.memoizedState;
-      if (ms && typeof ms === 'object' && ms !== null && 'current' in ms) {
+      if (ms && typeof ms === 'object' && 'current' in ms) {
         const val = ms.current;
         if (val && typeof val.getSource === 'function') map = val;
       }
