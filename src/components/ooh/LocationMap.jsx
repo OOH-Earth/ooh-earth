@@ -5,6 +5,7 @@ import {
   Marker,
   Popup,
   Tooltip,
+  CircleMarker,
   useMap,
   useMapEvents,
   ZoomControl,
@@ -54,6 +55,7 @@ import LayerManager from '@/components/ooh/map/layers/LayerManager';
 import CompactPinPopup from '@/components/ooh/map/CompactPinPopup';
 import { useMapStyle } from '@/lib/mapStyleContext';
 import { getStatusDotColor } from '@/lib/statusBadge';
+import { HOVER_RING_NONE, parseChannelColor, resolveHoverRingTarget } from '@/lib/hoverEmphasis';
 
 // Photo-circle pin — white-ringed location photo with a category micro-badge
 // (bottom-right) and a status dot (top-left), plus the pink radial highlight.
@@ -158,6 +160,34 @@ function FlyToHover({ hoverId, selectedId, markers }) {
     if (m) safeFlyTo(map, m.lat, m.lng, Math.max(map.getZoom(), 14), { duration: 0.8 });
   }, [hoverId, selectedId, markers, map]);
   return null;
+}
+
+// Result-row <-> marker hover emphasis (flat mode): a ring drawn at the
+// hovered marker's own position, using the theme's --c-flare brand token, so
+// hovering a result row makes the corresponding marker unmistakable -- not
+// just a camera pan (FlyToHover, above), which doesn't visually distinguish
+// the marker itself. Mirrors Globe3D.jsx's ooh-hover-ring layer.
+function HoverRing({ hoverId, selectedId, markers }) {
+  const targetId = resolveHoverRingTarget({ hoverId, selectedId });
+  if (targetId === HOVER_RING_NONE) return null;
+  const m = markers.find((x) => x.id === targetId);
+  if (!m || !isFinite(m.lat) || !isFinite(m.lng)) return null;
+  const flareColor = parseChannelColor(
+    getComputedStyle(document.documentElement).getPropertyValue('--c-flare'),
+  );
+  return (
+    <CircleMarker
+      center={[m.lat, m.lng]}
+      radius={22}
+      pathOptions={{
+        color: flareColor,
+        weight: 2.5,
+        fillColor: flareColor,
+        fillOpacity: 0.16,
+        interactive: false,
+      }}
+    />
+  );
 }
 
 // Emits the current viewport bounds on every pan/zoom so the results feed can
@@ -484,6 +514,7 @@ export default function LocationMap({
       <BoundsWatcher onBoundsChange={onBoundsChange} />
       <FlyTo selectedId={selectedId} markers={pins} />
       <FlyToHover hoverId={hoverId} selectedId={selectedId} markers={pins} />
+      <HoverRing hoverId={hoverId} selectedId={selectedId} markers={pins} />
       <FlyToGeocode flyTo={flyTo} />
       <FlyToUser userLoc={userLoc} />
       {userLoc && (
