@@ -1,9 +1,21 @@
+import { useState } from 'react';
 import { MapPin, Hand } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import LocationThumb, { metaFor } from '@/components/ooh/map/LocationThumb';
 import { BrandIcon } from '@/components/ooh/BrandBadge';
 import TimeSinceTag from '@/components/ooh/TimeSinceTag';
 import { getStatusDotColor } from '@/lib/statusBadge';
+import { parseChannelColor, resolveRowEmphasis } from '@/lib/hoverEmphasis';
+
+// Reads the live theme's --c-flare token ("R G B") for the row hover/focus
+// border -- a real, already-used brand accent (e.g. the Claim button below),
+// not an invented color. Read once per mount rather than per-render.
+function useFlareColor() {
+  const [color] = useState(() =>
+    parseChannelColor(getComputedStyle(document.documentElement).getPropertyValue('--c-flare')),
+  );
+  return color;
+}
 
 // Terminal reticle corner brackets — wraps a child box with four L-shaped marks.
 function Reticle({ children, className = '' }) {
@@ -30,12 +42,29 @@ export default function LocationCard({
 }) {
   const isLead = !m.image && m.status !== 'verified';
   const dotColor = getStatusDotColor(m.status);
+  const flareColor = useFlareColor();
+  const [isEmphasized, setIsEmphasized] = useState(false);
+  const emphasis = resolveRowEmphasis({ selected, isEmphasized });
 
   return (
     <div
       onClick={() => onSelect(m)}
-      onMouseEnter={() => onHover?.(m)}
-      onMouseLeave={() => onHoverEnd?.()}
+      onMouseEnter={() => {
+        setIsEmphasized(true);
+        onHover?.(m);
+      }}
+      onMouseLeave={() => {
+        setIsEmphasized(false);
+        onHoverEnd?.();
+      }}
+      onFocus={() => {
+        setIsEmphasized(true);
+        onHover?.(m);
+      }}
+      onBlur={() => {
+        setIsEmphasized(false);
+        onHoverEnd?.();
+      }}
       role="button"
       tabIndex={0}
       onKeyDown={(e) => {
@@ -44,10 +73,19 @@ export default function LocationCard({
           onSelect(m);
         }
       }}
-      className={`group flex w-full cursor-pointer gap-3 border-b border-slate2/40 p-3 text-left transition-colors hover:bg-card ${
-        selected ? 'bg-card' : ''
+      className={`group flex w-full cursor-pointer gap-3 border-b border-slate2/40 p-3 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-flare focus-visible:ring-inset ${
+        emphasis !== 'idle' ? 'bg-card' : ''
       }`}
-      style={{ borderLeft: selected ? '2px solid #EDFF00' : '2px solid transparent' }}
+      style={{
+        // Selected keeps its own persistent yellow-green accent (unchanged,
+        // not what was reported as weak); hover/keyboard-focus get the
+        // theme's flare accent instead -- distinct from selected. Driven by
+        // real state (not CSS :hover) so it can't fight this inline style's
+        // own precedence; the separate focus-visible:ring-flare class above
+        // (a different CSS property, box-shadow, not touched here) is what
+        // makes keyboard-specific focus visible without a mouse-hover ring.
+        borderLeft: `2px solid ${emphasis === 'selected' ? '#EDFF00' : emphasis === 'emphasized' ? flareColor : 'transparent'}`,
+      }}
     >
       {/* Thumbnail with reticle corners */}
       <Reticle className="shrink-0">
