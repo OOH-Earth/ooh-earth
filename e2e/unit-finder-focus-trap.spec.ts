@@ -21,11 +21,14 @@ test.describe('Focus trap — UnitFinder', () => {
     await expect(dialog).toBeVisible();
     await expect(dialog).toHaveAttribute('aria-modal', 'true');
 
-    const activeInsideDialog = await page.evaluate(() => {
-      const dlg = document.querySelector('[role="dialog"][aria-label="AI Unit Finder"]');
-      return !!dlg && dlg.contains(document.activeElement);
-    });
-    expect(activeInsideDialog).toBe(true);
+    await expect
+      .poll(() =>
+        page.evaluate(() => {
+          const dlg = document.querySelector('[role="dialog"][aria-label="AI Unit Finder"]');
+          return !!dlg && dlg.contains(document.activeElement);
+        }),
+      )
+      .toBe(true);
 
     // Shift+Tab from the first focusable should wrap to the last one within
     // the dialog, never escaping to the map behind it.

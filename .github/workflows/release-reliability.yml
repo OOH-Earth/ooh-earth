@@ -1,0 +1,41 @@
+name: Release Reliability Plan
+
+on:
+  workflow_dispatch:
+    inputs:
+      target:
+        description: Read-only release plan target
+        required: true
+        type: choice
+        options: [backup, production]
+
+concurrency:
+  group: release-reliability-production
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  plan:
+    name: Read-only release plan
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
+        with:
+          node-version: '20'
+          cache: npm
+      - run: npm ci
+      - name: Validate release state machine
+        run: npm run test:release
+      - name: Generate candidate manifest
+        run: npm run release:manifest -- release-manifest.json
+      - name: Print read-only deployment plan
+        run: npm run release:plan -- --target "${{ inputs.target }}" --manifest release-manifest.json --dry-run
+      - name: Upload release manifest
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: release-manifest
+          path: release-manifest.json
+          retention-days: 30

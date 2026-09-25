@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { mockBase44, filterCrashes } from './fixtures/mockBase44';
+import { mockBase44, filterCrashes, ADMIN_USER } from './fixtures/mockBase44';
 
 // OOH Earth is a pure client-rendered SPA with no SSR/prerender plugin.
 // src/lib/seoContext.jsx already applies correct per-route metadata to
@@ -15,7 +15,10 @@ import { mockBase44, filterCrashes } from './fixtures/mockBase44';
 
 test.describe('Client-hydrated metadata (real browser, JS-executing crawlers)', () => {
   test('document.title and og:title update per route after hydration', async ({ page }) => {
-    await mockBase44(page, { user: null, locations: {} });
+    // Lab prototypes are dynamically access-controlled. NFT Creator is a
+    // restricted prototype, so exercise its metadata as an authenticated
+    // visitor rather than treating the login redirect as a metadata failure.
+    await mockBase44(page, { user: ADMIN_USER, locations: {} });
     page.on('pageerror', filterCrashes);
 
     await page.goto('/map');

@@ -73,6 +73,21 @@ test.describe('Auth — a rejected token does not cause a redirect loop', () => 
     expect(page.url()).toContain('/operative');
   });
 
+  test('boot uses the production app id when the hosting build omits Vite app configuration', async ({
+    page,
+  }) => {
+    await mockBase44(page, { user: null, locations: {} });
+    const publicSettingsUrls: string[] = [];
+    page.on('request', (request) => {
+      if (request.url().includes('/public-settings/by-id/')) publicSettingsUrls.push(request.url());
+    });
+
+    await page.goto('/login');
+    await expect.poll(() => publicSettingsUrls.length).toBeGreaterThan(0);
+    expect(publicSettingsUrls[0]).toContain('/public-settings/by-id/6a62213cff3ccbca88c04ff5');
+    expect(publicSettingsUrls[0]).not.toContain('/by-id/null');
+  });
+
   test("a valid session reaches the protected route's real content, not a redirect", async ({
     page,
   }) => {

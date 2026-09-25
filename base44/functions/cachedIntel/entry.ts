@@ -8,7 +8,7 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
 const REGISTRY = {
   skyIntel: {
     add_context_from_internet: true,
-    model: 'gemini_3_flash',
+    model: 'gemini_3_flash' as const,
     prompt: (dateKey: string) =>
       `List notable naked-eye astronomical events occurring in the next 7 days starting ${dateKey}. Include Moon conjunctions with bright stars or planets (e.g. Moon–Antares), meteor showers, planet oppositions/conjunctions, eclipses, supermoons, and notable ISS/Starlink passes. Focus on events a casual observer can see. For each: date (YYYY-MM-DD), title (short, e.g. "Moon × Antares conjunction"), body (one sentence on what + visibility), type (one of: conjunction, meteor shower, opposition, eclipse, full moon, new moon, super moon, satellite pass, planet). Order by date. Max 8 events.`,
     response_json_schema: {

@@ -1,5 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { mockBase44, filterCrashes } from './fixtures/mockBase44';
+import { shareLocationUrl } from '../src/lib/shareLocation.js';
 
 // LocationDetail (src/pages/LocationDetail.jsx) plus the components it wires
 // in: PhotoGallery, TimeSinceTag. Network is mocked at the @base44/sdk REST
@@ -212,4 +213,185 @@ test.describe('LocationDetail — rolling time-since-tag counter', () => {
     await expect(page.getByRole('heading', { name: /Pending No Counter/i })).toBeVisible();
     await expect(page.getByText(/tagged .* ago/i)).toHaveCount(0);
   });
+});
+
+test.describe('LocationDetail — react-query migration regression', () => {
+  test('revisiting via client-side nav does not re-fetch the record within staleTime', async ({
+    page,
+  }) => {
+    test.setTimeout(30_000);
+
+    await mockBase44(page, {
+      user: null,
+      locations: {
+        'loc-cache-1': {
+          id: 'loc-cache-1',
+          title: 'Billboard · Cache Regression Check',
+          type: 'billboard',
+          address: '1 Cache Way, Testville',
+          lat: 13.79,
+          lng: 100.54,
+          image_url: svg('%2339FF14', 'COVER'),
+          status: 'verified',
+          status_updated_at: null,
+          access_key: 'none',
+        },
+      },
+      locationPhotos: [],
+    });
+
+    // Exact match on this specific record's GET endpoint -- Location.get(id)
+    // hits /entities/Location/{id} directly, a different URL shape from any
+    // list/filter call (/entities/Location?...), so no other page or widget
+    // can produce a same-URL false positive the way FieldId's bare
+    // Operative.list() endpoint could (see field-id.spec.ts).
+    let locationGetCalls = 0;
+    page.on('request', (req) => {
+      if (req.url().endsWith('/entities/Location/loc-cache-1')) locationGetCalls++;
+    });
+
+    await page.goto('/location/loc-cache-1');
+    await expect(page.getByRole('heading', { name: /Cache Regression Check/i })).toBeVisible();
+    const afterFirstVisit = locationGetCalls;
+    expect(afterFirstVisit).toBe(1);
+
+    // Client-side nav away, then back -- same SPA session, same QueryClient
+    // instance, no full page reload. This app's route transition
+    // (AnimatePresence mode="wait" + React.lazy chunks) takes several
+    // seconds, not milliseconds, to actually unmount the previous route --
+    // verified live with mount/unmount console markers for the sibling
+    // FieldId investigation (KNOWN_ISSUES #16). A short wait here would
+    // pass regardless of staleTime, for the wrong reason (the component
+    // simply hasn't unmounted yet).
+    //
+    // Nav target is Home ("OOH Earth — Home console"), not the "Field map"
+    // icon link -- that link is `hidden md:flex` in Nav.jsx, invisible (and
+    // unclickable) on the mobile-chromium viewport this suite also runs
+    // under. Home is safe here unlike in field-id.spec.ts: Location.get(id)
+    // hits a per-record URL no other page/widget shares, so there's no
+    // FieldIdGenerator-style confound to isolate away from.
+    await page.getByLabel('OOH Earth — Home console').click();
+    await page.waitForURL('**/', { timeout: 5000 });
+    await page.waitForTimeout(6000);
+    await page.goBack();
+    await expect(page.getByRole('heading', { name: /Cache Regression Check/i })).toBeVisible();
+    await page.waitForTimeout(500);
+
+    expect(
+      locationGetCalls,
+      `Location.get() should not fire again within staleTime on a genuine remount (was ${afterFirstVisit}, now ${locationGetCalls})`,
+    ).toBe(afterFirstVisit);
+  });
+});
+
+test.describe('LocationDetail — mobile actions and sharing', () => {
+  test('mobile header has one stable action row and native share uses the crawler-readable share URL', async ({
+    page,
+  }) => {
+    await page.addInitScript(() => {
+      Object.defineProperty(navigator, 'share', {
+        configurable: true,
+        value: async (data: ShareData) => {
+          (window as unknown as { sharedData: ShareData }).sharedData = data;
+        },
+      });
+    });
+    await mockBase44(page, {
+      user: null,
+      locations: {
+        'loc-share-1': {
+          id: 'loc-share-1',
+          title: 'Digital display · Share regression',
+          type: 'digital',
+          address: '1 Public Way, Testville',
+          lat: 13.75,
+          lng: 100.5,
+          image_url: svg('%23EDFF00', 'COVER'),
+          status: 'verified',
+        },
+      },
+      locationPhotos: [],
+    });
+
+    await page.goto('/location/loc-share-1');
+    await expect(page.getByRole('heading', { name: /Share regression/i })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Share location' })).toHaveCount(1);
+    await page.getByRole('button', { name: 'Share location' }).click();
+    await expect
+      .poll(() => page.evaluate(() => (window as any).sharedData?.url))
+      .toBe(shareLocationUrl('loc-share-1'));
+    await expect(page.evaluate(() => (window as any).sharedData?.text)).resolves.toContain(
+      'Digital display · Share regression',
+    );
+  });
+
+  test('copy fallback shares the crawler-readable URL and exposes feedback', async ({ page }) => {
+    await page.addInitScript(() => {
+      Object.defineProperty(navigator, 'share', { configurable: true, value: undefined });
+      Object.defineProperty(navigator, 'clipboard', {
+        configurable: true,
+        value: { writeText: async (text: string) => ((window as any).copied = text) },
+      });
+    });
+    await mockBase44(page, {
+      user: null,
+      locations: {
+        'loc-copy-1': {
+          id: 'loc-copy-1',
+          title: 'Billboard · Copy regression',
+          type: 'billboard',
+          notes: 'private operator note must not be shared',
+          lat: 13.75,
+          lng: 100.5,
+          status: 'verified',
+        },
+      },
+      locationPhotos: [],
+    });
+
+    await page.goto('/location/loc-copy-1');
+    await page.getByRole('button', { name: 'Share location' }).click();
+    await expect(page.getByRole('status')).toHaveText('Link copied');
+    await expect
+      .poll(() => page.evaluate(() => (window as any).copied))
+      .toBe(shareLocationUrl('loc-copy-1'));
+  });
+});
+
+test('returns to an active mission only when the Location is in that session mission', async ({
+  page,
+}) => {
+  await mockBase44(page, {
+    user: null,
+    locations: {
+      'loc-mission-return': {
+        id: 'loc-mission-return',
+        title: 'Mission return check',
+        type: 'billboard',
+        lat: 13.7,
+        lng: 100.5,
+        status: 'verified',
+        image_url: svg('%23EDFF00', 'MISSION'),
+      },
+    },
+    fieldChecks: {},
+  });
+  await page.addInitScript(() => {
+    sessionStorage.setItem(
+      'ooh-field-mission-v1',
+      JSON.stringify({
+        version: 1,
+        cap: 20,
+        reference: null,
+        ordering: 'PRIORITY THEN LOCATION ID',
+        progress: {},
+        items: [{ id: 'loc-mission-return', priority: 'HIGH', next_action: 'VERIFY IN FIELD' }],
+      }),
+    );
+  });
+  await page.goto('/location/loc-mission-return?action=recheck&from=field-mission');
+  await expect(page.getByTestId('return-to-mission')).toHaveAttribute(
+    'href',
+    '/portal/ops?section=geo&missionLocation=loc-mission-return',
+  );
 });

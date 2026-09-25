@@ -1,5 +1,6 @@
-import { useEffect, useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useState } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useParams, useSearchParams, Link } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import {
   ArrowLeft,
@@ -11,13 +12,13 @@ import {
   AlertTriangle,
   Navigation,
   SprayCan,
+  Share2,
 } from 'lucide-react';
 import { metaFor } from '@/components/ooh/map/LocationThumb';
 import { keyInfo, isKeyedType, ACCESS_KEYS } from '@/components/ooh/accessKeys';
 import seed from '@/components/ooh/mapSeed';
 import Nav from '@/components/ooh/Nav';
 import Breadcrumbs from '@/components/ooh/Breadcrumbs';
-import MobileHeader from '@/components/ooh/MobileHeader';
 import MintLocationPanel from '@/components/ooh/mint/MintLocationPanel';
 import PhotoGallery from '@/components/ooh/gallery/PhotoGallery';
 import TimeSinceTag from '@/components/ooh/TimeSinceTag';
@@ -25,9 +26,15 @@ import LocationEditPanel from '@/components/ooh/LocationEditPanel';
 import SubvertisingPanel from '@/components/ooh/SubvertisingPanel';
 import AdvertiserInfo from '@/components/ooh/AdvertiserInfo';
 import FieldCheckPanel from '@/components/ooh/FieldCheckPanel';
+import PublicSpacePanel from '@/components/ooh/PublicSpacePanel';
+import { isPublicSpaceType } from '@/lib/publicSpace';
 import RelatedLocations from '@/components/ooh/RelatedLocations';
+import LocationContextEvidence from '@/components/ooh/LocationContextEvidence';
+import EvidenceTimeline from '@/components/ooh/EvidenceTimeline';
 import { useSeo } from '@/lib/seoContext';
 import { getStatusBadgeClasses } from '@/lib/statusBadge';
+import { shareLocation } from '@/lib/shareLocation';
+import { loadFieldMission } from '@/lib/fieldMission';
 
 function normalizeSeed(rec) {
   return {
@@ -47,13 +54,49 @@ function normalizeSeed(rec) {
 
 export default function LocationDetail() {
   const { id } = useParams();
-  const [loc, setLoc] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const queryClient = useQueryClient();
+  const [searchParams] = useSearchParams();
+  const [shareState, setShareState] = useState('');
+  // Deep-link hint from PortalOps' Verification Priority Queue (or any other
+  // future caller) -- a pure navigation signal, nothing else. Any value other
+  // than exactly 'recheck' (missing, misspelled, tampered) is silently
+  // ignored and this page renders exactly as it always has: no mutation, no
+  // auto-opened camera, no permission prompts, no branching in the fetch
+  // above. See FieldCheckPanel's `focusRecheck` prop for what this actually
+  // does (scroll the existing field-check section into view + a bit of
+  // context copy) -- deliberately not more than that.
+  const isRecheckDeepLink = searchParams.get('action') === 'recheck';
+  const mission = loadFieldMission();
+  const missionItem =
+    searchParams.get('from') === 'field-mission'
+      ? mission?.items?.find((item) => item.id === id)
+      : null;
+  const returnToMission = missionItem
+    ? `/portal/ops?section=geo&missionLocation=${encodeURIComponent(id)}`
+    : null;
 
-  useEffect(() => {
-    let alive = true;
-    (async () => {
-      setLoading(true);
+  // Same fallback chain as before (get by id -> filter by legacy source_link
+  // -> static seed data), just wrapped as one queryFn so revisiting a
+  // location no longer re-fetches from scratch. "Not found" (rec stays
+  // null) is a valid, cacheable result here -- the page below already
+  // renders a dedicated empty state for it, not an error.
+  //
+  // staleTime matters here the same way it did for FieldId's Operative
+  // query (see that file's comment / KNOWN_ISSUES #16): the default (0)
+  // means refetchOnMount:true still refetches on a genuine remount, so
+  // without this the "revisiting doesn't re-fetch" claim in this PR's
+  // description was unproven -- verified with the same real-remount test
+  // methodology used for FieldId. 30s, not FieldId's 60s: unlike a
+  // read-only credential roster, this record's status/notes can change
+  // out from under the viewer via a moderator's verify/reject action
+  // elsewhere in the app, and this page has no subscribe/invalidate path
+  // for that -- only this component's own edits refresh the cache (see
+  // onUpdated below). 30s matches this codebase's existing precedent for
+  // status-sensitive data (MissionControl's operational-health query).
+  const { data: loc = null, isLoading: loading } = useQuery({
+    queryKey: ['location', id],
+    staleTime: 30_000,
+    queryFn: async () => {
       let rec = null;
       try {
         rec = await base44.entities.Location.get(id);
@@ -74,15 +117,9 @@ export default function LocationDetail() {
         const s = seed.find((x) => String(x.id) === String(id));
         if (s) rec = normalizeSeed(s);
       }
-      if (alive) {
-        setLoc(rec);
-        setLoading(false);
-      }
-    })();
-    return () => {
-      alive = false;
-    };
-  }, [id]);
+      return rec;
+    },
+  });
 
   useSeo(
     loc
@@ -151,10 +188,18 @@ export default function LocationDetail() {
     loc.industry_sector ||
     (loc.adbust_type && loc.adbust_type !== 'none')
   );
+  // Public-space facilities get PublicSpacePanel's dedicated evidence framing
+  // instead — showing AdvertiserInfo's ad-industry framing (agency/campaign/
+  // harm tags) on a skatepark would imply an advertising relationship that
+  // was never claimed.
   const showSubvertising =
-    ['billboard', 'digital', 'projection', 'transit'].includes(loc.type) || hasAdData;
+    !isPublicSpaceType(loc.type) &&
+    (['billboard', 'digital', 'projection', 'transit'].includes(loc.type) || hasAdData);
   const isPending = loc.status === 'pending';
-  const isUnclassified = isPending && !loc.brand_name && !loc.industry_sector;
+  // A public-space facility with no visible branding is fully classified as
+  // itself -- it never needs an ad-industry brand/sector to be "complete".
+  const isUnclassified =
+    isPending && !isPublicSpaceType(loc.type) && !loc.brand_name && !loc.industry_sector;
 
   // Content classification — derived from graffiti_medium / adbust_type / type
   const category = loc.graffiti_medium
@@ -173,10 +218,23 @@ export default function LocationDetail() {
       ? `https://www.google.com/maps/dir/?api=1&destination=${loc.lat},${loc.lng}`
       : null;
 
+  const onShare = async () => {
+    setShareState('sharing');
+    try {
+      const result = await shareLocation({ id: loc.id, title: loc.title, address: loc.address });
+      setShareState(
+        result.method === 'native' ? 'shared' : result.method === 'copy' ? 'copied' : '',
+      );
+    } catch {
+      setShareState('failed');
+    } finally {
+      window.setTimeout(() => setShareState(''), 2400);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-void text-silver">
       <Nav />
-      <MobileHeader to="/map" label="Atlas" />
       <div className="mx-auto max-w-5xl px-5 pt-4">
         <Breadcrumbs items={[{ label: 'Atlas', to: '/map' }, { label: 'Location' }]} />
       </div>
@@ -200,34 +258,77 @@ export default function LocationDetail() {
 
         {/* ── Header zone ── */}
         <header className="mb-6">
-          <div className="flex flex-wrap items-center gap-2">
-            <span
-              className="flex items-center gap-1.5 border border-slate2 px-2.5 py-1 font-mono text-[9px] uppercase tracking-[0.25em]"
-              style={{ color: meta.accent }}
-            >
-              <Icon className="h-3.5 w-3.5" /> {meta.label}
-            </span>
-            <span
-              className="flex items-center gap-1.5 border px-2.5 py-1 font-mono text-[9px] font-bold uppercase tracking-[0.25em]"
-              style={{ color: category.accent, borderColor: category.accent }}
-            >
-              {category.label}
-            </span>
-            <span
-              className={`flex items-center gap-1.5 border px-2.5 py-1 font-mono text-[9px] uppercase tracking-[0.25em] ${getStatusBadgeClasses(loc.status || 'pending')}`}
-            >
-              {loc.status === 'verified' ? <BadgeCheck className="h-3.5 w-3.5 text-ozone" /> : null}
-              {loc.status || 'pending'}
-            </span>
-            {!isPending && <TimeSinceTag since={loc.status_updated_at} />}
-            {loc.industry_sector && (
-              <span className="border border-slate2 px-2.5 py-1 font-mono text-[9px] uppercase tracking-[0.25em] text-darkgray">
-                {loc.industry_sector.replace(/_/g, ' ')}
+          <div className="flex items-start justify-between gap-3">
+            <div className="flex min-w-0 flex-wrap items-center gap-2">
+              <span
+                className="flex items-center gap-1.5 border border-slate2 px-2.5 py-1 font-mono text-[9px] uppercase tracking-[0.25em]"
+                style={{ color: meta.accent }}
+              >
+                <Icon className="h-3.5 w-3.5" /> {meta.label}
               </span>
-            )}
-            <span className="font-mono text-[9px] uppercase tracking-[0.25em] text-dim/60">
-              id · {loc.id}
-            </span>
+              <span
+                className="flex items-center gap-1.5 border px-2.5 py-1 font-mono text-[9px] font-bold uppercase tracking-[0.25em]"
+                style={{ color: category.accent, borderColor: category.accent }}
+              >
+                {category.label}
+              </span>
+              <span
+                className={`flex items-center gap-1.5 border px-2.5 py-1 font-mono text-[9px] uppercase tracking-[0.25em] ${getStatusBadgeClasses(loc.status || 'pending')}`}
+              >
+                {loc.status === 'verified' ? (
+                  <BadgeCheck className="h-3.5 w-3.5 text-ozone" />
+                ) : null}
+                {loc.status || 'pending'}
+              </span>
+              {!isPending && <TimeSinceTag since={loc.status_updated_at} />}
+              {loc.industry_sector && (
+                <span className="border border-slate2 px-2.5 py-1 font-mono text-[9px] uppercase tracking-[0.25em] text-darkgray">
+                  {loc.industry_sector.replace(/_/g, ' ')}
+                </span>
+              )}
+              <span className="font-mono text-[9px] uppercase tracking-[0.25em] text-dim/60">
+                id · {loc.id}
+              </span>
+            </div>
+            <div className="flex shrink-0 flex-col items-end gap-1">
+              <Link
+                to="/map"
+                aria-label="Back to Atlas"
+                className="inline-flex h-9 items-center gap-1.5 border border-slate2 px-3 font-mono text-[9px] font-bold uppercase tracking-[0.18em] text-silver transition-colors hover:border-ozone hover:text-ozone lg:hidden"
+              >
+                <ArrowLeft className="h-3.5 w-3.5" /> Atlas
+              </Link>
+              {returnToMission && (
+                <Link
+                  to={returnToMission}
+                  aria-label="Return to mission"
+                  className="inline-flex min-h-9 items-center gap-1.5 border border-ozone bg-ozone px-3 py-2 font-mono text-[9px] font-bold uppercase tracking-[0.18em] text-void transition-colors hover:bg-flare"
+                >
+                  Return to mission
+                </Link>
+              )}
+              <button
+                type="button"
+                onClick={onShare}
+                disabled={shareState === 'sharing'}
+                aria-label="Share location"
+                className="inline-flex h-9 items-center gap-1.5 border border-ozone/60 px-3 font-mono text-[9px] font-bold uppercase tracking-[0.18em] text-ozone transition-colors hover:bg-ozone hover:text-void disabled:opacity-50"
+              >
+                <Share2 className="h-3.5 w-3.5" /> Share
+              </button>
+              {shareState && shareState !== 'sharing' && (
+                <span
+                  role="status"
+                  className="font-mono text-[8px] uppercase tracking-[0.16em] text-dim"
+                >
+                  {shareState === 'shared'
+                    ? 'Shared'
+                    : shareState === 'copied'
+                      ? 'Link copied'
+                      : 'Share failed'}
+                </span>
+              )}
+            </div>
           </div>
 
           <h1 className="mt-3 font-display text-3xl font-bold tracking-[-0.02em] text-silver md:text-4xl">
@@ -276,6 +377,9 @@ export default function LocationDetail() {
           <div className="flex flex-col gap-4">
             {/* Advertiser intelligence — moved up from SubvertisingPanel */}
             {showSubvertising && <AdvertiserInfo loc={loc} />}
+
+            {/* Public-space facility metadata + branding/relationship evidence */}
+            {isPublicSpaceType(loc.type) && <PublicSpacePanel location={loc} />}
 
             {/* Graffiti / street art classification — inline so the column is
                 always populated for graffiti-classified locations */}
@@ -444,9 +548,27 @@ export default function LocationDetail() {
           </div>
         </section>
 
+        <LocationContextEvidence location={loc} />
+
+        <EvidenceTimeline location={loc} />
+
         {/* ── Field activity ── */}
         <section className="mb-8">
-          <FieldCheckPanel location={loc} />
+          <FieldCheckPanel location={loc} focusRecheck={isRecheckDeepLink} />
+          {returnToMission && (
+            <div className="mt-3 flex flex-wrap items-center justify-between gap-3 border border-ozone/30 bg-ozone/[0.04] p-3">
+              <p className="font-mono text-[10px] uppercase tracking-[0.14em] text-dim">
+                Working from a temporary field mission · status remains operator-controlled
+              </p>
+              <Link
+                to={returnToMission}
+                data-testid="return-to-mission"
+                className="inline-flex min-h-10 items-center justify-center border border-ozone bg-ozone px-4 py-2 font-mono text-[10px] font-bold uppercase tracking-[0.14em] text-void hover:bg-flare"
+              >
+                Return to mission
+              </Link>
+            </div>
+          )}
         </section>
 
         {/* ── Network ── */}
@@ -456,7 +578,10 @@ export default function LocationDetail() {
 
         {/* ── Admin zone ── */}
         <section className="mb-8 space-y-px">
-          <LocationEditPanel loc={loc} onUpdated={setLoc} />
+          <LocationEditPanel
+            loc={loc}
+            onUpdated={(updated) => queryClient.setQueryData(['location', id], updated)}
+          />
           <MintLocationPanel loc={loc} />
         </section>
 

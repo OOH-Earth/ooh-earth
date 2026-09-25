@@ -1,6 +1,7 @@
-import { useState } from 'react';
+// @ts-nocheck -- upload progress state is runtime-shaped per photo.
+import { useEffect, useState } from 'react';
 import { submitCapture } from '@/lib/offlineQueue';
-import { uploadLocationPhotos } from '@/components/ooh/gallery/MultiPhotoUpload';
+import { PhotoSyncStatus, uploadLocationPhotos } from '@/components/ooh/gallery/MultiPhotoUpload';
 import { Link } from 'react-router-dom';
 import {
   MapPin,
@@ -15,6 +16,14 @@ import ReportStep1Document from '@/components/ooh/report/ReportStep1Document';
 import ReportStep2Identify from '@/components/ooh/report/ReportStep2Identify';
 import ReportStep3Classify from '@/components/ooh/report/ReportStep3Classify';
 import ReportStep4Adbust from '@/components/ooh/report/ReportStep4Adbust';
+import DiscoveryPanel from '@/components/ooh/report/DiscoveryPanel';
+import { useGamification } from '@/hooks/useGamification';
+import { trackEvent } from '@/lib/trackEvent';
+import {
+  pointsForReport,
+  levelFromXp,
+  nearestBrandMilestone,
+} from '@/components/ooh/gamification/gamification';
 
 const STEPS = [
   { id: 1, label: 'Document', desc: 'Pin it, photograph it' },
@@ -45,6 +54,13 @@ const EMPTY = {
   adbust_image_url: '',
   action_flags: [],
   extraPhotos: [],
+  setting: 'unknown',
+  public_access: 'unknown',
+  // Client-side only -- never sent to Location.create (no matching schema
+  // field). Preserved here just long enough to render in the post-submit
+  // Discovery panel; never persisted, never fabricated if the scan didn't
+  // return one.
+  ai_confidence: null,
 };
 
 export default function FieldReport() {
@@ -53,8 +69,55 @@ export default function FieldReport() {
   const [submitting, setSubmitting] = useState(false);
   const [done, setDone] = useState(null);
   const [error, setError] = useState('');
+  const { user, stats, earnedBadges, allBadges, refresh } = useGamification();
+  // Snapshot of what this report should contribute to the Discovery panel,
+  // set right after a synced+authenticated+brand-identified submission.
+  // useGamification's refresh() only calls setState -- it doesn't return
+  // the fresh values -- so the actual panel data is derived in the effect
+  // below once `stats`/`earnedBadges` re-render with post-submission data.
+  const [pending, setPending] = useState(null);
+  const [discovery, setDiscovery] = useState(null);
+  const [photoSync, setPhotoSync] = useState(null);
 
   const onChange = (patch) => setData((d) => ({ ...d, ...patch }));
+
+  useEffect(() => {
+    if (!pending || !stats) return;
+    // A brand the user has already discovered before is already present in
+    // stats.brandCounts from the pre-submission fetch -- its mere presence
+    // doesn't prove this *specific* report is counted yet. Only a strictly
+    // higher total report count proves the fetch we're looking at actually
+    // includes it; wait for the next stats update (our own refresh() or the
+    // live subscription) rather than show a stale/undercounted number.
+    if (stats.reports <= pending.beforeReportsCount) return;
+    const brandKey = pending.brand.trim().toLowerCase();
+    const myBrand = stats.brandCounts.find((b) => b.brand.toLowerCase() === brandKey);
+    if (!myBrand) return;
+
+    const afterEarnedIds = new Set(earnedBadges.map((b) => b.id));
+    const newlyUnlockedId = [...afterEarnedIds].find((id) => !pending.beforeEarnedIds.has(id));
+    const newlyUnlocked = newlyUnlockedId ? allBadges.find((b) => b.id === newlyUnlockedId) : null;
+    // The first-ever discovery of a brand is what actually moves the
+    // distinct-brand (Explorer) count -- a repeat discovery only moves that
+    // brand's own (Collector) count. Show whichever track this specific
+    // report genuinely contributed to.
+    const track = myBrand.count === 1 ? 'explorer' : 'collector';
+    const milestone = nearestBrandMilestone(allBadges, stats, myBrand.count, afterEarnedIds, track);
+
+    setDiscovery({
+      brand: pending.brand,
+      parentCorp: pending.parentCorp,
+      confidence: pending.confidence,
+      xpGained: pending.xpGained,
+      level: levelFromXp(stats.xp),
+      discoveryCount: myBrand.count,
+      milestone,
+      newlyUnlocked: newlyUnlocked
+        ? { label: newlyUnlocked.label, tier: newlyUnlocked.tier }
+        : null,
+    });
+    setPending(null);
+  }, [stats, pending, earnedBadges, allBadges]);
 
   const next = () => setStep((s) => Math.min(s + 1, 4));
   const prev = () => setStep((s) => Math.max(s - 1, 1));
@@ -104,11 +167,38 @@ export default function FieldReport() {
         adbust_type: data.adbust_type,
         adbust_image_url: data.adbust_image_url,
         action_flags: data.action_flags,
+        // Public-space facility metadata -- only ever set when Step 1/the
+        // scanner actually populated them; harmless undefined otherwise.
+        setting: data.setting,
+        public_access: data.public_access,
       });
       if (res.status === 'synced') {
         setDone(res.rec);
-        if (data.extraPhotos?.length)
-          uploadLocationPhotos(data.extraPhotos, res.rec.id).catch(() => {});
+        // A genuinely transmitted report only -- an offline-queued one
+        // (res.status === 'queued') hasn't actually reached the server yet.
+        trackEvent('report_submitted', {
+          authenticated: Boolean(user),
+          report_type: res.rec.type,
+        });
+        if (data.extraPhotos?.length) syncExtraPhotos(data.extraPhotos, res.rec.id);
+        // Discovery Intelligence panel -- authenticated + a brand was
+        // genuinely identified. Anonymous submissions have no personal
+        // collection to report; a blank brand has no collector identity to
+        // attach to. Never blocks the success card, which is already
+        // rendering above via setDone.
+        if (user && res.rec.brand_name) {
+          setPending({
+            brand: res.rec.brand_name,
+            parentCorp: res.rec.parent_corp || null,
+            confidence: typeof data.ai_confidence === 'number' ? data.ai_confidence : null,
+            xpGained: pointsForReport(res.rec),
+            beforeEarnedIds: new Set(earnedBadges.map((b) => b.id)),
+            beforeReportsCount: stats?.reports || 0,
+          });
+          refresh().catch(() => {
+            /* gamification refresh failed -- panel simply never appears */
+          });
+        }
       } else {
         setDone({ queued: true, lat: latN, lng: lngN });
       }
@@ -119,11 +209,39 @@ export default function FieldReport() {
     }
   };
 
+  async function syncExtraPhotos(files, locationId, indexes = files.map((_, i) => i)) {
+    setPhotoSync({ status: 'uploading', completed: 0, total: files.length, failed: [] });
+    const result = await uploadLocationPhotos(files, locationId, {
+      displayOrders: indexes,
+      onProgress: ({ completed, total }) =>
+        setPhotoSync((current) => ({ ...current, status: 'uploading', completed, total })),
+    });
+    setPhotoSync({
+      status: result.failed.length ? 'partial' : 'complete',
+      completed: result.uploaded.length,
+      total: files.length,
+      failed: result.failed.map((failure) => indexes[failure.index]),
+    });
+  }
+
+  const retryFailedPhotos = () => {
+    if (!done?.id || !photoSync?.failed?.length) return;
+    const indexes = photoSync.failed;
+    syncExtraPhotos(
+      indexes.map((index) => data.extraPhotos[index]),
+      done.id,
+      indexes,
+    );
+  };
+
   const reset = () => {
     setDone(null);
     setData({ ...EMPTY });
     setStep(1);
     setError('');
+    setPending(null);
+    setDiscovery(null);
+    setPhotoSync(null);
   };
 
   if (done) {
@@ -152,6 +270,8 @@ export default function FieldReport() {
             </div>
           </div>
         )}
+        <DiscoveryPanel data={discovery} />
+        <PhotoSyncStatus state={photoSync} onRetry={retryFailedPhotos} />
         <div className="mt-6 flex flex-wrap gap-3">
           {done.id && (
             <Link

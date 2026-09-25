@@ -12,6 +12,9 @@ const ADS_TYPES = [
   { value: 'projection', label: 'Projection' },
   { value: 'sticker', label: 'Sticker' },
   { value: 'mural', label: 'Mural' },
+  { value: 'skatepark', label: 'Skatepark' },
+  { value: 'basketball_court', label: 'Basketball Court' },
+  { value: 'multi_use_court', label: 'Multi-Use Court' },
   { value: 'other', label: 'Other' },
 ];
 

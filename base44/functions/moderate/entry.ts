@@ -13,7 +13,7 @@ const CAN_VIEW = (u) =>
 const CAN_ACT = (u) =>
   !!u && (roleOf(u) === 'admin' || ['admin', 'moderator'].includes(accessOf(u)));
 
-const ENTITIES = new Set(['Location', 'DigitalBust']);
+const ENTITIES = new Set(['Location', 'DigitalBust', 'FieldCheck', 'LocationRelationship']);
 const VERIFY_STATUS = new Set(['verified', 'rejected']);
 
 const ALLOWED_ORIGINS = new Set([
@@ -57,9 +57,19 @@ Deno.serve(async (req) => {
           { error: 'Forbidden — operator clearance required.' },
           { status: 403, headers },
         );
-      const [locations, digital_busts] = await Promise.all([
+      const [locations, digital_busts, field_checks, location_relationships] = await Promise.all([
         base44.asServiceRole.entities.Location.filter({ status: 'pending' }, '-created_date', 200),
         base44.asServiceRole.entities.DigitalBust.filter(
+          { status: 'pending' },
+          '-created_date',
+          200,
+        ),
+        base44.asServiceRole.entities.FieldCheck.filter(
+          { status: 'pending' },
+          '-created_date',
+          200,
+        ),
+        base44.asServiceRole.entities.LocationRelationship.filter(
           { status: 'pending' },
           '-created_date',
           200,
@@ -73,6 +83,8 @@ Deno.serve(async (req) => {
           moderator: { email: caller.email, role: roleOf(caller), access: accessOf(caller) },
           locations: locations || [],
           digital_busts: digital_busts || [],
+          field_checks: field_checks || [],
+          location_relationships: location_relationships || [],
         },
         { headers },
       );
@@ -99,7 +111,14 @@ Deno.serve(async (req) => {
           { status: 400, headers },
         );
       const status_updated_at = new Date().toISOString();
-      await base44.asServiceRole.entities[entity].update(id, { status, status_updated_at });
+      const updates = { status, status_updated_at };
+      // A verified relationship claim also gets its verified_date stamped —
+      // "Verified: [date]" in the location-detail display reads directly off
+      // this, never off status_updated_at (which also covers rejections).
+      if (entity === 'LocationRelationship' && status === 'verified') {
+        updates.verified_date = status_updated_at;
+      }
+      await base44.asServiceRole.entities[entity].update(id, updates);
       // Cascade to gallery photos so a verified location's uploaded photos become visible
       // in the same action — there's no separate per-photo moderation UI.
       if (entity === 'Location') {

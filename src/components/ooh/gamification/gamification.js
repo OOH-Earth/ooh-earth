@@ -2,9 +2,9 @@
 // All state is computed client-side from contribution records (Location,
 // DigitalBust, Mint, LeadClaim) plus QuestCompletion bonus claims.
 
-import { POINTS, pointsForReport } from '../pointsConfig';
+import { POINTS, pointsForReport, pointsForRecheck } from '../pointsConfig';
 
-export { POINTS, pointsForReport };
+export { POINTS, pointsForReport, pointsForRecheck };
 
 // ── Level curve ──────────────────────────────────────────────────────
 export const LEVELS = [
@@ -151,6 +151,94 @@ export const BADGES = [
     tier: 'diamond',
     check: (s) => s.xp >= 5000,
   },
+  // Collector tracks — derived from brandCounts (see deriveBrandCounts
+  // above), which is already sorted by count descending. Distinct-brand
+  // progression starts at 5 (not 1) since 'first_blood' already covers the
+  // first discovery.
+  {
+    id: 'brand_explorer',
+    label: 'Brand Explorer',
+    desc: 'Discover 5 distinct brands',
+    icon: 'Eye',
+    tier: 'bronze',
+    check: (s) => (s.brandCounts?.length || 0) >= 5,
+    progress: (s) => ({ current: s.brandCounts?.length || 0, target: 5 }),
+  },
+  {
+    id: 'brand_explorer_2',
+    label: 'Brand Explorer II',
+    desc: 'Discover 10 distinct brands',
+    icon: 'Eye',
+    tier: 'silver',
+    check: (s) => (s.brandCounts?.length || 0) >= 10,
+    progress: (s) => ({ current: s.brandCounts?.length || 0, target: 10 }),
+  },
+  {
+    id: 'brand_explorer_3',
+    label: 'Brand Explorer III',
+    desc: 'Discover 25 distinct brands',
+    icon: 'Eye',
+    tier: 'gold',
+    check: (s) => (s.brandCounts?.length || 0) >= 25,
+    progress: (s) => ({ current: s.brandCounts?.length || 0, target: 25 }),
+  },
+  {
+    id: 'brand_collector',
+    label: 'Brand Collector',
+    desc: 'Spot the same brand 5 times',
+    icon: 'Target',
+    tier: 'bronze',
+    check: (s) => (s.brandCounts?.[0]?.count || 0) >= 5,
+    progress: (s) => ({ current: s.brandCounts?.[0]?.count || 0, target: 5 }),
+  },
+  {
+    id: 'brand_collector_2',
+    label: 'Brand Collector II',
+    desc: 'Spot the same brand 10 times',
+    icon: 'Target',
+    tier: 'silver',
+    check: (s) => (s.brandCounts?.[0]?.count || 0) >= 10,
+    progress: (s) => ({ current: s.brandCounts?.[0]?.count || 0, target: 10 }),
+  },
+  {
+    id: 'brand_collector_3',
+    label: 'Brand Collector III',
+    desc: 'Spot the same brand 25 times',
+    icon: 'Target',
+    tier: 'gold',
+    check: (s) => (s.brandCounts?.[0]?.count || 0) >= 25,
+    progress: (s) => ({ current: s.brandCounts?.[0]?.count || 0, target: 25 }),
+  },
+  // Repeat-observation tracks -- reuses stats.rechecks/rechecksVerified,
+  // already computed in useGamification.js from real FieldCheck records
+  // but previously unused by any badge. A first-of-its-kind incentive for
+  // the specific behavior (re-photographing a known spot) that builds the
+  // longitudinal timeline FieldCheckPanel.jsx already displays.
+  {
+    id: 'first_recheck',
+    label: 'Timeline Starter',
+    // Gated on rechecksVerified, not the raw rechecks submission count --
+    // same verified-only invariant as pointsForRecheck(). A pending or
+    // rejected submission must not earn recognition, only a confirmed one.
+    desc: 'Get your first re-check verified',
+    icon: 'MapPin',
+    tier: 'bronze',
+    check: (s) => (s.rechecksVerified || 0) >= 1,
+  },
+  {
+    id: 'timeline_builder',
+    label: 'Timeline Builder',
+    // Deliberately avoids the literal substring "re-checks" -- the
+    // OperativeProfile stats grid already has a "Re-checks" stat card on
+    // the same page, and Playwright's getByText('Re-checks') matches
+    // substrings case-insensitively, so this text and that stat card's
+    // label must never collide.
+    desc: 'Confirm 5 known placements',
+    icon: 'MapPin',
+    tier: 'silver',
+    check: (s) => (s.rechecksVerified || 0) >= 5,
+    progress: (s) => ({ current: s.rechecksVerified || 0, target: 5 }),
+  },
 ];
 
 export const TIER_STYLES = {
@@ -234,4 +322,72 @@ export function periodKey(type) {
   const diff = (now.getTime() - start.getTime()) / 86400000;
   const week = Math.ceil((diff + start.getDay() + 1) / 7);
   return `${year}-W${String(week).padStart(2, '0')}`;
+}
+
+// ── Brand collection ─────────────────────────────────────────────────
+// Groups a set of Location records by brand_name (case-insensitive, as
+// RelatedLocations.jsx already does for "same advertiser" matching),
+// counting repeat discoveries. Records with a missing/blank brand_name are
+// excluded — an ad the AI scanner couldn't identify isn't a collected brand.
+export function deriveBrandCounts(locations) {
+  const counts = new Map();
+  (locations || []).forEach((r) => {
+    const brand = (r?.brand_name || '').trim();
+    if (!brand) return;
+    const key = brand.toLowerCase();
+    const existing = counts.get(key);
+    if (existing) existing.count += 1;
+    else counts.set(key, { brand, count: 1 });
+  });
+  return [...counts.values()].sort((a, b) => b.count - a.count || a.brand.localeCompare(b.brand));
+}
+
+// ── Per-brand milestone lookup ───────────────────────────────────────
+// Finds the nearest not-yet-earned milestone on ONE specific track, scoped
+// to a single discovery -- never "whichever of the two tracks happens to
+// be globally closest", which can surface a milestone semantically
+// unrelated to the discovery being shown (e.g. a repeat Nike discovery
+// citing "2 more distinct brands to Brand Explorer", a stat that specific
+// report didn't move at all).
+//
+// track: 'collector' -- same-brand progress. Relevant when a discovery is a
+//   REPEAT of a brand the user already has (brandCount is that brand's own
+//   total); tiers evaluated via a synthetic single-entry brandCounts (each
+//   tier's progress() only ever reads brandCounts[0].count).
+// track: 'explorer' -- distinct-brand progress, using the real stats
+//   as-is. Relevant only when a discovery is the FIRST-ever occurrence of
+//   its brand for this user -- that specific report is what the distinct
+//   count actually moved.
+export function nearestBrandMilestone(
+  allBadges,
+  stats,
+  brandCount,
+  earnedIds,
+  track = 'collector',
+) {
+  const prefix = track === 'explorer' ? 'brand_explorer' : 'brand_collector';
+  const candidates = (allBadges || [])
+    .filter((b) => b.progress && b.id.startsWith(prefix) && !earnedIds.has(b.id))
+    .map((b) => {
+      const p =
+        track === 'explorer'
+          ? b.progress(stats)
+          : b.progress({ brandCounts: [{ count: brandCount }] });
+      return { badge: b, ...p };
+    })
+    .filter((m) => m.current < m.target)
+    .sort((a, b) => a.target - a.current - (b.target - b.current));
+  const nearest = candidates[0];
+  return nearest
+    ? { label: nearest.badge.label, current: nearest.current, target: nearest.target }
+    : null;
+}
+
+// ── Ordinal formatting ───────────────────────────────────────────────
+// Shared by the live post-submit Discovery panel and the standing Recent
+// Discoveries feed -- "1st"/"2nd"/"3rd"/"4th"... one implementation.
+export function ordinal(n) {
+  const s = ['th', 'st', 'nd', 'rd'];
+  const v = n % 100;
+  return `${n}${s[(v - 20) % 10] || s[v] || s[0]}`;
 }

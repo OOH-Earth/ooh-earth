@@ -66,10 +66,10 @@ const RISKS = [
   ],
   [
     'R-05',
-    'No rate limiting on public read functions.',
-    'med',
+    'fieldStats / cryptoWatch / fetchMapLocations redid their full (expensive, external-API-heavy) work on every call.',
+    'low',
     'Security',
-    'Per-IP throttle on fieldStats / cryptoWatch / fetchMapLocations.',
+    'Shipped a shared IntelCache-backed cache (30-120s window per function) capping real work at once per window regardless of caller count -- see TECHNICAL_DEBT_REGISTER.md. Chosen over a literal per-IP throttle: caches the expensive work itself rather than gating on caller identity, which cannot be tested without a live Base44 environment. Raw request-volume/bandwidth abuse (as opposed to the cost of doing the work) is still unaddressed.',
   ],
   [
     'R-06',

@@ -14,6 +14,7 @@ import {
   Sparkles,
 } from 'lucide-react';
 import { submitFieldCheck } from '@/lib/offlineQueue';
+import { trackEvent } from '@/lib/trackEvent';
 import CameraViewfinder from '@/components/ooh/CameraViewfinder';
 import { useKeyboardFilePicker } from '@/hooks/useKeyboardFilePicker';
 
@@ -93,6 +94,10 @@ export default function FieldCheckCamera({ location, open, onClose }) {
       setImageUrl(res.file_url);
     } catch {
       setError('Photo upload failed.');
+      // Coarse stage only, no error detail -- distinguishes "started but
+      // failed before reaching the server" from silence with no submission
+      // at all, which recheck_submitted alone can't tell apart.
+      trackEvent('recheck_failed', { stage: 'upload' });
     } finally {
       setUploading(false);
     }
@@ -165,10 +170,23 @@ Respond in JSON only.`,
     };
     try {
       const res = await submitFieldCheck(payload);
-      if (res.status === 'synced') setDone(res.rec);
-      else setDone({ queued: true });
+      if (res.status === 'synced') {
+        setDone(res.rec);
+        // A genuinely transmitted re-check only -- an offline-queued one
+        // hasn't actually reached the server yet.
+        trackEvent('recheck_submitted', { check_type: location.type });
+      } else {
+        setDone({ queued: true });
+        // submitFieldCheck (offlineQueue.js) collapses "genuinely offline"
+        // and "remote submission failed, fell back to local queue" into
+        // the same 'queued' result -- this event can't yet tell those
+        // apart, but it makes the aggregate volume visible for the first
+        // time, which today's zero-signal state cannot.
+        trackEvent('recheck_queued_offline', { check_type: location.type });
+      }
     } catch (err) {
       setError(err?.message || 'Transmission failed.');
+      trackEvent('recheck_failed', { stage: 'transmission' });
     } finally {
       setSubmitting(false);
     }

@@ -1,5 +1,4 @@
 import { useParams, Link } from 'react-router-dom';
-import { useEffect, useState } from 'react';
 import {
   Mail,
   ArrowUpRight,
@@ -11,43 +10,11 @@ import {
   Check,
   Sparkles,
 } from 'lucide-react';
-import { base44 } from '@/api/base44Client';
+import { useCareerRoles } from '@/hooks/useCareerRoles';
 import Nav from '@/components/ooh/Nav';
 import Reveal from '@/components/ooh/Reveal';
 import SiteFooter from '@/components/ooh/SiteFooter';
-import {
-  ROLES as BASE_ROLES,
-  SUPPORT,
-  APPLY_EMAIL,
-  STATUS_META,
-} from '@/components/ooh/careers/roles';
-
-// Same live-override merge used on /careers — keeps this page's status badge
-// and apply/register CTA in sync with whatever's set at /careers/admin.
-function useLiveRoles() {
-  const [roles, setRoles] = useState(BASE_ROLES);
-  useEffect(() => {
-    let alive = true;
-    (async () => {
-      try {
-        const recs = await base44.entities.CareerRoleStatus.list('sort_order');
-        if (!alive || !recs?.length) return;
-        setRoles(
-          BASE_ROLES.map((r) => {
-            const rec = recs.find((x) => x.role_id === r.id);
-            return rec ? { ...r, status: rec.status, visible: rec.visible !== false } : r;
-          }),
-        );
-      } catch {
-        // keep static fallback
-      }
-    })();
-    return () => {
-      alive = false;
-    };
-  }, []);
-  return roles;
-}
+import { SUPPORT, APPLY_EMAIL, STATUS_META } from '@/components/ooh/careers/roles';
 
 const TYPE_STYLES = {
   Volunteer: 'border-ozone/50 text-ozone',
@@ -74,7 +41,7 @@ function List({ title, items, mark: Mark = Check, tone = 'text-ozone' }) {
 
 export default function CareerRole() {
   const { id } = useParams();
-  const ROLES = useLiveRoles();
+  const ROLES = useCareerRoles();
   const role = ROLES.find((r) => r.id === id && r.visible !== false && r.status !== 'draft');
 
   if (!role) {
