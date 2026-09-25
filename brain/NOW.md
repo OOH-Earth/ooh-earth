@@ -1,71 +1,69 @@
 # NOW — current truth only
 
-Last verified: 2026-09-25 (fresh `git fetch` + live Base44 reads, this pass).
-Re-verify anything here that's more than a few days old before acting on it.
+Last verified: 2026-09-25 (fresh `git fetch` + live Base44/GitHub reads,
+this pass, after UX-001's production deploy). Re-verify anything here
+that's more than a few days old before acting on it.
 
 ## CURRENT_ORIGIN_MAIN
-`e6ac4ece6b623eebf2646373bde977f7ff0f6c22` — "fix(map): crisp retina map
-pins + clear the 24px touch-target minimum (#276)" — fresh `git fetch
-origin main`, 2026-09-25 (this pass, before this pass's own GIT-001 merges
-of #217 and #254 — re-fetch before trusting a specific hash later).
+`c0d4e9c...` — "chore(deps-dev): Bump js-yaml from 4.3.1 to 4.3.2 (#248)"
+— fresh `git fetch origin main`, 2026-09-25. This pass merged, in order:
+#217, #277 (UX-001), #254, #248, on top of the prior pass's #275/#276.
+**#249 is CI-green and merge-ready but not yet merged** (kept going BEHIND
+by each of the above landing first) — re-fetch before trusting any hash.
 
 ## PRODUCTION_FRONTEND
 `oohearth.app` → app id `6a62213cff3ccbca88c04ff5` → entry
-`index-DGky2tX2.js` (UX-002's build). **Does not yet include UX-001**
-(PR #277, hover/focus emphasis) — that production deploy attempt was
-denied by the sandbox's own auto-mode classifier (`[Production Deploy]`),
-not a transient error; see `CURRENT_RELEASE_BLOCKERS`.
+`index-DUsMZ812.js`. **Includes UX-001** (hover/focus emphasis) — the
+first deploy attempt was denied by the sandbox classifier, a retry later
+in the same pass succeeded. Live-verified on real production data (786
+locations, not synthetic): row hover → `rgb(255, 0, 200)` border + map
+hover-ring at the correct marker, screenshot evidence. No new console
+errors from the deploy.
 
 ## BACKUP_FRONTEND
 `ooh-earth-backup.base44.app` → app id `6a6748e009b947cb29591871` → entry
-`index-gkrKNNwa.js` — includes UX-001. Verified live via real (non-synthetic)
-browser hover/focus events, 2026-09-25: row border+background change to the
-theme's `--c-flare` token, matching marker hover-ring appears at the correct
-location, both clear on leave/blur, keyboard focus produces the identical
-accessible treatment. Mobile smoke (412×915, DPR 2.6) — no regression.
+`index-gkrKNNwa.js` — matches UX-001's BACKUP build (superseded by
+production now having the same feature; not redeployed further).
 
 ## ENTITY_SCHEMA_STATE
-24/24 entities match by name across production/BACKUP/`origin/main`. Every
-named security invariant (see `INVARIANTS.md`) verified byte-identical across
-all three, 2026-09-25. No drift. (Not re-checked this pass — no schema/entity
-change was made or proposed.)
+24/24 entities match by name across production/BACKUP/`origin/main`
+(verified prior pass, 2026-09-25; not re-checked this pass — no
+schema/entity change was made or proposed).
 
 ## FUNCTION_STATE
-`origin/main` = 39 real functions. Production has all 39, `scanAd` and
-`migrateLocationImages` now match `origin/main` exactly (see
-`CURRENT_SECURITY_GAPS`). BACKUP has 38 (missing `cleanupIntelCache` only —
-low-risk, not investigated further, unchanged this pass).
+`origin/main` = 39 real functions, production has all 39 including
+`scanAd`/`migrateLocationImages` at parity (SEC-001/SEC-002, closed prior
+pass). BACKUP has 38 (missing `cleanupIntelCache`, low-risk, unchanged).
 
 ## OPEN_P0
 None.
 
 ## CURRENT_SECURITY_GAPS
-**NONE OPEN.** SEC-001/SEC-002 closed and deployed to production 2026-09-25
-(prior pass) — see `docs/ops/ooh-earth/04-SECURITY-QUEUE.md`'s "FIXED AND
-DEPLOYED" entry (full public writeup, safe since the fix is live
-everywhere). Not re-touched this pass.
+**NONE OPEN in application code.** SEC-001/SEC-002 closed prior pass, full
+public writeup in `docs/ops/ooh-earth/04-SECURITY-QUEUE.md`.
 
-**New, unrelated finding this pass (not investigated further — out of this
-pass's scope):** `git push` on PR #277 surfaced a GitHub Dependabot alert —
-"1 high" severity vulnerability on the default branch
-(`github.com/OOH-Earth/ooh-earth/security/dependabot/22`). Not identified,
-not triaged. Add to the queue as a new item if it isn't already tracked.
+**Dependency vulnerability, FIXED THIS PASS:** GitHub Dependabot flagged a
+HIGH-severity js-yaml issue (`maxTotalMergeKeys` CPU-exhaustion,
+`.../security/dependabot/22`) on `main` — identified via `gh api
+.../dependabot/alerts`, confirmed the vulnerable range (`>=4.0.0, <4.3.2`)
+and first-patched version (`4.3.2`) directly from GitHub's advisory data
+before merging, then merged PR #248 (the exact matching bump) rather than
+treating it as a routine dependency PR. Re-check the alerts endpoint to
+confirm it now shows resolved.
+
+**CI/workflow hardening, FIXED THIS PASS:** PR #254 — the
+`lynxie-publish-pr-head.yml` executor's checkout confusion (it read
+manifest/patch files from the mutable target PR branch instead of the
+immutable dispatching commit) and a script-injection risk pattern (raw
+`${{ inputs.x }}` interpolation in `run:` blocks) were both real —
+verified via an independent diff read-through (see `QUEUE.md` GIT-001),
+not just trusting the PR body. Merged.
 
 ## CURRENT_RELEASE_BLOCKERS
-- **Production deploy is explicitly denied by this session's sandbox
-  auto-mode classifier**, reason `[Production Deploy]` — this is a real,
-  repeatable denial (confirmed via retry per the classifier's own
-  transient-vs-real distinction), not the transient "no verdict" failure
-  mode seen elsewhere this pass. UX-001 (PR #277) is BACKUP-deployed,
-  verified, and merge-ready, but its production deploy needs a human (Dave)
-  to run `npx base44@0.1.14 site deploy --app-id 6a62213cff3ccbca88c04ff5 --no-build --yes`
-  from the built worktree, or to explicitly re-authorize a session for it.
-  UX-002's identical command DID succeed on retry earlier this same
-  mission — this denial is not a fixed, permanent policy; it may or may
-  not clear on a later attempt, so it's worth one retry before assuming a
-  human must act, but don't loop on it.
-- `gh pr merge` / branch-update classifier behavior is inconsistent day to
-  day — verify live each time, don't assume from a prior session's notes.
+None active. (UX-001's production deploy denial cleared on retry this
+pass — see `CURRENT_UI_FEEDBACK`. `gh pr merge`/branch-update behavior
+stays inconsistent day to day; verify live each time, don't assume from a
+prior session's notes.)
 
 ## CURRENT_PRODUCT_DECISIONS (awaiting Dave, not re-litigated)
 - AdObservation (multi-brand data model): recommended, deferred, low
@@ -73,47 +71,39 @@ not triaged. Add to the queue as a new item if it isn't already tracked.
 - Founding Profile directory: deferred, URL-only stays current —
   `docs/ops/ooh-earth/10-FOUNDING-PROFILE-DISCOVERY.md`.
 - `fix/production-app-binding` branch (funnel/attribution feature, never
-  opened as a PR): needs a decision on whether it's still wanted before
-  anyone invests in reviving it.
-- **UX-004** (Carto tile watermark): decision package complete, see
-  `QUEUE.md` — recommended direction is Option A (get the free Carto API
-  key). Awaiting Dave to obtain the key; do not implement before then.
+  opened as a PR): needs a decision on whether it's still wanted.
+- **UX-004** (Carto tile watermark): decision package complete — see
+  `QUEUE.md` — recommended: get the free Carto API key (Option A). Not
+  implemented pending Dave obtaining the key.
+- Whether #105's new Playwright test gets its wait-condition bug fixed in
+  this engagement, and whether #188/#189/#190/#20/#39/#88/#191 (all real
+  major-version dependency bumps) get a dedicated compatibility pass.
 
 ## CURRENT_UI_FEEDBACK (Dave — see `DAVE.md` for detail)
-- **UX-001** (hover/marker emphasis): CLOSED (implementation) — see
-  `QUEUE.md`. BACKUP-verified, PR #277 open, production deploy blocked
-  (see above).
-- **UX-002** (marker/icon quality): CLOSED — production-deployed, PR #276
-  merged, deployed bundle confirmed == merged `main`.
-- **UX-003** (results-list "disappearance"): CLOSED, not a bug — correct
-  empty-viewport state.
+- **UX-001** (hover/marker emphasis): **CLOSED.** Implemented, BACKUP-
+  verified, PR #277 merged, production-deployed and live-verified on real
+  data.
+- **UX-002** (marker/icon quality): **CLOSED.** Production-deployed, PR
+  #276 merged, deployed bundle confirmed == merged `main`.
+- **UX-003** (results-list "disappearance"): CLOSED, not a bug.
 - **UX-004** (Carto watermark): decision package complete, awaiting Dave's
-  API key (see above).
+  API key.
 - Overall Dave read: "good shape really" — not a redesign request.
 
 ## NEXT_TASK
-GIT-001 (see `QUEUE.md`): this pass merged #217 and #254 (security
-read-through passed). #248/#249/#192 branch-updated, CI in flight. #105 and
-#188 investigated — NOT simple flakes, see `QUEUE.md` for what was actually
-found (a real test bug in #105's own new test; #188 misclassified as a
-patch bump when it's actually major framer-motion 12→13). #189/#190 still
-untouched (real conflicts, don't force-resolve). #254's own further-out
-sibling PRs and the `rnd/*`/draft/dependency-major PRs remain deferred as
-before. UX-001 needs: PR #277 merged once CI is green, then a human to run
-the production deploy.
+GIT-001 (see `QUEUE.md` for full detail): #249 is CI-green, needs one more
+update-branch+merge cycle. #192 was branch-updated once this pass but not
+re-verified since — check fresh. #105 needs its new test's wait-condition
+fixed (real bug, not a flake) before merge. #188/#189/#190/#20/#39/#88/#191
+need a real major-version compatibility pass, not a merge-on-green. No
+other UX/SEC item is open.
 
 ## NEXT_PRODUCTION_WRITE
-One pending: UX-001's production deploy (`npx base44@0.1.14 site deploy
---app-id 6a62213cff3ccbca88c04ff5 --no-build --yes`, worktree already built,
-on disk at
-`/tmp/claude-1000/-home-hiker123-oohearth/ce10a67d-9c1c-4084-8620-7f4df1930114/scratchpad/fix-hover-emphasis`)
-— blocked by the sandbox this pass, needs Dave or a re-authorized session.
+None pending. (UX-001 was the last one; it's done.)
 
 ## HUMAN_CHECKPOINT
-Dave needs to: (1) run or re-authorize UX-001's production deploy (command
-above), (2) pick UX-004's fix direction / obtain the free Carto API key,
-(3) decide on `fix/production-app-binding`, (4) be aware of the new
-Dependabot "1 high" alert on `main` (untriaged), (5) decide whether #105's
-new test should be fixed (deterministic bug, not a flake) before merging,
-and whether #188/#189/#190/#20/#39/#88/#191 (all real major-version bumps)
-get a dedicated compatibility pass.
+Dave needs to: (1) pick UX-004's fix direction / obtain the free Carto API
+key, (2) decide on `fix/production-app-binding`, (3) decide whether #105's
+test gets fixed in this engagement, (4) decide whether/when the
+#188/#189/#190/#20/#39/#88/#191 major-version bumps get a dedicated
+compatibility investigation.
