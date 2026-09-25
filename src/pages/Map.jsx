@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { usePersistentState } from '@/hooks/usePersistentState';
 import { base44 } from '@/api/base44Client';
+import { useAuthGatedSubscribe } from '@/hooks/useAuthGatedSubscribe';
 import Nav from '@/components/ooh/Nav';
 import LocationMap from '@/components/ooh/LocationMap';
 import MapToolbar from '@/components/ooh/map/MapToolbar';
@@ -388,50 +389,45 @@ export default function Map() {
   }, []);
 
   useEffect(() => {
-    let cancelled = false;
     if (view === 'globe') reloadLocations().then(() => {});
     else {
       viewportRequestRef.current += 1;
       setRaw({ markers: [], live: false, locationState: 'loading' });
     }
-
-    const unsub = base44.entities.Location.subscribe((event) => {
-      setRaw((cur) => {
-        if (!cur || !cur.live) return cur;
-        let markers = cur.markers;
-        const m = toMarker(event.data);
-        if (event.type === 'create')
-          markers = [
-            {
-              ...m,
-              livingRecord: false,
-              freshness: null,
-              attention: deriveFieldAttention({ location: event.data }),
-            },
-            ...markers.filter((x) => x.id !== m.id),
-          ];
-        else if (event.type === 'update') {
-          if (m.status === 'rejected') markers = markers.filter((x) => x.id !== m.id);
-          else
-            markers = markers.map((x) =>
-              x.id === m.id
-                ? {
-                    ...m,
-                    livingRecord: x.livingRecord,
-                    freshness: x.freshness,
-                    attention: deriveFieldAttention({ location: event.data }),
-                  }
-                : x,
-            );
-        } else if (event.type === 'delete') markers = markers.filter((x) => x.id !== m.id);
-        return { ...cur, markers };
-      });
-    });
-    return () => {
-      cancelled = true;
-      if (unsub) unsub();
-    };
   }, [reloadLocations, view]);
+
+  useAuthGatedSubscribe('Location', (event) => {
+    setRaw((cur) => {
+      if (!cur || !cur.live) return cur;
+      let markers = cur.markers;
+      const m = toMarker(event.data);
+      if (event.type === 'create')
+        markers = [
+          {
+            ...m,
+            livingRecord: false,
+            freshness: null,
+            attention: deriveFieldAttention({ location: event.data }),
+          },
+          ...markers.filter((x) => x.id !== m.id),
+        ];
+      else if (event.type === 'update') {
+        if (m.status === 'rejected') markers = markers.filter((x) => x.id !== m.id);
+        else
+          markers = markers.map((x) =>
+            x.id === m.id
+              ? {
+                  ...m,
+                  livingRecord: x.livingRecord,
+                  freshness: x.freshness,
+                  attention: deriveFieldAttention({ location: event.data }),
+                }
+              : x,
+          );
+      } else if (event.type === 'delete') markers = markers.filter((x) => x.id !== m.id);
+      return { ...cur, markers };
+    });
+  });
 
   // Contribution deep-link: /map?highlight=<locationId>, used by the report
   // wizard's and AR's "View on map" links so a user's own new submission is
@@ -478,27 +474,24 @@ export default function Map() {
     };
   }, [missionIds]);
 
-  useEffect(() => {
-    let cancelled = false;
-    const loadClaims = async () => {
-      try {
-        const recs = await base44.entities.LeadClaim.list('-created_date', 500, 0, [
-          'location_id',
-          'status',
-          'created_date',
-        ]);
-        if (!cancelled) setClaims(recs || []);
-      } catch {
-        if (!cancelled) setClaims([]);
-      }
-    };
-    loadClaims();
-    const unsub = base44.entities.LeadClaim.subscribe(() => loadClaims());
-    return () => {
-      cancelled = true;
-      if (unsub) unsub();
-    };
+  const loadClaims = useCallback(async () => {
+    try {
+      const recs = await base44.entities.LeadClaim.list('-created_date', 500, 0, [
+        'location_id',
+        'status',
+        'created_date',
+      ]);
+      setClaims(recs || []);
+    } catch {
+      setClaims([]);
+    }
   }, []);
+
+  useEffect(() => {
+    loadClaims();
+  }, [loadClaims]);
+
+  useAuthGatedSubscribe('LeadClaim', () => loadClaims());
 
   const claimsByLoc = useMemo(() => {
     const map = {};

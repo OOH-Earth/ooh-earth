@@ -3,6 +3,7 @@ import { ScanLine, Loader2, CheckCircle2, AlertTriangle, ShieldCheck } from 'luc
 import { base44 } from '@/api/base44Client';
 import { trackEvent } from '@/lib/trackEvent';
 import { lookupParentCorpSector, SECTOR_LABELS } from '@/components/ooh/report/advertiserRegistry';
+import { isPublicSpaceType, relationshipTypeLabel } from '@/lib/publicSpace';
 
 const LOW_CONFIDENCE_THRESHOLD = 0.5;
 
@@ -14,6 +15,9 @@ const VALID_TYPES = [
   'sticker',
   'mural',
   'transit',
+  'skatepark',
+  'basketball_court',
+  'multi_use_court',
   'other',
 ];
 
@@ -55,9 +59,17 @@ export default function ReportScanner({ data, onChange }) {
           trackEvent('brand_identified', { brand_name: det.brand_name });
         }
         const scannedType = VALID_TYPES.includes(det.surface_type) ? det.surface_type : 'other';
+        const isFacility = isPublicSpaceType(scannedType);
         onChange({
           type: scannedType,
           ai_scanned: true,
+          // Facility metadata only ever applies when the AI actually
+          // classified this as a public-space facility -- never leaks a
+          // stale 'outdoor'/'free' guess onto an unrelated ad-surface type.
+          ...(isFacility && {
+            setting: det.facility_setting || data.setting,
+            public_access: det.facility_public_access || data.public_access,
+          }),
           // Kept client-side only (never sent to Location.create -- no
           // matching schema field) so the post-submit Discovery panel can
           // show the real scan confidence instead of omitting it entirely.
@@ -168,6 +180,18 @@ export default function ReportScanner({ data, onChange }) {
                       {SECTOR_LABELS[result.registrySector] || result.registrySector}
                     </p>
                   )
+                )}
+                {isPublicSpaceType(
+                  VALID_TYPES.includes(result.surface_type) ? result.surface_type : 'other',
+                ) && (
+                  <p className="flex items-start gap-1.5 font-mono text-[9.5px] leading-snug text-dim">
+                    <AlertTriangle className="mt-px h-3 w-3 shrink-0 text-flare" />
+                    Public-space facility detected — a visible logo alone never proves a
+                    relationship.{' '}
+                    {result.brand_name && result.possible_relationship_type
+                      ? `Suggested relationship: ${relationshipTypeLabel(result.possible_relationship_type)} — still UNKNOWN until reviewed with evidence.`
+                      : 'Add any visible-branding evidence as an editable, unverified relationship claim after submitting.'}
+                  </p>
                 )}
               </div>
             )}

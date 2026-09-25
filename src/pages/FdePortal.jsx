@@ -1,5 +1,6 @@
 import { useEffect, useState, useCallback } from 'react';
 import { base44 } from '@/api/base44Client';
+import { useAuthGatedSubscribe } from '@/hooks/useAuthGatedSubscribe';
 import Nav from '@/components/ooh/Nav';
 import HorizonProgress from '@/components/ooh/HorizonProgress';
 import LocationThumb from '@/components/ooh/map/LocationThumb';
@@ -130,14 +131,7 @@ export default function FdePortal() {
     })();
   }, [load]);
 
-  useEffect(() => {
-    const unsub = base44.entities.Location.subscribe(() => {
-      load();
-    });
-    return () => {
-      if (unsub) unsub();
-    };
-  }, [load]);
+  useAuthGatedSubscribe('Location', () => load());
 
   const refresh = async () => {
     setRefreshing(true);
