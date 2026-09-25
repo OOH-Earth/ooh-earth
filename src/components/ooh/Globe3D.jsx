@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
-import maplibregl from 'maplibre-gl';
+import * as maplibregl from 'maplibre-gl';
+import '@/lib/maplibreWorkerSetup';
 import { ZoomIn, ZoomOut, Compass, RotateCw } from 'lucide-react';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import GlobeHud from '@/components/ooh/GlobeHud';
@@ -120,6 +121,7 @@ function buildFC(markers, selectedId) {
           lat: m.lat,
           lng: m.lng,
           selected: m.id === selectedId,
+          attention: Boolean(m.attention && m.attention.priority !== 'CURRENT'),
         },
       })),
   };
@@ -138,6 +140,7 @@ export default function Globe3D({
   flyTo = null,
   onError = null,
   onCounts = null,
+  attentionMode = false,
 }) {
   const mapStyle = useMapStyle().style;
   const containerRef = useRef(null);
@@ -204,7 +207,12 @@ export default function Globe3D({
     map.on('error', (e) => {
       // MapLibre fires error events for non-fatal things too; only bail if the
       // style itself hasn't loaded within a reasonable window.
-      if (!readyRef.current && !styleFailed && e?.error?.status === 404) {
+      if (
+        !readyRef.current &&
+        !styleFailed &&
+        e?.error instanceof maplibregl.AJAXError &&
+        e.error.status === 404
+      ) {
         styleFailed = true;
         onErrorRef.current?.();
       }
@@ -223,20 +231,23 @@ export default function Globe3D({
         map.setProjection({ type: 'globe' });
       } catch (e) {}
       try {
-        // setFog() doesn't exist on the installed maplibre-gl (5.24.0) Map
-        // class — only setSky(SkySpecification) does now. This throws and is
-        // caught below, so the space-fog/atmosphere effect is currently
-        // non-functional. Restoring it means porting to setSky() (a
-        // different param shape) and confirming the visual result — a
-        // design call, not a type fix. See KNOWN_ISSUES.md.
-        // @ts-expect-error — see comment above
-        map.setFog({
-          range: [1, 10],
-          color: '#0a0a0a',
-          'high-color': '#1a1a1a',
-          'horizon-blend': 0.12,
-          'space-color': '#000000',
-          'star-intensity': 0.45,
+        // Ported from the old (non-existent on installed maplibre-gl
+        // 5.24.0) setFog() call -- SkySpecification's real field set is
+        // smaller (confirmed against this repo's own installed
+        // @maplibre/maplibre-gl-style-spec types, not guessed): no
+        // range/star-intensity/space-color equivalent exists in this
+        // version's sky API, so those are dropped rather than faked.
+        // space-color (deep void) -> sky-color; high-color (dim
+        // near-horizon tone) -> horizon-color; horizon-blend -> the
+        // directly-equivalent sky-horizon-blend. atmosphere-blend has no
+        // prior value to port from -- kept low (default is 0.8) to match
+        // the original's understated, mostly-dark intent rather than a
+        // bright default glow.
+        map.setSky({
+          'sky-color': '#000000',
+          'horizon-color': '#1a1a1a',
+          'sky-horizon-blend': 0.12,
+          'atmosphere-blend': 0.3,
         });
       } catch (e) {}
     };
@@ -287,6 +298,18 @@ export default function Globe3D({
         paint: { 'text-color': '#EDFF00', 'text-halo-color': '#000', 'text-halo-width': 1.5 },
       });
       // individual field pins (unclustered only)
+      map.addLayer({
+        id: 'ooh-attention',
+        type: 'circle',
+        source: 'ooh-markers',
+        filter: ['all', ['!', ['has', 'point_count']], ['==', ['get', 'attention'], true]],
+        paint: {
+          'circle-radius': 12,
+          'circle-color': 'rgba(91,231,255,0.12)',
+          'circle-stroke-color': '#5BE7FF',
+          'circle-stroke-width': 2,
+        },
+      });
       map.addLayer({
         id: 'ooh-markers',
         type: 'symbol',
@@ -371,10 +394,12 @@ export default function Globe3D({
     const vis = activeLayers.some((l) => l === 'ads' || l === 'adbusting' || l === 'graffiti')
       ? 'visible'
       : 'none';
-    ['ooh-markers', 'ooh-clusters', 'ooh-cluster-count'].forEach((id) => {
+    ['ooh-markers', 'ooh-attention', 'ooh-clusters', 'ooh-cluster-count'].forEach((id) => {
       if (map.getLayer(id)) map.setLayoutProperty(id, 'visibility', vis);
     });
-  }, [activeLayers, ready]);
+    if (map.getLayer('ooh-attention'))
+      map.setLayoutProperty('ooh-attention', 'visibility', attentionMode ? vis : 'none');
+  }, [activeLayers, attentionMode, ready]);
 
   useEffect(() => {
     dataRef.current = buildFC(markers, selectedId);

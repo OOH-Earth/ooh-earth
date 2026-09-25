@@ -2,6 +2,11 @@
   "name": "FieldCheck",
   "type": "object",
   "properties": {
+    "client_operation_id": {
+      "type": "string",
+      "description": "Client-generated idempotency token for offline/retry submissions",
+      "maxLength": 120
+    },
     "location_id": {
       "type": "string",
       "description": "Location record being re-checked"
@@ -20,6 +25,9 @@
         "sticker",
         "mural",
         "transit",
+        "skatepark",
+        "basketball_court",
+        "multi_use_court",
         "other"
       ],
       "default": "other"
@@ -105,7 +113,33 @@
         "verified",
         "rejected"
       ],
-      "default": "pending"
+      "default": "pending",
+      "rls": {
+        "write": {
+          "$or": [
+            {
+              "user_condition": {
+                "role": "admin"
+              }
+            },
+            {
+              "user_condition": {
+                "data.access": "admin"
+              }
+            },
+            {
+              "user_condition": {
+                "data.access": "moderator"
+              }
+            },
+            {
+              "user_condition": {
+                "data.agency": true
+              }
+            }
+          ]
+        }
+      }
     }
   },
   "required": [

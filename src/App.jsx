@@ -49,7 +49,7 @@ const LabStreetRunner = lazy(() => import('@/pages/LabStreetRunner'));
 const AdScanLab = lazy(() => import('@/pages/AdScanLab'));
 const GraffitiCam = lazy(() => import('@/pages/GraffitiCam'));
 const NftCreator = lazy(() => import('@/pages/NftCreator'));
-import Home from '@/pages/Home';
+const Home = lazy(() => import('@/pages/Home'));
 const Map = lazy(() => import('@/pages/Map'));
 const Report = lazy(() => import('@/pages/Report'));
 const MediaCorps = lazy(() => import('@/pages/MediaCorps'));
@@ -60,6 +60,7 @@ const Plans = lazy(() => import('@/pages/Plans'));
 const Dashboard = lazy(() => import('@/pages/Dashboard'));
 const FdePortal = lazy(() => import('@/pages/FdePortal'));
 const PortalOps = lazy(() => import('@/pages/PortalOps'));
+const MissionControl = lazy(() => import('@/pages/MissionControl'));
 const AtariPortfolio = lazy(() => import('@/pages/AtariPortfolio'));
 const Sitemap = lazy(() => import('@/pages/Sitemap'));
 const Blog = lazy(() => import('@/pages/Blog'));
@@ -77,6 +78,7 @@ const Zora = lazy(() => import('@/pages/Zora'));
 const UiKit = lazy(() => import('@/pages/UiKit'));
 const Brand = lazy(() => import('@/pages/Brand'));
 const OperativeProfile = lazy(() => import('@/pages/OperativeProfile'));
+const FounderProfile = lazy(() => import('@/pages/FounderProfile'));
 const Guides = lazy(() => import('@/pages/Guides'));
 const FieldId = lazy(() => import('@/pages/FieldId'));
 const SuperCard = lazy(() => import('@/pages/SuperCard'));
@@ -190,6 +192,7 @@ const AuthenticatedApp = () => {
             <Route path="/card" element={<SuperCard />} />
             <Route path="/channel" element={<Channel />} />
             <Route path="/location/:id" element={<LocationDetail />} />
+            <Route path="/founders/:handle" element={<FounderProfile />} />
             <Route path="/bus-stops" element={<BusStops />} />
             <Route path="/bus-stop/:id" element={<BusStopDetail />} />
             <Route path="/access-keys" element={<AccessKeys />} />
@@ -211,6 +214,7 @@ const AuthenticatedApp = () => {
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/fde" element={<FdePortal />} />
               <Route path="/portal/ops" element={<PortalOps />} />
+              <Route path="/mission-control" element={<MissionControl />} />
               <Route path="/portfolio" element={<AtariPortfolio />} />
               <Route path="/radio-ops" element={<RadioOps />} />
               <Route path="/sitemap" element={<Sitemap />} />

@@ -28,9 +28,26 @@ export function useFocusTrap(containerRef, open, { label } = {}) {
   const previouslyFocused = useRef(null);
 
   useEffect(() => {
-    if (!open) return undefined;
     const container = containerRef.current;
     if (!container) return undefined;
+
+    if (!open) {
+      // Always-mounted overlays (CommandCenter) toggle visibility via
+      // aria-hidden + a CSS transition instead of unmounting -- aria-hidden
+      // alone does not remove focusability, so descendants stay tabbable
+      // unless something native blocks it too. `inert` is the correct
+      // pairing (WHATWG-recommended), but React (pre-19; this app is on
+      // 18) does not recognize it as a JSX prop -- confirmed live: passing
+      // inert={!open} on the element renders no attribute at all. Set it
+      // imperatively on the DOM node instead. Conditionally-rendered
+      // overlays (UnitFinder/QuickCapture/NavMenu) never reach this branch
+      // with a real container -- they return null / unmount when closed,
+      // so containerRef.current is already null and the guard above exits
+      // first; this is a no-op for them either way.
+      container.inert = true;
+      return undefined;
+    }
+    container.inert = false;
 
     previouslyFocused.current = document.activeElement;
     container.setAttribute('role', 'dialog');

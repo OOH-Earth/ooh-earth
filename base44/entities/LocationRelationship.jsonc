@@ -1,0 +1,153 @@
+{
+  "name": "LocationRelationship",
+  "type": "object",
+  "properties": {
+    "client_operation_id": {
+      "type": "string",
+      "description": "Client-generated idempotency token for offline/retry submissions",
+      "maxLength": 120
+    },
+    "location_id": {
+      "type": "string",
+      "description": "Location record this relationship claim is about"
+    },
+    "location_title": {
+      "type": "string",
+      "description": "Denormalized title of the parent location"
+    },
+    "brand_name": {
+      "type": "string",
+      "description": "Brand/organization the relationship claim is about, e.g. Nike, a local council"
+    },
+    "relationship_type": {
+      "type": "string",
+      "enum": [
+        "unknown",
+        "sponsor",
+        "funder",
+        "operator",
+        "owner",
+        "delivery_partner",
+        "naming_rights",
+        "community_partner"
+      ],
+      "default": "unknown",
+      "description": "What this brand's relationship to the facility actually is. Stays 'unknown' — a visible logo alone is never sufficient — until evidence_source is reviewed and status is set to verified."
+    },
+    "evidence_source": {
+      "type": "string",
+      "description": "What supports this claim beyond a bare logo sighting: plaque/signage text, naming-rights signage, regeneration/project board, an official announcement URL, etc. Required for anything to be promoted past 'unknown'/pending."
+    },
+    "evidence_field_check_id": {
+      "type": "string",
+      "description": "Optional link to the FieldCheck row (photo/observation) this claim is grounded in"
+    },
+    "verified_date": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When this relationship was last confirmed true, if verified"
+    },
+    "notes": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "verified",
+        "rejected"
+      ],
+      "default": "pending",
+      "description": "pending = proposed, unverified claim. verified = a moderator reviewed evidence_source and confirmed it. rejected = evidence didn't support the claim.",
+      "rls": {
+        "write": {
+          "$or": [
+            {
+              "user_condition": {
+                "role": "admin"
+              }
+            },
+            {
+              "user_condition": {
+                "data.access": "admin"
+              }
+            },
+            {
+              "user_condition": {
+                "data.access": "moderator"
+              }
+            },
+            {
+              "user_condition": {
+                "data.agency": true
+              }
+            }
+          ]
+        }
+      }
+    }
+  },
+  "required": [
+    "location_id",
+    "brand_name"
+  ],
+  "rls": {
+    "create": null,
+    "read": {
+      "$or": [
+        {
+          "data.status": "verified"
+        },
+        {
+          "created_by_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "update": {
+      "$or": [
+        {
+          "created_by_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        },
+        {
+          "user_condition": {
+            "data.access": "admin"
+          }
+        },
+        {
+          "user_condition": {
+            "data.access": "moderator"
+          }
+        },
+        {
+          "user_condition": {
+            "data.agency": true
+          }
+        }
+      ]
+    },
+    "delete": {
+      "$or": [
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        },
+        {
+          "user_condition": {
+            "data.access": "admin"
+          }
+        }
+      ]
+    }
+  }
+}

@@ -15,8 +15,11 @@ function seedOneLocation() {
       title: 'Heat Click Target Billboard',
       type: 'billboard',
       address: '1 Test St, Testville',
-      lat: 13.75,
-      lng: 100.5,
+      // Keep the fixture inside the deterministic initial Leaflet viewport.
+      // Map now uses viewport-bounded retrieval and intentionally does not
+      // fit the map to the first result set.
+      lat: 13.746,
+      lng: 100.55,
       status: 'verified',
       access_key: 'none',
     },

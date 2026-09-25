@@ -6,3 +6,9 @@ src/components/ui
 *.md
 *.svg
 *.jsonc
+
+# Lynxie publication executor (PR #253): patch files are content-addressed
+# (sha256-verified against .github/lynxie-patches/manifest.json) — Prettier
+# has no parser for .patch anyway (that's the real CI failure this excludes),
+# and even if it did, reformatting one would silently change its digest.
+.github/lynxie-patches/*.patch

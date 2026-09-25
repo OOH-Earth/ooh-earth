@@ -93,7 +93,7 @@ Deno.serve(async (req) => {
     }
 
     if (action === 'set') {
-      const patch = {};
+      const patch: { role?: string; access?: string; agency?: boolean } = {};
       if (body?.role !== undefined) {
         const role = String(body.role).toLowerCase();
         if (!ROLES.has(role))

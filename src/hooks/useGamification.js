@@ -1,10 +1,13 @@
 import { useCallback, useEffect, useState } from 'react';
 import { base44 } from '@/api/base44Client';
+import { useAuthGatedSubscribe } from '@/hooks/useAuthGatedSubscribe';
 import {
   BADGES,
   QUESTS,
   levelFromXp,
   pointsForReport,
+  pointsForRecheck,
+  deriveBrandCounts,
   isToday,
   isThisWeek,
   periodKey,
@@ -13,6 +16,7 @@ import {
 export function useGamification() {
   const [user, setUser] = useState(null);
   const [stats, setStats] = useState(null);
+  const [locations, setLocations] = useState([]);
   const [completions, setCompletions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [claiming, setClaiming] = useState(null);
@@ -26,12 +30,13 @@ export function useGamification() {
       }
       setUser(me);
 
-      const [locations, busts, mints, leads, quests] = await Promise.all([
+      const [locations, busts, mints, leads, quests, fieldChecks] = await Promise.all([
         base44.listAllLocations().catch(() => []),
         base44.entities.DigitalBust.list('-created_date', 200).catch(() => []),
         base44.entities.Mint.list('-created_date', 100).catch(() => []),
         base44.entities.LeadClaim.list('-created_date', 200).catch(() => []),
         base44.entities.QuestCompletion.list('-created_date', 200).catch(() => []),
+        base44.entities.FieldCheck.list('-created_date', 200).catch(() => []),
       ]);
 
       setCompletions(quests || []);
@@ -42,17 +47,20 @@ export function useGamification() {
       const myMints = mine(mints);
       const myLeads = mine(leads);
       const myQuests = mine(quests);
+      const myFieldChecks = mine(fieldChecks);
 
       const baseXp =
         myLocs.reduce((s, r) => s + pointsForReport(r), 0) +
+        myFieldChecks.reduce((s, r) => s + pointsForRecheck(r), 0) +
         myBusts.length * 15 +
         myMints.length * 100 +
         myLeads.length * 5;
       const questXp = myQuests.reduce((s, q) => s + (q.xp_awarded || 0), 0);
 
-      // Streak — consecutive days with any contribution
+      // Streak — consecutive days with any contribution, including re-checks
+      // (a re-check is a genuine field visit, not a lesser action)
       const activeDates = new Set();
-      [...myLocs, ...myBusts].forEach((r) => {
+      [...myLocs, ...myBusts, ...myFieldChecks].forEach((r) => {
         if (r.created_date) activeDates.add(r.created_date.slice(0, 10));
       });
       let streak = 0;
@@ -64,6 +72,12 @@ export function useGamification() {
         else if (i > 0) break;
       }
 
+      // Same already-fetched, already-filtered array every stat above is
+      // derived from -- exposed as-is so callers (e.g. a "recent
+      // discoveries" feed) can reuse it instead of issuing a second
+      // Location fetch.
+      setLocations(myLocs);
+
       setStats({
         reports: myLocs.length,
         verified: myLocs.filter((r) => r.status === 'verified').length,
@@ -71,10 +85,15 @@ export function useGamification() {
         busts: myBusts.length,
         mints: myMints.length,
         leads: myLeads.length,
+        // Folded into baseXp via pointsForRecheck() -- deliberately smaller
+        // than a new report (see pointsConfig.js), previously exactly 0.
+        rechecks: myFieldChecks.length,
+        rechecksVerified: myFieldChecks.filter((r) => r.status === 'verified').length,
         xp: baseXp + questXp,
         baseXp,
         questXp,
         streak,
+        brandCounts: deriveBrandCounts(myLocs),
         dailyReports: myLocs.filter((r) => isToday(r.created_date)).length,
         weeklyReports: myLocs.filter((r) => isThisWeek(r.created_date)).length,
         dailyPhotos: myLocs.filter((r) => isToday(r.created_date) && r.image_url).length,
@@ -90,11 +109,9 @@ export function useGamification() {
 
   useEffect(() => {
     loadData();
-    const unsub = base44.entities.Location.subscribe(() => loadData());
-    return () => {
-      if (unsub) unsub();
-    };
   }, [loadData]);
+
+  useAuthGatedSubscribe('Location', () => loadData());
 
   const level = stats ? levelFromXp(stats.xp) : null;
   const earnedBadges = stats ? BADGES.filter((b) => b.check(stats)) : [];
@@ -137,6 +154,7 @@ export function useGamification() {
   return {
     user,
     stats,
+    locations,
     level,
     earnedBadges,
     allBadges: BADGES,

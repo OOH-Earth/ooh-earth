@@ -8,6 +8,7 @@ import {
   Waves,
   Radio,
   Flame,
+  Fingerprint,
 } from 'lucide-react';
 
 // Layer groups — ordered by campaign priority.
@@ -36,7 +37,10 @@ export const LAYER_GROUPS = [
     id: 'intel',
     label: 'Intelligence',
     color: '#EDFF00',
-    layers: [{ id: 'heat', label: 'Activity Heat', icon: Flame, color: '#FF5C00' }],
+    layers: [
+      { id: 'heat', label: 'Activity Heat', icon: Flame, color: '#FF5C00' },
+      { id: 'mine', label: 'My Discoveries', icon: Fingerprint, color: '#39FF14' },
+    ],
   },
   {
     id: 'ecology',
@@ -73,13 +77,19 @@ export const ALL_LAYERS = LAYER_GROUPS.flatMap((g) => g.layers);
 // Default active layer IDs
 export const DEFAULT_LAYERS = ALL_LAYERS.filter((l) => l.defaultOn).map((l) => l.id);
 
-export default function MapLayerToggle({ activeLayers, onToggle }) {
+export default function MapLayerToggle({ activeLayers, onToggle, hiddenLayerIds = [] }) {
+  const hidden = new Set(hiddenLayerIds);
+  const visibleGroups = LAYER_GROUPS.map((group) => ({
+    ...group,
+    layers: group.layers.filter((l) => !hidden.has(l.id)),
+  })).filter((group) => group.layers.length > 0);
+
   return (
     <div className="atlas-track flex items-center gap-1 overflow-x-auto border-b border-slate2/40 px-5 py-2 md:px-8">
       <span className="shrink-0 font-mono text-[8px] uppercase tracking-[0.25em] text-dim">
         Layers
       </span>
-      {LAYER_GROUPS.map((group, gi) => (
+      {visibleGroups.map((group, gi) => (
         <div key={group.id} className="flex shrink-0 items-center gap-1.5">
           {gi > 0 && <span className="h-4 w-px bg-slate2/40" />}
           <span

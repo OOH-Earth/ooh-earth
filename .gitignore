@@ -35,8 +35,13 @@ base44/.app.jsonc
 # Playwright
 /test-results/
 /playwright-report/
+/playwright-report-preprod/
 /blob-report/
 /playwright/.cache/
+
+# `base44 auth pull` writes the app's live auth provider config here --
+# social/SSO client secrets, not just enabled/disabled flags. Never commit.
+/base44/auth/
 
 # CI local dry-run artifacts (ci.yml's build/dependency-audit jobs)
 /bundle-report/

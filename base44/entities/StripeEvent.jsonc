@@ -1,0 +1,30 @@
+{
+  "name": "StripeEvent",
+  "type": "object",
+  "properties": {
+    "provider": { "type": "string", "enum": ["stripe"] },
+    "event_id": { "type": "string" },
+    "event_type": { "type": "string" },
+    "business_key": { "type": "string" },
+    "session_id": { "type": "string" },
+    "subscription_id": { "type": "string" },
+    "status": { "type": "string", "enum": ["processing", "completed", "failed_retryable"] },
+    "purchase_status": { "type": "string", "enum": ["pending", "completed"] },
+    "inventory_status": { "type": "string", "enum": ["pending", "completed"] },
+    "funding_status": { "type": "string", "enum": ["pending", "completed"] },
+    "subscription_status": { "type": "string", "enum": ["pending", "completed"] },
+    "canonical_event_id": { "type": "string" },
+    "processing_started_at": { "type": "number" },
+    "processed_at": { "type": "number" },
+    "failed_at": { "type": "number" },
+    "retry_count": { "type": "number" },
+    "last_error_code": { "type": "string" }
+  },
+  "required": ["provider", "event_id", "event_type", "status"],
+  "rls": {
+    "create": { "user_condition": { "role": "admin" } },
+    "read": { "user_condition": { "role": "admin" } },
+    "update": { "user_condition": { "role": "admin" } },
+    "delete": { "user_condition": { "role": "admin" } }
+  }
+}

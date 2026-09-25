@@ -1,4 +1,4 @@
-import { useMemo, useState, useEffect, useCallback } from 'react';
+import { useMemo, useState, useEffect, useCallback, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import Nav from '@/components/ooh/Nav';
@@ -29,9 +29,22 @@ import { Loader2, Lock, Copy, Check, ArrowUpRight } from 'lucide-react';
      · fieldStats  → executive stats + client-latency readout
      · cryptoWatch → live Polygon balances + recent SOL/ETH tx
      · Location    → real moderation queue (filter + update)
+     · Location,
+       FieldCheck  → bounded read for deterministic Geospatial Intelligence
+                     (src/lib/locationQuality.js, src/lib/geospatialIntelligence.js)
 ──────────────────────────────────────────────────────────── */
 
 import { roleOf, accessOf, agencyOf, payload } from '@/lib/clearance';
+import {
+  profileGeospatialEvidence,
+  buildVerificationQueue,
+  fieldIntelligenceRecommendations,
+  findPossibleDuplicates,
+  queryLocationIntelligence,
+} from '@/lib/geospatialIntelligence';
+import { geographicCoverage, LOCATION_QUALITY } from '@/lib/locationQuality';
+import { trackEvent } from '@/lib/trackEvent';
+import FieldMissionPanel from '@/components/ooh/FieldMissionPanel';
 const fmt = (n) => (typeof n === 'number' && Number.isFinite(n) ? n.toLocaleString() : '—');
 const num = (v) => {
   const n = Number(v);
@@ -55,8 +68,25 @@ const SECTIONS = [
   { id: 'risk', label: 'Risk Register', min: 2, isNew: true },
   { id: 'deploy', label: 'Deploy & Releases', min: 3, isNew: true },
   { id: 'console', label: 'Ops Console', min: 3, isNew: true },
+  { id: 'geo', label: 'Geospatial Intelligence', min: 2, isNew: true },
   { id: 'roster', label: 'Access Roster', min: 2, isNew: true },
 ];
+
+// Bounded, field-minimized read used only for deterministic evidence
+// classification (src/lib/locationQuality.js, src/lib/geospatialIntelligence.js).
+// Requests only the fields needed to derive bounded evidence state. Photo URLs
+// are used as presence signals and never rendered or sent to another provider.
+const GEO_CAP = 2000;
+const GEO_LOCATION_FIELDS = [
+  'id',
+  'lat',
+  'lng',
+  'status',
+  'status_updated_at',
+  'created_date',
+  'image_url',
+];
+const GEO_FIELDCHECK_FIELDS = ['id', 'location_id', 'status', 'image_url', 'created_date'];
 
 /* ── data (non-sensitive; sensitive metadata lives in opsIntel) ─ */
 const PROTOCOLS = [
@@ -144,14 +174,24 @@ const FNS = [
     'secret',
     'Stripe Checkout · secrets server-side',
   ],
-  ['cryptoWatch', 'Live on-chain treasury watcher: SOL/ETH/Polygon.', 'pub', 'no auth, read-only'],
+  [
+    'cryptoWatch',
+    'Live on-chain treasury watcher: SOL/ETH/Polygon.',
+    'pub',
+    'no auth, read-only · cached in IntelCache (60s)',
+  ],
   [
     'fetchMapLocations',
     'Live location markers from a published feed.',
     'pub',
-    'no auth, read-only',
+    'no auth, read-only · cached in IntelCache (120s)',
   ],
-  ['fieldStats', 'PII-free aggregate stats for the orbital HUD.', 'pub', 'no auth, read-only'],
+  [
+    'fieldStats',
+    'PII-free aggregate stats for the orbital HUD.',
+    'pub',
+    'no auth, read-only · cached in IntelCache (30s)',
+  ],
   [
     'importKmlLocations',
     'Admin-only bulk KML importer, SSRF-hardened.',
@@ -195,7 +235,6 @@ const PROPOSED = [
   ['secretsAudit', 'Reports secret age vs a rotation cadence.', 'R-06'],
   ['promoteBackup', 'Guarded release: records CHANGELOG + tags a version.', 'R-03'],
   ['riskRegister', 'CRUD for the risk items so the count is live-editable.', 'Risk Register'],
-  ['rateLimit', 'Per-IP throttle for public read functions.', 'R-05'],
 ];
 const EXT = [
   ['Etherscan', 'ETH tx links'],
@@ -293,7 +332,6 @@ const NODES = {
   ],
 };
 const EDGES = [
-  ['/campaign', 'fetchMapLocations'],
   ['/campaign', 'fieldStats'],
   ['/dashboard', 'fieldStats'],
   ['/portal/investor', 'investorAccess'],
@@ -420,6 +458,19 @@ const Td = ({ children, name = false, right = false, mono = false }) => (
   >
     {children}
   </td>
+);
+const VpInput = ({ label, value, onChange }) => (
+  <label className="flex flex-col gap-1">
+    <span className="font-mono text-[9px] uppercase tracking-[0.14em] text-dim">{label}</span>
+    <input
+      type="number"
+      inputMode="decimal"
+      step="any"
+      value={value}
+      onChange={onChange}
+      className="border border-slate2/60 bg-black px-2 py-1.5 font-mono text-[11px] text-silver"
+    />
+  </label>
 );
 
 /* ── section renderers ────────────────────────────────────── */
@@ -1251,6 +1302,388 @@ function DeployView() {
   );
 }
 
+// Deterministic outcome classification for a Console function call. A
+// resolved axios promise only proves the round trip completed -- it says
+// nothing about whether the function's own answer is good news. n8nPing in
+// particular returns HTTP 200 with `{ok:false, reason:...}` by design (see
+// base44/functions/n8nPing/handler.ts) when N8N_WEBHOOK_URL isn't
+// configured, specifically so callers CAN tell transport success apart from
+// integration health -- rendering that as a flat "ok" green throws that
+// distinction away. Bad-request statuses (a caller sending the wrong body
+// shape) are also a different situation than a dependency actually being
+// down, so they get their own bucket rather than one generic "err".
+function classifyOutcome(data, err) {
+  if (err) {
+    const status = err?.response?.status;
+    if (status === 400 || status === 405) return 'INVALID_REQUEST';
+    if (status === 401 || status === 403) return 'UNAVAILABLE';
+    return 'ERROR';
+  }
+  if (data && typeof data === 'object' && data.ok === false) return 'MISCONFIGURED';
+  return 'HEALTHY';
+}
+
+const OUTCOME_STYLE = {
+  HEALTHY: 'text-[#39FF14]',
+  MISCONFIGURED: 'text-[#FFC107]',
+  INVALID_REQUEST: 'text-[#FFC107]',
+  UNAVAILABLE: 'text-dim',
+  ERROR: 'text-[#FF0040]',
+};
+
+function GeoIntelligenceView({ geo }) {
+  const profile = useMemo(
+    () =>
+      geo
+        ? profileGeospatialEvidence({ locations: geo.locations, fieldChecks: geo.fieldChecks })
+        : null,
+    [geo],
+  );
+  const queue = useMemo(
+    () =>
+      geo
+        ? buildVerificationQueue({
+            locations: geo.locations,
+            fieldChecks: geo.fieldChecks,
+            limit: 15,
+          })
+        : [],
+    [geo],
+  );
+  const coverage = useMemo(() => (geo ? geographicCoverage(geo.locations) : null), [geo]);
+  const duplicateResult = useMemo(
+    () => (geo ? findPossibleDuplicates({ locations: geo.locations, limit: 200 }) : null),
+    [geo],
+  );
+  const statusById = useMemo(() => {
+    const map = new Map();
+    for (const record of geo?.locations || []) {
+      if (typeof record?.id === 'string') map.set(record.id, record.status);
+    }
+    return map;
+  }, [geo]);
+  const recommendation = useMemo(
+    () => (profile ? fieldIntelligenceRecommendations(profile)[0] : null),
+    [profile],
+  );
+  const priorityTone = { HIGH: 'high', MEDIUM: 'warn', LOW: 'mute', UNKNOWN: 'mute' };
+
+  // Top of the field-action funnel: fires once, the first time this operator
+  // actually sees a non-empty, reason-backed queue -- distinct from
+  // 'recheck_action_selected' below (clicking one row) and from the panel-
+  // level 'recheck_context_reached' (landing on the location page). No
+  // per-row impression tracking here: this is an internal, already-gated
+  // ops table, not a public discoverability surface like FieldCheckPanel's
+  // IntersectionObserver -- the tab being open already is the "viewed" signal.
+  const queueViewedRef = useRef(false);
+  useEffect(() => {
+    if (queueViewedRef.current || queue.length === 0) return;
+    queueViewedRef.current = true;
+    trackEvent('verification_queue_viewed', {
+      count: queue.length,
+      top_priority: queue[0]?.priority,
+    });
+  }, [queue]);
+
+  // Reuses the same already-fetched, already-bounded `geo.locations` read
+  // (no additional network call, no additional FieldCheck retrieval) — this
+  // is a pure client-side filter over data the tab already holds, so a
+  // keystroke here is a sub-millisecond in-memory recompute, not a request.
+  const [vp, setVp] = useState({
+    north: '',
+    south: '',
+    east: '',
+    west: '',
+    quality: '',
+    status: '',
+  });
+  const setVpField = (field) => (e) => setVp((v) => ({ ...v, [field]: e.target.value }));
+  const viewportResult = useMemo(
+    () =>
+      geo
+        ? queryLocationIntelligence(geo.locations, {
+            north: vp.north === '' ? undefined : Number(vp.north),
+            south: vp.south === '' ? undefined : Number(vp.south),
+            east: vp.east === '' ? undefined : Number(vp.east),
+            west: vp.west === '' ? undefined : Number(vp.west),
+            quality: vp.quality || undefined,
+            status: vp.status || undefined,
+            limit: 200,
+          })
+        : null,
+    [geo, vp.north, vp.south, vp.east, vp.west, vp.quality, vp.status],
+  );
+  const queueById = useMemo(() => new Map(queue.map((row) => [row.id, row])), [queue]);
+
+  if (!geo) {
+    return (
+      <Block
+        title="Geospatial Intelligence"
+        desc="Deterministic evidence profiling over bounded Location/FieldCheck reads (src/lib/geospatialIntelligence.js, src/lib/locationQuality.js). No AI, no scoring — classifications only."
+      >
+        <p className="font-mono text-[11px] text-dim">— loading bounded evidence read…</p>
+      </Block>
+    );
+  }
+
+  return (
+    <>
+      <Block
+        title="Geospatial Intelligence"
+        desc={`Deterministic evidence profile over a bounded read (cap ${GEO_CAP}/entity): ${profile.locations_seen} Location, ${profile.field_checks_seen} FieldCheck rows. ${profile.caveat}`}
+      >
+        <div className="grid grid-cols-2 gap-2.5 md:grid-cols-4">
+          <Stat
+            k="Valid coordinates"
+            v={String(profile.valid_coordinates)}
+            sub={`of ${profile.locations_seen} seen`}
+          />
+          <Stat k="Verified" v={String(profile.verified_locations)} accent="text-ozone" />
+          <Stat
+            k="Stale evidence"
+            v={String(profile.stale_locations)}
+            accent={profile.stale_locations ? 'text-flare' : ''}
+          />
+          <Stat
+            k="Never verified"
+            v={String(profile.never_verified_locations)}
+            accent={profile.never_verified_locations ? 'text-flare' : ''}
+          />
+        </div>
+        {recommendation && (
+          <p className="mt-4 border border-dashed border-ozone/40 bg-ozone/[0.03] p-3 font-mono text-[11px] text-ozone">
+            <span className="text-dim">[{recommendation.priority}]</span> {recommendation.action}
+          </p>
+        )}
+      </Block>
+
+      <Block
+        title="Field Attention Queue"
+        desc="Bounded, deterministic evidence signals. Every item states what is known, why it needs attention, and the next human field action. Rejected records stay out of this actionable queue."
+      >
+        <FieldMissionPanel queue={queue} locations={geo.locations} />
+        {queue.length === 0 ? (
+          <p className="font-mono text-[11px] text-dim">
+            — no locations currently flagged for verification.
+          </p>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full border-collapse">
+              <thead>
+                <tr>
+                  <Th>Location</Th>
+                  <Th>Priority</Th>
+                  <Th>Last field evidence</Th>
+                  <Th>Photo state</Th>
+                  <Th>Verification</Th>
+                  <Th>Context</Th>
+                  <Th>Why</Th>
+                  <Th>Action</Th>
+                </tr>
+              </thead>
+              <tbody>
+                {queue.map((row) => (
+                  <tr key={row.id}>
+                    <Td mono>{short(row.id)}</Td>
+                    <Td>
+                      <Badge tone={priorityTone[row.priority] || 'mute'}>{row.priority}</Badge>
+                    </Td>
+                    <Td>{row.last_field_evidence || 'UNKNOWN'}</Td>
+                    <Td>{row.photo_state}</Td>
+                    <Td>{row.verification_state}</Td>
+                    <Td>{row.context_evidence}</Td>
+                    <Td>{row.reasons.join('; ')}</Td>
+                    <Td>
+                      {/* Closes the one verified gap in the field-evidence flywheel: this
+                          queue already knows exactly what needs checking and why (see the
+                          Why column, sourced from buildVerificationQueue's deterministic
+                          reasons) -- it just never let anyone act on that. `?action=recheck`
+                          is a pure navigation hint (see LocationDetail.jsx): it never mutates
+                          anything, never opens the camera automatically, and any other/missing
+                          value falls back to LocationDetail's normal, unchanged behavior. */}
+                      <Link
+                        to={`/location/${row.id}?action=recheck`}
+                        onClick={() =>
+                          trackEvent('recheck_action_selected', {
+                            priority: row.priority,
+                            quality: row.quality,
+                          })
+                        }
+                        title={row.next_action}
+                        className="inline-flex items-center gap-1.5 border border-ozone/50 px-2 py-1 font-mono text-[9px] font-bold uppercase tracking-[0.15em] text-ozone transition-colors hover:border-ozone hover:bg-ozone hover:text-void"
+                      >
+                        {row.next_action} <ArrowUpRight className="h-3 w-3" />
+                      </Link>
+                    </Td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </Block>
+
+      <Block
+        title="Bounded Viewport Query"
+        desc="Scope the same bounded read above to a lat/lng box (e.g. today's field-work area) and an evidence filter — for planning a verification route by geography instead of scanning the full queue. No additional read: filters the Location rows already fetched for this tab."
+      >
+        <div className="grid grid-cols-2 gap-2.5 md:grid-cols-6">
+          <VpInput label="North" value={vp.north} onChange={setVpField('north')} />
+          <VpInput label="South" value={vp.south} onChange={setVpField('south')} />
+          <VpInput label="East" value={vp.east} onChange={setVpField('east')} />
+          <VpInput label="West" value={vp.west} onChange={setVpField('west')} />
+          <label className="flex flex-col gap-1">
+            <span className="font-mono text-[9px] uppercase tracking-[0.14em] text-dim">
+              Quality
+            </span>
+            <select
+              value={vp.quality}
+              onChange={setVpField('quality')}
+              className="border border-slate2/60 bg-black px-2 py-1.5 font-mono text-[11px] text-silver"
+            >
+              <option value="">any</option>
+              {Object.values(LOCATION_QUALITY).map((q) => (
+                <option key={q} value={q}>
+                  {q}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label className="flex flex-col gap-1">
+            <span className="font-mono text-[9px] uppercase tracking-[0.14em] text-dim">
+              Status
+            </span>
+            <select
+              value={vp.status}
+              onChange={setVpField('status')}
+              className="border border-slate2/60 bg-black px-2 py-1.5 font-mono text-[11px] text-silver"
+            >
+              <option value="">any</option>
+              <option value="verified">verified</option>
+              <option value="pending">pending</option>
+              <option value="rejected">rejected</option>
+              <option value="unknown">unknown</option>
+            </select>
+          </label>
+        </div>
+
+        {!viewportResult || viewportResult.state === 'INSUFFICIENT_DATA' ? (
+          <p className="mt-4 font-mono text-[11px] text-dim">
+            — enter all four bounds (North ≥ South, each within valid lat/lng range) to query this
+            bounded read by viewport.
+          </p>
+        ) : viewportResult.results.length === 0 ? (
+          <p className="mt-4 font-mono text-[11px] text-dim">
+            — no locations in this bounded read fall within that viewport. This does not prove no
+            inventory exists there — only that none appear in the current bounded read.
+          </p>
+        ) : (
+          <div className="mt-4 overflow-x-auto">
+            <table className="w-full border-collapse">
+              <thead>
+                <tr>
+                  <Th>Location</Th>
+                  <Th>Lat</Th>
+                  <Th>Lng</Th>
+                  <Th>Status</Th>
+                  <Th>Quality</Th>
+                  <Th>Freshness</Th>
+                  <Th>Priority</Th>
+                  <Th>Next action</Th>
+                </tr>
+              </thead>
+              <tbody>
+                {viewportResult.results.map((row) => {
+                  const queued = queueById.get(row.id);
+                  return (
+                    <tr key={row.id}>
+                      <Td mono>{short(row.id)}</Td>
+                      <Td mono>{row.lat.toFixed(5)}</Td>
+                      <Td mono>{row.lng.toFixed(5)}</Td>
+                      <Td>{row.status}</Td>
+                      <Td>{row.quality}</Td>
+                      <Td>{row.freshness}</Td>
+                      <Td>
+                        {queued ? (
+                          <Badge tone={priorityTone[queued.priority] || 'mute'}>
+                            {queued.priority}
+                          </Badge>
+                        ) : (
+                          <span className="text-dim">—</span>
+                        )}
+                      </Td>
+                      <Td>{queued ? queued.next_action : 'No open field action.'}</Td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+            {viewportResult.results.length >= 200 && (
+              <p className="mt-2 font-mono text-[10px] text-dim">
+                Result cap reached (200); narrow the viewport for a complete list.
+              </p>
+            )}
+          </div>
+        )}
+      </Block>
+
+      <div className="grid gap-2.5 md:grid-cols-2">
+        <Block title="Geographic Coverage" desc={coverage.caveat}>
+          <div className="grid grid-cols-3 gap-2.5">
+            <Stat k="Seen" v={String(coverage.total_seen)} />
+            <Stat k="Valid coords" v={String(coverage.valid_coordinates)} />
+            <Stat k="Verified coords" v={String(coverage.verified_coordinates)} />
+          </div>
+          <p className="mt-3 font-mono text-[10px] uppercase tracking-[0.12em] text-dim">
+            state: {coverage.state}
+          </p>
+        </Block>
+        <Block
+          title="Possible Duplicate Evidence"
+          desc={
+            duplicateResult
+              ? `True-distance candidates within ${duplicateResult.radius_m}m, capped. ${duplicateResult.caveat} Never auto-merged, auto-deleted, or auto-corrected — always a human decision.`
+              : 'True-distance candidates, capped. Never auto-merged, auto-deleted, or auto-corrected — always a human decision.'
+          }
+        >
+          {!duplicateResult || duplicateResult.candidates.length === 0 ? (
+            <p className="font-mono text-[11px] text-dim">
+              — no coordinate pairs found within {duplicateResult?.radius_m ?? ''}m in this bounded
+              read.
+            </p>
+          ) : (
+            <ul className="space-y-2 font-mono text-[11px] text-dim">
+              {duplicateResult.candidates.slice(0, 10).map((candidate) => {
+                const [first, second] = candidate.ids;
+                const firstStatus = statusById.get(first);
+                const secondStatus = statusById.get(second);
+                return (
+                  <li key={candidate.ids.join('-')} className="border-b border-white/5 pb-2">
+                    <p className="text-ozone">
+                      <span className="text-dim">POSSIBLE DUPLICATE — </span>
+                      {short(first)}
+                      {firstStatus ? ` (${firstStatus})` : ''} ↔ {short(second)}
+                      {secondStatus ? ` (${secondStatus})` : ''}
+                    </p>
+                    <p>Distance: {candidate.distance_m} m</p>
+                    <p>Reason: {candidate.reason}</p>
+                    <p>Action: {candidate.next_action}</p>
+                  </li>
+                );
+              })}
+            </ul>
+          )}
+          {duplicateResult && duplicateResult.candidates.length > 10 && (
+            <p className="mt-2 font-mono text-[10px] text-dim">
+              +{duplicateResult.candidates.length - 10} more (bounded read; not exhaustive).
+            </p>
+          )}
+        </Block>
+      </div>
+    </>
+  );
+}
+
 function ConsoleView({ queue, onVerify, busy }) {
   const [outs, setOuts] = useState({});
   const run = useCallback(async (key, fn, args) => {
@@ -1261,9 +1694,15 @@ function ConsoleView({ queue, onVerify, busy }) {
       const dt = Math.round(performance.now() - t0);
       const data = payload(res);
       const preview = JSON.stringify(data)?.slice(0, 220);
-      setOuts((o) => ({ ...o, [key]: { state: 'ok', dt, preview } }));
+      const outcome = classifyOutcome(data, null);
+      setOuts((o) => ({ ...o, [key]: { state: 'ok', outcome, dt, preview } }));
     } catch (e) {
-      setOuts((o) => ({ ...o, [key]: { state: 'err', msg: e?.message || 'call failed' } }));
+      const outcome = classifyOutcome(null, e);
+      const bodyMsg = e?.response?.data?.error || e?.response?.data?.reason;
+      setOuts((o) => ({
+        ...o,
+        [key]: { state: 'err', outcome, msg: bodyMsg || e?.message || 'call failed' },
+      }));
     }
   }, []);
   const ACTIONS = [
@@ -1281,7 +1720,11 @@ function ConsoleView({ queue, onVerify, busy }) {
       desc: 'Re-pull the daily-cached LLM intel (skyIntel).',
       btn: 'Run cachedIntel',
       fn: 'cachedIntel',
-      args: {},
+      // cachedIntel's REGISTRY currently has exactly one entry ("skyIntel");
+      // an empty body resolves REGISTRY[undefined] and 400s with "unknown
+      // intel key" (base44/functions/cachedIntel/entry.ts) -- this was the
+      // console's own bug, not the function's.
+      args: { key: 'skyIntel' },
     },
     {
       key: 'stats',
@@ -1337,12 +1780,18 @@ function ConsoleView({ queue, onVerify, busy }) {
                     {o.state === 'run' && <span className="text-ozone">→ dispatching…</span>}
                     {o.state === 'ok' && (
                       <>
-                        <span className="text-[#39FF14]">→ ok · {o.dt} ms</span>
+                        <span className={OUTCOME_STYLE[o.outcome]}>
+                          → {o.outcome} · {o.dt} ms
+                        </span>
                         <br />
                         {o.preview}
                       </>
                     )}
-                    {o.state === 'err' && <span className="text-[#FF0040]">→ {o.msg}</span>}
+                    {o.state === 'err' && (
+                      <span className={OUTCOME_STYLE[o.outcome]}>
+                        → {o.outcome} · {o.msg}
+                      </span>
+                    )}
                   </pre>
                 )}
               </div>
@@ -1498,7 +1947,10 @@ function RosterView() {
 /* ── page ─────────────────────────────────────────────────── */
 export default function PortalOps() {
   const { user, isLoadingAuth, authChecked } = useAuth();
-  const [active, setActive] = useState('exec');
+  const [active, setActive] = useState(() => {
+    const requested = new URLSearchParams(window.location.search).get('section');
+    return SECTIONS.some((section) => section.id === requested) ? requested : 'exec';
+  });
   const [clr, setClr] = useState(3); // UI-only demo of the access matrix
   const [intel, setIntel] = useState(null); // { risks, secrets, fn_secrets } from opsIntel
   const [stats, setStats] = useState(null);
@@ -1506,6 +1958,7 @@ export default function PortalOps() {
   const [lat, setLat] = useState({});
   const [queue, setQueue] = useState(null);
   const [busy, setBusy] = useState({});
+  const [geo, setGeo] = useState(null); // bounded { locations, fieldChecks } for geospatial intelligence
 
   const isAdmin = roleOf(user) === 'admin' || accessOf(user) === 'admin';
   const isAgency = isAdmin || agencyOf(user);
@@ -1548,6 +2001,15 @@ export default function PortalOps() {
         if (alive) setQueue(q || []);
       } catch {
         if (alive) setQueue([]);
+      }
+      try {
+        const [locations, fieldChecks] = await Promise.all([
+          base44.entities.Location.filter({}, '-created_date', GEO_CAP, 0, GEO_LOCATION_FIELDS),
+          base44.entities.FieldCheck.filter({}, '-created_date', GEO_CAP, 0, GEO_FIELDCHECK_FIELDS),
+        ]);
+        if (alive) setGeo({ locations: locations || [], fieldChecks: fieldChecks || [] });
+      } catch {
+        if (alive) setGeo({ locations: [], fieldChecks: [] });
       }
     })();
     return () => {
@@ -1637,6 +2099,8 @@ export default function PortalOps() {
         return <DeployView />;
       case 'console':
         return <ConsoleView queue={queue} onVerify={verify} busy={busy} />;
+      case 'geo':
+        return <GeoIntelligenceView geo={geo} />;
       case 'roster':
         return <RosterView />;
       default:

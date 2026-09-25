@@ -1,17 +1,21 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { base44 } from '@/api/base44Client';
+import { useAuthGatedSubscribe } from '@/hooks/useAuthGatedSubscribe';
 import { Image } from '@/components/ui/image';
-import { RefreshCw, Clock, MapPin, Loader2, Ban, AlertCircle } from 'lucide-react';
+import {
+  RefreshCw,
+  Clock,
+  MapPin,
+  Loader2,
+  Ban,
+  AlertCircle,
+  ArrowRight,
+  XCircle,
+} from 'lucide-react';
 import FieldCheckCamera from '@/components/ooh/FieldCheckCamera';
-
-const CONDITION_LABELS = {
-  functional: 'Functional',
-  neglected: 'Neglected',
-  damaged: 'Damaged',
-  abandoned: 'Abandoned',
-  reclaimed: 'Reclaimed',
-  upgraded: 'Upgraded',
-};
+import TimeSinceTag from '@/components/ooh/TimeSinceTag';
+import { computeFreshness, detectChanges, CONDITION_LABELS } from '@/lib/fieldCheckFreshness';
+import { trackEvent } from '@/lib/trackEvent';
 
 function timeAgo(iso) {
   if (!iso) return '';
@@ -26,41 +30,85 @@ function timeAgo(iso) {
   return new Date(iso).toLocaleDateString();
 }
 
-export default function FieldCheckPanel({ location }) {
+export default function FieldCheckPanel({ location, focusRecheck = false }) {
   const [checks, setChecks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [cameraOpen, setCameraOpen] = useState(false);
+  const ctaRef = useRef(null);
+  const panelRef = useRef(null);
+  // Guards the deep-link scroll/track so it fires exactly once per mount,
+  // even though `checks`/`loading` change again on the FieldCheck.subscribe
+  // callback below -- without this, every live update while the operator is
+  // reading the panel would re-scroll them back to the top of it.
+  const contextReachedRef = useRef(false);
+
+  // Discoverability signal, not just a page-view: this panel sits well
+  // below the fold on mobile (measured ~1.6 viewport-heights down in
+  // Phase 7 recon), so "the page loaded" and "the CTA was actually seen"
+  // are different claims. Fires once, first time the button crosses 50%
+  // visible.
+  useEffect(() => {
+    const el = ctaRef.current;
+    if (!el || typeof IntersectionObserver !== 'function') return;
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          trackEvent('recheck_cta_viewed', { check_type: location?.type });
+          observer.disconnect();
+        }
+      },
+      { threshold: 0.5 },
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [location?.type]);
+
+  // Guards against a late-arriving response for a location the panel has
+  // since navigated away from (e.g. rapid location switching) clobbering
+  // fresher state -- equivalent to the `active`-flag pattern this replaces,
+  // but also covers the realtime-triggered refetch below.
+  const latestLocationIdRef = useRef(null);
+  const loadFieldChecks = useCallback(async () => {
+    const id = location?.id;
+    if (!id) return;
+    latestLocationIdRef.current = id;
+    setLoading(true);
+    try {
+      const recs = await base44.entities.FieldCheck.filter(
+        { location_id: id },
+        '-created_date',
+        50,
+      );
+      if (latestLocationIdRef.current === id) setChecks(recs || []);
+    } catch {
+      if (latestLocationIdRef.current === id) setChecks([]);
+    } finally {
+      if (latestLocationIdRef.current === id) setLoading(false);
+    }
+  }, [location?.id]);
 
   useEffect(() => {
-    if (!location?.id) return;
-    let active = true;
-    const load = async () => {
-      setLoading(true);
-      try {
-        const recs = await base44.entities.FieldCheck.filter(
-          { location_id: location.id },
-          '-created_date',
-          50,
-        );
-        if (active) setChecks(recs || []);
-      } catch {
-        if (active) setChecks([]);
-      } finally {
-        if (active) setLoading(false);
-      }
-    };
-    load();
-    let unsub;
-    try {
-      unsub = base44.entities.FieldCheck?.subscribe?.(load);
-    } catch {
-      unsub = null;
-    }
-    return () => {
-      active = false;
-      if (unsub) unsub();
-    };
-  }, [location?.id]);
+    loadFieldChecks();
+  }, [loadFieldChecks]);
+
+  useAuthGatedSubscribe(location?.id ? 'FieldCheck' : null, () => loadFieldChecks());
+
+  // Deep-link arrival: distinct from `recheck_cta_viewed` above (which only
+  // proves the button was seen) -- this proves the operator actually landed
+  // in field-check context from a Geospatial Intelligence recommendation.
+  // Deliberately does NOT open the camera or request any permission; it only
+  // scrolls the existing panel into view once real data has loaded, so the
+  // freshness/never-checked line and the (unchanged) "Re-check this spot"
+  // button are what greets them, not the top of the page.
+  useEffect(() => {
+    if (!focusRecheck || loading || contextReachedRef.current) return;
+    contextReachedRef.current = true;
+    panelRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    trackEvent('recheck_context_reached', {
+      check_type: location?.type,
+      has_evidence: checks.length > 0,
+    });
+  }, [focusRecheck, loading, checks.length, location?.type]);
 
   const verified = checks.filter((c) => c.status === 'verified');
   const latest = checks[0];
@@ -73,9 +121,24 @@ export default function FieldCheckPanel({ location }) {
   const earlierLabel = verified.length >= 2 ? 'Earlier' : 'Original report';
   const showComparison =
     Boolean(latestImage) && Boolean(earlierImage) && earlierImage !== latestImage;
+  const changes = detectChanges(verified[0], verified.length >= 2 ? verified[1] : location);
+  const freshness = computeFreshness(location, checks);
 
   return (
-    <div className="mt-8 border border-ozone/30 bg-card">
+    <div ref={panelRef} className="mt-8 border border-ozone/30 bg-card scroll-mt-20">
+      {/* Deep-link banner: only when arriving from a Geospatial Intelligence
+          recommendation (PortalOps' Verification Priority Queue today).
+          Reuses freshness/checks already computed above -- no extra fetch,
+          no invented confidence score, just the same reason the queue used. */}
+      {focusRecheck && !loading && (
+        <div className="border-b border-ozone/30 bg-ozone/5 px-4 py-2.5 font-mono text-[9px] uppercase tracking-[0.15em] text-ozone">
+          // Flagged for field verification —{' '}
+          {checks.length === 0
+            ? 'no field evidence on record yet'
+            : 'existing evidence may be out of date'}
+          . Re-check below to update it.
+        </div>
+      )}
       {/* Header */}
       <div className="flex items-center justify-between gap-3 border-b border-slate2/40 px-4 py-3">
         <span className="flex items-center gap-2">
@@ -90,7 +153,11 @@ export default function FieldCheckPanel({ location }) {
           )}
         </span>
         <button
-          onClick={() => setCameraOpen(true)}
+          ref={ctaRef}
+          onClick={() => {
+            trackEvent('camera_opened', { check_type: location?.type });
+            setCameraOpen(true);
+          }}
           className="flex items-center gap-1.5 border border-ozone bg-ozone px-3 py-1.5 font-mono text-[9px] font-bold uppercase tracking-[0.2em] text-void transition-colors hover:bg-flare hover:border-flare"
         >
           <RefreshCw className="h-3 w-3" /> Re-check this spot
@@ -98,6 +165,19 @@ export default function FieldCheckPanel({ location }) {
       </div>
 
       <div className="px-4 py-4">
+        {!loading && freshness && (
+          <div className="mb-4 flex flex-wrap items-center gap-x-3 gap-y-1 font-mono text-[9px] uppercase tracking-[0.15em] text-dim">
+            <span className="flex items-center gap-1.5">
+              <Clock className="h-3 w-3 text-ozone" />
+              Last confirmed <TimeSinceTag since={freshness.lastConfirmedAt} compact /> ago
+              {freshness.source === 'recheck' ? ' via re-check' : ' at intake'}
+            </span>
+            {!freshness.hasAnyCheck && <span className="text-dim/60">never re-checked</span>}
+            {freshness.pendingNewer && (
+              <span className="text-flare">newer re-check pending verification</span>
+            )}
+          </div>
+        )}
         {loading ? (
           <div className="flex items-center justify-center py-6">
             <Loader2 className="h-5 w-5 animate-spin text-ozone" />
@@ -115,6 +195,28 @@ export default function FieldCheckPanel({ location }) {
           </div>
         ) : (
           <>
+            {/* What changed */}
+            {changes.length > 0 && (
+              <div className="mb-5 border border-flare/30 bg-flare/5 p-3">
+                <span className="font-mono text-[9px] uppercase tracking-[0.3em] text-flare">
+                  // What changed
+                </span>
+                <div className="mt-2 space-y-1.5">
+                  {changes.map((c) => (
+                    <div
+                      key={c.key}
+                      className="flex flex-wrap items-center gap-1.5 font-mono text-[10px] uppercase tracking-[0.1em]"
+                    >
+                      <span className="text-dim">{c.label}:</span>
+                      <span className="text-darkgray">{c.before}</span>
+                      <ArrowRight className="h-2.5 w-2.5 text-flare" />
+                      <span className="font-bold text-silver">{c.after}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
             {/* Before / After comparison */}
             {showComparison && (
               <div className="mb-5">
@@ -200,6 +302,11 @@ export default function FieldCheckPanel({ location }) {
                           Verified
                         </span>
                       )}
+                      {check.status === 'rejected' && (
+                        <span className="flex items-center gap-1 border border-dim/40 px-1 py-0.5 font-mono text-[7px] uppercase tracking-[0.15em] text-dim">
+                          <XCircle className="h-2 w-2" /> Rejected — not used in evidence above
+                        </span>
+                      )}
                     </div>
                     <div className="mt-1 flex flex-wrap gap-1.5">
                       {check.condition && (
@@ -230,9 +337,8 @@ export default function FieldCheckPanel({ location }) {
 
             {latest && (
               <p className="mt-4 border-t border-slate2/30 pt-3 font-mono text-[9px] leading-relaxed text-dim">
-                // Last checked {timeAgo(latest.created_date)}
-                {latest.checked_by ? ` by ${latest.checked_by}` : ''}. Each check builds the record
-                — re-photograph to track changes over time.
+                // Last checked {timeAgo(latest.created_date)}. Each check builds the record —
+                re-photograph to track changes over time.
               </p>
             )}
           </>

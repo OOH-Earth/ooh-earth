@@ -9,7 +9,12 @@ import WalletButton from '@/components/ooh/WalletButton';
 import DonationWatcher from '@/components/ooh/campaign/DonationWatcher';
 import { CAMPAIGN } from '@/components/ooh/fundConfig';
 import { base44 } from '@/api/base44Client';
+import { trackEvent } from '@/lib/trackEvent';
 import { Megaphone, CheckCircle2 } from 'lucide-react';
+
+const PAYMENT_CONFIRMED_SESSION_KEY = 'ooh_payment_confirmed_session';
+const CONFIRM_POLL_ATTEMPTS = 4;
+const CONFIRM_POLL_DELAY_MS = 2500;
 
 export default function Campaign() {
   const [thanks, setThanks] = useState(false);
@@ -17,6 +22,38 @@ export default function Campaign() {
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
     if (urlParams.get('status') === 'thanks') setThanks(true);
+
+    // payment_confirmed is never inferred from this URL alone -- the session
+    // id it carries is just a capability token for asking the server (which
+    // only reflects stripeWebhook's own durable state) whether this specific
+    // checkout actually completed. The webhook can land a moment after the
+    // browser redirect, so this polls briefly rather than checking once.
+    const sessionId = urlParams.get('session_id');
+    if (!sessionId) return;
+    if (sessionStorage.getItem(PAYMENT_CONFIRMED_SESSION_KEY) === sessionId) return;
+
+    let cancelled = false;
+    (async () => {
+      for (let attempt = 0; attempt < CONFIRM_POLL_ATTEMPTS && !cancelled; attempt++) {
+        try {
+          const res = await base44.functions.invoke('donationStatus', { session_id: sessionId });
+          if (res?.data?.confirmed) {
+            if (!cancelled) {
+              trackEvent('payment_confirmed', { offer: 'donation' });
+              sessionStorage.setItem(PAYMENT_CONFIRMED_SESSION_KEY, sessionId);
+            }
+            return;
+          }
+        } catch {
+          /* a transient check failure should not stop the remaining attempts,
+             and must never affect the thank-you page itself */
+        }
+        if (!cancelled) await new Promise((r) => setTimeout(r, CONFIRM_POLL_DELAY_MS));
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   // Live raised total — same confirmed-funds source (fieldStats) the rest of the

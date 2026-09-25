@@ -2,6 +2,11 @@
   "name": "Location",
   "type": "object",
   "properties": {
+    "client_operation_id": {
+      "type": "string",
+      "description": "Client-generated idempotency token for offline/retry submissions",
+      "maxLength": 120
+    },
     "title": {
       "type": "string",
       "description": "Short label, e.g. 'Billboard \u00b7 1039 Pleonchit'"
@@ -16,9 +21,34 @@
         "sticker",
         "mural",
         "transit",
+        "skatepark",
+        "basketball_court",
+        "multi_use_court",
         "other"
       ],
       "default": "other"
+    },
+    "setting": {
+      "type": "string",
+      "enum": [
+        "unknown",
+        "outdoor",
+        "indoor",
+        "covered"
+      ],
+      "default": "unknown",
+      "description": "Public-space facility only: indoor/outdoor/covered. Unknown unless directly observed."
+    },
+    "public_access": {
+      "type": "string",
+      "enum": [
+        "unknown",
+        "free",
+        "low_cost",
+        "restricted"
+      ],
+      "default": "unknown",
+      "description": "Public-space facility only: access model. Never infer 'free'/municipal ownership just because a facility looks public — default stays unknown until evidenced."
     },
     "address": {
       "type": "string"
@@ -66,12 +96,64 @@
         "verified",
         "rejected"
       ],
-      "default": "pending"
+      "default": "pending",
+      "rls": {
+        "write": {
+          "$or": [
+            {
+              "user_condition": {
+                "role": "admin"
+              }
+            },
+            {
+              "user_condition": {
+                "data.access": "admin"
+              }
+            },
+            {
+              "user_condition": {
+                "data.access": "moderator"
+              }
+            },
+            {
+              "user_condition": {
+                "data.agency": true
+              }
+            }
+          ]
+        }
+      }
     },
     "status_updated_at": {
       "type": "string",
       "format": "date-time",
-      "description": "Timestamp of the last verify/reject action — drives the time-since-last-tag counter"
+      "description": "Timestamp of the last verify/reject action — drives the time-since-last-tag counter",
+      "rls": {
+        "write": {
+          "$or": [
+            {
+              "user_condition": {
+                "role": "admin"
+              }
+            },
+            {
+              "user_condition": {
+                "data.access": "admin"
+              }
+            },
+            {
+              "user_condition": {
+                "data.access": "moderator"
+              }
+            },
+            {
+              "user_condition": {
+                "data.agency": true
+              }
+            }
+          ]
+        }
+      }
     },
     "brand_name": {
       "type": "string",

@@ -18,19 +18,67 @@ function trackConsoleErrors(page: import('@playwright/test').Page) {
 
 test('primary navigation: home -> map -> report all render without crashing', async ({ page }) => {
   const consoleErrors = trackConsoleErrors(page);
-  await mockBase44(page, { user: null, locations: {}, locationPhotos: [] });
+  const mapProjectionRequests: string[] = [];
+  page.on('request', (request) => {
+    const url = new URL(request.url());
+    if (
+      url.pathname.includes('/entities/FieldCheck') ||
+      url.pathname.includes('/entities/LeadClaim')
+    ) {
+      mapProjectionRequests.push(url.searchParams.get('fields') || '');
+    }
+  });
+  await page.addInitScript(() => localStorage.setItem('ooh-map-view', JSON.stringify('flat')));
+  await mockBase44(page, {
+    user: null,
+    locations: {
+      'fixture-location-1': {
+        id: 'fixture-location-1',
+        title: 'Fixture location',
+        lat: 13.746,
+        lng: 100.55,
+        status: 'verified',
+      },
+    },
+    locationPhotos: [],
+  });
 
   await page.goto('/');
   await expect(page).toHaveTitle(/OOH/i);
 
+  const projectedMapRequest = page.waitForRequest((request) => {
+    const url = new URL(request.url());
+    return (
+      url.pathname.includes('/entities/FieldCheck') &&
+      url.searchParams.get('fields') === 'location_id,status,created_date'
+    );
+  });
+  const viewportLocationRequest = page.waitForRequest((request) => {
+    const url = new URL(request.url());
+    return (
+      url.pathname.includes('/entities/Location') &&
+      (url.searchParams.get('q') || '').includes('"lat"')
+    );
+  });
   await page.getByRole('link', { name: 'Field map', exact: true }).click();
   await expect(page).toHaveURL(/\/map/);
   await expect(page.locator('#root')).not.toBeEmpty();
+  const map = page.locator('.leaflet-container');
+  await map.hover();
+  await page.mouse.down();
+  await page.mouse.move(720, 420, { steps: 2 });
+  await page.mouse.up();
+  await projectedMapRequest;
+  const viewportQuery = JSON.parse(
+    new URL((await viewportLocationRequest).url()).searchParams.get('q')!,
+  );
+  expect(viewportQuery.lat).toMatchObject({ $gte: expect.any(Number), $lte: expect.any(Number) });
 
   await page.goto('/report');
   await expect(page.getByRole('heading', { name: /Adbusting/i })).toBeVisible();
 
   expect(filterCrashes(consoleErrors), consoleErrors.join('\n')).toEqual([]);
+  expect(mapProjectionRequests).toContain('location_id,status,created_date');
 });
 
 test('donation/support page renders the Stripe donate panel', async ({ page }) => {

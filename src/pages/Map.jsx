@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { usePersistentState } from '@/hooks/usePersistentState';
 import { base44 } from '@/api/base44Client';
+import { useAuthGatedSubscribe } from '@/hooks/useAuthGatedSubscribe';
 import Nav from '@/components/ooh/Nav';
 import LocationMap from '@/components/ooh/LocationMap';
 import MapToolbar from '@/components/ooh/map/MapToolbar';
@@ -9,6 +10,8 @@ import MapSearch from '@/components/ooh/map/MapSearch';
 import LocationCard from '@/components/ooh/map/LocationCard';
 import seedMarkers from '@/components/ooh/mapSeed';
 import { toMarker } from '@/components/ooh/map/markerUtils';
+import { computeFreshness } from '@/lib/fieldCheckFreshness';
+import { classifyLocationQuality } from '@/lib/locationQuality';
 import {
   Loader2,
   FileDown,
@@ -19,10 +22,12 @@ import {
   Camera,
   Key,
   Crosshair,
+  AlertTriangle,
   SprayCan,
   Maximize2,
   ChevronLeft,
   ChevronRight,
+  Fingerprint,
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useWalkthrough } from '@/lib/walkthroughContext';
@@ -47,6 +52,9 @@ import FieldTallyWidget from '@/components/ooh/map/FieldTallyWidget';
 import { useMapStyle } from '@/lib/mapStyleContext';
 import RadioStationCard from '@/components/ooh/map/RadioStationCard';
 import { RADIO_STATIONS } from '@/components/ooh/radio/radioStations';
+import { deriveFieldAttention } from '@/lib/geospatialIntelligence';
+import { addToFieldMission } from '@/lib/fieldMission';
+import { attentionMatchesFilter, MAP_ATTENTION_FILTERS } from '@/lib/mapAttention';
 
 const TOUR = [
   {
@@ -113,6 +121,7 @@ const TOUR = [
 
 export default function Map() {
   const [raw, setRaw] = useState(null);
+  const [user, setUser] = useState(null);
   const [mode, setMode] = usePersistentState('ooh-map-mode', 'split');
   const [searchCollapsed, setSearchCollapsed] = usePersistentState(
     'ooh-map-search-collapsed',
@@ -125,6 +134,14 @@ export default function Map() {
   const [typeFilter, setTypeFilter] = useState('all');
   const [query, setQuery] = useState('');
   const [selectedId, setSelectedId] = useState(null);
+  const missionIds = useMemo(() => {
+    const rawMission = new URLSearchParams(window.location.search).get('mission');
+    return new Set(
+      decodeURIComponent(rawMission || '')
+        .split(',')
+        .filter(Boolean),
+    );
+  }, []);
   const [hoverId, setHoverId] = useState(null);
   const [view, setView] = usePersistentState('ooh-map-view', 'globe');
   const [bounds, setBounds] = useState(null);
@@ -135,6 +152,12 @@ export default function Map() {
   const [flyTo, setFlyTo] = useState(null);
   const [activeLayers, setActiveLayers] = usePersistentState('ooh-map-layers-v2', DEFAULT_LAYERS);
   const [layerFilter, setLayerFilter] = useState('all');
+  const [attentionMode, setAttentionMode] = usePersistentState('ooh-map-attention-mode', false);
+  const [attentionFilter, setAttentionFilter] = useState(
+    /** @type {string} */ (MAP_ATTENTION_FILTERS.ALL),
+  );
+  const [missionNotice, setMissionNotice] = useState('');
+  const [missionLinkReady, setMissionLinkReady] = useState(false);
   const { style: mapStyle } = useMapStyle();
   const { spots: mushrooms, loading: mushLoading } = useMushroomData();
   const { spots: floraSpots, loading: floraLoading } = useFloraData();
@@ -147,6 +170,25 @@ export default function Map() {
   useEffect(() => {
     registerSteps(TOUR);
   }, [registerSteps]);
+
+  // Lightweight identity check for the "My Discoveries" layer -- deliberately
+  // not useGamification() here, which would trigger its own full
+  // base44.listAllLocations() fetch duplicating the one reloadLocations()
+  // already does below for the exact same records.
+  useEffect(() => {
+    let cancelled = false;
+    base44.auth
+      .me()
+      .then((me) => {
+        if (!cancelled) setUser(me);
+      })
+      .catch(() => {
+        if (!cancelled) setUser(null);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   // Dispatch a resize event after panel transitions so Leaflet/MapLibre
   // recalculate their container dimensions (fixes gray tiles / misalignment).
@@ -187,6 +229,9 @@ export default function Map() {
   const [detailItem, setDetailItem] = useState(null);
   const [isMobile, setIsMobile] = useState(false);
   const [globeClusters, setGlobeClusters] = useState(0);
+  const viewportTimerRef = useRef(null);
+  const viewportRequestRef = useRef(0);
+  const requestedViewportRef = useRef('');
 
   // Mobile detection — lg breakpoint (1024px) separates the mobile sheet
   // layout from the desktop split layout.
@@ -213,54 +258,176 @@ export default function Map() {
   }, []);
 
   const reloadLocations = useCallback(async () => {
+    setRaw((current) => ({
+      markers: current?.markers || [],
+      live: false,
+      locationState: 'loading',
+    }));
     try {
-      const [recs, verifiedChecks] = await Promise.all([
+      // One global query, no status filter -- RLS already limits what
+      // comes back to all verified checks plus the caller's own
+      // pending/rejected ones, same as it always did for the "living
+      // record" flag below. Widened (not duplicated) so the same fetch
+      // also covers the freshness signal (src/lib/fieldCheckFreshness.js,
+      // shared with FieldCheckPanel), which needs pending checks too, to
+      // detect a genuinely newer unverified re-check.
+      const [recs, checks] = await Promise.all([
         base44.listAllLocations(),
-        base44.entities.FieldCheck.filter({ status: 'verified' }, '-created_date', 2000).catch(
-          () => [],
-        ),
+        base44.entities.FieldCheck.filter({}, '-created_date', 2000, 0, [
+          'location_id',
+          'status',
+          'created_date',
+        ]).catch(() => []),
       ]);
+      // Plain object, not `new Map()` -- this component is itself named
+      // `Map`, which shadows the global Map constructor in this scope.
+      const checksByLocation = {};
+      for (const c of checks || []) {
+        const key = String(c.location_id);
+        (checksByLocation[key] ??= []).push(c);
+      }
       // "Living record" = has at least one verified re-check, i.e. the same
       // eligibility PR #56's before/after comparison already uses. Computed
       // as one extra global query, not per-marker — a FieldCheck getting
       // verified doesn't fire a Location realtime event, so this flag only
       // refreshes on reload/pull-to-refresh, not instantly.
-      const livingRecordIds = new Set((verifiedChecks || []).map((c) => String(c.location_id)));
+      const livingRecordIds = new Set(
+        (checks || []).filter((c) => c.status === 'verified').map((c) => String(c.location_id)),
+      );
       const markers = (recs || [])
         .filter((r) => r.status !== 'rejected')
-        .map((r) => ({ ...toMarker(r), livingRecord: livingRecordIds.has(String(r.id)) }));
-      setRaw(markers.length ? { markers, live: true } : { markers: seedMarkers, live: false });
+        .map((r) => ({
+          ...toMarker(r),
+          livingRecord: livingRecordIds.has(String(r.id)),
+          freshness: computeFreshness(r, checksByLocation[String(r.id)] || []),
+          intelligence: classifyLocationQuality(r),
+          attention: deriveFieldAttention({
+            location: r,
+            fieldChecks: checksByLocation[String(r.id)] || [],
+          }),
+        }));
+      setRaw(
+        markers.length
+          ? { markers, live: true, locationState: 'ready' }
+          : { markers: seedMarkers, live: false, locationState: 'empty' },
+      );
     } catch (e) {
-      setRaw({ markers: seedMarkers, live: false });
+      setRaw({ markers: seedMarkers, live: false, locationState: 'unavailable' });
+    }
+  }, []);
+
+  const loadViewportLocations = useCallback(async (viewport) => {
+    const viewportKey = JSON.stringify(viewport);
+    if (requestedViewportRef.current === viewportKey) return;
+    requestedViewportRef.current = viewportKey;
+    const requestId = ++viewportRequestRef.current;
+    setRaw((current) => ({
+      markers: current?.markers || [],
+      live: false,
+      locationState: 'loading',
+    }));
+    try {
+      const recs = await /** @type {any} */ (base44).listViewportLocations(viewport);
+      const ids = (recs || []).map((r) => String(r.id)).filter(Boolean);
+      const checks = ids.length
+        ? await base44.entities.FieldCheck.filter(
+            { location_id: { $in: ids } },
+            '-created_date',
+            2000,
+            0,
+            ['location_id', 'status', 'created_date'],
+          ).catch(() => [])
+        : [];
+      if (requestId !== viewportRequestRef.current) return;
+      const checksByLocation = {};
+      for (const c of checks || []) {
+        const key = String(c.location_id);
+        (checksByLocation[key] ??= []).push(c);
+      }
+      const livingRecordIds = new Set(
+        (checks || []).filter((c) => c.status === 'verified').map((c) => String(c.location_id)),
+      );
+      const markers = (recs || [])
+        .filter((r) => r.status !== 'rejected')
+        .map((r) => ({
+          ...toMarker(r),
+          livingRecord: livingRecordIds.has(String(r.id)),
+          freshness: computeFreshness(r, checksByLocation[String(r.id)] || []),
+          intelligence: classifyLocationQuality(r),
+          attention: deriveFieldAttention({
+            location: r,
+            fieldChecks: checksByLocation[String(r.id)] || [],
+          }),
+        }));
+      setRaw({ markers, live: true, locationState: markers.length ? 'ready' : 'empty' });
+    } catch {
+      if (requestId === viewportRequestRef.current)
+        setRaw({ markers: [], live: false, locationState: 'unavailable' });
     }
   }, []);
 
   useEffect(() => {
-    let cancelled = false;
-    reloadLocations().then(() => {});
+    if (view === 'flat' && bounds) loadViewportLocations(bounds);
+  }, [bounds, loadViewportLocations, view]);
 
-    const unsub = base44.entities.Location.subscribe((event) => {
-      setRaw((cur) => {
-        if (!cur || !cur.live) return cur;
-        let markers = cur.markers;
-        const m = toMarker(event.data);
-        if (event.type === 'create')
-          markers = [{ ...m, livingRecord: false }, ...markers.filter((x) => x.id !== m.id)];
-        else if (event.type === 'update') {
-          if (m.status === 'rejected') markers = markers.filter((x) => x.id !== m.id);
-          else
-            markers = markers.map((x) =>
-              x.id === m.id ? { ...m, livingRecord: x.livingRecord } : x,
-            );
-        } else if (event.type === 'delete') markers = markers.filter((x) => x.id !== m.id);
-        return { ...cur, markers };
-      });
-    });
+  const handleBoundsChange = useCallback(
+    (nextBounds) => {
+      setBounds(nextBounds);
+      if (view !== 'flat') return;
+      if (viewportTimerRef.current) clearTimeout(viewportTimerRef.current);
+      viewportTimerRef.current = setTimeout(() => {
+        loadViewportLocations(nextBounds);
+      }, 250);
+    },
+    [loadViewportLocations, view],
+  );
+
+  useEffect(() => {
     return () => {
-      cancelled = true;
-      if (unsub) unsub();
+      if (viewportTimerRef.current) clearTimeout(viewportTimerRef.current);
     };
   }, []);
+
+  useEffect(() => {
+    if (view === 'globe') reloadLocations().then(() => {});
+    else {
+      viewportRequestRef.current += 1;
+      setRaw({ markers: [], live: false, locationState: 'loading' });
+    }
+  }, [reloadLocations, view]);
+
+  useAuthGatedSubscribe('Location', (event) => {
+    setRaw((cur) => {
+      if (!cur || !cur.live) return cur;
+      let markers = cur.markers;
+      const m = toMarker(event.data);
+      if (event.type === 'create')
+        markers = [
+          {
+            ...m,
+            livingRecord: false,
+            freshness: null,
+            attention: deriveFieldAttention({ location: event.data }),
+          },
+          ...markers.filter((x) => x.id !== m.id),
+        ];
+      else if (event.type === 'update') {
+        if (m.status === 'rejected') markers = markers.filter((x) => x.id !== m.id);
+        else
+          markers = markers.map((x) =>
+            x.id === m.id
+              ? {
+                  ...m,
+                  livingRecord: x.livingRecord,
+                  freshness: x.freshness,
+                  attention: deriveFieldAttention({ location: event.data }),
+                }
+              : x,
+          );
+      } else if (event.type === 'delete') markers = markers.filter((x) => x.id !== m.id);
+      return { ...cur, markers };
+    });
+  });
 
   // Contribution deep-link: /map?highlight=<locationId>, used by the report
   // wizard's and AR's "View on map" links so a user's own new submission is
@@ -286,6 +453,13 @@ export default function Map() {
   }, [raw, handleExpandPin]);
 
   useEffect(() => {
+    if (!missionIds.size || !raw?.markers?.length || selectedId) return;
+    const first = raw.markers.find((marker) => missionIds.has(String(marker.id)));
+    if (first) setSelectedId(first.id);
+  }, [missionIds, raw, selectedId]);
+
+  useEffect(() => {
+    if (missionIds.size) return;
     if (!navigator.geolocation) return;
     let cancelled = false;
     navigator.geolocation.getCurrentPosition(
@@ -298,25 +472,26 @@ export default function Map() {
     return () => {
       cancelled = true;
     };
+  }, [missionIds]);
+
+  const loadClaims = useCallback(async () => {
+    try {
+      const recs = await base44.entities.LeadClaim.list('-created_date', 500, 0, [
+        'location_id',
+        'status',
+        'created_date',
+      ]);
+      setClaims(recs || []);
+    } catch {
+      setClaims([]);
+    }
   }, []);
 
   useEffect(() => {
-    let cancelled = false;
-    const loadClaims = async () => {
-      try {
-        const recs = await base44.entities.LeadClaim.list('-created_date', 500);
-        if (!cancelled) setClaims(recs || []);
-      } catch {
-        if (!cancelled) setClaims([]);
-      }
-    };
     loadClaims();
-    const unsub = base44.entities.LeadClaim.subscribe(() => loadClaims());
-    return () => {
-      cancelled = true;
-      if (unsub) unsub();
-    };
-  }, []);
+  }, [loadClaims]);
+
+  useAuthGatedSubscribe('LeadClaim', () => loadClaims());
 
   const claimsByLoc = useMemo(() => {
     const map = {};
@@ -328,6 +503,12 @@ export default function Map() {
     return map;
   }, [claims]);
 
+  // "My Discoveries" (Intelligence group) -- an ownership filter on the
+  // exact same markers already loaded for every other layer, not a second
+  // Location fetch. Malformed/missing coordinates are excluded rather than
+  // ever placed at a fallback point.
+  const mineOnly = activeLayers.includes('mine');
+
   const filtered = useMemo(() => {
     const list = raw?.markers || [];
     const q = query.trim().toLowerCase();
@@ -335,17 +516,23 @@ export default function Map() {
       .filter(
         (m) =>
           (typeFilter === 'all' || m.type === typeFilter) &&
+          (!mineOnly ||
+            (user && m.created_by_id === user.id && isFinite(m.lat) && isFinite(m.lng))) &&
           (!q ||
             `${m.title} ${m.address} ${m.brand_name || ''} ${m.parent_corp || ''}`
               .toLowerCase()
-              .includes(q)),
+              .includes(q)) &&
+          (!attentionMode || attentionMatchesFilter(m.attention, attentionFilter)),
       )
       .sort((a, b) => {
+        const aMission = missionIds.has(String(a.id)) ? 1 : 0;
+        const bMission = missionIds.has(String(b.id)) ? 1 : 0;
+        if (aMission !== bMission) return bMission - aMission;
         const aPhoto = a.status === 'verified' && !!a.image ? 2 : a.image ? 1 : 0;
         const bPhoto = b.status === 'verified' && !!b.image ? 2 : b.image ? 1 : 0;
         return bPhoto - aPhoto;
       });
-  }, [raw, typeFilter, query]);
+  }, [raw, typeFilter, query, mineOnly, user, missionIds, attentionMode, attentionFilter]);
 
   // Street layers are overlapping views of the Location entity.
   // "ads" is the superset (all markers); "adbusting" and "graffiti" are
@@ -389,8 +576,14 @@ export default function Map() {
       return { primaryLayer: ext || null, layerFiltered: heatOnly ? filtered : [] };
     }
 
-    return { primaryLayer: streetLayer, layerFiltered: lf };
-  }, [activeLayers, filtered]);
+    return {
+      primaryLayer: streetLayer,
+      layerFiltered: lf.map((m) => ({
+        ...m,
+        fieldMission: missionIds.has(String(m.id)),
+      })),
+    };
+  }, [activeLayers, filtered, missionIds]);
 
   // Results feed follows the map viewport (flat view): only spots inside the
   // visible bounds, nearest-to-centre first — the "search this area" pattern.
@@ -505,6 +698,21 @@ export default function Map() {
   const leads = adsInView.filter((m) => !m.image && m.status !== 'verified').length;
   const isStreet =
     primaryLayer === 'ads' || primaryLayer === 'adbusting' || primaryLayer === 'graffiti';
+  const selectedAttention = layerFiltered.find((m) => String(m.id) === String(selectedId));
+  const addSelectedToMission = () => {
+    const result = addToFieldMission(selectedAttention);
+    setMissionLinkReady(result.ok);
+    setMissionNotice(
+      result.ok
+        ? result.added
+          ? 'Added to field mission'
+          : 'Already in field mission'
+        : result.reason === 'MISSION_CAP'
+          ? 'Mission cap reached'
+          : 'Mission unavailable',
+    );
+    window.setTimeout(() => setMissionNotice(''), 2200);
+  };
 
   // Mobile: map always visible, cards always hidden (bottom sheet replaces).
   // Desktop: mode controls split/list/map as before.
@@ -533,6 +741,33 @@ export default function Map() {
           <div className="p-6 text-center font-mono text-[10px] uppercase tracking-[0.25em] text-dim">
             // Loading {primaryLayer} data…
           </div>
+        ) : isStreet && raw?.locationState === 'loading' ? (
+          <div
+            role="status"
+            className="p-6 text-center font-mono text-[10px] uppercase tracking-[0.25em] text-dim"
+          >
+            // Reading evidence for this view…
+          </div>
+        ) : isStreet && raw?.locationState === 'unavailable' ? (
+          <div role="alert" className="p-6 text-center">
+            <div className="font-mono text-[10px] uppercase tracking-[0.25em] text-flare">
+              // View evidence UNKNOWN
+            </div>
+            <p className="mt-1 font-mono text-[9px] uppercase tracking-[0.16em] text-dim/70">
+              The atlas could not read this geographic window. No absence is being claimed.
+            </p>
+            <button
+              type="button"
+              onClick={() => {
+                requestedViewportRef.current = '';
+                if (view === 'globe') reloadLocations();
+                else if (bounds) loadViewportLocations(bounds);
+              }}
+              className="mt-3 inline-flex items-center border border-ozone px-3 py-1.5 font-mono text-[9px] font-bold uppercase tracking-[0.2em] text-ozone transition-colors hover:bg-ozone hover:text-void"
+            >
+              Retry view
+            </button>
+          </div>
         ) : layerResults.length ? (
           isStreet ? (
             layerResults.map((m) => (
@@ -554,6 +789,21 @@ export default function Map() {
               <LayerResultCard key={`${primaryLayer}-${i}`} item={item} layer={primaryLayer} />
             ))
           )
+        ) : mineOnly && filtered.length === 0 ? (
+          <div className="p-6 text-center">
+            <div className="font-mono text-[10px] uppercase tracking-[0.25em] text-dim">
+              // No field discoveries yet
+            </div>
+            <p className="mt-1 font-mono text-[9px] uppercase tracking-[0.2em] text-dim/60">
+              File a report to begin your personal intelligence layer
+            </p>
+            <Link
+              to="/report"
+              className="mt-3 inline-flex items-center gap-1 border border-ozone bg-ozone px-3 py-1.5 font-mono text-[9px] font-bold uppercase tracking-[0.2em] text-void transition-colors hover:bg-flare"
+            >
+              Log a spot
+            </Link>
+          </div>
         ) : isStreet && followViewport && view === 'flat' ? (
           <div className="p-6 text-center">
             <div className="font-mono text-[10px] uppercase tracking-[0.25em] text-dim">
@@ -605,7 +855,11 @@ export default function Map() {
       )}
       {!fullscreen && (
         <div className="hidden lg:block">
-          <MapLayerToggle activeLayers={activeLayers} onToggle={toggleLayer} />
+          <MapLayerToggle
+            activeLayers={activeLayers}
+            onToggle={toggleLayer}
+            hiddenLayerIds={user ? [] : ['mine']}
+          />
         </div>
       )}
 
@@ -624,6 +878,25 @@ export default function Map() {
               }}
             />
           </div>
+          {/* The desktop layer toggle bar above is lg:hidden on mobile
+              (true for every layer, not something this feature changes) --
+              this is a dedicated mobile-reachable control for just this
+              one new layer rather than reworking mobile chrome for all of
+              them. */}
+          {user && (
+            <button
+              onClick={() => toggleLayer('mine')}
+              aria-label="My Discoveries"
+              aria-pressed={mineOnly}
+              className={`flex h-8 w-8 shrink-0 items-center justify-center border transition-colors ${
+                mineOnly
+                  ? 'border-ozone bg-ozone text-void'
+                  : 'border-slate2/60 text-dim hover:border-ozone hover:text-ozone'
+              }`}
+            >
+              <Fingerprint className="h-3.5 w-3.5" />
+            </button>
+          )}
           <button
             onClick={() => setFullscreen(true)}
             aria-label="Fullscreen map"
@@ -743,6 +1016,92 @@ export default function Map() {
                 <Globe className="h-3.5 w-3.5" /> <span className="hidden sm:inline">Globe</span>
               </button>
             </div>
+            <div className="absolute left-3 top-14 z-[1000] max-w-[calc(100vw-1.5rem)]">
+              <button
+                type="button"
+                data-testid="field-attention-toggle"
+                aria-label="Field attention"
+                aria-pressed={attentionMode}
+                onClick={() => setAttentionMode(!attentionMode)}
+                className={`flex min-h-9 items-center gap-1.5 border px-2.5 py-2 font-mono text-[10px] font-bold uppercase tracking-[0.18em] backdrop-blur-md transition-colors ${attentionMode ? 'border-flare bg-flare text-void' : 'border-slate2 bg-void/80 text-darkgray hover:border-flare hover:text-flare'}`}
+              >
+                <AlertTriangle className="h-3.5 w-3.5" /> Field attention
+              </button>
+              {attentionMode && (
+                <div
+                  data-testid="attention-filters"
+                  className="mt-1 flex max-w-full gap-1 overflow-x-auto border border-slate2 bg-void/90 p-1 backdrop-blur-md"
+                >
+                  {Object.values(MAP_ATTENTION_FILTERS).map((filter) => (
+                    <button
+                      key={filter}
+                      type="button"
+                      aria-pressed={attentionFilter === filter}
+                      onClick={() => setAttentionFilter(filter)}
+                      className={`min-h-8 shrink-0 px-2 font-mono text-[9px] font-bold uppercase tracking-[0.12em] ${attentionFilter === filter ? 'bg-ozone text-void' : 'text-darkgray hover:text-ozone'}`}
+                    >
+                      {filter}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+            {attentionMode && selectedAttention?.attention && (
+              <div
+                data-testid="map-attention-card"
+                className="absolute bottom-[68px] left-2 right-2 z-[1000] max-w-md border border-flare/70 bg-void/95 p-3 shadow-xl backdrop-blur-md sm:left-auto sm:right-3"
+              >
+                <div className="flex items-center gap-2 font-mono text-[10px] font-bold uppercase tracking-[0.2em] text-flare">
+                  <AlertTriangle className="h-3 w-3" /> {selectedAttention.attention.priority}{' '}
+                  attention
+                </div>
+                <ul className="mt-2 space-y-1 font-mono text-[10px] uppercase tracking-[0.08em] text-darkgray">
+                  {selectedAttention.attention.reasons.map((reason) => (
+                    <li key={reason}>• {reason}</li>
+                  ))}
+                </ul>
+                <div className="mt-2 font-mono text-[10px] font-bold uppercase tracking-[0.12em] text-ozone">
+                  Next: {selectedAttention.attention.action}
+                </div>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  <Link
+                    to={`/location/${selectedAttention.id}`}
+                    className="border border-ozone px-2 py-1.5 font-mono text-[9px] font-bold uppercase tracking-[0.12em] text-ozone"
+                  >
+                    View location
+                  </Link>
+                  <Link
+                    to={`/location/${selectedAttention.id}?action=recheck&from=map-attention`}
+                    className="border border-flare px-2 py-1.5 font-mono text-[9px] font-bold uppercase tracking-[0.12em] text-flare"
+                  >
+                    Recheck
+                  </Link>
+                  <button
+                    type="button"
+                    onClick={addSelectedToMission}
+                    className="border border-slate2 px-2 py-1.5 font-mono text-[9px] font-bold uppercase tracking-[0.12em] text-darkgray hover:border-ozone hover:text-ozone"
+                  >
+                    Add to mission
+                  </button>
+                </div>
+                {missionNotice && (
+                  <div
+                    role="status"
+                    className="mt-2 font-mono text-[9px] uppercase tracking-[0.12em] text-ozone"
+                  >
+                    {missionNotice}
+                    {missionLinkReady && (
+                      <Link
+                        to="/portal/ops?section=geo"
+                        className="ml-2 text-silver underline decoration-ozone underline-offset-2"
+                      >
+                        Open mission
+                      </Link>
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
             {view === 'globe' ? (
               <Globe3D
                 key={mapStyle.id}
@@ -752,6 +1111,7 @@ export default function Map() {
                 onSelect={setSelectedId}
                 userLoc={userLoc}
                 activeLayers={activeLayers}
+                attentionMode={attentionMode}
                 flyTo={flyTo}
                 onError={() => setView('flat')}
                 onCounts={(c) => setGlobeClusters(c.clusters)}
@@ -765,7 +1125,8 @@ export default function Map() {
                 userLoc={userLoc}
                 futures={OOH_FUTURES}
                 activeLayers={activeLayers}
-                onBoundsChange={setBounds}
+                onBoundsChange={handleBoundsChange}
+                fitBounds={false}
                 flyTo={flyTo}
                 compactPopup={isMobile}
                 onExpandPin={handleExpandPin}

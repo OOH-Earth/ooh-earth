@@ -15,6 +15,9 @@ import {
 
 // Routes the admin can manage. Static routes from META, plus dynamic prefixes
 // that represent a class of pages (store item, blog post, location, etc.).
+// `path` is a route TEMPLATE, never a real navigable URL (the literal ":id"
+// is not a record) -- never render it as a clickable link, and never send
+// it anywhere that expects a real destination.
 const DYNAMIC_ROUTES = [
   { path: '/store/:id', label: 'Store item (detail)', base: '/store' },
   { path: '/blog/:slug', label: 'Blog article (detail)', base: '/blog' },
@@ -25,6 +28,14 @@ const DYNAMIC_ROUTES = [
   { path: '/category/:slug', label: 'Category directory', base: '/categories' },
   { path: '/capital/:slug', label: 'Capital lead (detail)', base: '/campaign' },
 ];
+
+// Generic fallback description for a dynamic route family with no saved
+// PageMeta record yet -- individual records (e.g. a real Location) get
+// their own real title/description at render time (see src/lib/seoContext.jsx
+// + each detail page's own useSeo() override); this is only the admin's
+// starting draft for the template-level fallback card.
+const DYNAMIC_DESC_FALLBACK =
+  'Real-time OOH Earth record, tagged and verified by the field network.';
 
 function allRoutes() {
   const statics = Object.keys(META).map((p) => ({
@@ -73,14 +84,17 @@ export default function SeoAdminPanel() {
         map[path] = arr[0];
       }
       setRecords(map);
-      // Seed drafts from existing records / static fallback
+      // Seed drafts from existing records / static fallback. Dynamic routes
+      // have no entry in META (it only holds literal static paths) -- fall
+      // back to the route's own label/generic copy so "Generate card" isn't
+      // blocked behind an empty title for every dynamic route by default.
       const d = {};
       for (const route of allRoutes()) {
         const rec = map[route.path];
         const fb = META[route.path];
         d[route.path] = {
-          title: rec?.title || fb?.title || '',
-          description: rec?.description || fb?.desc || '',
+          title: rec?.title || fb?.title || (route.dynamic ? `${route.label} — OOH Earth` : ''),
+          description: rec?.description || fb?.desc || (route.dynamic ? DYNAMIC_DESC_FALLBACK : ''),
           noindex: rec?.noindex || false,
         };
       }
@@ -271,8 +285,12 @@ export default function SeoAdminPanel() {
     return r.path.toLowerCase().includes(q) || r.label.toLowerCase().includes(q);
   });
 
-  const ogFor = (path) =>
-    records?.[path]?.og_image || (META[path] && OG_IMAGES[ogKey(path)]) || OG_IMAGES.default;
+  // ogKey() already categorizes both static AND dynamic paths by prefix --
+  // gating this behind `META[path]` (previously here) meant every dynamic
+  // route (Location, Store item, Blog post, ...) silently fell through to
+  // the generic site-default image instead of its real category fallback,
+  // since dynamic route templates are never literal keys in META.
+  const ogFor = (path) => records?.[path]?.og_image || OG_IMAGES[ogKey(path)] || OG_IMAGES.default;
 
   // Map route path to the OG_IMAGES category key used in routeMeta
   function ogKey(path) {
@@ -399,15 +417,19 @@ export default function SeoAdminPanel() {
                     custom
                   </span>
                 )}
-                <a
-                  href={route.path}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="ml-auto text-silver/30 transition-colors hover:text-ozone"
+                {!route.dynamic && (
+                  <a
+                    href={route.path}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="ml-auto text-silver/30 transition-colors hover:text-ozone"
+                  >
+                    <ExternalLink className="h-3 w-3" />
+                  </a>
+                )}
+                <span
+                  className={`font-mono text-[9px] tracking-[0.1em] text-silver/35 ${route.dynamic ? 'ml-auto' : ''}`}
                 >
-                  <ExternalLink className="h-3 w-3" />
-                </a>
-                <span className="font-mono text-[9px] tracking-[0.1em] text-silver/35">
                   {route.path}
                 </span>
               </div>

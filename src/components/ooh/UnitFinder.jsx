@@ -99,7 +99,6 @@ export default function UnitFinder({ open, onClose }) {
       lat: c.lat,
       lng: c.lng,
       notes: c.notes || '',
-      status: 'pending',
       source_link: '',
     });
     setAddedIds((prev) => new Set(prev).add(c.id));

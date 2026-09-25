@@ -1,5 +1,6 @@
 import { useEffect, useState, useCallback } from 'react';
 import { base44 } from '@/api/base44Client';
+import { useAuthGatedSubscribe } from '@/hooks/useAuthGatedSubscribe';
 import { roleOf, accessOf, payload } from '@/lib/clearance';
 import Nav from '@/components/ooh/Nav';
 import HorizonProgress from '@/components/ooh/HorizonProgress';
@@ -25,6 +26,7 @@ import {
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import LocationThumb from '@/components/ooh/map/LocationThumb';
+import { relationshipTypeLabel } from '@/lib/publicSpace';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -39,6 +41,7 @@ import {
 import PullToRefresh from '@/components/ooh/PullToRefresh';
 import PersonaControl from '@/components/ooh/PersonaControl';
 import { STATUS_BADGE_CLASSES as STATUS_BADGE } from '@/lib/statusBadge';
+import { trackEvent } from '@/lib/trackEvent';
 
 const ACCESS_BADGE = {
   admin: 'border-ozone/50 text-ozone',
@@ -69,6 +72,20 @@ const normBust = (b) => ({
   _type: b.platform,
   image_url: b.image_url || null,
   source_link: b.proof_url || null,
+});
+const normFieldCheck = (c) => ({
+  ...c,
+  _entity: 'FieldCheck',
+  _title: c.location_title || c.brand_name || 'Field check',
+  _sub: [c.brand_name, c.address].filter(Boolean).join(' · '),
+  _type: c.location_type,
+});
+const normRelationship = (r) => ({
+  ...r,
+  _entity: 'LocationRelationship',
+  _title: r.location_title || r.brand_name || 'Relationship claim',
+  _sub: [r.brand_name, relationshipTypeLabel(r.relationship_type)].filter(Boolean).join(' · '),
+  _type: null,
 });
 
 const timeAgo = (iso) => {
@@ -112,10 +129,15 @@ function Row({
   selected = false,
   onToggle = null,
 }) {
-  return (
-    <div
-      className={`flex items-center gap-3 border bg-card p-3 ${selected ? 'border-ozone/60' : 'border-slate2/50'}`}
-    >
+  // "My field captures" rows (no onVerify/selectable) are real Location
+  // records the user can drill into -- link to the canonical detail page.
+  // Queue rows (onVerify present, Approve/Reject buttons rendered inside)
+  // stay a plain div: a <Link>/<a> wrapping <button> elements is invalid,
+  // ambiguous-activation HTML, out of scope for this fix.
+  const canLinkToDetail = !onVerify && !selectable && n._entity === 'Location' && n.id;
+
+  const content = (
+    <>
       {selectable && (
         <button
           onClick={onToggle}
@@ -141,6 +163,16 @@ function Row({
           {n._entity === 'DigitalBust' && (
             <span className="shrink-0 border border-silver/30 px-1.5 py-0.5 font-mono text-[8px] uppercase tracking-[0.2em] text-silver/70">
               bust
+            </span>
+          )}
+          {n._entity === 'FieldCheck' && (
+            <span className="shrink-0 border border-ozone/30 px-1.5 py-0.5 font-mono text-[8px] uppercase tracking-[0.2em] text-ozone/70">
+              re-check
+            </span>
+          )}
+          {n._entity === 'LocationRelationship' && (
+            <span className="shrink-0 border border-flare/30 px-1.5 py-0.5 font-mono text-[8px] uppercase tracking-[0.2em] text-flare/70">
+              claim
             </span>
           )}
           {triage && (
@@ -174,6 +206,24 @@ function Row({
           </button>
         </div>
       )}
+    </>
+  );
+
+  if (canLinkToDetail) {
+    return (
+      <Link
+        to={`/location/${n.id}`}
+        className={`flex items-center gap-3 border bg-card p-3 transition-colors hover:border-ozone/40 ${selected ? 'border-ozone/60' : 'border-slate2/50'}`}
+      >
+        {content}
+      </Link>
+    );
+  }
+  return (
+    <div
+      className={`flex items-center gap-3 border bg-card p-3 ${selected ? 'border-ozone/60' : 'border-slate2/50'}`}
+    >
+      {content}
     </div>
   );
 }
@@ -221,7 +271,12 @@ export default function Dashboard() {
           .invoke('moderate', { action: 'queue' })
           .then((res) => {
             const d = payload(res) || {};
-            return [...(d.locations || []).map(normLoc), ...(d.digital_busts || []).map(normBust)];
+            return [
+              ...(d.locations || []).map(normLoc),
+              ...(d.digital_busts || []).map(normBust),
+              ...(d.field_checks || []).map(normFieldCheck),
+              ...(d.location_relationships || []).map(normRelationship),
+            ];
           })
           .catch(() => [])
       : Promise.resolve([]);
@@ -242,23 +297,10 @@ export default function Dashboard() {
     })();
   }, [load]);
 
-  useEffect(() => {
-    const u1 = base44.entities.Location.subscribe(() => {
-      load();
-    });
-    let u2;
-    try {
-      u2 = base44.entities.DigitalBust?.subscribe?.(() => {
-        load();
-      });
-    } catch {
-      u2 = null;
-    }
-    return () => {
-      if (u1) u1();
-      if (u2) u2();
-    };
-  }, [load]);
+  useAuthGatedSubscribe('Location', () => load());
+  useAuthGatedSubscribe('DigitalBust', () => load());
+  useAuthGatedSubscribe('FieldCheck', () => load());
+  useAuthGatedSubscribe('LocationRelationship', () => load());
 
   const refresh = async () => {
     setRefreshing(true);
@@ -273,6 +315,12 @@ export default function Dashboard() {
     setBusy((b) => ({ ...b, [id]: true }));
     try {
       await base44.functions.invoke('moderate', { action: 'verify', entity, id, status });
+      // A genuine verification transition only -- never on reject, never
+      // for DigitalBust (not one of the approved analytics events).
+      if (status === 'verified') {
+        if (entity === 'Location') trackEvent('report_verified');
+        else if (entity === 'FieldCheck') trackEvent('recheck_verified');
+      }
       setPending((p) => p.filter((r) => !(r.id === id && r._entity === entity)));
       setSelected((s) => {
         const ns = new Set(s);
@@ -451,25 +499,40 @@ export default function Dashboard() {
               </div>
               <div className="mt-3 space-y-2">
                 {mine.length ? (
-                  mine.slice(0, 5).map((n) => (
-                    <div
-                      key={n.id}
-                      className="flex items-center gap-2 border-b border-slate2/30 pb-2 last:border-0 last:pb-0"
-                    >
-                      <span
-                        className={`h-1.5 w-1.5 shrink-0 rounded-full ${n.status === 'verified' ? 'bg-brand-green' : n.status === 'rejected' ? 'bg-flare' : 'bg-ozone'}`}
-                      />
-                      <span className="min-w-0 flex-1 truncate font-mono text-[10px] text-silver/80">
-                        {n._title}
-                      </span>
-                      <span className="shrink-0 font-mono text-[9px] uppercase tracking-[0.15em] text-dim">
-                        {n.status}
-                      </span>
-                      <span className="shrink-0 font-mono text-[9px] text-darkgray">
-                        {timeAgo(n.created_date)}
-                      </span>
-                    </div>
-                  ))
+                  mine.slice(0, 5).map((n) => {
+                    const activityContent = (
+                      <>
+                        <span
+                          className={`h-1.5 w-1.5 shrink-0 rounded-full ${n.status === 'verified' ? 'bg-brand-green' : n.status === 'rejected' ? 'bg-flare' : 'bg-ozone'}`}
+                        />
+                        <span className="min-w-0 flex-1 truncate font-mono text-[10px] text-silver/80">
+                          {n._title}
+                        </span>
+                        <span className="shrink-0 font-mono text-[9px] uppercase tracking-[0.15em] text-dim">
+                          {n.status}
+                        </span>
+                        <span className="shrink-0 font-mono text-[9px] text-darkgray">
+                          {timeAgo(n.created_date)}
+                        </span>
+                      </>
+                    );
+                    return n.id ? (
+                      <Link
+                        key={n.id}
+                        to={`/location/${n.id}`}
+                        className="flex items-center gap-2 border-b border-slate2/30 pb-2 transition-colors last:border-0 last:pb-0 hover:text-ozone"
+                      >
+                        {activityContent}
+                      </Link>
+                    ) : (
+                      <div
+                        key={n.id}
+                        className="flex items-center gap-2 border-b border-slate2/30 pb-2 last:border-0 last:pb-0"
+                      >
+                        {activityContent}
+                      </div>
+                    );
+                  })
                 ) : (
                   <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-dim">
                     // No activity yet
