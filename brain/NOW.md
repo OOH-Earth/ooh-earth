@@ -79,16 +79,23 @@ real API key or swapping the tile source. Overall: "good shape really" —
 not a redesign request.
 
 ## NEXT_TASK
-See `QUEUE.md`. In order: SEC-001/SEC-002 authorization package (prepared,
-awaiting Dave) → GIT-001 fresh PR audit and merge of whatever's still safe
-→ UX-003/UX-004 reproduction (cheap, read-only) → UX-001/UX-002 (real
-implementation work, scope first).
+See `QUEUE.md` and `HANDOFF.md`. GIT-001 mostly done (3 of 12 merged, 4
+more clean and ready, 2 need an isolated CI re-check). UX-003/UX-004 done
+(closed / root-caused). UX-002 implemented, tested, BACKUP-deployed and
+verified, PR #276 open — production deploy is the only remaining step,
+blocked on authorization. UX-001 not started.
 
 ## NEXT_PRODUCTION_WRITE
-The `scanAd` + `migrateLocationImages` redeploy, pending Dave's
-authorization. No other production write is proposed right now.
+Two pending: (1) `scanAd` + `migrateLocationImages` redeploy (SEC-001/
+SEC-002, oldest, highest priority, detail private); (2) PR #276's marker/
+icon quality fix (frontend-only, BACKUP-verified, already built for
+production — purely a "run the command" step, no remaining engineering
+question).
 
 ## HUMAN_CHECKPOINT
 Dave needs to: (1) authorize or decline the SEC-001/SEC-002 redeploy,
-(2) run the GIT-001 merge commands himself (sandbox blocks them for this
-session), (3) decide on `fix/production-app-binding`.
+(2) authorize or run PR #276's production deploy himself (the sandbox
+blocked it for this session, reason unexplained), (3) run the GIT-001
+merge commands for the remaining PRs (sandbox blocked further merges for
+this session), (4) pick UX-004's fix direction, (5) decide on
+`fix/production-app-binding`.
