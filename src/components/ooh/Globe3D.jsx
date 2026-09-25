@@ -22,12 +22,19 @@ const esc = (s) =>
 // Canvas-drawn field pin for the globe symbol layer — yellow disc,
 // category-specific glyph (from the shared pinGlyphs library), micro-badge +
 // status dot, pink radial glow.
+//
+// Drawn at devicePixelRatio so the bitmap map.addImage() registers actually
+// matches the screen's real pixel density — without this, MapLibre stretches
+// a 1x bitmap to cover 2-3x as many physical pixels on any retina/high-DPI
+// display, producing a soft/blurry marker regardless of icon-size.
 function makePinIcon(type, selected, verified) {
   const S = 64;
+  const dpr = typeof window !== 'undefined' ? window.devicePixelRatio || 1 : 1;
   const badgeColor = GLYPH_COLORS[type] || GLYPH_COLORS.other;
   const c = document.createElement('canvas');
-  c.width = c.height = S;
+  c.width = c.height = S * dpr;
   const ctx = c.getContext('2d');
+  ctx.scale(dpr, dpr);
   const cx = S / 2,
     cy = S / 2;
   // pink radial highlight
@@ -261,14 +268,15 @@ export default function Globe3D({
         clusterRadius: 52,
         clusterMaxZoom: 14,
       });
+      const iconPixelRatio = typeof window !== 'undefined' ? window.devicePixelRatio || 1 : 1;
       PIN_TYPES.forEach((t) => {
         const a = makePinIcon(t, false, false);
         map.addImage(`ooh-pin-${t}`, a.getContext('2d').getImageData(0, 0, a.width, a.height), {
-          pixelRatio: 1,
+          pixelRatio: iconPixelRatio,
         });
         const b = makePinIcon(t, true, false);
         map.addImage(`ooh-pin-${t}-sel`, b.getContext('2d').getImageData(0, 0, b.width, b.height), {
-          pixelRatio: 1,
+          pixelRatio: iconPixelRatio,
         });
       });
       // cluster discs — dark core, ozone ring, live count (military-grade)
