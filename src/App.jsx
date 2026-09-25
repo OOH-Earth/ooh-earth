@@ -78,6 +78,7 @@ const Zora = lazy(() => import('@/pages/Zora'));
 const UiKit = lazy(() => import('@/pages/UiKit'));
 const Brand = lazy(() => import('@/pages/Brand'));
 const OperativeProfile = lazy(() => import('@/pages/OperativeProfile'));
+const FounderProfile = lazy(() => import('@/pages/FounderProfile'));
 const Guides = lazy(() => import('@/pages/Guides'));
 const FieldId = lazy(() => import('@/pages/FieldId'));
 const SuperCard = lazy(() => import('@/pages/SuperCard'));
@@ -191,6 +192,7 @@ const AuthenticatedApp = () => {
             <Route path="/card" element={<SuperCard />} />
             <Route path="/channel" element={<Channel />} />
             <Route path="/location/:id" element={<LocationDetail />} />
+            <Route path="/founders/:handle" element={<FounderProfile />} />
             <Route path="/bus-stops" element={<BusStops />} />
             <Route path="/bus-stop/:id" element={<BusStopDetail />} />
             <Route path="/access-keys" element={<AccessKeys />} />

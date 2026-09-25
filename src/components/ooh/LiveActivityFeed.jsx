@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { base44 } from '@/api/base44Client';
+import { useAuthGatedSubscribe } from '@/hooks/useAuthGatedSubscribe';
 import useSoundscape from '@/hooks/useSoundscape';
 import { MapPin, Hand, Monitor, Coins, UserPlus, BadgeCheck, Radio } from 'lucide-react';
 
@@ -44,39 +44,34 @@ export default function LiveActivityFeed() {
     timers.current.set(id, t);
   };
 
-  useEffect(() => {
-    const subs = [
-      base44.entities.Location.subscribe((e) => {
-        if (e.type === 'create')
-          push({
-            type: 'report',
-            title: e.data?.title || 'Offense logged',
-            meta: e.data?.address || 'field report',
-          });
-      }),
-      base44.entities.DigitalBust.subscribe((e) => {
-        if (e.type === 'create')
-          push({
-            type: 'bust',
-            title: e.data?.platform_name || 'Digital bust',
-            meta: e.data?.region || 'metaverse',
-          });
-      }),
-      base44.entities.LeadClaim.subscribe((e) => {
-        if (e.type === 'create')
-          push({
-            type: 'claim',
-            title: 'Adopted landmark',
-            meta: '@' + (e.data?.operative_handle || 'operative'),
-          });
-      }),
-      base44.entities.FundingLead.subscribe((e) => {
-        if (e.type === 'create')
-          push({ type: 'donate', title: 'Pledge logged', meta: e.data?.channel || 'lead' });
-      }),
-    ];
-    return () => subs.forEach((u) => u && u());
-  }, []);
+  useAuthGatedSubscribe('Location', (e) => {
+    if (e.type === 'create')
+      push({
+        type: 'report',
+        title: e.data?.title || 'Offense logged',
+        meta: e.data?.address || 'field report',
+      });
+  });
+  useAuthGatedSubscribe('DigitalBust', (e) => {
+    if (e.type === 'create')
+      push({
+        type: 'bust',
+        title: e.data?.platform_name || 'Digital bust',
+        meta: e.data?.region || 'metaverse',
+      });
+  });
+  useAuthGatedSubscribe('LeadClaim', (e) => {
+    if (e.type === 'create')
+      push({
+        type: 'claim',
+        title: 'Adopted landmark',
+        meta: '@' + (e.data?.operative_handle || 'operative'),
+      });
+  });
+  useAuthGatedSubscribe('FundingLead', (e) => {
+    if (e.type === 'create')
+      push({ type: 'donate', title: 'Pledge logged', meta: e.data?.channel || 'lead' });
+  });
 
   useEffect(
     () => () => {
