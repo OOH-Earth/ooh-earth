@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { base44 } from '@/api/base44Client';
+import { useAuthGatedSubscribe } from '@/hooks/useAuthGatedSubscribe';
 import { Link } from 'react-router-dom';
 import { Megaphone, Camera } from 'lucide-react';
 import PortalShell from '@/components/ooh/map/PortalShell';
@@ -42,23 +43,20 @@ export default function AdbustingPortal() {
     reload();
   }, [reload]);
 
-  useEffect(() => {
-    let cancelled = false;
-    const load = async () => {
-      try {
-        const recs = await base44.entities.LeadClaim.list('-created_date', 500);
-        if (!cancelled) setClaims(recs || []);
-      } catch {
-        if (!cancelled) setClaims([]);
-      }
-    };
-    load();
-    const unsub = base44.entities.LeadClaim.subscribe(() => load());
-    return () => {
-      cancelled = true;
-      if (unsub) unsub();
-    };
+  const loadClaims = useCallback(async () => {
+    try {
+      const recs = await base44.entities.LeadClaim.list('-created_date', 500);
+      setClaims(recs || []);
+    } catch {
+      setClaims([]);
+    }
   }, []);
+
+  useEffect(() => {
+    loadClaims();
+  }, [loadClaims]);
+
+  useAuthGatedSubscribe('LeadClaim', () => loadClaims());
 
   const claimsByLoc = useMemo(() => {
     const map = {};
