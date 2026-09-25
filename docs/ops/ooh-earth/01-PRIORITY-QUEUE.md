@@ -1,5 +1,15 @@
 # Priority Queue
 
+## P0-CANDIDATE — production `scanAd` missing SSRF/host-allowlist validation, 2026-09-25 (NOT DEPLOYED, awaiting human authorization)
+
+- **STATUS:** SOURCE-VERIFIED via live `functions pull`, NOT deployed, NOT proven exploited. See `04-SECURITY-QUEUE.md`'s "OPEN — production scanAd/migrateLocationImages" section for full detail and the two prepared (not-run) deploy commands.
+- **WHAT:** production's live `scanAd` (the AI ad-scan function every field report goes through) passes a user-supplied `file_url` straight into the vision-LLM call with zero validation. `origin/main` and BACKUP both already have `validateMediaUrl()` (host-allowlist: `media.base44.com` or this app's own file API path only) — production alone is missing it. Also missing production-side: the Public Space facility-type (`skatepark`/`basketball_court`/`multi_use_court`) detection schema/prompt fields, a real feature gap on top of the security gap.
+- **OWNER:** unassigned, needs Dave's authorization to deploy
+- **FIX:** redeploy already-tested, already-qualified `origin/main` source — no new code. `npx --yes base44@0.1.14 functions deploy scanAd --app-id 6a62213cff3ccbca88c04ff5` (and the same for `migrateLocationImages`, a lower-urgency companion finding — see security queue).
+- **BLOCKER:** Lane D (production function deploy + security-relevant change) — explicitly out of autonomous authority per this pass's own mission brief. Needs Dave's go-ahead naming the exact command.
+- **NEXT ACTION:** Dave authorizes the deploy (both functions can go together), then standard pre/post pull-and-diff verification + a DevTools smoke check of `/report`'s AI-scan step on production.
+
+
 Ordered. Update this file when priorities change — do not rely on chat memory.
 
 ---
@@ -59,6 +69,32 @@ Ordered. Update this file when priorities change — do not rely on chat memory.
 - **FIX_OWNERSHIP: C (Base44 platform), unambiguous.** The responsible script is injected server-side into production's HTML outright — it does not exist in this repository's source, build config, or dependency tree in any form (`rrweb` is not in `package.json`; the bootstrap is not in `@base44/vite-plugin`'s own injection list either — it is injected by a separate, external Base44 hosting-layer mechanism this repo has no visibility or control over). There is no application-level opt-out, sampling control, or configuration surface available to OOH Earth's own code.
 - **BLOCKER:** none — this is a workspace-level Base44 plan/quota matter (session-recording quota exhausted), not a code defect. Resolving it (if ever wanted) would mean a workspace/billing action with Base44, not an engineering task.
 - **NEXT ACTION:** none required from this repository. Optional: if the ~240KB-per-load waste is ever judged worth eliminating, that is a Base44 support/workspace-settings conversation (e.g., ask Base44 to disable session recording for this app, or raise the quota), not a code change here.
+
+## LANE A — Vetted, ready-to-merge PRs, BLOCKED by auto-mode classifier ("Merge Without Review"), 2026-09-25
+
+- **STATUS:** Reviewed (CI, mergeability, diff content) and judged safe for a squash-merge; the merge attempt itself was denied by this session's sandbox classifier. Per established standing practice in this engagement, a classifier denial is a stop-and-report checkpoint, not something to route around — not retried, not attempted via any other tool/method.
+- **VETTED AND READY (human can merge directly, single command each: `gh pr merge <n> --squash --delete-branch`):**
+  - #211 postcss-selector-parser 6.1.2→6.1.4 (patch, CI green)
+  - #214 @humanfs/node 0.16.7→0.16.8 (patch, CI green)
+  - #217 fflate 0.8.2→0.8.3 (patch, CI green)
+  - #248 js-yaml 4.3.1→4.3.2 (patch, CI green)
+  - #249 dev-dependencies group (6 updates: @playwright/test, autoprefixer, baseline-browser-mapping, deno, eslint-plugin-react-refresh, postcss — all minor/patch, CI green)
+  - #265 npm-routine group (9 updates incl. @base44/sdk 0.8.42→0.8.48, maplibre-gl 6.7.0→6.9.0, @tanstack/react-query, react-router-dom, three — all minor/patch, CI green including the Playwright globe-markers spec, so the maplibre-gl bump doesn't regress the P0 globe fix)
+  - #192 GitHub Actions routine bump (codeql-action init/analyze, CI green)
+  - #190 rollup-plugin-visualizer 6.0.11→7.1.1 (major, but dev-only build-analysis tool, zero runtime impact, CI green)
+  - #188 framer-motion 12.43.0→13.2.0 (major, CI green across lint/typecheck/build/Playwright smoke+a11y+mobile — a real UI-runtime library, so this is a reasonable evidence bar, not blind trust, but flagged as the highest-risk item in this batch)
+  - #189 react-resizable-panels 2.1.9→4.12.4 (major, CI green)
+  - #105 `fix(a11y): expand footer link touch targets to 24px on mobile` — real fix, new Playwright regression test, verified pixel-identical layout (padding+matching negative margin)
+  - #108 `feat(protocol-one): make the shareable Protocol One page discoverable` — adds a footer link + sitemap.xml entry for `protocol-one.html`, which previously had zero inbound links; new Playwright coverage
+- **HELD BACK, NOT VETTED FOR AUTO-MERGE:**
+  - #156 `feat: add attributable live-use paths to README` — otherwise clean, but changes the public contact email (`hello@outofhell.org` → `oohearth@proton.me`) as a side effect. That's a real identity/ownership change, not mechanical — needs Dave's explicit confirmation that the new address is correct and monitored before merging, not an autonomous call.
+  - #20/#39/#88 (react-leaflet 4→5, react-dom bump, react bump) — all 3 fail identically on Lint & Typecheck, Prettier, Build, and Dependency audit. Needs real investigation of what specifically breaks (likely a react-leaflet v5 API/breaking-change interaction), not a blind retry or override.
+  - #191 (typescript 5.9.3→7.0.2) — fails Lint & Typecheck. A very large major-version jump for TypeScript; needs investigation before considering.
+  - #254 `lynxie/fix-executor-trusted-checkout` — CI green, but touches a CI/CD publish-executor's trust boundary (manifest/patch checkout isolation) — security-adjacent infrastructure change, judged to need a real read-through before merging, not just a green-CI nod.
+  - #63 release-please `chore(main): release 1.3.0` — `BLOCKED`, matches the already-known, already-tracked `release-please CI gap` (see `[[project_release_please_ci_gap]]` memory / PR #64, still unmerged) — required checks never run due to the anti-recursion `GITHUB_TOKEN` gap. Not a new finding, no new action here.
+  - #201 `codex/evidence-review-conversion-route` — still a DRAFT, not ready for merge consideration.
+  - #152/#153/#154/#158 (`rnd/*` research branches) — each PR's own title says "not for merge" / "negative result" / "R&D, not for merge yet". Lane F — document, do not ship, regardless of CI status.
+- **NEXT ACTION:** Dave (or anyone with merge permission) runs `gh pr merge <n> --squash --delete-branch` for the 12 vetted PRs above whenever convenient — no further engineering review needed for those. The "held back" set each needs a specific human answer or investigation before it's mergeable.
 
 ## P1 — Verify multi-ad/multi-brand behavior for one physical Location
 
