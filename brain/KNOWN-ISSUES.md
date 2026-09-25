@@ -6,8 +6,8 @@ see `QUEUE.md` for full task detail on each.
 
 | ID | Title | Status | Evidence |
 |---|---|---|---|
-| SEC-001 | Production function drift, security-relevant (detail kept private — public repo) | Prepared, awaiting authorization | `docs/ops/ooh-earth/04-SECURITY-QUEUE.md` (redacted) |
-| SEC-002 | Production function drift, companion finding (detail kept private) | Prepared, awaiting authorization | same |
+| SEC-001 | Production `scanAd` missing host-allowlist validation | CLOSED — deployed + source-verified 2026-09-25 | `docs/ops/ooh-earth/04-SECURITY-QUEUE.md` |
+| SEC-002 | Production `migrateLocationImages` error/stack leak | CLOSED — deployed + source-verified 2026-09-25 | same |
 | GIT-001 | 12 vetted PRs, merge blocked by sandbox classifier | Re-auditing | `docs/ops/ooh-earth/01-PRIORITY-QUEUE.md` "LANE A" |
 | UX-001 | Desktop results-row hover/active highlight weakened | Not started | Dave feedback, 2026-09-25 |
 | UX-002 | Marker/icon size and quality | Not started | Dave feedback, 2026-09-25 |

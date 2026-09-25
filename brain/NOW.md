@@ -39,15 +39,15 @@ None. Globe-markers incident closed (PR #274, browser-verified across
 still pending but is **not an engineering blocker**.
 
 ## CURRENT_SECURITY_GAPS
-- **SEC-001 / SEC-002**: two production functions are behind already-hardened
-  source that exists on `origin/main` and is already live on BACKUP; one is
-  security-relevant. **This repo is public — exact mechanism/impact detail
-  is deliberately not written here or in `docs/ops/`; it's kept in private
-  notes with the project owner pending the fix.** Both are prepared-but-not-
-  executed redeploys of already-tested code, no new code needed. See
-  `docs/ops/ooh-earth/04-SECURITY-QUEUE.md`'s redacted public entry, and ask
-  the project owner directly for the full technical writeup if you need it
-  to prepare the deploy.
+**NONE OPEN.** SEC-001 (`scanAd` missing `validateMediaUrl` host-allowlist)
+and SEC-002 (`migrateLocationImages` leaking `error.stack` to the client)
+were both source-verified against fresh main/BACKUP/production pulls
+(byte-identical hashes to intended source), test-qualified (26/26 focused
+tests pass), rollback-prepared, and deployed to production 2026-09-25 —
+then re-verified by pulling production's live source post-deploy and
+confirming it matches `origin/main` exactly. Full public writeup now safe
+to publish (fix is live everywhere) — see
+`docs/ops/ooh-earth/04-SECURITY-QUEUE.md`'s "FIXED AND DEPLOYED" entry.
 
 ## CURRENT_RELEASE_BLOCKERS
 - This session's sandbox denies `gh pr merge` for a batch with reason

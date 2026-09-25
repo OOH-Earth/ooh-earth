@@ -6,35 +6,31 @@ NEXT_ACTION · DONE_WHEN.
 ## P0
 None open.
 
-## P1 — security / production consistency
+## P1 — security / production consistency (CLOSED)
 
-### SEC-001 — production function drift, security-relevant (detail private)
-- WHY: a production function is behind already-hardened source on
-  `origin/main`/BACKUP. **Repo is public — mechanism/impact withheld from
-  all tracked files; full detail is in private notes with the project
-  owner.** Ask them directly before attempting to reconstruct this from
-  scratch.
-- SCOPE: redeploy existing, already-tested source to production. No new code.
-- WRITE_TYPE: production function deploy (Lane D — human authorization
-  required, never autonomous).
-- STATUS: prepared, not deployed.
-- EVIDENCE: `docs/ops/ooh-earth/04-SECURITY-QUEUE.md` (redacted public
-  entry) — full detail is not in this repo.
-- NEXT_ACTION: project owner authorizes; then redeploy from a fresh
-  `origin/main` worktree, pre/post pull-and-diff verification, targeted
-  smoke check of the affected surface on production.
-- DONE_WHEN: production pull matches `origin/main` byte-for-byte,
-  live-verified, git-reconciled (no PR needed — source already on main).
+### SEC-001 — production `scanAd` missing host-allowlist validation — CLOSED 2026-09-25
+- WHY: `origin/main`/BACKUP validated `file_url` before the vision-LLM call;
+  production didn't.
+- FIX: redeployed the exact `origin/main` source (already live on BACKUP).
+  Also brought in the Public Space facility-type detection schema as a
+  side effect of being on current source.
+- QUALIFICATION: pre-deploy source hash byte-identical to BACKUP's deployed
+  source; 26/26 focused tests passed (`security.test.ts`); rollback
+  artifact saved before deploy.
+- STATUS: **DEPLOYED AND SOURCE-VERIFIED.** Re-pulled production post-deploy,
+  confirmed `handler.ts`/`entry.ts` match `origin/main` exactly.
+- EVIDENCE: `docs/ops/ooh-earth/04-SECURITY-QUEUE.md` (full public writeup,
+  now safe since the fix is live everywhere).
+- NOT DONE: behavioral/runtime exploitation test (never run, per the
+  standing rule against synthetic production security tests).
 
-### SEC-002 — production function drift, companion finding (detail private)
-- WHY: same shape as SEC-001, lower priority, same public-repo redaction
-  reasoning applies.
-- SCOPE: redeploy existing source, no new code.
-- WRITE_TYPE: production function deploy (Lane D).
-- STATUS: prepared, not deployed.
-- EVIDENCE: same as SEC-001.
-- NEXT_ACTION: bundle with SEC-001's authorization if the owner agrees.
-- DONE_WHEN: same pattern as SEC-001.
+### SEC-002 — production `migrateLocationImages` error/stack leak — CLOSED 2026-09-25
+- WHY: generic catch-all leaked `error.message`+`error.stack` to the client;
+  `origin/main`/BACKUP already sanitize this.
+- FIX: redeployed the exact `origin/main` source.
+- QUALIFICATION: same hash/test/rollback rigor as SEC-001.
+- STATUS: **DEPLOYED AND SOURCE-VERIFIED.**
+- EVIDENCE: same file as SEC-001.
 
 ## P1 — release / git
 

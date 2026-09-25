@@ -1,6 +1,11 @@
 # HANDOFF — read this first
 
-LAST_UPDATED: 2026-09-25 (end of session)
+LAST_UPDATED: 2026-09-25 (loop #2 — SEC-001/SEC-002 closed)
+
+**SEC-001 and SEC-002 are CLOSED as of this update** — deployed to
+production, source-verified. See `04-SECURITY-QUEUE.md` for the now-public
+full writeup. This was the highest-priority item; treat everything below
+about them as historical, not pending.
 
 CURRENT_MAIN: verify fresh with `git fetch origin main` — this session
 merged 3 PRs (#265, #211, #214) during the session, so don't trust any
