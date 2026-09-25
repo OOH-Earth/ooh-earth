@@ -110,9 +110,9 @@ passwords are GitHub Environment secrets on the `preprod` environment:
 
 | Secret | Identity (email) | Used for |
 |---|---|---|
-| `PREPROD_CREATOR_PASSWORD` | `preprod-creator@outofhell.org` | Read/write as the record owner |
-| `PREPROD_OTHER_USER_PASSWORD` | `preprod-other@outofhell.org` | Confirms cross-user denial |
-| `PREPROD_ADMIN_PASSWORD` | `preprod-admin@outofhell.org` (`role: admin` on BACKUP) | Confirms admin visibility + used by `cleanup.mjs` |
+| `PREPROD_CREATOR_PASSWORD` | `runner@ooh.earth` | Read/write as the record owner |
+| `PREPROD_OTHER_USER_PASSWORD` | `casper@advertisersanonymous.org` | Confirms cross-user denial |
+| `PREPROD_ADMIN_PASSWORD` | `gonzo@ooh.earth` (`role: admin` on BACKUP) | Confirms admin visibility + used by `cleanup.mjs` |
 
 **This repository has no way to create these accounts itself, and nothing
 here bypasses that.** Investigated, in order:
@@ -149,38 +149,41 @@ account may hold real privileges elsewhere).
 
 To provision:
 
-1. **Create the three accounts** at `https://ooh-earth-backup.base44.app/register`
-   using exactly these emails — `preprodAuth.ts` and `cleanup.mjs` are
-   hardcoded to them: `preprod-creator@outofhell.org`,
-   `preprod-other@outofhell.org`, `preprod-admin@outofhell.org`. Choose a
-   strong password for each yourself (a password manager's generator is
-   fine) — this repo's tooling never needs to know or see it, only that
-   it's stored correctly in step 4. Complete the email-OTP step for each.
-2. **Tell me each account's email once created** (already known — the
-   fixed addresses above) so the `preprod-admin` identity can be promoted
-   to `role: admin` via a privileged `base44 exec --app-id
-   6a6748e009b947cb29591871 --privileged` call — no password needs to be
-   shared for this step.
-3. **Create the `preprod` GitHub Environment** (repo Settings →
-   Environments → New environment → name exactly `preprod`) and add the
-   three secrets there: `PREPROD_CREATOR_PASSWORD`,
-   `PREPROD_OTHER_USER_PASSWORD`, `PREPROD_ADMIN_PASSWORD`. Using an
-   Environment (not repo-level secrets) scopes them to jobs that explicitly
-   declare `environment: preprod` — `.github/workflows/preprod.yml`'s jobs
-   already do. (This step and the branch restriction below can be done via
-   `gh api`/`gh secret set` by whoever has repo admin access, without ever
-   putting a password value in a chat or a shell history that gets logged
-   — `gh secret set` reads from stdin or a `--body`/prompt, not a command-
-   line argument that would land in shell history.)
-4. **Recommended: "Required reviewers."** No `preprod` GitHub Environment
-   exists in this repo as of this writing, so this hasn't been configured.
-   Deployment-branch restriction (to `main`) can be set programmatically;
-   required-reviewer approval needs a specific GitHub username/team to
-   name as the reviewer, which isn't unambiguous from inside this repo —
-   name one when creating the Environment. Neither is strictly required
-   for the fork-PR-exfiltration threat this workflow is already immune to
-   (see "Security model" below), but both add real defense-in-depth
-   against a compromised or careless dispatch.
+1. ~~**Create the three accounts** at `https://ooh-earth-backup.base44.app/register`~~
+   **Done.** All three exist on BACKUP (independently re-confirmed via a
+   privileged, read-only `base44 exec` query against BACKUP's `User`
+   entity): `runner@ooh.earth`, `casper@advertisersanonymous.org`,
+   `gonzo@ooh.earth`. `preprodAuth.ts` and `cleanup.mjs` are hardcoded to
+   these exact addresses.
+2. ~~**Tell me each account's email once created**~~ **Done.** `gonzo@ooh.earth`
+   was promoted to `role: admin` on BACKUP via a privileged `base44 exec
+   --app-id 6a6748e009b947cb29591871 --privileged` call, targeting that one
+   record by id after confirming its email matched. `runner@ooh.earth` and
+   `casper@advertisersanonymous.org` were left untouched (re-confirmed
+   `role: user` by an independent re-query after the write). No password
+   was shared or needed for this step.
+3. ~~**Create the `preprod` GitHub Environment**~~ **Done.** It exists,
+   with `deployment_branch_policy` restricted to `main`. What's still
+   outstanding is the three secrets themselves — `PREPROD_CREATOR_PASSWORD`,
+   `PREPROD_OTHER_USER_PASSWORD`, `PREPROD_ADMIN_PASSWORD` — confirmed
+   empty as of this writing (`gh api
+   repos/OOH-Earth/ooh-earth/environments/preprod/secrets` lists none). The
+   account owner adds them directly: repo Settings → Environments →
+   `preprod` → Environment secrets → New environment secret, once per name
+   above, pasting the corresponding account's password as the value. Using
+   an Environment (not repo-level secrets) scopes them to jobs that
+   explicitly declare `environment: preprod` — `.github/workflows/preprod.yml`'s
+   jobs already do. (This can also be done via `gh secret set --env
+   preprod <NAME>` by whoever has repo admin access, without ever putting
+   a password value in a chat or a shell history that gets logged — `gh
+   secret set` reads from stdin or a prompt, not a command-line argument.)
+4. **Recommended: "Required reviewers."** Deployment-branch restriction
+   (to `main`) is already set. Required-reviewer approval needs a specific
+   GitHub username/team to name as the reviewer, which isn't unambiguous
+   from inside this repo — add one via the Environment's settings if
+   desired. Not strictly required for the fork-PR-exfiltration threat this
+   workflow is already immune to (see "Security model" below), but adds
+   real defense-in-depth against a compromised or careless dispatch.
 
 Until the environment and secrets exist, `.github/workflows/preprod.yml`'s
 `check-secrets` job fails fast with an explicit error — it will never

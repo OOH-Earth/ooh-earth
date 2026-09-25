@@ -12,6 +12,9 @@ export const GLYPH_COLORS = {
   mural: '#FF5C00',
   sticker: '#EDFF00',
   projection: '#FF5C00',
+  skatepark: '#39FF14',
+  basketball_court: '#39FF14',
+  multi_use_court: '#39FF14',
   other: '#B2B2B2',
 };
 
@@ -23,6 +26,9 @@ export const PIN_TYPES = [
   'mural',
   'sticker',
   'projection',
+  'skatepark',
+  'basketball_court',
+  'multi_use_court',
   'other',
 ];
 
@@ -43,6 +49,12 @@ const GLYPH_PATHS = {
     '<circle cx="12" cy="12" r="7" fill="#000"/><path d="M12 5v7l4 4" stroke="__A__" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>',
   projection:
     '<rect x="3" y="9" width="6" height="6" fill="#000"/><path d="M9 12L21 6" stroke="#000" stroke-width="2.4" stroke-linecap="round"/>',
+  skatepark:
+    '<path d="M4 20h16v-3H10a6 6 0 016-6h4V8h-4a9 9 0 00-9 9v3z" fill="#000"/><path d="M7 20a6 6 0 016-6" stroke="__A__" stroke-width="1.5" fill="none" stroke-linecap="round"/>',
+  basketball_court:
+    '<rect x="4" y="4" width="16" height="16" rx="1" fill="#000"/><circle cx="12" cy="12" r="5" fill="none" stroke="__A__" stroke-width="1.3"/><path d="M12 7v10M7 12h10" stroke="__A__" stroke-width="1" opacity="0.7"/>',
+  multi_use_court:
+    '<rect x="4" y="6" width="16" height="12" fill="#000"/><line x1="12" y1="6" x2="12" y2="18" stroke="__A__" stroke-width="1.5"/><line x1="4" y1="12" x2="20" y2="12" stroke="__A__" stroke-width="1" opacity="0.6"/>',
   other: '<circle cx="12" cy="12" r="6" fill="#000"/>',
 };
 
@@ -128,6 +140,63 @@ const GLYPH_CANVAS = {
     ctx.moveTo(9, 12);
     ctx.lineTo(21, 6);
     ctx.stroke();
+  },
+  skatepark: (ctx, a) => {
+    ctx.fillStyle = '#000';
+    ctx.beginPath();
+    ctx.moveTo(4, 20);
+    ctx.lineTo(20, 20);
+    ctx.lineTo(20, 17);
+    ctx.lineTo(10, 17);
+    ctx.quadraticCurveTo(10, 11, 16, 11);
+    ctx.lineTo(20, 11);
+    ctx.lineTo(20, 8);
+    ctx.lineTo(16, 8);
+    ctx.quadraticCurveTo(7, 8, 7, 17);
+    ctx.closePath();
+    ctx.fill();
+    ctx.strokeStyle = a;
+    ctx.lineWidth = 1.5;
+    ctx.lineCap = 'round';
+    ctx.beginPath();
+    ctx.moveTo(7, 20);
+    ctx.quadraticCurveTo(7, 14, 13, 14);
+    ctx.stroke();
+  },
+  basketball_court: (ctx, a) => {
+    ctx.fillStyle = '#000';
+    ctx.fillRect(4, 4, 16, 16);
+    ctx.strokeStyle = a;
+    ctx.lineWidth = 1.3;
+    ctx.beginPath();
+    ctx.arc(12, 12, 5, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.globalAlpha = 0.7;
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(12, 7);
+    ctx.lineTo(12, 17);
+    ctx.moveTo(7, 12);
+    ctx.lineTo(17, 12);
+    ctx.stroke();
+    ctx.globalAlpha = 1;
+  },
+  multi_use_court: (ctx, a) => {
+    ctx.fillStyle = '#000';
+    ctx.fillRect(4, 6, 16, 12);
+    ctx.strokeStyle = a;
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.moveTo(12, 6);
+    ctx.lineTo(12, 18);
+    ctx.stroke();
+    ctx.globalAlpha = 0.6;
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(4, 12);
+    ctx.lineTo(20, 12);
+    ctx.stroke();
+    ctx.globalAlpha = 1;
   },
   other: (ctx) => {
     ctx.fillStyle = '#000';

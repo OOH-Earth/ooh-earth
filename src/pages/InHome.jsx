@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
+import { useAuthGatedSubscribe } from '@/hooks/useAuthGatedSubscribe';
 import Nav from '@/components/ooh/Nav';
 import DigitalScene from '@/components/ooh/inhome/DigitalScene';
 import SignalConstellation from '@/components/ooh/inhome/SignalConstellation';
@@ -96,24 +97,24 @@ export default function InHome() {
         if (!cancelled) setRaw(seedBusts());
       }
     })();
-    const unsub = base44.entities.DigitalBust.subscribe((event) => {
-      setRaw((cur) => {
-        if (!cur || !cur.length || cur[0].id?.startsWith('seed-')) return cur;
-        const b = toBust(event.data);
-        if (event.type === 'create') return [b, ...cur.filter((x) => x.id !== b.id)];
-        if (event.type === 'update')
-          return b.status === 'rejected'
-            ? cur.filter((x) => x.id !== b.id)
-            : cur.map((x) => (x.id === b.id ? b : x));
-        if (event.type === 'delete') return cur.filter((x) => x.id !== b.id);
-        return cur;
-      });
-    });
     return () => {
       cancelled = true;
-      if (unsub) unsub();
     };
   }, [reloadKey]);
+
+  useAuthGatedSubscribe('DigitalBust', (event) => {
+    setRaw((cur) => {
+      if (!cur || !cur.length || cur[0].id?.startsWith('seed-')) return cur;
+      const b = toBust(event.data);
+      if (event.type === 'create') return [b, ...cur.filter((x) => x.id !== b.id)];
+      if (event.type === 'update')
+        return b.status === 'rejected'
+          ? cur.filter((x) => x.id !== b.id)
+          : cur.map((x) => (x.id === b.id ? b : x));
+      if (event.type === 'delete') return cur.filter((x) => x.id !== b.id);
+      return cur;
+    });
+  });
 
   const busts = raw || [];
 
