@@ -8,6 +8,9 @@ import {
   BusFront,
   MapPin,
   BadgeCheck,
+  Waves,
+  CircleDot,
+  Goal,
 } from 'lucide-react';
 
 // Category → icon + accent for placeholders
@@ -19,6 +22,9 @@ export const TYPE_META = {
   sticker: { label: 'Sticker', Icon: Sticker, accent: '#EDFF00' },
   mural: { label: 'Mural', Icon: Frame, accent: '#FF5C00' },
   transit: { label: 'Transit', Icon: BusFront, accent: '#EDFF00' },
+  skatepark: { label: 'Skatepark', Icon: Waves, accent: '#39FF14' },
+  basketball_court: { label: 'Basketball Court', Icon: CircleDot, accent: '#39FF14' },
+  multi_use_court: { label: 'Multi-Use Court', Icon: Goal, accent: '#39FF14' },
   other: { label: 'Field', Icon: MapPin, accent: '#B2B2B2' },
 };
 
