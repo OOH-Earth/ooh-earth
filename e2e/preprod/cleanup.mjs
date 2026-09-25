@@ -28,7 +28,7 @@ const BACKUP_APP_ID = '6a6748e009b947cb29591871';
 const PRODUCTION_APP_ID = '6a62213cff3ccbca88c04ff5'; // asserted against, never used
 const FORBIDDEN_HOSTS = ['oohearth.app', 'www.oohearth.app', 'ooh.earth', 'oohearth.base44.app'];
 const ENTITIES = ['Location', 'LocationPhoto', 'FieldCheck', 'DigitalBust'];
-const ADMIN_EMAIL = 'preprod-admin@outofhell.org';
+const ADMIN_EMAIL = 'gonzo@ooh.earth';
 
 function arg(name) {
   const index = process.argv.indexOf(`--${name}`);

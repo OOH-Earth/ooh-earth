@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { Image } from '@/components/ui/image';
 import { useNavigate, Link } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
@@ -211,8 +212,39 @@ function Grid({ items, ownedIds, onAction, busy }) {
 export default function Store() {
   const navigate = useNavigate();
   const { registerSteps } = useWalkthrough();
-  const [items, setItems] = useState(null);
-  const [ownedIds, setOwnedIds] = useState(new Set());
+  const { data: items } = useQuery({
+    queryKey: ['store-catalog'],
+    queryFn: async () => {
+      try {
+        const res = await base44.functions.invoke('storeCatalog', {});
+        const d = res?.data ?? res;
+        return Array.isArray(d?.items) ? d.items : [];
+      } catch {
+        return [];
+      }
+    },
+  });
+  // Owned entitlements (for badges + re-download), if signed in. Independent
+  // of the catalog fetch above -- an anonymous user or a failed lookup both
+  // resolve to an empty Set rather than erroring the query.
+  const { data: ownedIdsData } = useQuery({
+    queryKey: ['store-owned-purchases'],
+    queryFn: async () => {
+      try {
+        const me = await base44.auth.me();
+        if (!me?.id) return new Set();
+        const ps = await base44.entities.Purchase.filter(
+          { user_id: me.id, status: 'paid' },
+          '-created_date',
+          200,
+        );
+        return new Set((ps || []).map((p) => p.item_id));
+      } catch {
+        return new Set();
+      }
+    },
+  });
+  const ownedIds = ownedIdsData ?? new Set();
   const [busy, setBusy] = useState(null);
   const [error, setError] = useState('');
   const [thanks, setThanks] = useState(false);
@@ -224,34 +256,6 @@ export default function Store() {
     registerSteps(STORE_TOUR);
     const params = new URLSearchParams(window.location.search);
     if (params.get('status') === 'thanks') setThanks(true);
-
-    let cancelled = false;
-    (async () => {
-      try {
-        const res = await base44.functions.invoke('storeCatalog', {});
-        const d = res?.data ?? res;
-        if (!cancelled) setItems(Array.isArray(d?.items) ? d.items : []);
-      } catch {
-        if (!cancelled) setItems([]);
-      }
-      // Owned entitlements (for badges + re-download), if signed in.
-      try {
-        const me = await base44.auth.me();
-        if (me?.id && !cancelled) {
-          const ps = await base44.entities.Purchase.filter(
-            { user_id: me.id, status: 'paid' },
-            '-created_date',
-            200,
-          );
-          if (!cancelled) setOwnedIds(new Set((ps || []).map((p) => p.item_id)));
-        }
-      } catch {
-        /* logged out — fine */
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
   }, [registerSteps]);
 
   const cats = useMemo(() => {
