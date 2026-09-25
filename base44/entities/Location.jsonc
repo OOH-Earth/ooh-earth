@@ -21,9 +21,34 @@
         "sticker",
         "mural",
         "transit",
+        "skatepark",
+        "basketball_court",
+        "multi_use_court",
         "other"
       ],
       "default": "other"
+    },
+    "setting": {
+      "type": "string",
+      "enum": [
+        "unknown",
+        "outdoor",
+        "indoor",
+        "covered"
+      ],
+      "default": "unknown",
+      "description": "Public-space facility only: indoor/outdoor/covered. Unknown unless directly observed."
+    },
+    "public_access": {
+      "type": "string",
+      "enum": [
+        "unknown",
+        "free",
+        "low_cost",
+        "restricted"
+      ],
+      "default": "unknown",
+      "description": "Public-space facility only: access model. Never infer 'free'/municipal ownership just because a facility looks public — default stays unknown until evidenced."
     },
     "address": {
       "type": "string"
