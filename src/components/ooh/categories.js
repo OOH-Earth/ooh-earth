@@ -12,6 +12,9 @@ import {
   Palette,
   Sticker,
   Shapes,
+  Waves,
+  CircleDot,
+  Goal,
 } from 'lucide-react';
 import MAP_SEED from '@/components/ooh/mapSeed';
 import { BUS_STOPS } from '@/components/ooh/busStops';
@@ -82,6 +85,32 @@ export const CATEGORIES = [
     to: '/category/sticker',
     icon: Sticker,
     blurb: 'Sticker-scale interventions and subvertising.',
+  },
+  {
+    slug: 'skatepark',
+    label: 'Skateparks',
+    type: 'skatepark',
+    to: '/category/skatepark',
+    icon: Waves,
+    blurb:
+      'Public skateparks — mapped facilities with any visible branding tracked as evidence, not assumed sponsorship.',
+  },
+  {
+    slug: 'basketball-court',
+    label: 'Basketball Courts',
+    type: 'basketball_court',
+    to: '/category/basketball-court',
+    icon: CircleDot,
+    blurb:
+      'Public basketball courts — mapped facilities with any visible branding tracked as evidence, not assumed sponsorship.',
+  },
+  {
+    slug: 'multi-use-court',
+    label: 'Multi-Use Courts',
+    type: 'multi_use_court',
+    to: '/category/multi-use-court',
+    icon: Goal,
+    blurb: 'Shared-use public courts — football/futsal, tennis, and similar street-sport surfaces.',
   },
   {
     slug: 'other',
