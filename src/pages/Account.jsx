@@ -32,7 +32,18 @@ import {
   Coins,
   ArrowUpRight,
   Mail,
+  Star,
+  ExternalLink,
 } from 'lucide-react';
+import {
+  FOCUS_AREAS,
+  focusAreaLabel,
+  MAX_FOCUS_AREAS,
+  MAX_BIO_LENGTH,
+  MAX_REGION_LENGTH,
+  isValidHandle,
+  normalizeHandle,
+} from '@/lib/founderProfile';
 
 /* ────────────────────────────────────────────────────────────
    OOH Earth · Account & Settings hub · /account
@@ -102,12 +113,20 @@ const inputCls =
   'mt-1.5 w-full border border-slate2 bg-card px-3 py-2.5 font-display text-[14px] text-silver outline-none transition-colors placeholder:text-darkgray/50 focus:border-ozone';
 
 export default function Account() {
-  const { user: ctxUser, checkUserAuth } = useAuth();
+  const { user: ctxUser } = useAuth();
   const [me, setMe] = useState(ctxUser || null);
   const [loading, setLoading] = useState(true);
   const [tab, setTab] = useState('profile');
 
-  const [form, setForm] = useState({ full_name: '', handle: '', bio: '', avatar_url: '' });
+  const [form, setForm] = useState({
+    full_name: '',
+    handle: '',
+    bio: '',
+    avatar_url: '',
+    region: '',
+    focus_areas: [],
+    profile_public: false,
+  });
   const [prefs, setPrefs] = useState(PREF_DEFAULTS);
   const [savingP, setSavingP] = useState(false);
   const [savedP, setSavedP] = useState(false);
@@ -125,6 +144,11 @@ export default function Account() {
       handle: u.handle || '',
       bio: u.bio || '',
       avatar_url: u.avatar_url || '',
+      region: u.region || '',
+      focus_areas: Array.isArray(u.focus_areas) ? u.focus_areas : [],
+      // Explicit opt-in, defaults to false -- a handle/bio/etc. existing
+      // does not publish a profile. See User.jsonc's profile_public.
+      profile_public: !!u.profile_public,
     });
     let stored = null;
     try {
@@ -153,24 +177,66 @@ export default function Account() {
   }, [hydrate, ctxUser]);
 
   const saveProfile = async () => {
+    const handle = normalizeHandle(form.handle);
+    if (handle && !isValidHandle(handle)) {
+      setErr('Handle must be 2–32 letters, numbers, - or _ (no spaces or symbols).');
+      return;
+    }
     setSavingP(true);
     setErr(null);
     setSavedP(false);
     try {
-      // Safe subset only — never role/access/agency.
+      // Duplicate-handle guard — Base44 has no unique-index enforcement on
+      // custom User fields, so this is a best-effort, function-mediated
+      // check (see getPublicProfile's "check" mode) rather than a hard
+      // database constraint. It still can't be bypassed by a normal client
+      // since there's no general User.filter() exposed to non-admins.
+      if (handle && handle !== normalizeHandle(me?.handle)) {
+        try {
+          const res = await base44.functions.invoke('getPublicProfile', {
+            handle,
+            mode: 'check',
+          });
+          const { taken, mine } = res?.data || {};
+          if (taken && !mine) {
+            setErr('That handle is already taken — try another.');
+            setSavingP(false);
+            return;
+          }
+        } catch {
+          /* availability check is best-effort; do not block save on it */
+        }
+      }
+
+      // Safe subset only — never role/access/agency/founding_member. Those
+      // three (plus founding_member) are schema-declared on User and are
+      // write-RLS-locked to admin, so even a maliciously crafted updateMe
+      // payload including them would be rejected server-side — this
+      // allowlist is defense in depth, not the only boundary.
       await base44.auth.updateMe({
         full_name: form.full_name,
-        handle: form.handle,
-        bio: form.bio,
+        handle,
+        bio: form.bio.slice(0, MAX_BIO_LENGTH),
         avatar_url: form.avatar_url,
+        region: form.region.slice(0, MAX_REGION_LENGTH),
+        focus_areas: form.focus_areas.slice(0, MAX_FOCUS_AREAS),
+        profile_public: !!form.profile_public,
       });
-      try {
-        await checkUserAuth?.();
-      } catch {
-        /* context refresh is best-effort */
-      }
+      // Deliberately NOT calling checkUserAuth() here (pre-existing code
+      // used to): it flips AuthContext's isLoadingAuth to true, which makes
+      // ProtectedRoute swap to its loading fallback and unmount this whole
+      // page for the duration -- destroying savedP before the "Saved"
+      // confirmation is ever visible. base44.auth.me() below already gives
+      // us the fresh record for local state; that's all a save needs.
       const u = await base44.auth.me();
       setMe(u);
+      // Re-sync the form from the authoritative post-save record, not just
+      // `me` -- at least one field (full_name) is silently ignored by the
+      // platform's own updateMe endpoint (it returns 200 but never persists
+      // a change to it, confirmed live 2026-09-22), so without this the form
+      // -- and the "Saved" confirmation right below -- would keep showing
+      // whatever the user locally typed even though it was never written.
+      hydrate(u);
       setSavedP(true);
       setTimeout(() => setSavedP(false), 2200);
     } catch (e) {
@@ -431,16 +497,96 @@ export default function Account() {
                 </Field>
               </div>
               <div className="mt-5">
-                <Field label="Bio">
+                <Field label="Bio" hint={`${form.bio.length}/${MAX_BIO_LENGTH} characters`}>
                   <textarea
                     rows={3}
+                    maxLength={MAX_BIO_LENGTH}
                     className={inputCls}
                     value={form.bio}
-                    onChange={(e) => setForm((f) => ({ ...f, bio: e.target.value }))}
+                    onChange={(e) =>
+                      setForm((f) => ({ ...f, bio: e.target.value.slice(0, MAX_BIO_LENGTH) }))
+                    }
                     placeholder="A line about why you're in this."
+                    aria-label="Bio"
                   />
                 </Field>
               </div>
+              <div className="mt-5">
+                <Field label="Region" hint="Optional, human-entered — never your precise location.">
+                  <input
+                    className={inputCls}
+                    maxLength={MAX_REGION_LENGTH}
+                    value={form.region}
+                    onChange={(e) =>
+                      setForm((f) => ({ ...f, region: e.target.value.slice(0, MAX_REGION_LENGTH) }))
+                    }
+                    placeholder="e.g. London, UK"
+                    aria-label="Region"
+                  />
+                </Field>
+              </div>
+              <div className="mt-5">
+                <span className="font-mono text-[9px] uppercase tracking-[0.2em] text-dim">
+                  Focus areas
+                </span>
+                <span className="mt-1 block font-mono text-[9px] tracking-[0.05em] text-darkgray/70">
+                  Pick up to {MAX_FOCUS_AREAS} — what part of the network you're building.
+                </span>
+                <div className="mt-2 flex flex-wrap gap-2" role="group" aria-label="Focus areas">
+                  {FOCUS_AREAS.map((area) => {
+                    const active = form.focus_areas.includes(area);
+                    return (
+                      <button
+                        key={area}
+                        type="button"
+                        aria-pressed={active}
+                        onClick={() =>
+                          setForm((f) => {
+                            const has = f.focus_areas.includes(area);
+                            if (has)
+                              return { ...f, focus_areas: f.focus_areas.filter((a) => a !== area) };
+                            if (f.focus_areas.length >= MAX_FOCUS_AREAS) return f;
+                            return { ...f, focus_areas: [...f.focus_areas, area] };
+                          })
+                        }
+                        className={`border px-3 py-1.5 font-mono text-[10px] uppercase tracking-[0.12em] transition-colors ${
+                          active
+                            ? 'border-ozone bg-ozone/10 text-ozone'
+                            : 'border-slate2 text-darkgray hover:border-silver/50 hover:text-silver'
+                        }`}
+                      >
+                        {focusAreaLabel(area)}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+              <div className="mt-5 border border-slate2/60 bg-card/60 px-3 py-1">
+                <Toggle
+                  on={form.profile_public}
+                  onClick={() => setForm((f) => ({ ...f, profile_public: !f.profile_public }))}
+                  label="Public Founding Profile"
+                  desc="Off by default. Turn this on to publish your name, handle, bio, region, focus areas, and verified-contribution counts at a public URL anyone can view. Turn it off any time to stop anyone from seeing it — this takes effect immediately on save."
+                />
+              </div>
+              {me?.founding_member && (
+                <div className="mt-5 flex items-center gap-2 border border-ozone/30 bg-ozone/5 px-3 py-2.5">
+                  <Star className="h-3.5 w-3.5 shrink-0 text-ozone" />
+                  <span className="font-mono text-[10px] uppercase tracking-[0.15em] text-ozone">
+                    Founding Member
+                    {me?.created_date && (
+                      <span className="text-dim">
+                        {' '}
+                        · since{' '}
+                        {new Date(me.created_date).toLocaleDateString(undefined, {
+                          year: 'numeric',
+                          month: 'short',
+                        })}
+                      </span>
+                    )}
+                  </span>
+                </div>
+              )}
               <div className="mt-6 flex items-center gap-3">
                 <button
                   onClick={saveProfile}
@@ -458,6 +604,20 @@ export default function Account() {
                   Email is your login — managed under Security.
                 </span>
               </div>
+              {isValidHandle(me?.handle) &&
+                (me?.profile_public ? (
+                  <Link
+                    to={`/founders/${normalizeHandle(me.handle)}`}
+                    className="mt-4 inline-flex items-center gap-1.5 font-mono text-[10px] font-bold uppercase tracking-[0.15em] text-ozone transition-colors hover:text-flare"
+                  >
+                    View public profile <ExternalLink className="h-3 w-3" />
+                  </Link>
+                ) : (
+                  <p className="mt-4 font-mono text-[10px] uppercase tracking-[0.15em] text-dim">
+                    Your profile is private — turn on "Public Founding Profile" above and save to
+                    publish it.
+                  </p>
+                ))}
             </div>
           )}
 
