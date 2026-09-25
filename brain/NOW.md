@@ -67,11 +67,16 @@ still pending but is **not an engineering blocker**.
   anyone invests in reviving it.
 
 ## CURRENT_UI_FEEDBACK (Dave, this pass — see `DAVE.md` for detail)
-Desktop results-row hover/active highlight feels weaker than before;
-marker/icon size and quality wanted higher; possible (unconfirmed, "maybe
-random") results-list disappearance; one non-Chrome sighting of Carto
-"API KEY REQUIRED" tiles, not reproduced on Chrome. Overall: "good shape
-really" — not a redesign request.
+Desktop results-row hover/active highlight feels weaker than before
+(**UX-001**, not started); marker/icon size and quality wanted higher
+(**UX-002**, not started). Two items already investigated and resolved
+2026-09-25: the results-list "disappearance" (**UX-003**) reproduced as the
+app's own correct empty-viewport state, not a bug — closed. The Carto
+"API KEY REQUIRED" tile watermark (**UX-004**) *does* reproduce on Chrome
+(contradicting Dave's own guess) — root-caused to 4 of 5 map styles using
+an unauthenticated Carto endpoint; awaiting Dave's choice between getting a
+real API key or swapping the tile source. Overall: "good shape really" —
+not a redesign request.
 
 ## NEXT_TASK
 See `QUEUE.md`. In order: SEC-001/SEC-002 authorization package (prepared,

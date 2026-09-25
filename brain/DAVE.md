@@ -20,12 +20,20 @@ file holds only what's still open.
 
 4. **Carto/API-key sighting** — saw an "API KEY REQUIRED" tiled watermark
    state once, outside Chrome. His own words: "Not actually happening on
-   chrome so, ignore probably just random." → **UX-004**, reproduce before
-   touching any credential or config.
+   chrome so, ignore probably just random." **UPDATE 2026-09-25: this DOES
+   reproduce on Chrome, deterministically** — his own assumption was wrong,
+   this is a real bug, not random. Root cause: 4 of 5 map styles use an
+   unauthenticated Carto tile endpoint that watermarks tiles instead of
+   erroring. → **UX-004**, root-caused, two fix options prepared, needs
+   Dave to pick a direction (see `QUEUE.md`).
 
 5. **Results list disappearance** — observed the list possibly disappearing
    in some map state; explicitly flagged it himself as possibly random/
-   unconfirmed. → **UX-003**, reproduce before fixing anything speculative.
+   unconfirmed. **UPDATE 2026-09-25: reproduced and confirmed NOT a bug** —
+   it's the app's own correct "you've panned to an area with no data"
+   state, which already shows a "Follow Map" button to recover. Found one
+   small, separate cosmetic issue in the same state (stale list content) —
+   low priority. → **UX-003, CLOSED.**
 
 6. **General toggle sweep** — cycled through the map's toggles and views and
    said overall: "Good shape really." Not a request for a redesign.

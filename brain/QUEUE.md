@@ -56,26 +56,56 @@ None open.
 
 ## P2 — Dave map UX (reproduce before implementing)
 
-### UX-003 — possible results-list disappearance
+### UX-003 — possible results-list disappearance — CLOSED, NOT A BUG (2026-09-25)
 - WHY: Dave: "may be random" — unconfirmed.
-- SCOPE: reproduce only; cycle Split/Map/List × Flat/Globe, desktop+mobile.
-- WRITE_TYPE: none (investigation) unless reproduced.
-- STATUS: not started.
-- NEXT_ACTION: run the repro matrix in a real browser; record PASS or
-  NOT_REPRODUCED with evidence either way.
-- DONE_WHEN: a verdict (reproduced+fixed, or NOT_REPRODUCED+matrix) is
-  recorded.
+- VERDICT: **reproduced the exact "0 IN VIEW · 0 TOTAL" state** (zoom out +
+  pan to an area with no location data) and confirmed it's correct,
+  by-design viewport filtering — the app already shows a "Follow Map"
+  recovery button in exactly this state. Not a defect.
+- SECONDARY FINDING (minor, separate): in this same state, the results-list
+  *content* below the "0 IN VIEW" header still shows stale results from the
+  previous viewport (didn't clear to match the 0 count) — cosmetic
+  inconsistency, not data loss. Worth a small fix if convenient, not urgent.
+- STATUS: CLOSED — no engineering action needed for the core report.
+- EVIDENCE: reproduced live on `oohearth.app/map`, Flat mode, Split view,
+  desktop 1440×900, via programmatic zoom-out + pan.
 
-### UX-004 — Carto "API KEY REQUIRED" tile sighting
-- WHY: Dave saw it once outside Chrome; not reproduced on Chrome; said to
-  ignore probably.
-- SCOPE: reproduce only; inspect network/tile provider if it appears.
-- WRITE_TYPE: none unless reproduced — never rotate/change credentials
-  speculatively.
-- STATUS: not started.
-- NEXT_ACTION: try to reproduce on Chrome and on production; if it doesn't
-  reproduce, close as TRANSIENT/NOT_REPRODUCED.
-- DONE_WHEN: verdict recorded.
+### UX-004 — Carto "API KEY REQUIRED" tile watermark — REPRODUCED, real bug (2026-09-25)
+- WHY: Dave saw it once outside Chrome, assumed random/not-on-Chrome.
+- VERDICT: **reproduced deterministically on Chrome/Chromium**, contradicting
+  Dave's own assumption — this is not random. Root cause: `Dark`/`Light`/
+  `Voyager`/`Matrix` map styles (4 of 5 style options; `Satellite` is the
+  only unaffected one) all point to Carto's legacy free anonymous tile
+  endpoint (`{s}.basemaps.cartocdn.com/...`) with no API key, in
+  `src/lib/mapStyleContext.jsx` (also duplicated in `MediaCorpsMap.jsx` and
+  `MapPinDropper.jsx`). Carto's CDN doesn't hard-fail this — it serves a real
+  `200 OK` PNG tile with "API KEY REQUIRED — carto.com/basemaps/apikey"
+  watermarked directly into the image, so no network error ever surfaces.
+  Confirmed isolated to Flat/Leaflet raster mode — Globe's MapLibre GL
+  vector styles (same 4 style names, different Carto delivery mechanism)
+  are unaffected.
+- IMPACT: any visitor who picks Dark/Light/Voyager/Matrix in Flat mode gets
+  a watermarked, degraded-looking basemap. Not a security issue, not
+  data-related — purely a visual/branding problem, but it's on by default
+  for a meaningful fraction of the style picker.
+- FIX OPTIONS (not implemented — needs a decision, not a unilateral
+  redesign of Dave's stated visual choices):
+  1. Register a real Carto API key and switch to their authenticated tile
+     endpoint (`accountid`/API-key-bearing URL) — needs Dave to create/fund
+     a Carto account; no code change beyond adding the key.
+  2. Swap the raster tile source for a different no-key-required provider
+     for these 4 styles — a code-only fix, but changes the actual visual
+     style Dave chose, so should be presented with a preview, not silently
+     swapped.
+- WRITE_TYPE: frontend-only if option 2 is chosen (Lane B once a direction
+  is picked); option 1 needs Dave to obtain a credential (not something to
+  do autonomously).
+- STATUS: root-caused, awaiting Dave's choice of fix direction.
+- EVIDENCE: live network capture (`c/d/a/b.basemaps.cartocdn.com/dark_all/...`
+  all return `200`), source read (`src/lib/mapStyleContext.jsx:26-78`),
+  screenshot evidence matching Dave's own report pixel-for-pixel.
+- NEXT_ACTION: present both fix options to Dave; implement whichever he
+  picks.
 
 ### UX-001 — desktop results-row hover/active highlight weakened
 - WHY: Dave wants the previous strong fluorescent-red/pink hover/active
