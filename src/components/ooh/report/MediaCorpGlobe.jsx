@@ -21,11 +21,15 @@ function panelLabel(panels) {
   return String(panels);
 }
 
+// Drawn at devicePixelRatio so the bitmap map.addImage() registers actually
+// matches the screen's real pixel density — see Globe3D.jsx's makePinIcon().
 function makeCorpPinIcon(scope, selected, panels) {
   const S = 64;
+  const dpr = typeof window !== 'undefined' ? window.devicePixelRatio || 1 : 1;
   const canvas = document.createElement('canvas');
-  canvas.width = canvas.height = S;
+  canvas.width = canvas.height = S * dpr;
   const ctx = canvas.getContext('2d');
+  ctx.scale(dpr, dpr);
   const cx = S / 2;
   const cy = S / 2 - 6;
   const r = selected ? 20 : 16;
@@ -240,14 +244,15 @@ export default function MediaCorpGlobe({
         data: /** @type {GeoJSON.GeoJSON} */ (dataRef.current),
       });
 
+      const iconPixelRatio = typeof window !== 'undefined' ? window.devicePixelRatio || 1 : 1;
       SCOPES.forEach((s) => {
         const a = makeCorpPinIcon(s, false, 0);
         map.addImage(`mc-pin-${s}`, a.getContext('2d').getImageData(0, 0, a.width, a.height), {
-          pixelRatio: 1,
+          pixelRatio: iconPixelRatio,
         });
         const b = makeCorpPinIcon(s, true, 0);
         map.addImage(`mc-pin-${s}-sel`, b.getContext('2d').getImageData(0, 0, b.width, b.height), {
-          pixelRatio: 1,
+          pixelRatio: iconPixelRatio,
         });
       });
 

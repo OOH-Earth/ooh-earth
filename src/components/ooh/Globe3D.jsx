@@ -12,6 +12,7 @@ import { drawGlyph, GLYPH_COLORS, PIN_TYPES } from '@/components/ooh/map/pinGlyp
 import GlobeLayerManager from '@/components/ooh/map/layers/GlobeLayerManager';
 import { useMapStyle } from '@/lib/mapStyleContext';
 import { getStatusDotColor } from '@/lib/statusBadge';
+import { parseChannelColor, resolveHoverRingTarget } from '@/lib/hoverEmphasis';
 
 const esc = (s) =>
   String(s ?? '').replace(
@@ -22,12 +23,19 @@ const esc = (s) =>
 // Canvas-drawn field pin for the globe symbol layer — yellow disc,
 // category-specific glyph (from the shared pinGlyphs library), micro-badge +
 // status dot, pink radial glow.
+//
+// Drawn at devicePixelRatio so the bitmap map.addImage() registers actually
+// matches the screen's real pixel density — without this, MapLibre stretches
+// a 1x bitmap to cover 2-3x as many physical pixels on any retina/high-DPI
+// display, producing a soft/blurry marker regardless of icon-size.
 function makePinIcon(type, selected, verified) {
   const S = 64;
+  const dpr = typeof window !== 'undefined' ? window.devicePixelRatio || 1 : 1;
   const badgeColor = GLYPH_COLORS[type] || GLYPH_COLORS.other;
   const c = document.createElement('canvas');
-  c.width = c.height = S;
+  c.width = c.height = S * dpr;
   const ctx = c.getContext('2d');
+  ctx.scale(dpr, dpr);
   const cx = S / 2,
     cy = S / 2;
   // pink radial highlight
@@ -254,6 +262,16 @@ export default function Globe3D({
     map.on('load', () => {
       applyGlobe();
       map.on('style.load', applyGlobe);
+      // Read the live theme's --c-flare token (space-separated "R G B") once
+      // at mount, rather than hardcoding one theme's color -- MapLibre paint
+      // properties need a literal value, not a live CSS variable reference.
+      // Normalized to comma-separated here since rgba(R G B, a) (mixing the
+      // modern space syntax with a legacy comma-separated alpha) isn't valid
+      // CSS and MapLibre's color parser doesn't reliably accept the modern
+      // rgb(R G B / a) slash syntax either.
+      const flareColor = parseChannelColor(
+        getComputedStyle(document.documentElement).getPropertyValue('--c-flare'),
+      );
       map.addSource('ooh-markers', {
         type: 'geojson',
         data: /** @type {GeoJSON.GeoJSON} */ (dataRef.current),
@@ -261,14 +279,15 @@ export default function Globe3D({
         clusterRadius: 52,
         clusterMaxZoom: 14,
       });
+      const iconPixelRatio = typeof window !== 'undefined' ? window.devicePixelRatio || 1 : 1;
       PIN_TYPES.forEach((t) => {
         const a = makePinIcon(t, false, false);
         map.addImage(`ooh-pin-${t}`, a.getContext('2d').getImageData(0, 0, a.width, a.height), {
-          pixelRatio: 1,
+          pixelRatio: iconPixelRatio,
         });
         const b = makePinIcon(t, true, false);
         map.addImage(`ooh-pin-${t}-sel`, b.getContext('2d').getImageData(0, 0, b.width, b.height), {
-          pixelRatio: 1,
+          pixelRatio: iconPixelRatio,
         });
       });
       // cluster discs — dark core, ozone ring, live count (military-grade)
@@ -308,6 +327,23 @@ export default function Globe3D({
           'circle-color': 'rgba(91,231,255,0.12)',
           'circle-stroke-color': '#5BE7FF',
           'circle-stroke-width': 2,
+        },
+      });
+      // Result-row ↔ marker hover emphasis: a filter-driven ring (no re-baked
+      // icon bitmaps needed) using the theme's own --c-flare brand token, so
+      // hovering a result row makes the corresponding marker unmistakable.
+      // Starts matching nothing; the hoverId effect below sets the real filter.
+      map.addLayer({
+        id: 'ooh-hover-ring',
+        type: 'circle',
+        source: 'ooh-markers',
+        filter: ['==', ['get', 'id'], '__none__'],
+        paint: {
+          'circle-radius': 22,
+          'circle-color': flareColor.replace('rgb(', 'rgba(').replace(')', ', 0.16)'),
+          'circle-stroke-color': flareColor,
+          'circle-stroke-width': 2.5,
+          'circle-blur': 0.15,
         },
       });
       map.addLayer({
@@ -394,9 +430,11 @@ export default function Globe3D({
     const vis = activeLayers.some((l) => l === 'ads' || l === 'adbusting' || l === 'graffiti')
       ? 'visible'
       : 'none';
-    ['ooh-markers', 'ooh-attention', 'ooh-clusters', 'ooh-cluster-count'].forEach((id) => {
-      if (map.getLayer(id)) map.setLayoutProperty(id, 'visibility', vis);
-    });
+    ['ooh-markers', 'ooh-attention', 'ooh-hover-ring', 'ooh-clusters', 'ooh-cluster-count'].forEach(
+      (id) => {
+        if (map.getLayer(id)) map.setLayoutProperty(id, 'visibility', vis);
+      },
+    );
     if (map.getLayer('ooh-attention'))
       map.setLayoutProperty('ooh-attention', 'visibility', attentionMode ? vis : 'none');
   }, [activeLayers, attentionMode, ready]);
@@ -431,6 +469,20 @@ export default function Globe3D({
       });
     }
   }, [hoverId, selectedId, markers, ready]);
+
+  // Marker-side half of the result-row <-> marker hover emphasis: show the
+  // ring only for a genuine hover on a not-already-selected marker (matches
+  // the flyTo effect's own guard above -- an already-selected marker has its
+  // own persistent visual treatment, a hover ring on top would be redundant).
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!readyRef.current || !map || !map.getLayer('ooh-hover-ring')) return;
+    map.setFilter('ooh-hover-ring', [
+      '==',
+      ['get', 'id'],
+      resolveHoverRingTarget({ hoverId, selectedId }),
+    ]);
+  }, [hoverId, selectedId, ready]);
 
   useEffect(() => {
     const map = mapRef.current;
