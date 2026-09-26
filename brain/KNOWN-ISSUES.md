@@ -8,7 +8,8 @@ see `QUEUE.md` for full task detail on each.
 |---|---|---|---|
 | SEC-001 | Production `scanAd` missing host-allowlist validation | CLOSED — deployed + source-verified 2026-09-25 | `docs/ops/ooh-earth/04-SECURITY-QUEUE.md` |
 | SEC-002 | Production `migrateLocationImages` error/stack leak | CLOSED — deployed + source-verified 2026-09-25 | same |
-| GIT-001 | Dependency/small-fix PR backlog | 14 merged across 3 passes; remaining 6 are majors with a documented compatibility matrix, deferred pending dedicated investigation or a human decision on React 19 | `QUEUE.md`, `docs/ops/ooh-earth/01-PRIORITY-QUEUE.md` |
+| GIT-001 | Dependency/small-fix PR backlog | 15 merged across 4 passes; React 19 migration (#88/#39/#20) CLOSED via #281; framer-motion/react-resizable-panels/TypeScript-7 remain, pick one next | `QUEUE.md`, `docs/ops/ooh-earth/01-PRIORITY-QUEUE.md` |
+| REACT-19 | React 18→19 + react-leaflet 4→5 migration | CLOSED — production + BACKUP deployed, live-verified on real data, PR #281 merged | `QUEUE.md` |
 | UX-001 | Desktop results-row hover/active highlight weakened | CLOSED — deployed to production, PR #277 merged, live-verified | `QUEUE.md` |
 | UX-002 | Marker/icon size and quality | CLOSED — deployed to production, PR #276 merged | `QUEUE.md` |
 | UX-003 | Possible results-list disappearance | CLOSED — not a bug, correct viewport filtering | Reproduced 2026-09-25, `QUEUE.md` |
