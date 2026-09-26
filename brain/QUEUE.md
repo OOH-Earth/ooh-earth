@@ -6,6 +6,95 @@ NEXT_ACTION · DONE_WHEN.
 ## P0
 None open.
 
+## P1 — React 19 migration (IN PROGRESS, PR open, awaiting CI + production gate)
+
+### REACT-19 — React 18→19 migration, couples react-leaflet 4→5 — CLOSED 2026-09-26
+- WHY: PRs #88 (react)/#39 (react-dom)/#20 (react-leaflet) sat open for a
+  long time as "majors needing dedicated investigation" (see prior pass's
+  matrix in `docs/ops/ooh-earth/01-PRIORITY-QUEUE.md`).
+- **KEY FINDING, checked with the user before proceeding**: the mission's
+  assumption that React 19 and react-leaflet 5 could ship as fully
+  separate phases is wrong at the npm dependency-resolution level, not
+  just conceptually. `react-leaflet@4.2.1` hard-requires React 18
+  (confirmed with a real `npm install` — a genuine `ERESOLVE` failure,
+  not a soft warning); `react-leaflet@5.0.0` requires React 19; no 4.x
+  release bridges the two (checked every 4.x version on the registry).
+  User confirmed: combine into one migration rather than force a fake
+  separation.
+- SCOPE: react 18.3.1→19.3.0, react-dom same, `@types/react`/
+  `@types/react-dom`→19.3.0, `react-is`→19.3.0 (tracks React's own major,
+  no independent peer dep), react-leaflet 4.2.1→5.0.0, plus two forced
+  companion bumps that were themselves React-19 peer-dep blockers:
+  `@hello-pangea/dnd` 17→18.0.1 (zero usage anywhere in `src/`), `cmdk`
+  `^1.0.0`→`^1.1.1` (already resolved to 1.1.1 in practice; its only
+  consumer, `ui/command.jsx`, is itself unused).
+- DISCOVERY (read-only, before any change — see PR #281 description for
+  full detail): searched the whole `src/` tree for every React 19
+  breaking-change pattern (ReactDOM.render/hydrate, findDOMNode, string
+  refs, propTypes/defaultProps, legacy context, react-dom/test-utils,
+  risky ref-callback-return patterns) — none found. `main.jsx` already
+  uses `createRoot`. Fetched react-leaflet v5's actual GitHub release
+  notes: its only breaking change besides the React 19 requirement is
+  removal of `LeafletProvider`, unused in this codebase. Checked peer
+  deps for every other React-adjacent package (all Radix UI, framer-
+  motion, react-router-dom v7, TanStack Query v5, react-hook-form,
+  sonner, vaul, recharts, embla-carousel, lucide-react, next-themes, the
+  Base44 SDK) — all already support React 19.
+- LOCKFILE SAFETY: snapshotted the full resolved dependency graph (657
+  packages) before the change, diffed against post-install (654
+  packages) — every one of the 13 changed entries traces to an intended
+  bump or its own legitimate transitive dependency (react-leaflet's own
+  `@react-leaflet/core`, React's own `scheduler`, `@floating-ui/*` via
+  Radix's resolution, `@hello-pangea/dnd`'s dropped internal deps). Zero
+  unrelated packages touched. `npm audit`: 0 vulnerabilities before and
+  after. `npm ci` verified clean (strict sync).
+- QUALIFICATION: eslint/prettier/typecheck/build clean. Unit suite
+  132/132. Full Playwright chromium project 321 passed (2 pre-existing
+  flakes, unrelated to any migrated package — see TEST-EXTRA). mobile-
+  chromium 92 passed (1 pre-existing flake, confirmed unrelated to
+  `cmdk`). **BACKUP live QA**: Home globe, Map Flat (react-leaflet 5 —
+  clusters, hover-emphasis ring, marker click, `Popup`, all verified),
+  Map Globe, Location Detail (incl. its own embedded mini react-leaflet
+  map) all correct at desktop 1440×900 and mobile 390×844/412×915/
+  landscape 915×412. No horizontal overflow at any viewport. 0 WebSocket
+  attempts (realtime gating intact). Exactly 1 `Location` query per
+  fresh `/map` load (P0 dedupe intact). MapLibre worker resolves to a
+  properly hashed asset. Console clean except the same pre-existing,
+  unrelated anon-401 seen throughout this engagement.
+- NO APPLICATION SOURCE CODE CHANGED — discovery found none was needed.
+- WRITE_TYPE: frontend dependency bump only. No schema/function/data
+  change.
+- PRODUCTION: build target proven (`{appId:"6a62213cff3ccbca88c04ff5",...}`
+  in the entry file's runtime init object — not just a string-presence
+  check, since the inert production-id fallback constant in
+  `app-params.js` is always present as a string regardless of build
+  target). Deployed on the first attempt, no sandbox denial this time.
+  Live entry confirmed matching (`index-BaZoBc9l.js`).
+- **PRODUCTION LIVE QA, real data (786 locations, not synthetic)**: Home
+  globe, Map Globe, Map Flat (react-leaflet 5 — multiple real clusters,
+  individual markers with real thumbnails, hover-emphasis ring on a real
+  result row, all verified), mobile 390×844 (no overflow, clusters +
+  thumbnails render correctly) all confirmed via direct browser
+  inspection, not assumption. Network: all 288 tracked app/data/image/
+  map-tile requests returned successful statuses; the only console noise
+  was `rrweb`'s session-recording beacon retrying against an
+  already-429-rate-limited endpoint (`ERR_QUIC_PROTOCOL_ERROR` ×37) —
+  identified as a vanilla-JS analytics library with no React coupling,
+  unrelated to this migration, not a regression.
+- STATUS: **CLOSED.** PR #281 merged, MERGE_SHA `7700ed6`. Confirmed
+  `origin/main`'s `package.json` now shows react/react-dom `^19.3.0`,
+  react-leaflet `^5.0.0` — deployed production source matches merged
+  main exactly (built from the same tree pre-merge, squash-merged
+  unchanged) — no redeploy was needed post-merge.
+- SUPERSEDED PRs closed with explanatory comments (not silently): #88
+  (react), #39 (react-dom), #20 (react-leaflet) — each comment explains
+  the npm-level coupling that made them individually unmergeable.
+- NEXT_ACTION: none — closed. react-leaflet's own "Phase C" (per the
+  original mission framing) is now moot: react-leaflet 5 was necessarily
+  included in this same migration, there is nothing left to migrate
+  independently.
+- DONE_WHEN: met.
+
 ## P1 — CI reliability (CLOSED)
 
 ### TEST-001 — route-metadata.spec.ts intermittent CI failure — CLOSED 2026-09-26
