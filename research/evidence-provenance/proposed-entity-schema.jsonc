@@ -1,0 +1,66 @@
+// PROPOSAL ONLY. This is a design artifact, not a live schema file.
+// It is intentionally NOT placed under base44/entities/ and was never
+// deployed, pushed, or applied to any Base44 app (BACKUP or production).
+// See DESIGN.md "Mission 3 — collision / ownership check" for why
+// implementation stops at this proposal.
+{
+  "name": "EvidenceProvenance",
+  "type": "object",
+  "properties": {
+    "target_entity": {
+      "type": "string",
+      "enum": ["Location", "FieldCheck"],
+      "description": "Which entity this provenance row describes a field of",
+    },
+    "target_id": {
+      "type": "string",
+      "description": "id of the Location or FieldCheck record",
+    },
+    "field_name": {
+      "type": "string",
+      "description": "e.g. brand_name, industry_sector, condition, adbust_type",
+    },
+    "value": {
+      "type": "string",
+      "description": "Stringified value being asserted — provenance rows are metadata, not typed application storage",
+    },
+    "source": {
+      "type": "string",
+      "enum": ["ai", "registry", "human", "unknown"],
+    },
+    "confidence": {
+      "type": "number",
+      "description": "0.0-1.0. Present only when source=='ai' and the model call actually returned one (scanAd does; FieldCheck's client-side aiDetect currently does not — see TRUTH_TABLE.md)",
+    },
+    "model_version": {
+      "type": "string",
+      "description": "e.g. claude_sonnet_4_6 — omitted for non-AI sources",
+    },
+    "event_type": {
+      "type": "string",
+      "enum": ["initial_capture", "field_recheck", "human_correction", "moderation_decision"],
+    },
+    "previous_value": {
+      "type": "string",
+      "description": "Only set on human_correction — the value being overwritten, enabling a 'changed from X to Y' display without a second lookup",
+    },
+  },
+  "required": ["target_entity", "target_id", "field_name", "value", "source", "event_type"],
+  "rls": {
+    // Mirrors the read visibility of the entity it describes -- a
+    // provenance row for a still-pending Location shouldn't be more
+    // visible than the Location itself.
+    "create": null,
+    "read": {
+      "$or": [
+        { "user_condition": { "role": "admin" } },
+        { "created_by_id": "{{user.id}}" },
+      ],
+    },
+    // Append-only by design. This is the entire mechanism that makes the
+    // model auditable -- see DESIGN.md. A human_correction is a NEW row,
+    // never an edit to an old one.
+    "update": null,
+    "delete": { "user_condition": { "role": "admin" } },
+  },
+}
