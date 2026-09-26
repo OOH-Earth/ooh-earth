@@ -14,9 +14,15 @@ test.use({ viewport: { width: 390, height: 844 } });
 test('footer links meet the 24px minimum touch-target height on mobile', async ({ page }) => {
   await mockBase44(page, { user: null, locations: {} });
   await page.goto('/');
-  await page.waitForLoadState('domcontentloaded');
 
+  // This is a pure client-rendered SPA (no SSR) -- 'domcontentloaded' fires
+  // once the initial HTML/JS document is parsed, before React has
+  // necessarily mounted the footer. Querying the DOM at that point is a
+  // real race (reproduced in CI: the footer intermittently isn't there
+  // yet), not evidence the footer is missing. Wait for it via an
+  // auto-retrying assertion instead of a static waitForLoadState + count.
   const footerLinks = page.locator('footer ul a, footer ul button, footer ul a[href]');
+  await expect(footerLinks.first()).toBeVisible();
   const count = await footerLinks.count();
   expect(count).toBeGreaterThan(0);
 
