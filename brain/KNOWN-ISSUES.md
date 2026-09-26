@@ -17,3 +17,4 @@ see `QUEUE.md` for full task detail on each.
 | UX-006 | 5 full-res image URLs 404 (resized siblings 200) | P3 | same |
 | UX-007 | Lazy-chunk preload has no retry | P3, not reproduced under real conditions | same |
 | RQ-001 | Remaining react-query candidates | P3, scope individually | `delivery/dave-completion/KNOWN_ISSUES.md` #16 |
+| TEST-001 | `route-metadata.spec.ts` flakes to "Sign In" on `/lab/nft` | Confirmed on 3 unrelated PRs (incl. a docs-only one) — real test-isolation bug, not investigated | `QUEUE.md` |

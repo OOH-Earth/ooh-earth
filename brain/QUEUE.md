@@ -343,6 +343,20 @@ None open.
   Do not migrate merely to hit a round number. `LabAdmin`/`CareersAdmin`/
   `Plans`/`PortalOps` stay evidence-deferred — don't touch without new
   architectural evidence.
+- **TEST-001** `e2e/route-metadata.spec.ts`'s "Client-hydrated metadata ...
+  document.title and og:title update per route after hydration" test
+  (expects `/lab/nft` → "NFT Creator — OOH Earth Lab", intermittently gets
+  "Sign In — OOH Earth" instead) is a real, pre-existing CI flake —
+  confirmed reproducing on **three independent, unrelated PRs** this pass
+  (#105 — footer CSS only, #188 — a dependency bump, #278 — `brain/*.md`
+  docs only, zero application code). Since a docs-only PR can trigger it,
+  it cannot be caused by any of those PRs' actual changes — it's a
+  test-isolation issue in the suite itself (something intermittently
+  leaves the mocked session unauthenticated before this test runs,
+  redirecting `/lab/nft` to sign-in). Not investigated further this pass.
+  Worth a real fix (likely a fixture/ordering issue in
+  `e2e/fixtures/mockBase44.ts` or test-file execution order) since it's
+  now blocking otherwise-clean PRs on retry.
 
 ## DEFERRED — product decisions, do not reopen automatically
 - AdObservation / multi-brand model — recommended, deferred.
