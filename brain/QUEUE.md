@@ -6,6 +6,23 @@ NEXT_ACTION · DONE_WHEN.
 ## P0
 None open.
 
+## P1 — CI reliability (CLOSED)
+
+### TEST-001 — route-metadata.spec.ts intermittent CI failure — CLOSED 2026-09-26
+- WHY: reproduced across 3 unrelated PRs (one docs-only), blocking trust
+  in CI signal for otherwise-clean PRs.
+- ROOT CAUSE: a TEST bug, not app/infra — the test never authenticates
+  its `/lab/nft` navigation (`?access_token=` missing), unlike every
+  other authenticated-route test in the suite. Confirmed via direct
+  instrumentation + real reproduction, not guessed. Full writeup:
+  `docs/ops/ooh-earth/05-TEST-MATRIX.md` "TEST-001".
+- FIX: added the missing `?access_token=mock-admin-token`. No
+  application code changed.
+- QUALIFICATION: 60/60 local repeats (retries disabled), full chromium
+  suite clean, real GitHub CI green including an explicit rerun of the
+  historically-unstable job.
+- STATUS: **CLOSED.** PR #279 merged.
+
 ## P1 — security / production consistency (CLOSED)
 
 ### SEC-001 — production `scanAd` missing host-allowlist validation — CLOSED 2026-09-25
@@ -34,87 +51,46 @@ None open.
 
 ## P1 — release / git
 
-### GIT-001 — vetted-safe PR batch — FURTHER PROGRESSED, 2026-09-25 (2nd pass)
-- WHY: dependency/small-fix PR backlog, processed sequentially (never
-  batched — batching was previously denied "Merge Without Review").
-- **FRESH-QUERIED, not assumed from prior notes** (`gh pr list --state
-  open`, 23 open PRs incl. this pass's own #277).
-- **MERGED THIS PASS, all confirmed via `gh pr view <n> --json
-  state,mergedAt` (not just a clean exit code — one merge command failed
-  silently on a stale branch earlier and wasn't caught immediately; now
-  double-checking each one):**
-  - **#217** (fflate patch bump, CLEAN, straightforward).
-  - **#254** (Lynxie `lynxie-publish-pr-head.yml` executor checkout-trust
-    fix) — a real security read-through of the diff was done before
-    merging, not just the PR body: confirmed `workflow_dispatch`-only
-    trigger with no fork-triggerable event, a minimal `permissions:` block
-    (`contents: write`, `pull-requests: read`, `actions: read`, nothing
-    broader), the claimed trusted-vs-target checkout split is real in the
-    diff, the four free-form dispatch inputs genuinely moved from inline
-    `${{ inputs.x }}` interpolation to `env:` + shell variables, no
-    `--force` anywhere, the only commit/push step is `dry_run`-gated, and
-    its 24-assertion offline regression suite matches the claimed threat
-    model. Genuine hardening, not new risk.
-  - **#248** (js-yaml 4.3.1→4.3.2) — **this is not just a routine
-    dev-dependency bump: it's the exact fix for a HIGH-severity GitHub
-    Dependabot alert** discovered mid-pass
-    (`.../security/dependabot/22`, `js-yaml: maxTotalMergeKeys does not
-    limit CPU use for empty merge sources`, vulnerable range `>=4.0.0,
-    <4.3.2`, first patched version `4.3.2` — confirmed via `gh api
-    .../dependabot/alerts/22` before merging, not assumed from the PR
-    title). Prioritized ahead of the other routine dependabot PRs once
-    found. The alert should now show resolved on GitHub's own tracking.
-- **STILL OPEN, CI green, needs one more update-branch+merge cycle (each
-  merge above put it BEHIND again — GitHub requires the head branch current
-  with `main` before merging):** #249. Command:
-  `gh api repos/OOH-Earth/ooh-earth/pulls/249/update-branch -X PUT`, wait
-  for CI, `gh pr merge 249 --squash --delete-branch`, then confirm via
-  `gh pr view 249 --json state,mergedAt` — don't trust a clean exit code
-  alone, this pass hit one silent failure doing exactly that.
-- **NOT RE-CHECKED THIS PASS:** #192 (branch-updated once earlier in this
-  pass; re-verify current CI/mergeability fresh before merging).
-- **RECLASSIFIED — do NOT treat as simple CI-rerun candidates:**
-  - **#105** ("fix(a11y): footer touch targets") — investigated the actual
-    failure, not just re-run it. Its own NEW test
-    (`e2e/footer-touch-targets.spec.ts`) fails deterministically (3/3
-    retries, same result every time): `footer ul a` locator count is `0`.
-    The `SiteFooter.jsx` change itself (adding `inline-block py-1.5
-    -my-1.5` to existing links, preserving layout via the negative margin)
-    reads as correct and safe. The bug is almost certainly in the new
-    test's own wait strategy — it calls
-    `page.waitForLoadState('domcontentloaded')` before querying the
-    footer, which on an SPA can resolve before React has hydrated/painted
-    footer content. This is a **real, fixable test bug**, not a flake —
-    don't blindly re-run; either fix the wait condition (e.g. wait for a
-    `footer` selector, or `waitForLoadState('load')`/hydration signal) or
-    have Dave decide whether that's worth doing before merge.
-  - **#188** ("chore(deps-dev): Bump framer-motion...") — the prior pass's
-    notes treated this as a dev-dependency patch alongside #105 for an
-    "isolated CI rerun." It is not: `package.json` currently pins
-    `"framer-motion": "^12.43.0"`, and this PR bumps to **13.2.0 — a major
-    version**. Its own CI failure is in an unrelated, pre-existing flaky
-    test (`route-metadata.spec.ts`'s "NFT Creator" title check, which also
-    flaked-but-passed on #105's own run — an existing test-isolation issue
-    unrelated to either PR's change), so the failure itself isn't evidence
-    against the bump, but the major-version jump itself needs the same
-    "dedicated compatibility investigation" the mission asked for on
-    #20/#39/#88/#191 — moved to that group, not merged on green CI alone.
-  - **#189/#190** — still real lockfile conflicts (react-resizable-panels
-    2.1.9→**4.12.4** and rollup-plugin-visualizer 6.0.11→**7.1.1**, both
-    also majors, not just conflicted). Not force-resolved. Same caution as
-    the #20/#39/#88/#191/#188 group now applies to these two as well.
+### GIT-001 — dependency/small-fix PR backlog — ONGOING, updated 2026-09-26 (3rd pass)
+- WHY: PR backlog, processed sequentially (batching was previously denied
+  "Merge Without Review"; never re-attempted).
+- **MERGED SO FAR, cumulative across all 3 passes** (each confirmed via
+  `gh pr view <n> --json state,mergedAt`, not just a clean exit code —
+  one merge command failed silently on a stale branch once and wasn't
+  caught immediately, so this check is now routine): #265, #211, #214,
+  #275, #276 (UX-002), #217, #277 (UX-001), #254 (Lynxie executor
+  security fix — full diff read-through, see git history for detail),
+  #248 (js-yaml — turned out to be a HIGH-sev Dependabot CVE fix, found
+  via the GitHub API not the PR title), #249, #192, #105 (a11y fix — its
+  own new test had a real bug, not a flake, see `docs/ops/ooh-earth/
+  05-TEST-MATRIX.md` "TEST-001"), #279 (TEST-001 root-cause fix), #190
+  (rollup-plugin-visualizer — real lockfile conflict, resolved correctly
+  on the 2nd attempt after GitHub's own Dependency Review caught a bad
+  first resolution; see `docs/ops/ooh-earth/01-PRIORITY-QUEUE.md`
+  "Major dependency compatibility matrix" for the full lesson).
+- **Major dependency programme** (#188/#189/#20/#39/#88/#191): fully
+  matrixed with real evidence (npm registry peer-deps, usage counts,
+  fresh mergeable-state checks) — full table in `docs/ops/ooh-earth/
+  01-PRIORITY-QUEUE.md`. Summary: #20 (react-leaflet 5) is hard-blocked
+  on React 19; #88+#39 (React 18→19) are a linked pair and the
+  highest-blast-radius item in the whole queue — DEFERRED as its own
+  dedicated project, not a queue-clearing task. #188 (framer-motion) and
+  #189 (react-resizable-panels) are real, independent majors, not
+  React-gated — DEFERRED, candidates for a future one-at-a-time pass.
+  #191 (TypeScript 7, the Go-based compiler rewrite) — DEFERRED, needs
+  its own investigation given the novelty of a compiler-level rewrite.
 - **STILL DEFERRED, untouched, reasons unchanged:** #201 (draft), #156
-  (needs Dave's email-address confirmation), #63 (release-please, known CI
-  gap, tracked separately), #158/#154/#153/#152 (4 `rnd/*`, explicitly "not
-  for merge" per their own titles), #108 (not re-checked this pass).
+  (needs Dave's email confirmation), #63 (release-please, known CI gap),
+  #158/#154/#153/#152 (4 `rnd/*`, "not for merge" per own titles), #108
+  (not re-checked).
 - WRITE_TYPE: git merge only, no deploy triggered by merging to main.
-- NEXT_ACTION: merge #249 (green, just needs one more update-branch cycle);
-  re-check #192 fresh; decide on #105's test fix; give
-  #188/#189/#190/#20/#39/#88/#191 a real compatibility pass (changelogs +
-  local smoke, not just green CI) before merging any of them; verify the
-  Dependabot alert now shows resolved after #248.
+- NEXT_ACTION: none mechanical remains — what's left needs either a real
+  human decision (React 19 migration timing) or dedicated investigation
+  time (framer-motion/react-resizable-panels/TypeScript 7), not more
+  autonomous processing.
 - DONE_WHEN: every open PR is merged or has an explicit, evidenced reason
-  it isn't.
+  it isn't (currently true for everything except the deferred majors,
+  which have their evidenced reason on record).
 
 ## P2 — Dave map UX (reproduce before implementing)
 

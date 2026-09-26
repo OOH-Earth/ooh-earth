@@ -196,3 +196,48 @@ Ordered. Update this file when priorities change — do not rely on chat memory.
 - **FINDING:** despite its name, this branch's own commit history (`git log feat/weather-context-v1`) contains **zero** weather-related commits — its most recent commits are about production-observability telemetry and an unrelated map dateline-query fix. Its current **uncommitted, dirty working tree** (the actual live state of the checkout at the start of this session) is *also* not weather-related — the modified/untracked files are about TrueCost/UPC-scanning (`TrueCostResult.jsx`, `UpcScanner.jsx`, `AdScanLab.jsx`, `productLookup/`, `productIdentifier.js`, `productResolver.js`, etc.), not weather context.
 - **CONCLUSION:** "weather context" work has not actually been started in this branch, despite the branch name — either it's a planned-but-not-yet-begun next step after the current in-progress TrueCost work, or the branch was named ahead of a pivot that hasn't happened yet. This is a naming/expectation mismatch worth surfacing to whoever is tracking that branch, not a silent assumption to carry forward.
 - **NEXT ACTION:** none from this session — flagging only, per the explicit read-only instruction.
+
+## Major dependency compatibility matrix, 2026-09-26
+
+Built from real evidence (npm registry peer-dependency data via
+`npm view <pkg>@<version> peerDependencies`, actual `grep -rl` usage
+counts in `src/`, and fresh `gh pr view --json mergeable,mergeStateStatus`
+checks) — not from Dependabot's own PR titles, which the prior pass
+already proved unreliable (#188 was filed as if it were a routine
+dev-dependency patch; it's a major).
+
+| PR | Package | From → To | Major? | Peer-dep gate | Lockfile | Usage sites | Risk | Action |
+|---|---|---|---|---|---|---|---|---|
+| #20 | react-leaflet | 4.2.1 → 5.0.0 | Yes | **Requires `react ^19.0.0`** (confirmed via registry) | behind, no conflict | 14 files | High (blocked on React 19) | DEFER — cannot merge before #88+#39 |
+| #88 | react + @types/react | 18.3.1 → 19.2.8 | Yes | n/a (this IS the gate) | behind, no conflict | whole app | Highest (blast radius = every component) | DEFER — needs its own dedicated project |
+| #39 | react-dom + @types/react-dom | 18.3.1 → 19.2.8 | Yes | must land with #88 | **real conflict** | whole app | Highest, linked to #88 | DEFER — same project as #88 |
+| #188 | framer-motion | 12.43.0 → 13.2.0 | Yes | accepts React 18 OR 19 (not gated) | behind, no conflict | 19 files | Moderate | DEFER — candidate for a future dedicated pass |
+| #189 | react-resizable-panels | 2.1.9 → 4.12.4 | Yes (skips v3) | accepts React 18 OR 19 (not gated) | **real conflict** | 1 file | Moderate-low (narrow surface) | DEFER — candidate for a future dedicated pass |
+| #191 | typescript | 5.9.3 → 7.0.2 | Yes — compiler rewrite, not a normal bump | n/a | behind, no conflict | whole codebase's type-checking | High-novelty (Go-based "tsgo" rewrite, confirmed genuinely `latest` on npm as of 2026-09-26, not a beta/fluke) | DEFER — needs dedicated investigation |
+| #190 | rollup-plugin-visualizer | 6.0.11 → 7.1.1 | Yes | n/a (dev-only, no runtime peer surface) | **real conflict, resolved this pass** | 1 file, build-time only | Low, one soft flag: declares `engines.node >= 22` vs this repo's CI Node 20 (warns, doesn't fail, under npm's default `engine-strict=false`) | ATTEMPTED — see GIT-001 in `brain/QUEUE.md` for outcome |
+
+**Key takeaways for whoever picks this up next:**
+- #20/#88/#39 are one project, not three independent PRs — react-leaflet 5
+  hard-requires React 19. Don't merge #20 alone; it will break the build.
+- #188/#189 are real, independent, moderate-risk majors — each deserves
+  its own branch/qualification pass (lockfile conflicts resolved
+  one-at-a-time, not batched — see #190's own lesson below about why).
+- #191 (TypeScript 7) is not like the others — it changes the compiler
+  itself, not a library the app calls. Recommend treating it as an
+  investigation task before any merge attempt: run it against this exact
+  codebase in a disposable branch first and see what changes, rather than
+  assuming semver-major-bump-as-usual risk.
+- **Lockfile-conflict lesson from #190**: resolving a real `package-lock.json`
+  conflict by taking one side (`git checkout --ours/--theirs`) and then
+  running `npm install --package-lock-only` is NOT safe by default — it
+  can cause npm to silently re-resolve unrelated transitive dependencies
+  differently than they resolve on a clean install from the target base,
+  including reverting an already-fixed security patch on an unrelated
+  package. The safe pattern: reset the lockfile to the TARGET base
+  (`origin/main`)'s own copy, then apply only the PR's own intended change
+  via `npm install <pkg>@<version> --package-lock-only` (or `--save-dev`
+  if the range needs updating too) on top of that clean base, and confirm
+  the resulting diff touches only that package's own dependency subtree.
+  GitHub's own `Dependency Review` check is a real, useful catch for this
+  class of mistake — do not treat a `Dependency Review` failure on a
+  dependency-bump PR as noise without reading exactly what it flagged.
