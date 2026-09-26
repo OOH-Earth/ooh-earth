@@ -278,3 +278,63 @@ Not run: full desktop/mobile/refresh/route-transition/zero-results matrix for ev
 | New, separate, minor finding #1 | Image 404 | 5 full-resolution `media.base44.com/images/public/.../<hash>.jpg` URLs (no resize suffix) 404; their `-768x...` resized siblings 200 |
 | New, separate, minor finding #2 | Lazy-chunk resilience gap | no retry on a failed lazy-route CSS/JS preload — any transient network drop during code-splitting (real or synthetic) hard-fails to a full-page error boundary |
 | Synthetic production data created | NONE | read-only browser verification, no entity/function/schema writes |
+
+## TEST-001 — route-metadata.spec.ts intermittent failure — CLOSED, 2026-09-26
+
+**Occurrences (all pre-fix):**
+
+| PR | Workflow/job | Test | Failure signature | Retry result |
+|---|---|---|---|---|
+| #105 (footer CSS, unrelated) | CI / Playwright (smoke + accessibility) | `route-metadata.spec.ts:17` | `toHaveTitle` timeout, got "Sign In — OOH Earth" | flaky — passed on retry |
+| #188 (framer-motion bump, unrelated) | CI / Playwright (smoke + accessibility) | same | same | failed all 3 attempts (2 retries) |
+| #278 (docs-only, `brain/*.md`) | CI / Playwright (smoke + accessibility) | same | same | failed all 3 attempts — proves it's unrelated to any of these 3 PRs' own content |
+| Local repro, `--repeat-each=15`, `retries=0` | n/a | same | same | 14 passed / 1 failed |
+| Local repro, `--repeat-each=8`, `retries=0` (higher system load) | n/a | same | same | 4 passed / 4 failed |
+| Local repro, `--repeat-each=20`, `retries=0`, **after fix** | n/a | same | n/a | **20/20 (60/60 incl. the file's other 2 tests) passed** |
+
+**Root cause** (confirmed by temporarily instrumenting `AuthContext.jsx`
+`checkAppState()`/`checkUserAuth()` and `LabAccessRoute.jsx`'s render
+decision with `console.log`, then running the real test with a
+`page.on('console')` listener — not guessed from reading code alone):
+the test's `/lab/nft` navigation never passes `?access_token=`.
+`AuthContext.jsx`'s `checkAppState()` only calls `checkUserAuth()` when
+`appParams.token` (sourced from that URL param, or a persisted
+`localStorage` value from an earlier `?access_token=` navigation in the
+same browser context) is truthy; otherwise it immediately sets
+`authChecked=true, isAuthenticated=false` and never attempts the call.
+`LabAccessRoute`'s own fallback effect
+(`if (tok === 'no' && !authChecked && !isLoadingAuth) checkUserAuth()`)
+can occasionally still win a narrow render-timing race and authenticate
+anyway — real, but not the mechanism a real user relies on, and not
+guaranteed. Confirmed via a direct diagnostic run: with a minimal
+network mock (no `?access_token=`), 6/6 isolated `/lab/nft` loads
+deterministically redirected to `/login` at the ~700ms mark and never
+recovered in 6+ seconds of polling — proving the "locked" state is
+real and permanent once `checkAppState` takes that branch first.
+
+**Classification**: TEST BUG (this test never authenticates the
+protected navigation, unlike every other authenticated-route test in
+this suite, e.g. `nft-creator-ux.spec.ts`'s own comment documents the
+`?access_token=` requirement for this exact page). Not a Playwright bug,
+not worker/CPU/memory contention (this repo already runs Playwright with
+`workers: 1` in CI, and `e2e`/`e2e-mobile` are separate GitHub Actions
+jobs on separate runner VMs — no cross-job resource sharing exists to
+blame), not a server-startup race, not a port collision. It is a genuine
+ORDER/TIMING race in `AuthContext`/`LabAccessRoute`'s own effect
+scheduling, but the test should never have been relying on winning that
+race in the first place.
+
+**Fix**: `e2e/route-metadata.spec.ts` — added `?access_token=mock-admin-token`
+to the `/lab/nft` `page.goto()`, matching the suite's established
+convention. No application code changed. PR #279, merged.
+
+**CI architecture note** (ruled out as a factor, documented for future
+reference): `playwright.config.ts` already sets `workers:
+process.env.CI ? 1 : undefined` and `retries: process.env.CI ? 2 : 0`.
+`ci.yml`'s `e2e` and `e2e-mobile` jobs each `runs-on: ubuntu-latest` as
+separate jobs — GitHub-hosted runners never share a VM across jobs, even
+within the same workflow run, so the "many PRs' CI running concurrently"
+theory from a prior pass does not apply to this specific failure
+mechanism (though GitHub's account-level concurrent-job limit could
+still delay job starts under heavy load — a separate, lower-severity
+consideration, not investigated further as it wasn't the cause here).
