@@ -5,6 +5,7 @@ import {
   Marker,
   Popup,
   Tooltip,
+  CircleMarker,
   useMap,
   useMapEvents,
   ZoomControl,
@@ -16,23 +17,26 @@ import 'leaflet/dist/leaflet.css';
 // Category-specific pin icons — yellow disc + per-type glyph.
 // Each location type (billboard, digital, transit, mural, etc.) gets its
 // own distinct iconography from the shared pinGlyphs library.
+// Sized to clear the 24px minimum touch-target guideline (was 22px/30px —
+// the 22px unselected size was the one case that fell under it; see the same
+// guideline already applied to SiteFooter's links).
 function pinIcon(type) {
   return L.divIcon({
     className: 'ooh-pin',
-    html: `<div style="position:relative;width:22px;height:22px"><span style="position:absolute;inset:-7px;border-radius:50%;background:radial-gradient(circle,rgba(255,72,118,0.26),transparent 65%)"></span><span style="position:relative;display:flex;width:22px;height:22px;border-radius:50%;background:#EDFF00;border:1.5px solid #000;box-shadow:0 0 0 2px rgba(237,255,0,0.20),0 0 12px rgba(237,255,0,0.5);align-items:center;justify-content:center">${glyphSVG(type, 11)}</span></div>`,
-    iconSize: [22, 22],
-    iconAnchor: [11, 11],
-    popupAnchor: [0, -12],
+    html: `<div style="position:relative;width:28px;height:28px"><span style="position:absolute;inset:-7px;border-radius:50%;background:radial-gradient(circle,rgba(255,72,118,0.26),transparent 65%)"></span><span style="position:relative;display:flex;width:28px;height:28px;border-radius:50%;background:#EDFF00;border:1.5px solid #000;box-shadow:0 0 0 2px rgba(237,255,0,0.20),0 0 12px rgba(237,255,0,0.5);align-items:center;justify-content:center">${glyphSVG(type, 14)}</span></div>`,
+    iconSize: [28, 28],
+    iconAnchor: [14, 14],
+    popupAnchor: [0, -15],
   });
 }
 
 function selIcon(type) {
   return L.divIcon({
     className: 'ooh-pin ooh-pin--sel',
-    html: `<div style="position:relative;width:30px;height:30px"><span style="position:absolute;inset:-12px;border-radius:50%;background:radial-gradient(circle,rgba(255,72,118,0.45),transparent 65%)"></span><span style="position:absolute;inset:0;border-radius:50%;border:2px solid #FF5C00;animation:ooh-pinpulse 1.4s ease-out infinite"></span><span style="position:relative;display:flex;width:30px;height:30px;border-radius:50%;background:#EDFF00;border:2px solid #000;box-shadow:0 0 0 3px rgba(255,92,0,0.25),0 0 18px rgba(255,92,0,0.55);align-items:center;justify-content:center">${glyphSVG(type, 14)}</span></div>`,
-    iconSize: [30, 30],
-    iconAnchor: [15, 15],
-    popupAnchor: [0, -16],
+    html: `<div style="position:relative;width:36px;height:36px"><span style="position:absolute;inset:-12px;border-radius:50%;background:radial-gradient(circle,rgba(255,72,118,0.45),transparent 65%)"></span><span style="position:absolute;inset:0;border-radius:50%;border:2px solid #FF5C00;animation:ooh-pinpulse 1.4s ease-out infinite"></span><span style="position:relative;display:flex;width:36px;height:36px;border-radius:50%;background:#EDFF00;border:2px solid #000;box-shadow:0 0 0 3px rgba(255,92,0,0.25),0 0 18px rgba(255,92,0,0.55);align-items:center;justify-content:center">${glyphSVG(type, 17)}</span></div>`,
+    iconSize: [36, 36],
+    iconAnchor: [18, 18],
+    popupAnchor: [0, -19],
   });
 }
 
@@ -51,6 +55,7 @@ import LayerManager from '@/components/ooh/map/layers/LayerManager';
 import CompactPinPopup from '@/components/ooh/map/CompactPinPopup';
 import { useMapStyle } from '@/lib/mapStyleContext';
 import { getStatusDotColor } from '@/lib/statusBadge';
+import { HOVER_RING_NONE, parseChannelColor, resolveHoverRingTarget } from '@/lib/hoverEmphasis';
 
 // Photo-circle pin — white-ringed location photo with a category micro-badge
 // (bottom-right) and a status dot (top-left), plus the pink radial highlight.
@@ -155,6 +160,34 @@ function FlyToHover({ hoverId, selectedId, markers }) {
     if (m) safeFlyTo(map, m.lat, m.lng, Math.max(map.getZoom(), 14), { duration: 0.8 });
   }, [hoverId, selectedId, markers, map]);
   return null;
+}
+
+// Result-row <-> marker hover emphasis (flat mode): a ring drawn at the
+// hovered marker's own position, using the theme's --c-flare brand token, so
+// hovering a result row makes the corresponding marker unmistakable -- not
+// just a camera pan (FlyToHover, above), which doesn't visually distinguish
+// the marker itself. Mirrors Globe3D.jsx's ooh-hover-ring layer.
+function HoverRing({ hoverId, selectedId, markers }) {
+  const targetId = resolveHoverRingTarget({ hoverId, selectedId });
+  if (targetId === HOVER_RING_NONE) return null;
+  const m = markers.find((x) => x.id === targetId);
+  if (!m || !isFinite(m.lat) || !isFinite(m.lng)) return null;
+  const flareColor = parseChannelColor(
+    getComputedStyle(document.documentElement).getPropertyValue('--c-flare'),
+  );
+  return (
+    <CircleMarker
+      center={[m.lat, m.lng]}
+      radius={22}
+      pathOptions={{
+        color: flareColor,
+        weight: 2.5,
+        fillColor: flareColor,
+        fillOpacity: 0.16,
+        interactive: false,
+      }}
+    />
+  );
 }
 
 // Emits the current viewport bounds on every pan/zoom so the results feed can
@@ -481,6 +514,7 @@ export default function LocationMap({
       <BoundsWatcher onBoundsChange={onBoundsChange} />
       <FlyTo selectedId={selectedId} markers={pins} />
       <FlyToHover hoverId={hoverId} selectedId={selectedId} markers={pins} />
+      <HoverRing hoverId={hoverId} selectedId={selectedId} markers={pins} />
       <FlyToGeocode flyTo={flyTo} />
       <FlyToUser userLoc={userLoc} />
       {userLoc && (
