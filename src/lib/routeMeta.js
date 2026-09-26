@@ -59,6 +59,11 @@ export const META = {
     desc: 'OOH Earth is an open-source, community-funded platform reclaiming the visual commons through mapping, adbusting, and creative resistance.',
     image: OG_IMAGES.default,
   },
+  '/evidence-review': {
+    title: 'Evidence Review — OOH Earth',
+    desc: 'A bounded, source-linked evidence brief for a defined outdoor-advertising or public-space question.',
+    image: OG_IMAGES.map,
+  },
   '/support': {
     title: 'Support — OOH Earth',
     desc: 'Get help, report issues, and join the member network. Field support for the OOH Earth community.',
