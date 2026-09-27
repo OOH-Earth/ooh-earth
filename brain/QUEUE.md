@@ -74,34 +74,79 @@ Master roadmap SOCIAL-1..10 + permanent rules A–H live in
   `getPublicProfile/entry.ts`, sha256 prefix `0d334434`) with
   `functions deploy getPublicProfile`; frontend = redeploy a main build.
 
-### SOCIAL-3 — Missions — NEXT (design only so far; not built)
-- QUESTION: is a Mission the user-facing OOH brand for the existing Quest,
-  or a distinct real-world object?
-- INITIAL FINDING: **brand the existing Quest system as Missions first.**
-  It already is a real-world call to action with server-side truth:
-  `QUESTS` (5 daily/weekly defs in `gamification.js`), a server-validated
-  `claimQuest` function that recomputes progress from real records and
-  holds its own QUESTS table (client can't forge XP), and the
-  `QuestCompletion` entity (`quest_id`, `period_key`, `xp_awarded`) as
-  the durable record. Reusing it satisfies rule B.
-- What Quests *lack* vs. the Missions vision: they're counters ("file 5
-  reports this week"), not place-bound ("recheck these 3 stale places near
-  you"). A place-bound mission can still be a QUEST definition whose
-  progress metric is computed from real FieldCheck/Location records —
-  no new entity needed for v1.
-- NAMING COLLISION: "Field Mission" already exists — a local,
-  client-only route planner over up to 20 places
-  (`src/lib/fieldMission.js`). Decide whether it becomes the "go do it"
-  half of a Mission or gets renamed, before shipping any "Missions" UI.
-- CHECK BEFORE BUILDING: (1) client `periodKey` runs in the browser's
-  local timezone, the server's in UTC — confirm weekly keys agree near
-  week boundaries for non-UTC users; (2) `QuestCompletion` read access —
-  review before surfacing completions on any public surface (rule C);
-  (3) keep `claimQuest` the only XP-granting path (rule H).
-- WRITE_TYPE (expected v1): frontend-first (rename/reframe the existing
-  quest UI as a Mission board, link to real places); a `claimQuest`
-  QUESTS-table change only if a new place-bound metric is added →
-  BACKUP-first function gate.
+### SOCIAL-3 — Missions (Mission Board) — CLOSED 2026-09-27
+- DECISION (owner): Missions are the user-facing evolution of the existing
+  Quest engine. No MissionCompletion/MissionXP/etc. Internal persistence
+  stays `QUESTS` + `claimQuest` + `QuestCompletion`.
+- ROOT CAUSE FIXED (period disagreement): Base44 timestamps carry no
+  offset and browsers parsed them as local time; `claimQuest`'s week
+  formula rolled over at Saturday 00:00 in the runtime timezone; the
+  client counted progress by local day / local Monday. Now ONE definition
+  (UTC day; ISO week from Monday 00:00 UTC) in
+  `base44/functions/claimQuest/period.ts`, mirrored in
+  `src/lib/questPeriod.js`, with a Deno parity test over ~1,400 instants
+  plus day/week/year/timezone boundary tests. Replay is decided by the
+  caller's latest claim's `created_date` (old-format keys can neither be
+  re-claimed nor block a later week).
+- MISSION BOARD: `QuestTracker.jsx` on `/operative#missions`; states from
+  `src/lib/missions.js`; honest claim feedback (server result shown,
+  never assumed); accessible progressbars + live notice; safety copy
+  ("stay on public ground…"); Home widget copy + deep link.
+- NAMING: "Field Mission" was user-facing on the public Map (Field
+  attention → "Add to mission"/"Open mission"), so public copy now says
+  "route". Operator-only Ops Portal panel and internal code unchanged.
+- PRIVACY: the board fetches only the caller's own QuestCompletion rows
+  (previously the 200 newest rows of all users, filtered client-side).
+  No completion data is shown publicly.
+- PRODUCTION RECONCILIATION: production `claimQuest` had lagged main — an
+  older single-file version without main's server-side eligibility
+  recompute. This release deployed main's handler + the period fix, so
+  production now matches main (fresh-pull byte-identical). Same auth, same
+  quests and XP, no schema change. Rollback source captured (the previous
+  single-file version) in the session scratchpad; re-deployable with
+  `functions deploy claimQuest` from a folder holding it.
+- TESTS: function 72/72 (10 new period/claim tests), unit 150/150 (6 new),
+  Playwright mission-board 7/7 (x2 serial) + operative/map/field-route/
+  founder/critical-path regressions green; lint/prettier/typecheck/build/
+  security check clean.
+- RELEASE: BACKUP + production — `claimQuest` only, fresh-pull verified;
+  frontend BACKUP `index-DDhlcKue.js`, production `index-C5h9-uGg.js`
+  (target proven). DevTools desktop 1440 + mobile 390/412.
+- LIMITATION: no test identity exists, so a real authenticated claim was
+  not exercised live; covered by deterministic tests and a client-stubbed
+  render of the deployed bundle (no request reached the backend).
+
+### CHECKPOINT-QC-READ — narrow QuestCompletion read access — AWAITING OWNER
+- WHAT: change `QuestCompletion` read RLS from its current broad rule to
+  owner-or-admin (`created_by_id == user` OR admin).
+- WHY: rows carry `created_by_id` + claim timestamps; no product surface
+  needs other users' rows (the board now reads only the caller's own;
+  `deleteMyAccount` and `claimQuest` use service role).
+- DATA / WHO READS / WHO WRITES: quest_id, period_key, xp_awarded,
+  created_by_id, timestamps. Read → owner + admin. Write unchanged
+  (admin-only create; claims go through `claimQuest`).
+- RETENTION: unchanged. PRIVACY IMPACT: reduces exposure. ABUSE RISK of
+  the change: none identified. ROLLBACK: restore the previous rule.
+- WHY A CHECKPOINT: it's an entity schema/permission push (whole-folder
+  `entities push`), which this programme never self-approves.
+- ALTERNATIVES: leave as is (status quo exposure); or a read-only
+  function returning the caller's claims (more code, same effect).
+- RECOMMENDED: owner approves; apply to BACKUP first, verify the board,
+  then production.
+
+### SOCIAL-4 — Progress — NEXT (discovery only)
+- EXISTING: XP/level/badges computed client-side in `useGamification`
+  from the caller's own records + quest XP; shown on the private
+  `/operative` page (nav label "Member profile"). Public identity =
+  Founder profile (`/founders/:handle`, opt-in).
+- NAMING HAZARD: `Operative` is also an admin-managed roster entity used
+  by roster widgets. SOCIAL-4 must not read or expose it; public copy
+  should say "Progress"/"Level", not "Operative".
+- AUTONOMOUS PART: improve the private progress surface (own data only).
+- CHECKPOINT PART: showing level/XP/badges on the PUBLIC Founder profile is
+  new public exposure of user information (XP includes pending reports
+  and quest claims) → needs an owner decision; a safer variant derives a
+  public level only from the already-public verified counts.
 
 ### PERF-OBS-1 — HeroConsole polls the full Location set every 20s — OBSERVED
 - Seen on production mobile Home (anonymous): `Location?limit=500` +
@@ -109,7 +154,9 @@ Master roadmap SOCIAL-1..10 + permanent rules A–H live in
   20000)`, present since at least 2026-08-12). Pre-existing, unrelated to
   SOCIAL-1/2. Not the P0 load-burst duplication (initial load still
   fetches once). Candidate: pause when hidden / lengthen / reuse the
-  shared Location query. Needs owner priority call.
+  shared Location query. Deserves its own bounded performance burst (not
+  mixed into social work): ~786 locations today and growing, so the cost
+  scales with the dataset for every open Home tab.
 
 ## P1 — React 19 migration (CLOSED)
 

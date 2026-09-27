@@ -1,38 +1,34 @@
 # HANDOFF — read this first
 
-LAST_UPDATED: 2026-09-27 (SOCIAL-2 Field Record — shipped, stopped by
-design)
+LAST_UPDATED: 2026-09-27 (SOCIAL-3 Missions — shipped, stopped by design)
 
-The repo runs a **real-world social-network programme in short bursts**.
-Read `brain/PRODUCT.md` before any feature work — it holds the north star,
-the master roadmap SOCIAL-1..10, the permanent rules A–H, and the privacy
-hard rules.
+The repo runs a **real-world social-network programme in short bursts**
+under the owner's autonomous GREEN-release rule (see `PRODUCT.md`
+"AUTONOMY"). Read `brain/PRODUCT.md` before any feature work.
 
-Everything prior (React 19 + react-leaflet 5, TEST-001, SEC-001/002,
-UX-001/002/003, SOCIAL-1) remains CLOSED.
+Everything prior (React 19, TEST-001, SEC-001/002, UX-001/002/003,
+SOCIAL-1, SOCIAL-2) remains CLOSED.
 
 ## What this burst did
-1. Re-verified SOCIAL-1 reconciled (PR #283 merged, prod == main).
-2. Proved `getPublicProfile` identical on main / BACKUP / production
-   before touching it; re-audited its privacy boundary (uniform
-   `{found:false}` for private/missing, explicit allowlist, check mode
-   returns only `taken`/`mine`).
-3. Added `recent_verified_places` (max 5, verified-only, own places,
-   `{id,title,type,created_date(day)}`) from the query the count already
-   ran; refactored into `handler.ts` with 12 Deno tests.
-4. Field Record section on `FounderProfile.jsx`, honest empty state,
-   pure normaliser + unit tests, 6 Playwright cases.
-5. BACKUP then production: function deploy (only `getPublicProfile`),
-   fresh-pull byte-identical, raw-response privacy QA; frontend builds
-   target-proven via the entry's runtime init object, deployed, desktop +
-   mobile QA. Nothing written to any entity.
-6. SOCIAL-3 discovery only (see `QUEUE.md`), roadmap + rules recorded.
+1. Discovery of the real quest engine: `QUESTS`, `claimQuest`,
+   `QuestCompletion`, the client hook, the board UI, period logic.
+2. Found and fixed a three-way period disagreement (offset-less Base44
+   timestamps parsed as local time in browsers; server week rolling over
+   Saturday in runtime-local time; client progress in local day/Monday).
+   One UTC definition shared by server and client, parity-tested.
+3. Mission Board = the Quest Board, reframed: explicit states, UTC reset
+   countdown, honest claim feedback, safety copy, own-rows-only fetch.
+4. "Field Mission" was user-facing on the public Map → public copy now
+   says "route"; operator tooling unchanged.
+5. Found production `claimQuest` lagging main (no server-side
+   eligibility); this release reconciled it. BACKUP then production,
+   `claimQuest` only, fresh-pull verified; frontends target-proven and
+   QA'd desktop + mobile.
+6. Prepared CHECKPOINT-QC-READ and SOCIAL-4 discovery (QUEUE).
 
 ## Next
-SOCIAL-3 Missions. Recommendation: Missions = the existing Quest system
-(`QUESTS` + `claimQuest` + `QuestCompletion`) rebranded and pointed at
-real places — no parallel engine. Resolve the "Field Mission" naming
-collision first. Human checkpoint in `NOW.md`.
+SOCIAL-4 Progress — autonomous private part first; public-profile part is
+a human checkpoint. PERF-OBS-1 is a separate performance burst.
 
 ## Blockers
 None.
