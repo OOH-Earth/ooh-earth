@@ -6,7 +6,55 @@ NEXT_ACTION · DONE_WHEN.
 ## P0
 None open.
 
-## P1 — React 19 migration (IN PROGRESS, PR open, awaiting CI + production gate)
+## P1 — Social programme (short bursts; see `brain/PRODUCT.md`)
+
+### SOCIAL-1 — Live activity → real places — SHIPPED 2026-09-27
+- WHY: first slice toward "GO OUT → DISCOVER → DO SOMETHING". Discovery
+  found the Discover layer largely already exists (`MiniMapStack`,
+  `LiveActivityFeed`, public profiles with real contribution counts, a
+  real XP/level/badge engine) — the smallest real gap was that live
+  activity was ambient-only: feed cards weren't clickable.
+- SCOPE: `LiveActivityFeed` cards for new Locations and LeadClaims now
+  link to the place's public Location Detail page (realtime events carry
+  the record `id`; LeadClaim carries `location_id`). Other event types
+  stay non-interactive. Pure helper `src/lib/activityTarget.js`
+  (5 unit tests: place-not-person, create-only, strict id allowlist).
+- PRIVACY: links go only to already-public place pages; no person pages,
+  no new fields exposed; realtime stays auth-gated (anonymous sees the
+  truthful empty "ON AIR" state, 0 WebSockets verified).
+- WRITE_TYPE: frontend-only. No schema/function/data change.
+- QUALIFICATION: lint/prettier/typecheck/build clean, unit 137/137, Home
+  smoke spec 2/2. BACKUP + production target proven via runtime init
+  object; both deployed; rendered QA passed (desktop + 390/412 mobile).
+  One production 520 on a `SiteSetting` read was re-checked on reload
+  (all 200) — transient upstream blip, unrelated request.
+- LIMITATION: a clickable card wasn't live-clicked (needs an
+  authenticated session receiving a real create event; no data was
+  fabricated to force one). Covered by unit tests.
+- STATUS: shipped to BACKUP + production. PR on
+  `feat/social-v1-discover` — confirm merged with `gh pr view`.
+
+### SOCIAL-2 — Real-world history on public profiles — RECOMMENDED NEXT
+- WHY: the "BUILD A REAL-WORLD HISTORY" + "CONNECT" steps. Public
+  Founding Profiles show only *counts* (`verified_reports`,
+  `verified_rechecks`); a person's actual places aren't browsable.
+- PROPOSED DESIGN (no new entity): additive change to the existing
+  `getPublicProfile` function — alongside the counts it already computes,
+  return up to N recent **verified** places the member created
+  (`id, title, type, created_date` only — no lat/lng precision beyond
+  what Location Detail already shows publicly, no pending/rejected rows),
+  gated by the same `profile_public` check. Frontend: a "Field record"
+  list on `FounderProfile.jsx` linking each to Location Detail; truthful
+  empty state when zero. Optionally surface the existing level/badges
+  derived from those same public counts.
+- WRITE_TYPE: **function change** (additive response field) → per the
+  programme's gate, BACKUP-first and explicit owner approval before the
+  production function deploy.
+- ALTERNATIVES considered: Missions (prompts toward places needing
+  rechecks — frontend-only possible, strong "go out" pull) is a close
+  second; Trails/Crews/Connections need consent/data-model design first.
+
+## P1 — React 19 migration (CLOSED)
 
 ### REACT-19 — React 18→19 migration, couples react-leaflet 4→5 — CLOSED 2026-09-26
 - WHY: PRs #88 (react)/#39 (react-dom)/#20 (react-leaflet) sat open for a
