@@ -46,7 +46,7 @@ test.describe('Mission Board', () => {
     });
     await mockBase44(page, { user: null });
     await page.goto('/operative');
-    await expect(page.getByText(/Log in to view your operative profile/i)).toBeVisible({
+    await expect(page.getByText(/Log in to view your progress/i)).toBeVisible({
       timeout: 15_000,
     });
     await expect(page.locator('#missions')).toHaveCount(0);

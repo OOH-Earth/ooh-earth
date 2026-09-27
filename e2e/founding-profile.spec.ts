@@ -541,3 +541,92 @@ test.describe('Founding Profiles — Field Record', () => {
     await expect(page.getByText('Field Place 1').first()).toBeVisible({ timeout: 10_000 });
   });
 });
+
+// SOCIAL-4 — Progress: a truthful, derived-only-from-public-data subset of
+// badges on the public Founder profile. No new backend field: computed
+// client-side from the same contributions.verified_reports/
+// verified_rechecks getPublicProfile already returns. Most badges (and all
+// XP/Level) require private data and must NEVER appear here.
+test.describe('Founding Profiles — Progress (public badge subset)', () => {
+  const verifiedLocation = (n: number) => ({
+    id: `pl-${n}`,
+    created_by_id: MEMBER.id,
+    status: 'verified',
+    created_date: `2026-05-${String(10 + n).padStart(2, '0')}T00:00:00.000000`,
+  });
+  const verifiedCheck = (n: number) => ({
+    id: `pc-${n}`,
+    created_by_id: MEMBER.id,
+    status: 'verified',
+    created_date: `2026-05-${String(10 + n).padStart(2, '0')}T00:00:00.000000`,
+  });
+
+  test('shows exactly the badges truthfully earned from public counts, nothing else', async ({
+    page,
+  }) => {
+    const locations: Record<string, any> = {};
+    for (let i = 1; i <= 10; i++) locations[`l${i}`] = verifiedLocation(i);
+    const fieldChecks: Record<string, any> = {};
+    for (let i = 1; i <= 5; i++) fieldChecks[`c${i}`] = verifiedCheck(i);
+
+    await mockBase44(page, {
+      user: null,
+      otherUsers: { ghostsignal: { ...MEMBER } },
+      locations,
+      fieldChecks,
+    });
+    await page.goto('/founders/ghostsignal');
+
+    const section = page.getByRole('region', { name: /^Progress$/i });
+    await expect(section).toBeVisible({ timeout: 10_000 });
+    await expect(section).toContainText('Truth Seeker');
+    await expect(section).toContainText('Timeline Starter');
+    await expect(section).toContainText('Timeline Builder');
+    // Never a numeric XP/Level anywhere on the public page -- not derivable
+    // truthfully from public data, so it must stay private.
+    const bodyText = await page.locator('body').innerText();
+    expect(bodyText).not.toMatch(/total xp|\blevel\s*\d/i);
+  });
+
+  test('a profile below every public threshold shows no Progress section at all', async ({
+    page,
+  }) => {
+    await mockBase44(page, {
+      user: null,
+      otherUsers: { ghostsignal: { ...MEMBER } },
+      locations: { l1: verifiedLocation(1) }, // 1 verified report -- below every threshold
+    });
+    await page.goto('/founders/ghostsignal');
+    await expect(page.getByRole('heading', { name: 'Ghost Signal' })).toBeVisible({
+      timeout: 10_000,
+    });
+    await expect(page.getByRole('region', { name: /^Progress$/i })).toHaveCount(0);
+  });
+
+  test('a private profile never renders a Progress section', async ({ page }) => {
+    const locations: Record<string, any> = {};
+    for (let i = 1; i <= 10; i++) locations[`l${i}`] = verifiedLocation(i);
+    await mockBase44(page, {
+      user: null,
+      otherUsers: { ghostsignal: { ...MEMBER, profile_public: false } },
+      locations,
+    });
+    await page.goto('/founders/ghostsignal');
+    await expect(page.getByText('Profile not found')).toBeVisible({ timeout: 10_000 });
+    await expect(page.getByRole('region', { name: /^Progress$/i })).toHaveCount(0);
+    expect(await page.locator('body').innerText()).not.toContain('Truth Seeker');
+  });
+
+  test('renders cleanly on mobile with no horizontal overflow', async ({ page }) => {
+    const locations: Record<string, any> = {};
+    for (let i = 1; i <= 10; i++) locations[`l${i}`] = verifiedLocation(i);
+    await mockBase44(page, { user: null, otherUsers: { ghostsignal: { ...MEMBER } }, locations });
+    await page.goto('/founders/ghostsignal');
+    const section = page.getByRole('region', { name: /^Progress$/i });
+    await expect(section).toBeVisible({ timeout: 10_000 });
+    const overflow = await page.evaluate(
+      () => document.documentElement.scrollWidth - window.innerWidth,
+    );
+    expect(overflow).toBeLessThanOrEqual(0);
+  });
+});

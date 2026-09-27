@@ -20,6 +20,7 @@ import {
   CircleDot,
   Goal,
   Shapes,
+  Award,
 } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import Nav from '@/components/ooh/Nav';
@@ -27,6 +28,14 @@ import SiteFooter from '@/components/ooh/SiteFooter';
 import { useSeo } from '@/lib/seoContext';
 import { focusAreaLabel, initialsFrom, normalizeHandle } from '@/lib/founderProfile';
 import { fieldRecordEntries } from '@/lib/fieldRecord';
+import { publicEarnedBadges } from '@/lib/publicProgress';
+import { TIER_STYLES } from '@/components/ooh/gamification/gamification';
+
+// Small, local icon map covering only the badge icons that are actually
+// reachable from public data today (see src/lib/publicProgress.js) --
+// Award is the safe fallback if that set ever grows to include an icon
+// name not listed here.
+const PROGRESS_ICONS = { ShieldCheck, MapPin, Award };
 
 // Same glyphs as the category directories (categories.js), mapped locally
 // so this page doesn't pull the map seed into its chunk.
@@ -155,6 +164,7 @@ export default function FounderProfile() {
   const [profile, setProfile] = useState(null);
   const [contributions, setContributions] = useState(null);
   const [fieldRecord, setFieldRecord] = useState([]);
+  const [progressBadges, setProgressBadges] = useState([]);
 
   useEffect(() => {
     let alive = true;
@@ -175,6 +185,7 @@ export default function FounderProfile() {
         setProfile(data.profile);
         setContributions(data.contributions || null);
         setFieldRecord(fieldRecordEntries(data.recent_verified_places));
+        setProgressBadges(publicEarnedBadges(data.contributions));
         setState('found');
       } catch {
         if (alive) setState('error');
@@ -338,6 +349,34 @@ export default function FounderProfile() {
         )}
 
         <FieldRecord entries={fieldRecord} />
+
+        {progressBadges.length > 0 && (
+          <section className="mt-10" aria-labelledby="progress-heading">
+            <h2
+              id="progress-heading"
+              className="inline-flex items-center gap-2 border-b border-slate2/50 pb-2 font-mono text-[9px] uppercase tracking-[0.25em] text-dim"
+            >
+              <Award className="h-3 w-3 text-ozone" aria-hidden="true" /> Progress
+            </h2>
+            <ul className="mt-3 flex flex-wrap gap-2">
+              {progressBadges.map((badge) => {
+                const Icon = PROGRESS_ICONS[badge.icon] || Award;
+                const style = TIER_STYLES[badge.tier];
+                return (
+                  <li
+                    key={badge.id}
+                    title={badge.desc}
+                    className="inline-flex items-center gap-1.5 border px-2.5 py-1.5 font-mono text-[9px] font-bold uppercase tracking-[0.15em]"
+                    style={{ borderColor: style?.color, color: style?.color }}
+                  >
+                    <Icon className="h-3.5 w-3.5" aria-hidden="true" />
+                    {badge.label}
+                  </li>
+                );
+              })}
+            </ul>
+          </section>
+        )}
       </main>
       <SiteFooter />
     </div>
