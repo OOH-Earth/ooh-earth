@@ -31,10 +31,9 @@ SOCIAL-4 PR once merged (`feat/social-4-progress`, #286). Always
 `index-BavNZINI.js`; functions unchanged.
 
 ## OPEN_P0 / SECURITY
-None open. One qualified-but-blocked item: **CHECKPOINT-QC-READ**
-(QuestCompletion read RLS narrowing) — fully investigated, proven safe,
-whole-folder-diffed, but the sandbox denied the actual push ("Blind
-Apply"). Exact command in `brain/HANDOFF.md`; needs a human to run it.
+None open. **CHECKPOINT-QC-READ CLOSED** this burst (QuestCompletion read
+RLS narrowed to owner-or-admin on both BACKUP and production, fresh-pull
+verified before/after; see `QUEUE.md`).
 Separately observed (not fixed, not urgent): production `DigitalBust`/
 `LocationPhoto` missing a defence-in-depth field lock the repo already
 has — not exploitable, entity-level admin-only rule already covers it.
