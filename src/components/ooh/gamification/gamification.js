@@ -3,6 +3,7 @@
 // DigitalBust, Mint, LeadClaim) plus QuestCompletion bonus claims.
 
 import { POINTS, pointsForReport, pointsForRecheck } from '../pointsConfig';
+import { isInPeriod, periodKey as utcPeriodKey } from '../../../lib/questPeriod.js';
 
 export { POINTS, pointsForReport, pointsForRecheck };
 
@@ -248,13 +249,16 @@ export const TIER_STYLES = {
   diamond: { color: '#39FF14', glow: 'rgba(57,255,20,0.3)', label: 'Diamond' },
 };
 
-// ── Quest definitions ───────────────────────────────────────────────
+// ── Quest definitions (shown to users as Missions) ──────────────────
+// ids / targets / reward_xp must match claimQuest's server table — the
+// server is the only thing that awards XP. label/desc are display copy:
+// real-world objectives on public ground, never anything unsafe.
 export const QUESTS = [
   {
     id: 'daily_report',
     type: 'daily',
-    label: 'File a Report',
-    desc: 'Log 1 spot today',
+    label: 'Map a Place',
+    desc: 'Report 1 real ad or public space today',
     target: 1,
     metric: 'dailyReports',
     reward_xp: 50,
@@ -263,7 +267,7 @@ export const QUESTS = [
     id: 'daily_photo',
     type: 'daily',
     label: 'Photo Evidence',
-    desc: 'Add a photo to 1 report',
+    desc: 'Report 1 place with a photo today',
     target: 1,
     metric: 'dailyPhotos',
     reward_xp: 50,
@@ -272,7 +276,7 @@ export const QUESTS = [
     id: 'weekly_reports',
     type: 'weekly',
     label: 'Field Week',
-    desc: 'File 5 reports this week',
+    desc: 'Report 5 places this week',
     target: 5,
     metric: 'weeklyReports',
     reward_xp: 200,
@@ -281,7 +285,7 @@ export const QUESTS = [
     id: 'weekly_busts',
     type: 'weekly',
     label: 'Digital Resistance',
-    desc: 'Log 3 digital busts',
+    desc: 'Log 3 digital ads you spot in apps or online this week',
     target: 3,
     metric: 'weeklyBusts',
     reward_xp: 150,
@@ -298,30 +302,18 @@ export const QUESTS = [
 ];
 
 // ── Time helpers ─────────────────────────────────────────────────────
+// Mission periods are UTC (see src/lib/questPeriod.js) so the board shows
+// exactly what claimQuest will accept.
 export function isToday(iso) {
-  if (!iso) return false;
-  return new Date(iso).toDateString() === new Date().toDateString();
+  return isInPeriod(iso, 'daily', new Date());
 }
 
 export function isThisWeek(iso) {
-  if (!iso) return false;
-  const d = new Date(iso);
-  const now = new Date();
-  const day = now.getDay() || 7;
-  const monday = new Date(now);
-  monday.setDate(now.getDate() - day + 1);
-  monday.setHours(0, 0, 0, 0);
-  return d >= monday;
+  return isInPeriod(iso, 'weekly', new Date());
 }
 
 export function periodKey(type) {
-  const now = new Date();
-  if (type === 'daily') return now.toISOString().slice(0, 10);
-  const year = now.getFullYear();
-  const start = new Date(year, 0, 1);
-  const diff = (now.getTime() - start.getTime()) / 86400000;
-  const week = Math.ceil((diff + start.getDay() + 1) / 7);
-  return `${year}-W${String(week).padStart(2, '0')}`;
+  return utcPeriodKey(type, new Date());
 }
 
 // ── Brand collection ─────────────────────────────────────────────────

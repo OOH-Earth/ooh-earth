@@ -1577,15 +1577,12 @@ Deno.test(
         entities: {
           QuestCompletion: {
             filter: async (query: any) =>
-              completions.filter(
-                (item) =>
-                  item.quest_id === query.quest_id &&
-                  item.period_key === query.period_key &&
-                  item.created_by_id === query.created_by_id,
-              ),
+              completions
+                .filter((item) => Object.entries(query).every(([k, v]) => item[k] === v))
+                .reverse(),
             create: async (value: any) => {
               createCount++;
-              completions.push(value);
+              completions.push({ ...value, created_date: now.toISOString() });
             },
           },
           Location: { filter: async () => locations },

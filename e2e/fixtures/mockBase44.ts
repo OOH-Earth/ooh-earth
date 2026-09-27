@@ -1,4 +1,6 @@
 import type { Page, Route } from '@playwright/test';
+import { periodMetrics } from '../../src/lib/missions.js';
+import { isCompletionInPeriod, periodKey } from '../../src/lib/questPeriod.js';
 import { canReadEntity } from './rlsEngine';
 
 // This sandbox has no live Base44 backend (VITE_BASE44_APP_BASE_URL is
@@ -34,7 +36,25 @@ export type MockDb = {
   // Other members' public-shaped User records, for public-profile tests
   // that view someone other than db.user. Keyed by handle.
   otherUsers?: Record<string, any>;
+  // Missions: the caller's QuestCompletion rows, plus the "server" clock the
+  // claimQuest mock uses (ISO string; defaults to real now) and an optional
+  // forced HTTP status for error-path tests.
+  questCompletions?: Record<string, any>;
+  digitalBusts?: Record<string, any>;
+  serverNow?: string;
+  claimQuestStatus?: number;
 };
+
+// claimQuest's server table (ids/targets/XP) — mirrors
+// base44/functions/claimQuest/handler.ts.
+const SERVER_QUESTS: Record<string, { type: string; metric: string; target: number; xp: number }> =
+  {
+    daily_report: { type: 'daily', metric: 'dailyReports', target: 1, xp: 50 },
+    daily_photo: { type: 'daily', metric: 'dailyPhotos', target: 1, xp: 50 },
+    weekly_reports: { type: 'weekly', metric: 'weeklyReports', target: 5, xp: 200 },
+    weekly_busts: { type: 'weekly', metric: 'weeklyBusts', target: 3, xp: 150 },
+    weekly_mint: { type: 'weekly', metric: 'weeklyMints', target: 1, xp: 300 },
+  };
 
 function matchesQuery(rec: Record<string, any>, query: Record<string, any>) {
   if ('$or' in query) return query.$or.some((part: Record<string, any>) => matchesQuery(rec, part));
@@ -141,6 +161,54 @@ export async function mockBase44(page: Page, db: MockDb) {
           })),
         },
       });
+    }
+
+    // base44.functions.invoke('claimQuest', { quest_id }) -> POST
+    // /functions/claimQuest. Mirrors the real handler: auth required,
+    // server-side progress over the caller's own records in UTC periods,
+    // replay decided by the latest claim's created_date, server-set XP.
+    if (url.pathname.includes('/functions/claimQuest')) {
+      if (db.claimQuestStatus) {
+        return route.fulfill({ status: db.claimQuestStatus, json: { error: 'forced' } });
+      }
+      const me = db.user as Record<string, any> | null | undefined;
+      if (!me?.id)
+        return route.fulfill({ status: 401, json: { error: 'Authentication required.' } });
+      const questId = String(req.postDataJSON()?.quest_id || '');
+      const quest = SERVER_QUESTS[questId];
+      if (!quest) return route.fulfill({ status: 400, json: { error: 'Unknown quest.' } });
+      const now = db.serverNow ? new Date(db.serverNow) : new Date();
+      const store = db.questCompletions ?? (db.questCompletions = {});
+      const latest = Object.values(store)
+        .filter((c: any) => c.quest_id === questId && c.created_by_id === me.id)
+        .sort((a: any, b: any) => String(b.created_date).localeCompare(String(a.created_date)))[0];
+      const period = periodKey(quest.type, now);
+      if (isCompletionInPeriod(latest, questId, quest.type, now)) {
+        return route.fulfill({ json: { ok: true, already: true, period_key: period } });
+      }
+      const mine = (rows: Record<string, any> | undefined) =>
+        Object.values(rows ?? {}).filter((r: any) => r.created_by_id === me.id);
+      const metrics: Record<string, number> = periodMetrics(
+        { locations: mine(db.locations), busts: mine(db.digitalBusts), mints: [] },
+        now,
+      );
+      if ((metrics[quest.metric] || 0) < quest.target) {
+        return route.fulfill({
+          status: 403,
+          json: { error: 'Quest requirements are not complete.' },
+        });
+      }
+      const id = `qc-${Object.keys(store).length + 1}`;
+      // Base44 timestamps carry no offset.
+      store[id] = {
+        id,
+        quest_id: questId,
+        period_key: period,
+        xp_awarded: quest.xp,
+        created_by_id: me.id,
+        created_date: now.toISOString().replace('Z', '000'),
+      };
+      return route.fulfill({ json: { ok: true, xp_awarded: quest.xp, period_key: period } });
     }
 
     // base44.functions.invoke('scanAd', { file_url }) -> POST /functions/scanAd.
@@ -351,6 +419,21 @@ export async function mockBase44(page: Page, db: MockDb) {
         store[id] = { id, status: 'pending', created_by_id: db.user?.id, ...body };
         return route.fulfill({ json: store[id] });
       }
+    }
+
+    if (
+      (entity === 'QuestCompletion' || entity === 'DigitalBust') &&
+      !idOrAction &&
+      method === 'GET'
+    ) {
+      const store = (entity === 'QuestCompletion' ? db.questCompletions : db.digitalBusts) ?? {};
+      const q = url.searchParams.get('q');
+      let list = Object.values(store);
+      if (q) list = list.filter((rec) => matchesQuery(rec, JSON.parse(q)));
+      list = [...list].sort((a: any, b: any) =>
+        String(b.created_date || '').localeCompare(String(a.created_date || '')),
+      );
+      return route.fulfill({ json: list });
     }
 
     if (entity === 'FieldCheck') {

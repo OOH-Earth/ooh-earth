@@ -58,8 +58,8 @@ REAL-WORLD HISTORY → GO OUT AGAIN.
 |---|---|---|
 | SOCIAL-1 | DISCOVERY LINKING — live activity → real Location Detail | CLOSED 2026-09-27 |
 | SOCIAL-2 | FIELD RECORD — public profile → recent verified real-world contributions | CLOSED 2026-09-27 |
-| SOCIAL-3 | MISSIONS — turn existing useful contribution actions / quests into clear real-world calls to action | **NEXT** (design notes in `QUEUE.md`) |
-| SOCIAL-4 | OPERATIVE PROGRESS — unify existing XP, level, badges and contribution stats into one public/private progress experience | planned |
+| SOCIAL-3 | MISSIONS — turn existing useful contribution actions / quests into clear real-world calls to action | CLOSED 2026-09-27 |
+| SOCIAL-4 | PROGRESS ("Operative Progress") — unify existing XP, level, badges and contribution stats into one public/private progress experience | **NEXT** (discovery in `QUEUE.md`) |
 | SOCIAL-5 | TRAILS — consent-controlled history of meaningful places/contributions | planned |
 | SOCIAL-6 | CREWS — small opt-in groups around places, interests and missions | planned |
 | SOCIAL-7 | DROPS — place-linked creative/photo discoveries | planned |
@@ -68,7 +68,8 @@ REAL-WORLD HISTORY → GO OUT AGAIN.
 | SOCIAL-10 | COLLABORATION — creative, ecology, photography, design, community and professional opportunities around real places | planned |
 
 FUTURE ONLY — **dating / romantic discovery is NOT part of the early
-social implementation.**
+social implementation** and requires explicit owner + privacy/safety review
+before any implementation.
 
 Order past SOCIAL-3 is re-decided per burst from shipped evidence.
 Detailed architecture, when needed, goes in `docs/ops/ooh-earth/`.
@@ -108,6 +109,21 @@ targets, visible focus ring).
   each linking to Location Detail. Server-side in `getPublicProfile`,
   behind the same `profile_public` gate; a contribution record, not a
   movement tracker (no coordinates, no time of day, verified only).
+- SOCIAL-3: **Missions = the existing Quest engine**, renamed for users.
+  Mission Board on `/operative#missions` (available / in progress / ready
+  to claim / claimed, UTC reset countdown, honest claim feedback). One
+  period definition — UTC day, ISO week from Monday 00:00 UTC — shared by
+  `claimQuest` (authoritative) and the board. Internal names stay
+  Quest/QuestCompletion. The local route planner is "field route" in
+  public copy (internal `fieldMission` code unchanged).
+
+## AUTONOMY (owner-set 2026-09-27)
+Bounded, reversible, tested, privacy-preserving work inside the existing
+permissions/data model that passes the GREEN RELEASE CHECK ships without
+asking. Anything that changes who can see what, who can contact whom,
+where people are, what personal data exists, who can modify what, how
+money moves, or what users consent to is a HUMAN CHECKPOINT. Never claim
+legal/compliance status from an engineering review.
 
 Existing primitives confirmed during discovery (don't rebuild):
 `MiniMapStack` (Home "the terrain, now" — recent real places + mini map),

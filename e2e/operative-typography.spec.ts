@@ -5,7 +5,7 @@ test.describe('Operative Profile readable type controls', () => {
   test('all text-size presets preserve essential content and page width', async ({ page }) => {
     await mockBase44(page, { user: ADMIN_USER, locations: {} });
     await page.goto('/operative?access_token=mock-admin-token');
-    await expect(page.getByRole('heading', { name: 'Quest Board' })).toBeVisible({
+    await expect(page.getByRole('heading', { name: 'Mission Board' })).toBeVisible({
       timeout: 20_000,
     });
 
@@ -26,7 +26,7 @@ test.describe('Operative Profile readable type controls', () => {
             .evaluate((element) => getComputedStyle(element).fontSize.replace('px', '')),
         ),
       ).toBeCloseTo(Number.parseInt(preset.size, 10) * 0.16, 5);
-      await expect(page.getByRole('heading', { name: 'Quest Board' })).toBeVisible();
+      await expect(page.getByRole('heading', { name: 'Mission Board' })).toBeVisible();
       await expect(page.getByText('Field contributions')).toBeVisible();
       expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(
         true,
