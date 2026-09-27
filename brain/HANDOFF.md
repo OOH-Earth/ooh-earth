@@ -1,34 +1,45 @@
 # HANDOFF — read this first
 
-LAST_UPDATED: 2026-09-27 (SOCIAL-3 Missions — shipped, stopped by design)
+LAST_UPDATED: 2026-09-27 (qualification burst + SOCIAL-4 Progress —
+shipped, stopped by design)
 
 The repo runs a **real-world social-network programme in short bursts**
 under the owner's autonomous GREEN-release rule (see `PRODUCT.md`
 "AUTONOMY"). Read `brain/PRODUCT.md` before any feature work.
 
 Everything prior (React 19, TEST-001, SEC-001/002, UX-001/002/003,
-SOCIAL-1, SOCIAL-2) remains CLOSED.
+SOCIAL-1/2/3) remains CLOSED.
 
 ## What this burst did
-1. Discovery of the real quest engine: `QUESTS`, `claimQuest`,
-   `QuestCompletion`, the client hook, the board UI, period logic.
-2. Found and fixed a three-way period disagreement (offset-less Base44
-   timestamps parsed as local time in browsers; server week rolling over
-   Saturday in runtime-local time; client progress in local day/Monday).
-   One UTC definition shared by server and client, parity-tested.
-3. Mission Board = the Quest Board, reframed: explicit states, UTC reset
-   countdown, honest claim feedback, safety copy, own-rows-only fetch.
-4. "Field Mission" was user-facing on the public Map → public copy now
-   says "route"; operator tooling unchanged.
-5. Found production `claimQuest` lagging main (no server-side
-   eligibility); this release reconciled it. BACKUP then production,
-   `claimQuest` only, fresh-pull verified; frontends target-proven and
-   QA'd desktop + mobile.
-6. Prepared CHECKPOINT-QC-READ and SOCIAL-4 discovery (QUEUE).
+1. Hard-qualified SOCIAL-1/2/3 with real Chromium/DevTools against
+   BACKUP + production: live activity feed (0 events possible without a
+   real signed-in session receiving one — honestly recorded as untestable
+   beyond the deterministic unit test, nothing fabricated), Field Record
+   raw-response privacy, Mission Board states/UTC copy/no-overflow. Found
+   zero new regressions. Re-confirmed `claimQuest` drift from the prior
+   burst is closed (byte-identical to main in both environments).
+2. Core regression pass: Home/Map Flat/Map Globe/Location Detail/Store,
+   desktop 1440, mobile 390 + 412 landscape — all clean, P0 dedupe intact,
+   0 anonymous WebSockets, 0 entity writes. PERF-OBS-1 (HeroConsole
+   polling) re-observed, still correctly left alone.
+3. Investigated and fully qualified narrowing `QuestCompletion`'s public
+   read RLS — proven safe, whole-folder-diffed against a fresh
+   authoritative pull, but the actual push was denied by the sandbox
+   classifier. Not bypassed. See "Blockers" below.
+4. Along the way found a small, pre-existing, non-exploitable schema
+   drift on production (`DigitalBust`/`LocationPhoto` missing a
+   defence-in-depth field lock) — recorded, not touched.
+5. Shipped SOCIAL-4 Progress: frontend-only (no function/schema change).
+   Private `/operative` renamed to "Progress" language; public Founder
+   profile gets a Progress section showing only badges truthfully
+   derivable from already-public counts, provably never a false
+   positive. See `QUEUE.md` SOCIAL-4 for the full writeup.
 
 ## Next
-SOCIAL-4 Progress — autonomous private part first; public-profile part is
-a human checkpoint. PERF-OBS-1 is a separate performance burst.
+A human runs the CHECKPOINT-QC-READ push (see Blockers). Then SOCIAL-5
+Trails — a human privacy checkpoint, decision package in `QUEUE.md`, do
+not build until the owner answers the open questions there. PERF-OBS-1 is
+a separate performance burst.
 
 ## Blockers
 **QuestCompletion read-rule hardening — sandbox denied the push, needs a
