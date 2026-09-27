@@ -1,11 +1,48 @@
 import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { ArrowLeft, Star, MapPin, FileText, ShieldCheck, RefreshCw } from 'lucide-react';
+import {
+  ArrowLeft,
+  Star,
+  MapPin,
+  FileText,
+  ShieldCheck,
+  RefreshCw,
+  ChevronRight,
+  Crosshair,
+  RectangleHorizontal,
+  MonitorPlay,
+  Paintbrush2,
+  Lightbulb,
+  Palette,
+  Sticker,
+  BusFront,
+  Waves,
+  CircleDot,
+  Goal,
+  Shapes,
+} from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import Nav from '@/components/ooh/Nav';
 import SiteFooter from '@/components/ooh/SiteFooter';
 import { useSeo } from '@/lib/seoContext';
 import { focusAreaLabel, initialsFrom, normalizeHandle } from '@/lib/founderProfile';
+import { fieldRecordEntries } from '@/lib/fieldRecord';
+
+// Same glyphs as the category directories (categories.js), mapped locally
+// so this page doesn't pull the map seed into its chunk.
+const TYPE_ICONS = {
+  billboard: RectangleHorizontal,
+  digital: MonitorPlay,
+  painted: Paintbrush2,
+  projection: Lightbulb,
+  mural: Palette,
+  sticker: Sticker,
+  transit: BusFront,
+  skatepark: Waves,
+  basketball_court: CircleDot,
+  multi_use_court: Goal,
+  other: Shapes,
+};
 
 function Avatar({ url, name, handle }) {
   const [broken, setBroken] = useState(false);
@@ -42,12 +79,82 @@ function StatChip({ Icon, value, label }) {
   );
 }
 
+// Field Record — verified places this member put on the public record.
+// A contribution record, not a movement history: server-capped, verified
+// only, day-precision dates, and every row points at the place, never back
+// at the person.
+function FieldRecord({ entries }) {
+  return (
+    <section className="mt-10" aria-labelledby="field-record-heading">
+      <div className="flex items-baseline justify-between gap-3 border-b border-slate2/50 pb-2">
+        <h2
+          id="field-record-heading"
+          className="inline-flex items-center gap-2 font-mono text-[9px] uppercase tracking-[0.25em] text-dim"
+        >
+          <Crosshair className="h-3 w-3 text-ozone" aria-hidden="true" /> Field record
+        </h2>
+        <p className="hidden font-mono text-[8px] uppercase tracking-[0.2em] text-dim sm:block">
+          A mark left on the real world
+        </p>
+      </div>
+      {entries.length === 0 ? (
+        <p className="mt-4 font-mono text-[10px] uppercase tracking-[0.15em] text-dim">
+          No verified field records yet.
+        </p>
+      ) : (
+        <ol className="mt-3 space-y-2">
+          {entries.map((e, i) => {
+            const Icon = TYPE_ICONS[e.type] || Shapes;
+            return (
+              <li key={e.id}>
+                <Link
+                  to={e.href}
+                  className="group flex min-h-[56px] items-center gap-3 border border-slate2/60 bg-card/60 px-3 py-2.5 transition-colors hover:border-ozone/70 hover:bg-ozone/5 focus-visible:border-ozone focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ozone/60"
+                >
+                  <span
+                    className="w-5 shrink-0 font-mono text-[9px] tabular text-dim"
+                    aria-hidden="true"
+                  >
+                    {String(i + 1).padStart(2, '0')}
+                  </span>
+                  <span className="flex h-8 w-8 shrink-0 items-center justify-center border border-slate2/60 text-ozone group-hover:border-ozone/60">
+                    <Icon className="h-4 w-4" aria-hidden="true" />
+                  </span>
+                  <span className="min-w-0 flex-1">
+                    <span className="block truncate font-display text-[14px] font-semibold text-silver">
+                      {e.title}
+                    </span>
+                    <span className="mt-0.5 block font-mono text-[9px] uppercase tracking-[0.15em] text-dim">
+                      {e.typeLabel}
+                      {e.dateLabel && (
+                        <>
+                          {' · '}
+                          <time dateTime={e.date}>{e.dateLabel}</time>
+                        </>
+                      )}
+                    </span>
+                  </span>
+                  <ChevronRight
+                    className="h-4 w-4 shrink-0 text-dim transition-transform group-hover:translate-x-0.5 group-hover:text-ozone"
+                    aria-hidden="true"
+                  />
+                </Link>
+              </li>
+            );
+          })}
+        </ol>
+      )}
+    </section>
+  );
+}
+
 export default function FounderProfile() {
   const { handle: rawHandle } = useParams();
   const handle = normalizeHandle(rawHandle);
   const [state, setState] = useState('loading'); // loading | found | not_found | error
   const [profile, setProfile] = useState(null);
   const [contributions, setContributions] = useState(null);
+  const [fieldRecord, setFieldRecord] = useState([]);
 
   useEffect(() => {
     let alive = true;
@@ -67,6 +174,7 @@ export default function FounderProfile() {
         }
         setProfile(data.profile);
         setContributions(data.contributions || null);
+        setFieldRecord(fieldRecordEntries(data.recent_verified_places));
         setState('found');
       } catch {
         if (alive) setState('error');
@@ -228,6 +336,8 @@ export default function FounderProfile() {
             </p>
           </div>
         )}
+
+        <FieldRecord entries={fieldRecord} />
       </main>
       <SiteFooter />
     </div>

@@ -1,35 +1,45 @@
 # NOW — current truth only
 
-Last verified: 2026-09-27 (Social Burst #1). Re-verify anything more than a
-few days old before acting on it.
+Last verified: 2026-09-27 (SOCIAL-2 — Field Record). Re-verify anything
+more than a few days old before acting on it.
 
 ## PRODUCT DIRECTION
-OOH Earth is now a **social-network programme run in short bursts** — see
-`brain/PRODUCT.md` (north star, core loop, privacy/safety hard rules).
+OOH Earth is a **real-world social-network programme run in short
+bursts** — see `brain/PRODUCT.md` (north star, master roadmap
+SOCIAL-1..10, permanent rules A–H, privacy hard rules, visual direction).
 Read it before any feature work.
 
 ## CURRENT_ORIGIN_MAIN
-`424cd3c` at the start of this burst, plus the Social Burst #1 PR once
-merged (`feat/social-v1-discover`). Always `git fetch origin main` first.
+`e3e832f` (SOCIAL-1, PR #283) at the start of this burst, plus the
+SOCIAL-2 PR once merged (`feat/social-2-field-record`). Always
+`git fetch origin main` first.
 
-## PRODUCTION_FRONTEND
-`oohearth.app` → app id `6a62213cff3ccbca88c04ff5` → entry
-`index-BKY7OUQV.js` (Social Burst #1 build, on React 19 + react-leaflet 5).
-Rendered QA passed on real data: Map (1 canvas, exactly 1 Location
-request, 0 WebSockets anonymous), Location Detail on mobile, Home.
+## PRODUCTION
+- Frontend: `oohearth.app` → app id `6a62213cff3ccbca88c04ff5` → entry
+  `index-DU26cBQ_.js` (SOCIAL-2 build).
+- `getPublicProfile`: SOCIAL-2 source (`entry.ts` + `handler.ts`),
+  fresh-pull byte-identical to the SOCIAL-2 branch.
+- QA passed: Home (Location limit=500 once + one skip=500 continuation),
+  Map Globe (MapLibre worker) + Flat (Leaflet markers, hover ring),
+  Location Detail, Founder Profile not-found path, 0 anonymous
+  WebSockets, no entity writes, desktop 1440×900 + mobile 390×844.
 
-## BACKUP_FRONTEND
-`ooh-earth-backup.base44.app` → app id `6a6748e009b947cb29591871` → entry
-`index-BxOusg1z.js` (same Social Burst #1 source).
+## BACKUP
+`ooh-earth-backup.base44.app` → app id `6a6748e009b947cb29591871` →
+entry `index-CEFuWLzB.js`; `getPublicProfile` = same SOCIAL-2 source.
 
 ## OPEN_P0 / SECURITY
-None open. No schema, function, credential, or permission change this
-burst.
+None open. SOCIAL-2 wrote exactly one function (`getPublicProfile`) per
+environment. No schema, entity, migration, or data write.
 
-## SOCIAL BURST #1 — SHIPPED
-The Home live activity feed (real, auth-gated realtime events — nothing
-fabricated) now links new places and adopted landmarks to their public
-Location Detail page. See `QUEUE.md` SOCIAL-1.
+## SOCIAL PROGRAMME
+- SOCIAL-1 Discovery Linking — CLOSED.
+- SOCIAL-2 Field Record — CLOSED (production-verified; see QUEUE).
+- **SOCIAL-3 Missions — NEXT** (design notes in QUEUE; not built).
+
+## OBSERVED, NOT ACTED ON
+PERF-OBS-1: HeroConsole re-fetches the full Location set every 20s on
+Home (pre-existing). Owner priority call.
 
 ## DEPRIORITISED FOR THIS PROGRAMME
 framer-motion 13, react-resizable-panels 4, TypeScript 7 — unless one
@@ -40,12 +50,14 @@ UX-004 Carto key · `fix/production-app-binding` · AdObservation · Founding
 directory.
 
 ## NEXT_TASK
-Owner provides Social Burst #2. Recommendation in `QUEUE.md` SOCIAL-2.
+SOCIAL-3 burst: decide Mission = branded Quest (recommended) vs distinct
+object, resolve the "Field Mission" naming collision, then ship the
+smallest frontend-first Mission board slice.
 
 ## NEXT_PRODUCTION_WRITE
 None pending.
 
 ## HUMAN_CHECKPOINT
-Choose Burst #2 (recommended: public-profile real-world history, which
-needs an additive `getPublicProfile` response change → owner approval for
-the function deploy).
+Owner confirms SOCIAL-3 direction: "Missions = the existing Quest system,
+rebranded and linked to real places" (recommended), and what happens to
+the existing local "Field Mission" route planner name.

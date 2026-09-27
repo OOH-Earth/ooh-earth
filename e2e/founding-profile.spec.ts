@@ -406,3 +406,138 @@ test.describe('Founding Profiles — public view (/founders/:handle)', () => {
     await expect(page.getByText(/Could not load this profile/i)).toBeVisible({ timeout: 10_000 });
   });
 });
+
+// SOCIAL-2 — Field Record: a public profile's recent verified places, each
+// linking to its public Location Detail page. Verified-only, capped, and a
+// contribution record rather than a movement history.
+test.describe('Founding Profiles — Field Record', () => {
+  const place = (n: number, extra: Record<string, unknown> = {}) => ({
+    id: `fr-${n}`,
+    title: `Field Place ${n}`,
+    type: 'mural',
+    status: 'verified',
+    created_by_id: MEMBER.id,
+    created_date: `2026-05-${String(10 + n).padStart(2, '0')}T12:34:56.000Z`,
+    lat: 51.5,
+    lng: -0.12,
+    address: 'PRIVATE-ADDRESS-STRING',
+    ...extra,
+  });
+
+  test('lists recent verified places newest first, and only verified ones', async ({ page }) => {
+    const db: MockDb = {
+      user: null,
+      otherUsers: { ghostsignal: { ...MEMBER } },
+      locations: {
+        a: place(1),
+        b: place(2, { type: 'billboard' }),
+        c: place(3, { status: 'pending', title: 'PENDING-PLACE' }),
+        d: place(4, { status: 'rejected', title: 'REJECTED-PLACE' }),
+        e: place(5, { created_by_id: 'someone-else', title: 'OTHER-USERS-PLACE' }),
+      },
+    };
+    await mockBase44(page, db);
+    const responses: string[] = [];
+    page.on('response', async (res) => {
+      if (res.url().includes('/functions/getPublicProfile')) responses.push(await res.text());
+    });
+    await page.goto('/founders/ghostsignal');
+
+    const section = page.getByRole('region', { name: /Field record/i });
+    await expect(section).toBeVisible({ timeout: 10_000 });
+    const links = section.getByRole('link');
+    await expect(links).toHaveCount(2);
+    await expect(links.nth(0)).toHaveAttribute('href', '/location/fr-2');
+    await expect(links.nth(0)).toContainText('Field Place 2');
+    await expect(links.nth(0)).toContainText('Billboard');
+    await expect(links.nth(0)).toContainText('12 MAY 2026');
+    await expect(links.nth(1)).toHaveAttribute('href', '/location/fr-1');
+
+    const text = await page.locator('body').innerText();
+    for (const s of ['PENDING-PLACE', 'REJECTED-PLACE', 'OTHER-USERS-PLACE']) {
+      expect(text).not.toContain(s);
+    }
+    // The response itself carries only the allowlisted place fields.
+    const raw = responses.join('\n');
+    expect(raw).not.toContain('PRIVATE-ADDRESS-STRING');
+    expect(raw).not.toContain('"lat"');
+    expect(raw).not.toContain('created_by_id');
+    expect(raw).not.toContain('12:34:56');
+  });
+
+  test('is capped at five records', async ({ page }) => {
+    const locations: Record<string, any> = {};
+    for (let n = 1; n <= 8; n++) locations[`p${n}`] = place(n);
+    await mockBase44(page, { user: null, otherUsers: { ghostsignal: { ...MEMBER } }, locations });
+    await page.goto('/founders/ghostsignal');
+    const section = page.getByRole('region', { name: /Field record/i });
+    await expect(section.getByRole('link')).toHaveCount(5, { timeout: 10_000 });
+    await expect(section.getByRole('link').first()).toHaveAttribute('href', '/location/fr-8');
+  });
+
+  test('shows an honest empty state when there are no verified places', async ({ page }) => {
+    await mockBase44(page, {
+      user: null,
+      otherUsers: { ghostsignal: { ...MEMBER } },
+      locations: { x: place(1, { status: 'pending' }) },
+    });
+    await page.goto('/founders/ghostsignal');
+    const section = page.getByRole('region', { name: /Field record/i });
+    await expect(section).toContainText('No verified field records yet.', { timeout: 10_000 });
+    await expect(section.getByRole('link')).toHaveCount(0);
+  });
+
+  test('a private profile renders no field record at all', async ({ page }) => {
+    await mockBase44(page, {
+      user: null,
+      otherUsers: { ghostsignal: { ...MEMBER, profile_public: false } },
+      locations: { a: place(1, { title: 'SHOULD-NOT-RENDER' }) },
+    });
+    await page.goto('/founders/ghostsignal');
+    await expect(page.getByText('Profile not found')).toBeVisible({ timeout: 10_000 });
+    await expect(page.getByRole('region', { name: /Field record/i })).toHaveCount(0);
+    expect(await page.locator('body').innerText()).not.toContain('SHOULD-NOT-RENDER');
+  });
+
+  test('malformed records are dropped or defaulted without crashing', async ({ page }) => {
+    await mockBase44(page, { user: null, otherUsers: { ghostsignal: { ...MEMBER } } });
+    await page.route('**/functions/getPublicProfile', (route) =>
+      route.fulfill({
+        json: {
+          found: true,
+          profile: { handle: 'ghostsignal', full_name: 'Ghost Signal' },
+          contributions: { verified_reports: 1, verified_rechecks: 0 },
+          recent_verified_places: [
+            { id: '../../admin', title: 'Bad id' },
+            null,
+            { id: 'ok-1', title: '', type: 'spaceship', created_date: 'nope' },
+          ],
+        },
+      }),
+    );
+    await page.goto('/founders/ghostsignal');
+    const section = page.getByRole('region', { name: /Field record/i });
+    await expect(section.getByRole('link')).toHaveCount(1, { timeout: 10_000 });
+    await expect(section.getByRole('link')).toHaveAttribute('href', '/location/ok-1');
+    await expect(section).toContainText('Untitled place');
+    await expect(section).not.toContainText('Bad id');
+  });
+
+  test('keyboard: a record is reachable by Tab and opens Location Detail on Enter', async ({
+    page,
+  }) => {
+    await mockBase44(page, {
+      user: null,
+      otherUsers: { ghostsignal: { ...MEMBER } },
+      locations: { a: place(1) },
+    });
+    await page.goto('/founders/ghostsignal');
+    const link = page.getByRole('region', { name: /Field record/i }).getByRole('link');
+    await expect(link).toHaveCount(1, { timeout: 10_000 });
+    await link.focus();
+    await expect(link).toBeFocused();
+    await page.keyboard.press('Enter');
+    await expect(page).toHaveURL(/\/location\/fr-1$/);
+    await expect(page.getByText('Field Place 1').first()).toBeVisible({ timeout: 10_000 });
+  });
+});

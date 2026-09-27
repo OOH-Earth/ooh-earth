@@ -1,38 +1,49 @@
 # HANDOFF — read this first
 
-LAST_UPDATED: 2026-09-27 (Social Burst #1 — shipped, stopped by design)
+LAST_UPDATED: 2026-09-27 (SOCIAL-2 Field Record — shipped, stopped by
+design)
 
-The repo is now running a **social-network programme in short bursts**.
-Read `brain/PRODUCT.md` before any feature work — it holds the north star
-and the privacy/safety hard rules.
+The repo runs a **real-world social-network programme in short bursts**.
+Read `brain/PRODUCT.md` before any feature work — it holds the north star,
+the master roadmap SOCIAL-1..10, the permanent rules A–H, and the privacy
+hard rules.
 
 Everything prior (React 19 + react-leaflet 5, TEST-001, SEC-001/002,
-UX-001/002/003) remains CLOSED.
+UX-001/002/003, SOCIAL-1) remains CLOSED.
 
 ## What this burst did
-1. Discovery (read-only): inventoried entities and social/gamification
-   primitives. Found far more already exists than the brief assumed — a
-   real XP/level/badge engine, `QuestCompletion`, public opt-in Founding
-   Profiles with real contribution counts, `MiniMapStack` (recent real
-   places on Home), and a real auth-gated `LiveActivityFeed`. See
-   `PRODUCT.md` "Existing primitives".
-2. Chose the smallest real gap: live activity cards weren't actionable.
-   Made new-place / adopted-landmark cards link to the public Location
-   Detail page. Frontend-only, no schema/function change.
-3. Tested (unit 137/137, lint, prettier, typecheck, build, Home smoke),
-   BACKUP target-proven + deployed + rendered QA, production target-proven
-   + deployed + rendered QA on real data. P0 dedupe, realtime gating,
-   globe/map, Location Detail all verified intact.
-4. Recorded the durable product direction in `brain/PRODUCT.md`.
+1. Re-verified SOCIAL-1 reconciled (PR #283 merged, prod == main).
+2. Proved `getPublicProfile` identical on main / BACKUP / production
+   before touching it; re-audited its privacy boundary (uniform
+   `{found:false}` for private/missing, explicit allowlist, check mode
+   returns only `taken`/`mine`).
+3. Added `recent_verified_places` (max 5, verified-only, own places,
+   `{id,title,type,created_date(day)}`) from the query the count already
+   ran; refactored into `handler.ts` with 12 Deno tests.
+4. Field Record section on `FounderProfile.jsx`, honest empty state,
+   pure normaliser + unit tests, 6 Playwright cases.
+5. BACKUP then production: function deploy (only `getPublicProfile`),
+   fresh-pull byte-identical, raw-response privacy QA; frontend builds
+   target-proven via the entry's runtime init object, deployed, desktop +
+   mobile QA. Nothing written to any entity.
+6. SOCIAL-3 discovery only (see `QUEUE.md`), roadmap + rules recorded.
 
 ## Next
-Owner picks Social Burst #2. Recommendation: SOCIAL-2 (real-world history
-on public profiles) — needs an additive `getPublicProfile` response change,
-so BACKUP-first + explicit owner approval before the production function
-deploy. Full proposal in `QUEUE.md`.
+SOCIAL-3 Missions. Recommendation: Missions = the existing Quest system
+(`QUESTS` + `claimQuest` + `QuestCompletion`) rebranded and pointed at
+real places — no parallel engine. Resolve the "Field Mission" naming
+collision first. Human checkpoint in `NOW.md`.
 
 ## Blockers
 None.
+
+## Sandbox note
+Both `functions deploy getPublicProfile` calls (BACKUP + production) and
+both `site deploy` calls ran directly this burst — no classifier denial.
+If a future deploy is denied, do not bypass via the browser; hand the
+exact command to the owner, e.g.
+`npx --yes base44@0.1.14 --app-id <APP_ID> functions deploy <name>`
+(never `--force`).
 
 ## DO_NOT_TOUCH
 - `feat/weather-context-v1` (user's dirty branch) — never touch.
