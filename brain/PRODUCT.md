@@ -59,8 +59,8 @@ REAL-WORLD HISTORY → GO OUT AGAIN.
 | SOCIAL-1 | DISCOVERY LINKING — live activity → real Location Detail | CLOSED 2026-09-27 |
 | SOCIAL-2 | FIELD RECORD — public profile → recent verified real-world contributions | CLOSED 2026-09-27 |
 | SOCIAL-3 | MISSIONS — turn existing useful contribution actions / quests into clear real-world calls to action | CLOSED 2026-09-27 |
-| SOCIAL-4 | PROGRESS ("Operative Progress") — unify existing XP, level, badges and contribution stats into one public/private progress experience | **NEXT** (discovery in `QUEUE.md`) |
-| SOCIAL-5 | TRAILS — consent-controlled history of meaningful places/contributions | planned |
+| SOCIAL-4 | PROGRESS — unify existing XP, level, badges and contribution stats into one public/private progress experience | CLOSED 2026-09-27 |
+| SOCIAL-5 | TRAILS — consent-controlled history of meaningful places/contributions | **NEXT — human privacy checkpoint** (decision package in `QUEUE.md`) |
 | SOCIAL-6 | CREWS — small opt-in groups around places, interests and missions | planned |
 | SOCIAL-7 | DROPS — place-linked creative/photo discoveries | planned |
 | SOCIAL-8 | CONNECTIONS — consent-based person-to-person connections emerging from shared activity | planned |
@@ -116,6 +116,15 @@ targets, visible focus ring).
   `claimQuest` (authoritative) and the board. Internal names stay
   Quest/QuestCompletion. The local route planner is "field route" in
   public copy (internal `fieldMission` code unchanged).
+- SOCIAL-4: **Progress** — the private `/operative` page (already had a
+  coherent level/XP/stats/badges/missions layout) now says "Progress"
+  instead of "Operative"; the public Founder profile shows a **Progress**
+  section with only the badges truthfully derivable from data
+  `getPublicProfile` already returns (3 of 21 today), running the exact
+  same badge predicates as the private page — never a second formula, and
+  provably never a false positive (property-tested). XP/Level stay
+  private everywhere except `/operative`: no truthful public number
+  exists for them. No function/schema change.
 
 ## AUTONOMY (owner-set 2026-09-27)
 Bounded, reversible, tested, privacy-preserving work inside the existing

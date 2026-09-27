@@ -140,7 +140,7 @@ export default function OperativeProfile() {
         {loading ? (
           <div className="flex items-center gap-3 font-mono text-[10px] uppercase tracking-[0.3em] text-dim">
             <span className="h-1.5 w-1.5 animate-flicker rounded-full bg-ozone" /> Compiling
-            operative dossier…
+            progress…
           </div>
         ) : !user ? (
           <div className="border border-slate2/60 bg-card p-12 text-center">
@@ -149,7 +149,7 @@ export default function OperativeProfile() {
               Authentication Required
             </h1>
             <p className="mt-2 font-display text-[0.875rem] text-darkgray">
-              Log in to view your operative profile, badges, and missions.
+              Log in to view your progress, badges, and missions.
             </p>
             <div className="mt-6 flex justify-center gap-2">
               <Link
@@ -171,7 +171,7 @@ export default function OperativeProfile() {
             {/* Header */}
             <div className="flex flex-col gap-1">
               <span className="font-mono text-[10px] uppercase tracking-[0.3em] text-ozone">
-                // Operative Profile
+                // Progress
               </span>
               <h1 className="font-display text-4xl font-black uppercase tracking-tight2 text-silver md:text-6xl">
                 {user.full_name || user.email?.split('@')[0] || 'Anonymous'}
