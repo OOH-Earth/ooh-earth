@@ -216,3 +216,29 @@ Chrome/Chromium was not installed in this session's environment (chrome-devtools
 
 ## DATA_LOSS
 **NO.** Purely a client-side rendering/worker-resolution defect — no backend data was ever missing, deleted, or corrupted; the underlying `Location` records were always correct and always fully fetched.
+
+---
+
+# Incident: Black square over the selected-location marker/popup on mobile
+
+## REPORTER
+Dave, real mobile screenshot (~387×805) with a black rectangle circled over the flat/satellite map near a selected-location marker, alongside a general "excessive mobile padding" note.
+
+## ROOT_CAUSE (CONFIRMED — live-reproduced, not inferred)
+`LocationMap.jsx`'s `pinFor()` (the flat-map circular photo marker) stripped the resize suffix off `m.image` (e.g. `"...-768x1024.jpg"` → `"....jpg"`), assuming that would fetch a higher-resolution original. A real subset of production `Location` records only ever had the resized derivative stored on `media.base44.com` — the stripped URL 404s for those. Live-confirmed via anonymous `fetch()` against production: **13 real `Location` records carry an `image_url` with a resize suffix, and 10/10 sampled stripped URLs returned 404.** `LocationThumb.jsx`'s `thumbHTML()` (the non-mobile Leaflet popup, also used by `Globe3D.jsx`'s popup) had the identical gap. Neither had an `onerror` handler, and both render against an explicit dark/near-black container background (`background:#000` / `background:#111`) — a failed `<img>` left that background fully exposed. Reproduced pixel-for-pixel by rendering the real production template markup against a real, confirmed-404 image URL: a solid black rectangle (240×110px popup case) / circle (52-62px marker case), not a browser broken-image glyph.
+
+## FIX
+- `pinFor()` no longer strips the resize suffix (root cause removed — requests the same URL already known to work).
+- `pinFor()`, `thumbHTML()`, and the React `LocationThumb` (used by `LocationCard`/the mobile bottom sheet) now all render the existing "no photo" category-glyph placeholder as a base layer, with the photo overlaid on top and removed on load failure (`onerror`) — any image failure, this one or a future one, reveals the designed placeholder instead of a black box, at fixed/stable dimensions.
+
+## ADDITIONAL FINDING (same investigation, fixed in the same PR)
+A real, reproducible layout collision: the full-width `MapAlertTicker` (`top-12`, `h-8`) directly overlapped the "Field attention" toggle button (`top-14`, `min-h-9`) on every mobile width tested — visible in every live screenshot taken while reproducing Dave's report. Ticker repositioned below the toggle (and further below when its filter row is expanded).
+
+## SCOPE NOTE — general mobile density/typography
+Investigated the broader "excessive padding" / typography claims in Dave's report. Found the existing mobile map UI (search bar, mode toggle, selected-location card, mission/command card `ContextualNudge.jsx`, bottom nav `MobileBottomTabs.jsx`) already reasonably dense, with touch targets already ≥44px and safe-area insets already correctly applied throughout. Typography already has a comprehensive terminal-appropriate system in place (`IBM Plex Mono` for mono/body, `Inter Tight` for headings, plus Orbitron/Share Tech Mono/VT323/etc. already loaded as CSS variables for display contexts) — no new font introduced, none needed. No further density changes made without concrete evidence of waste; the two fixes above are the real, evidenced defects found.
+
+## NOT FIXED — flagged separately
+The mobile map viewport collapses to a squashed/near-zero-height Leaflet container in landscape orientation at narrow heights. **Confirmed pre-existing**: reproduces identically on unmodified live production (not introduced by this PR). Partially known already — a prior pass noted "~150px tall" at 915×412 as minor/non-blocking; this pass additionally found it fully collapses (0 visible height, no map chrome at all) at 844×390. Needs its own investigation; out of scope for this bounded release.
+
+## DEPLOYMENT STATUS
+Deployed to BACKUP (`6a6748e009b947cb29591871`), live-verified via chrome-devtools across 360/375/387/390/393/412/430px portrait and 844×390/915×412 landscape — no horizontal overflow, no new console errors, collision fix confirmed visually, deployed entry-file hash matched the inspected build exactly. PR #287 (`fix/mobile-terminal-density`, off `origin/main` at `130650b`), CI green. **Production deploy blocked by this session's own auto-mode permission classifier** (explicit "[Production Deploy]" denial) — awaiting human authorization, not yet live on `oohearth.app`.
