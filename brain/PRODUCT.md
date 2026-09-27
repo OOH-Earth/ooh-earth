@@ -134,6 +134,15 @@ where people are, what personal data exists, who can modify what, how
 money moves, or what users consent to is a HUMAN CHECKPOINT. Never claim
 legal/compliance status from an engineering review.
 
+## PRE-DAVE RELEASE STANDARD (owner-set 2026-09-27)
+Dave is not our QA environment — his feedback is product feedback, not
+our primary bug detector. If Dave can spot it in 30 seconds, we should
+have spotted it first. No user-facing feature is reported externally
+until responsive QA, DevTools QA, network/console QA, real production QA,
+visual QA and reconciliation are all complete. Do not prepare or
+recommend a Dave-facing update for work that hasn't passed our own
+aggressive visual and functional review first.
+
 Existing primitives confirmed during discovery (don't rebuild):
 `MiniMapStack` (Home "the terrain, now" — recent real places + mini map),
 `LiveActivityFeed` (realtime, auth-gated), public Founding Profiles

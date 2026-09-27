@@ -6,6 +6,31 @@ NEXT_ACTION · DONE_WHEN.
 ## P0
 None open.
 
+## IN PROGRESS — another session (do not duplicate)
+`fix/mobile-terminal-density` — peer session "debug-mobile-map-black-square"
+owns `Map.jsx`/`LocationMap.jsx`/`LocationThumb.jsx`/`Globe3D.jsx` until
+its PR merges. Root cause confirmed (missing `onerror` fallback on the
+flat-map circular photo marker and both LocationThumb popup renderers,
+plus `pinFor()` incorrectly stripping a real resize suffix that a subset
+of production image URLs only have — the stripped URL 404s, rendering as
+a black box). Fix + a placeholder-glyph fallback + regression coverage
+in progress there; broader mobile density/typography pass to follow.
+Coordinate with that session before touching those 4 files.
+
+## FINDING — header breadcrumb link hidden behind the fixed toolbar (LOW)
+On `LocationDetail` (and likely any page whose local breadcrumb nav
+renders in the same y-range as the app's persistent `fixed top-0 z-[100]`
+toolbar), a small in-flow "Atlas" text link (`href="/map"`) is completely
+covered by that toolbar — `elementFromPoint` at its coordinates resolves
+to the toolbar div, not the link, so it's unreachable by mouse/touch.
+Confirmed at 387×805. Not a visual defect (nothing looks broken — the
+covering toolbar is legitimate chrome) and not a broken journey: the same
+destination (`/map`) is also reachable via the always-visible globe icon
+and the page's own "← ATLAS" button. Pre-existing, unrelated to any
+SOCIAL work. Low priority; a real fix would need a considered decision
+(add scroll-margin/padding to page-local headers, or reduce breadcrumb
+duplication) rather than a quick patch.
+
 ## P1 — Social programme (short bursts; see `brain/PRODUCT.md`)
 
 ### SOCIAL-1 — Live activity → real places — SHIPPED 2026-09-27
