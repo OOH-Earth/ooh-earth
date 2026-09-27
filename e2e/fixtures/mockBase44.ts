@@ -102,9 +102,12 @@ export async function mockBase44(page: Page, db: MockDb) {
 
       const store = db.locations ?? {};
       const checks = db.fieldChecks ?? {};
-      const verifiedReports = Object.values(store).filter(
-        (r: any) => r.created_by_id === match.id && r.status === 'verified',
-      ).length;
+      const verifiedLocations = Object.values(store)
+        .filter((r: any) => r.created_by_id === match.id && r.status === 'verified')
+        .sort((a: any, b: any) =>
+          String(b.created_date || '').localeCompare(String(a.created_date || '')),
+        );
+      const verifiedReports = verifiedLocations.length;
       const verifiedRechecks = Object.values(checks).filter(
         (r: any) => r.created_by_id === match.id && r.status === 'verified',
       ).length;
@@ -126,6 +129,16 @@ export async function mockBase44(page: Page, db: MockDb) {
             verified_reports: verifiedReports,
             verified_rechecks: verifiedRechecks,
           },
+          // Field Record: capped, allowlisted, day-precision (mirrors handler.ts).
+          recent_verified_places: verifiedLocations.slice(0, 5).map((r: any) => ({
+            id: r.id,
+            title: typeof r.title === 'string' ? r.title : '',
+            type: typeof r.type === 'string' ? r.type : '',
+            created_date:
+              typeof r.created_date === 'string'
+                ? (/^\d{4}-\d{2}-\d{2}/.exec(r.created_date)?.[0] ?? null)
+                : null,
+          })),
         },
       });
     }
