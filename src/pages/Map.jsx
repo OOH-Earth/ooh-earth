@@ -1137,7 +1137,16 @@ export default function Map() {
               clusters={view === 'globe' ? globeClusters : 0}
               className={view === 'flat' ? 'bottom-[60px]' : 'bottom-3'}
             />
-            <div className="pointer-events-none absolute left-3 right-3 top-12 z-[900] md:top-14">
+            {/* top-24 clears the Field attention toggle immediately to its
+                left (absolute, top-14 + min-h-9 => bottom edge ~92px) at
+                every breakpoint -- top-12/md:top-14 used to sit directly
+                underneath it, so the full-width ticker text visibly
+                collided with the toggle's own label on mobile. Drops further
+                (top-36) while the attention filter row is expanded, since
+                that adds another ~36px below the toggle. */}
+            <div
+              className={`pointer-events-none absolute left-3 right-3 z-[900] ${attentionMode ? 'top-36' : 'top-24'}`}
+            >
               <MapAlertTicker />
             </div>
             {view === 'flat' && (
