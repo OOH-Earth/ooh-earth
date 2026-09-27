@@ -6,16 +6,44 @@ NEXT_ACTION · DONE_WHEN.
 ## P0
 None open.
 
-## IN PROGRESS — another session (do not duplicate)
-`fix/mobile-terminal-density` — peer session "debug-mobile-map-black-square"
-owns `Map.jsx`/`LocationMap.jsx`/`LocationThumb.jsx`/`Globe3D.jsx` until
-its PR merges. Root cause confirmed (missing `onerror` fallback on the
-flat-map circular photo marker and both LocationThumb popup renderers,
-plus `pinFor()` incorrectly stripping a real resize suffix that a subset
-of production image URLs only have — the stripped URL 404s, rendering as
-a black box). Fix + a placeholder-glyph fallback + regression coverage
-in progress there; broader mobile density/typography pass to follow.
-Coordinate with that session before touching those 4 files.
+## MOBILE BLACK SQUARE — CLOSED 2026-09-27 (PR #287, merge b62fecf)
+Root cause: `pinFor()` (flat-map marker) and `thumbHTML()`/`LocationThumb`
+(popup + bottom-sheet card) rendered a plain `<img>` with no `onerror`, and
+`pinFor()` additionally stripped a real resize suffix (e.g. `-768x1024`)
+assuming it'd reach a higher-res original — a real subset of production
+records (confirmed: exactly 13) only ever had the resized derivative
+stored, so the stripped URL 404s. With no fallback, the failed `<img>`
+left its dark container background showing as a solid black box.
+- FIX: `pinFor()` no longer strips the suffix (root cause); all three
+  render locations now show the existing "no photo" glyph placeholder as
+  a base layer with the photo overlaid on top, `onerror` removing just
+  the photo so the placeholder shows through — same fixed dimensions, no
+  layout shift, no retry loop.
+- ALSO FIXED IN THE SAME PR: the full-width `MapAlertTicker` sat directly
+  under the Field Attention toggle at every breakpoint, visibly
+  overlapping its label on mobile — ticker's top offset is now dynamic
+  (`top-24`/`top-36` depending on whether the attention filter row is
+  expanded).
+- VERIFIED, not just trusted: reconciled the PR onto current main myself
+  before merging (clean diff, only the 4 expected files + 1 new e2e
+  spec + 2 docs — no protected file touched). BACKUP + production
+  DevTools QA confirmed no overlap (Field Attention/ticker) at multiple
+  states, and — the strongest evidence — fetched the OLD (stripped) and
+  NEW (unstripped) URLs directly for a real affected production record
+  (`6a633da7fd5deca1dd6a57f4`): old = 404, new = 200/210KB. Genuinely
+  fixed, confirmed against real broken data, not only passing tests.
+- NOT re-tested: authenticated states (no working authenticated browser
+  session this burst — see below).
+
+## FINDING — mobile map landscape viewport collapse (NOT fixed, separate)
+Confirmed independently (not just trusted from the incident doc): at
+844×412 and 915×412 landscape, the map container collapses to ~130-155px
+tall instead of filling the viewport, on both BACKUP and production,
+unrelated to PR #287 (present before and after it, byte-identical
+symptom). Root cause not yet investigated (likely a `vh`/flex-height
+calculation that doesn't account for a short landscape viewport). Needs
+its own reproduction + fix burst — do not fold into a future mobile PR
+without a dedicated root-cause pass first.
 
 ## FINDING — header breadcrumb link hidden behind the fixed toolbar (LOW)
 On `LocationDetail` (and likely any page whose local breadcrumb nav

@@ -43,6 +43,23 @@
   `~/.cache/ms-playwright/chromium-1243/chrome-linux64/chrome`. Launch
   headless with `--remote-debugging-port=9223`, then chrome-devtools MCP
   connects via its existing `--browserUrl` mode.
+- **This session's Chromium is headless-only, and relaunching it non-
+  headless does not produce a window the human can see or click into.**
+  Tested directly (2026-09-27): env vars for a real display exist
+  (`DISPLAY=:0`, `WAYLAND_DISPLAY=wayland-0`, backed by a genuine WSLg
+  socket at `/mnt/wslg/runtime-dir/wayland-0`), and Chrome auto-selects
+  `--ozone-platform=x11` and starts fine when `--headless=new` is
+  dropped — but a direct `xwininfo -root -tree` on that display shows
+  **no Chrome window is ever mapped**, only WSLg's own internal Weston
+  compositor windows. So a manual-login handoff ("open Chrome, owner logs
+  in, resume automation on that session") is **not currently possible in
+  this environment** — there is no way to hand a human a clickable window
+  in the browser instance chrome-devtools MCP controls. Do not re-attempt
+  this without new evidence the display path itself has changed; if
+  authenticated QA is needed, the owner logging into their own separate
+  browser is the only working path, and that session cannot be inspected
+  via chrome-devtools MCP (never bridge sessions by touching a cookie/
+  token — see the credential rules elsewhere in this file/HANDOFF).
 - **Never substitute curl-only checks for browser rendering when rendering
   is actually the question** — this exact bug class (MapLibre worker
   resolution) was invisible to canvas-presence/API-200/count checks; only
