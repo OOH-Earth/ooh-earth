@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import {
   Megaphone,
   Monitor,
@@ -51,35 +52,52 @@ const esc = (s) =>
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&#39;');
 
-// HTML string for popup contexts — real photo w/ CONFIRMED badge, else glyph placeholder
+// HTML string for popup contexts — real photo w/ CONFIRMED badge, else glyph
+// placeholder. The glyph placeholder is always rendered first (as the base
+// layer) and the photo is overlaid on top of it — if the photo 404s (some
+// records only ever had a resized derivative stored, not the original; see
+// docs/ops/ooh-earth/02-INCIDENT-MOBILE-LOCATIONS.md), the broken <img>'s own
+// onerror removes just itself, revealing the already-designed placeholder
+// underneath instead of a bare black rectangle. Dimensions never change.
 export function thumbHTML(m) {
   const meta = metaFor(m.type);
   const accent = meta.accent;
-  if (m.image) {
-    return `<div style="position:relative;width:100%;height:110px">
-      <img src="${esc(m.image)}" alt="${esc(m.title)}" style="width:100%;height:110px;object-fit:cover;display:block;background:#111" />
-      <svg viewBox="0 0 24 24" width="14" height="14" style="position:absolute;left:4px;top:4px"><path d="M12 2l2.4 1.8 3 .2.9 2.9 2.2 2-1 2.8 1 2.8-2.2 2-.9 2.9-3 .2L12 22l-2.4-1.8-3-.2-.9-2.9-2.2-2 1-2.8-1-2.8 2.2-2 .9-2.9 3-.2z" fill="#EDFF00"/><path d="M9 12l2 2 4-4" fill="none" stroke="#000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-    </div>`;
-  }
   const glyph = (GLYPH[m.type] || GLYPH.other).replace(/\{A\}/g, accent);
   const leadPill =
     m.status !== 'verified'
       ? `<span style="position:absolute;left:4px;top:4px;border:1px solid rgba(255,92,0,0.5);background:rgba(10,10,10,0.7);padding:1px 4px;font-size:7px;font-weight:700;text-transform:uppercase;letter-spacing:0.2em;color:#FF5C00;font-family:'Inter Tight',sans-serif">Lead</span>`
       : '';
-  return `<div style="position:relative;width:100%;height:110px;background:#0a0a0a;background-image:linear-gradient(rgba(241,241,241,0.04) 1px,transparent 1px),linear-gradient(90deg,rgba(241,241,241,0.04) 1px,transparent 1px);background-size:14px 14px;display:flex;align-items:center;justify-content:center">
+  const placeholder = `<div style="position:relative;width:100%;height:110px;background:#0a0a0a;background-image:linear-gradient(rgba(241,241,241,0.04) 1px,transparent 1px),linear-gradient(90deg,rgba(241,241,241,0.04) 1px,transparent 1px);background-size:14px 14px;display:flex;align-items:center;justify-content:center">
     ${leadPill}
     <svg viewBox="0 0 32 32" width="40" height="40" fill="none">${glyph}</svg>
     <span style="position:absolute;bottom:4px;left:0;right:0;text-align:center;font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:0.2em;color:${accent};opacity:0.85;font-family:'Inter Tight',sans-serif">${meta.label}</span>
   </div>`;
+  if (!m.image) return placeholder;
+  return `<div style="position:relative;width:100%;height:110px">
+    ${placeholder}
+    <div style="position:absolute;inset:0">
+      <img src="${esc(m.image)}" alt="${esc(m.title)}" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block" onerror="this.parentElement.remove()" />
+      <svg viewBox="0 0 24 24" width="14" height="14" style="position:absolute;left:4px;top:4px"><path d="M12 2l2.4 1.8 3 .2.9 2.9 2.2 2-1 2.8 1 2.8-2.2 2-.9 2.9-3 .2L12 22l-2.4-1.8-3-.2-.9-2.9-2.2-2 1-2.8-1-2.8 2.2-2 .9-2.9 3-.2z" fill="#EDFF00"/><path d="M9 12l2 2 4-4" fill="none" stroke="#000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </div>
+  </div>`;
 }
 
-// React thumbnail — real photo w/ CONFIRMED badge, else designed category glyph
+// React thumbnail — real photo w/ CONFIRMED badge, else designed category
+// glyph. If the photo 404s (see thumbHTML's comment above — same underlying
+// data issue), onError falls back to the same designed placeholder used when
+// there's no image at all, instead of a bare broken-image box.
 export default function LocationThumb({ m, className = '', imgClassName = '' }) {
   const { Icon, accent } = metaFor(m.type);
-  if (m.image) {
+  const [imgFailed, setImgFailed] = useState(false);
+  if (m.image && !imgFailed) {
     return (
       <div className={`relative shrink-0 overflow-hidden ${className}`}>
-        <img src={m.image} alt={m.title} className={`h-full w-full object-cover ${imgClassName}`} />
+        <img
+          src={m.image}
+          alt={m.title}
+          className={`h-full w-full object-cover ${imgClassName}`}
+          onError={() => setImgFailed(true)}
+        />
         <BadgeCheck className="absolute left-1 top-1 h-4 w-4 text-ozone drop-shadow-[0_0_3px_rgba(0,0,0,0.8)]" />
       </div>
     );

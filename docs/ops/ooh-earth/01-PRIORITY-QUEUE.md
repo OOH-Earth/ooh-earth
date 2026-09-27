@@ -241,3 +241,20 @@ dev-dependency patch; it's a major).
   GitHub's own `Dependency Review` check is a real, useful catch for this
   class of mistake — do not treat a `Dependency Review` failure on a
   dependency-bump PR as noise without reading exactly what it flagged.
+
+## Mobile map: landscape viewport collapses (new, not yet triaged)
+
+- **STATUS:** Found during the black-square investigation (PR #287,
+  `docs/ops/ooh-earth/02-INCIDENT-MOBILE-LOCATIONS.md`), not fixed there,
+  not yet root-caused.
+- **SYMPTOM:** `/map`'s Leaflet container collapses to a squashed or fully
+  zero-height box in landscape orientation at narrow heights — confirmed
+  at 844×390 (fully collapsed, no map chrome visible at all) and
+  915×412 (squashed to ~150px, previously noted as minor). Reproduces
+  identically on unmodified production, so this is not a regression from
+  any recent change; likely a `vh`/flex-height calculation that doesn't
+  account for a short landscape viewport.
+- **NOT INVESTIGATED:** exact CSS/JS cause, whether it also affects the
+  globe (MapLibre) path or only the flat (Leaflet) path, whether portrait
+  is affected at any height. Needs its own reproduction + root-cause pass
+  before scoping a fix.
