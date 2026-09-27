@@ -2,7 +2,7 @@
 // All state is computed client-side from contribution records (Location,
 // DigitalBust, Mint, LeadClaim) plus QuestCompletion bonus claims.
 
-import { POINTS, pointsForReport, pointsForRecheck } from '../pointsConfig';
+import { POINTS, pointsForReport, pointsForRecheck } from '../pointsConfig.js';
 import { isInPeriod, periodKey as utcPeriodKey } from '../../../lib/questPeriod.js';
 
 export { POINTS, pointsForReport, pointsForRecheck };

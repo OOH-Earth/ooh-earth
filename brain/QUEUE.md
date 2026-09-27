@@ -6,6 +6,31 @@ NEXT_ACTION · DONE_WHEN.
 ## P0
 None open.
 
+## IN PROGRESS — another session (do not duplicate)
+`fix/mobile-terminal-density` — peer session "debug-mobile-map-black-square"
+owns `Map.jsx`/`LocationMap.jsx`/`LocationThumb.jsx`/`Globe3D.jsx` until
+its PR merges. Root cause confirmed (missing `onerror` fallback on the
+flat-map circular photo marker and both LocationThumb popup renderers,
+plus `pinFor()` incorrectly stripping a real resize suffix that a subset
+of production image URLs only have — the stripped URL 404s, rendering as
+a black box). Fix + a placeholder-glyph fallback + regression coverage
+in progress there; broader mobile density/typography pass to follow.
+Coordinate with that session before touching those 4 files.
+
+## FINDING — header breadcrumb link hidden behind the fixed toolbar (LOW)
+On `LocationDetail` (and likely any page whose local breadcrumb nav
+renders in the same y-range as the app's persistent `fixed top-0 z-[100]`
+toolbar), a small in-flow "Atlas" text link (`href="/map"`) is completely
+covered by that toolbar — `elementFromPoint` at its coordinates resolves
+to the toolbar div, not the link, so it's unreachable by mouse/touch.
+Confirmed at 387×805. Not a visual defect (nothing looks broken — the
+covering toolbar is legitimate chrome) and not a broken journey: the same
+destination (`/map`) is also reachable via the always-visible globe icon
+and the page's own "← ATLAS" button. Pre-existing, unrelated to any
+SOCIAL work. Low priority; a real fix would need a considered decision
+(add scroll-margin/padding to page-local headers, or reduce breadcrumb
+duplication) rather than a quick patch.
+
 ## P1 — Social programme (short bursts; see `brain/PRODUCT.md`)
 
 ### SOCIAL-1 — Live activity → real places — SHIPPED 2026-09-27
@@ -116,37 +141,149 @@ Master roadmap SOCIAL-1..10 + permanent rules A–H live in
   not exercised live; covered by deterministic tests and a client-stubbed
   render of the deployed bundle (no request reached the backend).
 
-### CHECKPOINT-QC-READ — narrow QuestCompletion read access — AWAITING OWNER
-- WHAT: change `QuestCompletion` read RLS from its current broad rule to
+### CHECKPOINT-QC-READ — narrow QuestCompletion read access — CLOSED 2026-09-27
+- WHAT: changed `QuestCompletion` read RLS from fully public to
   owner-or-admin (`created_by_id == user` OR admin).
-- WHY: rows carry `created_by_id` + claim timestamps; no product surface
-  needs other users' rows (the board now reads only the caller's own;
-  `deleteMyAccount` and `claimQuest` use service role).
-- DATA / WHO READS / WHO WRITES: quest_id, period_key, xp_awarded,
-  created_by_id, timestamps. Read → owner + admin. Write unchanged
-  (admin-only create; claims go through `claimQuest`).
-- RETENTION: unchanged. PRIVACY IMPACT: reduces exposure. ABUSE RISK of
-  the change: none identified. ROLLBACK: restore the previous rule.
-- WHY A CHECKPOINT: it's an entity schema/permission push (whole-folder
-  `entities push`), which this programme never self-approves.
-- ALTERNATIVES: leave as is (status quo exposure); or a read-only
-  function returning the caller's claims (more code, same effect).
-- RECOMMENDED: owner approves; apply to BACKUP first, verify the board,
-  then production.
+- DEPLOYED: BACKUP then production, both via `entities push --yes` from a
+  24-entity whole-folder mirror (BACKUP built from the git repo, confirmed
+  fresh byte-identical to BACKUP first; production built from a FRESH
+  production pull taken immediately before editing, never the BACKUP
+  folder — production carries 2 unrelated pre-existing drifted entities,
+  `DigitalBust`/`LocationPhoto`, see DRIFT-DIGITALBUST-LOCATIONPHOTO
+  below, deliberately left untouched by this push).
+- VERIFIED (fresh authoritative `GET .../entity-schemas` via the CLI's own
+  token, before AND after each push, never the Monaco editor, never CLI
+  output alone): on both BACKUP and production, comparing the full
+  pre-push and post-push schema dumps entity-by-entity — **exactly one
+  entity actually changed: `QuestCompletion`**. Its persisted `read` rule
+  matches the intended `$or` exactly. `DigitalBust`/`LocationPhoto`'s
+  drift was confirmed byte-identical before and after (preserved, not
+  silently "fixed" as a side effect). No schema-field change, no data
+  mutation, no other permission change.
+- BEHAVIOR: on production, an anonymous read of `QuestCompletion` returned
+  1 real row before this change and `[]` immediately after, with no other
+  variable changed — genuine behavioral proof the new rule is enforced,
+  not just an artifact of an empty table. BACKUP has 0 rows total, so its
+  anonymous-read check (`[]` before and after) is consistent with the
+  rule but not independently conclusive there — noted honestly, not
+  overclaimed. `claimQuest`'s 72/72 deterministic tests re-run and still
+  pass (uses `asServiceRole`, bypasses RLS, correctly unaffected).
+  Owner-can-read-own-rows / other-member-denied / admin-allowed were
+  **not** behaviorally tested end-to-end (no second real test identity
+  exists in either environment) — those remain schema-proven only, via
+  the identical, already-empirically-correct `$or` pattern already live
+  on `Location`/`FieldCheck`/`DigitalBust`'s own read rules in this same
+  codebase, not a newly-invented one.
+- FOLLOW-UP (not yet done): `PortalOps.jsx`'s 3
+  `'QuestCompletion', 'READ/CREATE OPEN'` documentation strings are now
+  stale — should read `'READ: OWNER/ADMIN · CREATE ADMIN'`. Small, safe,
+  frontend-only text fix for a future pass.
+- RETENTION: unchanged. PRIVACY IMPACT: exposure reduced. ABUSE RISK:
+  none identified. ROLLBACK: restore `"read": {}` via the same whole-
+  folder-diff procedure.
 
-### SOCIAL-4 — Progress — NEXT (discovery only)
-- EXISTING: XP/level/badges computed client-side in `useGamification`
-  from the caller's own records + quest XP; shown on the private
-  `/operative` page (nav label "Member profile"). Public identity =
-  Founder profile (`/founders/:handle`, opt-in).
-- NAMING HAZARD: `Operative` is also an admin-managed roster entity used
-  by roster widgets. SOCIAL-4 must not read or expose it; public copy
-  should say "Progress"/"Level", not "Operative".
-- AUTONOMOUS PART: improve the private progress surface (own data only).
-- CHECKPOINT PART: showing level/XP/badges on the PUBLIC Founder profile is
-  new public exposure of user information (XP includes pending reports
-  and quest claims) → needs an owner decision; a safer variant derives a
-  public level only from the already-public verified counts.
+### DRIFT-DIGITALBUST-LOCATIONPHOTO — pre-existing schema drift on production — OBSERVED, not fixed
+- Found while diffing for CHECKPOINT-QC-READ (unrelated to it): production
+  is missing a field-level write lock on `status` for `DigitalBust` and
+  `LocationPhoto` that the git repo already declares (and that BACKUP
+  already has). **Not currently exploitable** — the entity-level `update`
+  rule on both is already admin-only on production, confirmed live via
+  the same authoritative pull — the field-level lock is defence-in-depth
+  that just hasn't been deployed for these two fields yet.
+- Deliberately NOT bundled into the QuestCompletion push (different
+  entities, different intent, no reason to increase that push's blast
+  radius). A future one-line schema sync, reviewed on its own.
+
+### SOCIAL-4 — Progress — CLOSED 2026-09-27
+- SHIPPED, FRONTEND-ONLY, NO FUNCTION CHANGE. Private `/operative` already
+  had a coherent LEVEL/XP/NEXT LEVEL/stats/badges/missions layout from
+  prior bursts — no redesign needed; only "Operative Profile"/"operative
+  dossier" copy → "Progress" language (route/entity naming unchanged,
+  deliberately — see NAMING HAZARD below).
+- PUBLIC PROGRESS: a new section on the Founder profile shows only the
+  badges truthfully derivable from data `getPublicProfile` already
+  returns (`verified_reports`, `verified_rechecks`) — 3 of 21 badges
+  today (`truth_seeker`, `first_recheck`, `timeline_builder`). Runs the
+  exact same canonical `BADGES.check()` predicates the private page uses
+  (`src/lib/publicProgress.js`) against a stats object with ONLY those
+  two keys populated — every other private field stays undefined, so a
+  badge needing it can never wrongly show. Property-tested over 500
+  synthetic full-stats cases: the public subset is always a subset of the
+  private truth. Section is omitted entirely when empty (no fake "0
+  badges" state, no vanity metric).
+- XP/LEVEL DELIBERATELY STAY PRIVATE: total XP depends on entirely
+  private inputs (total report count incl. pending, photo bonus,
+  DigitalBust/Mint/LeadClaim counts, QuestCompletion XP) with no public
+  equivalent — no truthful public number exists, so none is shown. Per
+  the owner's decision: keep private rather than approximate.
+- NAMING HAZARD (resolved): `Operative` is also an admin-managed roster
+  entity. SOCIAL-4 never reads or exposes it — only renamed page copy.
+- ALSO FIXED: `gamification.js` imported `pointsConfig` without a file
+  extension (Vite-only resolution) — added `.js` so `BADGES`/`LEVELS` are
+  testable with plain `node --test`, not only the pre-existing
+  esbuild-bundled path.
+- TESTS: unit 155/155 (5 new incl. the property test); Playwright
+  `founding-profile.spec.ts` +4 (populated/omitted/private-never-leaks/
+  mobile), 60/60; `mission-board.spec.ts` one copy-assertion update,
+  18/18 with operative specs; function tests 72/72 unchanged (no function
+  touched); lint/prettier/typecheck/build/security check clean.
+- RELEASE: BACKUP `index-BavNZINI.js`, production `index-D6rfqz_E.js`,
+  both target-proven. DevTools QA desktop 1440 + mobile 390 on both:
+  private Progress renders correctly (badges/level/XP/missions intact),
+  public Progress renders exactly the expected badges with zero XP/Level
+  leakage, 0 anonymous WebSockets, 0 entity writes, Home/Map unaffected.
+- LIMITATION: no real signed-in test account exists in either
+  environment; the populated states were verified with deterministic
+  tests plus a client-side-stubbed render of the deployed bundle (no
+  request left the browser).
+
+### SOCIAL-5 — Trails — NEXT (human privacy checkpoint; discovery only, NOT built)
+Trails = a consent-controlled history of meaningful OOH contributions.
+This is explicitly a HUMAN PRIVACY CHECKPOINT, not autonomous work — no
+schema/entity is created here, only the decision package.
+- WHAT ALREADY EXISTS THAT LOOKS ADJACENT: Field Record (SOCIAL-2) is
+  already a minimal, capped (5), always-on, opt-in-via-profile_public
+  "trail" of a member's own verified places. Trails would need to answer
+  what it adds beyond that — e.g. the FULL history (not capped at 5),
+  and/or per-entry visibility control, that Field Record deliberately
+  doesn't offer.
+- OPEN QUESTIONS (owner must answer before any build):
+  1. **What is public vs private by default?** Field Record's default is
+     "public once profile_public is on, no finer control." Does Trail
+     need a SEPARATE opt-in from profile_public (Model B from the earlier
+     Founding-Profile-discovery doc, `10-FOUNDING-PROFILE-DISCOVERY.md`),
+     or does it extend the same one?
+  2. **Per-entry hiding?** Can a member publish their profile but hide
+     one specific contribution from their Trail? (Field Record has no
+     such control today — it shows the 5 most recent verified places,
+     full stop.)
+  3. **Global kill switch?** Can Trail be disabled entirely while
+     `profile_public` stays on (so the rest of the profile still shows)?
+  4. **Date precision.** Field Record already uses day-precision, no
+     time-of-day, no coordinates — should Trail match that, or does
+     "history" imply something coarser still (month-only)?
+  5. **Does Trail imply movement?** It must not. A chronological list of
+     PLACES (like Field Record) is not the same claim as "where this
+     person has physically been" — the copy and design must keep making
+     that distinction explicit (see PRODUCT.md privacy rules: "no public
+     movement trail without explicit, revocable consent").
+  6. **Retention & deletion.** Can a member remove an old entry from
+     their own history after the fact? Location/FieldCheck records
+     underlying it are also used for counts/badges elsewhere — does
+     "hiding from Trail" mean hiding the display only, or does it need
+     its own suppression flag on the underlying record (schema
+     implication, another reason this is a checkpoint)?
+  7. **Scale.** Beyond 5 items, do we paginate, cap at a larger fixed
+     number, or show a real full timeline? Affects query shape/cost.
+- RECOMMENDATION (not a decision): reuse Location/FieldCheck as the data
+  source (no new entity) with an additive, opt-in-per-entry visibility
+  concept ONLY if the owner wants per-entry hiding — otherwise Trail can
+  ship as "Field Record, uncapped, still governed by the single
+  profile_public switch," which needs zero new privacy surface at all.
+  The per-entry / global-toggle questions above are exactly what turns
+  this from a bounded frontend extension into a schema change requiring
+  the owner's sign-off.
+- DO NOT BUILD until the owner answers questions 1–3 and 6 above.
 
 ### PERF-OBS-1 — HeroConsole polls the full Location set every 20s — OBSERVED
 - Seen on production mobile Home (anonymous): `Location?limit=500` +

@@ -255,7 +255,7 @@ const ENTITIES = [
   ['Location', 'READ: VERIFIED / OWNER / ADMIN'],
   ['Mint', 'ADMIN-ONLY'],
   ['Operative', 'READ OPEN · WRITE ADMIN'],
-  ['QuestCompletion', 'READ/CREATE OPEN'],
+  ['QuestCompletion', 'READ: OWNER/ADMIN · CREATE ADMIN'],
   ['StoreItem', 'ADMIN-ONLY'],
   ['User', 'ADMIN-ONLY'],
 ];
