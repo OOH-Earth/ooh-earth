@@ -31,7 +31,49 @@ SOCIAL-4 Progress — autonomous private part first; public-profile part is
 a human checkpoint. PERF-OBS-1 is a separate performance burst.
 
 ## Blockers
-None.
+**QuestCompletion read-rule hardening — sandbox denied the push, needs a
+human to run it.** Fully investigated and qualified this burst (see
+`QUEUE.md` CHECKPOINT-QC-READ): both BACKUP and production authoritative
+schemas confirmed identical (`"read": {}` — fully public), every repo
+consumer audited (only `useGamification.js` reads QuestCompletion via the
+client SDK, already scoped to `created_by_id: me.id`; everything else is
+`asServiceRole` or tests), so narrowing is safe. The whole 24-entity
+folder was diffed fresh against BACKUP's live schema — only
+`QuestCompletion.rls.read` differs, nothing else.
+
+Target rule (proven syntax, already live on `Location`/`FieldCheck`/
+`DigitalBust` for their own read rules):
+```json
+"read": {
+  "$or": [
+    { "created_by_id": "{{user.id}}" },
+    { "user_condition": { "role": "admin" } }
+  ]
+}
+```
+`create`/`update`/`delete` stay exactly as-is (admin-only, unchanged).
+
+To apply: from a clean worktree on this branch, in `base44/entities/`,
+apply that one edit to `QuestCompletion.jsonc`'s `rls.read`, then run
+(BACKUP first):
+```
+npx --yes base44@0.1.14 --app-id 6a6748e009b947cb29591871 entities push --yes
+```
+Then fresh-pull authoritative schema (`GET .../entity-schemas` via the
+CLI's stored token — see `INVARIANTS.md`) to prove exactly that one field
+changed on BACKUP, run the behavior checks in `QUEUE.md`
+CHECKPOINT-QC-READ, then repeat for production
+(`--app-id 6a62213cff3ccbca88c04ff5`) **built from a fresh production
+pull, not the BACKUP folder** — production currently has 2 unrelated,
+pre-existing drifted entities (`DigitalBust`, `LocationPhoto` — see
+QUEUE, not a QuestCompletion issue) that must NOT be touched by this push.
+
+Separately noticed, not fixed (own-scope, not bundled in): production's
+`DigitalBust`/`LocationPhoto` are missing a field-level write lock on
+`status` that the repo already declares and that BACKUP already has.
+Not currently exploitable — the entity-level `update` rule on both is
+already admin-only on production, confirmed live — but worth a future
+one-line schema sync once someone reviews it deliberately.
 
 ## Sandbox note
 Both `functions deploy getPublicProfile` calls (BACKUP + production) and
