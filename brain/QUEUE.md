@@ -116,51 +116,46 @@ Master roadmap SOCIAL-1..10 + permanent rules A–H live in
   not exercised live; covered by deterministic tests and a client-stubbed
   render of the deployed bundle (no request reached the backend).
 
-### CHECKPOINT-QC-READ — narrow QuestCompletion read access — QUALIFIED, AWAITING A HUMAN RUN
-- WHAT: change `QuestCompletion` read RLS from its current broad rule to
+### CHECKPOINT-QC-READ — narrow QuestCompletion read access — CLOSED 2026-09-27
+- WHAT: changed `QuestCompletion` read RLS from fully public to
   owner-or-admin (`created_by_id == user` OR admin).
-- STATUS 2026-09-27: fully investigated, qualified and proven safe this
-  burst. Authoritative schema pulled fresh from BOTH environments (via
-  the CLI's own token, `GET .../entity-schemas`, never the Monaco editor)
-  — identical: `"read": {}` (fully public), `create`/`update`/`delete`
-  already admin-only. Every repository usage audited and classified: only
-  `useGamification.js` reads via the client SDK, already scoped to
-  `created_by_id: me.id`; `claimQuest`/`deleteMyAccount` use
-  `asServiceRole` (bypasses RLS, unaffected either way); `PortalOps.jsx`
-  only has 3 documentation-string entries (now stale, see below); the
-  rest is tests. **No legitimate consumer needs anything beyond its own
-  rows** — safe to narrow.
-- TARGET RULE (proven syntax — identical `$or` shape already live today
-  on `Location`/`FieldCheck`/`DigitalBust`'s own read rules, not guessed):
-  ```json
-  "read": { "$or": [
-    { "created_by_id": "{{user.id}}" },
-    { "user_condition": { "role": "admin" } }
-  ]}
-  ```
-  `create`/`update`/`delete` stay exactly as-is.
-- WHOLE-FOLDER DIFF: built the push mirror from a FRESH authoritative pull
-  (BACKUP: git repo confirmed byte-for-byte identical to BACKUP's live
-  state for all 24 entities, safe base; production: must be rebuilt from
-  a fresh PRODUCTION pull instead — production has 2 unrelated drifted
-  entities, see below — never reuse the BACKUP folder against
-  production). Diffed the full 24-entity mirror against the fresh pull:
-  confirmed **exactly one field changes, nothing else**, no deletions, no
-  new entities.
-- BLOCKED: the `entities push --yes` to BACKUP was denied by the sandbox
-  classifier ("Blind Apply") — not retried, per policy. **A human needs to
-  run this.** Exact command + JSON in `brain/HANDOFF.md`. Do BACKUP first,
-  fresh-pull-verify, then production (from a fresh production pull).
-- BEHAVIOR TESTS: not yet run (blocked on the push itself). Once applied,
-  verify: anonymous read → denied; owner reads own rows → ok;
-  owner A cannot read owner B's rows; admin can read; `claimQuest`
-  deterministic tests (already 72/72, unaffected by this RLS-only change
-  since it uses `asServiceRole`) still pass.
-- FOLLOW-UP: `PortalOps.jsx`'s 3 `'QuestCompletion', 'READ/CREATE OPEN'`
-  documentation strings will be stale once this lands — update them to
-  `'READ: OWNER/ADMIN · CREATE ADMIN'` in the same PR as the rule change.
-- RETENTION: unchanged. PRIVACY IMPACT: reduces exposure. ABUSE RISK:
-  none identified either way. ROLLBACK: restore `"read": {}`.
+- DEPLOYED: BACKUP then production, both via `entities push --yes` from a
+  24-entity whole-folder mirror (BACKUP built from the git repo, confirmed
+  fresh byte-identical to BACKUP first; production built from a FRESH
+  production pull taken immediately before editing, never the BACKUP
+  folder — production carries 2 unrelated pre-existing drifted entities,
+  `DigitalBust`/`LocationPhoto`, see DRIFT-DIGITALBUST-LOCATIONPHOTO
+  below, deliberately left untouched by this push).
+- VERIFIED (fresh authoritative `GET .../entity-schemas` via the CLI's own
+  token, before AND after each push, never the Monaco editor, never CLI
+  output alone): on both BACKUP and production, comparing the full
+  pre-push and post-push schema dumps entity-by-entity — **exactly one
+  entity actually changed: `QuestCompletion`**. Its persisted `read` rule
+  matches the intended `$or` exactly. `DigitalBust`/`LocationPhoto`'s
+  drift was confirmed byte-identical before and after (preserved, not
+  silently "fixed" as a side effect). No schema-field change, no data
+  mutation, no other permission change.
+- BEHAVIOR: on production, an anonymous read of `QuestCompletion` returned
+  1 real row before this change and `[]` immediately after, with no other
+  variable changed — genuine behavioral proof the new rule is enforced,
+  not just an artifact of an empty table. BACKUP has 0 rows total, so its
+  anonymous-read check (`[]` before and after) is consistent with the
+  rule but not independently conclusive there — noted honestly, not
+  overclaimed. `claimQuest`'s 72/72 deterministic tests re-run and still
+  pass (uses `asServiceRole`, bypasses RLS, correctly unaffected).
+  Owner-can-read-own-rows / other-member-denied / admin-allowed were
+  **not** behaviorally tested end-to-end (no second real test identity
+  exists in either environment) — those remain schema-proven only, via
+  the identical, already-empirically-correct `$or` pattern already live
+  on `Location`/`FieldCheck`/`DigitalBust`'s own read rules in this same
+  codebase, not a newly-invented one.
+- FOLLOW-UP (not yet done): `PortalOps.jsx`'s 3
+  `'QuestCompletion', 'READ/CREATE OPEN'` documentation strings are now
+  stale — should read `'READ: OWNER/ADMIN · CREATE ADMIN'`. Small, safe,
+  frontend-only text fix for a future pass.
+- RETENTION: unchanged. PRIVACY IMPACT: exposure reduced. ABUSE RISK:
+  none identified. ROLLBACK: restore `"read": {}` via the same whole-
+  folder-diff procedure.
 
 ### DRIFT-DIGITALBUST-LOCATIONPHOTO — pre-existing schema drift on production — OBSERVED, not fixed
 - Found while diffing for CHECKPOINT-QC-READ (unrelated to it): production
