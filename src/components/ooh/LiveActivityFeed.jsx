@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useAuthGatedSubscribe } from '@/hooks/useAuthGatedSubscribe';
+import { activityTargetPath } from '@/lib/activityTarget';
 import useSoundscape from '@/hooks/useSoundscape';
 import { MapPin, Hand, Monitor, Coins, UserPlus, BadgeCheck, Radio } from 'lucide-react';
 
@@ -50,6 +52,7 @@ export default function LiveActivityFeed() {
         type: 'report',
         title: e.data?.title || 'Offense logged',
         meta: e.data?.address || 'field report',
+        href: activityTargetPath('Location', e),
       });
   });
   useAuthGatedSubscribe('DigitalBust', (e) => {
@@ -66,6 +69,7 @@ export default function LiveActivityFeed() {
         type: 'claim',
         title: 'Adopted landmark',
         meta: '@' + (e.data?.operative_handle || 'operative'),
+        href: activityTargetPath('LeadClaim', e),
       });
   });
   useAuthGatedSubscribe('FundingLead', (e) => {
@@ -95,16 +99,10 @@ export default function LiveActivityFeed() {
         {events.map((ev) => {
           const t = TYPES[ev.type];
           const Icon = t.icon;
-          return (
-            <motion.div
-              key={ev.id}
-              layout
-              initial={{ opacity: 0, x: -40, scale: 0.96 }}
-              animate={{ opacity: 1, x: 0, scale: 1 }}
-              exit={{ opacity: 0, x: -40, scale: 0.96 }}
-              transition={{ type: 'spring', stiffness: 320, damping: 28 }}
-              className="pointer-events-auto flex items-start gap-3 border border-slate2/70 bg-void/90 p-3 backdrop-blur-md"
-            >
+          const cardClass =
+            'flex items-start gap-3 border border-slate2/70 bg-void/90 p-3 backdrop-blur-md';
+          const body = (
+            <>
               <span
                 className="mt-0.5 h-2 w-2 shrink-0 rounded-full"
                 style={{ backgroundColor: t.dot, boxShadow: `0 0 8px ${t.dot}` }}
@@ -122,6 +120,29 @@ export default function LiveActivityFeed() {
                 </div>
                 <div className="truncate font-mono text-[9px] text-darkgray">{ev.meta}</div>
               </div>
+            </>
+          );
+          return (
+            <motion.div
+              key={ev.id}
+              layout
+              initial={{ opacity: 0, x: -40, scale: 0.96 }}
+              animate={{ opacity: 1, x: 0, scale: 1 }}
+              exit={{ opacity: 0, x: -40, scale: 0.96 }}
+              transition={{ type: 'spring', stiffness: 320, damping: 28 }}
+              className="pointer-events-auto"
+            >
+              {ev.href ? (
+                <Link
+                  to={ev.href}
+                  aria-label={`${t.label}: ${ev.title} — open place`}
+                  className={`${cardClass} transition-colors hover:border-ozone focus-visible:border-ozone focus-visible:outline-none`}
+                >
+                  {body}
+                </Link>
+              ) : (
+                <div className={cardClass}>{body}</div>
+              )}
             </motion.div>
           );
         })}
