@@ -223,7 +223,7 @@ test.describe('OperativeProfile — Recent Discoveries feed', () => {
       timeout: 20_000,
     });
     await expect(page.getByRole('heading', { name: 'Brand Collection' })).toBeVisible();
-    await expect(page.getByRole('heading', { name: 'Quest Board' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Mission Board' })).toBeVisible();
     await expect(page.getByRole('heading', { name: 'Merit Badges' })).toBeVisible();
     await expect(page.getByRole('heading', { name: 'XP Breakdown' })).toBeVisible();
   });

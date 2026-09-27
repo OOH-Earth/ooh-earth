@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useEffect, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import {
   FileText,
@@ -59,9 +59,17 @@ export default function OperativeProfile() {
     allBadges,
     questStatus,
     claimQuest,
+    claimNotice,
     claiming,
     loading,
   } = useGamification();
+
+  // Deep link from the Home widget ("missions ready to claim").
+  useEffect(() => {
+    if (!loading && window.location.hash === '#missions') {
+      document.getElementById('missions')?.scrollIntoView({ block: 'start' });
+    }
+  }, [loading]);
 
   const newBadges = useNewBadgeRecognition(user, earnedBadges, loading);
 
@@ -141,7 +149,7 @@ export default function OperativeProfile() {
               Authentication Required
             </h1>
             <p className="mt-2 font-display text-[0.875rem] text-darkgray">
-              Log in to view your operative profile, badges, and quest progress.
+              Log in to view your operative profile, badges, and missions.
             </p>
             <div className="mt-6 flex justify-center gap-2">
               <Link
@@ -226,15 +234,20 @@ export default function OperativeProfile() {
               <BrandCollection brandCounts={stats?.brandCounts || []} />
             </section>
 
-            {/* Quests */}
-            <section className="mt-12">
+            {/* Missions (the Quest engine, presented as real-world missions) */}
+            <section id="missions" className="mt-12 scroll-mt-24">
               <div className="mb-4 flex items-center gap-2">
                 <Target className="h-4 w-4 text-ozone" />
                 <h2 className="font-display text-2xl font-black uppercase tracking-tight text-silver">
-                  Quest Board
+                  Mission Board
                 </h2>
               </div>
-              <QuestTracker quests={questStatus} onClaim={claimQuest} claiming={claiming} />
+              <QuestTracker
+                quests={questStatus}
+                onClaim={claimQuest}
+                claiming={claiming}
+                claimNotice={claimNotice}
+              />
             </section>
 
             {/* Badges */}
@@ -267,7 +280,7 @@ export default function OperativeProfile() {
                 </div>
                 <div className="border border-slate2/60 bg-card p-4">
                   <div className="font-mono text-[0.6875rem] uppercase tracking-[0.2em] text-dim">
-                    Quest bonuses
+                    Mission bonuses
                   </div>
                   <div className="mt-1 font-mono text-xl font-bold tabular text-ozone">
                     {stats?.questXp.toLocaleString()}

@@ -12,8 +12,8 @@ function LoginPrompt() {
         </span>
       </div>
       <p className="mt-3 font-display text-sm leading-relaxed text-darkgray">
-        Log in to track your XP, earn merit badges, complete daily quests, and climb the resistance
-        leaderboard.
+        Log in to track your XP, earn merit badges, complete daily missions, and climb the
+        resistance leaderboard.
       </p>
       <div className="mt-4 flex gap-2">
         <Link
@@ -120,11 +120,11 @@ export default function GamificationWidget() {
         </div>
       </div>
 
-      {/* Active quests */}
+      {/* Active missions */}
       {activeQuests.length > 0 && (
         <div className="mt-4">
           <div className="mb-2 font-mono text-[9px] uppercase tracking-[0.2em] text-dim">
-            // Active quests
+            // Active missions
           </div>
           <div className="space-y-1.5">
             {activeQuests.map((q) => {
@@ -149,10 +149,10 @@ export default function GamificationWidget() {
 
       {claimable > 0 && (
         <Link
-          to="/operative"
+          to="/operative#missions"
           className="mt-4 block border border-ozone bg-ozone px-4 py-2.5 text-center font-mono text-[9px] font-bold uppercase tracking-[0.2em] text-void transition-colors hover:bg-flare hover:border-flare"
         >
-          {claimable} quest{claimable > 1 ? 's' : ''} ready to claim →
+          {claimable} mission{claimable > 1 ? 's' : ''} ready to claim →
         </Link>
       )}
     </div>

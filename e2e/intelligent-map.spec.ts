@@ -81,8 +81,8 @@ test.describe('Intelligent Map — bounded field attention mode', () => {
     });
     await page.goto('/map?highlight=attention-handoff');
     await expect(page.getByTestId('map-attention-card')).toBeVisible({ timeout: 10_000 });
-    await page.getByRole('button', { name: 'Add to mission' }).dispatchEvent('click');
-    await expect(page.getByRole('link', { name: 'Open mission' })).toHaveAttribute(
+    await page.getByRole('button', { name: 'Add to route' }).dispatchEvent('click');
+    await expect(page.getByRole('link', { name: 'Open route' })).toHaveAttribute(
       'href',
       '/portal/ops?section=geo',
     );

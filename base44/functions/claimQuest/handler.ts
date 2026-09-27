@@ -1,3 +1,5 @@
+import { isCompletionInPeriod, isInPeriod, periodKey } from './period.ts';
+
 const QUESTS = {
   daily_report: { type: 'daily', metric: 'dailyReports', target: 1, reward_xp: 50 },
   daily_photo: { type: 'daily', metric: 'dailyPhotos', target: 1, reward_xp: 50 },
@@ -12,22 +14,10 @@ type Dependencies = {
   inFlight?: Map<string, Promise<unknown>>;
 };
 
-function periodKey(type: string, date: Date) {
-  if (type === 'daily') return date.toISOString().slice(0, 10);
-  const year = date.getFullYear();
-  const start = new Date(year, 0, 1);
-  const diff = (date.getTime() - start.getTime()) / 86400000;
-  const week = Math.ceil((diff + start.getDay() + 1) / 7);
-  return `${year}-W${String(week).padStart(2, '0')}`;
-}
-
+// Periods are defined once in period.ts (UTC day / ISO week from Monday
+// 00:00 UTC), independent of the runtime's timezone.
 function recordsInPeriod(records: any[], type: string, now: Date) {
-  const current = periodKey(type, now);
-  return (records || []).filter((record) => {
-    if (typeof record?.created_date !== 'string') return false;
-    const date = new Date(record.created_date);
-    return !Number.isNaN(date.getTime()) && periodKey(type, date) === current;
-  });
+  return (records || []).filter((record) => isInPeriod(record?.created_date, type, now));
 }
 
 async function calculateProgress(
@@ -95,12 +85,15 @@ export async function handleClaimQuest(
   if (existingOperation) return Response.json(await existingOperation);
   const operation = (async () => {
     const completionEntity = base44.asServiceRole.entities.QuestCompletion;
-    const existing = await completionEntity.filter(
-      { quest_id: questId, period_key: period, created_by_id: caller.id },
+    // The caller's latest claim of this quest decides replay: it counts for
+    // the current period by its created_date, so claims keyed under the old
+    // week formula can't be re-claimed (or wrongly block a later week).
+    const latest = await completionEntity.filter(
+      { quest_id: questId, created_by_id: caller.id },
       '-created_date',
       1,
     );
-    if (existing?.length)
+    if (isCompletionInPeriod(latest?.[0], questId, quest.type, current))
       return { status: 200, body: { ok: true, already: true, period_key: period } };
     const progress = await calculateProgress(base44, caller.id, quest, current);
     if (progress < quest.target)

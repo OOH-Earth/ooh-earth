@@ -705,11 +705,11 @@ export default function Map() {
     setMissionNotice(
       result.ok
         ? result.added
-          ? 'Added to field mission'
-          : 'Already in field mission'
+          ? 'Added to field route'
+          : 'Already in field route'
         : result.reason === 'MISSION_CAP'
-          ? 'Mission cap reached'
-          : 'Mission unavailable',
+          ? 'Route full (20 max)'
+          : 'Route unavailable',
     );
     window.setTimeout(() => setMissionNotice(''), 2200);
   };
@@ -1081,7 +1081,7 @@ export default function Map() {
                     onClick={addSelectedToMission}
                     className="border border-slate2 px-2 py-1.5 font-mono text-[9px] font-bold uppercase tracking-[0.12em] text-darkgray hover:border-ozone hover:text-ozone"
                   >
-                    Add to mission
+                    Add to route
                   </button>
                 </div>
                 {missionNotice && (
@@ -1095,7 +1095,7 @@ export default function Map() {
                         to="/portal/ops?section=geo"
                         className="ml-2 text-silver underline decoration-ozone underline-offset-2"
                       >
-                        Open mission
+                        Open route
                       </Link>
                     )}
                   </div>
