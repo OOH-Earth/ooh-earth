@@ -19,6 +19,10 @@ Read the rest of `brain/` (`ENVIRONMENTS.md`, `RELEASE.md`, `TEST.md`,
 `DECISIONS.md`, `KNOWN-ISSUES.md`, `DAVE.md`) only when the task at hand
 touches that topic.
 
+**Before any product/feature work, also read `brain/PRODUCT.md`** — the
+durable product north star ("the social network that gets you off social
+networks"), its privacy/safety rules, and the current build phase.
+
 **Read the full `docs/ops/ooh-earth/` archive only when:**
 
 - a `brain/` file explicitly links to it for detail
