@@ -31,28 +31,85 @@ None open.
 - LIMITATION: a clickable card wasn't live-clicked (needs an
   authenticated session receiving a real create event; no data was
   fabricated to force one). Covered by unit tests.
-- STATUS: shipped to BACKUP + production. PR on
-  `feat/social-v1-discover` — confirm merged with `gh pr view`.
+- STATUS: CLOSED — PR #283 merged (`e3e832f`); re-verified reconciled at
+  the start of SOCIAL-2.
 
-### SOCIAL-2 — Real-world history on public profiles — RECOMMENDED NEXT
-- WHY: the "BUILD A REAL-WORLD HISTORY" + "CONNECT" steps. Public
-  Founding Profiles show only *counts* (`verified_reports`,
-  `verified_rechecks`); a person's actual places aren't browsable.
-- PROPOSED DESIGN (no new entity): additive change to the existing
-  `getPublicProfile` function — alongside the counts it already computes,
-  return up to N recent **verified** places the member created
-  (`id, title, type, created_date` only — no lat/lng precision beyond
-  what Location Detail already shows publicly, no pending/rejected rows),
-  gated by the same `profile_public` check. Frontend: a "Field record"
-  list on `FounderProfile.jsx` linking each to Location Detail; truthful
-  empty state when zero. Optionally surface the existing level/badges
-  derived from those same public counts.
-- WRITE_TYPE: **function change** (additive response field) → per the
-  programme's gate, BACKUP-first and explicit owner approval before the
-  production function deploy.
-- ALTERNATIVES considered: Missions (prompts toward places needing
-  rechecks — frontend-only possible, strong "go out" pull) is a close
-  second; Trails/Crews/Connections need consent/data-model design first.
+Master roadmap SOCIAL-1..10 + permanent rules A–H live in
+`brain/PRODUCT.md`. One slice per burst.
+
+### SOCIAL-2 — Field Record on public profiles — CLOSED 2026-09-27
+- WHY: "BUILD A REAL-WORLD HISTORY". Profiles showed only counts.
+- SCOPE: `getPublicProfile` adds `recent_verified_places:
+  [{ id, title, type, created_date }]` — max 5, newest first, the
+  member's own `status:'verified'` Locations (same rule as the verified
+  count and as Location's public-read RLS), `created_date` truncated to
+  `YYYY-MM-DD`. Computed only after the `profile_public` gate, from the
+  SAME bounded query the count already ran (limit 500) — zero extra
+  requests, no N+1. Explicit allowlist projection + status re-check.
+  Logic moved to `handler.ts` (DI, testable); `entry.ts` thin wrapper.
+  Frontend: Field Record section on `FounderProfile.jsx` (+ pure
+  normaliser `src/lib/fieldRecord.js`: re-cap, safe-id-only hrefs,
+  allowlisted fields, TZ-independent date label), honest empty state
+  "No verified field records yet."
+- PRIVACY: private profile still returns exactly `{found:false}` and runs
+  no Location query; no coordinates/address/owner id/time-of-day; no
+  pending/rejected/other-user rows. Existing profile fields + counts
+  unchanged. `check` mode unchanged.
+- TESTS: function 12/12 (Deno), full function suite 62/62, unit 144/144,
+  Playwright founder spec +6 Field Record cases, 74/74 across founder/
+  location-detail/globe-markers/critical-paths (24 initially timed out
+  under machine load; all 24 passed on a serial rerun). lint/prettier/
+  typecheck/build clean; server-function security check passed.
+- RELEASE: BACKUP function deployed + fresh-pull byte-identical;
+  BACKUP frontend `index-CEFuWLzB.js` (target proven). Production
+  function deployed + fresh-pull byte-identical; production frontend
+  `index-DU26cBQ_.js` (target proven). Raw network responses inspected on
+  both: `{"found":false}` only, no entity writes, 0 anonymous WebSockets.
+- LIMITATION (honest): no real `profile_public:true` handle is known in
+  either environment, so the populated Field Record was verified by the
+  deterministic function tests + Playwright + a client-side-stubbed
+  render of the deployed bundle (no data written anywhere). First real
+  public profile with a verified place = the first live data check.
+- ROLLBACK: redeploy the pre-SOCIAL-2 source (origin/main `e3e832f`
+  `getPublicProfile/entry.ts`, sha256 prefix `0d334434`) with
+  `functions deploy getPublicProfile`; frontend = redeploy a main build.
+
+### SOCIAL-3 — Missions — NEXT (design only so far; not built)
+- QUESTION: is a Mission the user-facing OOH brand for the existing Quest,
+  or a distinct real-world object?
+- INITIAL FINDING: **brand the existing Quest system as Missions first.**
+  It already is a real-world call to action with server-side truth:
+  `QUESTS` (5 daily/weekly defs in `gamification.js`), a server-validated
+  `claimQuest` function that recomputes progress from real records and
+  holds its own QUESTS table (client can't forge XP), and the
+  `QuestCompletion` entity (`quest_id`, `period_key`, `xp_awarded`) as
+  the durable record. Reusing it satisfies rule B.
+- What Quests *lack* vs. the Missions vision: they're counters ("file 5
+  reports this week"), not place-bound ("recheck these 3 stale places near
+  you"). A place-bound mission can still be a QUEST definition whose
+  progress metric is computed from real FieldCheck/Location records —
+  no new entity needed for v1.
+- NAMING COLLISION: "Field Mission" already exists — a local,
+  client-only route planner over up to 20 places
+  (`src/lib/fieldMission.js`). Decide whether it becomes the "go do it"
+  half of a Mission or gets renamed, before shipping any "Missions" UI.
+- CHECK BEFORE BUILDING: (1) client `periodKey` runs in the browser's
+  local timezone, the server's in UTC — confirm weekly keys agree near
+  week boundaries for non-UTC users; (2) `QuestCompletion` read access —
+  review before surfacing completions on any public surface (rule C);
+  (3) keep `claimQuest` the only XP-granting path (rule H).
+- WRITE_TYPE (expected v1): frontend-first (rename/reframe the existing
+  quest UI as a Mission board, link to real places); a `claimQuest`
+  QUESTS-table change only if a new place-bound metric is added →
+  BACKUP-first function gate.
+
+### PERF-OBS-1 — HeroConsole polls the full Location set every 20s — OBSERVED
+- Seen on production mobile Home (anonymous): `Location?limit=500` +
+  `skip=500` re-fetched every 20s (`HeroConsole.jsx` `setInterval(load,
+  20000)`, present since at least 2026-08-12). Pre-existing, unrelated to
+  SOCIAL-1/2. Not the P0 load-burst duplication (initial load still
+  fetches once). Candidate: pause when hidden / lengthen / reuse the
+  shared Location query. Needs owner priority call.
 
 ## P1 — React 19 migration (CLOSED)
 

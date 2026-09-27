@@ -53,23 +53,68 @@ REAL-WORLD HISTORY → GO OUT AGAIN.
   privacy-reviewed first.
 - Activity links point to places, not persons.
 
-## CURRENT BUILD PHASE
-Social Burst #1 (2026-09-27): shipped. The existing Home live activity feed
-(real, auth-gated realtime events) now links each new place / adopted
-landmark to its public Location Detail page — turning ambient activity
-into "go look at this." See `QUEUE.md` SOCIAL-1.
+## MASTER SOCIAL ROADMAP (owner-set 2026-09-27 — keep; one slice per burst)
+| ID | Slice | Status |
+|---|---|---|
+| SOCIAL-1 | DISCOVERY LINKING — live activity → real Location Detail | CLOSED 2026-09-27 |
+| SOCIAL-2 | FIELD RECORD — public profile → recent verified real-world contributions | CLOSED 2026-09-27 |
+| SOCIAL-3 | MISSIONS — turn existing useful contribution actions / quests into clear real-world calls to action | **NEXT** (design notes in `QUEUE.md`) |
+| SOCIAL-4 | OPERATIVE PROGRESS — unify existing XP, level, badges and contribution stats into one public/private progress experience | planned |
+| SOCIAL-5 | TRAILS — consent-controlled history of meaningful places/contributions | planned |
+| SOCIAL-6 | CREWS — small opt-in groups around places, interests and missions | planned |
+| SOCIAL-7 | DROPS — place-linked creative/photo discoveries | planned |
+| SOCIAL-8 | CONNECTIONS — consent-based person-to-person connections emerging from shared activity | planned |
+| SOCIAL-9 | LOCAL DISCOVERY — privacy-safe discovery of public activity / crews / opportunities in an area | planned |
+| SOCIAL-10 | COLLABORATION — creative, ecology, photography, design, community and professional opportunities around real places | planned |
+
+FUTURE ONLY — **dating / romantic discovery is NOT part of the early
+social implementation.**
+
+Order past SOCIAL-3 is re-decided per burst from shipped evidence.
+Detailed architecture, when needed, goes in `docs/ops/ooh-earth/`.
+
+## PERMANENT SOCIAL ARCHITECTURE RULES
+- **A. Real-world action before social graph** — people discover OOH
+  through places/actions first.
+- **B. Existing gamification engine first** — extend XP/levels/badges/
+  quests; never build a duplicate system.
+- **C. Privacy by default** — public identity stays opt-in.
+- **D. No precise people-nearby** — "nearby" means places, missions,
+  public activity, crews; never exact user presence.
+- **E. Mutual connections** — future Connections require explicit consent
+  from both sides.
+- **F. Crews before broad social graph** — shared activity gives people a
+  reason to connect.
+- **G. No infinite feed optimisation** — the objective is getting people
+  outside.
+- **H. No pay-to-status** — meaningful contribution alone determines
+  progress.
+
+## VISUAL DIRECTION
+Surfaces to grow toward: FIELD RECORD · OPERATIVE LEVEL · MISSION BOARD ·
+CITY PROGRESS · TRAILS · CREWS · DROPS — a subtle futuristic urban field
+system. But: clarity > gimmicks · accessibility > cyberpunk decoration ·
+real information > fake HUD noise · mobile usability > visual spectacle.
+Use the OOH Earth brand tokens. Never redesign the whole app in one burst.
+Reference implementation: the Field Record list on `FounderProfile.jsx`
+(numbered rows, type glyph, title, type · day-precision date, 56px+ tap
+targets, visible focus ring).
+
+## SHIPPED SO FAR
+- SOCIAL-1: Home live activity cards link new places / adopted landmarks
+  to their public Location Detail page.
+- SOCIAL-2: public Founding Profiles show a **Field Record** — up to 5 of
+  the member's own *verified* places (title, type, day-precision date),
+  each linking to Location Detail. Server-side in `getPublicProfile`,
+  behind the same `profile_public` gate; a contribution record, not a
+  movement tracker (no coordinates, no time of day, verified only).
 
 Existing primitives confirmed during discovery (don't rebuild):
 `MiniMapStack` (Home "the terrain, now" — recent real places + mini map),
 `LiveActivityFeed` (realtime, auth-gated), public Founding Profiles
 (`/founders/:handle`, opt-in, real `verified_reports`/`verified_rechecks`
-counts), the XP/level/badge engine, `QuestCompletion`, and an
+counts + Field Record), the XP/level/badge engine, the Quest system
+(`QUESTS` + server-validated `claimQuest` + `QuestCompletion`), the local
+"Field Mission" route planner (`src/lib/fieldMission.js`), and an
 admin-managed `Operative` roster entity (points/tier/badges — internal,
 not the public identity).
-
-## DEFERRED IDEAS (do not build without an explicit burst)
-Missions · Progress/XP surfaced on public profiles · consent-controlled
-Trails · Crews · Drops · Connections (consensual graph) · coarse local
-discovery · collaboration layer · dating (not an early burst).
-Order is decided per burst from shipped evidence, not from this list.
-Detailed architecture, when needed, goes in `docs/ops/ooh-earth/`.
