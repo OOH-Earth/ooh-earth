@@ -1,4 +1,5 @@
 import { Loader2, Check, Clock, Calendar, ShieldCheck } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { formatResetIn, MISSION_STATE_LABELS } from '@/lib/missions';
 
 // Mission Board — the existing Quest engine presented as real-world
@@ -170,6 +171,18 @@ export default function QuestTracker({ quests, onClaim, claiming, claimNotice = 
           missions to bank bonus XP — unclaimed ones expire at reset. Stay on public ground: never
           trespass, confront anyone, or put yourself at risk for a report.
         </p>
+      </div>
+
+      <div className="flex flex-wrap items-center justify-between gap-3 border border-ozone/30 bg-ozone/[0.04] p-3">
+        <p className="font-mono text-[0.6875rem] uppercase leading-relaxed tracking-[0.1em] text-dim">
+          Missions point back to real places. Open the field map to find your next action.
+        </p>
+        <Link
+          to="/map"
+          className="min-h-[32px] shrink-0 border border-ozone px-3 py-1.5 font-mono text-[0.625rem] font-bold uppercase tracking-[0.15em] text-ozone transition-colors hover:bg-ozone hover:text-void focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ozone/60"
+        >
+          Open field map →
+        </Link>
       </div>
     </div>
   );
