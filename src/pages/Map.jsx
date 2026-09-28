@@ -728,6 +728,44 @@ export default function Map() {
       : `hidden lg:flex ${cardsWidth} min-h-0 flex-col overflow-hidden transition-all duration-300 ease-in-out border-r ${resultsCollapsed ? 'border-transparent' : 'border-slate2/60'}`;
   const mapClass = mode === 'list' ? 'flex-1 lg:hidden' : 'flex-1';
 
+  const compactMapBar = (className) => (
+    <div className={className}>
+      <div className="min-w-0 flex-1">
+        <MapSearch
+          query={query}
+          setQuery={setQuery}
+          onFlyTo={(f) => setFlyTo({ ...f, nonce: Date.now() })}
+          onReset={() => {
+            setQuery('');
+            setTypeFilter('all');
+            setLayerFilter('all');
+          }}
+        />
+      </div>
+      {user && (
+        <button
+          onClick={() => toggleLayer('mine')}
+          aria-label="My Discoveries"
+          aria-pressed={mineOnly}
+          className={`flex h-8 w-8 shrink-0 items-center justify-center border transition-colors ${
+            mineOnly
+              ? 'border-ozone bg-ozone text-void'
+              : 'border-slate2/60 text-dim hover:border-ozone hover:text-ozone'
+          }`}
+        >
+          <Fingerprint className="h-3.5 w-3.5" />
+        </button>
+      )}
+      <button
+        onClick={() => setFullscreen(true)}
+        aria-label="Fullscreen map"
+        className="flex h-8 w-8 shrink-0 items-center justify-center border border-ozone/60 text-ozone transition-colors hover:bg-ozone hover:text-void"
+      >
+        <Maximize2 className="h-3.5 w-3.5" />
+      </button>
+    </div>
+  );
+
   // Shared results list — rendered in the desktop cards panel and the mobile
   // bottom sheet so both stay in sync from the same state.
   const renderResultsContent = () => (
@@ -832,7 +870,7 @@ export default function Map() {
 
   return (
     <div
-      className={`fixed inset-0 flex flex-col overflow-hidden bg-void ${fullscreen ? 'pt-0 pb-0' : 'pt-[calc(7rem_+_env(safe-area-inset-top))] md:pt-[calc(8rem_+_env(safe-area-inset-top))] pb-[calc(76px_+_env(safe-area-inset-bottom))] lg:pb-0'}`}
+      className={`fixed inset-0 flex flex-col overflow-hidden bg-void ${fullscreen ? 'pt-0 pb-0' : 'pt-[calc(7rem_+_env(safe-area-inset-top))] md:pt-[calc(8rem_+_env(safe-area-inset-top))] landscape:md:pt-[calc(7rem_+_env(safe-area-inset-top))] pb-[calc(76px_+_env(safe-area-inset-bottom))] lg:pb-0'}`}
     >
       {!fullscreen && <Nav />}
       {!fullscreen && (
@@ -863,49 +901,13 @@ export default function Map() {
         </div>
       )}
 
-      {/* Mobile compact bar — search + fullscreen toggle */}
-      {!fullscreen && (
-        <div className="flex items-center gap-1.5 border-b border-slate2/60 bg-void/95 px-2 py-1.5 backdrop-blur-md lg:hidden">
-          <div className="min-w-0 flex-1">
-            <MapSearch
-              query={query}
-              setQuery={setQuery}
-              onFlyTo={(f) => setFlyTo({ ...f, nonce: Date.now() })}
-              onReset={() => {
-                setQuery('');
-                setTypeFilter('all');
-                setLayerFilter('all');
-              }}
-            />
-          </div>
-          {/* The desktop layer toggle bar above is lg:hidden on mobile
-              (true for every layer, not something this feature changes) --
-              this is a dedicated mobile-reachable control for just this
-              one new layer rather than reworking mobile chrome for all of
-              them. */}
-          {user && (
-            <button
-              onClick={() => toggleLayer('mine')}
-              aria-label="My Discoveries"
-              aria-pressed={mineOnly}
-              className={`flex h-8 w-8 shrink-0 items-center justify-center border transition-colors ${
-                mineOnly
-                  ? 'border-ozone bg-ozone text-void'
-                  : 'border-slate2/60 text-dim hover:border-ozone hover:text-ozone'
-              }`}
-            >
-              <Fingerprint className="h-3.5 w-3.5" />
-            </button>
-          )}
-          <button
-            onClick={() => setFullscreen(true)}
-            aria-label="Fullscreen map"
-            className="flex h-8 w-8 shrink-0 items-center justify-center border border-ozone/60 text-ozone transition-colors hover:bg-ozone hover:text-void"
-          >
-            <Maximize2 className="h-3.5 w-3.5" />
-          </button>
-        </div>
-      )}
+      {/* On short landscape screens this bar becomes an overlay inside the
+          map. Keeping it in the shell's flex flow used 55px of the already
+          short map canvas. Portrait keeps the original in-flow layout. */}
+      {!fullscreen &&
+        compactMapBar(
+          'flex items-center gap-1.5 border-b border-slate2/60 bg-void/95 px-2 py-1.5 backdrop-blur-md lg:hidden landscape:hidden',
+        )}
 
       {!raw ? (
         <div className="flex flex-1 items-center justify-center">
@@ -975,6 +977,10 @@ export default function Map() {
           </div>
 
           <div data-tour="map" className={`relative min-h-0 isolate ${mapClass}`}>
+            {!fullscreen &&
+              compactMapBar(
+                'hidden items-center gap-1.5 border-b border-slate2/60 bg-void/95 px-2 py-1.5 backdrop-blur-md [@media(orientation:landscape)_and_(max-width:1023px)]:flex absolute inset-x-0 top-0 z-[900]',
+              )}
             {/* Expand tabs — terminal edge tabs for collapsed panels */}
             {mode === 'split' && (searchCollapsed || resultsCollapsed) && (
               <div className="absolute left-0 top-1/2 z-[1001] flex -translate-y-1/2 flex-col gap-1">
@@ -1000,7 +1006,7 @@ export default function Map() {
                 )}
               </div>
             )}
-            <div className="absolute left-3 top-3 z-[1000] flex border border-slate2 bg-void/80 backdrop-blur-md">
+            <div className="absolute left-3 top-3 z-[1000] flex border border-slate2 bg-void/80 backdrop-blur-md landscape:top-16">
               <button
                 onClick={() => setView('flat')}
                 aria-label="Flat map"
@@ -1016,7 +1022,7 @@ export default function Map() {
                 <Globe className="h-3.5 w-3.5" /> <span className="hidden sm:inline">Globe</span>
               </button>
             </div>
-            <div className="absolute left-3 top-14 z-[1000] max-w-[calc(100vw-1.5rem)]">
+            <div className="absolute left-3 top-14 z-[1000] max-w-[calc(100vw-1.5rem)] landscape:top-28">
               <button
                 type="button"
                 data-testid="field-attention-toggle"
@@ -1145,7 +1151,7 @@ export default function Map() {
                 (top-36) while the attention filter row is expanded, since
                 that adds another ~36px below the toggle. */}
             <div
-              className={`pointer-events-none absolute left-3 right-3 z-[900] ${attentionMode ? 'top-36' : 'top-24'}`}
+              className={`pointer-events-none absolute left-3 right-3 z-[900] ${attentionMode ? 'top-36 landscape:top-48' : 'top-24 landscape:top-40'}`}
             >
               <MapAlertTicker />
             </div>
@@ -1154,7 +1160,7 @@ export default function Map() {
                 <SpecsBar counts={counts} total={raw?.markers?.length || 0} />
               </div>
             )}
-            <div className="absolute right-3 top-3 z-[1000] flex items-center gap-1.5">
+            <div className="absolute right-3 top-3 z-[1000] flex items-center gap-1.5 landscape:top-16">
               <div className="hidden md:flex items-center gap-1.5">
                 <MapStyleSwitcher />
                 <button

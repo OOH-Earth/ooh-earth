@@ -35,15 +35,14 @@ left its dark container background showing as a solid black box.
 - NOT re-tested: authenticated states (no working authenticated browser
   session this burst — see below).
 
-## FINDING — mobile map landscape viewport collapse (NOT fixed, separate)
-Confirmed independently (not just trusted from the incident doc): at
-844×412 and 915×412 landscape, the map container collapses to ~130-155px
-tall instead of filling the viewport, on both BACKUP and production,
-unrelated to PR #287 (present before and after it, byte-identical
-symptom). Root cause not yet investigated (likely a `vh`/flex-height
-calculation that doesn't account for a short landscape viewport). Needs
-its own reproduction + fix burst — do not fold into a future mobile PR
-without a dedicated root-cause pass first.
+## FINDING — mobile map landscape viewport collapse (release in progress)
+Root cause proven: compact map bar consumed 55px of flex height and md landscape added 16px top padding. Candidate is frontend-only with a focused regression test. BACKUP frontend `assets/index-wlx-ltLf.js` is deployed and reconciled; 932x430 measures 242px versus old production 171px. Complete BACKUP matrix, then PR/CI/merge/production QA before closure.
+
+## BASELINE — entity-manifest consistency
+`LocationRelationship` is absent from both approved manifests. `npm run test:entities-preflight` exits 1 identically on starting main and landscape candidate. Separate cleanup; no entity deployment in landscape release.
+
+## BASELINE — moderate function typecheck
+`base44/functions/moderate/entry.ts:119` infers no `verified_date`; identical starting main/candidate failure. Separate cleanup.
 
 ## FINDING — header breadcrumb link hidden behind the fixed toolbar (LOW)
 On `LocationDetail` (and likely any page whose local breadcrumb nav
