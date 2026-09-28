@@ -1,7 +1,11 @@
 # HANDOFF — read this first
 
-LAST_UPDATED: 2026-09-27 (PR #287 final closure — mobile black square +
-Field Attention/ticker collision — merged, deployed, stopped by design)
+LAST_UPDATED: 2026-09-28 (landscape release checkpoint; BACKUP deployed, QA incomplete)
+
+## Active landscape release
+Candidate: `src/pages/Map.jsx` + `e2e/map-landscape-layout.spec.ts` only. Real production collapse measured 132/131/153/153/171px across 667x375..932x430. Root cause: compact bar flex consumption (55px) and md landscape top padding (16px). BACKUP frontend-only deployment is reconciled at `assets/index-wlx-ltLf.js`, runtime app `6a6748e009b947cb29591871`; 932x430 is 242px, no overflow/errors. Resume remaining BACKUP QA; no PR/merge/production work yet.
+
+Baseline exceptions, not release changes: `LocationRelationship` missing from approved manifests and `moderate/entry.ts:119` inferred `verified_date` type error. Both match untouched starting main. Do not alter entities/functions/manifests in this release.
 
 The repo runs a **real-world social-network programme in short bursts**
 under the owner's autonomous GREEN-release rule and PRE-DAVE RELEASE

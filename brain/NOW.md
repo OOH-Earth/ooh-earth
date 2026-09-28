@@ -1,8 +1,13 @@
 # NOW — current truth only
 
-Last verified: 2026-09-27 (PR #287 final closure — mobile black square +
-Field Attention/ticker collision). Re-verify anything more than a few
-days old before acting on it.
+Last verified: 2026-09-28 (landscape release in progress; BACKUP frontend deployed, QA incomplete).
+
+## LANDSCAPE RELEASE CHECKPOINT
+- Starting main `f0d5f36a5d931b7b6b6a0dad1bb09e6433bacb45`; production entry before fix `assets/index-CQGmvaxy.js`.
+- Production reproduced: map heights 132px (667x375), 131px (844x390), 153px (844x412/915x412), 171px (932x430). Cause: 55px compact bar in flex flow plus 16px excess `md` landscape top padding.
+- Candidate only changes `src/pages/Map.jsx` and `e2e/map-landscape-layout.spec.ts`: bar overlays in mobile landscape, controls move beneath it, landscape uses 7rem top reservation. Targeted test passes 844x390 and 915x412 (>=200px, controls, nav clearance, no overflow).
+- BACKUP `6a6748e009b947cb29591871`: frontend-only deploy via Base44 CLI 0.1.14; live entry `assets/index-wlx-ltLf.js`; entry runtime appId is BACKUP. 932x430 is 242px, no overflow, no page/failed-request errors. Full matrix, PR, merge, production, and Dave gate remain incomplete.
+- Baseline-only: `LocationRelationship` missing from both approved entity manifests; `moderate/entry.ts:119` inferred `verified_date` error. Identical on main/candidate; do not fix in this release.
 
 ## PRODUCT DIRECTION
 Real-world social-network programme in short bursts, under the owner's
