@@ -182,4 +182,19 @@ test.describe('Mission Board', () => {
     );
     expect(overflow).toBeLessThanOrEqual(0);
   });
+
+  test('connects missions to the real-world field map', async ({ page }) => {
+    const db: MockDb = {
+      user: OP,
+      locations: {
+        a: loc('a', '2026-09-30T09:00:00Z', { image_url: 'https://example.com/a.jpg' }),
+        b: loc('b', '2026-09-28T09:00:00Z'),
+      },
+    };
+    const board = await openBoard(page, db, '2026-09-30T12:00:00Z');
+    await expect(board.getByRole('link', { name: 'Open field map →' })).toHaveAttribute(
+      'href',
+      '/map',
+    );
+  });
 });

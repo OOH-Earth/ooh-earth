@@ -1,12 +1,12 @@
 # NOW — current truth only
 
-Last verified: 2026-09-28 (landscape release in progress; BACKUP frontend deployed, QA incomplete).
+Last verified: 2026-09-28 (landscape release shipped; social place-to-mission burst in progress).
 
 ## LANDSCAPE RELEASE CHECKPOINT
 - Starting main `f0d5f36a5d931b7b6b6a0dad1bb09e6433bacb45`; production entry before fix `assets/index-CQGmvaxy.js`.
 - Production reproduced: map heights 132px (667x375), 131px (844x390), 153px (844x412/915x412), 171px (932x430). Cause: 55px compact bar in flex flow plus 16px excess `md` landscape top padding.
 - Candidate only changes `src/pages/Map.jsx` and `e2e/map-landscape-layout.spec.ts`: bar overlays in mobile landscape, controls move beneath it, landscape uses 7rem top reservation. Targeted test passes 844x390 and 915x412 (>=200px, controls, nav clearance, no overflow).
-- BACKUP `6a6748e009b947cb29591871`: frontend-only deploy via Base44 CLI 0.1.14; live entry `assets/index-wlx-ltLf.js`; entry runtime appId is BACKUP. 932x430 is 242px, no overflow, no page/failed-request errors. Full matrix, PR, merge, production, and Dave gate remain incomplete.
+- PR #298 merged as `7c0acd2167b24c7608b1a30710f539276575604f`. Fresh production build head matched that SHA; production entry `assets/index-Dv146f8m.js` contains the active production app ID. Live cache-busting proof: 667x375=187px, 844x390=202px, 844x412=224px, 915x412=224px, 932x430=242px; representative portrait/tablet/desktop widths had no horizontal overflow. The first post-deploy check saw old geometry before CDN propagation; direct live chunk/CSS hashes then matched the build and fresh checks passed. Landscape release is CLOSED.
 - Baseline-only: `LocationRelationship` missing from both approved entity manifests; `moderate/entry.ts:119` inferred `verified_date` error. Identical on main/candidate; do not fix in this release.
 
 ## PRODUCT DIRECTION
@@ -31,9 +31,7 @@ Real-world social-network programme in short bursts, under the owner's
 - QA passed: full portrait mobile matrix (320–430px) + tablet (768) +
   desktop (1440) on Map, Home, Location Detail, `/operative` — all clean,
   0 anonymous WebSockets, 0 entity writes, console/network understood.
-- **Landscape is NOT clean**: `/map` at 844×412 and 915×412 collapses to
-  ~130–155px tall on both BACKUP and production. Confirmed pre-existing
-  (present before and after #287, not caused by it). See `QUEUE.md`.
+- Authenticated browser QA remains unavailable in this environment. Anonymous production QA observed expected platform telemetry (rrweb 429), anonymous auth 401, and a blocked external Wikimedia image; no page errors or core request failures. Function POSTs were read/aggregate probes, not user-data writes.
 - **Authenticated QA was not completed this burst** — see ENVIRONMENT
   LIMITATION below. Owner explicitly authorized proceeding on the
   anonymous-QA path instead.
@@ -63,9 +61,9 @@ production `DigitalBust`/`LocationPhoto` missing a defence-in-depth field
 lock the repo already has (not exploitable).
 
 ## SOCIAL PROGRAMME
-SOCIAL-1..4 CLOSED. **SOCIAL-5 Trails — NEXT, human privacy checkpoint**
-(decision package in `QUEUE.md`; do not build until the owner answers the
-open questions there).
+SOCIAL-1..4 CLOSED. SOCIAL-5 Trails remains a human privacy checkpoint. The
+next safe burst is place-centric: the Mission Board now links directly to
+the field map so a mission leads to a real-world action surface.
 
 ## OBSERVED, NOT ACTED ON
 - PERF-OBS-1: HeroConsole re-fetches the full Location set every ~20s on
@@ -80,12 +78,9 @@ framer-motion 13, react-resizable-panels 4, TypeScript 7 · UX-004 Carto
 key · `fix/production-app-binding` · AdObservation · Founding directory.
 
 ## NEXT_TASK
-No single blocking task. Candidates, owner's call:
-1. Fix the landscape map collapse (own root-cause pass first).
-2. Find a working authenticated-QA path (fix the display issue, or the
-   owner accepts qualitative manual QA in their own browser next time).
-3. SOCIAL-5 Trails — needs the owner's privacy decisions first.
-4. PERF-OBS-1 — bounded performance burst.
+Finish the bounded place-to-mission burst, then run its normal BACKUP →
+PR/CI → merge → production qualification loop. Keep PERF-OBS-1 and the
+two baseline maintenance findings separate.
 
 ## NEXT_PRODUCTION_WRITE
 None pending.

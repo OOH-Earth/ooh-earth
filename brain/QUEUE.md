@@ -35,8 +35,8 @@ left its dark container background showing as a solid black box.
 - NOT re-tested: authenticated states (no working authenticated browser
   session this burst — see below).
 
-## FINDING — mobile map landscape viewport collapse (release in progress)
-Root cause proven: compact map bar consumed 55px of flex height and md landscape added 16px top padding. Candidate is frontend-only with a focused regression test. BACKUP frontend `assets/index-wlx-ltLf.js` is deployed and reconciled; 932x430 measures 242px versus old production 171px. Complete BACKUP matrix, then PR/CI/merge/production QA before closure.
+## LANDSCAPE MAP RELEASE — CLOSED 2026-09-28 (PR #298, merge `7c0acd2`)
+Root cause: compact map bar consumed 55px of flex height and md landscape added 16px top padding. Fix overlays the compact bar below desktop, moves controls below it, and reuses the 7rem landscape reservation. Production live artifact `assets/index-Dv146f8m.js` matches the merged build. Live measurements: 667x375 187px, 844x390 202px, 844x412 224px, 915x412 224px, 932x430 242px; no overflow. A pre-propagation old-geometry reading was corrected by direct live chunk/CSS hash comparison and cache-busting behavioral proof.
 
 ## BASELINE — entity-manifest consistency
 `LocationRelationship` is absent from both approved manifests. `npm run test:entities-preflight` exits 1 identically on starting main and landscape candidate. Separate cleanup; no entity deployment in landscape release.
@@ -59,6 +59,12 @@ SOCIAL work. Low priority; a real fix would need a considered decision
 duplication) rather than a quick patch.
 
 ## P1 — Social programme (short bursts; see `brain/PRODUCT.md`)
+
+### SOCIAL-NEXT — Mission → field map handoff (IN PROGRESS)
+- WHY: connect the existing Mission Board to the physical action surface.
+- SCOPE: frontend-only CTA in `QuestTracker` linking to `/map`; no new data, schema, auth, or privacy surface.
+- NON-GOALS: no Trails, messaging, crews, connections, or new mission persistence.
+- SUCCESS: accessible CTA, no overflow at mobile widths, existing mission tests remain green, then normal BACKUP/CI/production loop.
 
 ### SOCIAL-1 — Live activity → real places — SHIPPED 2026-09-27
 - WHY: first slice toward "GO OUT → DISCOVER → DO SOMETHING". Discovery
