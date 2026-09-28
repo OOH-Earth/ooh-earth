@@ -1,6 +1,6 @@
 # NOW — current truth only
 
-Last verified: 2026-09-28 (landscape release shipped; social place-to-mission burst in progress).
+Last verified: 2026-09-28 (landscape and place-to-mission releases shipped).
 
 ## LANDSCAPE RELEASE CHECKPOINT
 - Starting main `f0d5f36a5d931b7b6b6a0dad1bb09e6433bacb45`; production entry before fix `assets/index-CQGmvaxy.js`.
@@ -32,6 +32,7 @@ Real-world social-network programme in short bursts, under the owner's
   desktop (1440) on Map, Home, Location Detail, `/operative` — all clean,
   0 anonymous WebSockets, 0 entity writes, console/network understood.
 - Authenticated browser QA remains unavailable in this environment. Anonymous production QA observed expected platform telemetry (rrweb 429), anonymous auth 401, and a blocked external Wikimedia image; no page errors or core request failures. Function POSTs were read/aggregate probes, not user-data writes.
+- Social place-to-mission CTA shipped in PR #299, merge `bcebc81fb3463959fde3b66ec3bd5de9bfc8d9e7`; production artifact `assets/index-CdunO6Ul.js` and `OperativeProfile-CRP5WLE4.js` are live. Mission Board focused suite passed 8/8; live production responsive matrix remained green (667x375=187px, 844x390=202px, 844x412=224px, 915x412=224px, 932x430=242px; 387x805=562px; no overflow).
 - **Authenticated QA was not completed this burst** — see ENVIRONMENT
   LIMITATION below. Owner explicitly authorized proceeding on the
   anonymous-QA path instead.
@@ -78,9 +79,9 @@ framer-motion 13, react-resizable-panels 4, TypeScript 7 · UX-004 Carto
 key · `fix/production-app-binding` · AdObservation · Founding directory.
 
 ## NEXT_TASK
-Finish the bounded place-to-mission burst, then run its normal BACKUP →
-PR/CI → merge → production qualification loop. Keep PERF-OBS-1 and the
-two baseline maintenance findings separate.
+Next safe product work: audit place-centric discovery and mission context
+without adding new schema or private-data access. Keep PERF-OBS-1, the two
+baseline maintenance findings, and SOCIAL-5 separate.
 
 ## NEXT_PRODUCTION_WRITE
 None pending.
