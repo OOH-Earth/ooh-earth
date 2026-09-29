@@ -85,6 +85,35 @@ test.describe('LocationDetail — existing single-image flow', () => {
     expect(filterCrashes(consoleErrors), consoleErrors.join('\n')).toEqual([]);
     expect(apiFailures, apiFailures.join('\n')).toEqual([]);
   });
+
+  test('adds a public place to the temporary field route', async ({ page }) => {
+    await mockBase44(page, {
+      user: null,
+      locations: {
+        'loc-route-1': {
+          id: 'loc-route-1',
+          title: 'Billboard · Route Action Check',
+          type: 'billboard',
+          address: '901 Route Ave, Testville',
+          lat: 13.75,
+          lng: 100.5,
+          image_url: svg('%23FF5C00', 'ROUTE'),
+          status: 'verified',
+          access_key: 'none',
+        },
+      },
+      locationPhotos: [],
+    });
+    await page.goto('/location/loc-route-1');
+    await expect(page.getByRole('heading', { name: /Route Action Check/i })).toBeVisible();
+    await page.getByRole('button', { name: /Add to field route/i }).click();
+    await expect(
+      page.getByRole('status').filter({ hasText: /Added to field route/i }),
+    ).toBeVisible();
+    await expect
+      .poll(() => page.evaluate(() => sessionStorage.getItem('ooh-field-mission-v1')))
+      .toContain('loc-route-1');
+  });
 });
 
 test.describe('LocationDetail — multi-photo gallery', () => {
