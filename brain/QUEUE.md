@@ -1,10 +1,14 @@
 # QUEUE — priority lanes, stable IDs
 
-## SOCIAL PLACE DISCOVERY LINKS — IN PROGRESS
-MiniMapStack currently sends real public place cards and map popups to the
-generic map. This burst changes both to the existing public Location Detail,
-so place discovery leads to context and the already-shipped field-route
-action. Frontend-only; no schema, permission, private-data, messaging,
+## SOCIAL PLACE DISCOVERY LINKS — CLOSED 2026-09-29 (PR #307)
+MiniMapStack place cards and map popups now lead to the existing public
+Location Detail, so place discovery reaches context and the shipped
+field-route action. Merge `62829b5`; BACKUP and production entry/chunk
+hashes reconciled before QA. Deterministic functional coverage passed;
+production responsive/landscape QA passed with no overflow or true
+entity/resource writes. Anonymous live data had no natural public Location
+links, so live CTA clicking remains unclaimed rather than fabricated.
+Frontend-only; no schema, permission, private-data, messaging,
 people-nearby, or Trails work.
 
 Format per task: ID · TITLE · WHY · SCOPE · WRITE_TYPE · STATUS · EVIDENCE ·
