@@ -1,21 +1,29 @@
 # NOW — current truth only
 
-## SOCIAL PLACE DISCOVERY LINKS — IN PROGRESS
+## SOCIAL PLACE DISCOVERY LINKS — CLOSED 2026-09-29
 - OBJECTIVE: make Home’s existing real-place “terrain, now” surface lead to
   truthful Location Detail instead of dead-ending at the generic map.
-- WHY: strengthen PLACE → UNDERSTAND → ACTION using existing public Location
-  records and navigation.
-- USER LOOP: discover a place → open its record → add it to a field route or
-  choose an existing field action.
-- SCOPE: MiniMapStack numbered place cards and map popups link to
-  `/location/:id`; deterministic Home regression coverage.
-- NON-GOALS: no feed, people-nearby, messaging, Trails, new entity/schema,
-  private-data expansion, permission/auth change, or backend write.
+- WHY / USER LOOP: discover a place → open its record → add it to a field
+  route or choose an existing field action.
+- SCOPE: MiniMapStack numbered place cards and map popups now link to
+  `/location/:id`; deterministic Home regression coverage shipped in PR #307.
 - PRIVACY BOUNDARY: only already-public Location IDs and fields are linked;
-  no person identity or precise presence is exposed.
-- SUCCESS EVIDENCE: accessible links preserve existing map entry point,
-  Location Detail route context is correct, responsive Home remains green,
-  no unexpected writes, and normal BACKUP/production artifact reconciliation.
+  no person identity, precise presence, schema, permission, or backend data
+  change was introduced.
+- RELEASE: PR #307 merged as `62829b5d273c50f9c6cd3fa35a25a37b485113f8`.
+  BACKUP entry `assets/index-hM8GfUB2.js` and
+  `MiniMapStack-3xgst_Eo.js` matched the built hashes. Production entry
+  `assets/index-DaErEz-B.js` and `MiniMapStack-C3wP2l79.js` matched the
+  production build; live chunk contains `Open location detail`.
+- QA: deterministic functional test passed; production fresh Chromium passed
+  387x805, 430x932, 1024x768, 1440x900, 667x375, 844x412, and 932x430 with
+  no horizontal overflow, no page errors, and no true entity/resource
+  writes. Platform telemetry, media aborts, and a 429 were understood.
+- LIMITATION: anonymous live production exposed no natural public Location
+  links, so live CTA clicking was not fabricated; fixture navigation plus
+  source/build/live-chunk reconciliation are the functional evidence.
+- NEXT SAFE BURST: audit the next existing place/mission/activity handoff;
+  keep Trails as a human privacy checkpoint.
 
 ## SELECTED MARKER OVERLAY RELEASE — 2026-09-29
 - PR #303 merged as `82d5ed82145506d7a7e7d041921b46a4ff816989`.

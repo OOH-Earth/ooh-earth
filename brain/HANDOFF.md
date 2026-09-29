@@ -1,11 +1,18 @@
 # HANDOFF — read this first
 
-## Social place discovery links — IN PROGRESS
-Next focused burst: make Home MiniMapStack place cards and map popups link to
-`/location/:id` using existing public Location records. This strengthens
-PLACE → UNDERSTAND → ACTION and deliberately avoids new social data models,
-private-data expansion, Trails, messaging, or people discovery. Deterministic
-Home regression is green; release gates remain pending.
+## Social place discovery links — CLOSED 2026-09-29
+PR #307 merged as `62829b5d273c50f9c6cd3fa35a25a37b485113f8`.
+MiniMapStack place cards and popups now link to `/location/:id`, strengthening
+PLACE → UNDERSTAND → ACTION with existing public data only. BACKUP and
+production artifacts were hash-reconciled before browser QA. Deterministic
+functional coverage passed; production passed the portrait/tablet/desktop
+and 667x375 / 844x412 / 932x430 landscape matrix with no overflow, page
+errors, or true entity/resource writes. Anonymous production had no natural
+public Location links, so live CTA click-through was not claimed. No schema,
+permission, private-data, messaging, people-nearby, or Trails work.
+
+Next: select another safe existing place ↔ mission/activity handoff. Trails
+remains a human privacy checkpoint.
 
 ## Selected marker overlay — CLOSED 2026-09-29
 PR #303 (`82d5ed82145506d7a7e7d041921b46a4ff816989`) merged the focused
