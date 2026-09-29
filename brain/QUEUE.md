@@ -1,5 +1,12 @@
 # QUEUE — priority lanes, stable IDs
 
+## SOCIAL PLACE DISCOVERY LINKS — IN PROGRESS
+MiniMapStack currently sends real public place cards and map popups to the
+generic map. This burst changes both to the existing public Location Detail,
+so place discovery leads to context and the already-shipped field-route
+action. Frontend-only; no schema, permission, private-data, messaging,
+people-nearby, or Trails work.
+
 Format per task: ID · TITLE · WHY · SCOPE · WRITE_TYPE · STATUS · EVIDENCE ·
 NEXT_ACTION · DONE_WHEN.
 

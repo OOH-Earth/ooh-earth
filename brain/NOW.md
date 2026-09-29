@@ -1,5 +1,22 @@
 # NOW — current truth only
 
+## SOCIAL PLACE DISCOVERY LINKS — IN PROGRESS
+- OBJECTIVE: make Home’s existing real-place “terrain, now” surface lead to
+  truthful Location Detail instead of dead-ending at the generic map.
+- WHY: strengthen PLACE → UNDERSTAND → ACTION using existing public Location
+  records and navigation.
+- USER LOOP: discover a place → open its record → add it to a field route or
+  choose an existing field action.
+- SCOPE: MiniMapStack numbered place cards and map popups link to
+  `/location/:id`; deterministic Home regression coverage.
+- NON-GOALS: no feed, people-nearby, messaging, Trails, new entity/schema,
+  private-data expansion, permission/auth change, or backend write.
+- PRIVACY BOUNDARY: only already-public Location IDs and fields are linked;
+  no person identity or precise presence is exposed.
+- SUCCESS EVIDENCE: accessible links preserve existing map entry point,
+  Location Detail route context is correct, responsive Home remains green,
+  no unexpected writes, and normal BACKUP/production artifact reconciliation.
+
 ## SELECTED MARKER OVERLAY RELEASE — 2026-09-29
 - PR #303 merged as `82d5ed82145506d7a7e7d041921b46a4ff816989`.
 - Root cause: shared MapLibre location popups used the default zero offset, so the selected information popup intruded into the selected ~61px glyph. `Globe3D.jsx` and `MediaCorpGlobe.jsx` now use a 44px dynamic popup offset; Flat Leaflet marker anchors were already safe.
