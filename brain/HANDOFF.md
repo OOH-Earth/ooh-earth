@@ -1,5 +1,12 @@
 # HANDOFF — read this first
 
+## Social place discovery links — IN PROGRESS
+Next focused burst: make Home MiniMapStack place cards and map popups link to
+`/location/:id` using existing public Location records. This strengthens
+PLACE → UNDERSTAND → ACTION and deliberately avoids new social data models,
+private-data expansion, Trails, messaging, or people discovery. Deterministic
+Home regression is green; release gates remain pending.
+
 ## Selected marker overlay — CLOSED 2026-09-29
 PR #303 (`82d5ed82145506d7a7e7d041921b46a4ff816989`) merged the focused
 MapLibre popup-anchor fix. The shared `Globe3D` and `MediaCorpGlobe` popup
