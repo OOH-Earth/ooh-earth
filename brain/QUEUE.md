@@ -758,3 +758,6 @@ schema/entity is created here, only the decision package.
   LeadClaim fix, Public Space + Founding Profile release, Store.jsx
   react-query — all CLOSED, all deployed and verified. See
   `docs/ops/ooh-earth/00-CURRENT-STATE.md` for the full history.
+
+## SHIPPED — final production reconciliation (2026-09-29)
+Current main `d3bd32d` is built and live as `assets/index-T3tZAZek.js`; landscape geometry remains green after the final frontend-only redeploy. The Mission Board place-to-map CTA is live. Keep PERF-OBS-1, entity-manifest cleanup, moderate type cleanup, SOCIAL-5 privacy checkpoint, and authenticated browser QA limitation separate.

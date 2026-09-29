@@ -90,3 +90,10 @@ None pending.
 1. Decide priority among the NEXT_TASK candidates above.
 2. SOCIAL-5's open questions (public/private default, per-entry hiding,
    global kill switch, retention/deletion) before any Trails work starts.
+
+## FINAL RECONCILIATION — 2026-09-29
+- Current merged main: `d3bd32db1797b1ba640a4aa8893a6ce3f9a6b737` (PR #301 docs merge; includes PR #300 Home Globe fix and PR #299 social CTA).
+- Fresh production build from that SHA: `assets/index-T3tZAZek.js`; runtime `appId` is `6a62213cff3ccbca88c04ff5`; backup ID is not active configuration.
+- Production frontend redeployed from the fresh merged-main build with Base44 CLI 0.1.14. Live HTML and entry now match `assets/index-T3tZAZek.js`.
+- Final live production map geometry: 667x375=187px, 844x390=202px, 844x412=224px, 915x412=224px, 932x430=242px; 387x805=562px; representative portrait/tablet/desktop widths had no horizontal overflow and zero page errors.
+- Live Mission Board chunk `OperativeProfile-CdoEmAUT.js` contains the place-to-map CTA. No user/data writes were made; observed telemetry and aggregate probes remain expected.

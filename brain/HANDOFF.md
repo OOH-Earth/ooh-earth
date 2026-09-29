@@ -84,3 +84,6 @@ exact command to the owner, e.g.
 - Never fabricate users, activity, completions, or friendships.
 - Lockfile conflicts: reset to the target base's lockfile and diff the
   full dependency graph (see `docs/ops/ooh-earth/01-PRIORITY-QUEUE.md`).
+
+## FINAL HANDOFF — 2026-09-29
+Release chain is reconciled: merged main `d3bd32d` → fresh production build `assets/index-T3tZAZek.js` → live production artifact. Landscape and responsive Playwright checks are green after propagation. PR #299's Mission Board → field map CTA is live. Authenticated browser QA remains unavailable; no backend resources or user data were changed.
