@@ -36,7 +36,7 @@ export const PIN_TYPES = [
 // __A__ is replaced at call-time with the type's accent colour.
 const GLYPH_PATHS = {
   billboard:
-    '<rect x="5" y="3" width="14" height="11" rx="1" fill="#000"/><rect x="7" y="5" width="10" height="2.5" fill="__A__" opacity="0.85"/><rect x="9" y="14" width="2" height="6" fill="#000"/><rect x="13" y="14" width="2" height="6" fill="#000"/>',
+    '<rect x="5.75" y="3.75" width="12.5" height="9.5" rx="1" fill="none" stroke="#000" stroke-width="1.5"/><rect x="7.5" y="5.25" width="9" height="2" fill="__A__" opacity="0.85"/><rect x="9" y="14" width="2" height="6" fill="#000"/><rect x="13" y="14" width="2" height="6" fill="#000"/>',
   digital:
     '<rect x="5" y="4" width="14" height="10" rx="1" fill="#000"/><rect x="7" y="6" width="10" height="2" fill="__A__"/><rect x="7" y="9" width="6" height="1.5" fill="__A__"/>',
   transit:
@@ -73,10 +73,12 @@ export function glyphSVG(type, size = 11) {
 const GLYPH_CANVAS = {
   billboard: (ctx, a) => {
     ctx.fillStyle = '#000';
-    ctx.fillRect(5, 3, 14, 11);
+    ctx.lineWidth = 1.5;
+    ctx.strokeStyle = '#000';
+    ctx.strokeRect(5.75, 3.75, 12.5, 9.5);
     ctx.globalAlpha = 0.85;
     ctx.fillStyle = a;
-    ctx.fillRect(7, 5, 10, 2.5);
+    ctx.fillRect(7.5, 5.25, 9, 2);
     ctx.globalAlpha = 1;
     ctx.fillStyle = '#000';
     ctx.fillRect(9, 14, 2, 6);
