@@ -90,24 +90,97 @@ function popupHTML(m) {
   const type = metaFor(m.type).label;
   const status = m.status || 'pending';
   return `
-    <div style="width:220px;font-family:'Inter Tight',sans-serif">
-      ${thumbHTML(m)}
-      <div style="padding:10px 12px 12px">
-        <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px">
+    <div class="ooh-location-popup" style="width:220px;font-family:'Inter Tight',sans-serif">
+      <div class="ooh-popup-thumb">${thumbHTML(m)}</div>
+      <div class="ooh-popup-details" style="padding:10px 12px 12px">
+        <div class="ooh-popup-meta" style="display:flex;align-items:center;gap:6px;margin-bottom:4px">
           <span style="font-size:9px;text-transform:uppercase;letter-spacing:0.2em;font-weight:700;color:#EDFF00">${esc(type)}</span>
           <span style="width:5px;height:5px;border-radius:999px;background:${getStatusDotColor(status)}"></span>
           <span style="font-size:9px;text-transform:uppercase;letter-spacing:0.2em;color:hsl(var(--muted-foreground))">${esc(status)}</span>
         </div>
-        <div style="font-weight:700;font-size:15px;color:hsl(var(--foreground));line-height:1.25">${esc(m.title)}</div>
-        <div style="font-size:12px;color:hsl(var(--muted-foreground));margin-top:4px;line-height:1.4">${esc(m.address || '')}</div>
-        <div style="font-size:9px;color:hsl(var(--muted-foreground));margin-top:4px;font-family:monospace;opacity:0.8">${Number(m.lat).toFixed(4)}, ${Number(m.lng).toFixed(4)}</div>
-        <div style="display:flex;flex-wrap:wrap;gap:5px;margin-top:10px">
+        <div class="ooh-popup-title" style="font-weight:700;font-size:15px;color:hsl(var(--foreground));line-height:1.25">${esc(m.title)}</div>
+        <div class="ooh-popup-address" style="font-size:12px;color:hsl(var(--muted-foreground));margin-top:4px;line-height:1.4">${esc(m.address || '')}</div>
+        <div class="ooh-popup-coords" style="font-size:9px;color:hsl(var(--muted-foreground));margin-top:4px;font-family:monospace;opacity:0.8">${Number(m.lat).toFixed(4)}, ${Number(m.lng).toFixed(4)}</div>
+        <div class="ooh-popup-actions" style="display:flex;flex-wrap:wrap;gap:5px;margin-top:10px">
           <a href="https://www.google.com/maps/dir/?api=1&destination=${m.lat},${m.lng}" target="_blank" rel="noreferrer" class="ooh-popup-btn ooh-popup-btn--flare">Directions ↗</a>
           <a href="/location/${esc(m.id)}" class="ooh-popup-btn ooh-popup-btn--ozone">Page ↗</a>
           ${m.link && /^https?:\/\//i.test(m.link) ? `<a href="${esc(m.link)}" target="_blank" rel="noreferrer" class="ooh-popup-btn ooh-popup-btn--ghost">OOH.EARTH ↗</a>` : ''}
         </div>
       </div>
     </div>`;
+}
+
+// The selected globe pin is a 64px canvas icon rendered at a 0.95 scale.
+// Keep the information panel outside that visual anchor in every direction.
+// MapLibre still chooses the side with the most room near container edges;
+// these per-anchor offsets preserve the same clearance after that choice.
+/** @type {import('maplibre-gl').Offset} */
+const LOCATION_POPUP_OFFSET = {
+  top: [0, 64],
+  'top-left': [46, 46],
+  'top-right': [-46, 46],
+  bottom: [0, -64],
+  'bottom-left': [46, -46],
+  'bottom-right': [-46, -46],
+  left: [64, 0],
+  right: [-64, 0],
+  center: [0, 0],
+};
+
+const POPUP_ANCHOR_ORDER = ['bottom', 'top', 'right', 'left'];
+
+function popupGeometryIsSafe(map, popup, coords) {
+  const popupRect = popup.getElement()?.getBoundingClientRect();
+  const mapRect = map.getContainer().getBoundingClientRect();
+  if (!popupRect || !mapRect) return false;
+  const point = map.project(coords);
+  const markerRect = {
+    left: mapRect.left + point.x - 31,
+    right: mapRect.left + point.x + 31,
+    top: mapRect.top + point.y - 31,
+    bottom: mapRect.top + point.y + 31,
+  };
+  const overlapX = Math.max(
+    0,
+    Math.min(markerRect.right, popupRect.right) - Math.max(markerRect.left, popupRect.left),
+  );
+  const overlapY = Math.max(
+    0,
+    Math.min(markerRect.bottom, popupRect.bottom) - Math.max(markerRect.top, popupRect.top),
+  );
+  return (
+    overlapX * overlapY === 0 &&
+    popupRect.left >= mapRect.left - 1 &&
+    popupRect.right <= mapRect.right + 1 &&
+    popupRect.top >= mapRect.top - 1 &&
+    popupRect.bottom <= mapRect.bottom + 1
+  );
+}
+
+function placePopupClearOfMarker(map, popup, coords) {
+  const currentAnchor = popup.options.anchor;
+  for (const anchor of POPUP_ANCHOR_ORDER) {
+    popup.options.anchor = anchor;
+    popup.setOffset(LOCATION_POPUP_OFFSET);
+    if (popupGeometryIsSafe(map, popup, coords)) return;
+  }
+  // Preserve a deterministic placement when a very small map cannot fit the
+  // full card on any side. The preferred above-marker anchor still keeps the
+  // marker clear and MapLibre's padding limits the card's excursion.
+  popup.options.anchor = currentAnchor || 'bottom';
+  popup.setOffset(LOCATION_POPUP_OFFSET);
+  const element = popup.getElement();
+  const mapRect = map.getContainer().getBoundingClientRect();
+  const popupRect = element?.getBoundingClientRect();
+  if (element && popupRect) {
+    const dx =
+      Math.max(mapRect.left - popupRect.left, 0) + Math.min(mapRect.right - popupRect.right, 0);
+    const dy =
+      Math.max(mapRect.top - popupRect.top, 0) + Math.min(mapRect.bottom - popupRect.bottom, 0);
+    if (dx || dy) {
+      element.style.transform = `${element.style.transform} translate(${dx}px, ${dy}px)`;
+    }
+  }
 }
 
 function buildFC(markers, selectedId) {
@@ -202,14 +275,23 @@ export default function Globe3D({
     popupRef.current = new maplibregl.Popup({
       closeButton: true,
       closeOnClick: true,
-      // The selected canvas pin is ~61px wide at the selected icon scale.
-      // Keep the popup's content clear of that anchor instead of letting the
-      // default zero offset place the card across the pin. MapLibre flips the
-      // anchor near an edge, so this remains usable above, below, or beside
-      // the marker while preserving the same clearance.
-      offset: 44,
+      // MapLibre flips the anchor near an edge. Use explicit offsets for each
+      // possible anchor so the card remains separated from the full selected
+      // pin, rather than only raising its z-index over the marker.
+      offset: LOCATION_POPUP_OFFSET,
+      padding: { top: 12, right: 12, bottom: 12, left: 12 },
       maxWidth: '260px',
     });
+
+    const repositionPopup = () => {
+      const popup = popupRef.current;
+      const lngLat = popup?.getLngLat?.();
+      if (popup?.isOpen?.() && lngLat) {
+        placePopupClearOfMarker(map, popup, [lngLat.lng, lngLat.lat]);
+      }
+    };
+    map.on('moveend', repositionPopup);
+    map.on('resize', repositionPopup);
 
     if (!scrollZoom) {
       map.scrollZoom.disable();
@@ -376,6 +458,7 @@ export default function Globe3D({
         const p = f.properties;
         const coords = /** @type {GeoJSON.Point} */ (f.geometry).coordinates.slice();
         popupRef.current.setLngLat(coords).setHTML(popupHTML(p)).addTo(map);
+        placePopupClearOfMarker(map, popupRef.current, coords);
         onSelectRef.current?.(p.id);
       });
       map.on('mouseenter', 'ooh-markers', () => {
@@ -457,7 +540,9 @@ export default function Globe3D({
       const m = markers.find((x) => x.id === selectedId);
       if (m && isFinite(m.lat) && isFinite(m.lng)) {
         map.flyTo({ center: [m.lng, m.lat], zoom: Math.max(map.getZoom(), 6), duration: 700 });
-        popupRef.current.setLngLat([m.lng, m.lat]).setHTML(popupHTML(m)).addTo(map);
+        const coords = [m.lng, m.lat];
+        popupRef.current.setLngLat(coords).setHTML(popupHTML(m)).addTo(map);
+        placePopupClearOfMarker(map, popupRef.current, coords);
       }
     }
   }, [markers, selectedId]);

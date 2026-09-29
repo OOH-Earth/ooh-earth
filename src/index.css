@@ -1344,6 +1344,55 @@
   color: #edff00;
 }
 
+/* Keep a selected globe card usable inside the compact Orbital Atlas. The
+   desktop card keeps its full field thumbnail; on narrow screens the same
+   information is retained in a compact, bounded presentation so an anchor
+   near the middle of the globe still has room for a non-overlapping card. */
+@media (max-width: 480px) {
+  .maplibregl-popup-content .ooh-location-popup {
+    width: 180px !important;
+  }
+  .maplibregl-popup-content .ooh-popup-thumb {
+    height: 52px;
+    overflow: hidden;
+  }
+  .maplibregl-popup-content .ooh-popup-thumb > div {
+    height: 100% !important;
+  }
+  .maplibregl-popup-content .ooh-popup-details {
+    padding: 6px 8px 7px !important;
+  }
+  .maplibregl-popup-content .ooh-popup-meta,
+  .maplibregl-popup-content .ooh-popup-address {
+    font-size: 9px !important;
+  }
+  .maplibregl-popup-content .ooh-popup-title {
+    display: -webkit-box;
+    overflow: hidden;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    font-size: 12px !important;
+  }
+  .maplibregl-popup-content .ooh-popup-address {
+    display: -webkit-box;
+    overflow: hidden;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    line-height: 1.25 !important;
+  }
+  .maplibregl-popup-content .ooh-popup-coords {
+    display: none;
+  }
+  .maplibregl-popup-content .ooh-popup-actions {
+    gap: 3px !important;
+    margin-top: 6px !important;
+  }
+  .maplibregl-popup-content .ooh-popup-btn {
+    padding: 2px 4px;
+    font-size: 7px;
+  }
+}
+
 /* Leaflet popup — terminal-styled, theme-aware chrome */
 .leaflet-container .leaflet-popup-content-wrapper,
 .leaflet-container .leaflet-popup-tip {

@@ -109,12 +109,12 @@ const MOCK_LOCATIONS: MockDb['locations'] = {
 const POPUP_GEOMETRY_LOCATION: MockDb['locations'] = {
   'loc-popup': {
     id: 'loc-popup',
-    title: 'Popup geometry fixture',
+    title: 'Popup geometry fixture with a deliberately long title',
     type: 'billboard',
     status: 'verified',
     lat: 13.7563,
     lng: 100.5018,
-    address: 'Bangkok, Thailand',
+    address: 'A long public-space address used to exercise popup collision handling',
   },
 };
 
@@ -278,11 +278,17 @@ test.describe('Globe markers — worker-resolution regression', () => {
     await mockBase44(page, { user: null, locations: POPUP_GEOMETRY_LOCATION });
 
     for (const viewport of [
+      { width: 360, height: 800 },
+      { width: 390, height: 844 },
+      { width: 430, height: 932 },
+      { width: 667, height: 375 },
+      { width: 844, height: 390 },
+      { width: 844, height: 412 },
+      { width: 915, height: 412 },
+      { width: 932, height: 430 },
       { width: 1440, height: 900 },
       { width: 1024, height: 768 },
       { width: 387, height: 805 },
-      { width: 844, height: 390 },
-      { width: 915, height: 412 },
     ]) {
       await page.setViewportSize(viewport);
       await page.goto('/');
@@ -300,6 +306,7 @@ test.describe('Globe markers — worker-resolution regression', () => {
       await expect(popup).toBeVisible({ timeout: 10_000 });
       const geometry = await page.evaluate((projected) => {
         const popup = document.querySelector('.maplibregl-popup')?.getBoundingClientRect();
+        const container = document.querySelector('[data-tour="globe"]')?.getBoundingClientRect();
         if (!popup || !projected) return null;
         const markerRect = {
           left: projected.x - 31,
@@ -330,6 +337,7 @@ test.describe('Globe markers — worker-resolution regression', () => {
         return {
           popup,
           markerRect,
+          container,
           overlapX,
           overlapY,
           gap: Math.max(gapX, gapY),
@@ -343,13 +351,21 @@ test.describe('Globe markers — worker-resolution regression', () => {
         `missing popup geometry at ${viewport.width}x${viewport.height}`,
       ).not.toBeNull();
       expect(
-        geometry?.overlapX && geometry?.overlapY,
+        (geometry?.overlapX ?? 0) * (geometry?.overlapY ?? 0),
         `marker/popup overlap at ${viewport.width}x${viewport.height}`,
       ).toBe(0);
       expect(
         geometry?.gap,
         `marker/popup clearance too small at ${viewport.width}x${viewport.height}`,
       ).toBeGreaterThanOrEqual(8);
+      expect(
+        geometry?.container &&
+          geometry.popup.left >= geometry.container.left - 1 &&
+          geometry.popup.right <= geometry.container.right + 1 &&
+          geometry.popup.top >= geometry.container.top - 1 &&
+          geometry.popup.bottom <= geometry.container.bottom + 1,
+        `popup escaped Orbital Atlas bounds at ${viewport.width}x${viewport.height}`,
+      ).toBe(true);
       expect(
         geometry?.overflow,
         `horizontal overflow at ${viewport.width}x${viewport.height}`,
