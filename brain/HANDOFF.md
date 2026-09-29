@@ -1,5 +1,16 @@
 # HANDOFF — read this first
 
+## Selected marker overlay — CLOSED 2026-09-29
+PR #303 (`82d5ed82145506d7a7e7d041921b46a4ff816989`) merged the focused
+MapLibre popup-anchor fix. The shared `Globe3D` and `MediaCorpGlobe` popup
+offset is 44px, preserving a visible selected marker. Geometry regression
+tests pass at 1440x900, 1024x768, 387x805, 844x390, and 915x412 with zero
+intersection and an 8px gap. Production was built from the merge and serves
+`assets/index-DDdeMp_o.js`; the live affected Globe3D chunk contains the
+fixed offset. No backend/resource/data writes occurred. Authenticated QA and
+natural anonymous production marker selection remain environment/data
+limitations; do not claim them as completed.
+
 LAST_UPDATED: 2026-09-28 (landscape and place-to-mission releases shipped)
 
 ## Landscape release — CLOSED

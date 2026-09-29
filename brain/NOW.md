@@ -1,5 +1,12 @@
 # NOW — current truth only
 
+## SELECTED MARKER OVERLAY RELEASE — 2026-09-29
+- PR #303 merged as `82d5ed82145506d7a7e7d041921b46a4ff816989`.
+- Root cause: shared MapLibre location popups used the default zero offset, so the selected information popup intruded into the selected ~61px glyph. `Globe3D.jsx` and `MediaCorpGlobe.jsx` now use a 44px dynamic popup offset; Flat Leaflet marker anchors were already safe.
+- Deterministic Playwright geometry coverage passes at 1440x900, 1024x768, 387x805, 844x390, and 915x412 with marker/popup intersection area zero and an 8px minimum gap. CI mobile and smoke/accessibility suites passed.
+- Fresh merged-main production build was `assets/index-DDdeMp_o.js`; runtime app ID was `6a62213cff3ccbca88c04ff5`, backup ID was not active. Live production HTML and `Globe3D-CPna4LJ_.js` match the build and contain the fixed offset.
+- Final anonymous production responsive smoke had no horizontal overflow. Natural live selected-marker fixture data was unavailable, so live popup geometry remains covered by the deterministic fixture test; authenticated browser QA remains unavailable.
+
 Last verified: 2026-09-28 (landscape and place-to-mission releases shipped).
 
 ## LANDSCAPE RELEASE CHECKPOINT

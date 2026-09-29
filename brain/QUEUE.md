@@ -6,6 +6,17 @@ NEXT_ACTION · DONE_WHEN.
 ## P0
 None open.
 
+## SELECTED MARKER OVERLAY — CLOSED 2026-09-29 (PR #303, merge `82d5ed8`)
+Root cause was a shared MapLibre popup with no anchor offset. `Globe3D.jsx`
+and `MediaCorpGlobe.jsx` now offset selected location information by 44px,
+keeping the selected marker visible. Deterministic geometry tests prove zero
+marker/popup intersection with an 8px minimum gap across desktop, tablet,
+mobile, and landscape viewports. Fresh merged-main artifact
+`assets/index-DDdeMp_o.js` and live Globe3D chunk match; production target
+proof is green. No backend resources, permissions, schemas, or data changed.
+Natural production marker selection was unavailable in the anonymous session;
+the deterministic real MapLibre fixture is the authoritative interaction proof.
+
 ## MOBILE BLACK SQUARE — CLOSED 2026-09-27 (PR #287, merge b62fecf)
 Root cause: `pinFor()` (flat-map marker) and `thumbHTML()`/`LocationThumb`
 (popup + bottom-sheet card) rendered a plain `<img>` with no `onerror`, and
