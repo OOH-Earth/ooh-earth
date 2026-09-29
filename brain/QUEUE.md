@@ -65,6 +65,7 @@ duplication) rather than a quick patch.
 - SCOPE: frontend-only CTA in `QuestTracker` linking to `/map`; no new data, schema, auth, or privacy surface.
 - NON-GOALS: no Trails, messaging, crews, connections, or new mission persistence.
 - SUCCESS: accessible CTA, no overflow at mobile widths, existing mission tests remain green, then normal BACKUP/CI/production loop.
+- SHIPPED: PR #299, merge `bcebc81`; live production artifact `assets/index-CdunO6Ul.js`; live OperativeProfile chunk contains the CTA; mission-board CI and production responsive checks passed.
 
 ### SOCIAL-1 — Live activity → real places — SHIPPED 2026-09-27
 - WHY: first slice toward "GO OUT → DISCOVER → DO SOMETHING". Discovery

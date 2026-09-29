@@ -1,6 +1,6 @@
 # HANDOFF — read this first
 
-LAST_UPDATED: 2026-09-28 (landscape shipped; place-to-mission burst in progress)
+LAST_UPDATED: 2026-09-28 (landscape and place-to-mission releases shipped)
 
 ## Landscape release — CLOSED
 PR #298 merged as `7c0acd2167b24c7608b1a30710f539276575604f`. Production artifact `assets/index-Dv146f8m.js` was built from that merge and its live Map chunk/CSS hashes match the build. Cache-busting live geometry: 667x375 187px, 844x390 202px, 844x412 224px, 915x412 224px, 932x430 242px; representative portrait/tablet/desktop cases had no horizontal overflow. The first old-geometry reading was a propagation race; final proof waited for live asset match before measuring.
@@ -45,9 +45,10 @@ SOCIAL-1/2/3/4, CHECKPOINT-QC-READ) remains CLOSED.
    path already used successfully in every prior burst.
 
 ## Next
-Complete the safe Mission Board → field map CTA burst in this worktree,
-then use the standard BACKUP/PR/CI/merge/production loop. Keep Trails,
-PERF-OBS-1, and baseline maintenance separate.
+The safe Mission Board → field map CTA is shipped in PR #299 (`bcebc81`)
+and live production serves `assets/index-CdunO6Ul.js`. Next use the
+standard BACKUP/PR/CI/merge/production loop for place-centric discovery.
+Keep Trails, PERF-OBS-1, and baseline maintenance separate.
 
 ## Blockers
 None release-blocking. Two carried-forward, non-urgent items:
