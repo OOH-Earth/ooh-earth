@@ -34,7 +34,7 @@ import EvidenceTimeline from '@/components/ooh/EvidenceTimeline';
 import { useSeo } from '@/lib/seoContext';
 import { getStatusBadgeClasses } from '@/lib/statusBadge';
 import { shareLocation } from '@/lib/shareLocation';
-import { loadFieldMission } from '@/lib/fieldMission';
+import { addToFieldMission, loadFieldMission } from '@/lib/fieldMission';
 
 function normalizeSeed(rec) {
   return {
@@ -57,6 +57,7 @@ export default function LocationDetail() {
   const queryClient = useQueryClient();
   const [searchParams] = useSearchParams();
   const [shareState, setShareState] = useState('');
+  const [routeState, setRouteState] = useState('');
   // Deep-link hint from PortalOps' Verification Priority Queue (or any other
   // future caller) -- a pure navigation signal, nothing else. Any value other
   // than exactly 'recheck' (missing, misspelled, tampered) is silently
@@ -74,6 +75,20 @@ export default function LocationDetail() {
   const returnToMission = missionItem
     ? `/portal/ops?section=geo&missionLocation=${encodeURIComponent(id)}`
     : null;
+
+  const addLocationToRoute = () => {
+    if (!loc) return;
+    const result = addToFieldMission(loc);
+    setRouteState(
+      result.ok
+        ? result.added
+          ? 'Added to field route'
+          : 'Already in field route'
+        : result.reason === 'MISSION_CAP'
+          ? 'Field route full (20 max)'
+          : 'Field route unavailable',
+    );
+  };
 
   // Same fallback chain as before (get by id -> filter by legacy source_link
   // -> static seed data), just wrapped as one queryFn so revisiting a
@@ -351,6 +366,21 @@ export default function LocationDetail() {
                 >
                   <Navigation className="h-3 w-3" /> Directions
                 </a>
+              )}
+              <button
+                type="button"
+                onClick={addLocationToRoute}
+                className="inline-flex items-center gap-1.5 border border-ozone/40 px-3 py-1 font-mono text-[9px] font-bold uppercase tracking-[0.2em] text-ozone transition-colors hover:bg-ozone hover:text-void"
+              >
+                <MapPin className="h-3 w-3" /> Add to field route
+              </button>
+              {routeState && (
+                <span
+                  role="status"
+                  className="font-mono text-[9px] uppercase tracking-[0.16em] text-ozone"
+                >
+                  {routeState}
+                </span>
               )}
             </div>
           )}
