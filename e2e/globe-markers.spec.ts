@@ -106,6 +106,84 @@ const MOCK_LOCATIONS: MockDb['locations'] = {
   },
 };
 
+const POPUP_GEOMETRY_LOCATION: MockDb['locations'] = {
+  'loc-popup': {
+    id: 'loc-popup',
+    title: 'Popup geometry fixture',
+    type: 'billboard',
+    status: 'verified',
+    lat: 13.7563,
+    lng: 100.5018,
+    address: 'Bangkok, Thailand',
+  },
+};
+
+async function projectGlobeLocation(page: import('@playwright/test').Page) {
+  return page.evaluate(() => {
+    const container = document.querySelector('.maplibregl-canvas-container');
+    if (!container) return null;
+    let el: Element | null = container.parentElement;
+    const fiberKey = (() => {
+      while (el) {
+        const key = Object.keys(el).find((k) => k.startsWith('__reactFiber$'));
+        if (key) return key;
+        el = el.parentElement;
+      }
+      return null;
+    })();
+    if (!el || !fiberKey) return null;
+    let fiber: any = (el as any)[fiberKey];
+    let map: any = null;
+    for (let hops = 0; fiber && hops < 25 && !map; hops += 1) {
+      let hook = fiber.memoizedState;
+      for (let i = 0; hook && i < 40; i += 1) {
+        const value = hook.memoizedState?.current;
+        if (value && typeof value.project === 'function') map = value;
+        hook = hook.next;
+      }
+      fiber = fiber.return;
+    }
+    if (!map) return null;
+    const point = map.project([100.5018, 13.7563]);
+    const canvas = document.querySelector('.maplibregl-canvas')?.getBoundingClientRect();
+    const rendered = map.queryRenderedFeatures([point.x, point.y], {
+      layers: ['ooh-markers'],
+    }).length;
+    return canvas ? { x: point.x + canvas.left, y: point.y + canvas.top, rendered } : null;
+  });
+}
+
+async function fireProjectedMarkerClick(page: import('@playwright/test').Page) {
+  return page.evaluate(() => {
+    const container = document.querySelector('.maplibregl-canvas-container');
+    if (!container) return false;
+    let el: Element | null = container.parentElement;
+    let fiberKey: string | undefined;
+    while (el && !fiberKey) {
+      fiberKey = Object.keys(el).find((k) => k.startsWith('__reactFiber$'));
+      if (!fiberKey) el = el.parentElement;
+    }
+    if (!el || !fiberKey) return false;
+    let fiber: any = (el as any)[fiberKey];
+    let map: any = null;
+    for (let hops = 0; fiber && hops < 25 && !map; hops += 1) {
+      let hook = fiber.memoizedState;
+      for (let i = 0; hook && i < 40; i += 1) {
+        const value = hook.memoizedState?.current;
+        if (value && typeof value.project === 'function') map = value;
+        hook = hook.next;
+      }
+      fiber = fiber.return;
+    }
+    if (!map) return false;
+    const point = map.project([100.5018, 13.7563]);
+    const features = map.queryRenderedFeatures([point.x, point.y], { layers: ['ooh-markers'] });
+    if (!features.length) return false;
+    map.fire('click', { point, lngLat: map.unproject(point), features });
+    return true;
+  });
+}
+
 test.describe('Globe markers — worker-resolution regression', () => {
   test('Home "Orbital Atlas" globe renders real markers, not just a spot count', async ({
     page,
@@ -191,6 +269,92 @@ test.describe('Globe markers — worker-resolution regression', () => {
     await expect
       .poll(() => page.locator('.leaflet-marker-icon').count(), { timeout: 10_000 })
       .toBeGreaterThan(0);
+    expect(filterCrashes(consoleErrors)).toEqual([]);
+  });
+
+  test('selected Home Globe popup keeps the marker visibly clear', async ({ page }) => {
+    test.setTimeout(60_000);
+    const consoleErrors = trackConsoleErrors(page);
+    await mockBase44(page, { user: null, locations: POPUP_GEOMETRY_LOCATION });
+
+    for (const viewport of [
+      { width: 1440, height: 900 },
+      { width: 1024, height: 768 },
+      { width: 387, height: 805 },
+      { width: 844, height: 390 },
+      { width: 915, height: 412 },
+    ]) {
+      await page.setViewportSize(viewport);
+      await page.goto('/');
+      const globe = page.locator('[data-tour="globe"]');
+      await globe.scrollIntoViewIfNeeded();
+      await expect(globe.locator('.maplibregl-canvas')).toBeVisible({ timeout: 15_000 });
+      await expect
+        .poll(() => projectGlobeLocation(page), { timeout: 15_000 })
+        .toEqual(expect.objectContaining({ rendered: 1 }));
+      const anchor = await projectGlobeLocation(page);
+      if (!anchor) throw new Error('Globe marker projection was unavailable');
+      await page.mouse.click(anchor.x, anchor.y);
+      if (!(await page.locator('.maplibregl-popup').count())) await fireProjectedMarkerClick(page);
+      const popup = page.locator('.maplibregl-popup');
+      await expect(popup).toBeVisible({ timeout: 10_000 });
+      const geometry = await page.evaluate((projected) => {
+        const popup = document.querySelector('.maplibregl-popup')?.getBoundingClientRect();
+        if (!popup || !projected) return null;
+        const markerRect = {
+          left: projected.x - 31,
+          right: projected.x + 31,
+          top: projected.y - 31,
+          bottom: projected.y + 31,
+        };
+        const overlapX = Math.max(
+          0,
+          Math.min(markerRect.right, popup.right) - Math.max(markerRect.left, popup.left),
+        );
+        const overlapY = Math.max(
+          0,
+          Math.min(markerRect.bottom, popup.bottom) - Math.max(markerRect.top, popup.top),
+        );
+        const gapX =
+          popup.right <= markerRect.left
+            ? markerRect.left - popup.right
+            : popup.left >= markerRect.right
+              ? popup.left - markerRect.right
+              : 0;
+        const gapY =
+          popup.bottom <= markerRect.top
+            ? markerRect.top - popup.bottom
+            : popup.top >= markerRect.bottom
+              ? popup.top - markerRect.bottom
+              : 0;
+        return {
+          popup,
+          markerRect,
+          overlapX,
+          overlapY,
+          gap: Math.max(gapX, gapY),
+          overflow:
+            document.documentElement.scrollWidth > innerWidth ||
+            document.body.scrollWidth > innerWidth,
+        };
+      }, anchor);
+      expect(
+        geometry,
+        `missing popup geometry at ${viewport.width}x${viewport.height}`,
+      ).not.toBeNull();
+      expect(
+        geometry?.overlapX && geometry?.overlapY,
+        `marker/popup overlap at ${viewport.width}x${viewport.height}`,
+      ).toBe(0);
+      expect(
+        geometry?.gap,
+        `marker/popup clearance too small at ${viewport.width}x${viewport.height}`,
+      ).toBeGreaterThanOrEqual(8);
+      expect(
+        geometry?.overflow,
+        `horizontal overflow at ${viewport.width}x${viewport.height}`,
+      ).toBe(false);
+    }
     expect(filterCrashes(consoleErrors)).toEqual([]);
   });
 });

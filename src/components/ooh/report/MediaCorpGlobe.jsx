@@ -192,6 +192,10 @@ export default function MediaCorpGlobe({
     popupRef.current = new maplibregl.Popup({
       closeButton: true,
       closeOnClick: true,
+      // Keep selected location context clear of the canvas pin. The selected
+      // glyph is roughly 61px across, so the default zero offset lets the
+      // popup content intrude into the marker's visual anchor.
+      offset: 44,
       maxWidth: '260px',
     });
 

@@ -202,6 +202,12 @@ export default function Globe3D({
     popupRef.current = new maplibregl.Popup({
       closeButton: true,
       closeOnClick: true,
+      // The selected canvas pin is ~61px wide at the selected icon scale.
+      // Keep the popup's content clear of that anchor instead of letting the
+      // default zero offset place the card across the pin. MapLibre flips the
+      // anchor near an edge, so this remains usable above, below, or beside
+      // the marker while preserving the same clearance.
+      offset: 44,
       maxWidth: '260px',
     });
 
