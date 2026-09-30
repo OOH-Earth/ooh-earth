@@ -1,5 +1,23 @@
 # NOW — current truth only
 
+## SOCIAL VERIFIED ACTIVITY → PLACE — IN PROGRESS
+- OBJECTIVE: make verified public FieldCheck activity open the public place
+  where the contribution happened.
+- WHY: connect CONTRIBUTION → FIELD RECORD → DISCOVERY without introducing a
+  social graph or generic feed.
+- USER LOOP: a verified field event appears → understand what was verified →
+  open the place → choose an existing action.
+- SCOPE: reuse the existing authenticated Live Activity subscription,
+  public FieldCheck status/location_id, existing activity target helper, and
+  Location Detail route; add pure helper/component regression coverage.
+- NON-GOALS: no new entity/schema, private reads, public identity fields,
+  Trails, messaging, people-nearby, movement history, or writes.
+- PRIVACY BOUNDARY: link only when status is `verified` and the existing
+  public `location_id` is present; never expose the contributor identity.
+- SUCCESS EVIDENCE: verified activity has an accessible place link, pending
+  checks remain non-interactive, existing activity tests stay green, and no
+  data mutation occurs.
+
 ## SOCIAL PLACE DISCOVERY LINKS — CLOSED 2026-09-29
 - OBJECTIVE: make Home’s existing real-place “terrain, now” surface lead to
   truthful Location Detail instead of dead-ending at the generic map.

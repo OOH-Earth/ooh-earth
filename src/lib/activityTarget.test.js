@@ -24,6 +24,25 @@ test('events with no public place stay non-interactive', () => {
   assert.equal(activityTargetPath('DigitalBust', { type: 'create', id: 'b1', data: {} }), null);
   assert.equal(activityTargetPath('FundingLead', { type: 'create', id: 'f1', data: {} }), null);
   assert.equal(activityTargetPath('LeadClaim', { type: 'create', id: 'c1', data: {} }), null);
+  assert.equal(
+    activityTargetPath('FieldCheck', {
+      type: 'create',
+      id: 'check1',
+      data: { location_id: 'loc9', status: 'pending' },
+    }),
+    null,
+  );
+});
+
+test('a verified FieldCheck links contribution activity to its public place', () => {
+  assert.equal(
+    activityTargetPath('FieldCheck', {
+      type: 'update',
+      id: 'check1',
+      data: { location_id: 'loc9', status: 'verified' },
+    }),
+    '/location/loc9',
+  );
 });
 
 test('only create events produce a link', () => {

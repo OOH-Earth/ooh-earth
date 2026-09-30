@@ -1,5 +1,10 @@
 # HANDOFF — read this first
 
+## Verified activity → place — IN PROGRESS
+Next focused burst: add a truthful Location Detail link to verified public
+FieldCheck activity using its existing `location_id`. Pending/unverified
+checks remain non-interactive. No new data model or privacy surface.
+
 ## Social place discovery links — CLOSED 2026-09-29
 PR #307 merged as `62829b5d273c50f9c6cd3fa35a25a37b485113f8`.
 MiniMapStack place cards and popups now link to `/location/:id`, strengthening

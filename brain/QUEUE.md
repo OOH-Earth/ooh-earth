@@ -1,5 +1,10 @@
 # QUEUE — priority lanes, stable IDs
 
+## SOCIAL VERIFIED ACTIVITY → PLACE — IN PROGRESS
+Use the existing public verified FieldCheck event and Live Activity surface
+to connect a real contribution back to its Location Detail. Frontend-only;
+no schema, private-data, messaging, people-nearby, or Trails work.
+
 ## SOCIAL PLACE DISCOVERY LINKS — CLOSED 2026-09-29 (PR #307)
 MiniMapStack place cards and map popups now lead to the existing public
 Location Detail, so place discovery reaches context and the shipped
