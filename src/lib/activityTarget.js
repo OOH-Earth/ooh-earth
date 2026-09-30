@@ -4,10 +4,13 @@
 const SAFE_ID = /^[A-Za-z0-9_-]{1,64}$/;
 
 export function activityTargetPath(entityName, event) {
-  if (!event || event.type !== 'create') return null;
+  if (!event || !['create', 'update'].includes(event.type)) return null;
   let id = null;
-  if (entityName === 'Location') id = event.id;
-  else if (entityName === 'LeadClaim') id = event.data?.location_id;
+  if (entityName === 'Location' && event.type === 'create') id = event.id;
+  else if (entityName === 'LeadClaim' && event.type === 'create') id = event.data?.location_id;
+  else if (entityName === 'FieldCheck' && event.data?.status === 'verified') {
+    id = event.data?.location_id;
+  }
   if (typeof id !== 'string' || !SAFE_ID.test(id)) return null;
   return `/location/${id}`;
 }

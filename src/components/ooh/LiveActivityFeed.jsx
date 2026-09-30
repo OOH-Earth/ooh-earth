@@ -72,6 +72,15 @@ export default function LiveActivityFeed() {
         href: activityTargetPath('LeadClaim', e),
       });
   });
+  useAuthGatedSubscribe('FieldCheck', (e) => {
+    if ((e.type === 'create' || e.type === 'update') && e.data?.status === 'verified')
+      push({
+        type: 'verify',
+        title: e.data?.location_title || 'Field check verified',
+        meta: e.data?.address || e.data?.location_type || 'field record',
+        href: activityTargetPath('FieldCheck', e),
+      });
+  });
   useAuthGatedSubscribe('FundingLead', (e) => {
     if (e.type === 'create')
       push({ type: 'donate', title: 'Pledge logged', meta: e.data?.channel || 'lead' });
