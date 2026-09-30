@@ -1,6 +1,6 @@
 # NOW — current truth only
 
-## SOCIAL VERIFIED ACTIVITY → PLACE — IN PROGRESS
+## SOCIAL VERIFIED ACTIVITY → PLACE — CLOSED 2026-09-30
 - OBJECTIVE: make verified public FieldCheck activity open the public place
   where the contribution happened.
 - WHY: connect CONTRIBUTION → FIELD RECORD → DISCOVERY without introducing a
@@ -17,6 +17,21 @@
 - SUCCESS EVIDENCE: verified activity has an accessible place link, pending
   checks remain non-interactive, existing activity tests stay green, and no
   data mutation occurs.
+- RELEASE: PR #310 merged as `a29e577d3034057ba9c55a257a0ee9535f22873b`.
+  Production was built from that SHA and the live entry plus Home,
+  LocationDetail, and LiveActivityFeed chunks matched the expected hashes.
+- QA: BACKUP and production deployed frontend-only; fresh Chromium passed
+  the required five production viewports with no page errors or horizontal
+  overflow. Location Detail route CTA regression passed. Existing
+  `fieldNews`/`fieldStats` POSTs were read/aggregate probes, not entity or
+  resource mutations. Authenticated browser QA remains unavailable.
+
+## SECURITY MAINTENANCE — CLOSED 2026-09-30
+- Root main baseline had transitive `@base44/sdk@0.8.48 → axios@1.18.1`
+  high advisories. The surgical lockfile update to `axios@1.20.0` cleared
+  high/critical audit findings without source or package.json changes.
+- PR #311 merged as `e95a9acba3d4084fc8e9ce29a4e4da7fb5b250fc`; audit,
+  security tests, build, lint/typecheck, CodeQL, and Playwright gates passed.
 
 ## SOCIAL PLACE DISCOVERY LINKS — CLOSED 2026-09-29
 - OBJECTIVE: make Home’s existing real-place “terrain, now” surface lead to
@@ -141,7 +156,15 @@ None pending.
 2. SOCIAL-5's open questions (public/private default, per-entry hiding,
    global kill switch, retention/deletion) before any Trails work starts.
 
-## FINAL RECONCILIATION — 2026-09-29
+## FINAL RECONCILIATION — 2026-09-30
+- Current merged main: `a29e577d3034057ba9c55a257a0ee9535f22873b` (PR #310;
+  includes security merge #311).
+- Fresh BACKUP and production builds used explicit app IDs and deployed only
+  the frontend. Production live entry and feature chunks matched the build;
+  no backend/resource/data deployment occurred.
+- `SAFE_TO_REPORT_TO_DAVE: YES`; no open P0 or release blocker.
+
+## PRIOR RECONCILIATION — 2026-09-29
 - Current merged main: `d3bd32db1797b1ba640a4aa8893a6ce3f9a6b737` (PR #301 docs merge; includes PR #300 Home Globe fix and PR #299 social CTA).
 - Fresh production build from that SHA: `assets/index-T3tZAZek.js`; runtime `appId` is `6a62213cff3ccbca88c04ff5`; backup ID is not active configuration.
 - Production frontend redeployed from the fresh merged-main build with Base44 CLI 0.1.14. Live HTML and entry now match `assets/index-T3tZAZek.js`.

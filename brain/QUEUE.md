@@ -1,9 +1,17 @@
 # QUEUE — priority lanes, stable IDs
 
-## SOCIAL VERIFIED ACTIVITY → PLACE — IN PROGRESS
+## SOCIAL VERIFIED ACTIVITY → PLACE — CLOSED 2026-09-30
 Use the existing public verified FieldCheck event and Live Activity surface
 to connect a real contribution back to its Location Detail. Frontend-only;
 no schema, private-data, messaging, people-nearby, or Trails work.
+PR #310 merged as `a29e577`; BACKUP and production entry/feature chunks
+matched their explicit builds. Five production viewports and the field-route
+CTA regression passed; true entity/resource writes remained zero.
+
+## SECURITY AUDIT BLOCKER — CLOSED 2026-09-30
+Transitive `axios@1.18.1` advisories through `@base44/sdk@0.8.48` were fixed
+by the surgical lockfile update to `axios@1.20.0`. PR #311 merged as
+`e95a9ac`; audit and all required security/release checks passed.
 
 ## SOCIAL PLACE DISCOVERY LINKS — CLOSED 2026-09-29 (PR #307)
 MiniMapStack place cards and map popups now lead to the existing public
