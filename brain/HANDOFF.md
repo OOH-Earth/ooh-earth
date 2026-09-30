@@ -1,9 +1,19 @@
 # HANDOFF — read this first
 
-## Verified activity → place — IN PROGRESS
-Next focused burst: add a truthful Location Detail link to verified public
-FieldCheck activity using its existing `location_id`. Pending/unverified
-checks remain non-interactive. No new data model or privacy surface.
+## Verified activity → place — CLOSED 2026-09-30
+PR #310 merged as `a29e577d3034057ba9c55a257a0ee9535f22873b`. Verified public
+FieldCheck activity now links to the existing public Location Detail using
+its existing `location_id`; pending/unverified checks remain non-interactive.
+BACKUP and production were built and deployed frontend-only, with live entry
+and feature chunks reconciled. Production Chromium passed 387x805, 844x390,
+915x412, 1024x768, and 1440x900; the field-route CTA regression passed.
+No true entity/resource writes occurred. Authenticated browser QA remains
+unavailable.
+
+## Dependency audit blocker — CLOSED 2026-09-30
+PR #311 merged as `e95a9ac`. The transitive axios advisory was cleared by a
+lockfile-only update from 1.18.1 to 1.20.0; no unrelated dependency upgrade
+or application source change was included.
 
 ## Social place discovery links — CLOSED 2026-09-29
 PR #307 merged as `62829b5d273c50f9c6cd3fa35a25a37b485113f8`.
@@ -30,7 +40,7 @@ fixed offset. No backend/resource/data writes occurred. Authenticated QA and
 natural anonymous production marker selection remain environment/data
 limitations; do not claim them as completed.
 
-LAST_UPDATED: 2026-09-28 (landscape and place-to-mission releases shipped)
+LAST_UPDATED: 2026-09-30 (verified activity release and security blocker shipped)
 
 ## Landscape release — CLOSED
 PR #298 merged as `7c0acd2167b24c7608b1a30710f539276575604f`. Production artifact `assets/index-Dv146f8m.js` was built from that merge and its live Map chunk/CSS hashes match the build. Cache-busting live geometry: 667x375 187px, 844x390 202px, 844x412 224px, 915x412 224px, 932x430 242px; representative portrait/tablet/desktop cases had no horizontal overflow. The first old-geometry reading was a propagation race; final proof waited for live asset match before measuring.
