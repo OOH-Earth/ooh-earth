@@ -47,3 +47,11 @@ Security #321 merged as `c4aa07b52cc528d5ed6431060543d52b43f881b2` after all CI 
 #319 CI and CodeQL now pass, including desktop and mobile Chromium. BACKUP rendered qualification remains required before merge/release.
 
 The owner completed normal Base44 device approval. However the CLI authentication polling process returned an execution-policy denial: `Network access to https://app.base44.com:443 was blocked by policy`. Authentication state is therefore unconfirmed. No alternate tool, host or encoding was attempted to bypass that block; no deployment was attempted. Production remains the reconciled #308 artifact. Restore the environment's approved Base44 API access before continuing the BACKUP/release lane.
+
+## Owner-run BACKUP deployment and live recovery - 2026-10-01
+
+Owner terminal output confirms normal CLI authentication and successful frontend-only BACKUP deployment from a fresh feature checkout. True entry: `assets/index-CKrSkWuv.js`; target `6a6748e009b947cb29591871` proven before deploy. Live manifest identifies `317402e912ffa0bd8541a0d9ede651f19e0f2baf`; the live entry independently confirms the BACKUP runtime target and references `Globe3D-DDOZg1Tm.js`.
+
+Work cloud Chromium (1363x936, WebGL2 unavailable) renders Home with the fallback instead of the page error boundary. The recovery link has a 44px height. Home document width does not exceed the viewport. Clicking it navigates to BACKUP `/map`, with one Leaflet container and a visually rendered satellite Flat map. No application errors appeared in the inspected console; browser-extension metadata errors are separate. This is desktop unsupported-device recovery evidence, not full responsive or supported-WebGL2 globe qualification. No data mutation was initiated by these QA interactions.
+
+The deployed feature branch predates security #321. Bring it onto the patched baseline and rerun gates before promotion. Supported-device globe geometry and the complete responsive matrix remain pending. Production unchanged; do not merge/release the fallback yet.
