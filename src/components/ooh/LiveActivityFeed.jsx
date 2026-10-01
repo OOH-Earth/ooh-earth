@@ -95,7 +95,7 @@ export default function LiveActivityFeed() {
   );
 
   return (
-    <div className="pointer-events-none fixed bottom-3 left-3 z-[80] hidden w-[300px] max-w-[calc(100vw-24px)] flex-col gap-2 md:flex">
+    <div className="pointer-events-none fixed bottom-[calc(82px+env(safe-area-inset-bottom))] left-3 z-[80] flex w-[300px] max-w-[calc(100vw-24px)] flex-col gap-2 md:bottom-3">
       <div className="flex items-center gap-2 px-1">
         <Radio className="h-3 w-3 animate-flicker text-ozone" />
         <span className="font-mono text-[9px] uppercase tracking-[0.3em] text-silver/70">
