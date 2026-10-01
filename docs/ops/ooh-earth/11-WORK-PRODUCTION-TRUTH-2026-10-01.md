@@ -55,3 +55,7 @@ Owner terminal output confirms normal CLI authentication and successful frontend
 Work cloud Chromium (1363x936, WebGL2 unavailable) renders Home with the fallback instead of the page error boundary. The recovery link has a 44px height. Home document width does not exceed the viewport. Clicking it navigates to BACKUP `/map`, with one Leaflet container and a visually rendered satellite Flat map. No application errors appeared in the inspected console; browser-extension metadata errors are separate. This is desktop unsupported-device recovery evidence, not full responsive or supported-WebGL2 globe qualification. No data mutation was initiated by these QA interactions.
 
 The deployed feature branch predates security #321. Bring it onto the patched baseline and rerun gates before promotion. Supported-device globe geometry and the complete responsive matrix remain pending. Production unchanged; do not merge/release the fallback yet.
+
+## Security baseline and artifact reconciliation
+
+The candidate now incorporates merged security #321. A fresh BACKUP-targeted build with that lockfile produces `index-CKrSkWuv.js` byte-identical to the owner-deployed live entry. Runtime behavior did not change with the dev-dependency patch. Local audit is zero high/critical; build, lint and typecheck pass. Supported-device globe geometry and responsive QA remain pending; production release is not authorized by these limited live measurements alone.
