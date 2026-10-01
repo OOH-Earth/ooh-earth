@@ -39,3 +39,11 @@ Owner supplied #308 release QA: deterministic geometry zero intersection and >=8
 - #321: separate brace-expansion 1.1.18 -> 1.1.21 lockfile patch. Local npm audit: zero high/critical, one low and one moderate remain. Lint/typecheck/build and glob compatibility checks pass; all 288 build assets equal the current-main build. CodeQL is green; browser CI is still running at this update.
 - Terminal Git writes lack a credential. Authorized publication used the connected GitHub app; published trees exactly match validated local trees.
 - Production remains #308; no deployment or production data change was made. #318 remains the separate merged release candidate.
+
+## Final gate update - 2026-10-01
+
+Security #321 merged as `c4aa07b52cc528d5ed6431060543d52b43f881b2` after all CI and CodeQL gates passed, with exact head protection. It changes only the dev-dependency lock entry; no deployment is needed for this fix.
+
+#319 CI and CodeQL now pass, including desktop and mobile Chromium. BACKUP rendered qualification remains required before merge/release.
+
+The owner completed normal Base44 device approval. However the CLI authentication polling process returned an execution-policy denial: `Network access to https://app.base44.com:443 was blocked by policy`. Authentication state is therefore unconfirmed. No alternate tool, host or encoding was attempted to bypass that block; no deployment was attempted. Production remains the reconciled #308 artifact. Restore the environment's approved Base44 API access before continuing the BACKUP/release lane.
