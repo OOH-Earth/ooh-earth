@@ -6,6 +6,7 @@ import 'maplibre-gl/dist/maplibre-gl.css';
 import GlobeHud from '@/components/ooh/GlobeHud';
 import FieldStatsHud from '@/components/ooh/FieldStatsHud';
 import { motion } from 'framer-motion';
+import { Link } from 'react-router-dom';
 
 import { thumbHTML, metaFor } from '@/components/ooh/map/LocationThumb';
 import { drawGlyph, GLYPH_COLORS, PIN_TYPES } from '@/components/ooh/map/pinGlyphs';
@@ -237,6 +238,7 @@ export default function Globe3D({
   onCountsRef.current = onCounts;
 
   const [ready, setReady] = useState(false);
+  const [gpuUnavailable, setGpuUnavailable] = useState(false);
   const [spinning, setSpinning] = useState(spin);
   const [, setCounts] = useState({ spots: 0, clusters: 0, leads: 0, verified: 0 });
 
@@ -261,16 +263,26 @@ export default function Globe3D({
 
   useEffect(() => {
     if (!containerRef.current) return;
-    const map = new maplibregl.Map({
-      container: containerRef.current,
-      style: mapStyle.glStyle,
-      center: [100.55, 13.746],
-      zoom: 1.6,
-      pitch: 25,
-      maxPitch: 85,
-      attributionControl: { compact: true },
-      interactive,
-    });
+    let map;
+    try {
+      map = new maplibregl.Map({
+        container: containerRef.current,
+        style: mapStyle.glStyle,
+        center: [100.55, 13.746],
+        zoom: 1.6,
+        pitch: 25,
+        maxPitch: 85,
+        attributionControl: { compact: true },
+        interactive,
+      });
+    } catch (error) {
+      // Unsupported graphics must not take the entire page into its error boundary.
+      // Other initialization failures still surface for diagnosis.
+      if (!(error instanceof maplibregl.GPUInitializationError)) throw error;
+      setGpuUnavailable(true);
+      onErrorRef.current?.();
+      return;
+    }
     mapRef.current = map;
     popupRef.current = new maplibregl.Popup({
       closeButton: true,
@@ -644,6 +656,23 @@ export default function Globe3D({
       duration: 800,
     });
   }, [userLoc, ready]);
+
+  if (gpuUnavailable) {
+    return (
+      <div
+        role="status"
+        className="flex h-full flex-col items-center justify-center gap-4 px-6 text-center"
+      >
+        <p className="font-mono text-sm text-silver">The globe is unavailable on this device.</p>
+        <Link
+          to="/map"
+          className="inline-flex min-h-11 items-center border border-ozone px-4 font-mono text-sm text-ozone focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ozone"
+        >
+          Explore the field map
+        </Link>
+      </div>
+    );
+  }
 
   return (
     <div className="absolute inset-0">

@@ -1,0 +1,31 @@
+# Work production truth - 2026-10-01
+
+## Current source and environments
+
+- Current origin/main: `133e9db922da2746594626ab66c7779983373c68` (#318).
+- #308 merged as `1cd9d2676c0a44002cabcf6182e39b1956dab462`; GitHub CI summary records all blocking gates successful.
+- #318 is merged; its head CI and CodeQL workflow runs are successful.
+- Production manifest identifies #308, not #318. A fresh clean build from #308 with only `VITE_BASE44_APP_ID=6a62213cff3ccbca88c04ff5` exactly matches production entry `assets/index-BN4u-e3V.js` and `Globe3D-DtphFOlP.js` byte for byte.
+- Live entry SHA256: `8a09cb363ebaca51d9fa0e88e656f685d0343e8dad580d822240d663a41f1dda`. Production ID occurs eight times; BACKUP ID occurs zero times.
+- BACKUP manifest identifies #318 (`133e9db`). This manifest alone does not prove rendered qualification.
+- #308 implementation is live. No redundant deployment was performed. Production geometry closure remains pending a WebGL2-capable browser.
+
+## Browser and deployment limitations
+
+The available cloud Chromium displays Home's page error boundary. Console evidence identifies `GPUInitializationError: WebGL2 is required` from Globe3D map construction. Reload reproduces it. This is a concrete unsupported-device failure, not evidence that supported devices fail or that popup geometry regressed.
+
+The local Playwright browser installer fails with truncated/non-ZIP download errors. No local Chromium execution or responsive geometry QA is claimed. No Chrome DevTools MCP is exposed.
+
+Base44 CLI 0.1.14 `whoami` reports no authenticated session and automatically starts device login. The waiting login was cancelled. No deployment was attempted and no deployment-classifier denial occurred in this session. Authentication must be restored through the normal CLI login before BACKUP qualification. No production entity/resource writes were initiated.
+
+## Bounded BUILD candidate
+
+Catch only MapLibre's `GPUInitializationError` during globe construction. Home retains a clear, keyboard-accessible field-map link; Map reuses its existing `onError` transition to Flat. Other initialization errors continue to surface. Popup placement, glyphs, worker setup, schemas, permissions, data access, and subscriptions are unchanged.
+
+Regression spec forces WebGL2 unavailable and exercises Home -> Map -> Leaflet across 360x800, 844x390, 1440x900. Browser execution is pending. Keep this candidate draft until BACKUP rendered QA and required gates are complete. Do not merge/deploy it based solely on static checks.
+
+## Next serialized release
+
+1. Finish real rendered production #308 geometry QA on a WebGL2-capable browser.
+2. Reconcile #318 BACKUP live assets and activity-card behavior before promoting its merged source; do not combine the unmerged fallback into its release.
+3. Qualify the fallback separately on BACKUP, run the forced-WebGL2 regression and normal globe geometry suite, then PR/CI/merge and fresh production build.
