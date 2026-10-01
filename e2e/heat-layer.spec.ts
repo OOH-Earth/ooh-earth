@@ -22,10 +22,18 @@ function trackConsoleErrors(page: import('@playwright/test').Page) {
 // toggle active). A direct bounding-box check is the geometry ground truth
 // and isn't subject to that same false negative.
 async function expectRenderedCanvas(locator: import('@playwright/test').Locator) {
-  const box = await locator.boundingBox();
-  expect(box, 'heat canvas should have a layout box').not.toBeNull();
-  expect(box.width, 'heat canvas width').toBeGreaterThan(0);
-  expect(box.height, 'heat canvas height').toBeGreaterThan(0);
+  // Changing street filters replaces the heat layer when its pins change.
+  // Re-resolve the current canvas until it has geometry instead of reading
+  // a handle that React may detach between lookup and boundingBox().
+  await expect
+    .poll(
+      async () => {
+        const box = await locator.boundingBox();
+        return !!box && box.width > 0 && box.height > 0;
+      },
+      { message: 'heat canvas should have a layout box with positive width and height' },
+    )
+    .toBe(true);
 }
 
 function seedLocations() {
