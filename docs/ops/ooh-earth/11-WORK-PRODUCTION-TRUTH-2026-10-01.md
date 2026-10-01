@@ -29,3 +29,13 @@ Regression spec forces WebGL2 unavailable and exercises Home -> Map -> Leaflet a
 1. Finish real rendered production #308 geometry QA on a WebGL2-capable browser.
 2. Reconcile #318 BACKUP live assets and activity-card behavior before promoting its merged source; do not combine the unmerged fallback into its release.
 3. Qualify the fallback separately on BACKUP, run the forced-WebGL2 regression and normal globe geometry suite, then PR/CI/merge and fresh production build.
+
+## Authorized continuation - 2026-10-01
+
+Owner supplied #308 release QA: deterministic geometry zero intersection and >=8px gap, responsive QA pass, no overflow or page errors, no data mutations, with natural live marker selection unavailable. This is owner-provided release evidence, not a new measurement in this Work browser. Together with the exact live artifact reconciliation it supports the prior P0 closure; the unsupported-WebGL2 failure remains a separate candidate.
+
+- #319: draft unsupported-WebGL2 fallback. Required CI runs the new three regression cases in the desktop Chromium suite; BACKUP qualification remains pending authentication.
+- #320: draft Live Canvas decision package, no publishing/schema authority added.
+- #321: separate brace-expansion 1.1.18 -> 1.1.21 lockfile patch. Local npm audit: zero high/critical, one low and one moderate remain. Lint/typecheck/build and glob compatibility checks pass; all 288 build assets equal the current-main build. CodeQL is green; browser CI is still running at this update.
+- Terminal Git writes lack a credential. Authorized publication used the connected GitHub app; published trees exactly match validated local trees.
+- Production remains #308; no deployment or production data change was made. #318 remains the separate merged release candidate.
