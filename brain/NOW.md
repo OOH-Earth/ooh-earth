@@ -1,5 +1,23 @@
 # NOW — current truth only
 
+## SOCIAL EARTH ACTIVITY ON MOBILE — IN PROGRESS
+- OBJECTIVE: make the existing public-place activity layer reachable on
+  mobile, where the current Live Activity surface is desktop-only.
+- WHY: Activity → Place is currently invisible on the primary field device;
+  exposing the existing verified-place links strengthens discovery without
+  inventing a feed or social graph.
+- USER LOOP: verified public activity appears → open the place → choose an
+  existing field action.
+- SCOPE: responsive presentation of the existing `LiveActivityFeed`; keep
+  existing auth-gated realtime subscriptions and place-link helper unchanged.
+- NON-GOALS: no new entity/schema, feed storage, private reads, identity
+  exposure, Trails, messaging, presence, or data writes.
+- PRIVACY BOUNDARY: only existing public event fields and existing public
+  Location Detail links are shown; realtime remains authenticated-only.
+- SUCCESS EVIDENCE: mobile activity cards avoid the bottom navigation area,
+  remain keyboard/focus accessible, desktop layout is unchanged, and existing
+  activity/location regression tests remain green.
+
 ## SOCIAL VERIFIED ACTIVITY → PLACE — CLOSED 2026-09-30
 - OBJECTIVE: make verified public FieldCheck activity open the public place
   where the contribution happened.
