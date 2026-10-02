@@ -272,27 +272,29 @@ test.describe('Globe markers — worker-resolution regression', () => {
     expect(filterCrashes(consoleErrors)).toEqual([]);
   });
 
-  test('selected Home Globe popup keeps the marker visibly clear', async ({ page }) => {
-    test.setTimeout(60_000);
-    const consoleErrors = trackConsoleErrors(page);
-    await mockBase44(page, { user: null, locations: POPUP_GEOMETRY_LOCATION });
-
-    for (const viewport of [
-      { width: 360, height: 800 },
-      { width: 390, height: 844 },
-      { width: 430, height: 932 },
-      { width: 667, height: 375 },
-      { width: 844, height: 390 },
-      { width: 844, height: 412 },
-      { width: 915, height: 412 },
-      { width: 932, height: 430 },
-      { width: 1440, height: 900 },
-      { width: 1024, height: 768 },
-      { width: 387, height: 805 },
-    ]) {
+  for (const viewport of [
+    { width: 360, height: 800 },
+    { width: 390, height: 844 },
+    { width: 430, height: 932 },
+    { width: 667, height: 375 },
+    { width: 844, height: 390 },
+    { width: 844, height: 412 },
+    { width: 915, height: 412 },
+    { width: 932, height: 430 },
+    { width: 1440, height: 900 },
+    { width: 1024, height: 768 },
+    { width: 387, height: 805 },
+  ]) {
+    test(`selected Home Globe popup keeps the marker visibly clear at ${viewport.width}x${viewport.height}`, async ({
+      page,
+    }) => {
+      test.setTimeout(60_000);
+      const consoleErrors = trackConsoleErrors(page);
+      await mockBase44(page, { user: null, locations: POPUP_GEOMETRY_LOCATION });
       await page.setViewportSize(viewport);
       await page.goto('/');
       const globe = page.locator('[data-tour="globe"]');
+      await expect(globe, 'Home globe section mounted').toBeVisible({ timeout: 15_000 });
       await globe.scrollIntoViewIfNeeded();
       await expect(globe.locator('.maplibregl-canvas')).toBeVisible({ timeout: 15_000 });
       await expect
@@ -370,7 +372,7 @@ test.describe('Globe markers — worker-resolution regression', () => {
         geometry?.overflow,
         `horizontal overflow at ${viewport.width}x${viewport.height}`,
       ).toBe(false);
-    }
-    expect(filterCrashes(consoleErrors)).toEqual([]);
-  });
+      expect(filterCrashes(consoleErrors)).toEqual([]);
+    });
+  }
 });
