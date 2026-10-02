@@ -18,8 +18,8 @@ Updated 2026-10-02. Follow `brain/PRODUCT.md`, `brain/INVARIANTS.md` and the own
 - [x] Reproduce manual-coordinate inputs disappearing as soon as both are populated.
 - [x] Implement editable manual recovery and accessible field names in an isolated branch.
 - [x] Root-cause and fix the 844x390 CI blocker (short-landscape results sheet covering Capture); rebase onto #323; 15/15 adjacent geometry regressions pass. See `docs/ops/ooh-earth/13-CAPTURE-RECOVERY-2026-10-02.md`.
-- [ ] Complete CI, BACKUP target proof/deploy and responsive rendered regression. Keep candidate draft until qualified.
-- [ ] Serialize its production release after the current SHIP candidate closes.
+- [x] Exact-head CI green (9/9, incl. previously-failing Playwright smoke+accessibility); BACKUP target-proof/deploy; rendered BACKUP QA (real click, real geometry, real manual-coordinate retyping) — PASS. Undrafted, ready to merge.
+- [ ] Serialize its production release after the #319 SHIP candidate's responsive QA gate closes.
 
 ## AUDIT — connected journey
 

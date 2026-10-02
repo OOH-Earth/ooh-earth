@@ -61,3 +61,17 @@ Cloud Chromium 1363×936 without WebGL2 renders Home normally with a 44px field-
 - Not yet done: PR head CI (push pending), BACKUP target proof/deploy, rendered BACKUP QA. No production action taken or needed for this frontend fix until it clears BACKUP qualification and is merged.
 
 No backend, schema, permission, vendor, or production-data change. No deployment performed in this pass.
+
+## #322 qualified: exact-head CI green, BACKUP deployed and rendered-verified
+
+Pushed rebased head `e046f7e3ed51d6d1005ae0e9fddb79d71d823521` (onto merged `#323`, `5ca1644`). All 9 required checks passed at this exact head, including `Playwright (smoke + accessibility)` (the suite that previously failed this spec) at 13m24s. `mergeStateStatus: CLEAN`.
+
+Built with `VITE_BASE44_APP_ID=6a6748e009b947cb29591871`; true entry `assets/index-B31vTGEn.js` contains the BACKUP SDK `appId` once and zero production-id hits. Deployed via `base44 site deploy --no-build --yes --app-id 6a6748e009b947cb29591871`. Live entry byte-for-byte identical to the local build (706894 bytes, direct diff).
+
+Rendered QA on live BACKUP (`ooh-earth-backup.base44.app`), real viewport 844×390, via a real browser (chrome-devtools MCP, not curl):
+- Measured in-page geometry: Capture button `bottom:210`, sheet `top:218` — 8px gap, matching the local prediction exactly.
+- `document.elementFromPoint()` at the button's center resolves to the button's own label span (contained within the button), not the bottom sheet — confirms no pointer-event interception at this viewport.
+- Opened the real QuickCapture modal via the button, typed `40.7484` into Latitude, then focused Longitude and typed `-` as the very first character (the exact trigger for the original defect) — both fields kept their values (`40.7484` / `-`), then completed to `-73.9857`. This is the live, deployed artifact exhibiting the fix, not just the local test suite.
+- No horizontal overflow. One console error: anonymous `401`, the same benign auth-probe pattern already documented elsewhere in this repo's QA history — not an application error, not an entity write.
+
+**Not yet done:** production deployment. Per `plan.md`'s SHIP lane, #319's own production regression gate ("full responsive supported-device production Playwright check") is still open, and only one production candidate is carried at a time — #322's production release is serialized behind that, not blocked by anything in #322 itself. PR #322 is undrafted and ready to merge on this evidence; merging to `main` is a pre-production step (GitHub only) and does not deploy anything.
