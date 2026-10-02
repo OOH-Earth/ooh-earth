@@ -1,5 +1,13 @@
 # NOW — current truth only
 
+## WORK VERIFICATION - 2026-10-01
+- Current main is `133e9db` (#318); production is exactly reconciled to #308 (`1cd9d26`), not #318. BACKUP manifest identifies #318.
+- #308 live entry and Globe3D chunk are byte-identical to a fresh build; production target ID is correct with zero BACKUP references.
+- Popup geometry closure is pending: cloud browser lacks WebGL2; local Chromium download failed. Do not claim responsive/marker QA complete.
+- BUILD: bounded unsupported-WebGL2 fallback, draft only until rendered BACKUP qualification.
+- CLI authentication is absent in this environment; no deployment was attempted.
+- Evidence: `docs/ops/ooh-earth/11-WORK-PRODUCTION-TRUTH-2026-10-01.md`.
+
 ## SOCIAL EARTH ACTIVITY ON MOBILE — IN PROGRESS
 - OBJECTIVE: make the existing public-place activity layer reachable on
   mobile, where the current Live Activity surface is desktop-only.
