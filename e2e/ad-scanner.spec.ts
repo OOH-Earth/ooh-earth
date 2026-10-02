@@ -439,7 +439,27 @@ test.describe('Ad Scanner — catalog to atlas', () => {
 
     // All 3 photos (cover + 2 pending extras) render for the creator -- not
     // just the cover.
-    await expect(page.getByTestId('photo-gallery').locator('img')).toHaveCount(3);
+    const gallery = page.getByTestId('photo-gallery');
+    await expect(gallery.locator('img')).toHaveCount(3);
+
+    // The cover is the Location's own image_url (no LocationPhoto row, no
+    // status) -- it must not show a status indicator itself.
+    await expect(
+      gallery.getByRole('button').first().getByTestId('gallery-photo-status'),
+    ).toHaveCount(0);
+
+    // Both extras are real LocationPhoto rows created with status: 'pending'
+    // -- each must carry a visible (if compact) pending indicator, so the
+    // creator can tell these haven't cleared moderation yet, not just that
+    // they rendered at all.
+    await expect(gallery.getByTestId('gallery-photo-status')).toHaveCount(2);
+
+    // Opening one in the lightbox shows the fuller text badge, not just the
+    // compact thumbnail dot.
+    await gallery.getByRole('button').nth(1).click();
+    await expect(page.getByRole('dialog').getByTestId('gallery-photo-status')).toHaveText(
+      'pending',
+    );
   });
 
   test('a failed extra-photo attach is surfaced to the user, not silently reported as a clean success', async ({
