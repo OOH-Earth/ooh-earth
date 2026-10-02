@@ -3,6 +3,7 @@ import { base44 } from '@/api/base44Client';
 import { Image } from '@/components/ui/image';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { ChevronLeft, ChevronRight, Images } from 'lucide-react';
+import { getStatusDotColor, getStatusBadgeClasses } from '@/lib/statusBadge';
 
 /**
  * Location photo gallery. Reads LocationPhoto rows (base44/entities/LocationPhoto.jsonc)
@@ -18,6 +19,17 @@ import { ChevronLeft, ChevronRight, Images } from 'lucide-react';
  * (RLS already grants them read access) were discarded before ever reaching this
  * component — every multi-photo submission looked like a single-photo one to the
  * very person who just uploaded it, until a moderator verified the location.
+ *
+ * Fixed alongside that: rows carried their `status` from the API but it was
+ * dropped before reaching the UI, so a pending/rejected photo rendered
+ * pixel-identical to a verified one — the one viewer who could actually see
+ * a pending photo (its own creator, or an admin) had no way to tell it
+ * wasn't live yet. Thumbnails get the same binary dot used on map pins
+ * (verified vs not); the cover and lightbox get the fuller 3-way badge
+ * already used on LocationDetail's own status badge (`@/lib/statusBadge`).
+ * The legacy `loc.image_url` cover fallback has no row of its own, so it
+ * never carries a status and never shows a badge — the page-level Location
+ * status badge already covers that case.
  */
 export default function PhotoGallery({ loc, icon: Icon, accent }) {
   const [photos, setPhotos] = useState([]);
@@ -41,7 +53,7 @@ export default function PhotoGallery({ loc, icon: Icon, accent }) {
           setPhotos(
             (rows || [])
               .filter((r) => r.url)
-              .map((r) => ({ url: r.url, caption: r.caption || '' })),
+              .map((r) => ({ url: r.url, caption: r.caption || '', status: r.status })),
           );
       } catch {
         if (alive) setPhotos([]);
@@ -82,6 +94,14 @@ export default function PhotoGallery({ loc, icon: Icon, accent }) {
           className="h-full w-full object-cover"
           fittingType="fill"
         />
+        {gallery[0].status && gallery[0].status !== 'verified' && (
+          <span
+            data-testid="gallery-photo-status"
+            className={`absolute left-2 top-2 border bg-void/80 px-2 py-1 font-mono text-[9px] uppercase tracking-[0.2em] backdrop-blur-sm ${getStatusBadgeClasses(gallery[0].status)}`}
+          >
+            {gallery[0].status}
+          </span>
+        )}
         {gallery.length > 1 && (
           <span className="absolute bottom-2 right-2 flex items-center gap-1 border border-slate2 bg-void/80 px-2 py-1 font-mono text-[9px] uppercase tracking-[0.2em] text-silver backdrop-blur-sm">
             <Images className="h-3 w-3" /> {gallery.length}
@@ -99,6 +119,15 @@ export default function PhotoGallery({ loc, icon: Icon, accent }) {
               className="relative aspect-square overflow-hidden border border-slate2/60 transition-colors hover:border-ozone"
             >
               <Image src={p.url} alt="" className="h-full w-full object-cover" fittingType="fill" />
+              {p.status && p.status !== 'verified' && (
+                <span
+                  data-testid="gallery-photo-status"
+                  className="absolute left-1 top-1 h-2 w-2 rounded-full border border-void/60"
+                  style={{ backgroundColor: getStatusDotColor(p.status) }}
+                >
+                  <span className="sr-only">{p.status}</span>
+                </span>
+              )}
               {i === 3 && gallery.length > 5 && (
                 <span className="absolute inset-0 flex items-center justify-center bg-void/70 font-mono text-[10px] text-silver">
                   +{gallery.length - 5}
@@ -118,6 +147,14 @@ export default function PhotoGallery({ loc, icon: Icon, accent }) {
                 alt={gallery[openIndex].caption || loc.title}
                 className="max-h-[75vh] w-full object-contain"
               />
+              {gallery[openIndex].status && gallery[openIndex].status !== 'verified' && (
+                <span
+                  data-testid="gallery-photo-status"
+                  className={`absolute left-2 top-2 border bg-void/80 px-2 py-1 font-mono text-[9px] uppercase tracking-[0.2em] backdrop-blur-sm ${getStatusBadgeClasses(gallery[openIndex].status)}`}
+                >
+                  {gallery[openIndex].status}
+                </span>
+              )}
               {gallery[openIndex].caption && (
                 <p className="mt-2 px-1 font-mono text-[11px] text-darkgray">
                   {gallery[openIndex].caption}
