@@ -3,7 +3,7 @@
 ## WORK VERIFICATION — 2026-10-02
 - Current main: `31617284a289c62d8a8cb312fc4d70c079c5a746` (#319).
 - #319 merged after exact-head CI + CodeQL and owner-run BACKUP Chromium 16/16 pass (one worker, retries disabled). Initial six-worker run failed 11/14; do not erase that evidence or assert its cause as proven.
-- Production is last reconciled to #308, `assets/index-BN4u-e3V.js`. No production deployment occurred in Work.
+- Fresh public production check now serves `assets/index-D00a9FXq.js`; manifest identifies #318 (`133e9db`). Runtime app ID is production; zero BACKUP references. Fresh #318 entry hash matches production exactly. No production deployment occurred in Work.
 - Fresh merged-main production build: `assets/index-D7jCRmhl.js`, SHA256 `d8aca1f8dd214ca9c71293287a4a94192c2c55c8526cb55c2107d17615fa59e7`. Runtime SDK targets production; zero BACKUP references.
 - SHIP: owner-terminal frontend deploy + live production qualification remain pending. Work's Base44 API network denial remains in force; no bypass attempted.
 - BUILD: isolated manual-coordinate capture recovery. Keep manually typed inputs editable and name them accessibly. Candidate not yet BACKUP-qualified.

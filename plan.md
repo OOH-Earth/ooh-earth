@@ -8,7 +8,8 @@ Updated 2026-10-02. Follow `brain/PRODUCT.md`, `brain/INVARIANTS.md` and the own
 - [x] Merge #321 security lock fix; audit zero high/critical.
 - [x] Qualify #319 on BACKUP: owner serial Chromium 16/16; exact-head CI and CodeQL pass; merge `3161728`.
 - [x] Build merged source for production; true entry `index-D7jCRmhl.js` targets production with no BACKUP references.
-- [ ] Owner-terminal frontend-only production deploy from the pinned merge.
+- [x] Reconcile newly observed production #318 entry byte-for-byte with a fresh #318 build.
+- [ ] Owner-terminal frontend-only #319 production deploy from the pinned merge.
 - [ ] Reconcile live manifest, entry and feature chunks, then rendered production checks. Do not report new feature completion to Dave before this gate.
 
 ## BUILD — Sprint 1/2 bounded capture recovery

@@ -25,3 +25,9 @@ Screenshots are current-run local audit attachments, not historical screenshots.
 Three responsive browser regression cases type a negative longitude character by character, assert focus/value retention, edit latitude, check overflow and verify no entity mutation requests. Browser execution must complete in CI; local browser unavailable. Local lint/typecheck pass; build/format validation recorded separately. No new schema/vendor/permission/function or backend work.
 
 Next: qualify this candidate on BACKUP after CI, then serialize its release after #319. Continue the existing Place → Contribution loop without inventing public creative publishing or social graph infrastructure.
+
+## Fresh production observation
+
+Public check at the end of this pass finds production entry `assets/index-D00a9FXq.js`, SHA256 `8a497bad076918554120b7b72f4b5af2506949276a0f096e29de2febb105711b`; Globe3D `Globe3D-BJEfLZs5.js`. Runtime SDK targets production with zero BACKUP references. Live release manifest identifies merged #318 (`133e9db`) rather than previous #308. This deployment was not performed by Work. Do not assume the earlier production artifact remains current; reconcile the #318 build before recommending the #319 deploy. Manifest fields alone do not establish rendered release qualification.
+
+Fresh #318-targeted build produces the same `index-D00a9FXq.js` entry and SHA256 as live production. The entry is reconciled byte-for-byte. This removes source ambiguity for the pending #319 frontend release; it does not substitute for rendered production QA.
