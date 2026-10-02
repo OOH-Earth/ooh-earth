@@ -380,6 +380,12 @@ export default function LocationDetail() {
                   className="font-mono text-[9px] uppercase tracking-[0.16em] text-ozone"
                 >
                   {routeState}
+                  <Link
+                    to="/field-route"
+                    className="ml-2 text-silver underline decoration-ozone underline-offset-2"
+                  >
+                    View route
+                  </Link>
                 </span>
               )}
             </div>

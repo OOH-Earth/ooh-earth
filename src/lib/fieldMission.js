@@ -119,6 +119,19 @@ export function loadFieldMission() {
   }
 }
 
+export function saveFieldMission(mission) {
+  try {
+    if (mission) sessionStorage.setItem(FIELD_MISSION_STORAGE_KEY, JSON.stringify(mission));
+    else sessionStorage.removeItem(FIELD_MISSION_STORAGE_KEY);
+  } catch {
+    /* sessionStorage unavailable (private mode, disabled storage) - mission just won't persist */
+  }
+}
+
+export function clearFieldMission() {
+  saveFieldMission(null);
+}
+
 export function addToFieldMission(item) {
   if (!item || typeof item.id !== 'string') return { ok: false, reason: 'INVALID_LOCATION' };
   const current = loadFieldMission();

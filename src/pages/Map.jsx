@@ -1098,7 +1098,7 @@ export default function Map() {
                     {missionNotice}
                     {missionLinkReady && (
                       <Link
-                        to="/portal/ops?section=geo"
+                        to="/field-route"
                         className="ml-2 text-silver underline decoration-ozone underline-offset-2"
                       >
                         Open route
