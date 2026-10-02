@@ -81,6 +81,7 @@ const OperativeProfile = lazy(() => import('@/pages/OperativeProfile'));
 const FounderProfile = lazy(() => import('@/pages/FounderProfile'));
 const Guides = lazy(() => import('@/pages/Guides'));
 const FieldId = lazy(() => import('@/pages/FieldId'));
+const FieldRoute = lazy(() => import('@/pages/FieldRoute'));
 const SuperCard = lazy(() => import('@/pages/SuperCard'));
 const Channel = lazy(() => import('@/pages/Channel'));
 const LocationDetail = lazy(() => import('@/pages/LocationDetail'));
@@ -189,6 +190,7 @@ const AuthenticatedApp = () => {
             <Route path="/operative" element={<OperativeProfile />} />
             <Route path="/guides" element={<Guides />} />
             <Route path="/field-id" element={<FieldId />} />
+            <Route path="/field-route" element={<FieldRoute />} />
             <Route path="/card" element={<SuperCard />} />
             <Route path="/channel" element={<Channel />} />
             <Route path="/location/:id" element={<LocationDetail />} />
