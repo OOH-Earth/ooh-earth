@@ -53,7 +53,21 @@ test.describe('Home Globe marker geometry', () => {
       await page.setViewportSize(viewport);
       await page.goto('/');
       await page.locator('[data-tour="globe"]').scrollIntoViewIfNeeded();
-      await page.waitForTimeout(1500);
+      await expect(page.locator('[data-tour="globe"] .maplibregl-canvas')).toBeVisible({
+        timeout: 15_000,
+      });
+      // Wait for actual sprite generation, not elapsed network/render time.
+      await expect
+        .poll(
+          () =>
+            page.evaluate(
+              () =>
+                (window as typeof window & { __homeGlobeSprites?: Sprite[] }).__homeGlobeSprites
+                  ?.length ?? 0,
+            ),
+          { timeout: 15_000, message: 'Home globe generated its marker sprites' },
+        )
+        .toBeGreaterThanOrEqual(2);
 
       const captured = await page.evaluate(
         () =>
