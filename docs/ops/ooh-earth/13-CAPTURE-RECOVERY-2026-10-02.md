@@ -37,3 +37,27 @@ Fresh #318-targeted build produces the same `index-D00a9FXq.js` entry and SHA256
 Owner attachment `Pasted text(20261002-104011).txt` records successful frontend-only production deployment from pinned #319 merge in `/tmp/tmp.YaCwdsSQqU`, after the entry hash guard passed. Fresh public production entry is `/assets/index-D7jCRmhl.js`, SHA256 `d8aca1f8dd214ca9c71293287a4a94192c2c55c8526cb55c2107d17615fa59e7`. Live manifest identifies `31617284a289c62d8a8cb312fc4d70c079c5a746`. Entry and Home-D9J_DvYd, Map-DyQwRnAb, Globe3D-DQhI618A, LiveActivityFeed-Ax881eaI chunks match the clean merged-source build byte-for-byte. Earlier #318 production observation is superseded.
 
 Cloud Chromium 1363×936 without WebGL2 renders Home normally with a 44px field-map recovery link. Clicking navigates to `/map`: Leaflet container 723×657.21875, 23 marker DOM elements, visible real clusters/thumbnails, no document overflow and no page error boundary. Console inspection finds known session-recordings 429 and browser-extension metadata failures, no application error entries. Current-run screenshot `production-319-flat.jpg` captured and inspected. No upload, capture submission or entity mutation was initiated; comprehensive network mutation monitoring was unavailable. Full responsive supported-device and authenticated production QA are not claimed; owner serial production regression remains pending.
+
+## #322 landscape overlap — found, root-caused, fixed (this pass)
+
+**Original failed QA result (preserved):** PR #322's own CI (`Playwright (smoke + accessibility)`, run `36997083892`, retried 3×) failed `capture-manual-coordinates.spec.ts` at 844×390 only: `locator.click` on "Capture photo" timed out after 30s, with Playwright reporting `<div class="flex justify-center pt-2">…</div> from <div class="ooh-bottom-sheet …">… subtree intercepts pointer events`. 361 other tests passed. The manual-coordinate editing fix itself was never exercised at that viewport because the click never landed.
+
+**Root cause, measured locally** (isolated worktree, rebuilt `dist`, fresh `vite preview`, `page.evaluate` `getBoundingClientRect()` — no guessing from source alone):
+- The "Capture photo" button sits at a viewport-height-independent `top:176px, bottom:210px` (it's `position:absolute` inside an ancestor anchored to the header, not to `100vh`).
+- `MapBottomSheet`'s default "peek" state used a fixed `132px` height plus a fixed `76px` bottom-nav offset, so its top edge is at `vh - 208`.
+- At `vh=375/390/412` that put the sheet's top edge at `167/182/204` — above the button's `210` bottom edge, so the sheet's (opaque, `z-[1100]`) drag-handle visually and physically covered the button. At `vh=430` the sheet's top edge (`222`) already cleared the button by `12px`, which is why wider short-landscape viewports looked fine and the collision was easy to miss.
+- Confirmed by direct measurement, not inference: `667×375` gap `-43px`, `844×390` gap `-28px`, `844×412` / `915×412` gap `-6px`, `932×430` gap `+12px`, portrait and desktop (`lg:hidden` hides the sheet) unaffected.
+
+**Fix:** `MapBottomSheet.jsx`'s peek height is now `Math.min(132, Math.max(64, vh - 294))` — unchanged (`132px`) above `~430px` tall, shrinking on shorter viewports to keep a constant `8px` clearance below the floating controls. Re-measured after the fix: `375`→gap `8`, `390`→gap `8`, `412`→gap `8`, `430`→gap `12` (unchanged), portrait `805`→gap `386` (unchanged), desktop unaffected (sheet not laid out). Real (non-force) clicks now land at every measured short-landscape height.
+
+**Test coverage added**, not just a click-retry workaround: `capture-manual-coordinates.spec.ts` now also covers `844×412` (the tightest pre-fix margin short of outright overlap) and asserts, numerically, that the Capture button and `.ooh-bottom-sheet` have zero intersection and ≥8px gap before clicking — so a future regression fails on geometry, not a flaky timeout.
+
+**Verification performed:**
+- Local reproduction of the exact CI failure (same timeout, same intercepting element) on the unfixed branch.
+- `npm run lint`, `npm run typecheck`, `npm run format:check` — clean.
+- Production build — succeeds; no dependency/schema/function changes.
+- `capture-manual-coordinates.spec.ts` (all 4 viewports) — pass. One transient desktop-viewport typing failure during a loaded run was not reproducible in 4 subsequent isolated/full-suite runs (consistent with this host's heavy concurrent-session load, not a code defect) — recorded here rather than silently dropped.
+- Full `e2e/map-landscape-layout.spec.ts` (both existing landscape viewports), `map-fieldcheck-freshness.spec.ts`, `map-my-discoveries.spec.ts`, `map-contribution-highlight.spec.ts`, `heat-layer-click-handoff.spec.ts` — 15/15 pass; no marker geometry, popup collision, WebGL recovery, or mobile-activity regression.
+- Not yet done: PR head CI (push pending), BACKUP target proof/deploy, rendered BACKUP QA. No production action taken or needed for this frontend fix until it clears BACKUP qualification and is merged.
+
+No backend, schema, permission, vendor, or production-data change. No deployment performed in this pass.

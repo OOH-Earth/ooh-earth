@@ -4,6 +4,7 @@ import { mockBase44 } from './fixtures/mockBase44';
 for (const viewport of [
   { width: 360, height: 800 },
   { width: 844, height: 390 },
+  { width: 844, height: 412 },
   { width: 1440, height: 900 },
 ]) {
   test(`manual capture coordinates remain editable at ${viewport.width}x${viewport.height}`, async ({
@@ -30,7 +31,33 @@ for (const viewport of [
       }
     });
     await page.goto('/map');
-    await page.getByRole('button', { name: 'Capture photo', exact: true }).click();
+    const captureButton = page.getByRole('button', { name: 'Capture photo', exact: true });
+    await expect(captureButton).toBeVisible();
+    // Short landscape viewports (e.g. 844x390) can let the mobile results
+    // sheet's peek height reach high enough to cover the floating map
+    // controls. Assert real clearance, not just that the click eventually
+    // lands, so this can't silently regress behind a click-retry loop.
+    const clearance = await page.evaluate(() => {
+      const btn = document.querySelector('button[aria-label="Capture photo"]');
+      const sheet = document.querySelector('.ooh-bottom-sheet');
+      // lg:hidden keeps the sheet in the DOM on desktop; skip when it isn't
+      // actually laid out (zero box / display:none via offsetParent).
+      if (!btn || !sheet || sheet.offsetParent === null) return null;
+      const b = btn.getBoundingClientRect();
+      const s = sheet.getBoundingClientRect();
+      const intersects = !(
+        b.right < s.left ||
+        b.left > s.right ||
+        b.bottom < s.top ||
+        b.top > s.bottom
+      );
+      return { intersects, gap: s.top - b.bottom };
+    });
+    if (clearance) {
+      expect(clearance.intersects).toBe(false);
+      expect(clearance.gap).toBeGreaterThanOrEqual(8);
+    }
+    await captureButton.click();
     const latitude = page.getByRole('textbox', { name: 'Latitude', exact: true });
     const longitude = page.getByRole('textbox', { name: 'Longitude', exact: true });
     await expect(latitude).toBeVisible();
