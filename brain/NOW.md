@@ -1,12 +1,15 @@
 # NOW — current truth only
 
-## WORK VERIFICATION - 2026-10-01
-- Current main is `133e9db` (#318); production is exactly reconciled to #308 (`1cd9d26`), not #318. BACKUP manifest identifies #318.
-- #308 live entry and Globe3D chunk are byte-identical to a fresh build; production target ID is correct with zero BACKUP references.
-- Popup geometry closure is pending: cloud browser lacks WebGL2; local Chromium download failed. Do not claim responsive/marker QA complete.
-- BUILD: bounded unsupported-WebGL2 fallback, draft only until rendered BACKUP qualification.
-- CLI authentication is absent in this environment; no deployment was attempted.
-- Evidence: `docs/ops/ooh-earth/11-WORK-PRODUCTION-TRUTH-2026-10-01.md`.
+## WORK VERIFICATION — 2026-10-02
+- Current main: `31617284a289c62d8a8cb312fc4d70c079c5a746` (#319).
+- #319 merged after exact-head CI + CodeQL and owner-run BACKUP Chromium 16/16 pass (one worker, retries disabled). Initial six-worker run failed 11/14; do not erase that evidence or assert its cause as proven.
+- Production is last reconciled to #308, `assets/index-BN4u-e3V.js`. No production deployment occurred in Work.
+- Fresh merged-main production build: `assets/index-D7jCRmhl.js`, SHA256 `d8aca1f8dd214ca9c71293287a4a94192c2c55c8526cb55c2107d17615fa59e7`. Runtime SDK targets production; zero BACKUP references.
+- SHIP: owner-terminal frontend deploy + live production qualification remain pending. Work's Base44 API network denial remains in force; no bypass attempted.
+- BUILD: isolated manual-coordinate capture recovery. Keep manually typed inputs editable and name them accessibly. Candidate not yet BACKUP-qualified.
+- AUDIT: Map → Capture → manual location recovery reproduced on BACKUP; completing both coordinates removes inputs and focus. No submission, upload or entity mutation initiated.
+- DESIGN: Live Canvas decision package #320 remains draft; Trails/public creative publishing remain separate checkpoints.
+- Active execution plan: `plan.md`. Detailed evidence: `docs/ops/ooh-earth/13-CAPTURE-RECOVERY-2026-10-02.md`.
 
 ## SOCIAL EARTH ACTIVITY ON MOBILE — IN PROGRESS
 - OBJECTIVE: make the existing public-place activity layer reachable on

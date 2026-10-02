@@ -29,6 +29,7 @@ export default function QuickCapture({ open, onClose }) {
   const [address, setAddress] = useState('');
   const [lat, setLat] = useState('');
   const [lng, setLng] = useState('');
+  const [manualCoordinates, setManualCoordinates] = useState(false);
   const [image_url, setImageUrl] = useState('');
   const [extraPhotos, setExtraPhotos] = useState([]);
   const [locating, setLocating] = useState(false);
@@ -48,6 +49,7 @@ export default function QuickCapture({ open, onClose }) {
       (pos) => {
         setLat(pos.coords.latitude.toFixed(5));
         setLng(pos.coords.longitude.toFixed(5));
+        setManualCoordinates(false);
         setLocating(false);
       },
       () => {
@@ -89,6 +91,7 @@ export default function QuickCapture({ open, onClose }) {
     setAddress('');
     setLat('');
     setLng('');
+    setManualCoordinates(false);
     setType('billboard');
     setError('');
   };
@@ -185,7 +188,7 @@ export default function QuickCapture({ open, onClose }) {
     );
   };
 
-  const showManual = !locating && (!lat || !lng);
+  const showManual = !locating && (manualCoordinates || !lat || !lng);
 
   return (
     <div
@@ -315,6 +318,7 @@ export default function QuickCapture({ open, onClose }) {
             </div>
 
             <input
+              aria-label="Street or district (optional)"
               value={address}
               onChange={(e) => setAddress(e.target.value)}
               placeholder="Street, district (optional)"
@@ -335,14 +339,22 @@ export default function QuickCapture({ open, onClose }) {
               <div className="mt-2 grid grid-cols-2 gap-px border border-slate2/60 bg-slate2/40">
                 <input
                   value={lat}
-                  onChange={(e) => setLat(e.target.value)}
+                  onChange={(e) => {
+                    setManualCoordinates(true);
+                    setLat(e.target.value);
+                  }}
+                  aria-label="Latitude"
                   placeholder="Latitude"
                   inputMode="decimal"
                   className="border-0 bg-card px-3 py-2.5 font-mono text-[11px] text-silver outline-none"
                 />
                 <input
                   value={lng}
-                  onChange={(e) => setLng(e.target.value)}
+                  onChange={(e) => {
+                    setManualCoordinates(true);
+                    setLng(e.target.value);
+                  }}
+                  aria-label="Longitude"
                   placeholder="Longitude"
                   inputMode="decimal"
                   className="border-0 bg-card px-3 py-2.5 font-mono text-[11px] text-silver outline-none"
