@@ -26,7 +26,7 @@ Updated 2026-10-02. Follow `brain/PRODUCT.md`, `brain/INVARIANTS.md` and the own
 ## AUDIT — connected journey
 
 - [x] Inspect Map → Capture entry and camera/location unavailable recovery on BACKUP.
-- [ ] Continue gallery → existing Place → pending Contribution → verification context with mocked browser tests; no synthetic production data.
+- [x] Gallery → pending Contribution → verification context: found and fixed PhotoGallery.jsx silently dropping each photo's own `status`, so a pending/rejected row looked identical to a verified one to its creator/admin (the only viewers who can see it at all). PR #325, mocked-only regression, no schema/permission change.
 - [ ] Audit Location Detail → Mission Board → Field Record → Activity links and responsive states, selecting only evidenced bounded fixes.
 
 ## DESIGN — checkpoints
