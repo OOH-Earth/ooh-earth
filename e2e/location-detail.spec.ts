@@ -107,12 +107,21 @@ test.describe('LocationDetail — existing single-image flow', () => {
     await page.goto('/location/loc-route-1');
     await expect(page.getByRole('heading', { name: /Route Action Check/i })).toBeVisible();
     await page.getByRole('button', { name: /Add to field route/i }).click();
-    await expect(
-      page.getByRole('status').filter({ hasText: /Added to field route/i }),
-    ).toBeVisible();
+    const status = page.getByRole('status').filter({ hasText: /Added to field route/i });
+    await expect(status).toBeVisible();
     await expect
       .poll(() => page.evaluate(() => sessionStorage.getItem('ooh-field-mission-v1')))
       .toContain('loc-route-1');
+
+    // Before this, there was no link from here to anywhere that could show
+    // the route back to the visitor who just built it -- not even a broken
+    // one, just nothing. Confirm it's there and goes to the public page.
+    const viewRoute = status.getByRole('link', { name: 'View route' });
+    await expect(viewRoute).toHaveAttribute('href', '/field-route');
+    await viewRoute.click();
+    await expect(page).toHaveURL('/field-route');
+    await expect(page.getByTestId('field-route-item')).toContainText('Route Action Check');
+    await expect(page.getByTestId('field-route-item')).toContainText('901 Route Ave, Testville');
   });
 });
 

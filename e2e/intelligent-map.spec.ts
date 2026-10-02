@@ -82,9 +82,13 @@ test.describe('Intelligent Map — bounded field attention mode', () => {
     await page.goto('/map?highlight=attention-handoff');
     await expect(page.getByTestId('map-attention-card')).toBeVisible({ timeout: 10_000 });
     await page.getByRole('button', { name: 'Add to route' }).dispatchEvent('click');
+    // Regression guard: this used to point at /portal/ops?section=geo, which
+    // requires agency/admin access (PortalOps's own `isAgency` gate) -- any
+    // ordinary or anonymous visitor who built a route here had no way to
+    // ever see it. /field-route is the public page anyone can reach.
     await expect(page.getByRole('link', { name: 'Open route' })).toHaveAttribute(
       'href',
-      '/portal/ops?section=geo',
+      '/field-route',
     );
   });
 });
