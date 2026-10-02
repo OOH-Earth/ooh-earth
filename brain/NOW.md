@@ -1,5 +1,14 @@
 # NOW — current truth only
 
+## RELEASE QUEUE STATE — 2026-10-02 (supersedes the WORK VERIFICATION block below for current status; that block's evidence is retained, not stale-deleted)
+- `origin/main` is at `4717841e8e6b375126ad597e1d4233c398443b83`. Merge order since #319: `#323` (test-only, 26/26 owner production run) → `#322` (capture + landscape overlap fix) → `#324` (docs reconciliation) → `#325` (gallery status indicator).
+- **Live production is still #319's build** (`assets/index-D7jCRmhl.js`, confirmed by direct fetch 2026-10-02) — #322, #324, #325 are merged to `main` but **none of them are deployed anywhere yet**. Merged is not shipped.
+- **#322** (`20db711f9b322ea3d6dc9b38caf2fc92b7ee2bc7`): exact-head CI/CodeQL green, BACKUP-deployed and rendered-QA'd (real click, measured 8px clearance, live retyping of the original defect's exact trigger — `docs/ops/ooh-earth/13-CAPTURE-RECOVERY-2026-10-02.md`). This is the **pinned SHIP candidate**. Its production build/deploy/verification is prepared (pinned build script, target-id proof, bounded-polling post-deploy check, serial zero-retry regression) and sitting with the owner — `base44 site deploy` to the production app id is denied here by the sandbox/auto-mode classifier, so deployment itself must run in the owner's terminal. Per "one production candidate at a time," this candidate stays pinned at `20db711f` — it is built and deployed from that exact commit, not rebuilt from a later `main` that includes #325.
+- **#325** (`4717841e`): merged, CI-verified (9/9 required checks green at exact head, including the 12m7s Playwright smoke+accessibility run containing its new assertions). **Not BACKUP-qualified, not production-deployed.** It rides into BACKUP/production in whatever release comes after #322's pinned candidate ships — it is not part of that candidate.
+- **#320** (Live Canvas checkpoint): still draft, documentation-only, 5 owner decisions unresolved. No implementation authorized.
+- AUDIT: gallery→pending-contribution status-indicator gap found and fixed (#325). Location Detail → Mission Board → Field Record → Activity link audit is the next open AUDIT item (`plan.md`).
+- Active execution plan: `plan.md`.
+
 ## WORK VERIFICATION — 2026-10-02
 - Current main: `31617284a289c62d8a8cb312fc4d70c079c5a746` (#319).
 - #319 merged after exact-head CI + CodeQL and owner-run BACKUP Chromium 16/16 pass (one worker, retries disabled). Initial six-worker run failed 11/14; do not erase that evidence or assert its cause as proven.
