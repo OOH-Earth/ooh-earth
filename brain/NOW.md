@@ -3,9 +3,10 @@
 ## WORK VERIFICATION — 2026-10-02
 - Current main: `31617284a289c62d8a8cb312fc4d70c079c5a746` (#319).
 - #319 merged after exact-head CI + CodeQL and owner-run BACKUP Chromium 16/16 pass (one worker, retries disabled). Initial six-worker run failed 11/14; do not erase that evidence or assert its cause as proven.
-- Fresh public production check now serves `assets/index-D00a9FXq.js`; manifest identifies #318 (`133e9db`). Runtime app ID is production; zero BACKUP references. Fresh #318 entry hash matches production exactly. No production deployment occurred in Work.
-- Fresh merged-main production build: `assets/index-D7jCRmhl.js`, SHA256 `d8aca1f8dd214ca9c71293287a4a94192c2c55c8526cb55c2107d17615fa59e7`. Runtime SDK targets production; zero BACKUP references.
-- SHIP: owner-terminal frontend deploy + live production qualification remain pending. Work's Base44 API network denial remains in force; no bypass attempted.
+- Owner-terminal frontend-only #319 deployment succeeded from the pinned merge. Live production entry `assets/index-D7jCRmhl.js` and Home, Map, Globe3D, LiveActivityFeed chunks match the clean merge build byte-for-byte; manifest identifies `3161728`.
+- Production entry SHA256 `d8aca1f8dd214ca9c71293287a4a94192c2c55c8526cb55c2107d17615fa59e7`; target ID proven, zero BACKUP references.
+- SHIP: desktop cloud Chromium (1363×936, WebGL2 unavailable) passed Home recovery → Flat map navigation, 44px recovery link, no horizontal overflow, no page error boundary; Leaflet renders real markers/clusters. Console only showed known telemetry 429 and extension metadata errors. Full responsive supported-device production QA remains pending owner Playwright.
+- No production upload/submission/entity mutation was initiated by these interactions. This is not comprehensive network-write monitoring. Authenticated QA remains unavailable.
 - BUILD: isolated manual-coordinate capture recovery. Keep manually typed inputs editable and name them accessibly. Candidate not yet BACKUP-qualified.
 - AUDIT: Map → Capture → manual location recovery reproduced on BACKUP; completing both coordinates removes inputs and focus. No submission, upload or entity mutation initiated.
 - DESIGN: Live Canvas decision package #320 remains draft; Trails/public creative publishing remain separate checkpoints.
