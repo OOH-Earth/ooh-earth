@@ -82,3 +82,34 @@ test('Hackers Club main content is accessible and brief controls work by keyboar
   const results = await new AxeBuilder({ page }).include('main').analyze();
   expect(results.violations).toEqual([]);
 });
+
+for (const viewport of [
+  { width: 360, height: 800 },
+  { width: 844, height: 390 },
+  { width: 1440, height: 900 },
+]) {
+  test(`Hackers Club poster header labels stay separate and contained at ${viewport.width}x${viewport.height}`, async ({
+    page,
+  }) => {
+    await page.setViewportSize(viewport);
+    await mockBase44(page, { user: null, locations: {} });
+    await page.goto('/hackers-club');
+    const labels = page.getByTestId('club-poster-header').locator('span');
+    await expect(labels).toHaveCount(2);
+    const poster = (await page.getByTestId('club-poster').boundingBox())!;
+    const [a, b] = await Promise.all([0, 1].map((i) => labels.nth(i).boundingBox()));
+    for (const box of [a!, b!]) {
+      expect(box.x).toBeGreaterThanOrEqual(poster.x);
+      expect(box.x + box.width).toBeLessThanOrEqual(poster.x + poster.width);
+    }
+    // Either on one row with a readable gap, or wrapped onto separate rows. Never touching.
+    const sameRow = a!.y < b!.y + b!.height && b!.y < a!.y + a!.height;
+    if (sameRow) expect(b!.x - (a!.x + a!.width)).toBeGreaterThanOrEqual(8);
+    else expect(b!.y).toBeGreaterThanOrEqual(a!.y + a!.height);
+    // Neither label is clipped by its own box.
+    const clipped = await labels.evaluateAll((els) =>
+      els.some((el) => el.scrollWidth > el.clientWidth + 1),
+    );
+    expect(clipped).toBe(false);
+  });
+}

@@ -225,7 +225,10 @@ export default function HackersClub() {
                 data-testid="club-poster"
                 className={`flex aspect-[3/4] flex-col justify-between overflow-hidden p-6 text-black md:p-8 ${paper === 'lime' ? 'bg-[#edff00]' : 'bg-[#f4efdc]'}`}
               >
-                <div className="flex justify-between border-b-2 border-black pb-3 font-mono text-xs font-bold">
+                <div
+                  data-testid="club-poster-header"
+                  className="flex flex-wrap justify-between gap-x-4 gap-y-1 border-b-2 border-black pb-3 font-mono text-xs font-bold"
+                >
                   <span>OOH!EARTH</span>
                   <span>PUBLIC SPACE / PUBLIC VOICE</span>
                 </div>
