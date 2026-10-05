@@ -116,7 +116,8 @@ test.describe('Media Corps map', () => {
   test('empty registry says so instead of showing a silent blank map', async ({ page }) => {
     await page.setViewportSize({ width: 360, height: 800 });
     await openMediaCorps(page, []);
-    const status = page.getByRole('status');
+    // Other status regions exist (e.g. the STAGE banner on BACKUP builds), so select by content.
+    const status = page.getByRole('status').filter({ hasText: /No media corps|No corps match/ });
     await expect(status).toContainText('No media corps published yet');
     await expect(status.getByRole('link', { name: 'File a report' })).toHaveAttribute(
       'href',
@@ -128,7 +129,8 @@ test.describe('Media Corps map', () => {
     await page.setViewportSize({ width: 360, height: 800 });
     await openMediaCorps(page);
     await page.getByPlaceholder('Search corps…').fill('zzz-no-such-corp');
-    const status = page.getByRole('status');
+    // Other status regions exist (e.g. the STAGE banner on BACKUP builds), so select by content.
+    const status = page.getByRole('status').filter({ hasText: /No media corps|No corps match/ });
     await expect(status).toContainText('No corps match these filters');
     await status.getByRole('button', { name: 'Clear filters' }).click();
     await expect(status).toHaveCount(0);
