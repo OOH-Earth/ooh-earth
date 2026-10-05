@@ -44,6 +44,9 @@ const CORPS = [
   },
 ];
 
+// Exact hostnames (not a URL regex) so only the basemap tile CDNs are stubbed.
+const TILE_HOSTS = ['basemaps.cartocdn.com', 'arcgisonline.com'];
+
 const TILE_PNG = Buffer.from(
   'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==',
   'base64',
@@ -52,8 +55,9 @@ const TILE_PNG = Buffer.from(
 async function openMediaCorps(page: Page, corps: unknown[] = CORPS) {
   await mockBase44(page, { user: null, locations: {} });
   // Registered after mockBase44 so these win. Tiles are stubbed to keep the test hermetic.
-  await page.route(/basemaps\.cartocdn\.com|arcgisonline\.com/, (route) =>
-    route.fulfill({ status: 200, contentType: 'image/png', body: TILE_PNG }),
+  await page.route(
+    (url) => TILE_HOSTS.some((host) => url.hostname === host || url.hostname.endsWith(`.${host}`)),
+    (route) => route.fulfill({ status: 200, contentType: 'image/png', body: TILE_PNG }),
   );
   await page.route('**/api/apps/*/entities/MediaCorp*', (route) =>
     route.request().method() === 'GET'
