@@ -231,9 +231,9 @@ export default function HackersClub() {
                 </div>
                 <p
                   data-testid="club-poster-message"
-                  className={`whitespace-pre-wrap break-words font-display font-black uppercase leading-tight [overflow-wrap:anywhere] ${message.length > 60 ? 'text-xl md:text-2xl' : 'text-3xl md:text-4xl'}`}
+                  className={`break-words font-display font-black uppercase leading-tight [overflow-wrap:anywhere] ${message.length > 60 ? 'text-xl md:text-2xl' : 'text-3xl md:text-4xl'}`}
                 >
-                  {message.trim() || 'YOUR CITY.\nYOUR MESSAGE.'}
+                  {message.trim().replace(/\s+/g, ' ') || 'YOUR CITY. YOUR MESSAGE.'}
                 </p>
                 <div className="border-t-2 border-black pt-3 font-mono text-xs font-bold">
                   HACKERS CLUB / PRIVATE CONCEPT
