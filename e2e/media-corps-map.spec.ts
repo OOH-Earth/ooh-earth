@@ -162,6 +162,13 @@ test.describe('Media Corps map', () => {
       // The chrome above the map stays reachable by scrolling the page.
       await page.getByPlaceholder('Search corps…').scrollIntoViewIfNeeded();
       await expect(page.getByPlaceholder('Search corps…')).toBeVisible();
+      // Leaflet focuses the map on mousedown and only compensates window scroll. The page
+      // itself must therefore be the scroller, or the pin moves under the cursor between
+      // mousedown and mouseup and the first click is lost.
+      const pin = page.locator('.ooh-media-corp-pin[title="JCDecaux"]');
+      await pin.scrollIntoViewIfNeeded();
+      await pin.click();
+      await expect(page.getByRole('dialog', { name: 'JCDecaux details' })).toBeVisible();
     });
   }
 });

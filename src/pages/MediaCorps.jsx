@@ -114,7 +114,7 @@ export default function MediaCorps() {
   }, [corps]);
 
   return (
-    <div className="fixed inset-0 flex flex-col overflow-hidden [@media(max-height:500px)]:overflow-y-auto bg-void pt-[calc(7rem_+_env(safe-area-inset-top))] md:pt-[calc(8rem_+_env(safe-area-inset-top))] pb-[calc(76px_+_env(safe-area-inset-bottom))] lg:pb-0">
+    <div className="fixed inset-0 flex flex-col overflow-hidden [@media(max-height:500px)]:static [@media(max-height:500px)]:inset-auto [@media(max-height:500px)]:min-h-screen [@media(max-height:500px)]:overflow-visible bg-void pt-[calc(7rem_+_env(safe-area-inset-top))] md:pt-[calc(8rem_+_env(safe-area-inset-top))] pb-[calc(76px_+_env(safe-area-inset-bottom))] lg:pb-0">
       <Nav />
 
       {/* Toolbar */}
