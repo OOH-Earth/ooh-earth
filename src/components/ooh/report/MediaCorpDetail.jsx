@@ -37,6 +37,8 @@ export default function MediaCorpDetail({ corp, onClose }) {
 
   return (
     <div
+      role="dialog"
+      aria-label={`${corp.name} details`}
       className="absolute inset-0 z-[1100] flex justify-end bg-void/60 backdrop-blur-sm"
       onClick={onClose}
     >
@@ -54,6 +56,8 @@ export default function MediaCorpDetail({ corp, onClose }) {
           />
           <div className="absolute inset-0 bg-gradient-to-t from-card via-card/60 to-transparent" />
           <button
+            type="button"
+            aria-label="Close details"
             onClick={onClose}
             className="absolute right-3 top-3 flex h-8 w-8 items-center justify-center border border-slate2 bg-void/80 text-silver backdrop-blur-md transition-colors hover:border-flare hover:text-flare"
           >
