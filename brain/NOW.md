@@ -1,5 +1,11 @@
 # NOW — current truth only
 
+## MEDIA CORPS MAPS — 2026-10-05 (merged, production held)
+- PR #333 merged as `13f23dfaf4874c8c81f04ae311aaad9ab264c81f` after required CI (CodeQL alert on the new spec fixed first). BACKUP carries it (`index-Bod7xzCb.js`, byte-identical entry/chunk/manifest, target proven BACKUP-only).
+- **Production is still #319** (`index-D7jCRmhl.js`). A fresh `main` build would also ship #322, #325, #327, #328 and #331; held for an owner decision (see QUEUE "MEDIA CORPS MAPS"). #322 stays the pinned candidate.
+- Production and BACKUP both have 0 MediaCorp records; no data was seeded. See QUEUE "MEDIA CORPS REGISTRY POPULATION".
+- Hackers Club (#331, merge `42637f7`) is BACKUP-only; Dave's feedback pending.
+
 ## RELEASE QUEUE STATE — 2026-10-02, updated (supersedes the WORK VERIFICATION block below for current status; that block's evidence is retained, not stale-deleted)
 - `origin/main` is at `629f5cc77de958f159ffdf6ddb4b984ac7671100`. Merge order since #319: `#323` (test-only, 26/26 owner production run) → `#322` (capture + landscape overlap fix) → `#324` (docs) → `#325` (gallery status indicator) → `#326` (docs) → `#328` (concept preview, #320's authorized step) → `#327` (public field-route page).
 - **Live production is still #319's build** (`assets/index-D7jCRmhl.js`, confirmed by direct fetch 2026-10-02) — everything merged since is on `main` but **none of it is deployed anywhere yet**. Merged is not shipped.
