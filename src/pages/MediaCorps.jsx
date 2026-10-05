@@ -57,6 +57,11 @@ export default function MediaCorps() {
   const corps = corpsLoading ? null : corpsData || [];
 
   const handleBoundsChange = useCallback((b) => setMapBounds(b), []);
+  const clearFilters = useCallback(() => {
+    setScopeFilter('all');
+    setSearch('');
+    setGlobalSouthOnly(false);
+  }, []);
 
   const filtered = useMemo(
     () =>
@@ -109,7 +114,7 @@ export default function MediaCorps() {
   }, [corps]);
 
   return (
-    <div className="fixed inset-0 flex flex-col overflow-hidden bg-void pt-[calc(7rem_+_env(safe-area-inset-top))] md:pt-[calc(8rem_+_env(safe-area-inset-top))] pb-[calc(76px_+_env(safe-area-inset-bottom))] lg:pb-0">
+    <div className="fixed inset-0 flex flex-col overflow-hidden [@media(max-height:500px)]:static [@media(max-height:500px)]:inset-auto [@media(max-height:500px)]:min-h-screen [@media(max-height:500px)]:overflow-visible bg-void pt-[calc(7rem_+_env(safe-area-inset-top))] md:pt-[calc(8rem_+_env(safe-area-inset-top))] pb-[calc(76px_+_env(safe-area-inset-bottom))] lg:pb-0">
       <Nav />
 
       {/* Toolbar */}
@@ -211,7 +216,7 @@ export default function MediaCorps() {
       </div>
 
       {/* Regional breakdown bar */}
-      <div className="hidden items-center gap-3 border-b border-slate2/60 bg-void px-5 py-1.5 md:flex">
+      <div className="hidden items-center gap-3 border-b border-slate2/60 bg-void px-5 py-1.5 md:flex [@media(max-height:500px)]:md:hidden">
         <span className="font-mono text-[8px] uppercase tracking-[0.25em] text-dim/60">
           Regions:
         </span>
@@ -229,7 +234,7 @@ export default function MediaCorps() {
       </div>
 
       {/* Main split */}
-      <div className="flex min-h-0 flex-1">
+      <div className="flex min-h-0 flex-1 [@media(max-height:500px)]:h-[300px] [@media(max-height:500px)]:flex-none">
         {/* Sidebar */}
         <aside
           className={`${viewMode === 'list' ? 'flex w-full' : 'hidden w-[280px] shrink-0 lg:flex'} flex-col border-r border-slate2/60 bg-card`}
@@ -389,6 +394,43 @@ export default function MediaCorps() {
                     showCoverage={showCoverage}
                     fitAllNonce={fitAllNonce}
                   />
+                )}
+
+                {/* Empty states: the sidebar message is hidden below lg, so say it on the map too */}
+                {filtered.length === 0 && (
+                  <div
+                    role="status"
+                    className="pointer-events-none absolute inset-0 z-[900] flex items-center justify-center p-6 text-center"
+                  >
+                    <div className="pointer-events-auto max-w-xs border border-slate2 bg-void/90 p-5 backdrop-blur-md">
+                      <p className="font-display text-sm font-bold text-silver">
+                        {corps.length === 0
+                          ? 'No media corps published yet'
+                          : 'No corps match these filters'}
+                      </p>
+                      <p className="mt-1 text-xs text-darkgray">
+                        {corps.length === 0
+                          ? 'The registry is empty right now. Know an outdoor media owner? File a report.'
+                          : 'Try a different search or clear the filters.'}
+                      </p>
+                      {corps.length === 0 ? (
+                        <Link
+                          to="/report"
+                          className="mt-3 inline-flex min-h-9 items-center border border-ozone px-3 font-mono text-[10px] font-bold uppercase tracking-[0.15em] text-ozone hover:bg-ozone hover:text-void"
+                        >
+                          File a report
+                        </Link>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={clearFilters}
+                          className="mt-3 inline-flex min-h-9 items-center border border-ozone px-3 font-mono text-[10px] font-bold uppercase tracking-[0.15em] text-ozone hover:bg-ozone hover:text-void"
+                        >
+                          Clear filters
+                        </button>
+                      )}
+                    </div>
+                  </div>
                 )}
 
                 {/* Mobile list toggle */}
