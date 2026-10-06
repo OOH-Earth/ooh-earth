@@ -13,6 +13,14 @@ const location = {
   access_key: 'none',
 };
 
+const secondLocation = {
+  ...location,
+  id: 'research-place-2',
+  title: 'Research Place · Second Square',
+  lat: 0,
+  lng: 0,
+};
+
 test.describe('bounded place research', () => {
   test('loads only on request and keeps fixtures distinct from live reporting', async ({
     page,
@@ -77,5 +85,43 @@ test.describe('bounded place research', () => {
     await expect(page.getByTestId('research-fixture-card')).toBeVisible();
     await expect(page.getByRole('status')).toContainText('USGS returned 503');
     await expect(page.getByText('OOH-verified evidence')).toBeVisible();
+  });
+
+  test('does not render a pending response after switching locations', async ({ page }) => {
+    let release;
+    await page.route('https://earthquake.usgs.gov/**', async (route) => {
+      await new Promise((resolve) => {
+        release = resolve;
+      });
+      await route.fulfill({
+        json: {
+          type: 'FeatureCollection',
+          features: [
+            {
+              id: 'old-location-event',
+              properties: {
+                title: 'Old location event',
+                time: Date.parse('2026-10-01T12:00:00Z'),
+                url: 'https://earthquake.usgs.gov/earthquakes/eventpage/old-location-event',
+              },
+              geometry: { type: 'Point', coordinates: [0, 0, 4] },
+            },
+          ],
+        },
+      });
+    });
+    await mockBase44(page, {
+      user: null,
+      locations: { [location.id]: location, [secondLocation.id]: secondLocation },
+      fieldChecks: {},
+    });
+    await page.goto(`/location/${location.id}`);
+    await page.locator('button').filter({ hasText: 'Research this place' }).first().click();
+    await page.getByTestId('load-live-research').click();
+    await expect.poll(() => Boolean(release)).toBe(true);
+    await page.goto(`/location/${secondLocation.id}`);
+    await expect(page.getByText(secondLocation.title)).toBeVisible();
+    release();
+    await expect(page.getByText('Old location event')).toHaveCount(0);
   });
 });

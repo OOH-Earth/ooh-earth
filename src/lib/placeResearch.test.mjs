@@ -102,6 +102,39 @@ test('retries one transient response, but clears failure for a later deliberate 
   assert.equal(calls, 3, 'failed in-flight state must not poison a later retry');
 });
 
+test('honours Retry-After for a transient response', async () => {
+  let calls = 0;
+  const fetchImpl = async () => {
+    calls += 1;
+    if (calls === 1) return response({ error: 'busy' }, 429, { 'retry-after': '0' });
+    return response({ type: 'FeatureCollection', features: [feature('retry-after')] });
+  };
+  const result = await createPlaceResearchClient({ fetchImpl }).request(publicPlace);
+  assert.equal(result.items[0].providerEventId, 'retry-after');
+  assert.equal(calls, 2);
+});
+
+test('one abandoned consumer does not cancel the shared request for another consumer', async () => {
+  let release;
+  let calls = 0;
+  const fetchImpl = async () => {
+    calls += 1;
+    await new Promise((resolve) => {
+      release = resolve;
+    });
+    return response({ type: 'FeatureCollection', features: [feature('shared-consumer')] });
+  };
+  const client = createPlaceResearchClient({ fetchImpl });
+  const abandoned = client.request(publicPlace);
+  const surviving = client.request(publicPlace);
+  assert.equal(calls, 1);
+  release();
+  await abandoned;
+  const result = await surviving;
+  assert.equal(result.items[0].providerEventId, 'shared-consumer');
+  assert.equal(calls, 1);
+});
+
 test('rejects malformed source data without merging distinct events', async () => {
   let calls = 0;
   const fetchImpl = async () => {
