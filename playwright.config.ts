@@ -1,6 +1,6 @@
 import { defineConfig, devices } from '@playwright/test';
 
-const PORT = 4173;
+const PORT = Number(process.env.PLAYWRIGHT_PORT ?? 4173);
 const BASE_URL = process.env.PLAYWRIGHT_BASE_URL ?? `http://localhost:${PORT}`;
 
 export default defineConfig({
@@ -44,6 +44,7 @@ export default defineConfig({
         'focus-trap.spec.ts',
         'nav-menu-disclosure.spec.ts',
         'dashboard-location-links.spec.ts',
+        'place-research.spec.ts',
       ],
     },
   ],

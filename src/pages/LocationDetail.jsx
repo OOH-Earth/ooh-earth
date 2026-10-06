@@ -11,6 +11,7 @@ import {
   AlertTriangle,
   Navigation,
   SprayCan,
+  ShieldCheck,
 } from 'lucide-react';
 import { metaFor } from '@/components/ooh/map/LocationThumb';
 import { keyInfo, isKeyedType, ACCESS_KEYS } from '@/components/ooh/accessKeys';
@@ -26,6 +27,7 @@ import SubvertisingPanel from '@/components/ooh/SubvertisingPanel';
 import AdvertiserInfo from '@/components/ooh/AdvertiserInfo';
 import FieldCheckPanel from '@/components/ooh/FieldCheckPanel';
 import RelatedLocations from '@/components/ooh/RelatedLocations';
+import PlaceResearchPanel from '@/components/ooh/PlaceResearchPanel';
 import { useSeo } from '@/lib/seoContext';
 import { getStatusBadgeClasses } from '@/lib/statusBadge';
 
@@ -49,6 +51,7 @@ export default function LocationDetail() {
   const { id } = useParams();
   const [loc, setLoc] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [researchOpen, setResearchOpen] = useState(false);
 
   useEffect(() => {
     let alive = true;
@@ -253,7 +256,21 @@ export default function LocationDetail() {
               )}
             </div>
           )}
+          <button
+            type="button"
+            onClick={() => setResearchOpen((open) => !open)}
+            aria-expanded={researchOpen}
+            aria-controls="place-research-title"
+            className="mt-4 inline-flex min-h-11 items-center gap-2 border border-ozone bg-ozone px-3 py-2 font-mono text-[9px] font-bold uppercase tracking-[0.2em] text-void transition-colors hover:border-flare hover:bg-flare focus-visible:outline focus-visible:outline-2 focus-visible:outline-ozone"
+          >
+            <ShieldCheck className="h-3.5 w-3.5" />{' '}
+            {researchOpen ? 'Close research' : 'Research this place'}
+          </button>
         </header>
+
+        {researchOpen && (
+          <PlaceResearchPanel location={loc} onClose={() => setResearchOpen(false)} />
+        )}
 
         {/* ── Half-split: media left, details right ── */}
         <section className="mb-8 grid gap-4 md:grid-cols-2">
@@ -445,7 +462,7 @@ export default function LocationDetail() {
         </section>
 
         {/* ── Field activity ── */}
-        <section className="mb-8">
+        <section id="ooh-verified-evidence" className="mb-8">
           <FieldCheckPanel location={loc} />
         </section>
 
