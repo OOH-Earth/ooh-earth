@@ -27,10 +27,13 @@ export default function HorizonProgress() {
       </div>
 
       {/* Coordinate readout */}
-      <div className="pointer-events-none fixed right-3 top-1/2 z-40 hidden -translate-y-1/2 flex-col items-end gap-1 font-mono text-[9px] uppercase tracking-[0.25em] text-silver/40 md:flex">
+      <aside
+        aria-label="Horizon scroll indicator"
+        className="pointer-events-none fixed right-3 top-1/2 z-40 hidden -translate-y-1/2 flex-col items-end gap-1 font-mono text-[9px] uppercase tracking-[0.25em] text-silver/40 md:flex"
+      >
         <span>HORIZON</span>
         <span className="tabular-nums text-ozone">{pct.toString().padStart(3, '0')}%</span>
-      </div>
+      </aside>
     </>
   );
 }
