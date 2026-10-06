@@ -3,6 +3,14 @@
 ## QUICKCAPTURE MANUAL COORDINATE INPUT — INTERMITTENT KEYSTROKE LOSS (follow-up)
 `e2e/capture-manual-coordinates.spec.ts` fails ~25% locally on clean `main` at 844x390/1440x900 with the typed value truncated ("-73", "-73.98"). The input is a plain controlled field, so suspect surrounding Map-page handlers or re-render timing. Investigate with a CPU-throttled repro before relying on #322 for slow devices. Not a regression of the release train.
 
+## RIVERS + ECOLOGY MAPS — BUILT 2026-10-06, NOT DEPLOYED (PRs #337 RIVERS-1, #338 ECOLOGY-1/2, stacked)
+Rivers: bundled Natural Earth major rivers (public domain) crossfading into the live OpenStreetMap network from zoom 5 (CARTO tiles the app already loads, no new vendor), illustrative samples relabelled and selectable. Ecology: LLM-generated hotspots replaced by reference layers (water, natural cover, parks/protected areas), real iNaturalist observations (research grade, last 180 days, obscured excluded) and on-demand modelled conditions (Open-Meteo). 20/20 + 23/23 deterministic Playwright tests, real-network QA across 5 + 7 regions. Enters the release queue AFTER the frozen train candidate (`a1868f1`) is production-reconciled; one candidate at a time.
+- RIVERS-2: live river readings only from station-based observed sources with provider, timestamp, units and freshness (USGS NWIS for the US, UK Environment Agency for the UK verified CORS-open). Open-Meteo flood discharge is REJECTED for rivers: point queries snapped to tributary cells (0.63 m3/s for the Ganges at Varanasi, 11.8 m3/s for the Thames at London).
+- DATA QUALITY: the static "Varanasi Monitoring Station" sample is plotted at 22.3N 89.0E (Bangladesh delta), ~700 km from Varanasi; sample WQI/pH/turbidity values are illustrative literals. Owner to confirm or retire them.
+- MAIN MAP LLM LAYERS: `useMushroomData` / `useFloraData` still feed the main Map page's mushroom and flora layers with LLM-generated coordinates and a paid call per session. Same trust and cost problem as the old Ecology page.
+- DECISION (not blocking): Open-Meteo's free tier is non-commercial (CC BY 4.0, fair use). The app already uses it for air quality; confirm against OOH Earth's status before conditions are used at scale.
+- NOTE: iNaturalist coverage tracks observer density, not biodiversity; copy must keep saying so.
+
 ## MEDIA CORPS MAPS — MERGED 2026-10-05, NOT DEPLOYED TO PRODUCTION (PR #333, merge `13f23dfaf4874c8c81f04ae311aaad9ab264c81f`)
 Root causes (reproduced on production and BACKUP): the lazy `/media-corps` map did
 not own its Leaflet CSS (unstyled panes, giant unpositioned tiles, no usable pins);
