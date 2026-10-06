@@ -13,8 +13,7 @@ import {
   VECTOR_MIN_ZOOM,
   VECTOR_SOURCE_ID,
   VECTOR_TILEJSON,
-  providerFor,
-  waterwayKind,
+  describeFeature,
   waterwayLabel,
 } from './environmentLayers';
 
@@ -45,6 +44,12 @@ export default function EnvironmentMap({
   selectedPointId = null,
   onSelectPoint = null,
   noun = 'River',
+  unitNoun = 'segment',
+  inspectNoun = noun.toLowerCase(),
+  layerToggles = null,
+  onViewportChange = null,
+  children = null,
+  keepZoomOnSelect = false,
   initialView = { center: [15, 25], zoom: 1.6 },
 }) {
   const { style: mapStyle } = useMapStyle();
@@ -55,6 +60,8 @@ export default function EnvironmentMap({
   const inspectBtnRef = useRef(null);
   const cardRef = useRef(null);
   const openedByKeyboardRef = useRef(false);
+  const onViewportRef = useRef(onViewportChange);
+  onViewportRef.current = onViewportChange;
   const onSelectPointRef = useRef(onSelectPoint);
   onSelectPointRef.current = onSelectPoint;
 
@@ -76,7 +83,9 @@ export default function EnvironmentMap({
   const queryLayers = useMemo(() => activeDefs.flatMap((d) => d.queryLayers || []), [activeDefs]);
   const measureLayers = useMemo(
     () =>
-      activeDefs.flatMap((d) => d.layers.filter((l) => /major|minor/.test(l.id)).map((l) => l.id)),
+      activeDefs.flatMap((d) =>
+        d.layers.filter((l) => !/hit|selected|-line$/.test(l.id)).map((l) => l.id),
+      ),
     [activeDefs],
   );
 
@@ -92,13 +101,8 @@ export default function EnvironmentMap({
       ];
       const hits = map.queryRenderedFeatures(box, { layers: present });
       if (!hits.length) return false;
-      const props = hits[0].properties || {};
-      const name = waterwayLabel(props);
       setSelection({
-        type: 'waterway',
-        name,
-        kind: waterwayKind(props),
-        provider: providerFor(hits[0].layer?.id),
+        ...describeFeature(hits[0].layer?.id, hits[0].properties || {}),
         lngLat: lngLat || map.unproject(point),
       });
       return true;
@@ -114,12 +118,33 @@ export default function EnvironmentMap({
     setReady(false);
     setStatus('loading');
     setPartialFailure(false);
+    // Deep link: ?lat=&lng=&z= sets the starting view (validated; ignored if malformed).
+    const params = new URLSearchParams(window.location.search);
+    const dl = {
+      lat: Number(params.get('lat')),
+      lng: Number(params.get('lng')),
+      z: Number(params.get('z')),
+    };
+    const linked =
+      params.has('lat') &&
+      params.has('lng') &&
+      Number.isFinite(dl.lat) &&
+      Number.isFinite(dl.lng) &&
+      Math.abs(dl.lat) <= 85 &&
+      Math.abs(dl.lng) <= 180;
+    const startCenter = /** @type {[number, number]} */ (
+      linked ? [dl.lng, dl.lat] : initialView.center
+    );
+    const startZoom =
+      linked && params.has('z') && Number.isFinite(dl.z)
+        ? Math.min(14, Math.max(0, dl.z))
+        : initialView.zoom;
     try {
       map = new maplibregl.Map({
         container: containerRef.current,
         style: mapStyle.glStyle,
-        center: /** @type {[number, number]} */ (initialView.center),
-        zoom: initialView.zoom,
+        center: startCenter,
+        zoom: startZoom,
         pitch: 0,
         maxPitch: 60,
         attributionControl: { compact: true },
@@ -232,6 +257,17 @@ export default function EnvironmentMap({
     });
     map.on('idle', refresh);
     map.on('zoomend', refresh);
+    const reportViewport = () => {
+      const b = map.getBounds();
+      const c = map.getCenter();
+      onViewportRef.current?.({
+        center: [c.lng, c.lat],
+        zoom: map.getZoom(),
+        bounds: { west: b.getWest(), south: b.getSouth(), east: b.getEast(), north: b.getNorth() },
+      });
+    };
+    map.on('moveend', reportViewport);
+    map.on('load', reportViewport);
     map.on('click', REF_LAYER, (e) => {
       const id = e.features?.[0]?.properties?.id;
       if (id != null) onSelectPointRef.current?.(String(id));
@@ -317,7 +353,11 @@ export default function EnvironmentMap({
       return;
     }
     setSelection({ type: 'point', point: p, lngLat: { lat: p.lat, lng: p.lng } });
-    map.flyTo({ center: [p.lng, p.lat], zoom: 7, duration: 900 });
+    map.flyTo({
+      center: [p.lng, p.lat],
+      zoom: keepZoomOnSelect ? Math.max(map.getZoom(), 7) : 7,
+      duration: 900,
+    });
   }, [ready, selectedPointId, referencePoints]);
 
   // Detail surface: Escape closes it; keyboard-opened details take focus and give it back.
@@ -399,7 +439,7 @@ export default function EnvironmentMap({
           {status === 'ready' &&
             (noCoverage
               ? 'no coverage in view'
-              : `${view.segments} segment${view.segments === 1 ? '' : 's'} · ${view.names} named in view`)}
+              : `${view.segments} ${unitNoun}${view.segments === 1 ? '' : 's'} · ${view.names} named in view`)}
           {status === 'error' && 'unavailable'}
         </span>
         {status === 'error' && (
@@ -445,7 +485,7 @@ export default function EnvironmentMap({
           <button
             ref={inspectBtnRef}
             type="button"
-            aria-label={`Inspect the ${noun.toLowerCase()} nearest the map centre`}
+            aria-label={`Inspect the ${inspectNoun} nearest the map centre`}
             title="Inspect nearest waterway to the map centre"
             onClick={inspectCentre}
             className="flex h-11 w-11 items-center justify-center border border-slate2 bg-void/85 text-darkgray backdrop-blur-md transition-colors hover:border-ozone hover:text-ozone focus-visible:outline focus-visible:outline-2 focus-visible:outline-ozone"
@@ -455,7 +495,7 @@ export default function EnvironmentMap({
         )}
         <button
           type="button"
-          aria-label={legendOpen ? 'Hide legend' : 'Show legend'}
+          aria-label={`${legendOpen ? 'Hide' : 'Show'} ${layerToggles ? 'layers and legend' : 'legend'}`}
           aria-expanded={legendOpen}
           onClick={() => setLegendOpen((v) => !v)}
           className="flex h-11 w-11 items-center justify-center border border-slate2 bg-void/85 text-darkgray backdrop-blur-md transition-colors hover:border-ozone hover:text-ozone focus-visible:outline focus-visible:outline-2 focus-visible:outline-ozone"
@@ -464,23 +504,45 @@ export default function EnvironmentMap({
         </button>
       </div>
 
-      {/* Legend */}
+      {/* Layers & legend */}
       {legendOpen && !selection && (
         <div
           data-testid="env-legend"
-          className="absolute bottom-3 left-3 z-[900] max-w-[min(18rem,calc(100%-5.5rem))] space-y-2 border border-slate2 bg-void/90 p-2.5 backdrop-blur-md"
+          className="absolute bottom-3 left-3 z-[900] max-h-[calc(100%-6rem)] max-w-[min(19rem,calc(100%-5.5rem))] space-y-2 overflow-y-auto border border-slate2 bg-void/90 p-2.5 backdrop-blur-md"
         >
-          <p className="font-mono text-[9px] uppercase tracking-[0.2em] text-dim">Legend</p>
-          {activeDefs.map((d) => (
-            <div key={d.id} className="space-y-0.5">
-              <div className="flex items-center gap-2">
-                <span className="h-0.5 w-5" style={{ background: d.swatch }} />
-                <span className="text-[11px] font-bold text-silver">{d.label}</span>
+          <p className="font-mono text-[9px] uppercase tracking-[0.2em] text-dim">
+            {layerToggles ? 'Layers & legend' : 'Legend'}
+          </p>
+          {(layerToggles || activeDefs.map((d) => ({ ...d, active: true }))).map((d) => {
+            const row = (
+              <>
+                <span
+                  className="h-2 w-5 shrink-0"
+                  style={{ background: d.swatch, opacity: d.active === false ? 0.35 : 1 }}
+                />
+                <span className="text-left text-[11px] font-bold text-silver">{d.label}</span>
                 <TrustBadge kind={d.trust} />
+              </>
+            );
+            return (
+              <div key={d.id} className="space-y-0.5">
+                {d.onToggle ? (
+                  <button
+                    type="button"
+                    aria-pressed={d.active}
+                    onClick={d.onToggle}
+                    className="flex min-h-11 w-full items-center gap-2 text-left focus-visible:outline focus-visible:outline-2 focus-visible:outline-ozone"
+                  >
+                    {row}
+                  </button>
+                ) : (
+                  <div className="flex items-center gap-2">{row}</div>
+                )}
+                <p className="text-[10px] leading-snug text-darkgray">{d.description}</p>
+                {d.note && <p className="text-[10px] leading-snug text-ozone/80">{d.note}</p>}
               </div>
-              <p className="text-[10px] leading-snug text-darkgray">{d.description}</p>
-            </div>
-          ))}
+            );
+          })}
           {referenceLegend && (
             <div className="space-y-0.5">
               <div className="flex items-center gap-2">
@@ -494,11 +556,15 @@ export default function EnvironmentMap({
             </div>
           )}
           <p className="border-t border-slate2/60 pt-1.5 text-[9px] leading-snug text-dim">
-            Sources: {NE_ATTRIBUTION}; {VECTOR_ATTRIBUTION}. Reference geography, not a live
-            reading.
+            Sources: {NE_ATTRIBUTION}; {VECTOR_ATTRIBUTION}.{' '}
+            {layerToggles
+              ? 'Reference layers show map geography, not live conditions.'
+              : 'Reference geography, not a live reading.'}
           </p>
         </div>
       )}
+
+      {children}
 
       {/* Detail */}
       {selection && (
@@ -508,20 +574,20 @@ export default function EnvironmentMap({
           aria-label={
             selection.type === 'point'
               ? `${selection.point.label} details`
-              : `${selection.name || 'Unnamed waterway'} details`
+              : `${selection.name || `Unnamed ${(selection.kind || 'feature').toLowerCase()}`} details`
           }
           data-testid="env-detail"
           className="absolute bottom-3 left-3 right-16 z-[950] max-w-sm border border-slate2 bg-card/95 p-3 backdrop-blur-md focus:outline-none sm:right-auto"
         >
           <div className="flex items-start justify-between gap-2">
             <div className="min-w-0">
-              {selection.type === 'waterway' && (
+              {(selection.type === 'waterway' || selection.type === 'area') && (
                 <>
                   <p className="font-mono text-[9px] uppercase tracking-[0.2em] text-dim">
                     {selection.kind}
                   </p>
                   <h3 className="font-display text-base font-bold leading-tight text-silver">
-                    {selection.name || 'Unnamed waterway'}
+                    {selection.name || `Unnamed ${(selection.kind || 'feature').toLowerCase()}`}
                   </h3>
                 </>
               )}
@@ -537,13 +603,13 @@ export default function EnvironmentMap({
               )}
               {selection.type === 'none' && (
                 <h3 className="font-display text-base font-bold leading-tight text-silver">
-                  No {noun.toLowerCase()} near the map centre
+                  No {inspectNoun} near the map centre
                 </h3>
               )}
             </div>
             <button
               type="button"
-              aria-label={`Close ${noun.toLowerCase()} details`}
+              aria-label={`Close ${inspectNoun} details`}
               onClick={closeSelection}
               className="flex h-9 w-9 shrink-0 items-center justify-center border border-slate2 text-silver transition-colors hover:border-flare hover:text-flare focus-visible:outline focus-visible:outline-2 focus-visible:outline-ozone"
             >
@@ -571,11 +637,44 @@ export default function EnvironmentMap({
                 </div>
               </>
             )}
+            {selection.type === 'area' && (
+              <>
+                {selection.rows?.map((r) => (
+                  <div key={r.label} className="flex gap-2">
+                    <dt className="w-24 shrink-0 text-dim">{r.label}</dt>
+                    <dd className="text-silver">{r.value}</dd>
+                  </div>
+                ))}
+                <div className="flex gap-2">
+                  <dt className="w-24 shrink-0 text-dim">Data type</dt>
+                  <dd className="text-silver">
+                    <TrustBadge kind="reference" /> map geography
+                  </dd>
+                </div>
+                <div className="flex gap-2">
+                  <dt className="w-24 shrink-0 text-dim">Source</dt>
+                  <dd className="text-silver">{selection.provider}</dd>
+                </div>
+              </>
+            )}
             {selection.type === 'point' &&
               selection.point.rows?.map((r) => (
                 <div key={r.label} className="flex gap-2">
                   <dt className="w-24 shrink-0 text-dim">{r.label}</dt>
-                  <dd className="text-silver">{r.value}</dd>
+                  <dd className="text-silver">
+                    {r.href ? (
+                      <a
+                        href={r.href}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-ozone underline underline-offset-2"
+                      >
+                        {r.value}
+                      </a>
+                    ) : (
+                      r.value
+                    )}
+                  </dd>
                 </div>
               ))}
             {selection.type === 'point' && (
