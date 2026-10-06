@@ -40,11 +40,3 @@ Updated 2026-10-02. Follow `brain/PRODUCT.md`, `brain/INVARIANTS.md` and the own
 - [ ] Owner decisions before public creative publishing, new schemas, Trails, Crews, Connections or persistent AR observations. Proposed future policies (moderation-queue reuse, creator notifications, derivative cascades, attribution-only dispute handling) remain **unvalidated proposals** requiring their own design/dependency assessment — not implemented, not assumed to work with existing infrastructure.
 
 Preserve closed popup/glyph/worker/security work. Keep PERF-OBS-1, entity-manifest mismatch, function typecheck and production defence-in-depth schema drift in their own scopes.
-
-## NEW PRIORITY — Hackers Club (owner request, 2026-10-05)
-
-Purpose: bring artists, makers and ethical researchers into the real-world discovery/action loop. First bounded slice: public `/hackers-club`, three actionable briefs, a local poster concept editor, permission-based field planning and an authorised-research scope checklist. Menu discovery and per-route metadata included.
-
-Status: implementation candidate only, not merged/BACKUP-deployed/production-shipped. No membership records, public uploads, messaging, location tracking, active security tools, new permissions or entities. Poster text/colour use component state only; reload clears them. Existing application telemetry is unaffected; no claim of app-wide zero writes.
-
-Next: exact-head CI; responsive/keyboard/a11y browser checks; BACKUP targeting and artifact proof; rendered BACKUP QA. Then give Dave the verified preview link, what changed and three things to try. Preserve the existing pinned release queue; do not include this feature silently in #322 or the combined follow-up candidate.

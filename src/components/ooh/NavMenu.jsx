@@ -103,7 +103,6 @@ const SITEMAP = [
     group: 'Campaigns',
     tier: 'primary',
     items: [
-      { to: '/hackers-club', label: 'Hackers Club', status: 'testing' },
       { to: '/adbusting', label: 'Adbusting', status: 'live' },
       { to: '/graffiti', label: 'Graffiti', status: 'live' },
       { to: '/ecology', label: 'Ecology', status: 'live' },
