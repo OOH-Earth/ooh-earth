@@ -29,8 +29,8 @@ test.describe('bounded place research', () => {
               properties: {
                 title: 'M 2.9 — 4 km SW of Testville',
                 mag: 2.9,
-                time: Date.now() - 60_000,
-                url: 'https://earthquake.usgs.gov/test-event-1',
+                time: Date.parse('2026-10-01T12:00:00Z'),
+                url: 'https://earthquake.usgs.gov/earthquakes/eventpage/test-event-1',
               },
               geometry: { type: 'Point', coordinates: [-0.2, 51.5, 8.2] },
             },
@@ -53,7 +53,15 @@ test.describe('bounded place research', () => {
     await expect(page.getByTestId('research-fixture-card')).toContainText(
       'Fixture · not live intelligence',
     );
-    await expect(page.getByTestId('research-live-card')).toContainText('External reporting');
+    expect(usgsRequests).toBe(0);
+    const loadLive = page.getByTestId('load-live-research');
+    await loadLive.click();
+    await loadLive.click();
+    await expect.poll(() => usgsRequests).toBe(1);
+    await expect(
+      page.getByTestId('research-live-card').or(page.getByText(/No matching events returned/)),
+    ).toBeVisible();
+    await expect(page.getByText('External reporting').first()).toBeVisible();
     await expect(page.getByText('Open field check')).toBeVisible();
     expect(usgsRequests).toBe(1);
   });
@@ -65,8 +73,9 @@ test.describe('bounded place research', () => {
     await mockBase44(page, { user: null, locations: { [location.id]: location }, fieldChecks: {} });
     await page.goto(`/location/${location.id}`);
     await page.locator('button').filter({ hasText: 'Research this place' }).first().click();
+    await page.getByTestId('load-live-research').click();
     await expect(page.getByTestId('research-fixture-card')).toBeVisible();
-    await expect(page.getByRole('status')).toContainText('external source is unavailable');
+    await expect(page.getByRole('status')).toContainText('USGS returned 503');
     await expect(page.getByText('OOH-verified evidence')).toBeVisible();
   });
 });

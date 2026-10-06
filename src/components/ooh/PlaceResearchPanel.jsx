@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   AlertTriangle,
   Clock3,
@@ -9,7 +9,12 @@ import {
   Radio,
   ShieldCheck,
 } from 'lucide-react';
-import { fetchUsgsResearch, RESEARCH_FIXTURES, RESEARCH_SOURCE } from '@/lib/placeResearch';
+import {
+  placeResearchClient,
+  RESEARCH_FIXTURES,
+  RESEARCH_SOURCE,
+  validatePublicCoordinates,
+} from '@/lib/placeResearch';
 
 const STALE_AFTER_MS = 6 * 60 * 60 * 1000;
 function formatDate(value) {
@@ -62,7 +67,20 @@ function SourceCard({ item }) {
             <MapPinned className="h-3 w-3 text-ozone" /> {item.geographicPrecision}
           </dd>
         </div>
+        {item.status === 'live' && (
+          <div>
+            <dt className="font-mono uppercase tracking-[0.15em] text-dim">Search distance</dt>
+            <dd className="mt-0.5 text-silver">
+              {item.searchDistanceKm} km radius · not event accuracy
+            </dd>
+          </div>
+        )}
       </dl>
+      {item.cacheHit && (
+        <p className="mt-3 font-mono text-[8px] uppercase tracking-[0.15em] text-dim">
+          Cache hit · retrieval timestamp above is the original upstream retrieval
+        </p>
+      )}
       <a
         href={item.sourceUrl}
         target="_blank"
@@ -76,39 +94,55 @@ function SourceCard({ item }) {
 }
 
 export default function PlaceResearchPanel({ location, onClose }) {
-  const [live, setLive] = useState({ status: 'loading', items: [], error: '', requestUrl: '' });
+  const [liveRequested, setLiveRequested] = useState(false);
+  const [live, setLive] = useState({ status: 'idle', items: [], error: '', requestUrl: '' });
+  const requestSequence = useRef(0);
   const coordinates = useMemo(
     () => ({ lat: Number(location?.lat), lng: Number(location?.lng) }),
     [location],
   );
-  const hasCoordinates = Number.isFinite(coordinates.lat) && Number.isFinite(coordinates.lng);
-  useEffect(() => {
-    if (!hasCoordinates) {
-      setLive({
-        status: 'unavailable',
-        items: [],
-        error: 'This place has no usable coordinates.',
-        requestUrl: '',
-      });
-      return undefined;
+  const coordinatePrivacy =
+    location?.coordinate_privacy ||
+    (location?.is_private || location?.private ? 'restricted' : 'public');
+  const locationKey = `${location?.id || 'unknown'}:${coordinates.lat}:${coordinates.lng}`;
+  const coordinateState = useMemo(() => {
+    try {
+      validatePublicCoordinates({ ...coordinates, coordinatePrivacy });
+      return { ok: true, message: '' };
+    } catch (error) {
+      return { ok: false, message: error.message };
     }
-    const controller = new AbortController();
-    fetchUsgsResearch({ ...coordinates, signal: controller.signal })
-      .then((result) =>
-        setLive({ status: 'ready', items: result.items, error: '', requestUrl: result.requestUrl }),
-      )
+  }, [coordinates, coordinatePrivacy]);
+
+  useEffect(() => {
+    return () => {
+      requestSequence.current += 1;
+    };
+  }, [locationKey]);
+
+  const requestLiveData = () => {
+    if (!coordinateState.ok || live.status === 'loading') return;
+    const sequence = ++requestSequence.current;
+    setLiveRequested(true);
+    setLive({ status: 'loading', items: [], error: '', requestUrl: '' });
+    placeResearchClient
+      .request({ ...coordinates, coordinatePrivacy })
+      .then((result) => {
+        if (sequence !== requestSequence.current) return;
+        setLive({ status: 'ready', items: result.items, error: '', requestUrl: result.requestUrl });
+      })
       .catch((error) => {
-        if (error.name !== 'AbortError')
-          setLive({
-            status: 'error',
-            items: [],
-            error: 'The external source is unavailable right now.',
-            requestUrl: '',
-          });
+        if (sequence !== requestSequence.current) return;
+        setLive({
+          status: 'error',
+          items: [],
+          error: error.message || 'The external source is unavailable right now.',
+          requestUrl: '',
+        });
       });
-    return () => controller.abort();
-  }, [coordinates, hasCoordinates]);
-  const liveItems = live.items.length ? live.items : [];
+  };
+
+  const liveItems = liveRequested && live.items.length ? live.items : [];
   return (
     <section
       className="mb-8 border border-ozone/40 bg-card/30"
@@ -133,12 +167,24 @@ export default function PlaceResearchPanel({ location, onClose }) {
             record. This panel loads only because you requested it.
           </p>
         </div>
-        <button
-          onClick={onClose}
-          className="min-h-11 border border-slate2 px-3 py-2 font-mono text-[9px] uppercase tracking-[0.18em] text-darkgray hover:border-ozone hover:text-ozone focus-visible:outline focus-visible:outline-2 focus-visible:outline-ozone"
-        >
-          Close research
-        </button>
+        <div className="flex flex-wrap gap-2">
+          <button
+            type="button"
+            onClick={requestLiveData}
+            disabled={!coordinateState.ok || live.status === 'loading'}
+            data-testid="load-live-research"
+            className="min-h-11 border border-ozone bg-ozone px-3 py-2 font-mono text-[9px] font-bold uppercase tracking-[0.18em] text-void hover:border-flare hover:bg-flare disabled:cursor-not-allowed disabled:border-slate2 disabled:bg-slate2 disabled:text-dim focus-visible:outline focus-visible:outline-2 focus-visible:outline-ozone"
+          >
+            {live.status === 'loading' ? 'Loading live source…' : 'Load live USGS data'}
+          </button>
+          <button
+            type="button"
+            onClick={onClose}
+            className="min-h-11 border border-slate2 px-3 py-2 font-mono text-[9px] uppercase tracking-[0.18em] text-darkgray hover:border-ozone hover:text-ozone focus-visible:outline focus-visible:outline-2 focus-visible:outline-ozone"
+          >
+            Close research
+          </button>
+        </div>
       </div>
       <div className="grid gap-4 p-4 sm:p-5 lg:grid-cols-[1.4fr_0.8fr]">
         <div>
@@ -164,18 +210,26 @@ export default function PlaceResearchPanel({ location, onClose }) {
               <SourceCard key={item.id} item={item} />
             ))}
           </div>
-          {live.status === 'ready' && liveItems.length === 0 && (
-            <p className="mt-3 border border-slate2/60 p-4 font-mono text-[10px] uppercase tracking-[0.15em] text-darkgray">
-              No matching events returned for this bounded query.
+          {!liveRequested && (
+            <p className="mt-3 border border-ozone/30 bg-ozone/5 p-4 text-[11px] leading-relaxed text-silver">
+              Fixture mode is active. No provider request has been made. Choose “Load live USGS
+              data” to send this public place’s coordinates to USGS.
             </p>
           )}
-          {(live.status === 'error' || live.status === 'unavailable') && (
+          {liveRequested && live.status === 'ready' && liveItems.length === 0 && (
+            <p className="mt-3 border border-slate2/60 p-4 font-mono text-[10px] uppercase tracking-[0.15em] text-darkgray">
+              No matching events returned for this bounded query. This capped lookup is not
+              exhaustive, and an empty result is not proof that this place is safe.
+            </p>
+          )}
+          {(!coordinateState.ok || live.status === 'error') && (
             <p
               role="status"
               className="mt-3 flex items-start gap-2 border border-flare/50 bg-flare/5 p-4 text-[11px] leading-relaxed text-silver"
             >
-              <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-flare" /> {live.error} Fixture
-              validation remains available; OOH Earth itself is still usable.
+              <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-flare" />{' '}
+              {coordinateState.ok ? live.error : coordinateState.message} Fixture validation remains
+              available; OOH Earth itself is still usable.
             </p>
           )}
         </div>
@@ -195,9 +249,27 @@ export default function PlaceResearchPanel({ location, onClose }) {
             </div>
             <div>
               <dt className="font-mono text-[8px] uppercase tracking-[0.15em] text-dim">
+                Query window / cap
+              </dt>
+              <dd className="mt-0.5 text-silver">{RESEARCH_SOURCE.queryWindow}</dd>
+            </div>
+            <div>
+              <dt className="font-mono text-[8px] uppercase tracking-[0.15em] text-dim">
+                Completeness boundary
+              </dt>
+              <dd className="mt-0.5 text-silver">{RESEARCH_SOURCE.completeness}</dd>
+            </div>
+            <div>
+              <dt className="font-mono text-[8px] uppercase tracking-[0.15em] text-dim">
                 Query disclosure
               </dt>
               <dd className="mt-0.5 text-silver">{RESEARCH_SOURCE.disclosure}</dd>
+            </div>
+            <div>
+              <dt className="font-mono text-[8px] uppercase tracking-[0.15em] text-dim">
+                Catalog vs feed
+              </dt>
+              <dd className="mt-0.5 text-silver">{RESEARCH_SOURCE.feedChoice}</dd>
             </div>
             <div>
               <dt className="font-mono text-[8px] uppercase tracking-[0.15em] text-dim">
@@ -229,7 +301,8 @@ export default function PlaceResearchPanel({ location, onClose }) {
             </span>
             <p className="mt-2 text-[11px] leading-relaxed text-silver">
               External reporting does not verify what is on this exact site today. The existing OOH
-              field record is the place to confirm conditions in person.
+              field record is the place to confirm conditions in person. No external event changes
+              OOH verification, creates a field check, or implies site damage.
             </p>
             <a
               href="#ooh-verified-evidence"

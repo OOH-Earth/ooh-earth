@@ -24,10 +24,13 @@ The OOH slice does not embed or import OSIRIS. Direct USGS access was selected o
 - Contract: documented FDSN Event Web Service GeoJSON query.
 - Rights: USGS-authored data is public domain in the US; the UI retains USGS attribution language. Data rights are tracked separately from OSIRIS's MIT code licence.
 - Reliability: the catalog is authoritative for published events, but completeness is not guaranteed for small events or sparsely instrumented regions.
-- Rate limits: one request per panel open; no polling, background refresh, persistent cache, or contribution payload is sent.
-- Privacy: only the selected place latitude/longitude and fixed query parameters are sent upstream.
+- Rate limits: one explicit live action starts at most one shared request for a canonical provider/coordinate/query key. A bounded eight-entry in-memory cache is fresh for five minutes; there is no polling or background refresh. Cache hits retain the original upstream retrieval timestamp.
+- Privacy: fixture mode makes no provider request. A live action sends only the selected public place latitude/longitude and fixed query parameters upstream, with omitted credentials and a restrictive `no-referrer` policy. Normal network metadata, including the connecting IP address, is visible to USGS. Restricted/private coordinates are rejected until an explicit privacy decision exists.
+- Request correctness: coordinates are finite and range-checked (including zero); the request is bounded to the previous 30 days, 100 km and five results. Only transient timeout/network/408/425/429/5xx failures retry once, respecting `Retry-After`; malformed responses do not retry. Failed in-flight entries are cleared for deliberate retry.
+- Evidence boundary: duplicate provider event IDs are collapsed only when the IDs match. External reports retain source, event, retrieval and precision metadata, but never change OOH verification, create a field check, or imply site damage. The field-check handoff still requires an independent observation and normal confirmation.
+- Feed choice: the Catalog query is used for a place-bounded historical window. USGS real-time GeoJSON feeds were not selected because this panel does not continuously monitor or poll a global feed.
 
-Reference: `https://earthquake.usgs.gov/fdsnws/event/1/que`, `https://www.usgs.gov/data-management/data-licensing`, and `https://www.usgs.gov/faqs/are-usgs-reports/publications-copyrighted`.
+Reference: `https://earthquake.usgs.gov/fdsnws/event/1/query`, `https://earthquake.usgs.gov/fdsnws/event/1/`, `https://www.usgs.gov/data-management/data-licensing`, and `https://www.usgs.gov/faqs/are-usgs-reports/publications-copyrighted`.
 
 ## Release boundary
 
