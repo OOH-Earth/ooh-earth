@@ -1,4 +1,4 @@
-import { MapContainer, TileLayer, Marker, Popup, Circle, useMap } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, Circle, useMap } from 'react-leaflet';
 import L from 'leaflet';
 // Own the stylesheet: this page is a lazy route, so relying on another map component's
 // import leaves the Leaflet panes/tiles unpositioned on a direct visit.
@@ -166,65 +166,16 @@ export default function MediaCorpsMap({
           title={corp.name}
           eventHandlers={{
             click: () => onSelect?.(corp),
-            // Pins are role=button. Leaflet only maps Enter to its popup toggle, never Space,
-            // and neither reaches onSelect, so keyboard users never got the details drawer.
+            // Pins are role=button. Leaflet maps neither Enter nor Space to onSelect, so keyboard
+            // users never reached the details drawer, which is the single information surface.
             keydown: (e) => {
               const key = e.originalEvent?.key;
               if (key !== 'Enter' && key !== ' ') return;
               e.originalEvent.preventDefault();
-              e.target.openPopup();
               onSelect?.(corp);
             },
           }}
-        >
-          <Popup>
-            <div className="min-w-[200px]">
-              <div className="flex items-center gap-1.5">
-                <span
-                  className="h-2 w-2 rounded-full"
-                  style={{ background: SCOPE_COLOR[corp.scope] || SCOPE_COLOR.local }}
-                />
-                <span
-                  className="font-mono text-[9px] font-bold uppercase tracking-[0.2em]"
-                  style={{ color: SCOPE_COLOR[corp.scope] || SCOPE_COLOR.local }}
-                >
-                  {corp.scope}
-                </span>
-                <span className="font-mono text-[9px] text-gray-500">
-                  {corp.countries || 0} countries
-                </span>
-              </div>
-              <div className="font-bold text-sm mt-1" style={{ color: '#EDFF00' }}>
-                {corp.name}
-              </div>
-              <div className="text-xs text-gray-400 mt-0.5">{corp.hq}</div>
-              <div className="text-[10px] text-gray-500 mt-1.5">
-                {corp.panels > 0
-                  ? `${panelLabel(corp.panels)} panels`
-                  : 'Infrastructure / software'}
-                {corp.parent && ` · ${corp.parent}`}
-              </div>
-              {corp.regions?.length > 0 && (
-                <div className="mt-1.5 flex flex-wrap gap-1">
-                  {corp.regions.map((r) => (
-                    <span
-                      key={r}
-                      className="px-1 py-0.5 font-mono text-[7px] uppercase tracking-[0.1em] border border-gray-600 text-gray-500"
-                    >
-                      {r}
-                    </span>
-                  ))}
-                </div>
-              )}
-              <button
-                onClick={() => onSelect?.(corp)}
-                className="mt-2 w-full border border-yellow-500/40 px-2 py-1 text-[10px] font-bold uppercase tracking-wide text-yellow-400 hover:bg-yellow-500/10"
-              >
-                View details →
-              </button>
-            </div>
-          </Popup>
-        </Marker>
+        ></Marker>
       ))}
     </MapContainer>
   );
