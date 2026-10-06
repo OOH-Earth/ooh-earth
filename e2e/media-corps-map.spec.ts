@@ -178,3 +178,47 @@ test.describe('Media Corps map', () => {
     });
   }
 });
+
+test.describe('Media Corps map — single information surface', () => {
+  test('a pin opens only the details dialog, which closes on Escape and returns focus to the pin', async ({
+    page,
+  }) => {
+    await openMediaCorps(page);
+    const pin = page.locator('.ooh-media-corp-pin[title="JCDecaux"]');
+    const dialog = page.getByRole('dialog', { name: 'JCDecaux details' });
+    for (const how of ['click', 'Enter', ' ']) {
+      await pin.scrollIntoViewIfNeeded();
+      if (how === 'click') await pin.click();
+      else {
+        await pin.focus();
+        await page.keyboard.press(how);
+      }
+      await expect(dialog).toBeVisible();
+      // No second competing popup behind the dialog backdrop.
+      await expect(page.locator('.leaflet-popup')).toHaveCount(0);
+      // Focus moved into the dialog.
+      await expect(page.getByRole('button', { name: 'Close details' })).toBeFocused();
+      await page.keyboard.press('Escape');
+      await expect(dialog).toHaveCount(0);
+      // ...and returns to the control that opened it (the pin for keyboard use).
+      if (how !== 'click') await expect(pin).toBeFocused();
+    }
+  });
+
+  test('quick-pick chips keep distinguishable labels and full accessible names', async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 360, height: 800 });
+    const corps = [
+      { ...CORPS[0], id: 'c1', name: 'Clear Channel Outdoor' },
+      { ...CORPS[1], id: 'c2', name: 'Clear Media' },
+      { ...CORPS[2], id: 'c3', name: 'Bangkok Metro Networks' },
+    ];
+    await openMediaCorps(page, corps);
+    const strip = page.locator('div.overflow-x-auto');
+    const texts = await strip.getByRole('button').allTextContents();
+    expect(texts.map((t) => t.trim())).toEqual(['Clear Channel', 'Clear', 'Bangkok Metro']);
+    expect(new Set(texts).size).toBe(texts.length);
+    await expect(strip.getByRole('button', { name: 'Clear Channel Outdoor' })).toHaveCount(1);
+  });
+});
