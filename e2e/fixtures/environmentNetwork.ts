@@ -3,7 +3,11 @@ import type { Page } from '@playwright/test';
 // Deterministic stand-in for the CARTO vector tile network the environment maps use. Regression
 // tests must not depend on third-party services; real-network QA is done separately.
 
-const STYLE_URL = /basemaps\.cartocdn\.com\/gl\/.*style\.json/;
+// Exact-hostname matching (not URL regexes) so only the intended third-party hosts are stubbed.
+const isHost = (url: URL, host: string) =>
+  url.hostname === host || url.hostname.endsWith(`.${host}`);
+const isStyle = (url: URL) =>
+  isHost(url, 'basemaps.cartocdn.com') && /^\/gl\/.*style\.json$/.test(url.pathname);
 const TILEJSON_URL = /\/vector\/carto\.streets\/v1\/tiles\.json/;
 const TILE_URL = /\/vectortiles\/carto\.streets\/v1\/(\d+)\/(\d+)\/(\d+)\.mvt/;
 const TILE_TEMPLATE =
@@ -85,7 +89,7 @@ export async function stubEnvironmentNetwork(page: Page, mode: NetworkMode = 'gr
   const grid = gridTile();
   const empty = emptyTile();
 
-  await page.route(STYLE_URL, (route) => {
+  await page.route(isStyle, (route) => {
     stats.style += 1;
     return route.fulfill({
       json: {
@@ -130,8 +134,11 @@ export async function stubEnvironmentNetwork(page: Page, mode: NetworkMode = 'gr
     });
   });
   // Anything else third-party on the map path is out of scope for these tests.
-  await page.route(/basemaps\.cartocdn\.com\/fonts|arcgisonline\.com/, (route) =>
-    route.fulfill({ status: 204 }),
+  await page.route(
+    (url) =>
+      (isHost(url, 'basemaps.cartocdn.com') && url.pathname.startsWith('/fonts')) ||
+      isHost(url, 'arcgisonline.com'),
+    (route) => route.fulfill({ status: 204 }),
   );
   return { tileRequests, stats };
 }
