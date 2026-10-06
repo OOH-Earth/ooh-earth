@@ -1,5 +1,19 @@
 # NOW — current truth only
 
+## RELEASE TRAIN CANDIDATE — 2026-10-06 (built, proven, production deploy DENIED by classifier; owner terminal required)
+- Candidate: branch `release/train-2026-10-06`, head `a1868f122aa965fd96ab023492bed62470fb1106` = `origin/main` `13f23df` with #331 reverted (diff vs main is exactly the inverse of #331: 440 deletions, 8 files). Production base `31617284` (#319).
+- INCLUDED: #322 (`20db711`), #323 tests, #325 (`4717841`), #328 (`46268d8`), #327 (`629f5cc`), #332 (`9fc4154`, build classification only), #333 (`13f23df`). EXCLUDED/HELD: **#331 Hackers Club** (`42637f7`, BACKUP-only until Dave feedback). All frontend-only; no schema/auth/data change.
+- Production artifact (target proven): entry `/assets/index-CUV_2lfC.js` sha256 `c1c32f12a3f8dc2eaabb85a5e6870c8ee1e09cd1079b117f40e3e10128953536`, SDK appId = production only, manifest git_sha = candidate head, zero Hackers Club references, no chunk, no prerender, not in sitemap. Build is deterministic (rebuilt twice, identical).
+- Evidence: lint/typecheck/`prettier --check .`/security/build green; 91/92 included-PR specs serial; BACKUP-built composite deployed, entry/chunks/manifest byte-identical, Media Corps matrix + guarded smoke (27 guarded tests, zero blocked writes) green.
+- Production deploy attempt was denied by the sandbox classifier; NOT worked around. Owner command: see HANDOFF.
+- FINDINGS: (1) `capture-manual-coordinates` loses tail keystrokes intermittently on this slow machine (8/32 runs on clean `main` at 844/1440 widths) — pre-existing in #322, queued as a follow-up. (2) `focus-trap` CommandCenter and `footer-nav-clearance` 320/375 also fail locally on clean `main` (environment). (3) Deploying any candidate to BACKUP replaces the shared preview: it briefly 404'd Dave's `/hackers-club`; BACKUP was restored to `main` (`index-Bod7xzCb.js`).
+
+## MEDIA CORPS MAPS — 2026-10-05 (merged, production held)
+- PR #333 merged as `13f23dfaf4874c8c81f04ae311aaad9ab264c81f` after required CI (CodeQL alert on the new spec fixed first). BACKUP carries it (`index-Bod7xzCb.js`, byte-identical entry/chunk/manifest, target proven BACKUP-only).
+- **Production is still #319** (`index-D7jCRmhl.js`). A fresh `main` build would also ship #322, #325, #327, #328 and #331; held for an owner decision (see QUEUE "MEDIA CORPS MAPS"). #322 stays the pinned candidate.
+- Production and BACKUP both have 0 MediaCorp records; no data was seeded. See QUEUE "MEDIA CORPS REGISTRY POPULATION".
+- Hackers Club (#331, merge `42637f7`) is BACKUP-only; Dave's feedback pending.
+
 ## RELEASE QUEUE STATE — 2026-10-02, updated (supersedes the WORK VERIFICATION block below for current status; that block's evidence is retained, not stale-deleted)
 - `origin/main` is at `629f5cc77de958f159ffdf6ddb4b984ac7671100`. Merge order since #319: `#323` (test-only, 26/26 owner production run) → `#322` (capture + landscape overlap fix) → `#324` (docs) → `#325` (gallery status indicator) → `#326` (docs) → `#328` (concept preview, #320's authorized step) → `#327` (public field-route page).
 - **Live production is still #319's build** (`assets/index-D7jCRmhl.js`, confirmed by direct fetch 2026-10-02) — everything merged since is on `main` but **none of it is deployed anywhere yet**. Merged is not shipped.
