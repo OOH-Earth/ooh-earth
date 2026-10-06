@@ -1,5 +1,8 @@
 # QUEUE — priority lanes, stable IDs
 
+## QUICKCAPTURE MANUAL COORDINATE INPUT — INTERMITTENT KEYSTROKE LOSS (follow-up)
+`e2e/capture-manual-coordinates.spec.ts` fails ~25% locally on clean `main` at 844x390/1440x900 with the typed value truncated ("-73", "-73.98"). The input is a plain controlled field, so suspect surrounding Map-page handlers or re-render timing. Investigate with a CPU-throttled repro before relying on #322 for slow devices. Not a regression of the release train.
+
 ## MEDIA CORPS MAPS — MERGED 2026-10-05, NOT DEPLOYED TO PRODUCTION (PR #333, merge `13f23dfaf4874c8c81f04ae311aaad9ab264c81f`)
 Root causes (reproduced on production and BACKUP): the lazy `/media-corps` map did
 not own its Leaflet CSS (unstyled panes, giant unpositioned tiles, no usable pins);
