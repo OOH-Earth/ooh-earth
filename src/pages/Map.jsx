@@ -44,7 +44,7 @@ import { OOH_FUTURES } from '@/components/ooh/map/futures';
 import { useMushroomData } from '@/components/ooh/map/layers/useMushroomData';
 import { useFloraData } from '@/components/ooh/map/layers/useFloraData';
 import { useWarZoneData } from '@/components/ooh/map/layers/useWarZoneData';
-import { RIVER_SOURCES } from '@/components/ooh/map/layers/riverData';
+import { VISIBLE_RIVER_SOURCES } from '@/components/ooh/map/layers/riverData';
 import LayerResultCard from '@/components/ooh/map/LayerResultCard';
 import MapStyleSwitcher from '@/components/ooh/map/MapStyleSwitcher';
 import MapBottomSheet from '@/components/ooh/map/MapBottomSheet';
@@ -644,7 +644,7 @@ export default function Map() {
             matches(`${z.title} ${z.region} ${z.advisory} ${z.source || ''}`),
         );
       case 'rivers':
-        return RIVER_SOURCES.filter(
+        return VISIBLE_RIVER_SOURCES.filter(
           (s) =>
             (layerFilter === 'all' || s.pollution === layerFilter) &&
             matches(`${s.name} ${s.river} ${s.notes}`),

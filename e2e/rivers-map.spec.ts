@@ -38,7 +38,7 @@ test.describe('Rivers — river network map', () => {
     const legend = page.getByTestId('env-legend');
     await expect(legend).toContainText('River network');
     await expect(legend).toContainText('Reference');
-    await expect(legend).toContainText('Illustrative');
+    await expect(legend).toContainText('Demo / legacy');
     await expect(legend).toContainText('Natural Earth');
     await expect(legend).toContainText('CARTO');
     await expect(legend).toContainText('not a live reading');
@@ -70,6 +70,9 @@ test.describe('Rivers — river network map', () => {
   });
 
   test('panning at detail zoom requests new tiles for the new viewport', async ({ page }) => {
+    // Zooming plus four full-width drags on a software-rendered WebGL map takes ~24 s on its own,
+    // leaving almost no headroom under the 30 s default. The assertions are unchanged.
+    test.setTimeout(90_000);
     const { net, map } = await openRivers(page);
     await expect(map).toHaveAttribute('data-status', 'ready', { timeout: 20_000 });
     await zoomTo(page, map, 6.5);
@@ -136,7 +139,7 @@ test.describe('Rivers — river network map', () => {
     await expect(inspect).toBeFocused();
   });
 
-  test('selecting a reference sample from the list opens labelled illustrative details', async ({
+  test('selecting a reference sample from the list opens details labelled demo / legacy', async ({
     page,
   }) => {
     await page.setViewportSize({ width: 1440, height: 900 });
@@ -147,9 +150,21 @@ test.describe('Rivers — river network map', () => {
     await page.keyboard.press('Enter');
     const detail = page.getByRole('region', { name: 'Kemble Source details' });
     await expect(detail).toBeVisible();
-    await expect(detail).toContainText('Illustrative');
+    await expect(detail).toContainText('Demo / legacy');
     await expect(detail).toContainText('not a live reading');
     await expect(card).toHaveAttribute('aria-pressed', 'true');
+  });
+
+  test('the Varanasi sample (provenance required, coordinates ~700 km off) is hidden everywhere', async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    const { map } = await openRivers(page);
+    await expect(map).toHaveAttribute('data-status', 'ready', { timeout: 20_000 });
+    await expect(page.getByRole('button', { name: /Kemble Source/ })).toBeVisible();
+    await expect(page.getByText(/Varanasi/)).toHaveCount(0);
+    // No sample is presented as a monitoring station or a WHO-benchmarked assessment.
+    await expect(page.getByText(/Source Monitoring Station|Benchmarked/)).toHaveCount(0);
   });
 
   test('if the detailed network cannot load, the page says so and keeps major rivers', async ({
