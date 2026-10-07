@@ -5,6 +5,7 @@ on:
     branches: [main]
     paths:
       - scripts/release/place-research-backup.sh
+      - scripts/release/place-research-backup.test.mjs
       - .github/workflows/backup-handoff-validation.yml
   workflow_dispatch:
 
@@ -25,6 +26,7 @@ jobs:
           OOH_EVIDENCE_ROOT: ${{ runner.temp }}
         run: |
           bash -n scripts/release/place-research-backup.sh
+          node --test scripts/release/place-research-backup.test.mjs
           bash scripts/release/place-research-backup.sh validate
       - name: Execute the guarded specs against a local preview, never BACKUP
         shell: bash

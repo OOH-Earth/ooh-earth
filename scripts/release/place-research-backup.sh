@@ -129,17 +129,36 @@ fi
 node --input-type=module - <<'JS'
 import fs from 'node:fs';
 const runs = [37641011927, 37641012186, 37641012022];
-const evidence = [];
-for (const id of runs) {
-  const response = await fetch(`https://api.github.com/repos/OOH-Earth/ooh-earth/actions/runs/${id}`, {
+const getGithub = async path => {
+  const response = await fetch(`https://api.github.com/repos/OOH-Earth/ooh-earth/${path}`, {
     headers: { Accept: 'application/vnd.github+json' }, signal: AbortSignal.timeout(20000),
   });
-  if (!response.ok) throw Error(`CI lookup ${id}: HTTP ${response.status}`);
-  const run = await response.json();
-  if (run.head_sha !== process.env.CANDIDATE_SHA || run.status !== 'completed' || run.conclusion !== 'success')
-    throw Error(`Exact-head CI gate not met: ${run.name} ${run.status}/${run.conclusion}`);
-  evidence.push({ id, name: run.name, head: run.head_sha, conclusion: run.conclusion, url: run.html_url });
+  if (!response.ok) throw Error(`GitHub qualification lookup: HTTP ${response.status}`);
+  return response.json();
+};
+const deadline = Date.now() + 1200000;
+let evidence;
+while (true) {
+  const results = await Promise.allSettled(runs.map(id => getGithub(`actions/runs/${id}`)));
+  const current = results.map(result => {
+    if (result.status !== 'fulfilled') throw result.reason;
+    return result.value;
+  });
+  for (const run of current) {
+    if (run.head_sha !== process.env.CANDIDATE_SHA) throw Error('CI head mismatch');
+    if (run.status === 'completed' && run.conclusion !== 'success')
+      throw Error(`Exact-head CI failed: ${run.name}/${run.conclusion}`);
+  }
+  if (current.every(run => run.status === 'completed' && run.conclusion === 'success')) {
+    evidence = current.map(run => ({ id: run.id, name: run.name, head: run.head_sha, conclusion: run.conclusion, url: run.html_url }));
+    break;
+  }
+  if (Date.now() >= deadline) throw Error('Exact-head CI did not finish within 20 minutes; nothing deployed');
+  console.log('Waiting for exact-head qualification:', current.map(run => `${run.name}: ${run.status}`).join('; '));
+  await new Promise(resolve => setTimeout(resolve, 30000));
 }
+const pr = await getGithub('pulls/336');
+if (pr.head?.sha !== process.env.CANDIDATE_SHA) throw Error('PR source advanced; review the new candidate before deploying');
 fs.writeFileSync(`${process.env.EVIDENCE_DIR}/ci-proof.json`, JSON.stringify(evidence, null, 2));
 const before = await fetch('https://ooh-earth-backup.base44.app/', { cache: 'no-store', signal: AbortSignal.timeout(20000) });
 if (!before.ok) throw Error(`Pre-deploy BACKUP homepage: HTTP ${before.status}`);
