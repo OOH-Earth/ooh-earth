@@ -84,7 +84,11 @@ export default function EnvironmentMap({
   const measureLayers = useMemo(
     () =>
       activeDefs.flatMap((d) =>
-        d.layers.filter((l) => !/hit|selected|-line$/.test(l.id)).map((l) => l.id),
+        d.layers
+          .filter(
+            (l) => !(l.id.includes('hit') || l.id.includes('selected') || l.id.endsWith('-line')),
+          )
+          .map((l) => l.id),
       ),
     [activeDefs],
   );
