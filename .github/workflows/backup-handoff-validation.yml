@@ -1,0 +1,62 @@
+name: BACKUP handoff validation (no deploy)
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - scripts/release/place-research-backup.sh
+      - .github/workflows/backup-handoff-validation.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  handoff:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with:
+          node-version: '20'
+      - name: Validate isolated pinned build and guarded test discovery
+        env:
+          OOH_EVIDENCE_ROOT: ${{ runner.temp }}
+        run: |
+          bash -n scripts/release/place-research-backup.sh
+          bash scripts/release/place-research-backup.sh validate
+      - name: Execute the guarded specs against a local preview, never BACKUP
+        shell: bash
+        run: |
+          sources=("$RUNNER_TEMP"/ooh-place-backup.*/source)
+          [ "${#sources[@]}" -eq 1 ]
+          cd "${sources[0]}"
+          export EVIDENCE_DIR="$(dirname "$PWD")"
+          npx playwright install --with-deps chromium
+          cat > playwright.handoff-local.config.ts <<'TS'
+          import { defineConfig } from '@playwright/test';
+          import original from './playwright.config';
+          import guarded from './playwright.backup-release.config';
+          export default defineConfig({ ...guarded, webServer: original.webServer,
+            use: { ...guarded.use, baseURL: 'http://localhost:4173' },
+          });
+          TS
+          npx playwright test --config=playwright.handoff-local.config.ts e2e/place-research.spec.ts e2e/capture-manual-coordinates.spec.ts e2e/ecology-map.spec.ts --grep 'bounded place research|manual capture coordinates|delayed dialog autofocus|selecting an observation' --workers=1 --retries=0 --trace=on
+          node --input-type=module - <<'JS'
+          import fs from 'node:fs';
+          const report = JSON.parse(fs.readFileSync(`${process.env.EVIDENCE_DIR}/results.json`, 'utf8'));
+          if (report.stats.expected !== 12 || report.stats.unexpected || report.stats.flaky || report.stats.skipped || report.errors?.length)
+            throw Error(`Guarded browser validation failed: ${JSON.stringify(report.stats)}`);
+          JS
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        if: always()
+        with:
+          name: backup-handoff-validation
+          path: |
+            ${{ runner.temp }}/ooh-place-backup.*/session.log
+            ${{ runner.temp }}/ooh-place-backup.*/build-proof.json
+            ${{ runner.temp }}/ooh-place-backup.*/test-discovery.txt
+            ${{ runner.temp }}/ooh-place-backup.*/results.json
+            ${{ runner.temp }}/ooh-place-backup.*/browser-results
+          retention-days: 14
