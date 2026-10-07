@@ -1,0 +1,71 @@
+name: Interaction regression (zero retries)
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - src/hooks/useFocusTrap.js
+      - e2e/capture-manual-coordinates.spec.ts
+      - e2e/ecology-map.spec.ts
+      - .github/workflows/interaction-regression.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  interactions:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with:
+          node-version: '20'
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - name: Prove delayed autofocus regression against the previous implementation
+        if: github.event_name == 'pull_request'
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        shell: bash
+        run: |
+          cp src/hooks/useFocusTrap.js /tmp/focus-trap-fixed.js
+          git fetch --no-tags origin "$BASE_SHA"
+          git show "$BASE_SHA:src/hooks/useFocusTrap.js" > src/hooks/useFocusTrap.js
+          npm run build
+          set +e
+          npx playwright test e2e/capture-manual-coordinates.spec.ts --grep 'delayed dialog autofocus' --project=chromium --workers=1 --retries=0 --reporter=json > /tmp/focus-baseline.json
+          baseline_exit=$?
+          set -e
+          cp /tmp/focus-trap-fixed.js src/hooks/useFocusTrap.js
+          BASELINE_EXIT="$baseline_exit" node --input-type=module - <<'JS'
+          import fs from 'node:fs';
+          const report = JSON.parse(fs.readFileSync('/tmp/focus-baseline.json', 'utf8'));
+          const errors = [];
+          const visit = suite => {
+            for (const spec of suite.specs || []) for (const test of spec.tests || [])
+              for (const result of test.results || []) errors.push(...(result.errors || []));
+            for (const child of suite.suites || []) visit(child);
+          };
+          for (const suite of report.suites || []) visit(suite);
+          if (process.env.BASELINE_EXIT === '0' || !errors.some(error => /Delayed initial autofocus must preserve the edited longitude/.test(error.message || '')))
+            throw new Error('Baseline did not reproduce the expected focus-loss failure; inspect before promotion');
+          console.log('Previous implementation reproduced the focus-loss regression.');
+          JS
+      - name: Build corrected source
+        run: npm run build
+      - name: Repeat keyboard and coordinate interactions, serially with zero retries
+        run: npx playwright test e2e/capture-manual-coordinates.spec.ts e2e/ecology-map.spec.ts --grep 'manual capture coordinates|delayed dialog autofocus|selecting an observation' --project=chromium --workers=1 --retries=0 --repeat-each=5 --trace=on
+        env:
+          CI: 'true'
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        if: always()
+        with:
+          name: interaction-regression-evidence
+          path: |
+            playwright-report
+            test-results
+            /tmp/focus-baseline.json
+          retention-days: 14

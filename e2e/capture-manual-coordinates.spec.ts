@@ -80,3 +80,53 @@ for (const viewport of [
     expect(writes).toEqual([]);
   });
 }
+
+test('delayed dialog autofocus preserves a coordinate input already being edited', async ({
+  page,
+}) => {
+  await mockBase44(page, { user: null, locations: {} });
+  await page.route('**/api/app-logs/**', (route) => route.fulfill({ json: {} }));
+  await page.addInitScript(() => {
+    localStorage.setItem('ooh-map-view', JSON.stringify('flat'));
+    Object.defineProperty(navigator, 'geolocation', {
+      value: { getCurrentPosition: (_success: unknown, error: Function) => error({ code: 1 }) },
+    });
+  });
+  await page.goto('/map');
+  await expect(page.getByRole('button', { name: 'Capture photo', exact: true })).toBeVisible();
+  // Hold animation frames only while the capture dialog is open. This reproduces a
+  // delayed opening frame without slowing typing or changing the dialog's code.
+  await page.evaluate(() => {
+    const original = window.requestAnimationFrame.bind(window);
+    const pending: Array<() => void> = [];
+    let held = true;
+    window.requestAnimationFrame = (callback) =>
+      original((time) => {
+        if (held && document.querySelector('[aria-label="Anonymous field capture"]')) {
+          pending.push(() => callback(time));
+        } else callback(time);
+      });
+    Object.assign(window, {
+      releaseCaptureFrames: () => {
+        held = false;
+        for (const callback of pending.splice(0)) callback();
+      },
+      pendingCaptureFrames: () => pending.length,
+    });
+  });
+  await page.getByRole('button', { name: 'Capture photo', exact: true }).click();
+  const longitude = page.getByRole('textbox', { name: 'Longitude', exact: true });
+  await expect(longitude).toBeVisible();
+  await expect
+    .poll(() => page.evaluate(() => (window as any).pendingCaptureFrames()))
+    .toBeGreaterThan(0);
+  await longitude.pressSequentially('-73');
+  await expect(longitude).toBeFocused();
+  await page.evaluate(() => (window as any).releaseCaptureFrames());
+  await expect(
+    longitude,
+    'Delayed initial autofocus must preserve the edited longitude',
+  ).toBeFocused();
+  await longitude.pressSequentially('.9857');
+  await expect(longitude).toHaveValue('-73.9857');
+});

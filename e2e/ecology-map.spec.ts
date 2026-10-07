@@ -143,8 +143,11 @@ test.describe('Ecology — layers and observations', () => {
     await expect(map).toHaveAttribute('data-status', 'ready', { timeout: 20_000 });
     await zoomTo(page, map, 6.5);
     const card = page.getByRole('button', { name: /crown flower/ });
+    await expect(card).toBeVisible({ timeout: 15_000 });
     await card.focus();
-    await page.keyboard.press('Enter');
+    await expect(card).toBeFocused();
+    await card.press('Enter');
+    await expect(card).toHaveAttribute('aria-pressed', 'true');
     const detail = page.getByRole('region', { name: 'crown flower details' });
     await expect(detail).toBeVisible();
     await expect(detail).toContainText('Recent observation');
