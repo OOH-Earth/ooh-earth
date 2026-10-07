@@ -66,6 +66,7 @@ export default defineConfig({
         'public-space-discovery.spec.ts',
         'public-space-moderation.spec.ts',
         'founding-profile.spec.ts',
+        'place-research.spec.ts',
       ],
     },
   ],
