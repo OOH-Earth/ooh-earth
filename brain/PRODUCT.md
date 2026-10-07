@@ -152,3 +152,12 @@ counts + Field Record), the XP/level/badge engine, the Quest system
 "Field Mission" route planner (`src/lib/fieldMission.js`), and an
 admin-managed `Operative` roster entity (points/tier/badges — internal,
 not the public identity).
+
+## MAP & ENVIRONMENT PRINCIPLES (2026-10-06)
+The goal is not maximum pins. The goal is maximum understanding of the physical world.
+- **DENSITY BEFORE GEOGRAPHY.** Show what is actually here (real river network, habitat, observations) before adding more markers or decoration.
+- **UNKNOWN IS DATA.** "Unknown", "no coverage" and "no observations in view" are honest answers. Never fill a gap with a plausible value, and never imply an empty environment from missing data.
+- **FRESHNESS IS PART OF TRUTH.** Every observation carries its date or provider timestamp; stale or sparse data says so.
+- **REFERENCE != LIVE.** Map geography (rivers, parks, cover) is labelled Reference. Legacy hand-authored samples are labelled Demo / legacy (never a reading, never a monitoring station). Only dated provider readings are Recent/Current/Observed. Model output is labelled Modelled.
+- **PLACE HAS MEMORY.** Environmental context should connect back to PLACE (and later OBSERVATION -> FIELD ACTION -> ACTIVITY) without new persistent tracking or schemas invented for the sake of it.
+- **MAP LAYERS MUST EXPLAIN THEMSELVES.** Each layer shows what it is, where it came from, how recent it is, and what it is not (legend, trust badge, attribution, empty/error state).
