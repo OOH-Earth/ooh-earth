@@ -2,8 +2,7 @@ import { test, expect, type Page } from '@playwright/test';
 import { mockBase44 } from './fixtures/mockBase44';
 
 // The Main Map's mushroom / flora / conflict layers are produced by a language model, not by
-// observations. They must (1) not be requested until the layer is switched on, and (2) say so
-// everywhere they appear. Dated, verifiable ecology lives on /ecology (iNaturalist).
+// observations. They must not be requested or plotted, including opt-in paths. Dated, verifiable ecology lives on /ecology (iNaturalist).
 
 // Prompts of the model-written layers: mushroom hotspots, flora hotspots, conflict zones and the
 // environmental news summary ticker.
@@ -86,22 +85,22 @@ test.describe('Main Map — AI-generated layers', () => {
     expect(generated(calls)).toHaveLength(0);
   });
 
-  test('switching a layer on makes exactly one call, and its results are labelled AI-generated', async ({
+  test('unsourced coordinate layers are unavailable and cannot request model data', async ({
     page,
   }) => {
     const calls = await openMap(page);
-    await page
-      .getByRole('button', { name: /Mushrooms/i })
-      .first()
-      .click();
-    await expect.poll(() => generated(calls).length, { timeout: 15_000 }).toBe(1);
-    await expect(page.getByText(/AI-generated · unverified/).first()).toBeVisible({
-      timeout: 15_000,
-    });
+    for (const name of [/Mushrooms/i, /^Flora$/i, /Conflict Alerts/i]) {
+      await expect(page.getByRole('button', { name }).first()).toBeDisabled();
+    }
+    await expect(
+      page.getByText('Mushroom, flora and conflict layers unavailable pending sourced data'),
+    ).toBeVisible();
+    await expect(page.getByRole('link', { name: 'Ecology observations' })).toHaveAttribute(
+      'href',
+      '/ecology',
+    );
     await page.waitForTimeout(1500);
-    expect(generated(calls)).toHaveLength(1); // not re-requested by other consumers
-    // The other generated layers stay unrequested.
-    expect(generated(calls).some((c) => /conflict/i.test(c))).toBe(false);
+    expect(generated(calls)).toHaveLength(0);
   });
 
   test('the environmental summary ticker is opt-in, labelled, and never links to non-http URLs', async ({

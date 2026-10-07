@@ -1,72 +1,8 @@
-import { useEffect, useState, useRef } from 'react';
-import { base44 } from '@/api/base44Client';
-import { getCached } from './layerDataCache';
+// No sourced observations are wired to this legacy Main Map layer yet.
+// Keep the consumer contract stable without requesting or plotting model-written coordinates.
+// Ecology observations remain available on /ecology; conflict data needs a licensed source.
+const unavailable = { spots: [], loading: false };
 
-// Shared data hook — fetches plant biodiversity / flora hotspot data via LLM web search.
-// Uses a module-level cache so multiple consumers share a single API call.
-// `enabled`: the LLM request is only made once the layer is actually switched on.
-export function useFloraData(enabled = true) {
-  const [spots, setSpots] = useState([]);
-  const [loading, setLoading] = useState(enabled);
-  const mounted = useRef(true);
-
-  useEffect(() => {
-    mounted.current = true;
-    if (!enabled) {
-      setLoading(false);
-      return () => {
-        mounted.current = false;
-      };
-    }
-    setLoading(true);
-    getCached('flora', async () => {
-      const res = await base44.integrations.Core.InvokeLLM({
-        prompt:
-          'Return 12 notable plant biodiversity hotspots and flora reserves around the world. Include locations from Thailand, UK, Amazon basin, Mediterranean, South Africa, and Southeast Asia. For each, provide: key plant species found (comma-separated), the ecosystem type (rainforest, grassland, wetland, etc.), a short note (max 100 chars), latitude, longitude, and the nearest city or region name. Focus on wild flora, endemic species, and medicinal plants rather than cultivated gardens.',
-        add_context_from_internet: true,
-        response_json_schema: {
-          type: 'object',
-          properties: {
-            spots: {
-              type: 'array',
-              items: {
-                type: 'object',
-                properties: {
-                  species: { type: 'string' },
-                  ecosystem: { type: 'string' },
-                  note: { type: 'string' },
-                  lat: { type: 'number' },
-                  lng: { type: 'number' },
-                  region: { type: 'string' },
-                },
-                required: ['species', 'lat', 'lng'],
-              },
-            },
-          },
-          required: ['spots'],
-        },
-      });
-      // InvokeLLM's SDK type is `string | object`; response_json_schema
-      // above guarantees an object at runtime.
-      const data = /** @type {{ spots?: any[] }} */ (res);
-      return data?.spots || [];
-    })
-      .then((data) => {
-        if (mounted.current) {
-          setSpots(data);
-          setLoading(false);
-        }
-      })
-      .catch(() => {
-        if (mounted.current) {
-          setSpots([]);
-          setLoading(false);
-        }
-      });
-    return () => {
-      mounted.current = false;
-    };
-  }, [enabled]);
-
-  return { spots, loading };
+export function useFloraData(_enabled = true) {
+  return unavailable;
 }
