@@ -10,7 +10,7 @@ const LAYER_META = {
 
 // Generic result card for non-ad map layers (mushrooms, flora, war, rivers).
 // Ad spots use LocationCard which has richer entity-backed interactions.
-export default function LayerResultCard({ item, layer }) {
+export default function LayerResultCard({ item, layer, onSelect = null, selected = false }) {
   const { Icon, accent, label } = LAYER_META[layer] || LAYER_META.mushrooms;
 
   const title =
@@ -36,8 +36,23 @@ export default function LayerResultCard({ item, layer }) {
 
   return (
     <div
-      className="group flex w-full gap-3 border-b border-slate2/40 p-3 text-left transition-colors hover:bg-card"
-      style={{ borderLeft: '2px solid transparent' }}
+      // Opt-in: portals that connect cards to the map pass onSelect; other portals keep static cards.
+      {...(onSelect
+        ? {
+            role: 'button',
+            tabIndex: 0,
+            'aria-pressed': selected,
+            onClick: () => onSelect(item),
+            onKeyDown: (e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                onSelect(item);
+              }
+            },
+          }
+        : {})}
+      className={`group flex w-full gap-3 border-b border-slate2/40 p-3 text-left transition-colors hover:bg-card ${onSelect ? 'cursor-pointer focus-visible:outline focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ozone' : ''} ${selected ? 'bg-card' : ''}`}
+      style={{ borderLeft: selected ? `2px solid ${accent}` : '2px solid transparent' }}
     >
       <div
         className="relative flex h-14 w-14 shrink-0 items-center justify-center border border-slate2/40 grid-bg"
@@ -85,7 +100,12 @@ export default function LayerResultCard({ item, layer }) {
           <div className="mt-0.5 truncate font-mono text-[10px] italic text-dim">{subtitle}</div>
         )}
         {layer === 'rivers' && (
-          <div className="mt-1 flex gap-3 font-mono text-[9px]">
+          <div className="mt-1 font-mono text-[8px] uppercase tracking-[0.15em] text-dim/80">
+            Illustrative sample · not a live reading
+          </div>
+        )}
+        {layer === 'rivers' && (
+          <div className="mt-0.5 flex gap-3 font-mono text-[9px]">
             <span className="text-dim">
               WQI{' '}
               <span className="font-bold" style={{ color: POLLUTION_META[item.pollution]?.color }}>
