@@ -96,3 +96,9 @@
 - Provisioning behaviors (`LabAdmin.jsx`/`CareersAdmin.jsx`-style
   read→conditional-write→reread patterns) — do not wrap in react-query or
   any auto-retry mechanism without redesigning the write path first.
+
+## Environmental claims
+- **NO SOURCE -> NO CLAIM.** Every environmental layer must answer: where did this come from, what kind of data is it (REFERENCE / OBSERVED / MODELLED / DERIVED), when does it represent, and how certain should I be. If the interface cannot answer those, it is not ready to be presented as environmental intelligence. Sources are recorded in `docs/ops/ooh-earth/18-ENVIRONMENTAL-SOURCE-REGISTER.md` before they ship.
+- **Never convert NO OBSERVATION into NO WATER / NO FLOW / NO ECOLOGY.** Absence of a station or record is "no observation coverage", not a measurement of the environment.
+- **LLM output is never map data.** Model-generated coordinates, species or events must not be presented as observations or reference geography.
+
