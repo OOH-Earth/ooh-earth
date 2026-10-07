@@ -189,3 +189,123 @@ test('snapBbox is outward and stable; the request URL is bounded', () => {
   assert.match(u, /parameter_code=00060%2C00065/);
   assert.match(u, /properties=/);
 });
+
+test('shared request survives one consumer leaving, with one fetch and private request flags', async () => {
+  let release;
+  let calls = 0;
+  let upstreamSignal;
+  const fetchImpl = async (_url, options) => {
+    calls += 1;
+    upstreamSignal = options.signal;
+    assert.equal(options.credentials, 'omit');
+    assert.equal(options.referrerPolicy, 'no-referrer');
+    await new Promise((resolve) => {
+      release = resolve;
+    });
+    return json({ features: [], links: [] });
+  };
+  const cache = createCache();
+  const leaving = new AbortController();
+  const a = fetchUsgsStations(BOX, { fetchImpl, cache, signal: leaving.signal });
+  const rejection = assert.rejects(a, (error) => error.kind === 'aborted');
+  const b = fetchUsgsStations(BOX, { fetchImpl, cache });
+  await Promise.resolve();
+  leaving.abort();
+  assert.equal(upstreamSignal.aborted, false);
+  release();
+  await rejection;
+  const result = await b;
+  assert.equal(calls, 1);
+  assert.deepEqual(result.stations, []);
+  const hit = await fetchUsgsStations(BOX, { fetchImpl, cache });
+  assert.equal(hit.retrievedAt, result.retrievedAt);
+  assert.equal(calls, 1);
+});
+
+test('last consumer cancellation aborts upstream and leaves a fresh request possible', async () => {
+  const cache = createCache();
+  let signal;
+  const fetchImpl = (_url, options) =>
+    new Promise((resolve, reject) => {
+      signal = options.signal;
+      signal.addEventListener(
+        'abort',
+        () => reject(Object.assign(new Error('cancelled'), { name: 'AbortError' })),
+        { once: true },
+      );
+    });
+  const caller = new AbortController();
+  const pending = fetchUsgsStations(BOX, { fetchImpl, cache, signal: caller.signal });
+  const rejected = assert.rejects(pending, (error) => error.kind === 'aborted');
+  await Promise.resolve();
+  caller.abort();
+  await rejected;
+  assert.equal(signal.aborted, true);
+  const next = await fetchUsgsStations(BOX, {
+    cache,
+    fetchImpl: async () => json({ features: [], links: [] }),
+  });
+  assert.equal(next.cached, false);
+});
+
+test('cache expires old entries and evicts the least recently used at its capacity', async () => {
+  let now = 0;
+  const cache = createCache(() => now, 2);
+  await cache.get('a', 10, async () => 'a');
+  await cache.get('b', 10, async () => 'b');
+  await cache.get('a', 10, async () => assert.fail('fresh a must not reload'));
+  await cache.get('c', 10, async () => 'c');
+  assert.equal(cache.size(), 2);
+  assert.equal((await cache.get('b', 10, async () => 'new b')).value, 'new b');
+  now = 11;
+  await cache.get('d', 10, async () => 'd');
+  assert.equal(cache.size(), 1);
+});
+
+test('clear prevents an old pending load from repopulating or removing its replacement', async () => {
+  const cache = createCache();
+  let releaseOld;
+  const old = cache.get(
+    'key',
+    100,
+    () =>
+      new Promise((resolve) => {
+        releaseOld = resolve;
+      }),
+  );
+  await Promise.resolve();
+  cache.clear();
+  let releaseNew;
+  const fresh = cache.get(
+    'key',
+    100,
+    () =>
+      new Promise((resolve) => {
+        releaseNew = resolve;
+      }),
+  );
+  await Promise.resolve();
+  releaseOld('old');
+  await old;
+  assert.equal(cache.size(), 0);
+  const shared = cache.get('key', 100, () =>
+    assert.fail('new pending operation must remain shared'),
+  );
+  releaseNew('new');
+  assert.equal((await fresh).value, 'new');
+  assert.equal((await shared).value, 'new');
+  assert.equal(
+    (await cache.get('key', 100, () => assert.fail('new value must be cached'))).value,
+    'new',
+  );
+});
+
+test('an already cancelled consumer never starts or consumes a cached request', async () => {
+  const cache = createCache();
+  const controller = new AbortController();
+  controller.abort();
+  await assert.rejects(
+    cache.get('key', 100, () => assert.fail('must not load'), controller.signal),
+    (error) => error.kind === 'aborted',
+  );
+});

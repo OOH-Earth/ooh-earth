@@ -74,9 +74,12 @@ async function getJson(url, opts = {}) {
     else signal.addEventListener('abort', onAbort, { once: true });
   }
   try {
+    if (ctl.signal.aborted) throw new HydroError('aborted', 'Cancelled');
     const res = await fetchImpl(url, {
       signal: ctl.signal,
       headers: { Accept: 'application/json' },
+      credentials: 'omit',
+      referrerPolicy: 'no-referrer',
     });
     if (!res.ok) throw new HydroError('http', `HTTP ${res.status}`, res.status);
     try {
@@ -96,25 +99,71 @@ async function getJson(url, opts = {}) {
 }
 
 // ---- small TTL cache with in-flight de-duplication ---------------------------------------
-export function createCache(now = () => Date.now()) {
+export function createCache(now = () => Date.now(), maxEntries = 64) {
   const done = new Map();
   const inflight = new Map();
+  let generation = 0;
   return {
-    async get(key, ttlMs, load) {
+    async get(key, ttlMs, load, signal) {
+      if (signal?.aborted) throw new HydroError('aborted', 'Cancelled');
+      for (const [k, item] of done) if (now() >= item.expiresAt) done.delete(k);
       const hit = done.get(key);
-      if (hit && now() - hit.at < ttlMs) return { value: hit.value, cached: true };
-      if (inflight.has(key)) return { value: await inflight.get(key), cached: true };
-      const p = load()
-        .then((value) => {
-          done.set(key, { at: now(), value });
-          return value;
-        })
-        .finally(() => inflight.delete(key));
-      inflight.set(key, p);
-      return { value: await p, cached: false };
+      if (hit) {
+        done.delete(key);
+        done.set(key, hit);
+        return { value: hit.value, cached: true };
+      }
+      let operation = inflight.get(key);
+      const shared = Boolean(operation);
+      if (!operation) {
+        const controller = new AbortController();
+        const startedGeneration = generation;
+        operation = { controller, consumers: 0, promise: null };
+        const current = operation;
+        current.promise = Promise.resolve()
+          .then(() => load(controller.signal))
+          .then((value) => {
+            if (!controller.signal.aborted && generation === startedGeneration) {
+              done.set(key, { expiresAt: now() + ttlMs, value });
+              while (done.size > maxEntries) done.delete(done.keys().next().value);
+            }
+            return value;
+          })
+          .finally(() => {
+            if (inflight.get(key) === current) inflight.delete(key);
+          });
+        inflight.set(key, current);
+      }
+      const current = operation;
+      current.consumers += 1;
+      return new Promise((resolve, reject) => {
+        let settled = false;
+        const finish = (error, value) => {
+          if (settled) return;
+          settled = true;
+          signal?.removeEventListener('abort', onAbort);
+          current.consumers -= 1;
+          if (error) reject(error);
+          else resolve({ value, cached: shared });
+        };
+        const onAbort = () => {
+          finish(new HydroError('aborted', 'Cancelled'));
+          if (current.consumers === 0) {
+            if (inflight.get(key) === current) inflight.delete(key);
+            current.controller.abort();
+          }
+        };
+        signal?.addEventListener('abort', onAbort, { once: true });
+        current.promise.then(
+          (value) => finish(null, value),
+          (error) => finish(error),
+        );
+      });
     },
     clear() {
+      generation += 1;
       done.clear();
+      for (const operation of inflight.values()) operation.controller.abort();
       inflight.clear();
     },
     size: () => done.size,
@@ -141,8 +190,8 @@ export async function fetchUsgsStations(bbox, opts = {}) {
   const { value, cached } = await (opts.cache || hydroCache).get(
     `usgs:${snapped.join(',')}`,
     USGS_TTL_MS,
-    async () => {
-      const json = await getJson(usgsLatestUrl(snapped), opts);
+    async (signal) => {
+      const json = await getJson(usgsLatestUrl(snapped), { ...opts, signal });
       const retrievedAt = Date.now();
       return {
         stations: normalizeUsgs(json.features || [], [], retrievedAt),
@@ -150,6 +199,7 @@ export async function fetchUsgsStations(bbox, opts = {}) {
         retrievedAt,
       };
     },
+    opts.signal,
   );
   return { ...value, cached };
 }
@@ -158,13 +208,14 @@ export async function fetchUsgsSite(stationId, opts = {}) {
   const { value } = await (opts.cache || hydroCache).get(
     `usgs-site:${stationId}`,
     EA_STATIONS_TTL_MS,
-    async () => {
+    async (signal) => {
       const json = await getJson(
         `${USGS_BASE}/collections/monitoring-locations/items/${encodeURIComponent(stationId)}?f=json`,
-        opts,
+        { ...opts, signal },
       );
       return normalizeUsgsSite(json);
     },
+    opts.signal,
   );
   return value;
 }
@@ -193,10 +244,11 @@ export async function fetchEaStations(bbox, opts = {}) {
     await (opts.cache || hydroCache).get(
       `ea-stations:${snapped.join(',')}`,
       EA_STATIONS_TTL_MS,
-      async () => {
-        const json = await getJson(eaStationsUrl(lat, lng, distKm), opts);
+      async (signal) => {
+        const json = await getJson(eaStationsUrl(lat, lng, distKm), { ...opts, signal });
         return json.items || [];
       },
+      opts.signal,
     )
   ).value;
   return { stations, truncatedByRadius: distKm > 100 };
@@ -207,10 +259,14 @@ export async function fetchEaReadings(opts = {}) {
   const { value, cached } = await (opts.cache || hydroCache).get(
     'ea-readings',
     EA_READINGS_TTL_MS,
-    async () => {
-      const json = await getJson(`${EA_BASE}/data/readings?latest&parameter=level`, opts);
+    async (signal) => {
+      const json = await getJson(`${EA_BASE}/data/readings?latest&parameter=level`, {
+        ...opts,
+        signal,
+      });
       return { index: indexEaReadings(json.items || []), retrievedAt: Date.now() };
     },
+    opts.signal,
   );
   return { ...value, cached };
 }
