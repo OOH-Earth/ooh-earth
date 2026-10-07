@@ -4,7 +4,7 @@ set -euo pipefail
 
 MODE="${1:-validate}"
 [[ "$MODE" == validate || "$MODE" == deploy ]] || { echo 'Use validate or deploy'; exit 2; }
-export CANDIDATE_SHA=141ed244bbc64c2a77414f19e24fa6c1052e12e5
+export CANDIDATE_SHA=b57cc4645592f6e696f917fc860d672c397895b0
 export BACKUP_APP_ID=6a6748e009b947cb29591871
 export PROD_APP_ID=6a62213cff3ccbca88c04ff5
 export EVIDENCE_DIR
@@ -22,7 +22,8 @@ git merge-base --is-ancestor df43402ce2d33c015e7b153c20a14113371a7077 HEAD
 git merge-base --is-ancestor 13bffdecce4c423918f04fd7b83b2607a71a5278 HEAD
 npm ci
 GITHUB_SHA="$CANDIDATE_SHA" GIT_SHA="$CANDIDATE_SHA" RELEASE_ID="$CANDIDATE_SHA" \
-  RELEASE_STATE=CANDIDATE VITE_BASE44_APP_ID="$BACKUP_APP_ID" npm run build
+  RELEASE_STATE=CANDIDATE VITE_BASE44_APP_ID="$BACKUP_APP_ID" \
+  VITE_BASE44_APP_BASE_URL='' VITE_BASE44_FUNCTIONS_VERSION='' npm run build
 node --test src/lib/placeResearch.test.mjs
 
 node --input-type=module - <<'JS'
@@ -63,6 +64,10 @@ export const test = base.extend<{ releaseGuard: void }>({
     const errors: string[] = [];
     const logs: string[] = [];
     page.on('pageerror', error => errors.push(error.message));
+    page.on('request', request => {
+      if (/\/api\/(?:apps|app-logs)\/6a62213cff3ccbca88c04ff5(?:\/|$)/.test(new URL(request.url()).pathname))
+        blocked.push(`PRODUCTION RUNTIME TARGET ${request.method()}`);
+    });
     await page.route('**/*', async route => {
       const request = route.request();
       const url = new URL(request.url());
@@ -123,7 +128,7 @@ fi
 # exact-head runs. A timeout, authentication wall or rate limit fails closed.
 node --input-type=module - <<'JS'
 import fs from 'node:fs';
-const runs = [37639439574, 37639440101, 37639439739];
+const runs = [37641011927, 37641012186, 37641012022];
 const evidence = [];
 for (const id of runs) {
   const response = await fetch(`https://api.github.com/repos/OOH-Earth/ooh-earth/actions/runs/${id}`, {
@@ -136,6 +141,15 @@ for (const id of runs) {
   evidence.push({ id, name: run.name, head: run.head_sha, conclusion: run.conclusion, url: run.html_url });
 }
 fs.writeFileSync(`${process.env.EVIDENCE_DIR}/ci-proof.json`, JSON.stringify(evidence, null, 2));
+const before = await fetch('https://ooh-earth-backup.base44.app/', { cache: 'no-store', signal: AbortSignal.timeout(20000) });
+if (!before.ok) throw Error(`Pre-deploy BACKUP homepage: HTTP ${before.status}`);
+const priorHtml = await before.text();
+const priorEntries = [...priorHtml.matchAll(/<script\b[^>]*\bsrc="(\/assets\/index-[^/]+\.js)"[^>]*>/g)].map(match => match[1]);
+if (priorEntries.length !== 1) throw Error('Cannot identify previous BACKUP entry; inspect before deploy');
+fs.writeFileSync(`${process.env.EVIDENCE_DIR}/pre-deploy-summary.json`, JSON.stringify({
+  previousEntry: priorEntries[0], observedAt: new Date().toISOString(), target: process.env.BACKUP_APP_ID,
+  note: 'Reference only: an entry filename is not a qualified rollback build',
+}, null, 2));
 JS
 npx --yes base44@0.1.14 whoami
 npx playwright install chromium
