@@ -1,5 +1,11 @@
 import { Polyline, CircleMarker, Tooltip, Popup } from 'react-leaflet';
-import { RIVERS, RIVER_SOURCES, POLLUTION_META } from './riverData';
+import {
+  RIVERS,
+  VISIBLE_RIVER_SOURCES,
+  POLLUTION_META,
+  LEGACY_SAMPLE_BADGE,
+  LEGACY_SAMPLE_NOTE,
+} from './riverData';
 import { Droplets } from 'lucide-react';
 
 // Renders river polylines plus source/headwater monitoring stations with
@@ -51,7 +57,7 @@ export default function RiverLayer() {
         </Polyline>
       ))}
 
-      {RIVER_SOURCES.map((s, i) => {
+      {VISIBLE_RIVER_SOURCES.map((s, i) => {
         const meta = POLLUTION_META[s.pollution] || POLLUTION_META.moderate;
         return (
           <CircleMarker
@@ -123,7 +129,7 @@ export default function RiverLayer() {
                   {s.name}
                 </div>
                 <div style={{ fontSize: 11, color: 'hsl(var(--muted-foreground))', marginTop: 2 }}>
-                  {s.river} · Source Monitoring Station
+                  {s.river} · {LEGACY_SAMPLE_BADGE} sample
                 </div>
                 <div
                   style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6, marginTop: 8 }}
@@ -240,7 +246,7 @@ export default function RiverLayer() {
                     letterSpacing: '0.15em',
                   }}
                 >
-                  Benchmarked: WHO Drinking Water · SDG 6.3
+                  {LEGACY_SAMPLE_NOTE}
                 </div>
                 <div
                   style={{

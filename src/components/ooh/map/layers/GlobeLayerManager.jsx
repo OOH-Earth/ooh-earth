@@ -3,7 +3,13 @@ import * as maplibregl from 'maplibre-gl';
 import { useMushroomData } from './useMushroomData';
 import { useFloraData } from './useFloraData';
 import { useWarZoneData } from './useWarZoneData';
-import { riversToGeoJSON, riverSourcesToGeoJSON, POLLUTION_META } from './riverData';
+import {
+  riversToGeoJSON,
+  riverSourcesToGeoJSON,
+  POLLUTION_META,
+  LEGACY_SAMPLE_BADGE,
+  LEGACY_SAMPLE_NOTE,
+} from './riverData';
 import { RADIO_STATIONS } from '@/components/ooh/radio/radioStations';
 import { useRadio } from '@/lib/radioContext';
 
@@ -72,7 +78,7 @@ function addRivers(map, popup) {
             <span style="font-size:9px;text-transform:uppercase;letter-spacing:0.2em;color:${meta.color};font-weight:700">${meta.label} Pollution</span>
           </div>
           <div style="font-weight:700;font-size:14px;color:hsl(var(--foreground));line-height:1.25">${esc(p.name)}</div>
-          <div style="font-size:11px;color:hsl(var(--muted-foreground));margin-top:2px">${esc(p.river)} · Source Monitoring Station</div>
+          <div style="font-size:11px;color:hsl(var(--muted-foreground));margin-top:2px">${esc(p.river)} · ${esc(LEGACY_SAMPLE_BADGE)} sample</div>
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:8px">
             <div style="border:1px solid rgba(241,241,241,0.1);padding:4px 6px">
               <div style="font-size:7px;text-transform:uppercase;letter-spacing:0.15em;color:hsl(var(--muted-foreground))">WQI</div>
@@ -92,7 +98,7 @@ function addRivers(map, popup) {
             </div>
           </div>
           <div style="font-size:10px;color:hsl(var(--foreground));margin-top:8px;line-height:1.45;opacity:0.85">${esc(p.notes)}</div>
-          <div style="font-size:8px;color:hsl(var(--muted-foreground));margin-top:8px;text-transform:uppercase;letter-spacing:0.15em">Benchmarked: WHO Drinking Water · SDG 6.3</div>
+          <div style="font-size:8px;color:hsl(var(--muted-foreground));margin-top:8px;text-transform:uppercase;letter-spacing:0.15em">${esc(LEGACY_SAMPLE_NOTE)}</div>
         </div>
       `,
         )

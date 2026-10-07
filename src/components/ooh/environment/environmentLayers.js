@@ -20,6 +20,15 @@ const NE_MAX_ZOOM = 5.5;
 export const TRUST = {
   reference: { label: 'Reference', hint: 'Map geography. Not a current observation.' },
   illustrative: { label: 'Illustrative', hint: 'Sample values for context. Not a live reading.' },
+  legacy: {
+    label: 'Demo / legacy',
+    hint: 'Legacy hand-authored example. Not an observation; provenance unknown.',
+  },
+  observed: { label: 'Observed', hint: 'A dated measurement from the named provider.' },
+  modelled: {
+    label: 'Modelled',
+    hint: 'Model output for the nearest grid cell, not a measurement.',
+  },
   recent: { label: 'Recent observation', hint: 'Real observation with a timestamp.' },
   current: { label: 'Current', hint: 'Latest reading from the provider.' },
   derived: { label: 'Derived', hint: 'Computed or modelled, not directly observed.' },
