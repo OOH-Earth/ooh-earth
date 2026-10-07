@@ -59,11 +59,13 @@ Data types: **REFERENCE** (map geography), **OBSERVED** (a provider-dated measur
 - **Temporal / freshness:** per-reading UTC `time`. Measured 2026-10-06: ages ranged from 7 minutes to about 42 years across one 2x2 degree box. **"Latest" is not "current"**: discontinued gauges keep their last value.
 - **Licence:** US Government work, generally public domain ("for the most part, is in the public domain", USGS docs); provisional data is subject to revision. **Attribution:** credit USGS.
 - **Access:** client, CORS open. **Rate limit:** unauthenticated requests are rate limited (HTTP 429); headers `X-RateLimit-Limit/Remaining`; higher limits need an api.data.gov key (OOH uses none).
-- **Caching:** OOH caches per area for 10 minutes and pauses when the tab is hidden.
+- **Caching:** OOH caches per 0.5-degree-snapped area for 5 minutes, shares in-flight requests, cancels superseded requests and pauses when the tab is hidden.
+- **Measured payload (2026-10-07):** a 4x3 degree box in Maryland/Virginia returned 901 latest values (no hard cap at `limit=3000`; a `next` link signals truncation), 46 KB gzipped with a `properties=` projection, ~3 s. Without the projection it is 613 KB.
+- **Names are fetched on selection**, not in bulk: the `monitoring-locations` list truncates at 3000 and a `site_type_code=ST` filter misses tidal sites (`ST-TS`, e.g. the Anacostia River). `items/{id}` is ~1 KB. USGS gives a site name, not a separate waterbody.
 - **Qualifiers / flags to preserve:** `approval_status` (Provisional/Approved), `qualifier` (ESTIMATED, DISCONTINUED, BACKWATER, RATINGDEV, LESSTHAN ...).
 - **Known biases:** gauge placement favours populated and flood-prone reaches; discharge and gage height are different quantities (units ft3/s vs ft) and are never merged.
 - **Failure modes:** the legacy `waterservices.usgs.gov` IV service returned HTTP 503 and 30-51 s responses on 2026-10-06 and is being migrated away; OOH uses the modernised API with a hard client timeout.
-- **OOH usage:** RIVERS-2 observed stations.
+- **OOH usage:** RIVERS-2 observed stations (in progress; nothing deployed).
 
 ## UK Environment Agency flood-monitoring API
 - **Dataset:** `/id/stations` (metadata) and `/data/readings?latest` (all latest readings), `parameter=level`.
