@@ -115,10 +115,6 @@ export async function stubHydroApis(page: Page, opts: { usgs?: HydroMode; ea?: H
   const usgsSiteRequests: string[] = [];
   const eaStationRequests: URL[] = [];
   const eaReadingRequests: URL[] = [];
-  const aborted: string[] = [];
-  page.on('requestfailed', (r) => {
-    if (/waterdata\.usgs\.gov|environment\.data\.gov\.uk/.test(r.url())) aborted.push(r.url());
-  });
 
   const respond = async (route: any, mode: HydroMode, body: unknown) => {
     if (mode === 'error') return route.fulfill({ status: 503, body: 'unavailable' });
@@ -185,6 +181,5 @@ export async function stubHydroApis(page: Page, opts: { usgs?: HydroMode; ea?: H
     usgsSiteRequests,
     eaStationRequests,
     eaReadingRequests,
-    aborted,
   };
 }

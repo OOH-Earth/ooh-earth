@@ -207,7 +207,13 @@ test.describe('Rivers — observed stations (USGS)', () => {
       w.__aborts = 0;
       const orig = window.fetch.bind(window);
       window.fetch = (input: any, init?: any) => {
-        if (/waterdata\.usgs\.gov/.test(String(input)))
+        let host = '';
+        try {
+          host = new URL(String(input), location.href).hostname;
+        } catch {
+          /* relative or invalid: not a provider call */
+        }
+        if (host === 'api.waterdata.usgs.gov')
           init?.signal?.addEventListener('abort', () => (w.__aborts += 1));
         return orig(input, init);
       };
