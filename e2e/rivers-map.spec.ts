@@ -70,6 +70,9 @@ test.describe('Rivers — river network map', () => {
   });
 
   test('panning at detail zoom requests new tiles for the new viewport', async ({ page }) => {
+    // Zooming plus four full-width drags on a software-rendered WebGL map takes ~24 s on its own,
+    // leaving almost no headroom under the 30 s default. The assertions are unchanged.
+    test.setTimeout(90_000);
     const { net, map } = await openRivers(page);
     await expect(map).toHaveAttribute('data-status', 'ready', { timeout: 20_000 });
     await zoomTo(page, map, 6.5);
