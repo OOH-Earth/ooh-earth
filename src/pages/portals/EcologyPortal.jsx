@@ -1,60 +1,207 @@
-import { useState, useMemo } from 'react';
+import { useCallback, useMemo, useState } from 'react';
+import { Leaf } from 'lucide-react';
 import PortalShell from '@/components/ooh/map/PortalShell';
-import LayerResultCard from '@/components/ooh/map/LayerResultCard';
-import { useMushroomData } from '@/components/ooh/map/layers/useMushroomData';
-import { useFloraData } from '@/components/ooh/map/layers/useFloraData';
+import EnvironmentMap from '@/components/ooh/environment/EnvironmentMap';
+import ConditionsCard from '@/components/ooh/environment/ConditionsCard';
+import { ENVIRONMENT_LAYERS } from '@/components/ooh/environment/environmentLayers';
+import {
+  OBS_GROUPS,
+  OBS_MIN_ZOOM,
+  RECENT_DAYS,
+  describeAge,
+  useObservations,
+} from '@/components/ooh/environment/useObservations';
+
+// Ecology: reference geography (water, natural cover, protected areas) and real, dated community
+// observations from iNaturalist, each labelled by what kind of data it is. Replaces the previous
+// LLM-generated "hotspots", which were neither observations nor verifiable.
+const REFERENCE_IDS = ['water', 'habitat', 'protected'];
+const ACCENT = '#39FF14';
+
+function ObservationCard({ item, selected, onSelect }) {
+  const color = OBS_GROUPS[item.group].color;
+  return (
+    <div
+      role="button"
+      tabIndex={0}
+      aria-pressed={selected}
+      onClick={() => onSelect(item)}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          onSelect(item);
+        }
+      }}
+      className={`group flex w-full cursor-pointer gap-3 border-b border-slate2/40 p-3 text-left transition-colors hover:bg-card focus-visible:outline focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ozone ${selected ? 'bg-card' : ''}`}
+      style={{ borderLeft: selected ? `2px solid ${color}` : '2px solid transparent' }}
+    >
+      <div className="flex h-12 w-12 shrink-0 items-center justify-center border border-slate2/40 bg-[#0a0a0a]">
+        <Leaf className="h-5 w-5" style={{ color }} strokeWidth={1.5} />
+      </div>
+      <div className="min-w-0 flex-1">
+        <div className="flex items-center gap-1.5">
+          <span className="font-mono text-[9px] uppercase tracking-[0.2em]" style={{ color }}>
+            {OBS_GROUPS[item.group].label}
+          </span>
+          <span className="ml-auto border border-slate2 px-1.5 py-0.5 font-mono text-[8px] uppercase tracking-[0.15em] text-darkgray">
+            Recent observation
+          </span>
+        </div>
+        <div className="mt-0.5 truncate font-display text-sm font-semibold text-silver">
+          {item.name}
+        </div>
+        <div className="truncate font-mono text-[10px] italic text-dim">{item.scientific}</div>
+        <div className="mt-0.5 font-mono text-[9px] text-darkgray">
+          {item.observedOn ? describeAge(item.observedOn) : 'Unknown date'} · iNaturalist
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export default function EcologyPortal() {
-  const { spots: mushrooms, loading: mushLoading } = useMushroomData();
-  const { spots: floraSpots, loading: floraLoading } = useFloraData();
   const [query, setQuery] = useState('');
   const [filterValue, setFilterValue] = useState('all');
+  const [enabledRef, setEnabledRef] = useState(['habitat', 'protected']);
+  const [enabledObs, setEnabledObs] = useState(['plants', 'fungi']);
+  const [viewport, setViewport] = useState(null);
+  const [selectedId, setSelectedId] = useState(null);
 
-  const loading = mushLoading || floraLoading;
+  const onViewportChange = useCallback((v) => setViewport(v), []);
+  const obs = useObservations(viewport, enabledObs);
 
-  const filterTags = [
-    { value: 'all', label: 'All', count: mushrooms.length + floraSpots.length },
-    { value: 'mushrooms', label: 'Mushrooms', count: mushrooms.length },
-    { value: 'flora', label: 'Flora', count: floraSpots.length },
+  const toggle = (list, setList, id) =>
+    setList((cur) => (cur.includes(id) ? cur.filter((x) => x !== id) : [...cur, id]));
+
+  const obsNote = (group) => {
+    if (!enabledObs.includes(group)) return null;
+    if (obs.status === 'zoom') return `Zoom in to load observations (from zoom ${OBS_MIN_ZOOM}).`;
+    if (obs.status === 'loading') return 'Loading observations…';
+    if (obs.status === 'error') return 'iNaturalist is unavailable right now. Try again shortly.';
+    if (obs.status !== 'ready') return null;
+    const mine = obs.points.filter((p) => p.group === group);
+    if (!mine.length) {
+      return `No research-grade observations in the last ${RECENT_DAYS} days in view. That is not evidence that nothing lives here.`;
+    }
+    const newest = mine
+      .map((p) => p.observedOn)
+      .filter(Boolean)
+      .sort()
+      .pop();
+    return `Showing the latest ${mine.length} of ${obs.totals[group] ?? mine.length} in view. Newest: ${newest ? describeAge(newest) : 'unknown'}.`;
+  };
+
+  const layerToggles = [
+    ...REFERENCE_IDS.map((id) => ({
+      id,
+      label: ENVIRONMENT_LAYERS[id].label,
+      swatch: ENVIRONMENT_LAYERS[id].swatch,
+      trust: 'reference',
+      description: ENVIRONMENT_LAYERS[id].description,
+      active: enabledRef.includes(id),
+      onToggle: () => toggle(enabledRef, setEnabledRef, id),
+    })),
+    ...Object.values(OBS_GROUPS).map((g) => ({
+      id: `obs-${g.id}`,
+      label: `${g.label} observations`,
+      swatch: g.color,
+      trust: 'recent',
+      description: `Research-grade community records from iNaturalist, last ${RECENT_DAYS} days.`,
+      note: obsNote(g.id),
+      active: enabledObs.includes(g.id),
+      onToggle: () => toggle(enabledObs, setEnabledObs, g.id),
+    })),
   ];
 
   const results = useMemo(() => {
     const q = query.trim().toLowerCase();
-    const matches = (text) => !q || text.toLowerCase().includes(q);
-    const mush = mushrooms
-      .filter((s) => matches(`${s.species} ${s.region} ${s.habitat} ${s.note || ''}`))
-      .map((s) => ({ ...s, _layer: 'mushrooms' }));
-    const flor = floraSpots
-      .filter((s) => matches(`${s.species} ${s.region} ${s.ecosystem} ${s.note || ''}`))
-      .map((s) => ({ ...s, _layer: 'flora' }));
-    if (filterValue === 'mushrooms') return mush;
-    if (filterValue === 'flora') return flor;
-    return [...mush, ...flor];
-  }, [mushrooms, floraSpots, filterValue, query]);
+    return obs.points.filter(
+      (p) =>
+        (filterValue === 'all' || p.group === filterValue) &&
+        (!q || `${p.name} ${p.scientific}`.toLowerCase().includes(q)),
+    );
+  }, [obs.points, filterValue, query]);
 
-  // Pass layer coordinates as markers so the flat map can fit bounds
-  const mapMarkers = useMemo(
+  const filterTags = useMemo(
     () => [
-      ...mushrooms.map((s, i) => ({ id: `mush-${i}`, lat: s.lat, lng: s.lng })),
-      ...floraSpots.map((s, i) => ({ id: `flora-${i}`, lat: s.lat, lng: s.lng })),
+      { value: 'all', label: 'All', count: obs.points.length },
+      ...Object.values(OBS_GROUPS).map((g) => ({
+        value: g.id,
+        label: g.label,
+        count: obs.points.filter((p) => p.group === g.id).length,
+      })),
     ],
-    [mushrooms, floraSpots],
+    [obs.points],
+  );
+
+  const referencePoints = useMemo(
+    () =>
+      results.map((p) => ({
+        id: p.id,
+        lat: p.lat,
+        lng: p.lng,
+        label: p.name,
+        subtitle: OBS_GROUPS[p.group].label,
+        color: OBS_GROUPS[p.group].color,
+        trust: 'recent',
+        trustNote: 'dated community observation',
+        rows: [
+          { label: 'Observed', value: p.observedOn ? describeAge(p.observedOn) : 'Unknown' },
+          { label: 'Scientific', value: p.scientific },
+          { label: 'Quality', value: 'Research grade (community verified)' },
+          { label: 'Source', value: 'iNaturalist' },
+          ...(p.license ? [{ label: 'Licence', value: String(p.license).toUpperCase() }] : []),
+          ...(p.uri ? [{ label: 'Record', value: 'View on iNaturalist', href: p.uri }] : []),
+        ],
+      })),
+    [results],
+  );
+
+  const mapMarkers = useMemo(
+    () => results.map((p) => ({ id: p.id, lat: p.lat, lng: p.lng })),
+    [results],
   );
 
   return (
     <PortalShell
       title="Ecology"
-      accent="#39FF14"
-      activeLayers={['mushrooms', 'flora']}
+      accent={ACCENT}
+      activeLayers={[]}
       markers={mapMarkers}
       results={results}
-      loading={loading}
+      loading={obs.status === 'loading'}
       query={query}
       setQuery={setQuery}
       filterTags={filterTags}
       filterValue={filterValue}
       onFilterChange={setFilterValue}
-      renderCard={(item, i) => <LayerResultCard key={`eco-${i}`} item={item} layer={item._layer} />}
+      renderCard={(item) => (
+        <ObservationCard
+          key={item.id}
+          item={item}
+          selected={selectedId === item.id}
+          onSelect={(it) => setSelectedId(it.id)}
+        />
+      )}
+      renderMap={({ view, mapStyle }) => (
+        <EnvironmentMap
+          key={`${mapStyle.id}-${view}`}
+          projection={view === 'globe' ? 'globe' : 'mercator'}
+          layers={enabledRef}
+          layerToggles={layerToggles}
+          referencePoints={referencePoints}
+          selectedPointId={selectedId}
+          onSelectPoint={setSelectedId}
+          onViewportChange={onViewportChange}
+          keepZoomOnSelect
+          noun="Ecology"
+          inspectNoun="feature"
+          unitNoun="feature"
+          initialView={{ center: [100.5, 13.75], zoom: view === 'globe' ? 1.8 : 2 }}
+        >
+          <ConditionsCard center={viewport?.center} />
+        </EnvironmentMap>
+      )}
     />
   );
 }

@@ -20,6 +20,15 @@ const NE_MAX_ZOOM = 5.5;
 export const TRUST = {
   reference: { label: 'Reference', hint: 'Map geography. Not a current observation.' },
   illustrative: { label: 'Illustrative', hint: 'Sample values for context. Not a live reading.' },
+  legacy: {
+    label: 'Demo / legacy',
+    hint: 'Legacy hand-authored example. Not an observation; provenance unknown.',
+  },
+  observed: { label: 'Observed', hint: 'A dated measurement from the named provider.' },
+  modelled: {
+    label: 'Modelled',
+    hint: 'Model output for the nearest grid cell, not a measurement.',
+  },
   recent: { label: 'Recent observation', hint: 'Real observation with a timestamp.' },
   current: { label: 'Current', hint: 'Latest reading from the provider.' },
   derived: { label: 'Derived', hint: 'Computed or modelled, not directly observed.' },
@@ -124,7 +133,89 @@ const majorRiverLayers = [
   },
 ];
 
+const OSM_PROVIDER = 'OpenStreetMap, via CARTO';
+const NON_NATURAL_GRASS = ['golf_course', 'park', 'recreation_ground', 'village_green', 'garden'];
+
+const waterAreaLayers = [
+  {
+    id: 'ooh-env-water-fill',
+    type: 'fill',
+    source: VECTOR_SOURCE_ID,
+    'source-layer': 'water',
+    minzoom: VECTOR_MIN_ZOOM,
+    paint: { 'fill-color': '#1F51FF', 'fill-opacity': 0.22 },
+  },
+];
+const habitatLayers = [
+  {
+    id: 'ooh-env-habitat-fill',
+    type: 'fill',
+    source: VECTOR_SOURCE_ID,
+    'source-layer': 'landcover',
+    minzoom: VECTOR_MIN_ZOOM,
+    filter: [
+      'all',
+      ['in', ['get', 'class'], ['literal', ['wood', 'grass', 'wetland']]],
+      ['!', ['in', ['get', 'subclass'], ['literal', NON_NATURAL_GRASS]]],
+    ],
+    paint: {
+      'fill-color': ['match', ['get', 'class'], 'wood', '#2E8B3C', 'wetland', '#2FA4A0', '#8BC34A'],
+      'fill-opacity': 0.34,
+    },
+  },
+];
+const protectedLayers = [
+  {
+    id: 'ooh-env-protected-fill',
+    type: 'fill',
+    source: VECTOR_SOURCE_ID,
+    'source-layer': 'park',
+    minzoom: VECTOR_MIN_ZOOM,
+    paint: { 'fill-color': '#39FF14', 'fill-opacity': 0.12 },
+  },
+  {
+    id: 'ooh-env-protected-line',
+    type: 'line',
+    source: VECTOR_SOURCE_ID,
+    'source-layer': 'park',
+    minzoom: VECTOR_MIN_ZOOM,
+    paint: { 'line-color': '#39FF14', 'line-width': 1.2, 'line-opacity': 0.85 },
+  },
+];
+
 export const ENVIRONMENT_LAYERS = {
+  water: {
+    id: 'water',
+    label: 'Water bodies',
+    group: 'Water',
+    trust: 'reference',
+    swatch: '#1F51FF',
+    description: 'Lakes, rivers and sea as mapped in OpenStreetMap. Appears from zoom 5.',
+    layers: waterAreaLayers,
+    queryLayers: ['ooh-env-water-fill'],
+  },
+  habitat: {
+    id: 'habitat',
+    label: 'Natural cover',
+    group: 'Green / habitat',
+    trust: 'reference',
+    swatch: '#2E8B3C',
+    description:
+      'Woodland, grassland/scrub and wetland as mapped in OpenStreetMap. Not a satellite classification. From zoom 5.',
+    layers: habitatLayers,
+    queryLayers: ['ooh-env-habitat-fill'],
+  },
+  protected: {
+    id: 'protected',
+    label: 'Parks & protected areas',
+    group: 'Protected',
+    trust: 'reference',
+    swatch: '#39FF14',
+    description:
+      'Park, reserve and protected-area boundaries as tagged in OpenStreetMap. Tagging varies by country and is not the official WDPA register. From zoom 5.',
+    layers: protectedLayers,
+    queryLayers: ['ooh-env-protected-fill'],
+  },
   waterways: {
     id: 'waterways',
     label: 'River network',
@@ -157,4 +248,67 @@ export function providerFor(layerId = '') {
   return layerId.startsWith('ooh-env-ne')
     ? 'Natural Earth (public domain), major rivers'
     : 'OpenStreetMap, via CARTO';
+}
+
+const HABITAT_NAMES = {
+  wood: 'Woodland / forest',
+  grass: 'Grassland / scrub / heath',
+  wetland: 'Wetland',
+};
+
+// Turns a queried map feature into a trust-labelled description for the detail panel.
+export function describeFeature(layerId = '', props = {}) {
+  if (layerId.startsWith('ooh-env-ne') || layerId.includes('waterway')) {
+    return {
+      type: 'waterway',
+      name: waterwayLabel(props),
+      kind: waterwayKind(props),
+      provider: providerFor(layerId),
+    };
+  }
+  if (layerId.includes('water-fill')) {
+    return {
+      type: 'area',
+      kind: 'Water body',
+      name: props.name_en || props.name || null,
+      provider: OSM_PROVIDER,
+      rows: [
+        {
+          label: 'Type',
+          value:
+            props.class === 'lake'
+              ? 'Lake'
+              : props.class === 'river'
+                ? 'River (area)'
+                : props.class || 'Water',
+        },
+        { label: 'Intermittent', value: props.intermittent ? 'Yes' : 'No or unknown' },
+      ],
+    };
+  }
+  if (layerId.includes('habitat')) {
+    return {
+      type: 'area',
+      kind: 'Natural cover',
+      name: null,
+      provider: OSM_PROVIDER,
+      rows: [
+        { label: 'Cover', value: HABITAT_NAMES[props.class] || props.class || 'Unknown' },
+        { label: 'Detail', value: props.subclass || 'Unknown' },
+      ],
+    };
+  }
+  if (layerId.includes('protected')) {
+    return {
+      type: 'area',
+      kind: 'Park / protected area',
+      name: props.name_en || props.name || null,
+      provider: OSM_PROVIDER,
+      rows: [
+        { label: 'Designation', value: props.class ? `${props.class} (as tagged)` : 'Unknown' },
+        { label: 'Note', value: 'OpenStreetMap tag, not the official WDPA register.' },
+      ],
+    };
+  }
+  return { type: 'area', kind: 'Feature', name: null, provider: OSM_PROVIDER, rows: [] };
 }

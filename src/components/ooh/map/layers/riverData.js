@@ -171,6 +171,11 @@ export const RIVER_SOURCES = [
   {
     river: 'Ganges',
     name: 'Varanasi Monitoring Station',
+    // VARANASI_SAMPLE_PROVENANCE_REQUIRED: these coordinates (22.3N 89.0E, Bangladesh delta) are
+    // ~700 km from Varanasi (25.3N 83.0E). Provenance is unknown, so the record is kept here as
+    // evidence but hidden from every map and list. Do not edit or "fix" the coordinates without it.
+    hidden: true,
+    provenance: 'VARANASI_SAMPLE_PROVENANCE_REQUIRED',
     lat: 22.3,
     lng: 89.0,
     pollution: 'toxic',
@@ -203,6 +208,15 @@ export const RIVER_SOURCES = [
   },
 ];
 
+// ALL samples above are legacy hand-authored examples with unknown provenance. They are DEMO /
+// LEGACY REFERENCE data: not observations, not live readings, not authoritative locations.
+export const LEGACY_SAMPLE_BADGE = 'Demo / legacy';
+export const LEGACY_SAMPLE_NOTE =
+  'Legacy demo sample. Values are not a live reading or an assessment.';
+
+// The samples that may be shown (hidden ones are kept as evidence only).
+export const VISIBLE_RIVER_SOURCES = RIVER_SOURCES.filter((s) => !s.hidden);
+
 // Pollution level → color + severity label
 export const POLLUTION_META = {
   clean: { color: '#39FF14', label: 'Clean' },
@@ -230,7 +244,7 @@ export function riversToGeoJSON() {
 export function riverSourcesToGeoJSON() {
   return {
     type: 'FeatureCollection',
-    features: RIVER_SOURCES.map((s) => ({
+    features: VISIBLE_RIVER_SOURCES.map((s) => ({
       type: 'Feature',
       geometry: { type: 'Point', coordinates: [s.lng, s.lat] },
       properties: {

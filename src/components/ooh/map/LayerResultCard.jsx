@@ -101,7 +101,7 @@ export default function LayerResultCard({ item, layer, onSelect = null, selected
         )}
         {layer === 'rivers' && (
           <div className="mt-1 font-mono text-[8px] uppercase tracking-[0.15em] text-dim/80">
-            Illustrative sample · not a live reading
+            Demo / legacy sample · not a live reading
           </div>
         )}
         {layer === 'rivers' && (

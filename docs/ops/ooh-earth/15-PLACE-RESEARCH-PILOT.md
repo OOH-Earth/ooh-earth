@@ -2,11 +2,11 @@
 
 Date: 2026-10-06
 Branch: `feat/place-research-pilot-local`
-Status: fixture-first frontend slice; no production or BACKUP deployment
+Status: frontend pilot; historical BACKUP qualification at `7b0dbda`, reconciliation requires fresh qualification. No production deployment.
 
-## What shipped in this slice
+## What is implemented in this slice
 
-- Location detail has an on-demand `Research this place` panel. Opening it is the only trigger for provider access.
+- Location detail has an on-demand `Research this place` panel. Opening it makes no provider request; only the explicit `Load live USGS data` action accesses the provider.
 - A clearly labelled fixture card validates event/publication time, retrieval time, geographic precision, original link, and the not-live boundary.
 - The live read-only adapter queries the USGS Earthquake Catalog directly with the selected public place coordinates, a 100 km radius, a maximum of five events, and no account or user identifiers.
 - External reporting is visually separated from the existing OOH-verified field-check timeline. The panel links to the existing field-check action as the next step.
@@ -34,4 +34,4 @@ Reference: `https://earthquake.usgs.gov/fdsnws/event/1/query`, `https://earthqua
 
 ## Release boundary
 
-This is not a production candidate and has not been deployed to BACKUP. The current release plan still pins #322 as the production candidate and requires owner-terminal deployment/verification before later work advances. No backend, entity, permission, classifier, or live production state was changed here.
+This is not a production candidate. BACKUP evidence at `7b0dbda` is historical and must not certify a changed source or build. The current frozen production candidate is `a1868f122aa965fd96ab023492bed62470fb1106`, not the older #322-only candidate; deployment/verification remains separate. No backend, entity, permission, classifier, or live production state was changed here.

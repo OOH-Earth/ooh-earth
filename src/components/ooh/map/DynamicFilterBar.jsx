@@ -2,7 +2,7 @@ import { Fragment, useMemo } from 'react';
 import { useMushroomData } from './layers/useMushroomData';
 import { useFloraData } from './layers/useFloraData';
 import { useWarZoneData } from './layers/useWarZoneData';
-import { RIVER_SOURCES, POLLUTION_META } from './layers/riverData';
+import { VISIBLE_RIVER_SOURCES, POLLUTION_META } from './layers/riverData';
 
 const ADS_TYPES = [
   { value: 'billboard', label: 'Billboard' },
@@ -30,11 +30,11 @@ function adsTags(counts, total) {
 
 function riverTags() {
   const tally = {};
-  RIVER_SOURCES.forEach((s) => {
+  VISIBLE_RIVER_SOURCES.forEach((s) => {
     tally[s.pollution] = (tally[s.pollution] || 0) + 1;
   });
   return [
-    { value: 'all', label: 'All', count: RIVER_SOURCES.length },
+    { value: 'all', label: 'All', count: VISIBLE_RIVER_SOURCES.length },
     ...Object.keys(POLLUTION_META)
       .map((key) => ({ value: key, label: POLLUTION_META[key].label, count: tally[key] || 0 }))
       .filter((t) => t.count > 0),
