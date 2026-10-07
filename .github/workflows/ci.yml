@@ -37,6 +37,8 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
           cache: npm
       - run: npm ci
+      - name: Hydro adapter unit tests (offline)
+        run: npm run test:hydro
       - name: Typecheck
         run: |
           npm run typecheck > typecheck.log 2>&1; code=$?

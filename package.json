@@ -40,6 +40,7 @@
     "test:location-quality": "node --test src/lib/locationQuality.test.js",
     "test:geospatial-intelligence": "node --test src/lib/geospatialIntelligence.test.js",
     "test:entity-logos": "node --test src/lib/entityLogos.test.js",
+    "test:hydro": "node --test src/lib/hydro/*.test.js",
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
     "test:a11y": "playwright test a11y.spec.ts",
