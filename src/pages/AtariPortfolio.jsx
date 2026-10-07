@@ -1,4 +1,5 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import Nav from '@/components/ooh/Nav';
 import HorizonProgress from '@/components/ooh/HorizonProgress';
@@ -122,50 +123,42 @@ function WalletRow({ label, addr }) {
 
 export default function AtariPortfolio() {
   const { registerSteps } = useWalkthrough();
-  const [user, setUser] = useState(null);
-  const [chain, setChain] = useState(null);
-  const [mints, setMints] = useState([]);
-  const [pledges, setPledges] = useState(0);
-  const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
 
-  const load = useCallback(async () => {
-    const u = await base44.auth.me();
-    setUser(u);
-    const [cw, mintList, leads] = await Promise.all([
-      base44.functions.invoke('cryptoWatch', {}),
-      base44.entities.Mint.filter({ status: 'minted' }, '-created_date', 100),
-      base44.entities.FundingLead.list('-created_date', 500).catch(() => []),
-    ]);
-    setChain(cw?.data || null);
-    setMints(mintList || []);
-    setPledges((leads || []).reduce((a, r) => a + (r.amount || 0), 0));
-  }, []);
-
-  useEffect(() => {
-    (async () => {
-      try {
-        await load();
-      } catch {
-        /* auth handled by route guard */
-      } finally {
-        setLoading(false);
-      }
-    })();
-  }, [load]);
+  const {
+    data: portfolio,
+    isLoading: loading,
+    isFetching: refreshing,
+    refetch,
+  } = useQuery({
+    queryKey: ['atari-portfolio'],
+    queryFn: async () => {
+      const u = await base44.auth.me();
+      const [cw, mintList, leads] = await Promise.all([
+        base44.functions.invoke('cryptoWatch', {}),
+        base44.entities.Mint.filter({ status: 'minted' }, '-created_date', 100),
+        base44.entities.FundingLead.list('-created_date', 500).catch(() => []),
+      ]);
+      return {
+        user: u,
+        chain: cw?.data || null,
+        mints: mintList || [],
+        pledges: (leads || []).reduce((a, r) => a + (r.amount || 0), 0),
+      };
+    },
+    // Auth errors are handled by the route guard, same as the previous
+    // try/catch's silent swallow -- no error UI is rendered here either way.
+    throwOnError: false,
+  });
+  const user = portfolio?.user ?? null;
+  const chain = portfolio?.chain ?? null;
+  const mints = portfolio?.mints ?? [];
+  const pledges = portfolio?.pledges ?? 0;
 
   useEffect(() => {
     registerSteps(PORTFOLIO_TOUR);
   }, [registerSteps]);
 
-  const refresh = async () => {
-    setRefreshing(true);
-    try {
-      await load();
-    } finally {
-      setRefreshing(false);
-    }
-  };
+  const refresh = () => refetch();
 
   if (loading) {
     return (

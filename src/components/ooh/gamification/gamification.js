@@ -2,9 +2,10 @@
 // All state is computed client-side from contribution records (Location,
 // DigitalBust, Mint, LeadClaim) plus QuestCompletion bonus claims.
 
-import { POINTS, pointsForReport } from '../pointsConfig';
+import { POINTS, pointsForReport, pointsForRecheck } from '../pointsConfig.js';
+import { isInPeriod, periodKey as utcPeriodKey } from '../../../lib/questPeriod.js';
 
-export { POINTS, pointsForReport };
+export { POINTS, pointsForReport, pointsForRecheck };
 
 // ── Level curve ──────────────────────────────────────────────────────
 export const LEVELS = [
@@ -209,6 +210,36 @@ export const BADGES = [
     check: (s) => (s.brandCounts?.[0]?.count || 0) >= 25,
     progress: (s) => ({ current: s.brandCounts?.[0]?.count || 0, target: 25 }),
   },
+  // Repeat-observation tracks -- reuses stats.rechecks/rechecksVerified,
+  // already computed in useGamification.js from real FieldCheck records
+  // but previously unused by any badge. A first-of-its-kind incentive for
+  // the specific behavior (re-photographing a known spot) that builds the
+  // longitudinal timeline FieldCheckPanel.jsx already displays.
+  {
+    id: 'first_recheck',
+    label: 'Timeline Starter',
+    // Gated on rechecksVerified, not the raw rechecks submission count --
+    // same verified-only invariant as pointsForRecheck(). A pending or
+    // rejected submission must not earn recognition, only a confirmed one.
+    desc: 'Get your first re-check verified',
+    icon: 'MapPin',
+    tier: 'bronze',
+    check: (s) => (s.rechecksVerified || 0) >= 1,
+  },
+  {
+    id: 'timeline_builder',
+    label: 'Timeline Builder',
+    // Deliberately avoids the literal substring "re-checks" -- the
+    // OperativeProfile stats grid already has a "Re-checks" stat card on
+    // the same page, and Playwright's getByText('Re-checks') matches
+    // substrings case-insensitively, so this text and that stat card's
+    // label must never collide.
+    desc: 'Confirm 5 known placements',
+    icon: 'MapPin',
+    tier: 'silver',
+    check: (s) => (s.rechecksVerified || 0) >= 5,
+    progress: (s) => ({ current: s.rechecksVerified || 0, target: 5 }),
+  },
 ];
 
 export const TIER_STYLES = {
@@ -218,13 +249,16 @@ export const TIER_STYLES = {
   diamond: { color: '#39FF14', glow: 'rgba(57,255,20,0.3)', label: 'Diamond' },
 };
 
-// ── Quest definitions ───────────────────────────────────────────────
+// ── Quest definitions (shown to users as Missions) ──────────────────
+// ids / targets / reward_xp must match claimQuest's server table — the
+// server is the only thing that awards XP. label/desc are display copy:
+// real-world objectives on public ground, never anything unsafe.
 export const QUESTS = [
   {
     id: 'daily_report',
     type: 'daily',
-    label: 'File a Report',
-    desc: 'Log 1 spot today',
+    label: 'Map a Place',
+    desc: 'Report 1 real ad or public space today',
     target: 1,
     metric: 'dailyReports',
     reward_xp: 50,
@@ -233,7 +267,7 @@ export const QUESTS = [
     id: 'daily_photo',
     type: 'daily',
     label: 'Photo Evidence',
-    desc: 'Add a photo to 1 report',
+    desc: 'Report 1 place with a photo today',
     target: 1,
     metric: 'dailyPhotos',
     reward_xp: 50,
@@ -242,7 +276,7 @@ export const QUESTS = [
     id: 'weekly_reports',
     type: 'weekly',
     label: 'Field Week',
-    desc: 'File 5 reports this week',
+    desc: 'Report 5 places this week',
     target: 5,
     metric: 'weeklyReports',
     reward_xp: 200,
@@ -251,7 +285,7 @@ export const QUESTS = [
     id: 'weekly_busts',
     type: 'weekly',
     label: 'Digital Resistance',
-    desc: 'Log 3 digital busts',
+    desc: 'Log 3 digital ads you spot in apps or online this week',
     target: 3,
     metric: 'weeklyBusts',
     reward_xp: 150,
@@ -268,30 +302,18 @@ export const QUESTS = [
 ];
 
 // ── Time helpers ─────────────────────────────────────────────────────
+// Mission periods are UTC (see src/lib/questPeriod.js) so the board shows
+// exactly what claimQuest will accept.
 export function isToday(iso) {
-  if (!iso) return false;
-  return new Date(iso).toDateString() === new Date().toDateString();
+  return isInPeriod(iso, 'daily', new Date());
 }
 
 export function isThisWeek(iso) {
-  if (!iso) return false;
-  const d = new Date(iso);
-  const now = new Date();
-  const day = now.getDay() || 7;
-  const monday = new Date(now);
-  monday.setDate(now.getDate() - day + 1);
-  monday.setHours(0, 0, 0, 0);
-  return d >= monday;
+  return isInPeriod(iso, 'weekly', new Date());
 }
 
 export function periodKey(type) {
-  const now = new Date();
-  if (type === 'daily') return now.toISOString().slice(0, 10);
-  const year = now.getFullYear();
-  const start = new Date(year, 0, 1);
-  const diff = (now.getTime() - start.getTime()) / 86400000;
-  const week = Math.ceil((diff + start.getDay() + 1) / 7);
-  return `${year}-W${String(week).padStart(2, '0')}`;
+  return utcPeriodKey(type, new Date());
 }
 
 // ── Brand collection ─────────────────────────────────────────────────

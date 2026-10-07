@@ -14,7 +14,7 @@ function DiscoveryCard({ item }) {
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           {typeof discoveryNumber === 'number' && (
-            <div className="font-mono text-[8px] uppercase tracking-[0.2em] text-dim">
+            <div className="font-mono text-[0.6875rem] uppercase tracking-[0.2em] text-dim">
               Discovery #{discoveryNumber}
             </div>
           )}
@@ -22,7 +22,7 @@ function DiscoveryCard({ item }) {
             {location.brand_name}
           </div>
           {chain.length > 0 && (
-            <div className="mt-0.5 truncate font-mono text-[9px] uppercase tracking-[0.1em] text-dim">
+            <div className="mt-0.5 truncate font-mono text-[0.6875rem] uppercase tracking-[0.1em] text-dim">
               {chain.join(' → ')}
             </div>
           )}
@@ -35,7 +35,7 @@ function DiscoveryCard({ item }) {
       {/* A distinct ordinal per card -- even repeat discoveries of the same
           brand read as individually meaningful ("1st"/"2nd"/"3rd" Nike),
           not an identical aggregate total repeated on every one of them. */}
-      <div className="mt-3 font-mono text-[9px] uppercase tracking-[0.15em] text-dim">
+      <div className="mt-3 font-mono text-[0.6875rem] uppercase tracking-[0.15em] text-dim">
         Your {ordinal(ordinalForBrand)} {location.brand_name} discovery
       </div>
 
@@ -47,7 +47,7 @@ function DiscoveryCard({ item }) {
               style={{ width: `${Math.min(100, (milestone.current / milestone.target) * 100)}%` }}
             />
           </div>
-          <div className="mt-1 font-mono text-[9px] uppercase tracking-[0.1em] text-dim">
+          <div className="mt-1 font-mono text-[0.6875rem] uppercase tracking-[0.1em] text-dim">
             {milestone.current} / {milestone.target} · {milestone.target - milestone.current} more
             to {milestone.label}
           </div>

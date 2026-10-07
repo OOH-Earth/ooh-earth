@@ -144,6 +144,21 @@ export default function MiniMapStack() {
                             {m.address}
                           </div>
                         )}
+                        <Link
+                          to={`/location/${m.id}`}
+                          style={{
+                            display: 'inline-block',
+                            marginTop: 8,
+                            color: '#EDFF00',
+                            fontFamily: 'monospace',
+                            fontSize: 10,
+                            fontWeight: 700,
+                            letterSpacing: '0.12em',
+                            textTransform: 'uppercase',
+                          }}
+                        >
+                          Open location detail →
+                        </Link>
                       </div>
                     </Popup>
                   </Marker>
@@ -158,7 +173,8 @@ export default function MiniMapStack() {
               {markers.slice(0, 5).map((m, i) => (
                 <Link
                   key={m.id}
-                  to="/map"
+                  to={`/location/${m.id}`}
+                  aria-label={`Open ${m.title} location detail`}
                   className="group flex items-center gap-3 border border-slate2/60 bg-card p-3 transition-colors hover:border-ozone"
                   style={{ transform: `translateX(${i * 6}px)` }}
                 >

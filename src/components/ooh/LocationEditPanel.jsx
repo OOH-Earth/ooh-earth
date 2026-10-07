@@ -19,7 +19,14 @@ import {
   Ban,
   Megaphone,
   SprayCan,
+  Waves,
 } from 'lucide-react';
+import {
+  PUBLIC_SPACE_TYPES,
+  isPublicSpaceType,
+  SETTING_OPTIONS,
+  PUBLIC_ACCESS_OPTIONS,
+} from '@/lib/publicSpace';
 
 const SURFACE_TYPES = [
   { value: 'billboard', label: 'Billboard' },
@@ -29,6 +36,9 @@ const SURFACE_TYPES = [
   { value: 'sticker', label: 'Sticker' },
   { value: 'mural', label: 'Mural' },
   { value: 'transit', label: 'Transit' },
+  { value: 'skatepark', label: 'Skatepark' },
+  { value: 'basketball_court', label: 'Basketball Court' },
+  { value: 'multi_use_court', label: 'Multi-Use Court' },
   { value: 'other', label: 'Other' },
 ];
 
@@ -122,16 +132,21 @@ export default function LocationEditPanel({ loc, onUpdated }) {
 
   if (!canEditLocation(user)) return null;
 
+  // industry_sector/brand_name are ad-industry fields -- a public-space
+  // facility with no visible branding is already fully classified as
+  // itself, so those two count as satisfied rather than missing for it.
+  const isFacilityLoc = isPublicSpaceType(loc.type);
   const completeness = {
     hasType: !!loc.type,
-    hasSector: !!loc.industry_sector,
-    hasBrand: !!loc.brand_name,
+    hasSector: isFacilityLoc || !!loc.industry_sector,
+    hasBrand: isFacilityLoc || !!loc.brand_name,
     hasCondition: !!loc.condition,
     hasStatus: loc.status === 'verified' || loc.status === 'rejected',
   };
   const done = Object.values(completeness).filter(Boolean).length;
   const total = Object.keys(completeness).length;
-  const needsAttention = loc.status === 'pending' && (!loc.brand_name || !loc.industry_sector);
+  const needsAttention =
+    loc.status === 'pending' && !isFacilityLoc && (!loc.brand_name || !loc.industry_sector);
 
   const startEdit = () => {
     setForm({
@@ -153,6 +168,8 @@ export default function LocationEditPanel({ loc, onUpdated }) {
       graffiti_style: loc.graffiti_style || '',
       graffiti_surface_m2: loc.graffiti_surface_m2 || '',
       graffiti_coverage_pct: loc.graffiti_coverage_pct || '',
+      setting: loc.setting || 'unknown',
+      public_access: loc.public_access || 'unknown',
     });
     setError(null);
     setOpen(true);
@@ -160,7 +177,8 @@ export default function LocationEditPanel({ loc, onUpdated }) {
 
   // Quick-classify: sets the fields that make a location appear on the
   // corresponding map layer. "graffiti" sets graffiti_medium + type so the
-  // graffiti portal/map picks it up; "adbust" sets adbust_type; "ad" clears both.
+  // graffiti portal/map picks it up; "adbust" sets adbust_type; "public_space"
+  // sets type to a facility type; "ad" clears all of the above.
   const quickClassify = (category) => {
     setForm((f) => {
       const next = { ...f };
@@ -169,12 +187,20 @@ export default function LocationEditPanel({ loc, onUpdated }) {
         if (!['painted', 'mural', 'sticker'].includes(next.type)) next.type = 'mural';
       } else if (category === 'adbust') {
         if (next.adbust_type === 'none') next.adbust_type = 'subverted';
+      } else if (category === 'public_space') {
+        if (!isPublicSpaceType(next.type)) next.type = PUBLIC_SPACE_TYPES[0];
+        next.graffiti_medium = '';
+        next.graffiti_style = '';
+        next.graffiti_surface_m2 = '';
+        next.graffiti_coverage_pct = '';
+        if (next.adbust_type !== 'none') next.adbust_type = 'none';
       } else if (category === 'ad') {
         next.graffiti_medium = '';
         next.graffiti_style = '';
         next.graffiti_surface_m2 = '';
         next.graffiti_coverage_pct = '';
         if (next.adbust_type !== 'none') next.adbust_type = 'none';
+        if (isPublicSpaceType(next.type)) next.type = 'other';
       }
       return next;
     });
@@ -184,7 +210,9 @@ export default function LocationEditPanel({ loc, onUpdated }) {
     ? 'graffiti'
     : form?.adbust_type && form.adbust_type !== 'none'
       ? 'adbust'
-      : 'ad';
+      : isPublicSpaceType(form?.type)
+        ? 'public_space'
+        : 'ad';
 
   const quickAction = async (status) => {
     setSaving(true);
@@ -365,6 +393,12 @@ export default function LocationEditPanel({ loc, onUpdated }) {
                 >
                   <SprayCan className="h-3 w-3" /> Graffiti / Street Art
                 </button>
+                <button
+                  onClick={() => quickClassify('public_space')}
+                  className={`flex items-center gap-1.5 border px-3 py-1.5 font-mono text-[9px] font-bold uppercase tracking-[0.12em] transition-colors ${formCategory === 'public_space' ? 'border-ozone bg-ozone text-void' : 'border-slate2 text-darkgray hover:border-ozone hover:text-ozone'}`}
+                >
+                  <Waves className="h-3 w-3" /> Public Space
+                </button>
               </div>
               {formCategory === 'graffiti' && (
                 <p className="mt-1.5 font-mono text-[9px] text-flare/80">
@@ -501,6 +535,47 @@ export default function LocationEditPanel({ loc, onUpdated }) {
                     className="border border-slate2 bg-void px-3 py-2 text-sm text-silver outline-none focus:border-flare"
                     placeholder="0–100"
                   />
+                </label>
+              </div>
+            )}
+
+            {/* Public space detail — visible inline when classified as a facility */}
+            {formCategory === 'public_space' && (
+              <div className="mt-3 grid gap-3 border border-ozone/30 bg-ozone/5 p-3 sm:grid-cols-2">
+                <label className="flex flex-col gap-1">
+                  <span className="font-mono text-[9px] uppercase tracking-[0.15em] text-dim">
+                    Setting
+                  </span>
+                  <select
+                    value={form.setting}
+                    onChange={(e) => set('setting', e.target.value)}
+                    className="border border-slate2 bg-void px-3 py-2 text-sm text-silver outline-none focus:border-ozone"
+                  >
+                    {SETTING_OPTIONS.map((o) => (
+                      <option key={o.value} value={o.value}>
+                        {o.label}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <label className="flex flex-col gap-1">
+                  <span className="font-mono text-[9px] uppercase tracking-[0.15em] text-dim">
+                    Public Access
+                  </span>
+                  <select
+                    value={form.public_access}
+                    onChange={(e) => set('public_access', e.target.value)}
+                    className="border border-slate2 bg-void px-3 py-2 text-sm text-silver outline-none focus:border-ozone"
+                  >
+                    {PUBLIC_ACCESS_OPTIONS.map((o) => (
+                      <option key={o.value} value={o.value}>
+                        {o.label}
+                      </option>
+                    ))}
+                  </select>
+                  <span className="font-mono text-[8px] text-dim">
+                    Never assume free/municipal access — leave Unknown unless evidenced.
+                  </span>
                 </label>
               </div>
             )}

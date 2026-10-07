@@ -1,15 +1,15 @@
 import { useCallback, useEffect, useState } from 'react';
 import { base44 } from '@/api/base44Client';
+import { useAuthGatedSubscribe } from '@/hooks/useAuthGatedSubscribe';
 import {
   BADGES,
   QUESTS,
   levelFromXp,
   pointsForReport,
+  pointsForRecheck,
   deriveBrandCounts,
-  isToday,
-  isThisWeek,
-  periodKey,
 } from '@/components/ooh/gamification/gamification';
+import { claimFeedback, missionStatus, periodMetrics } from '@/lib/missions';
 
 export function useGamification() {
   const [user, setUser] = useState(null);
@@ -18,6 +18,7 @@ export function useGamification() {
   const [completions, setCompletions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [claiming, setClaiming] = useState(null);
+  const [claimNotice, setClaimNotice] = useState(null); // { id, tone, text }
 
   const loadData = useCallback(async () => {
     try {
@@ -33,7 +34,12 @@ export function useGamification() {
         base44.entities.DigitalBust.list('-created_date', 200).catch(() => []),
         base44.entities.Mint.list('-created_date', 100).catch(() => []),
         base44.entities.LeadClaim.list('-created_date', 200).catch(() => []),
-        base44.entities.QuestCompletion.list('-created_date', 200).catch(() => []),
+        // Only the caller's own claims — the board never needs anyone else's.
+        base44.entities.QuestCompletion.filter(
+          { created_by_id: me.id },
+          '-created_date',
+          100,
+        ).catch(() => []),
         base44.entities.FieldCheck.list('-created_date', 200).catch(() => []),
       ]);
 
@@ -49,14 +55,16 @@ export function useGamification() {
 
       const baseXp =
         myLocs.reduce((s, r) => s + pointsForReport(r), 0) +
+        myFieldChecks.reduce((s, r) => s + pointsForRecheck(r), 0) +
         myBusts.length * 15 +
         myMints.length * 100 +
         myLeads.length * 5;
       const questXp = myQuests.reduce((s, q) => s + (q.xp_awarded || 0), 0);
 
-      // Streak — consecutive days with any contribution
+      // Streak — consecutive days with any contribution, including re-checks
+      // (a re-check is a genuine field visit, not a lesser action)
       const activeDates = new Set();
-      [...myLocs, ...myBusts].forEach((r) => {
+      [...myLocs, ...myBusts, ...myFieldChecks].forEach((r) => {
         if (r.created_date) activeDates.add(r.created_date.slice(0, 10));
       });
       let streak = 0;
@@ -81,10 +89,8 @@ export function useGamification() {
         busts: myBusts.length,
         mints: myMints.length,
         leads: myLeads.length,
-        // Not folded into xp/baseXp -- no point value for a re-check has
-        // been product-validated yet (see the P2 freshness work's same
-        // "no invented threshold" stance). Pure visibility of real,
-        // already-stored FieldCheck activity, nothing fabricated.
+        // Folded into baseXp via pointsForRecheck() -- deliberately smaller
+        // than a new report (see pointsConfig.js), previously exactly 0.
         rechecks: myFieldChecks.length,
         rechecksVerified: myFieldChecks.filter((r) => r.status === 'verified').length,
         xp: baseXp + questXp,
@@ -92,11 +98,8 @@ export function useGamification() {
         questXp,
         streak,
         brandCounts: deriveBrandCounts(myLocs),
-        dailyReports: myLocs.filter((r) => isToday(r.created_date)).length,
-        weeklyReports: myLocs.filter((r) => isThisWeek(r.created_date)).length,
-        dailyPhotos: myLocs.filter((r) => isToday(r.created_date) && r.image_url).length,
-        weeklyBusts: myBusts.filter((r) => isThisWeek(r.created_date)).length,
-        weeklyMints: myMints.filter((r) => isThisWeek(r.created_date)).length,
+        // Same UTC windows and records claimQuest counts server-side.
+        ...periodMetrics({ locations: myLocs, busts: myBusts, mints: myMints }),
       });
     } catch {
       /* offline */
@@ -107,48 +110,39 @@ export function useGamification() {
 
   useEffect(() => {
     loadData();
-    const unsub = base44.entities.Location.subscribe(() => loadData());
-    return () => {
-      if (unsub) unsub();
-    };
   }, [loadData]);
+
+  useAuthGatedSubscribe('Location', () => loadData());
 
   const level = stats ? levelFromXp(stats.xp) : null;
   const earnedBadges = stats ? BADGES.filter((b) => b.check(stats)) : [];
 
-  const questStatus = stats
-    ? QUESTS.map((q) => {
-        const period = periodKey(q.type);
-        const claimed = completions.some(
-          (c) => c.quest_id === q.id && c.period_key === period && c.created_by_id === user?.id,
-        );
-        const progress = Math.min(stats[q.metric] || 0, q.target);
-        return { ...q, period, progress, complete: progress >= q.target, claimed };
-      })
-    : [];
+  const questStatus = stats ? missionStatus(QUESTS, stats, completions, user?.id) : [];
 
+  // The server decides; the board only offers Claim when its (identical)
+  // rules say the mission is complete, then shows whatever the server says.
   const claimQuest = useCallback(
     async (questId) => {
-      const quest = QUESTS.find((q) => q.id === questId);
-      if (!quest || !user) return;
-      const period = periodKey(quest.type);
-      const already = completions.some(
-        (c) => c.quest_id === questId && c.period_key === period && c.created_by_id === user.id,
-      );
-      if (already) return;
-      if ((stats?.[quest.metric] || 0) < quest.target) return;
+      const quest = questStatus.find((q) => q.id === questId);
+      if (!quest || !user || quest.claimed || !quest.complete) return;
 
       setClaiming(questId);
+      setClaimNotice(null);
+      let result;
       try {
-        await base44.functions.invoke('claimQuest', { quest_id: questId });
+        const res = await base44.functions.invoke('claimQuest', { quest_id: questId });
+        result = res?.data || {};
+      } catch (err) {
+        result = { status: err?.response?.status ?? err?.status };
+      }
+      setClaimNotice({ id: questId, ...claimFeedback(result) });
+      try {
         await loadData();
-      } catch {
-        /* error */
       } finally {
         setClaiming(null);
       }
     },
-    [user, completions, stats, loadData],
+    [user, questStatus, loadData],
   );
 
   return {
@@ -161,6 +155,7 @@ export function useGamification() {
     questStatus,
     claimQuest,
     claiming,
+    claimNotice,
     loading,
     refresh: loadData,
   };

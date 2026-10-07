@@ -3,6 +3,7 @@ import { handleN8nPing } from '../n8nPing/handler.ts';
 import { handleScanAd, validateMediaUrl } from '../scanAd/handler.ts';
 import { handleCachedIntel } from '../cachedIntel/handler.ts';
 import { handleCreateDonationCheckout } from '../createDonationCheckout/handler.ts';
+import { handleDonationStatus } from '../donationStatus/handler.ts';
 import { handleClaimLead } from '../claimLead/handler.ts';
 import { handleStripeWebhook } from '../stripeWebhook/handler.ts';
 import { handleCreateProductCheckout } from '../createProductCheckout/handler.ts';
@@ -14,6 +15,14 @@ import { handleFieldStats, resetFieldStatsCache } from '../fieldStats/handler.ts
 import { handleSubmitOffline } from '../submitOffline/handler.ts';
 import { isValidCorrelationId, telemetryFor } from '../_shared/telemetry.ts';
 import { handleRuntimeHealth } from '../runtimeHealth/handler.ts';
+import {
+  evaluateOperationalSnapshots,
+  handleOperationalHealth,
+} from '../operationalHealth/handler.ts';
+import {
+  recordOperationalHealth,
+  resetOperationalStateCooldown,
+} from '../_shared/operationalState.ts';
 
 const assert = (condition: unknown, message: string) => {
   if (!condition) throw new Error(message);
@@ -123,6 +132,140 @@ Deno.test('runtimeHealth is bounded and admin-only', async () => {
   const body = await response.json();
   assertEquals(Object.keys(body).sort(), ['release', 'status', 'timestamp'], 'health fields');
   assert(!JSON.stringify(body).includes('SECRET'), 'health does not expose secrets');
+});
+
+Deno.test('operational state is bounded, throttled, and fail-open', async () => {
+  resetOperationalStateCooldown();
+  let now = 1_700_000_000_000;
+  const rows: any[] = [];
+  let writes = 0;
+  const entity = {
+    filter: async () => rows,
+    create: async (value: any) => {
+      writes++;
+      rows.push({ id: 'state-1', ...value });
+    },
+    update: async (_id: string, value: any) => {
+      writes++;
+      Object.assign(rows[0], value);
+    },
+  };
+  const client = () => ({ asServiceRole: { entities: { OperationalHealth: entity } } });
+  const req = new Request('https://oohearth.base44.app/functions/fieldStats');
+  await recordOperationalHealth(req, 'fieldStats', 'success', 42, {
+    createClientFromRequest: client,
+    now: () => now,
+    getEnv: () => undefined,
+  });
+  await recordOperationalHealth(req, 'fieldStats', 'success', 43, {
+    createClientFromRequest: client,
+    now: () => now + 1_000,
+    getEnv: () => undefined,
+  });
+  assertEquals(writes, 1, 'same-status snapshot throttled');
+  assertEquals(rows[0].environment, 'production', 'environment bounded');
+  assertEquals(rows[0].status, 'HEALTHY', 'success state');
+  assertEquals(rows[0].success_count_window, 1, 'success count bounded');
+  assert(!('correlation_id' in rows[0]), 'no correlation id persisted');
+  now += 2_000;
+  await recordOperationalHealth(req, 'fieldStats', 'failed', 999999, {
+    createClientFromRequest: client,
+    now: () => now,
+    getEnv: () => undefined,
+    error_code: 'not-a-real-code',
+  });
+  assertEquals(writes, 2, 'status transition persisted');
+  assertEquals(rows[0].status, 'DEGRADED', 'failure state');
+  assertEquals(rows[0].last_error_code, 'INTERNAL_FAILURE', 'error code bounded');
+  assert(rows[0].last_duration_ms <= 120000, 'duration bounded');
+  const failing = () => ({
+    asServiceRole: {
+      entities: {
+        OperationalHealth: {
+          filter: async () => {
+            throw new Error('down');
+          },
+        },
+      },
+    },
+  });
+  await recordOperationalHealth(req, 'fieldStats', 'success', 10, {
+    createClientFromRequest: failing,
+    now: () => now + 61_000,
+  });
+});
+
+Deno.test(
+  'operational health read is admin-only and exposes explicit missing evidence',
+  async () => {
+    const requestFor = (method = 'GET') => new Request('https://example.test/health', { method });
+    const client = (user: unknown) => ({
+      auth: { me: async () => user },
+      asServiceRole: { entities: { OperationalHealth: { list: async () => [] } } },
+    });
+    assertEquals(
+      (await handleOperationalHealth(requestFor(), { createClientFromRequest: () => client(null) }))
+        .status,
+      401,
+      'operational health auth',
+    );
+    const response = await handleOperationalHealth(requestFor(), {
+      createClientFromRequest: () => client({ role: 'admin' }),
+      now: () => 1_700_000_000_000,
+    });
+    assertEquals(response.status, 200, 'operational health response');
+    const body = await response.json();
+    assertEquals(body.status, 'UNKNOWN', 'empty state is unknown');
+    assertEquals(body.evidence_status, 'INSUFFICIENT_DATA', 'missing evidence is explicit');
+    assertEquals(body.services, [], 'empty service list');
+  },
+);
+
+Deno.test('operational health distinguishes freshness, degradation, and candidate binding', () => {
+  const now = 1_700_000_000_000;
+  const base = {
+    state_key: 'fieldStats:backup',
+    service: 'fieldStats',
+    environment: 'backup',
+    status: 'HEALTHY',
+    evidence_status: 'VERIFIED',
+    release: 'abc1234',
+    updated_at: now,
+  };
+  assertEquals(
+    evaluateOperationalSnapshots([base], { now, environment: 'backup', candidateSha: 'abc1234' })
+      .reason_code,
+    'HEALTHY',
+    'fresh matching health is healthy',
+  );
+  assertEquals(
+    evaluateOperationalSnapshots([{ ...base, updated_at: now - 15 * 60_000 - 1 }], {
+      now,
+      environment: 'backup',
+    }).reason_code,
+    'SERVICE_SNAPSHOT_STALE',
+    'stale healthy evidence is unknown',
+  );
+  assertEquals(
+    evaluateOperationalSnapshots([{ ...base, status: 'DEGRADED' }], { now, environment: 'backup' })
+      .status,
+    'DEGRADED',
+    'degraded service is not healthy',
+  );
+  assertEquals(
+    evaluateOperationalSnapshots([{ ...base, release: 'deadbeef' }], {
+      now,
+      environment: 'backup',
+      candidateSha: 'abc1234',
+    }).reason_code,
+    'CANDIDATE_MISMATCH',
+    'old evidence cannot certify a new candidate',
+  );
+  assertEquals(
+    evaluateOperationalSnapshots([], { now, environment: 'backup' }).reason_code,
+    'NO_SERVICE_SNAPSHOT',
+    'missing evidence is explicit',
+  );
 });
 
 const migrationClient = (user: unknown, locations: unknown[] = []) => {
@@ -263,6 +406,54 @@ Deno.test(
   },
 );
 
+Deno.test(
+  'submitOffline strips a forged status, so a submission cannot self-verify past moderation',
+  async () => {
+    // Location and FieldCheck both have rls.create: null (open by design --
+    // anyone can submit a report) with no field-level restriction on
+    // `status`. Without server-side stripping, an unauthenticated caller
+    // could set status: "verified" directly and skip the moderate.ts queue
+    // entirely -- the exact bypass this test proves is now closed.
+    let createdPayload: any = null;
+    const client = {
+      entities: {
+        Location: {
+          filter: async () => [],
+          create: async (payload: any) => {
+            createdPayload = payload;
+            return { id: 'location-1', status: 'pending', ...payload };
+          },
+        },
+      },
+    };
+    const deps = { createClientFromRequest: () => client };
+    const payload = {
+      client_operation_id: 'capture.status-forge-1',
+      title: 'Forged verification attempt',
+      status: 'verified',
+      status_updated_at: '2020-01-01T00:00:00.000Z',
+    };
+    const res = await handleSubmitOffline(
+      request('POST', { entity_type: 'Location', payload }),
+      deps,
+    );
+    assertEquals(
+      res.status,
+      200,
+      'submission itself is accepted (fields are stripped, not rejected)',
+    );
+    assert(createdPayload !== null, 'entity.create must have been called');
+    assert(
+      !('status' in createdPayload),
+      'status must never reach entity.create() from the client',
+    );
+    assert(
+      !('status_updated_at' in createdPayload),
+      'status_updated_at must never reach entity.create() from the client',
+    );
+  },
+);
+
 Deno.test('migrateLocationImages permits an admin and hides failures', async () => {
   const fake = migrationClient({ data: { role: 'admin' } }, [
     { image_url: 'https://ooh.earth/old.jpg' },
@@ -361,6 +552,10 @@ Deno.test(
       const params = new URLSearchParams(String(init?.body));
       assertEquals(params.get('line_items[0][price_data][unit_amount]'), '5000', 'Stripe amount');
       assertEquals(params.get('line_items[0][price_data][currency]'), 'usd', 'Stripe currency');
+      assert(
+        (params.get('success_url') || '').includes('session_id={CHECKOUT_SESSION_ID}'),
+        'donation success_url carries the Stripe session id placeholder',
+      );
       return new Response(JSON.stringify({ url: 'https://checkout.stripe.test/session' }), {
         status: 200,
       });
@@ -418,6 +613,133 @@ Deno.test(
       await json(failed),
       { error: 'Checkout unavailable' },
       'donation sanitized failure',
+    );
+  },
+);
+
+Deno.test(
+  'donationStatus reports only a boolean, sourced from FundingLead, never from the request alone',
+  async () => {
+    const fundingClient = (rows: any[]) => ({
+      createClientFromRequest: () => ({
+        asServiceRole: {
+          entities: {
+            FundingLead: {
+              filter: async (query: any) => rows.filter((row) => row.ext_ref === query.ext_ref),
+            },
+          },
+        },
+      }),
+    });
+
+    const confirmedSessionId = 'cs_test_confirmed1234567890';
+    const unconfirmedSessionId = 'cs_test_unconfirmed1234567';
+    const unknownSessionId = 'cs_test_neverseenbefore123';
+    const rows = [
+      {
+        ext_ref: confirmedSessionId,
+        email: 'donor@example.com',
+        amount: 50,
+        channel: 'stripe',
+      },
+    ];
+
+    // method
+    assertEquals(
+      (
+        await handleDonationStatus(
+          request('GET', { session_id: confirmedSessionId }),
+          fundingClient(rows),
+        )
+      ).status,
+      405,
+      'donationStatus method',
+    );
+
+    // malformed body
+    const malformed = new Request('https://example.test', { method: 'POST', body: '{' });
+    const malformedResp = await handleDonationStatus(malformed, fundingClient(rows));
+    assertEquals(malformedResp.status, 400, 'donationStatus malformed body');
+
+    // missing session id
+    assertEquals(
+      (await handleDonationStatus(request('POST', {}), fundingClient(rows))).status,
+      400,
+      'donationStatus missing session id',
+    );
+
+    // malformed session id shapes (not a real Stripe session id)
+    for (const bad of [
+      '',
+      'not-a-session',
+      'cs_short',
+      "cs_test_'; DROP TABLE--",
+      'x'.repeat(300),
+    ]) {
+      assertEquals(
+        (await handleDonationStatus(request('POST', { session_id: bad }), fundingClient(rows)))
+          .status,
+        400,
+        `donationStatus rejects malformed session id: ${bad.slice(0, 20)}`,
+      );
+    }
+
+    // unknown session id -- never seen by the webhook
+    const unknownResp = await handleDonationStatus(
+      request('POST', { session_id: unknownSessionId }),
+      fundingClient(rows),
+    );
+    assertEquals(unknownResp.status, 200, 'donationStatus unknown status');
+    assertEquals(await json(unknownResp), { confirmed: false }, 'donationStatus unknown body');
+
+    // unconfirmed session id -- webhook hasn't landed yet (simulates the race)
+    const unconfirmedResp = await handleDonationStatus(
+      request('POST', { session_id: unconfirmedSessionId }),
+      fundingClient(rows),
+    );
+    assertEquals(unconfirmedResp.status, 200, 'donationStatus unconfirmed status');
+    assertEquals(
+      await json(unconfirmedResp),
+      { confirmed: false },
+      'donationStatus unconfirmed body',
+    );
+
+    // confirmed session id -- webhook already created the FundingLead row
+    const confirmedResp = await handleDonationStatus(
+      request('POST', { session_id: confirmedSessionId }),
+      fundingClient(rows),
+    );
+    assertEquals(confirmedResp.status, 200, 'donationStatus confirmed status');
+    const confirmedBody = await json(confirmedResp);
+    assertEquals(confirmedBody, { confirmed: true }, 'donationStatus confirmed body');
+    assertEquals(
+      Object.keys(confirmedBody as object),
+      ['confirmed'],
+      'donationStatus never returns fields beyond confirmed (no email/amount/FundingLead object)',
+    );
+
+    // backend failure fails closed, never leaks the underlying error
+    const brokenResp = await handleDonationStatus(
+      request('POST', { session_id: confirmedSessionId }),
+      {
+        createClientFromRequest: () => ({
+          asServiceRole: {
+            entities: {
+              FundingLead: {
+                filter: async () => {
+                  throw new Error('secret database detail');
+                },
+              },
+            },
+          },
+        }),
+      },
+    );
+    assertEquals(brokenResp.status, 200, 'donationStatus fails closed on backend error');
+    assertEquals(
+      await json(brokenResp),
+      { confirmed: false },
+      'donationStatus sanitized failure body',
     );
   },
 );
@@ -1255,15 +1577,12 @@ Deno.test(
         entities: {
           QuestCompletion: {
             filter: async (query: any) =>
-              completions.filter(
-                (item) =>
-                  item.quest_id === query.quest_id &&
-                  item.period_key === query.period_key &&
-                  item.created_by_id === query.created_by_id,
-              ),
+              completions
+                .filter((item) => Object.entries(query).every(([k, v]) => item[k] === v))
+                .reverse(),
             create: async (value: any) => {
               createCount++;
-              completions.push(value);
+              completions.push({ ...value, created_date: now.toISOString() });
             },
           },
           Location: { filter: async () => locations },

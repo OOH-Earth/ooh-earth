@@ -1,0 +1,11 @@
+{
+  "nav-aria-fix": {
+    "prNumber": 201,
+    "targetBranch": "codex/evidence-review-conversion-route",
+    "expectedParentSha": "04d3da91ced7a35942d2e3e04fe55e6d4664c950",
+    "candidateSha": "1f8388e5a3905f33e896507fe8e83de4bfc34a92",
+    "patchSha256": "d28d35d9ba5cc82186856d20d0ed3f6d92c511733fc20b49a48ca0d17892053c",
+    "approvedDiffSha256": "d28d35d9ba5cc82186856d20d0ed3f6d92c511733fc20b49a48ca0d17892053c",
+    "description": "Nav.jsx 'Open Command Center' button: add aria-label (accessible-name fix for the real, currently-reproducing axe-core button-name violation on / and /map). Live QA verified (local axe-core A/B, BEFORE=FAIL AFTER=PASS on both routes). Single-line change, no other file touched."
+  }
+}

@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { base44 } from '@/api/base44Client';
+import { useAuthGatedSubscribe } from '@/hooks/useAuthGatedSubscribe';
 import seedMarkers from '@/components/ooh/mapSeed';
 import { toMarker } from '@/components/ooh/map/markerUtils';
 
@@ -32,25 +33,24 @@ export function useLocations() {
     };
     load();
 
-    const unsub = base44.entities.Location.subscribe((event) => {
-      setData((cur) => {
-        if (!cur.live) return cur;
-        let markers = cur.markers;
-        const m = toMarker(event.data);
-        if (event.type === 'create') markers = [m, ...markers.filter((x) => x.id !== m.id)];
-        else if (event.type === 'update') {
-          if (m.status === 'rejected') markers = markers.filter((x) => x.id !== m.id);
-          else markers = markers.map((x) => (x.id === m.id ? m : x));
-        } else if (event.type === 'delete') markers = markers.filter((x) => x.id !== m.id);
-        return { ...cur, markers };
-      });
-    });
-
     return () => {
       cancelled = true;
-      if (unsub) unsub();
     };
   }, []);
+
+  useAuthGatedSubscribe('Location', (event) => {
+    setData((cur) => {
+      if (!cur.live) return cur;
+      let markers = cur.markers;
+      const m = toMarker(event.data);
+      if (event.type === 'create') markers = [m, ...markers.filter((x) => x.id !== m.id)];
+      else if (event.type === 'update') {
+        if (m.status === 'rejected') markers = markers.filter((x) => x.id !== m.id);
+        else markers = markers.map((x) => (x.id === m.id ? m : x));
+      } else if (event.type === 'delete') markers = markers.filter((x) => x.id !== m.id);
+      return { ...cur, markers };
+    });
+  });
 
   return data;
 }

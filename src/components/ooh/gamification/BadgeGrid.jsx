@@ -52,17 +52,19 @@ function Badge({ badge, earned, stats }) {
       >
         {earned ? <Icon className="h-6 w-6" /> : <Lock className="h-4 w-4" />}
       </div>
-      <div className="font-mono text-[8px] font-bold uppercase tracking-[0.15em] text-silver">
+      <div className="font-mono text-[0.6875rem] font-bold uppercase tracking-[0.15em] text-silver">
         {badge.label}
       </div>
-      <div className="font-mono text-[7px] uppercase tracking-[0.1em] text-dim">{badge.desc}</div>
+      <div className="font-mono text-[0.625rem] leading-relaxed uppercase tracking-[0.1em] text-dim">
+        {badge.desc}
+      </div>
       {progress && (
-        <div className="font-mono text-[7px] font-bold tabular text-silver/70">
+        <div className="font-mono text-[0.625rem] font-bold tabular text-silver/70">
           {Math.min(progress.current, progress.target)} / {progress.target}
         </div>
       )}
       <span
-        className="absolute right-1.5 top-1.5 font-mono text-[6px] font-bold uppercase tracking-[0.15em]"
+        className="absolute right-1.5 top-1.5 font-mono text-[0.5625rem] font-bold uppercase tracking-[0.15em]"
         style={{ color: style.color }}
       >
         {style.label}
@@ -70,7 +72,7 @@ function Badge({ badge, earned, stats }) {
       {earned && (
         <Link
           to={`/lab/nft?badge=${badge.id}`}
-          className="mt-0.5 flex items-center gap-1 font-mono text-[7px] font-bold uppercase tracking-[0.12em] text-dim opacity-0 transition-opacity hover:text-ozone focus-visible:opacity-100 group-hover:opacity-100"
+          className="mt-0.5 flex items-center gap-1 font-mono text-[0.625rem] font-bold uppercase tracking-[0.12em] text-dim opacity-0 transition-opacity hover:text-ozone focus-visible:opacity-100 group-hover:opacity-100"
         >
           <Coins className="h-2.5 w-2.5" /> Mint as NFT
         </Link>

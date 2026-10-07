@@ -1,0 +1,183 @@
+name: lynxie-publish-pr-head
+
+# Constrained Lynxie PR publication executor. Publishes exactly one
+# pre-reviewed, pre-committed patch (never workflow-input patch text) to
+# an EXISTING, open, non-main/master PR head branch, iff the branch's
+# current remote head exactly matches the expected parent SHA this
+# request was approved against. Manual dispatch only: no schedule, no
+# pull_request trigger, no push trigger. Uses only this run's own
+# auto-issued GITHUB_TOKEN (permissions block below) — no PAT, no App
+# secret, nothing persisted or printed.
+#
+# The `patch` this applies is never arbitrary text: request_id resolves
+# only to a file already committed to THIS repo under
+# .github/lynxie-patches/, reviewed the same way any other repo change is
+# reviewed, with its expected sha256 recorded in manifest.json (also
+# committed, also reviewed) — the workflow_dispatch inputs are checked
+# AGAINST that manifest, never trusted on their own.
+#
+# TRUSTED vs. TARGET checkout split (2026-09-15, repair of a real failure
+# observed on run https://github.com/OOH-Earth/ooh-earth/actions/runs/34934932554
+# — a dry_run=true dispatch of the request this manifest already
+# describes, which failed at the manifest-lookup step): every trusted
+# artifact this workflow reads —
+# manifest.json, the patch file, and this workflow's own verification
+# scripts under .github/scripts/lynxie-publish/ — is read EXCLUSIVELY from
+# a checkout of ${{ github.sha }} (the immutable revision this specific
+# run was dispatched from, never the mutable "main" branch name, which
+# could move mid-run) into path `trusted/`. The mutable PR-under-publish
+# is checked out separately into path `target/`, and every git operation
+# that touches it (patch apply, commit, push) happens inside `target/`
+# only. This is why the original bug existed: the original single
+# checkout pointed at the TARGET branch, so `.github/lynxie-patches/`
+# — which only ever exists on `main` — could never be found there,
+# failing every single dispatch (including legitimate ones) at the
+# manifest-lookup step. Because `trusted/` and `target/` are distinct
+# checkout paths, the target checkout cannot overwrite or shadow
+# `trusted/` — a forged manifest/patch committed to the target PR branch
+# is never read by anything in this workflow.
+#
+# Script-injection hardening (same repair, same lines already being
+# touched): every free-form string workflow_dispatch input
+# (request_id/target_branch/expected_remote_sha/candidate_sha) is passed
+# to steps via `env:` and referenced as a shell variable ("$REQUEST_ID"
+# etc.) rather than interpolated directly as `${{ inputs.x }}` inside a
+# `run:` block's literal text — the standard mitigation for GitHub
+# Actions' documented script-injection risk. `pr_number`/`dry_run` are
+# typed number/boolean by the workflow_dispatch schema itself, so GitHub
+# rejects a non-conforming value before the job ever starts.
+on:
+  workflow_dispatch:
+    inputs:
+      pr_number:
+        description: 'Existing PR number on this repo'
+        required: true
+        type: number
+      target_branch:
+        description: "The PR's own head branch — never main/master"
+        required: true
+        type: string
+      expected_remote_sha:
+        description: 'The exact commit the target branch must currently be at'
+        required: true
+        type: string
+      candidate_sha:
+        description: 'Audit-only label for which locally-approved candidate this corresponds to — the actual content check is the patch digest below, not this string'
+        required: true
+        type: string
+      request_id:
+        description: 'Selects .github/lynxie-patches/<request_id>.patch — must match [a-zA-Z0-9_-]+ only'
+        required: true
+        type: string
+      dry_run:
+        description: 'true = run every check and report the result, apply nothing, push nothing'
+        required: false
+        type: boolean
+        default: true
+
+permissions:
+  contents: write
+  pull-requests: read
+  actions: read
+
+concurrency:
+  group: lynxie-publish-pr-head-${{ inputs.pr_number }}
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    env:
+      REQUEST_ID: ${{ inputs.request_id }}
+      TARGET_BRANCH: ${{ inputs.target_branch }}
+      EXPECTED_REMOTE_SHA: ${{ inputs.expected_remote_sha }}
+      CANDIDATE_SHA: ${{ inputs.candidate_sha }}
+    steps:
+      - name: Checkout TRUSTED executor source (immutable revision this run was dispatched from — never the mutable target PR branch)
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          path: trusted
+          fetch-depth: 1
+          persist-credentials: false
+
+      - name: Checkout TARGET PR head (mutable — the sole subject of any git write below)
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.target_branch }}
+          path: target
+          fetch-depth: 0
+
+      - name: Validate request_id shape (defense in depth against path traversal)
+        run: bash trusted/.github/scripts/lynxie-publish/validate-request-id.sh "$REQUEST_ID"
+
+      - name: Refuse a main/master target outright
+        run: bash trusted/.github/scripts/lynxie-publish/refuse-mainline-target.sh "$TARGET_BRANCH"
+
+      - name: Look up the request in the TRUSTED, committed, reviewed manifest (never target/ — a forged manifest/patch on the target branch is never read)
+        id: manifest
+        run: |
+          set -euo pipefail
+          entry=$(bash trusted/.github/scripts/lynxie-publish/lookup-manifest.sh trusted "$REQUEST_ID")
+          echo "entry=$entry" >> "$GITHUB_OUTPUT"
+          echo "patch_file=trusted/.github/lynxie-patches/${REQUEST_ID}.patch" >> "$GITHUB_OUTPUT"
+
+      - name: Verify workflow_dispatch inputs match the manifest entry exactly
+        run: bash trusted/.github/scripts/lynxie-publish/verify-inputs-match-manifest.sh
+        env:
+          ENTRY: ${{ steps.manifest.outputs.entry }}
+          PR_NUMBER: ${{ inputs.pr_number }}
+
+      - name: Verify the (trusted) patch file's digest matches the manifest (content-addressed integrity)
+        run: |
+          set -euo pipefail
+          expected=$(node -e "console.log(JSON.parse(process.env.ENTRY).patchSha256)")
+          bash trusted/.github/scripts/lynxie-publish/verify-patch-digest.sh "${{ steps.manifest.outputs.patch_file }}" "$expected"
+        env:
+          ENTRY: ${{ steps.manifest.outputs.entry }}
+
+      - name: Verify PR is open, on this exact repo, at the exact expected branch/SHA (server-side, live GitHub state)
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          pr_json=$(gh pr view "${{ inputs.pr_number }}" --repo "${{ github.repository }}" --json state,headRefName,headRefOid)
+          bash trusted/.github/scripts/lynxie-publish/verify-remote-pr-state.sh "$pr_json" "$TARGET_BRANCH" "$EXPECTED_REMOTE_SHA" target
+
+      - name: Apply the pre-committed (trusted) patch inside target/ and verify the resulting diff exactly matches what was approved
+        id: apply
+        run: |
+          set -euo pipefail
+          expected_diff_sha=$(node -e "console.log(JSON.parse(process.env.ENTRY).approvedDiffSha256)")
+          bash trusted/.github/scripts/lynxie-publish/apply-and-verify-diff.sh target "${{ steps.manifest.outputs.patch_file }}" "$expected_diff_sha"
+        env:
+          ENTRY: ${{ steps.manifest.outputs.entry }}
+
+      - name: Dry run — report and stop (no commit, no push)
+        if: ${{ inputs.dry_run == 'true' || inputs.dry_run == true }}
+        run: |
+          echo "### Lynxie publish — DRY RUN ###" >> "$GITHUB_STEP_SUMMARY"
+          echo "All checks passed. No commit was created, nothing was pushed." >> "$GITHUB_STEP_SUMMARY"
+          echo "pr_number=${{ inputs.pr_number }}" >> "$GITHUB_STEP_SUMMARY"
+          echo "target_branch=$TARGET_BRANCH" >> "$GITHUB_STEP_SUMMARY"
+          echo "expected_remote_sha=$EXPECTED_REMOTE_SHA" >> "$GITHUB_STEP_SUMMARY"
+          git -C target diff --stat >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Commit and push (non-force, exact branch only) — real publication
+        if: ${{ inputs.dry_run != 'true' && inputs.dry_run != true }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          cd target
+          git config user.name "lynxie-publish-pr-head[bot]"
+          git config user.email "lynxie-publish-pr-head[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "Lynxie publish: request ${REQUEST_ID} (audit candidate ${CANDIDATE_SHA})"
+          new_sha=$(git rev-parse HEAD)
+          echo "new_sha=$new_sha" >> "$GITHUB_OUTPUT"
+          # Plain push, exact branch, no force flag anywhere in this file.
+          git push origin "HEAD:refs/heads/${TARGET_BRANCH}"
+          echo "### Lynxie publish — LIVE ###" >> "$GITHUB_STEP_SUMMARY"
+          echo "Pushed $new_sha to ${TARGET_BRANCH} on ${{ github.repository }}" >> "$GITHUB_STEP_SUMMARY"
+        id: publish

@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { base44 } from '@/api/base44Client';
+import { useAuthGatedSubscribe } from '@/hooks/useAuthGatedSubscribe';
 import { Trophy, BadgeCheck, Camera, FileText, Crown } from 'lucide-react';
 import { pointsForReport, rankTier, POINTS } from '@/components/ooh/pointsConfig';
 import OperativeUnitRoster from '@/components/ooh/OperativeUnitRoster';
@@ -50,17 +51,14 @@ export default function Leaderboard() {
       }
     };
     load();
-
-    const unsub = base44.entities.Location.subscribe(() => {
-      base44.listAllLocations().then((recs) => {
-        if (!cancelled) setRows(aggregate(recs));
-      });
-    });
     return () => {
       cancelled = true;
-      if (unsub) unsub();
     };
   }, []);
+
+  useAuthGatedSubscribe('Location', () => {
+    base44.listAllLocations().then((recs) => setRows(aggregate(recs)));
+  });
 
   const totalPoints = (rows || []).reduce((s, r) => s + r.points, 0);
 

@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
-import { base44 } from '@/api/base44Client';
+import { useAuthGatedSubscribe } from '@/hooks/useAuthGatedSubscribe';
+import { activityTargetPath } from '@/lib/activityTarget';
 import useSoundscape from '@/hooks/useSoundscape';
 import { MapPin, Hand, Monitor, Coins, UserPlus, BadgeCheck, Radio } from 'lucide-react';
 
@@ -44,39 +46,45 @@ export default function LiveActivityFeed() {
     timers.current.set(id, t);
   };
 
-  useEffect(() => {
-    const subs = [
-      base44.entities.Location.subscribe((e) => {
-        if (e.type === 'create')
-          push({
-            type: 'report',
-            title: e.data?.title || 'Offense logged',
-            meta: e.data?.address || 'field report',
-          });
-      }),
-      base44.entities.DigitalBust.subscribe((e) => {
-        if (e.type === 'create')
-          push({
-            type: 'bust',
-            title: e.data?.platform_name || 'Digital bust',
-            meta: e.data?.region || 'metaverse',
-          });
-      }),
-      base44.entities.LeadClaim.subscribe((e) => {
-        if (e.type === 'create')
-          push({
-            type: 'claim',
-            title: 'Adopted landmark',
-            meta: '@' + (e.data?.operative_handle || 'operative'),
-          });
-      }),
-      base44.entities.FundingLead.subscribe((e) => {
-        if (e.type === 'create')
-          push({ type: 'donate', title: 'Pledge logged', meta: e.data?.channel || 'lead' });
-      }),
-    ];
-    return () => subs.forEach((u) => u && u());
-  }, []);
+  useAuthGatedSubscribe('Location', (e) => {
+    if (e.type === 'create')
+      push({
+        type: 'report',
+        title: e.data?.title || 'Offense logged',
+        meta: e.data?.address || 'field report',
+        href: activityTargetPath('Location', e),
+      });
+  });
+  useAuthGatedSubscribe('DigitalBust', (e) => {
+    if (e.type === 'create')
+      push({
+        type: 'bust',
+        title: e.data?.platform_name || 'Digital bust',
+        meta: e.data?.region || 'metaverse',
+      });
+  });
+  useAuthGatedSubscribe('LeadClaim', (e) => {
+    if (e.type === 'create')
+      push({
+        type: 'claim',
+        title: 'Adopted landmark',
+        meta: '@' + (e.data?.operative_handle || 'operative'),
+        href: activityTargetPath('LeadClaim', e),
+      });
+  });
+  useAuthGatedSubscribe('FieldCheck', (e) => {
+    if ((e.type === 'create' || e.type === 'update') && e.data?.status === 'verified')
+      push({
+        type: 'verify',
+        title: e.data?.location_title || 'Field check verified',
+        meta: e.data?.address || e.data?.location_type || 'field record',
+        href: activityTargetPath('FieldCheck', e),
+      });
+  });
+  useAuthGatedSubscribe('FundingLead', (e) => {
+    if (e.type === 'create')
+      push({ type: 'donate', title: 'Pledge logged', meta: e.data?.channel || 'lead' });
+  });
 
   useEffect(
     () => () => {
@@ -87,7 +95,7 @@ export default function LiveActivityFeed() {
   );
 
   return (
-    <div className="pointer-events-none fixed bottom-3 left-3 z-[80] hidden w-[300px] max-w-[calc(100vw-24px)] flex-col gap-2 md:flex">
+    <div className="pointer-events-none fixed bottom-[calc(82px+env(safe-area-inset-bottom))] left-3 z-[80] flex w-[300px] max-w-[calc(100vw-24px)] flex-col gap-2 md:bottom-3">
       <div className="flex items-center gap-2 px-1">
         <Radio className="h-3 w-3 animate-flicker text-ozone" />
         <span className="font-mono text-[9px] uppercase tracking-[0.3em] text-silver/70">
@@ -100,16 +108,10 @@ export default function LiveActivityFeed() {
         {events.map((ev) => {
           const t = TYPES[ev.type];
           const Icon = t.icon;
-          return (
-            <motion.div
-              key={ev.id}
-              layout
-              initial={{ opacity: 0, x: -40, scale: 0.96 }}
-              animate={{ opacity: 1, x: 0, scale: 1 }}
-              exit={{ opacity: 0, x: -40, scale: 0.96 }}
-              transition={{ type: 'spring', stiffness: 320, damping: 28 }}
-              className="pointer-events-auto flex items-start gap-3 border border-slate2/70 bg-void/90 p-3 backdrop-blur-md"
-            >
+          const cardClass =
+            'flex items-start gap-3 border border-slate2/70 bg-void/90 p-3 backdrop-blur-md';
+          const body = (
+            <>
               <span
                 className="mt-0.5 h-2 w-2 shrink-0 rounded-full"
                 style={{ backgroundColor: t.dot, boxShadow: `0 0 8px ${t.dot}` }}
@@ -127,6 +129,29 @@ export default function LiveActivityFeed() {
                 </div>
                 <div className="truncate font-mono text-[9px] text-darkgray">{ev.meta}</div>
               </div>
+            </>
+          );
+          return (
+            <motion.div
+              key={ev.id}
+              layout
+              initial={{ opacity: 0, x: -40, scale: 0.96 }}
+              animate={{ opacity: 1, x: 0, scale: 1 }}
+              exit={{ opacity: 0, x: -40, scale: 0.96 }}
+              transition={{ type: 'spring', stiffness: 320, damping: 28 }}
+              className="pointer-events-auto"
+            >
+              {ev.href ? (
+                <Link
+                  to={ev.href}
+                  aria-label={`${t.label}: ${ev.title} — open place`}
+                  className={`${cardClass} transition-colors hover:border-ozone focus-visible:border-ozone focus-visible:outline-none`}
+                >
+                  {body}
+                </Link>
+              ) : (
+                <div className={cardClass}>{body}</div>
+              )}
             </motion.div>
           );
         })}

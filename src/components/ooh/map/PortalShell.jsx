@@ -29,6 +29,7 @@ export default function PortalShell({
   onRefresh = null,
   mapActions = null,
   live = undefined,
+  renderMap = null,
 }) {
   const [selectedId, setSelectedId] = useState(null);
   const [hoverId, setHoverId] = useState(null);
@@ -43,6 +44,16 @@ export default function PortalShell({
         ? 'flex w-full lg:flex-1'
         : 'hidden lg:flex lg:w-[340px]';
   const mapClass = mode === 'list' ? 'hidden' : 'flex-1';
+
+  // Portals that supply their own map (renderMap) keep a usable 300px canvas on short landscape
+  // screens and let the page scroll to the filters, instead of squeezing the map to a sliver.
+  // Opt-in so other portals keep their existing layout.
+  const shortLandscapeRoot = renderMap
+    ? '[@media(max-height:500px)]:static [@media(max-height:500px)]:inset-auto [@media(max-height:500px)]:min-h-screen [@media(max-height:500px)]:overflow-visible'
+    : '';
+  const shortLandscapeBody = renderMap
+    ? '[@media(max-height:500px)]:h-[300px] [@media(max-height:500px)]:flex-none'
+    : '';
 
   const resultsContent = (
     <div className="space-y-px">
@@ -63,7 +74,9 @@ export default function PortalShell({
   );
 
   return (
-    <div className="fixed inset-0 flex flex-col overflow-hidden bg-void pt-[calc(7rem_+_env(safe-area-inset-top))] md:pt-[calc(8rem_+_env(safe-area-inset-top))] pb-[calc(76px_+_env(safe-area-inset-bottom))] lg:pb-0">
+    <div
+      className={`fixed inset-0 flex flex-col overflow-hidden bg-void pt-[calc(7rem_+_env(safe-area-inset-top))] md:pt-[calc(8rem_+_env(safe-area-inset-top))] pb-[calc(76px_+_env(safe-area-inset-bottom))] lg:pb-0 ${shortLandscapeRoot}`}
+    >
       <Nav />
 
       {/* Portal header */}
@@ -149,7 +162,7 @@ export default function PortalShell({
         </div>
       )}
 
-      <div className="flex min-h-0 flex-1 flex-col lg:flex-row">
+      <div className={`flex min-h-0 flex-1 flex-col lg:flex-row ${shortLandscapeBody}`}>
         {/* Results sidebar */}
         <div className={`min-h-0 flex-col border-r border-slate2/60 ${cardsClass}`}>
           <div className="flex items-center justify-between border-b border-slate2/60 px-4 py-2">
@@ -185,7 +198,9 @@ export default function PortalShell({
             </div>
             <MapStyleSwitcher />
           </div>
-          {view === 'globe' ? (
+          {renderMap ? (
+            renderMap({ view, selectedId, setSelectedId, hoverId, mapStyle })
+          ) : view === 'globe' ? (
             <Globe3D
               key={mapStyle.id}
               markers={markers}

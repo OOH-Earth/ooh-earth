@@ -3,7 +3,6 @@ import { Link } from 'react-router-dom';
 import { ArrowUpRight } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { metaFor } from '@/components/ooh/map/LocationThumb';
-import { Image } from '@/components/ui/image';
 
 // Metro rail — auto-scrolling strip of the latest field-logged locations
 // (photo-backed only). Pauses on hover; static under reduced-motion.
@@ -51,26 +50,44 @@ export default function MetroSlider() {
           {loop.map((l, i) => {
             const { Icon, accent, label } = metaFor(l.type);
             return (
-              <Link
+              <article
                 key={`${l.id}-${i}`}
-                to="/map"
-                className="group/card relative block h-28 w-44 shrink-0 overflow-hidden border-r border-slate2/30 md:h-32 md:w-52"
+                data-testid="field-log-card"
+                className="group/card relative h-28 w-44 shrink-0 overflow-hidden border-r border-slate2/30 md:h-32 md:w-52"
               >
-                <Image
-                  src={l.image_url}
-                  alt={l.title || 'Field location'}
-                  className="h-full w-full"
-                  fittingType="fill"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-void/90 via-void/10 to-transparent transition-opacity duration-300 group-hover/card:from-void" />
+                {l.id ? (
+                  <Link
+                    to={`/location/${encodeURIComponent(l.id)}`}
+                    data-testid="field-log-location-link"
+                    aria-label={`View ${l.title || 'field location'} details`}
+                    className="absolute inset-0 z-0"
+                  >
+                    <img
+                      src={l.image_url}
+                      alt={l.title || 'Field location'}
+                      data-testid="field-log-image"
+                      className="block h-full w-full object-cover object-center"
+                      loading="lazy"
+                    />
+                  </Link>
+                ) : (
+                  <img
+                    src={l.image_url}
+                    alt={l.title || 'Field location'}
+                    data-testid="field-log-image"
+                    className="absolute inset-0 block h-full w-full object-cover object-center"
+                    loading="lazy"
+                  />
+                )}
+                <div className="pointer-events-none absolute inset-0 z-10 bg-gradient-to-t from-void/90 via-void/10 to-transparent transition-opacity duration-300 group-hover/card:from-void" />
                 <span
-                  className="absolute left-2 top-2 flex items-center gap-1 font-mono text-[8px] uppercase tracking-[0.25em]"
+                  className="pointer-events-none absolute left-2 top-2 z-10 flex items-center gap-1 font-mono text-[8px] uppercase tracking-[0.25em]"
                   style={{ color: accent }}
                 >
                   <Icon className="h-2.5 w-2.5" />
                   {label}
                 </span>
-                <div className="absolute inset-x-0 bottom-0 p-2">
+                <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 p-2">
                   <div className="truncate font-display text-xs font-bold text-silver">
                     {l.title}
                   </div>
@@ -79,8 +96,17 @@ export default function MetroSlider() {
                       {l.address}
                     </div>
                   )}
+                  {l.id && (
+                    <Link
+                      to={`/map?highlight=${encodeURIComponent(l.id)}`}
+                      data-testid="field-log-map-link"
+                      className="pointer-events-auto relative z-20 mt-1 inline-flex items-center gap-1 font-mono text-[8px] uppercase tracking-[0.15em] text-ozone/80 hover:text-ozone"
+                    >
+                      Open map <ArrowUpRight className="h-2.5 w-2.5" />
+                    </Link>
+                  )}
                 </div>
-              </Link>
+              </article>
             );
           })}
         </div>

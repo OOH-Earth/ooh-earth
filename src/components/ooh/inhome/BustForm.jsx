@@ -50,7 +50,6 @@ export default function BustForm({ open, onClose, onCreated }) {
         region: form.region,
         proof_url: form.proof_url,
         notes: form.notes,
-        status: 'pending',
       });
       setForm(empty);
       onCreated && onCreated();

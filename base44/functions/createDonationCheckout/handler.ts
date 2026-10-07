@@ -53,7 +53,7 @@ export async function handleCreateDonationCheckout(
   const params = new URLSearchParams();
   const origin = checkoutOrigin(req);
   params.set('mode', 'payment');
-  params.set('success_url', `${origin}/campaign?status=thanks`);
+  params.set('success_url', `${origin}/campaign?status=thanks&session_id={CHECKOUT_SESSION_ID}`);
   params.set('cancel_url', `${origin}/campaign?status=cancelled`);
   params.set('payment_method_types[0]', 'card');
   params.set('line_items[0][quantity]', '1');

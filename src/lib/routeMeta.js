@@ -29,6 +29,11 @@ export const META = {
     desc: 'Interactive global map of every billboard, digital screen, and advertising surface — logged, verified, and ready for adbusting.',
     image: OG_IMAGES.map,
   },
+  '/hackers-club': {
+    title: 'Hackers Club — OOH Earth',
+    desc: 'A starting point for artists, makers and ethical researchers. Remix a poster, plan permission-based street art, and explore authorised research.',
+    image: OG_IMAGES.default,
+  },
   '/adbusting': {
     title: 'Adbusting Portal — OOH Earth',
     desc: 'Creative resistance against outdoor advertising. Subverting, reclaiming, and replacing corporate messaging in public space.',
@@ -187,6 +192,11 @@ export const META = {
   '/portal/ops': {
     title: 'Architecture Ops — OOH Earth',
     desc: 'Platform architecture operations and build management.',
+    image: OG_IMAGES.lab,
+  },
+  '/mission-control': {
+    title: 'Mission Control — OOH Earth',
+    desc: 'Authenticated operations cockpit for bounded OOH Earth health evidence, release truth, and service state.',
     image: OG_IMAGES.lab,
   },
   '/portfolio': {

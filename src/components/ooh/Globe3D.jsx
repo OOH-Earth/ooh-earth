@@ -1,16 +1,19 @@
 import { useEffect, useRef, useState } from 'react';
 import * as maplibregl from 'maplibre-gl';
+import '@/lib/maplibreWorkerSetup';
 import { ZoomIn, ZoomOut, Compass, RotateCw } from 'lucide-react';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import GlobeHud from '@/components/ooh/GlobeHud';
 import FieldStatsHud from '@/components/ooh/FieldStatsHud';
 import { motion } from 'framer-motion';
+import { Link } from 'react-router-dom';
 
 import { thumbHTML, metaFor } from '@/components/ooh/map/LocationThumb';
 import { drawGlyph, GLYPH_COLORS, PIN_TYPES } from '@/components/ooh/map/pinGlyphs';
 import GlobeLayerManager from '@/components/ooh/map/layers/GlobeLayerManager';
 import { useMapStyle } from '@/lib/mapStyleContext';
 import { getStatusDotColor } from '@/lib/statusBadge';
+import { parseChannelColor, resolveHoverRingTarget } from '@/lib/hoverEmphasis';
 
 const esc = (s) =>
   String(s ?? '').replace(
@@ -21,12 +24,19 @@ const esc = (s) =>
 // Canvas-drawn field pin for the globe symbol layer — yellow disc,
 // category-specific glyph (from the shared pinGlyphs library), micro-badge +
 // status dot, pink radial glow.
+//
+// Drawn at devicePixelRatio so the bitmap map.addImage() registers actually
+// matches the screen's real pixel density — without this, MapLibre stretches
+// a 1x bitmap to cover 2-3x as many physical pixels on any retina/high-DPI
+// display, producing a soft/blurry marker regardless of icon-size.
 function makePinIcon(type, selected, verified) {
   const S = 64;
+  const dpr = typeof window !== 'undefined' ? window.devicePixelRatio || 1 : 1;
   const badgeColor = GLYPH_COLORS[type] || GLYPH_COLORS.other;
   const c = document.createElement('canvas');
-  c.width = c.height = S;
+  c.width = c.height = S * dpr;
   const ctx = c.getContext('2d');
+  ctx.scale(dpr, dpr);
   const cx = S / 2,
     cy = S / 2;
   // pink radial highlight
@@ -81,24 +91,97 @@ function popupHTML(m) {
   const type = metaFor(m.type).label;
   const status = m.status || 'pending';
   return `
-    <div style="width:220px;font-family:'Inter Tight',sans-serif">
-      ${thumbHTML(m)}
-      <div style="padding:10px 12px 12px">
-        <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px">
+    <div class="ooh-location-popup" style="width:220px;font-family:'Inter Tight',sans-serif">
+      <div class="ooh-popup-thumb">${thumbHTML(m)}</div>
+      <div class="ooh-popup-details" style="padding:10px 12px 12px">
+        <div class="ooh-popup-meta" style="display:flex;align-items:center;gap:6px;margin-bottom:4px">
           <span style="font-size:9px;text-transform:uppercase;letter-spacing:0.2em;font-weight:700;color:#EDFF00">${esc(type)}</span>
           <span style="width:5px;height:5px;border-radius:999px;background:${getStatusDotColor(status)}"></span>
           <span style="font-size:9px;text-transform:uppercase;letter-spacing:0.2em;color:hsl(var(--muted-foreground))">${esc(status)}</span>
         </div>
-        <div style="font-weight:700;font-size:15px;color:hsl(var(--foreground));line-height:1.25">${esc(m.title)}</div>
-        <div style="font-size:12px;color:hsl(var(--muted-foreground));margin-top:4px;line-height:1.4">${esc(m.address || '')}</div>
-        <div style="font-size:9px;color:hsl(var(--muted-foreground));margin-top:4px;font-family:monospace;opacity:0.8">${Number(m.lat).toFixed(4)}, ${Number(m.lng).toFixed(4)}</div>
-        <div style="display:flex;flex-wrap:wrap;gap:5px;margin-top:10px">
+        <div class="ooh-popup-title" style="font-weight:700;font-size:15px;color:hsl(var(--foreground));line-height:1.25">${esc(m.title)}</div>
+        <div class="ooh-popup-address" style="font-size:12px;color:hsl(var(--muted-foreground));margin-top:4px;line-height:1.4">${esc(m.address || '')}</div>
+        <div class="ooh-popup-coords" style="font-size:9px;color:hsl(var(--muted-foreground));margin-top:4px;font-family:monospace;opacity:0.8">${Number(m.lat).toFixed(4)}, ${Number(m.lng).toFixed(4)}</div>
+        <div class="ooh-popup-actions" style="display:flex;flex-wrap:wrap;gap:5px;margin-top:10px">
           <a href="https://www.google.com/maps/dir/?api=1&destination=${m.lat},${m.lng}" target="_blank" rel="noreferrer" class="ooh-popup-btn ooh-popup-btn--flare">Directions ↗</a>
           <a href="/location/${esc(m.id)}" class="ooh-popup-btn ooh-popup-btn--ozone">Page ↗</a>
           ${m.link && /^https?:\/\//i.test(m.link) ? `<a href="${esc(m.link)}" target="_blank" rel="noreferrer" class="ooh-popup-btn ooh-popup-btn--ghost">OOH.EARTH ↗</a>` : ''}
         </div>
       </div>
     </div>`;
+}
+
+// The selected globe pin is a 64px canvas icon rendered at a 0.95 scale.
+// Keep the information panel outside that visual anchor in every direction.
+// MapLibre still chooses the side with the most room near container edges;
+// these per-anchor offsets preserve the same clearance after that choice.
+/** @type {import('maplibre-gl').Offset} */
+const LOCATION_POPUP_OFFSET = {
+  top: [0, 64],
+  'top-left': [46, 46],
+  'top-right': [-46, 46],
+  bottom: [0, -64],
+  'bottom-left': [46, -46],
+  'bottom-right': [-46, -46],
+  left: [64, 0],
+  right: [-64, 0],
+  center: [0, 0],
+};
+
+const POPUP_ANCHOR_ORDER = ['bottom', 'top', 'right', 'left'];
+
+function popupGeometryIsSafe(map, popup, coords) {
+  const popupRect = popup.getElement()?.getBoundingClientRect();
+  const mapRect = map.getContainer().getBoundingClientRect();
+  if (!popupRect || !mapRect) return false;
+  const point = map.project(coords);
+  const markerRect = {
+    left: mapRect.left + point.x - 31,
+    right: mapRect.left + point.x + 31,
+    top: mapRect.top + point.y - 31,
+    bottom: mapRect.top + point.y + 31,
+  };
+  const overlapX = Math.max(
+    0,
+    Math.min(markerRect.right, popupRect.right) - Math.max(markerRect.left, popupRect.left),
+  );
+  const overlapY = Math.max(
+    0,
+    Math.min(markerRect.bottom, popupRect.bottom) - Math.max(markerRect.top, popupRect.top),
+  );
+  return (
+    overlapX * overlapY === 0 &&
+    popupRect.left >= mapRect.left - 1 &&
+    popupRect.right <= mapRect.right + 1 &&
+    popupRect.top >= mapRect.top - 1 &&
+    popupRect.bottom <= mapRect.bottom + 1
+  );
+}
+
+function placePopupClearOfMarker(map, popup, coords) {
+  const currentAnchor = popup.options.anchor;
+  for (const anchor of POPUP_ANCHOR_ORDER) {
+    popup.options.anchor = anchor;
+    popup.setOffset(LOCATION_POPUP_OFFSET);
+    if (popupGeometryIsSafe(map, popup, coords)) return;
+  }
+  // Preserve a deterministic placement when a very small map cannot fit the
+  // full card on any side. The preferred above-marker anchor still keeps the
+  // marker clear and MapLibre's padding limits the card's excursion.
+  popup.options.anchor = currentAnchor || 'bottom';
+  popup.setOffset(LOCATION_POPUP_OFFSET);
+  const element = popup.getElement();
+  const mapRect = map.getContainer().getBoundingClientRect();
+  const popupRect = element?.getBoundingClientRect();
+  if (element && popupRect) {
+    const dx =
+      Math.max(mapRect.left - popupRect.left, 0) + Math.min(mapRect.right - popupRect.right, 0);
+    const dy =
+      Math.max(mapRect.top - popupRect.top, 0) + Math.min(mapRect.bottom - popupRect.bottom, 0);
+    if (dx || dy) {
+      element.style.transform = `${element.style.transform} translate(${dx}px, ${dy}px)`;
+    }
+  }
 }
 
 function buildFC(markers, selectedId) {
@@ -120,6 +203,7 @@ function buildFC(markers, selectedId) {
           lat: m.lat,
           lng: m.lng,
           selected: m.id === selectedId,
+          attention: Boolean(m.attention && m.attention.priority !== 'CURRENT'),
         },
       })),
   };
@@ -138,6 +222,7 @@ export default function Globe3D({
   flyTo = null,
   onError = null,
   onCounts = null,
+  attentionMode = false,
 }) {
   const mapStyle = useMapStyle().style;
   const containerRef = useRef(null);
@@ -153,6 +238,7 @@ export default function Globe3D({
   onCountsRef.current = onCounts;
 
   const [ready, setReady] = useState(false);
+  const [gpuUnavailable, setGpuUnavailable] = useState(false);
   const [spinning, setSpinning] = useState(spin);
   const [, setCounts] = useState({ spots: 0, clusters: 0, leads: 0, verified: 0 });
 
@@ -177,22 +263,47 @@ export default function Globe3D({
 
   useEffect(() => {
     if (!containerRef.current) return;
-    const map = new maplibregl.Map({
-      container: containerRef.current,
-      style: mapStyle.glStyle,
-      center: [100.55, 13.746],
-      zoom: 1.6,
-      pitch: 25,
-      maxPitch: 85,
-      attributionControl: { compact: true },
-      interactive,
-    });
+    let map;
+    try {
+      map = new maplibregl.Map({
+        container: containerRef.current,
+        style: mapStyle.glStyle,
+        center: [100.55, 13.746],
+        zoom: 1.6,
+        pitch: 25,
+        maxPitch: 85,
+        attributionControl: { compact: true },
+        interactive,
+      });
+    } catch (error) {
+      // Unsupported graphics must not take the entire page into its error boundary.
+      // Other initialization failures still surface for diagnosis.
+      if (!(error instanceof maplibregl.GPUInitializationError)) throw error;
+      setGpuUnavailable(true);
+      onErrorRef.current?.();
+      return;
+    }
     mapRef.current = map;
     popupRef.current = new maplibregl.Popup({
       closeButton: true,
       closeOnClick: true,
+      // MapLibre flips the anchor near an edge. Use explicit offsets for each
+      // possible anchor so the card remains separated from the full selected
+      // pin, rather than only raising its z-index over the marker.
+      offset: LOCATION_POPUP_OFFSET,
+      padding: { top: 12, right: 12, bottom: 12, left: 12 },
       maxWidth: '260px',
     });
+
+    const repositionPopup = () => {
+      const popup = popupRef.current;
+      const lngLat = popup?.getLngLat?.();
+      if (popup?.isOpen?.() && lngLat) {
+        placePopupClearOfMarker(map, popup, [lngLat.lng, lngLat.lat]);
+      }
+    };
+    map.on('moveend', repositionPopup);
+    map.on('resize', repositionPopup);
 
     if (!scrollZoom) {
       map.scrollZoom.disable();
@@ -228,26 +339,39 @@ export default function Globe3D({
         map.setProjection({ type: 'globe' });
       } catch (e) {}
       try {
-        // setFog() doesn't exist on the installed maplibre-gl (5.24.0) Map
-        // class — only setSky(SkySpecification) does now. This throws and is
-        // caught below, so the space-fog/atmosphere effect is currently
-        // non-functional. Restoring it means porting to setSky() (a
-        // different param shape) and confirming the visual result — a
-        // design call, not a type fix. See KNOWN_ISSUES.md.
-        // @ts-expect-error — see comment above
-        map.setFog({
-          range: [1, 10],
-          color: '#0a0a0a',
-          'high-color': '#1a1a1a',
-          'horizon-blend': 0.12,
-          'space-color': '#000000',
-          'star-intensity': 0.45,
+        // Ported from the old (non-existent on installed maplibre-gl
+        // 5.24.0) setFog() call -- SkySpecification's real field set is
+        // smaller (confirmed against this repo's own installed
+        // @maplibre/maplibre-gl-style-spec types, not guessed): no
+        // range/star-intensity/space-color equivalent exists in this
+        // version's sky API, so those are dropped rather than faked.
+        // space-color (deep void) -> sky-color; high-color (dim
+        // near-horizon tone) -> horizon-color; horizon-blend -> the
+        // directly-equivalent sky-horizon-blend. atmosphere-blend has no
+        // prior value to port from -- kept low (default is 0.8) to match
+        // the original's understated, mostly-dark intent rather than a
+        // bright default glow.
+        map.setSky({
+          'sky-color': '#000000',
+          'horizon-color': '#1a1a1a',
+          'sky-horizon-blend': 0.12,
+          'atmosphere-blend': 0.3,
         });
       } catch (e) {}
     };
     map.on('load', () => {
       applyGlobe();
       map.on('style.load', applyGlobe);
+      // Read the live theme's --c-flare token (space-separated "R G B") once
+      // at mount, rather than hardcoding one theme's color -- MapLibre paint
+      // properties need a literal value, not a live CSS variable reference.
+      // Normalized to comma-separated here since rgba(R G B, a) (mixing the
+      // modern space syntax with a legacy comma-separated alpha) isn't valid
+      // CSS and MapLibre's color parser doesn't reliably accept the modern
+      // rgb(R G B / a) slash syntax either.
+      const flareColor = parseChannelColor(
+        getComputedStyle(document.documentElement).getPropertyValue('--c-flare'),
+      );
       map.addSource('ooh-markers', {
         type: 'geojson',
         data: /** @type {GeoJSON.GeoJSON} */ (dataRef.current),
@@ -255,14 +379,15 @@ export default function Globe3D({
         clusterRadius: 52,
         clusterMaxZoom: 14,
       });
+      const iconPixelRatio = typeof window !== 'undefined' ? window.devicePixelRatio || 1 : 1;
       PIN_TYPES.forEach((t) => {
         const a = makePinIcon(t, false, false);
         map.addImage(`ooh-pin-${t}`, a.getContext('2d').getImageData(0, 0, a.width, a.height), {
-          pixelRatio: 1,
+          pixelRatio: iconPixelRatio,
         });
         const b = makePinIcon(t, true, false);
         map.addImage(`ooh-pin-${t}-sel`, b.getContext('2d').getImageData(0, 0, b.width, b.height), {
-          pixelRatio: 1,
+          pixelRatio: iconPixelRatio,
         });
       });
       // cluster discs — dark core, ozone ring, live count (military-grade)
@@ -293,6 +418,35 @@ export default function Globe3D({
       });
       // individual field pins (unclustered only)
       map.addLayer({
+        id: 'ooh-attention',
+        type: 'circle',
+        source: 'ooh-markers',
+        filter: ['all', ['!', ['has', 'point_count']], ['==', ['get', 'attention'], true]],
+        paint: {
+          'circle-radius': 12,
+          'circle-color': 'rgba(91,231,255,0.12)',
+          'circle-stroke-color': '#5BE7FF',
+          'circle-stroke-width': 2,
+        },
+      });
+      // Result-row ↔ marker hover emphasis: a filter-driven ring (no re-baked
+      // icon bitmaps needed) using the theme's own --c-flare brand token, so
+      // hovering a result row makes the corresponding marker unmistakable.
+      // Starts matching nothing; the hoverId effect below sets the real filter.
+      map.addLayer({
+        id: 'ooh-hover-ring',
+        type: 'circle',
+        source: 'ooh-markers',
+        filter: ['==', ['get', 'id'], '__none__'],
+        paint: {
+          'circle-radius': 22,
+          'circle-color': flareColor.replace('rgb(', 'rgba(').replace(')', ', 0.16)'),
+          'circle-stroke-color': flareColor,
+          'circle-stroke-width': 2.5,
+          'circle-blur': 0.15,
+        },
+      });
+      map.addLayer({
         id: 'ooh-markers',
         type: 'symbol',
         source: 'ooh-markers',
@@ -316,6 +470,7 @@ export default function Globe3D({
         const p = f.properties;
         const coords = /** @type {GeoJSON.Point} */ (f.geometry).coordinates.slice();
         popupRef.current.setLngLat(coords).setHTML(popupHTML(p)).addTo(map);
+        placePopupClearOfMarker(map, popupRef.current, coords);
         onSelectRef.current?.(p.id);
       });
       map.on('mouseenter', 'ooh-markers', () => {
@@ -376,10 +531,14 @@ export default function Globe3D({
     const vis = activeLayers.some((l) => l === 'ads' || l === 'adbusting' || l === 'graffiti')
       ? 'visible'
       : 'none';
-    ['ooh-markers', 'ooh-clusters', 'ooh-cluster-count'].forEach((id) => {
-      if (map.getLayer(id)) map.setLayoutProperty(id, 'visibility', vis);
-    });
-  }, [activeLayers, ready]);
+    ['ooh-markers', 'ooh-attention', 'ooh-hover-ring', 'ooh-clusters', 'ooh-cluster-count'].forEach(
+      (id) => {
+        if (map.getLayer(id)) map.setLayoutProperty(id, 'visibility', vis);
+      },
+    );
+    if (map.getLayer('ooh-attention'))
+      map.setLayoutProperty('ooh-attention', 'visibility', attentionMode ? vis : 'none');
+  }, [activeLayers, attentionMode, ready]);
 
   useEffect(() => {
     dataRef.current = buildFC(markers, selectedId);
@@ -393,7 +552,9 @@ export default function Globe3D({
       const m = markers.find((x) => x.id === selectedId);
       if (m && isFinite(m.lat) && isFinite(m.lng)) {
         map.flyTo({ center: [m.lng, m.lat], zoom: Math.max(map.getZoom(), 6), duration: 700 });
-        popupRef.current.setLngLat([m.lng, m.lat]).setHTML(popupHTML(m)).addTo(map);
+        const coords = [m.lng, m.lat];
+        popupRef.current.setLngLat(coords).setHTML(popupHTML(m)).addTo(map);
+        placePopupClearOfMarker(map, popupRef.current, coords);
       }
     }
   }, [markers, selectedId]);
@@ -411,6 +572,20 @@ export default function Globe3D({
       });
     }
   }, [hoverId, selectedId, markers, ready]);
+
+  // Marker-side half of the result-row <-> marker hover emphasis: show the
+  // ring only for a genuine hover on a not-already-selected marker (matches
+  // the flyTo effect's own guard above -- an already-selected marker has its
+  // own persistent visual treatment, a hover ring on top would be redundant).
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!readyRef.current || !map || !map.getLayer('ooh-hover-ring')) return;
+    map.setFilter('ooh-hover-ring', [
+      '==',
+      ['get', 'id'],
+      resolveHoverRingTarget({ hoverId, selectedId }),
+    ]);
+  }, [hoverId, selectedId, ready]);
 
   useEffect(() => {
     const map = mapRef.current;
@@ -481,6 +656,23 @@ export default function Globe3D({
       duration: 800,
     });
   }, [userLoc, ready]);
+
+  if (gpuUnavailable) {
+    return (
+      <div
+        role="status"
+        className="flex h-full flex-col items-center justify-center gap-4 px-6 text-center"
+      >
+        <p className="font-mono text-sm text-silver">The globe is unavailable on this device.</p>
+        <Link
+          to="/map"
+          className="inline-flex min-h-11 items-center border border-ozone px-4 font-mono text-sm text-ozone focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ozone"
+        >
+          Explore the field map
+        </Link>
+      </div>
+    );
+  }
 
   return (
     <div className="absolute inset-0">

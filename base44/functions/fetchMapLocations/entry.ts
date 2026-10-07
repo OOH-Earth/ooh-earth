@@ -1,4 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
+import { recordOperationalHealth } from './operationalState.ts';
 
 // Preferred live source: a static JSON feed you publish on oohearth.app.
 // Static files aren't routed through the SG captcha, so this works from the
@@ -56,11 +57,23 @@ function stripTags(s: string) {
 }
 
 Deno.serve(async (req) => {
+  const startedAt = Date.now();
+  const respond = async (
+    body: unknown,
+    init?: ResponseInit,
+    outcome: 'success' | 'failed' = 'success',
+  ) => {
+    const response = Response.json(body, init);
+    await recordOperationalHealth(req, 'map', outcome, Date.now() - startedAt, {
+      createClientFromRequest,
+    });
+    return response;
+  };
   try {
     const base44 = createClientFromRequest(req);
     const periodKey = String(Math.floor(Date.now() / CACHE_WINDOW_MS));
     const cached = await readCache(base44, periodKey);
-    if (cached) return Response.json(cached);
+    if (cached) return respond(cached);
 
     // 1) JSON feed (live, no captcha).
     try {
@@ -87,7 +100,7 @@ Deno.serve(async (req) => {
           if (markers.length) {
             const payload = { count: markers.length, markers, live: true };
             await writeCache(base44, periodKey, payload);
-            return Response.json(payload);
+            return respond(payload);
           }
         }
       }
@@ -175,10 +188,13 @@ Deno.serve(async (req) => {
       if (added === 0) break;
     }
 
+    // An empty but valid HTTP-200 response is a functioning read with an
+    // empty dataset. It must not be treated as a provider failure merely
+    // because this legacy feed has no records in an environment.
     const payload = { count: markers.length, markers, live: markers.length > 0 };
     if (markers.length > 0) await writeCache(base44, periodKey, payload);
-    return Response.json(payload);
+    return respond(payload);
   } catch (error) {
-    return Response.json({ error: error.message }, { status: 500 });
+    return respond({ error: 'Map data unavailable' }, { status: 500 }, 'failed');
   }
 });

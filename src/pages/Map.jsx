@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { usePersistentState } from '@/hooks/usePersistentState';
 import { base44 } from '@/api/base44Client';
+import { useAuthGatedSubscribe } from '@/hooks/useAuthGatedSubscribe';
 import Nav from '@/components/ooh/Nav';
 import LocationMap from '@/components/ooh/LocationMap';
 import MapToolbar from '@/components/ooh/map/MapToolbar';
@@ -10,6 +11,7 @@ import LocationCard from '@/components/ooh/map/LocationCard';
 import seedMarkers from '@/components/ooh/mapSeed';
 import { toMarker } from '@/components/ooh/map/markerUtils';
 import { computeFreshness } from '@/lib/fieldCheckFreshness';
+import { classifyLocationQuality } from '@/lib/locationQuality';
 import {
   Loader2,
   FileDown,
@@ -20,6 +22,7 @@ import {
   Camera,
   Key,
   Crosshair,
+  AlertTriangle,
   SprayCan,
   Maximize2,
   ChevronLeft,
@@ -49,6 +52,9 @@ import FieldTallyWidget from '@/components/ooh/map/FieldTallyWidget';
 import { useMapStyle } from '@/lib/mapStyleContext';
 import RadioStationCard from '@/components/ooh/map/RadioStationCard';
 import { RADIO_STATIONS } from '@/components/ooh/radio/radioStations';
+import { deriveFieldAttention } from '@/lib/geospatialIntelligence';
+import { addToFieldMission } from '@/lib/fieldMission';
+import { attentionMatchesFilter, MAP_ATTENTION_FILTERS } from '@/lib/mapAttention';
 
 const TOUR = [
   {
@@ -128,6 +134,14 @@ export default function Map() {
   const [typeFilter, setTypeFilter] = useState('all');
   const [query, setQuery] = useState('');
   const [selectedId, setSelectedId] = useState(null);
+  const missionIds = useMemo(() => {
+    const rawMission = new URLSearchParams(window.location.search).get('mission');
+    return new Set(
+      decodeURIComponent(rawMission || '')
+        .split(',')
+        .filter(Boolean),
+    );
+  }, []);
   const [hoverId, setHoverId] = useState(null);
   const [view, setView] = usePersistentState('ooh-map-view', 'globe');
   const [bounds, setBounds] = useState(null);
@@ -138,6 +152,12 @@ export default function Map() {
   const [flyTo, setFlyTo] = useState(null);
   const [activeLayers, setActiveLayers] = usePersistentState('ooh-map-layers-v2', DEFAULT_LAYERS);
   const [layerFilter, setLayerFilter] = useState('all');
+  const [attentionMode, setAttentionMode] = usePersistentState('ooh-map-attention-mode', false);
+  const [attentionFilter, setAttentionFilter] = useState(
+    /** @type {string} */ (MAP_ATTENTION_FILTERS.ALL),
+  );
+  const [missionNotice, setMissionNotice] = useState('');
+  const [missionLinkReady, setMissionLinkReady] = useState(false);
   const { style: mapStyle } = useMapStyle();
   const { spots: mushrooms, loading: mushLoading } = useMushroomData();
   const { spots: floraSpots, loading: floraLoading } = useFloraData();
@@ -238,6 +258,11 @@ export default function Map() {
   }, []);
 
   const reloadLocations = useCallback(async () => {
+    setRaw((current) => ({
+      markers: current?.markers || [],
+      live: false,
+      locationState: 'loading',
+    }));
     try {
       // One global query, no status filter -- RLS already limits what
       // comes back to all verified checks plus the caller's own
@@ -275,10 +300,19 @@ export default function Map() {
           ...toMarker(r),
           livingRecord: livingRecordIds.has(String(r.id)),
           freshness: computeFreshness(r, checksByLocation[String(r.id)] || []),
+          intelligence: classifyLocationQuality(r),
+          attention: deriveFieldAttention({
+            location: r,
+            fieldChecks: checksByLocation[String(r.id)] || [],
+          }),
         }));
-      setRaw(markers.length ? { markers, live: true } : { markers: seedMarkers, live: false });
+      setRaw(
+        markers.length
+          ? { markers, live: true, locationState: 'ready' }
+          : { markers: seedMarkers, live: false, locationState: 'empty' },
+      );
     } catch (e) {
-      setRaw({ markers: seedMarkers, live: false });
+      setRaw({ markers: seedMarkers, live: false, locationState: 'unavailable' });
     }
   }, []);
 
@@ -287,6 +321,11 @@ export default function Map() {
     if (requestedViewportRef.current === viewportKey) return;
     requestedViewportRef.current = viewportKey;
     const requestId = ++viewportRequestRef.current;
+    setRaw((current) => ({
+      markers: current?.markers || [],
+      live: false,
+      locationState: 'loading',
+    }));
     try {
       const recs = await /** @type {any} */ (base44).listViewportLocations(viewport);
       const ids = (recs || []).map((r) => String(r.id)).filter(Boolean);
@@ -314,10 +353,16 @@ export default function Map() {
           ...toMarker(r),
           livingRecord: livingRecordIds.has(String(r.id)),
           freshness: computeFreshness(r, checksByLocation[String(r.id)] || []),
+          intelligence: classifyLocationQuality(r),
+          attention: deriveFieldAttention({
+            location: r,
+            fieldChecks: checksByLocation[String(r.id)] || [],
+          }),
         }));
-      setRaw({ markers, live: true });
+      setRaw({ markers, live: true, locationState: markers.length ? 'ready' : 'empty' });
     } catch {
-      if (requestId === viewportRequestRef.current) setRaw({ markers: [], live: false });
+      if (requestId === viewportRequestRef.current)
+        setRaw({ markers: [], live: false, locationState: 'unavailable' });
     }
   }, []);
 
@@ -344,38 +389,45 @@ export default function Map() {
   }, []);
 
   useEffect(() => {
-    let cancelled = false;
     if (view === 'globe') reloadLocations().then(() => {});
     else {
       viewportRequestRef.current += 1;
-      setRaw({ markers: [], live: false });
+      setRaw({ markers: [], live: false, locationState: 'loading' });
     }
-
-    const unsub = base44.entities.Location.subscribe((event) => {
-      setRaw((cur) => {
-        if (!cur || !cur.live) return cur;
-        let markers = cur.markers;
-        const m = toMarker(event.data);
-        if (event.type === 'create')
-          markers = [
-            { ...m, livingRecord: false, freshness: null },
-            ...markers.filter((x) => x.id !== m.id),
-          ];
-        else if (event.type === 'update') {
-          if (m.status === 'rejected') markers = markers.filter((x) => x.id !== m.id);
-          else
-            markers = markers.map((x) =>
-              x.id === m.id ? { ...m, livingRecord: x.livingRecord, freshness: x.freshness } : x,
-            );
-        } else if (event.type === 'delete') markers = markers.filter((x) => x.id !== m.id);
-        return { ...cur, markers };
-      });
-    });
-    return () => {
-      cancelled = true;
-      if (unsub) unsub();
-    };
   }, [reloadLocations, view]);
+
+  useAuthGatedSubscribe('Location', (event) => {
+    setRaw((cur) => {
+      if (!cur || !cur.live) return cur;
+      let markers = cur.markers;
+      const m = toMarker(event.data);
+      if (event.type === 'create')
+        markers = [
+          {
+            ...m,
+            livingRecord: false,
+            freshness: null,
+            attention: deriveFieldAttention({ location: event.data }),
+          },
+          ...markers.filter((x) => x.id !== m.id),
+        ];
+      else if (event.type === 'update') {
+        if (m.status === 'rejected') markers = markers.filter((x) => x.id !== m.id);
+        else
+          markers = markers.map((x) =>
+            x.id === m.id
+              ? {
+                  ...m,
+                  livingRecord: x.livingRecord,
+                  freshness: x.freshness,
+                  attention: deriveFieldAttention({ location: event.data }),
+                }
+              : x,
+          );
+      } else if (event.type === 'delete') markers = markers.filter((x) => x.id !== m.id);
+      return { ...cur, markers };
+    });
+  });
 
   // Contribution deep-link: /map?highlight=<locationId>, used by the report
   // wizard's and AR's "View on map" links so a user's own new submission is
@@ -401,6 +453,13 @@ export default function Map() {
   }, [raw, handleExpandPin]);
 
   useEffect(() => {
+    if (!missionIds.size || !raw?.markers?.length || selectedId) return;
+    const first = raw.markers.find((marker) => missionIds.has(String(marker.id)));
+    if (first) setSelectedId(first.id);
+  }, [missionIds, raw, selectedId]);
+
+  useEffect(() => {
+    if (missionIds.size) return;
     if (!navigator.geolocation) return;
     let cancelled = false;
     navigator.geolocation.getCurrentPosition(
@@ -413,29 +472,26 @@ export default function Map() {
     return () => {
       cancelled = true;
     };
+  }, [missionIds]);
+
+  const loadClaims = useCallback(async () => {
+    try {
+      const recs = await base44.entities.LeadClaim.list('-created_date', 500, 0, [
+        'location_id',
+        'status',
+        'created_date',
+      ]);
+      setClaims(recs || []);
+    } catch {
+      setClaims([]);
+    }
   }, []);
 
   useEffect(() => {
-    let cancelled = false;
-    const loadClaims = async () => {
-      try {
-        const recs = await base44.entities.LeadClaim.list('-created_date', 500, 0, [
-          'location_id',
-          'status',
-          'created_date',
-        ]);
-        if (!cancelled) setClaims(recs || []);
-      } catch {
-        if (!cancelled) setClaims([]);
-      }
-    };
     loadClaims();
-    const unsub = base44.entities.LeadClaim.subscribe(() => loadClaims());
-    return () => {
-      cancelled = true;
-      if (unsub) unsub();
-    };
-  }, []);
+  }, [loadClaims]);
+
+  useAuthGatedSubscribe('LeadClaim', () => loadClaims());
 
   const claimsByLoc = useMemo(() => {
     const map = {};
@@ -465,14 +521,18 @@ export default function Map() {
           (!q ||
             `${m.title} ${m.address} ${m.brand_name || ''} ${m.parent_corp || ''}`
               .toLowerCase()
-              .includes(q)),
+              .includes(q)) &&
+          (!attentionMode || attentionMatchesFilter(m.attention, attentionFilter)),
       )
       .sort((a, b) => {
+        const aMission = missionIds.has(String(a.id)) ? 1 : 0;
+        const bMission = missionIds.has(String(b.id)) ? 1 : 0;
+        if (aMission !== bMission) return bMission - aMission;
         const aPhoto = a.status === 'verified' && !!a.image ? 2 : a.image ? 1 : 0;
         const bPhoto = b.status === 'verified' && !!b.image ? 2 : b.image ? 1 : 0;
         return bPhoto - aPhoto;
       });
-  }, [raw, typeFilter, query, mineOnly, user]);
+  }, [raw, typeFilter, query, mineOnly, user, missionIds, attentionMode, attentionFilter]);
 
   // Street layers are overlapping views of the Location entity.
   // "ads" is the superset (all markers); "adbusting" and "graffiti" are
@@ -516,8 +576,14 @@ export default function Map() {
       return { primaryLayer: ext || null, layerFiltered: heatOnly ? filtered : [] };
     }
 
-    return { primaryLayer: streetLayer, layerFiltered: lf };
-  }, [activeLayers, filtered]);
+    return {
+      primaryLayer: streetLayer,
+      layerFiltered: lf.map((m) => ({
+        ...m,
+        fieldMission: missionIds.has(String(m.id)),
+      })),
+    };
+  }, [activeLayers, filtered, missionIds]);
 
   // Results feed follows the map viewport (flat view): only spots inside the
   // visible bounds, nearest-to-centre first — the "search this area" pattern.
@@ -632,6 +698,21 @@ export default function Map() {
   const leads = adsInView.filter((m) => !m.image && m.status !== 'verified').length;
   const isStreet =
     primaryLayer === 'ads' || primaryLayer === 'adbusting' || primaryLayer === 'graffiti';
+  const selectedAttention = layerFiltered.find((m) => String(m.id) === String(selectedId));
+  const addSelectedToMission = () => {
+    const result = addToFieldMission(selectedAttention);
+    setMissionLinkReady(result.ok);
+    setMissionNotice(
+      result.ok
+        ? result.added
+          ? 'Added to field route'
+          : 'Already in field route'
+        : result.reason === 'MISSION_CAP'
+          ? 'Route full (20 max)'
+          : 'Route unavailable',
+    );
+    window.setTimeout(() => setMissionNotice(''), 2200);
+  };
 
   // Mobile: map always visible, cards always hidden (bottom sheet replaces).
   // Desktop: mode controls split/list/map as before.
@@ -647,6 +728,44 @@ export default function Map() {
       : `hidden lg:flex ${cardsWidth} min-h-0 flex-col overflow-hidden transition-all duration-300 ease-in-out border-r ${resultsCollapsed ? 'border-transparent' : 'border-slate2/60'}`;
   const mapClass = mode === 'list' ? 'flex-1 lg:hidden' : 'flex-1';
 
+  const compactMapBar = (className) => (
+    <div className={className}>
+      <div className="min-w-0 flex-1">
+        <MapSearch
+          query={query}
+          setQuery={setQuery}
+          onFlyTo={(f) => setFlyTo({ ...f, nonce: Date.now() })}
+          onReset={() => {
+            setQuery('');
+            setTypeFilter('all');
+            setLayerFilter('all');
+          }}
+        />
+      </div>
+      {user && (
+        <button
+          onClick={() => toggleLayer('mine')}
+          aria-label="My Discoveries"
+          aria-pressed={mineOnly}
+          className={`flex h-8 w-8 shrink-0 items-center justify-center border transition-colors ${
+            mineOnly
+              ? 'border-ozone bg-ozone text-void'
+              : 'border-slate2/60 text-dim hover:border-ozone hover:text-ozone'
+          }`}
+        >
+          <Fingerprint className="h-3.5 w-3.5" />
+        </button>
+      )}
+      <button
+        onClick={() => setFullscreen(true)}
+        aria-label="Fullscreen map"
+        className="flex h-8 w-8 shrink-0 items-center justify-center border border-ozone/60 text-ozone transition-colors hover:bg-ozone hover:text-void"
+      >
+        <Maximize2 className="h-3.5 w-3.5" />
+      </button>
+    </div>
+  );
+
   // Shared results list — rendered in the desktop cards panel and the mobile
   // bottom sheet so both stay in sync from the same state.
   const renderResultsContent = () => (
@@ -659,6 +778,33 @@ export default function Map() {
         ) : layerLoading ? (
           <div className="p-6 text-center font-mono text-[10px] uppercase tracking-[0.25em] text-dim">
             // Loading {primaryLayer} data…
+          </div>
+        ) : isStreet && raw?.locationState === 'loading' ? (
+          <div
+            role="status"
+            className="p-6 text-center font-mono text-[10px] uppercase tracking-[0.25em] text-dim"
+          >
+            // Reading evidence for this view…
+          </div>
+        ) : isStreet && raw?.locationState === 'unavailable' ? (
+          <div role="alert" className="p-6 text-center">
+            <div className="font-mono text-[10px] uppercase tracking-[0.25em] text-flare">
+              // View evidence UNKNOWN
+            </div>
+            <p className="mt-1 font-mono text-[9px] uppercase tracking-[0.16em] text-dim/70">
+              The atlas could not read this geographic window. No absence is being claimed.
+            </p>
+            <button
+              type="button"
+              onClick={() => {
+                requestedViewportRef.current = '';
+                if (view === 'globe') reloadLocations();
+                else if (bounds) loadViewportLocations(bounds);
+              }}
+              className="mt-3 inline-flex items-center border border-ozone px-3 py-1.5 font-mono text-[9px] font-bold uppercase tracking-[0.2em] text-ozone transition-colors hover:bg-ozone hover:text-void"
+            >
+              Retry view
+            </button>
           </div>
         ) : layerResults.length ? (
           isStreet ? (
@@ -724,7 +870,7 @@ export default function Map() {
 
   return (
     <div
-      className={`fixed inset-0 flex flex-col overflow-hidden bg-void ${fullscreen ? 'pt-0 pb-0' : 'pt-[calc(7rem_+_env(safe-area-inset-top))] md:pt-[calc(8rem_+_env(safe-area-inset-top))] pb-[calc(76px_+_env(safe-area-inset-bottom))] lg:pb-0'}`}
+      className={`fixed inset-0 flex flex-col overflow-hidden bg-void ${fullscreen ? 'pt-0 pb-0' : 'pt-[calc(7rem_+_env(safe-area-inset-top))] md:pt-[calc(8rem_+_env(safe-area-inset-top))] landscape:md:pt-[calc(7rem_+_env(safe-area-inset-top))] pb-[calc(76px_+_env(safe-area-inset-bottom))] lg:pb-0'}`}
     >
       {!fullscreen && <Nav />}
       {!fullscreen && (
@@ -755,49 +901,13 @@ export default function Map() {
         </div>
       )}
 
-      {/* Mobile compact bar — search + fullscreen toggle */}
-      {!fullscreen && (
-        <div className="flex items-center gap-1.5 border-b border-slate2/60 bg-void/95 px-2 py-1.5 backdrop-blur-md lg:hidden">
-          <div className="min-w-0 flex-1">
-            <MapSearch
-              query={query}
-              setQuery={setQuery}
-              onFlyTo={(f) => setFlyTo({ ...f, nonce: Date.now() })}
-              onReset={() => {
-                setQuery('');
-                setTypeFilter('all');
-                setLayerFilter('all');
-              }}
-            />
-          </div>
-          {/* The desktop layer toggle bar above is lg:hidden on mobile
-              (true for every layer, not something this feature changes) --
-              this is a dedicated mobile-reachable control for just this
-              one new layer rather than reworking mobile chrome for all of
-              them. */}
-          {user && (
-            <button
-              onClick={() => toggleLayer('mine')}
-              aria-label="My Discoveries"
-              aria-pressed={mineOnly}
-              className={`flex h-8 w-8 shrink-0 items-center justify-center border transition-colors ${
-                mineOnly
-                  ? 'border-ozone bg-ozone text-void'
-                  : 'border-slate2/60 text-dim hover:border-ozone hover:text-ozone'
-              }`}
-            >
-              <Fingerprint className="h-3.5 w-3.5" />
-            </button>
-          )}
-          <button
-            onClick={() => setFullscreen(true)}
-            aria-label="Fullscreen map"
-            className="flex h-8 w-8 shrink-0 items-center justify-center border border-ozone/60 text-ozone transition-colors hover:bg-ozone hover:text-void"
-          >
-            <Maximize2 className="h-3.5 w-3.5" />
-          </button>
-        </div>
-      )}
+      {/* On short landscape screens this bar becomes an overlay inside the
+          map. Keeping it in the shell's flex flow used 55px of the already
+          short map canvas. Portrait keeps the original in-flow layout. */}
+      {!fullscreen &&
+        compactMapBar(
+          'flex items-center gap-1.5 border-b border-slate2/60 bg-void/95 px-2 py-1.5 backdrop-blur-md lg:hidden landscape:hidden',
+        )}
 
       {!raw ? (
         <div className="flex flex-1 items-center justify-center">
@@ -867,6 +977,10 @@ export default function Map() {
           </div>
 
           <div data-tour="map" className={`relative min-h-0 isolate ${mapClass}`}>
+            {!fullscreen &&
+              compactMapBar(
+                'hidden items-center gap-1.5 border-b border-slate2/60 bg-void/95 px-2 py-1.5 backdrop-blur-md [@media(orientation:landscape)_and_(max-width:1023px)]:flex absolute inset-x-0 top-0 z-[900]',
+              )}
             {/* Expand tabs — terminal edge tabs for collapsed panels */}
             {mode === 'split' && (searchCollapsed || resultsCollapsed) && (
               <div className="absolute left-0 top-1/2 z-[1001] flex -translate-y-1/2 flex-col gap-1">
@@ -892,7 +1006,7 @@ export default function Map() {
                 )}
               </div>
             )}
-            <div className="absolute left-3 top-3 z-[1000] flex border border-slate2 bg-void/80 backdrop-blur-md">
+            <div className="absolute left-3 top-3 z-[1000] flex border border-slate2 bg-void/80 backdrop-blur-md landscape:top-16">
               <button
                 onClick={() => setView('flat')}
                 aria-label="Flat map"
@@ -908,6 +1022,92 @@ export default function Map() {
                 <Globe className="h-3.5 w-3.5" /> <span className="hidden sm:inline">Globe</span>
               </button>
             </div>
+            <div className="absolute left-3 top-14 z-[1000] max-w-[calc(100vw-1.5rem)] landscape:top-28">
+              <button
+                type="button"
+                data-testid="field-attention-toggle"
+                aria-label="Field attention"
+                aria-pressed={attentionMode}
+                onClick={() => setAttentionMode(!attentionMode)}
+                className={`flex min-h-9 items-center gap-1.5 border px-2.5 py-2 font-mono text-[10px] font-bold uppercase tracking-[0.18em] backdrop-blur-md transition-colors ${attentionMode ? 'border-flare bg-flare text-void' : 'border-slate2 bg-void/80 text-darkgray hover:border-flare hover:text-flare'}`}
+              >
+                <AlertTriangle className="h-3.5 w-3.5" /> Field attention
+              </button>
+              {attentionMode && (
+                <div
+                  data-testid="attention-filters"
+                  className="mt-1 flex max-w-full gap-1 overflow-x-auto border border-slate2 bg-void/90 p-1 backdrop-blur-md"
+                >
+                  {Object.values(MAP_ATTENTION_FILTERS).map((filter) => (
+                    <button
+                      key={filter}
+                      type="button"
+                      aria-pressed={attentionFilter === filter}
+                      onClick={() => setAttentionFilter(filter)}
+                      className={`min-h-8 shrink-0 px-2 font-mono text-[9px] font-bold uppercase tracking-[0.12em] ${attentionFilter === filter ? 'bg-ozone text-void' : 'text-darkgray hover:text-ozone'}`}
+                    >
+                      {filter}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+            {attentionMode && selectedAttention?.attention && (
+              <div
+                data-testid="map-attention-card"
+                className="absolute bottom-[68px] left-2 right-2 z-[1000] max-w-md border border-flare/70 bg-void/95 p-3 shadow-xl backdrop-blur-md sm:left-auto sm:right-3"
+              >
+                <div className="flex items-center gap-2 font-mono text-[10px] font-bold uppercase tracking-[0.2em] text-flare">
+                  <AlertTriangle className="h-3 w-3" /> {selectedAttention.attention.priority}{' '}
+                  attention
+                </div>
+                <ul className="mt-2 space-y-1 font-mono text-[10px] uppercase tracking-[0.08em] text-darkgray">
+                  {selectedAttention.attention.reasons.map((reason) => (
+                    <li key={reason}>• {reason}</li>
+                  ))}
+                </ul>
+                <div className="mt-2 font-mono text-[10px] font-bold uppercase tracking-[0.12em] text-ozone">
+                  Next: {selectedAttention.attention.action}
+                </div>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  <Link
+                    to={`/location/${selectedAttention.id}`}
+                    className="border border-ozone px-2 py-1.5 font-mono text-[9px] font-bold uppercase tracking-[0.12em] text-ozone"
+                  >
+                    View location
+                  </Link>
+                  <Link
+                    to={`/location/${selectedAttention.id}?action=recheck&from=map-attention`}
+                    className="border border-flare px-2 py-1.5 font-mono text-[9px] font-bold uppercase tracking-[0.12em] text-flare"
+                  >
+                    Recheck
+                  </Link>
+                  <button
+                    type="button"
+                    onClick={addSelectedToMission}
+                    className="border border-slate2 px-2 py-1.5 font-mono text-[9px] font-bold uppercase tracking-[0.12em] text-darkgray hover:border-ozone hover:text-ozone"
+                  >
+                    Add to route
+                  </button>
+                </div>
+                {missionNotice && (
+                  <div
+                    role="status"
+                    className="mt-2 font-mono text-[9px] uppercase tracking-[0.12em] text-ozone"
+                  >
+                    {missionNotice}
+                    {missionLinkReady && (
+                      <Link
+                        to="/field-route"
+                        className="ml-2 text-silver underline decoration-ozone underline-offset-2"
+                      >
+                        Open route
+                      </Link>
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
             {view === 'globe' ? (
               <Globe3D
                 key={mapStyle.id}
@@ -917,6 +1117,7 @@ export default function Map() {
                 onSelect={setSelectedId}
                 userLoc={userLoc}
                 activeLayers={activeLayers}
+                attentionMode={attentionMode}
                 flyTo={flyTo}
                 onError={() => setView('flat')}
                 onCounts={(c) => setGlobeClusters(c.clusters)}
@@ -942,7 +1143,16 @@ export default function Map() {
               clusters={view === 'globe' ? globeClusters : 0}
               className={view === 'flat' ? 'bottom-[60px]' : 'bottom-3'}
             />
-            <div className="pointer-events-none absolute left-3 right-3 top-12 z-[900] md:top-14">
+            {/* top-24 clears the Field attention toggle immediately to its
+                left (absolute, top-14 + min-h-9 => bottom edge ~92px) at
+                every breakpoint -- top-12/md:top-14 used to sit directly
+                underneath it, so the full-width ticker text visibly
+                collided with the toggle's own label on mobile. Drops further
+                (top-36) while the attention filter row is expanded, since
+                that adds another ~36px below the toggle. */}
+            <div
+              className={`pointer-events-none absolute left-3 right-3 z-[900] ${attentionMode ? 'top-36 landscape:top-48' : 'top-24 landscape:top-40'}`}
+            >
               <MapAlertTicker />
             </div>
             {view === 'flat' && (
@@ -950,7 +1160,7 @@ export default function Map() {
                 <SpecsBar counts={counts} total={raw?.markers?.length || 0} />
               </div>
             )}
-            <div className="absolute right-3 top-3 z-[1000] flex items-center gap-1.5">
+            <div className="absolute right-3 top-3 z-[1000] flex items-center gap-1.5 landscape:top-16">
               <div className="hidden md:flex items-center gap-1.5">
                 <MapStyleSwitcher />
                 <button

@@ -46,9 +46,40 @@ const DETECTION_SCHEMA = {
         'sticker',
         'mural',
         'projection',
+        'skatepark',
+        'basketball_court',
+        'multi_use_court',
         'other',
       ],
-      description: 'Type of OOH surface',
+      description:
+        'Type of OOH surface, or public recreation facility type if the image shows a skatepark/basketball court/multi-use court rather than an ad surface',
+    },
+    facility_setting: {
+      type: 'string',
+      enum: ['unknown', 'outdoor', 'indoor', 'covered'],
+      description:
+        'Only relevant when surface_type is a facility type (skatepark/basketball_court/multi_use_court). Unknown unless directly visible in the photo.',
+    },
+    facility_public_access: {
+      type: 'string',
+      enum: ['unknown', 'free', 'low_cost', 'restricted'],
+      description:
+        'Only relevant when surface_type is a facility type. Never guess "free" just because a facility looks public — default unknown unless signage states an access rule.',
+    },
+    possible_relationship_type: {
+      type: 'string',
+      enum: [
+        'unknown',
+        'sponsor',
+        'funder',
+        'operator',
+        'owner',
+        'delivery_partner',
+        'naming_rights',
+        'community_partner',
+      ],
+      description:
+        "A brand's relationship to a facility, ONLY when facility metadata is relevant. A visible logo on a ramp/court surface alone is NEVER sufficient to claim anything other than 'unknown' — a narrower value requires literal plaque/naming-rights/announcement text visible in the image saying what the relationship is (e.g. a sign reading 'Community Court built by X'). If in doubt, use 'unknown'.",
     },
     industry_sector: {
       type: 'string',
@@ -83,7 +114,7 @@ const DETECTION_SCHEMA = {
 
 const PROMPT = `You are an advertising detection system for OOH Earth — a public-space art, mapping, and adbusting platform.
 
-Analyze the provided image and detect any outdoor advertising, logos, branding, or promotional content visible.
+Analyze the provided image and detect any outdoor advertising, logos, branding, or promotional content visible — this also covers public recreation facilities (skateparks, basketball courts, multi-use courts) where a brand logo, sponsor plaque, or naming-rights signage may be visible.
 
 Extract:
 - Whether advertising is present (is_advertising)
@@ -92,7 +123,9 @@ Extract:
 - Creative agency (if identifiable)
 - Parent corporation / holding company
 - OOH structure operator (if visible on the physical unit, e.g. JCDecaux label)
-- Surface type (billboard, digital screen, transit, painted, sticker, mural, projection, other)
+- Surface type (billboard, digital screen, transit, painted, sticker, mural, projection, skatepark, basketball_court, multi_use_court, other)
+- If surface_type is a facility type: facility_setting (indoor/outdoor/covered/unknown) and facility_public_access (free/low_cost/restricted/unknown) — leave unknown unless directly stated by visible signage
+- If a brand/logo is visible on a facility: possible_relationship_type — this MUST stay 'unknown' unless the image itself shows literal text (a plaque, naming-rights sign, project board) stating the relationship. A logo on a ramp or backboard alone proves only that the logo is visible, never a sponsorship/funding/ownership claim.
 - Industry sector (fossil_fuel, tobacco, alcohol, gambling, ultra_processed_food, surveillance, finance, real_estate, fashion, automotive, pharma, other)
 - Harm tags (greenwashing, child_targeting, body_image, predatory_lending, etc.)
 - Brief description of the ad creative

@@ -2,6 +2,8 @@
 import { createClient } from '@base44/sdk';
 import { appParams } from '@/lib/app-params';
 import { buildViewportLocationQueries } from '@/lib/mapViewportQueries';
+import { withRetry } from '@/lib/withRetry';
+import { createDedupeInFlight } from '@/lib/dedupeInFlight';
 
 const { appId, token, functionsVersion, appBaseUrl } = appParams;
 
@@ -20,18 +22,47 @@ export const base44 = createClient({
 // once the dataset grows past a page (the fieldStats function paginates for
 // the same reason). Attached to the client so existing `base44` importers can
 // call it without adding an import.
-base44.listAllLocations = async (sort = '-created_date', pageSize = 500, hardCap = 5000) => {
-  const out = [];
-  let skip = 0;
-  while (out.length < hardCap) {
-    const page = await base44.entities.Location.list(sort, pageSize, skip);
-    if (!page || page.length === 0) break;
-    out.push(...page);
-    if (page.length < pageSize) break;
-    skip += pageSize;
-  }
-  return out;
-};
+//
+// ~15+ independent components each call listAllLocations() on the same page
+// load (Home alone mounts CarbonCounter, CityPulse, Leaderboard,
+// OperativeNetwork, OffenderRegistry, GamificationWidget, useLocations, and
+// more, all uncoordinated), producing 8-16+ concurrent identical requests
+// every time Home renders. Two fixes address this together:
+//
+// 1. In-flight de-duplication: concurrent calls with the same (sort,
+//    pageSize, hardCap) share one underlying fetch instead of each starting
+//    their own. This is the fix for the *fan-out itself* -- it cuts ~15
+//    redundant requests down to 1 per page load, for every caller, with no
+//    change to any of their call sites.
+// 2. A single bounded, selective retry (src/lib/withRetry.js) on each page
+//    fetch. This exists because, on a slow connection, the burst of
+//    concurrent requests racing against the app's auth/session bootstrap has
+//    been directly observed to produce a spurious 401 on the very first
+//    Location page fetched, even though a byte-identical request moments
+//    later succeeds -- a session-readiness race, not a real authorization
+//    failure. withRetry only retries statuses that plausibly mean "try
+//    again" (401 here specifically because of this diagnosed race, plus
+//    408/429/502/503/504, and true network errors) -- never a deterministic
+//    4xx like 400/403/404/422.
+//
+// Every listAllLocations() caller already treats any thrown error as "no
+// data" (silent empty/seed fallback, no retry, no visible error of its own),
+// so both fixes living here, upstream, cover all ~16 call sites at once.
+const dedupeLocationFetch = createDedupeInFlight();
+
+base44.listAllLocations = (sort = '-created_date', pageSize = 500, hardCap = 5000) =>
+  dedupeLocationFetch(`${sort}:${pageSize}:${hardCap}`, async () => {
+    const out = [];
+    let skip = 0;
+    while (out.length < hardCap) {
+      const page = await withRetry(() => base44.entities.Location.list(sort, pageSize, skip));
+      if (!page || page.length === 0) break;
+      out.push(...page);
+      if (page.length < pageSize) break;
+      skip += pageSize;
+    }
+    return out;
+  });
 
 // Query only the visible geographic window for the flat map. This remains a
 // server-side filter; it is not a client-side slice of listAllLocations().

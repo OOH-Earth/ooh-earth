@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useEffect, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import {
   FileText,
@@ -44,7 +44,7 @@ function StatCard({ label, value, Icon, color }) {
     <div className="border border-slate2/60 bg-card p-3 text-center">
       <Icon className={`mx-auto h-4 w-4 ${color}`} />
       <div className="mt-1.5 font-mono text-xl font-bold tabular text-silver">{value}</div>
-      <div className="font-mono text-[8px] uppercase tracking-[0.2em] text-dim">{label}</div>
+      <div className="font-mono text-[0.625rem] uppercase tracking-[0.2em] text-dim">{label}</div>
     </div>
   );
 }
@@ -59,9 +59,17 @@ export default function OperativeProfile() {
     allBadges,
     questStatus,
     claimQuest,
+    claimNotice,
     claiming,
     loading,
   } = useGamification();
+
+  // Deep link from the Home widget ("missions ready to claim").
+  useEffect(() => {
+    if (!loading && window.location.hash === '#missions') {
+      document.getElementById('missions')?.scrollIntoView({ block: 'start' });
+    }
+  }, [loading]);
 
   const newBadges = useNewBadgeRecognition(user, earnedBadges, loading);
 
@@ -132,7 +140,7 @@ export default function OperativeProfile() {
         {loading ? (
           <div className="flex items-center gap-3 font-mono text-[10px] uppercase tracking-[0.3em] text-dim">
             <span className="h-1.5 w-1.5 animate-flicker rounded-full bg-ozone" /> Compiling
-            operative dossier…
+            progress…
           </div>
         ) : !user ? (
           <div className="border border-slate2/60 bg-card p-12 text-center">
@@ -140,8 +148,8 @@ export default function OperativeProfile() {
             <h1 className="mt-4 font-display text-2xl font-black uppercase text-silver">
               Authentication Required
             </h1>
-            <p className="mt-2 font-display text-sm text-darkgray">
-              Log in to view your operative profile, badges, and quest progress.
+            <p className="mt-2 font-display text-[0.875rem] text-darkgray">
+              Log in to view your progress, badges, and missions.
             </p>
             <div className="mt-6 flex justify-center gap-2">
               <Link
@@ -163,12 +171,12 @@ export default function OperativeProfile() {
             {/* Header */}
             <div className="flex flex-col gap-1">
               <span className="font-mono text-[10px] uppercase tracking-[0.3em] text-ozone">
-                // Operative Profile
+                // Progress
               </span>
               <h1 className="font-display text-4xl font-black uppercase tracking-tight2 text-silver md:text-6xl">
                 {user.full_name || user.email?.split('@')[0] || 'Anonymous'}
               </h1>
-              <p className="mt-1 font-mono text-[10px] uppercase tracking-[0.2em] text-dim">
+              <p className="mt-1 font-mono text-[0.6875rem] uppercase tracking-[0.2em] text-dim">
                 {user.email} · Rank #{level?.level} {level?.title}
               </p>
             </div>
@@ -188,7 +196,7 @@ export default function OperativeProfile() {
                   <div className="font-mono text-2xl font-bold tabular text-flare">
                     {stats?.streak || 0}
                   </div>
-                  <div className="font-mono text-[8px] uppercase tracking-[0.2em] text-dim">
+                  <div className="font-mono text-[0.6875rem] uppercase tracking-[0.2em] text-dim">
                     Day streak
                   </div>
                 </div>
@@ -226,15 +234,20 @@ export default function OperativeProfile() {
               <BrandCollection brandCounts={stats?.brandCounts || []} />
             </section>
 
-            {/* Quests */}
-            <section className="mt-12">
+            {/* Missions (the Quest engine, presented as real-world missions) */}
+            <section id="missions" className="mt-12 scroll-mt-24">
               <div className="mb-4 flex items-center gap-2">
                 <Target className="h-4 w-4 text-ozone" />
                 <h2 className="font-display text-2xl font-black uppercase tracking-tight text-silver">
-                  Quest Board
+                  Mission Board
                 </h2>
               </div>
-              <QuestTracker quests={questStatus} onClaim={claimQuest} claiming={claiming} />
+              <QuestTracker
+                quests={questStatus}
+                onClaim={claimQuest}
+                claiming={claiming}
+                claimNotice={claimNotice}
+              />
             </section>
 
             {/* Badges */}
@@ -258,7 +271,7 @@ export default function OperativeProfile() {
               </div>
               <div className="grid gap-3 sm:grid-cols-3">
                 <div className="border border-slate2/60 bg-card p-4">
-                  <div className="font-mono text-[8px] uppercase tracking-[0.2em] text-dim">
+                  <div className="font-mono text-[0.6875rem] uppercase tracking-[0.2em] text-dim">
                     Field contributions
                   </div>
                   <div className="mt-1 font-mono text-xl font-bold tabular text-silver">
@@ -266,8 +279,8 @@ export default function OperativeProfile() {
                   </div>
                 </div>
                 <div className="border border-slate2/60 bg-card p-4">
-                  <div className="font-mono text-[8px] uppercase tracking-[0.2em] text-dim">
-                    Quest bonuses
+                  <div className="font-mono text-[0.6875rem] uppercase tracking-[0.2em] text-dim">
+                    Mission bonuses
                   </div>
                   <div className="mt-1 font-mono text-xl font-bold tabular text-ozone">
                     {stats?.questXp.toLocaleString()}

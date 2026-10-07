@@ -1,7 +1,8 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { Loader2, CreditCard } from 'lucide-react';
 import PaymentBadges from '@/components/ooh/campaign/PaymentBadges';
+import { trackEvent } from '@/lib/trackEvent';
 
 const TIERS = [25, 50, 100, 250];
 
@@ -11,6 +12,10 @@ export default function StripeDonate() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const inIframe = typeof window !== 'undefined' && window.self !== window.top;
+
+  useEffect(() => {
+    trackEvent('offer_viewed', { offer: 'donation' });
+  }, []);
 
   const donate = async () => {
     const val = custom ? Number(custom) : amount;
@@ -22,8 +27,13 @@ export default function StripeDonate() {
     setError('');
     try {
       const res = await base44.functions.invoke('createDonationCheckout', { amount: val });
-      if (res.data?.url) window.location.href = res.data.url;
-      else setError(res.data?.error || 'Checkout failed.');
+      if (res.data?.url) {
+        // checkout_started marks a real Stripe Checkout Session being handed
+        // off to -- not the click alone, so a validation-rejected click never
+        // gets counted as a started checkout.
+        trackEvent('checkout_started', { offer: 'donation', amount: val });
+        window.location.href = res.data.url;
+      } else setError(res.data?.error || 'Checkout failed.');
     } catch (e) {
       setError(e?.message || 'Checkout failed.');
     } finally {

@@ -1,6 +1,7 @@
+// @ts-nocheck -- upload progress state is runtime-shaped per photo.
 import { useEffect, useState } from 'react';
 import { submitCapture } from '@/lib/offlineQueue';
-import { uploadLocationPhotos } from '@/components/ooh/gallery/MultiPhotoUpload';
+import { PhotoSyncStatus, uploadLocationPhotos } from '@/components/ooh/gallery/MultiPhotoUpload';
 import { Link } from 'react-router-dom';
 import {
   MapPin,
@@ -53,6 +54,8 @@ const EMPTY = {
   adbust_image_url: '',
   action_flags: [],
   extraPhotos: [],
+  setting: 'unknown',
+  public_access: 'unknown',
   // Client-side only -- never sent to Location.create (no matching schema
   // field). Preserved here just long enough to render in the post-submit
   // Discovery panel; never persisted, never fabricated if the scan didn't
@@ -74,6 +77,7 @@ export default function FieldReport() {
   // below once `stats`/`earnedBadges` re-render with post-submission data.
   const [pending, setPending] = useState(null);
   const [discovery, setDiscovery] = useState(null);
+  const [photoSync, setPhotoSync] = useState(null);
 
   const onChange = (patch) => setData((d) => ({ ...d, ...patch }));
 
@@ -163,6 +167,10 @@ export default function FieldReport() {
         adbust_type: data.adbust_type,
         adbust_image_url: data.adbust_image_url,
         action_flags: data.action_flags,
+        // Public-space facility metadata -- only ever set when Step 1/the
+        // scanner actually populated them; harmless undefined otherwise.
+        setting: data.setting,
+        public_access: data.public_access,
       });
       if (res.status === 'synced') {
         setDone(res.rec);
@@ -172,8 +180,7 @@ export default function FieldReport() {
           authenticated: Boolean(user),
           report_type: res.rec.type,
         });
-        if (data.extraPhotos?.length)
-          uploadLocationPhotos(data.extraPhotos, res.rec.id).catch(() => {});
+        if (data.extraPhotos?.length) syncExtraPhotos(data.extraPhotos, res.rec.id);
         // Discovery Intelligence panel -- authenticated + a brand was
         // genuinely identified. Anonymous submissions have no personal
         // collection to report; a blank brand has no collector identity to
@@ -202,6 +209,31 @@ export default function FieldReport() {
     }
   };
 
+  async function syncExtraPhotos(files, locationId, indexes = files.map((_, i) => i)) {
+    setPhotoSync({ status: 'uploading', completed: 0, total: files.length, failed: [] });
+    const result = await uploadLocationPhotos(files, locationId, {
+      displayOrders: indexes,
+      onProgress: ({ completed, total }) =>
+        setPhotoSync((current) => ({ ...current, status: 'uploading', completed, total })),
+    });
+    setPhotoSync({
+      status: result.failed.length ? 'partial' : 'complete',
+      completed: result.uploaded.length,
+      total: files.length,
+      failed: result.failed.map((failure) => indexes[failure.index]),
+    });
+  }
+
+  const retryFailedPhotos = () => {
+    if (!done?.id || !photoSync?.failed?.length) return;
+    const indexes = photoSync.failed;
+    syncExtraPhotos(
+      indexes.map((index) => data.extraPhotos[index]),
+      done.id,
+      indexes,
+    );
+  };
+
   const reset = () => {
     setDone(null);
     setData({ ...EMPTY });
@@ -209,6 +241,7 @@ export default function FieldReport() {
     setError('');
     setPending(null);
     setDiscovery(null);
+    setPhotoSync(null);
   };
 
   if (done) {
@@ -238,6 +271,7 @@ export default function FieldReport() {
           </div>
         )}
         <DiscoveryPanel data={discovery} />
+        <PhotoSyncStatus state={photoSync} onRetry={retryFailedPhotos} />
         <div className="mt-6 flex flex-wrap gap-3">
           {done.id && (
             <Link

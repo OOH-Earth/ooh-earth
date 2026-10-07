@@ -11,6 +11,7 @@ const n8nEntry = read('n8nPing');
 const scanEntry = read('scanAd');
 const cachedIntel = read('cachedIntel', 'handler.ts');
 const donation = read('createDonationCheckout', 'handler.ts');
+const donationStatus = read('donationStatus', 'handler.ts');
 const claim = read('claimLead', 'handler.ts');
 const stripe = read('stripeWebhook', 'handler.ts');
 const stripeEventSchema = fs.readFileSync('base44/entities/StripeEvent.jsonc', 'utf8');
@@ -63,6 +64,33 @@ assert.match(donation, /POST only/, 'donation checkout must reject non-POST requ
 assert.match(donation, /Number\.isFinite/, 'donation checkout must reject non-finite amounts');
 assert.match(donation, /MAX_DONATION_USD/, 'donation checkout must bound amounts');
 assert.match(donation, /Idempotency-Key/, 'donation checkout must forward Stripe idempotency');
+assert.match(
+  donation,
+  /session_id=\{CHECKOUT_SESSION_ID\}/,
+  'donation success_url must carry the Stripe session id placeholder',
+);
+assert.match(donationStatus, /POST only/, 'donationStatus must reject non-POST requests');
+assert.match(
+  donationStatus,
+  /asServiceRole\.entities\.FundingLead/,
+  'donationStatus must read FundingLead via the service role, not client-side RLS',
+);
+assert.match(
+  donationStatus,
+  /ext_ref:\s*sessionId/,
+  'donationStatus must look up the exact session id, never an arbitrary/broad query',
+);
+assert.match(
+  donationStatus,
+  /confirmed:\s*!!/,
+  'donationStatus must return only a boolean, never the underlying record',
+);
+assert.doesNotMatch(donationStatus, /email/i, 'donationStatus must never return donor email');
+assert.doesNotMatch(
+  donationStatus,
+  /STRIPE_SECRET_KEY/,
+  'donationStatus must never touch Stripe secrets',
+);
 assert.match(claim, /POST only/, 'claimLead must reject non-POST requests');
 assert.match(claim, /HANDLE_MAX/, 'claimLead must bound handles');
 assert.match(claim, /inFlight/, 'claimLead must guard local concurrent claims');

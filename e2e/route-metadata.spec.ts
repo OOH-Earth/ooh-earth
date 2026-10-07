@@ -32,7 +32,19 @@ test.describe('Client-hydrated metadata (real browser, JS-executing crawlers)', 
     await page.goto('/report');
     await expect(page).toHaveTitle('Field Report — OOH Earth');
 
-    await page.goto('/lab/nft');
+    // AuthContext only resolves an authenticated session when a token is
+    // present (appParams.token, read from ?access_token=) -- without it,
+    // checkAppState's own no-token branch locks isAuthenticated=false
+    // before LabAccessRoute's fallback effect gets a chance to call
+    // checkUserAuth(), regardless of what user mockBase44 has mocked at the
+    // network layer. Every other authenticated-route test in this suite
+    // (e.g. nft-creator-ux.spec.ts, the dedicated test for this exact page)
+    // already follows this convention; this test previously omitted it,
+    // which made it pass only when it happened to win an unrelated,
+    // narrow timing race in LabAccessRoute/AuthContext's effect
+    // scheduling -- reproduced locally at roughly a 50% failure rate in
+    // isolation (`--repeat-each`, retries disabled). See TEST-001.
+    await page.goto('/lab/nft?access_token=mock-admin-token');
     await expect(page).toHaveTitle('NFT Creator — OOH Earth Lab');
   });
 });

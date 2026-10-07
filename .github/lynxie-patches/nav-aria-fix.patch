@@ -1,0 +1,12 @@
+diff --git a/src/components/ooh/Nav.jsx b/src/components/ooh/Nav.jsx
+index 098d6b0..33a0122 100644
+--- a/src/components/ooh/Nav.jsx
++++ b/src/components/ooh/Nav.jsx
+@@ -95,6 +95,7 @@ export default function Nav() {
+           </button>
+           <button
+             onClick={openCommand}
++            aria-label="Open Command Center"
+             className="group flex h-10 items-center gap-2 border-2 border-ozone bg-ozone px-3 font-mono text-[10px] font-bold uppercase tracking-[0.25em] text-void transition-colors hover:bg-flare hover:border-flare md:h-8"
+           >
+             <Crosshair className="h-4 w-4 md:h-3.5 md:w-3.5" />

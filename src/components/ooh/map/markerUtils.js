@@ -6,6 +6,9 @@ const KNOWN_TYPES = [
   'sticker',
   'mural',
   'transit',
+  'skatepark',
+  'basketball_court',
+  'multi_use_court',
   'other',
 ];
 

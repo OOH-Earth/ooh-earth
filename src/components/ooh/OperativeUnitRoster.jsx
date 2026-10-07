@@ -1,5 +1,6 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { base44 } from '@/api/base44Client';
+import { useAuthGatedSubscribe } from '@/hooks/useAuthGatedSubscribe';
 import { Shield, BadgeCheck } from 'lucide-react';
 
 const TIER_CLS = {
@@ -19,23 +20,19 @@ const TIER_LABEL = {
 export default function OperativeUnitRoster() {
   const [ops, setOps] = useState(null);
 
-  useEffect(() => {
-    let cancelled = false;
-    const load = () =>
+  const load = useCallback(
+    () =>
       base44.entities.Operative.list('-points', 50)
-        .then((recs) => {
-          if (!cancelled) setOps(recs || []);
-        })
-        .catch(() => {
-          if (!cancelled) setOps([]);
-        });
+        .then((recs) => setOps(recs || []))
+        .catch(() => setOps([])),
+    [],
+  );
+
+  useEffect(() => {
     load();
-    const unsub = base44.entities.Operative.subscribe(load);
-    return () => {
-      cancelled = true;
-      if (unsub) unsub();
-    };
-  }, []);
+  }, [load]);
+
+  useAuthGatedSubscribe('Operative', load);
 
   return (
     <div className="mt-10">

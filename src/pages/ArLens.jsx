@@ -151,7 +151,6 @@ export default function ArLens() {
         lat,
         lng,
         image_url: up.file_url,
-        status: 'pending',
         notes: 'Filed via AR Lens field capture',
       });
       setLastReport(rec);

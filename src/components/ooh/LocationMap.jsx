@@ -5,6 +5,7 @@ import {
   Marker,
   Popup,
   Tooltip,
+  CircleMarker,
   useMap,
   useMapEvents,
   ZoomControl,
@@ -16,23 +17,26 @@ import 'leaflet/dist/leaflet.css';
 // Category-specific pin icons — yellow disc + per-type glyph.
 // Each location type (billboard, digital, transit, mural, etc.) gets its
 // own distinct iconography from the shared pinGlyphs library.
+// Sized to clear the 24px minimum touch-target guideline (was 22px/30px —
+// the 22px unselected size was the one case that fell under it; see the same
+// guideline already applied to SiteFooter's links).
 function pinIcon(type) {
   return L.divIcon({
     className: 'ooh-pin',
-    html: `<div style="position:relative;width:22px;height:22px"><span style="position:absolute;inset:-7px;border-radius:50%;background:radial-gradient(circle,rgba(255,72,118,0.26),transparent 65%)"></span><span style="position:relative;display:flex;width:22px;height:22px;border-radius:50%;background:#EDFF00;border:1.5px solid #000;box-shadow:0 0 0 2px rgba(237,255,0,0.20),0 0 12px rgba(237,255,0,0.5);align-items:center;justify-content:center">${glyphSVG(type, 11)}</span></div>`,
-    iconSize: [22, 22],
-    iconAnchor: [11, 11],
-    popupAnchor: [0, -12],
+    html: `<div style="position:relative;width:28px;height:28px"><span style="position:absolute;inset:-7px;border-radius:50%;background:radial-gradient(circle,rgba(255,72,118,0.26),transparent 65%)"></span><span style="position:relative;display:flex;width:28px;height:28px;border-radius:50%;background:#EDFF00;border:1.5px solid #000;box-shadow:0 0 0 2px rgba(237,255,0,0.20),0 0 12px rgba(237,255,0,0.5);align-items:center;justify-content:center">${glyphSVG(type, 14)}</span></div>`,
+    iconSize: [28, 28],
+    iconAnchor: [14, 14],
+    popupAnchor: [0, -15],
   });
 }
 
 function selIcon(type) {
   return L.divIcon({
     className: 'ooh-pin ooh-pin--sel',
-    html: `<div style="position:relative;width:30px;height:30px"><span style="position:absolute;inset:-12px;border-radius:50%;background:radial-gradient(circle,rgba(255,72,118,0.45),transparent 65%)"></span><span style="position:absolute;inset:0;border-radius:50%;border:2px solid #FF5C00;animation:ooh-pinpulse 1.4s ease-out infinite"></span><span style="position:relative;display:flex;width:30px;height:30px;border-radius:50%;background:#EDFF00;border:2px solid #000;box-shadow:0 0 0 3px rgba(255,92,0,0.25),0 0 18px rgba(255,92,0,0.55);align-items:center;justify-content:center">${glyphSVG(type, 14)}</span></div>`,
-    iconSize: [30, 30],
-    iconAnchor: [15, 15],
-    popupAnchor: [0, -16],
+    html: `<div style="position:relative;width:36px;height:36px"><span style="position:absolute;inset:-12px;border-radius:50%;background:radial-gradient(circle,rgba(255,72,118,0.45),transparent 65%)"></span><span style="position:absolute;inset:0;border-radius:50%;border:2px solid #FF5C00;animation:ooh-pinpulse 1.4s ease-out infinite"></span><span style="position:relative;display:flex;width:36px;height:36px;border-radius:50%;background:#EDFF00;border:2px solid #000;box-shadow:0 0 0 3px rgba(255,92,0,0.25),0 0 18px rgba(255,92,0,0.55);align-items:center;justify-content:center">${glyphSVG(type, 17)}</span></div>`,
+    iconSize: [36, 36],
+    iconAnchor: [18, 18],
+    popupAnchor: [0, -19],
   });
 }
 
@@ -51,6 +55,7 @@ import LayerManager from '@/components/ooh/map/layers/LayerManager';
 import CompactPinPopup from '@/components/ooh/map/CompactPinPopup';
 import { useMapStyle } from '@/lib/mapStyleContext';
 import { getStatusDotColor } from '@/lib/statusBadge';
+import { HOVER_RING_NONE, parseChannelColor, resolveHoverRingTarget } from '@/lib/hoverEmphasis';
 
 // Photo-circle pin — white-ringed location photo with a category micro-badge
 // (bottom-right) and a status dot (top-left), plus the pink radial highlight.
@@ -65,15 +70,35 @@ function pinFor(m, selected) {
   // (ozone already means "highlighted/AI/notable" elsewhere in the app)
   // instead of adding a new badge/element to an already-busy pin.
   const living = Boolean(m.livingRecord);
-  const ringColor = living ? '#EDFF00' : '#fff';
+  const ringColor = m.fieldMission
+    ? '#FF5C00'
+    : m.attention?.priority && m.attention.priority !== 'CURRENT'
+      ? '#5BE7FF'
+      : living
+        ? '#EDFF00'
+        : '#fff';
   const mc_color = GLYPH_COLORS[m.type] || GLYPH_COLORS.other;
   const mc_svg = glyphSVG(m.type, 10);
   const size = selected ? 62 : 52;
   const badge = selected ? 22 : 18;
   const glow = selected ? 'rgba(255,72,118,0.45)' : 'rgba(255,72,118,0.20)';
-  const img = String(m.image).replace(/-\d+x\d+(?=\.\w+$)/, '');
-  const title = living ? ' title="Living record — documented over time"' : '';
-  const html = `<div${title} style="position:relative;width:${size}px;height:${size}px"><span style="position:absolute;inset:-${selected ? 12 : 8}px;border-radius:50%;background:radial-gradient(circle,${glow},transparent 65%)"></span><span style="position:relative;display:block;width:${size}px;height:${size}px;border-radius:50%;border:3px solid ${ringColor};overflow:hidden;background:#000;box-shadow:0 2px 6px rgba(0,0,0,0.6)${selected ? ',0 0 0 2px ' + mc_color : ''}${living ? ',0 0 8px rgba(237,255,0,0.5)' : ''}"><img src="${img}" alt="" style="width:100%;height:100%;object-fit:cover;display:block"/></span><span style="position:absolute;right:-3px;bottom:-3px;width:${badge}px;height:${badge}px;border-radius:50%;background:${mc_color};border:2px solid #000;display:flex;align-items:center;justify-content:center;box-shadow:0 0 6px rgba(0,0,0,0.6)">${mc_svg}</span><span style="position:absolute;left:-2px;top:-2px;width:10px;height:10px;border-radius:50%;background:${dotColor};border:2px solid #000"></span></div>`;
+  // Root cause of the black-square incident (docs/ops/ooh-earth/
+  // 02-INCIDENT-MOBILE-LOCATIONS.md): this used to strip the resize suffix
+  // (e.g. "-768x1024") to request what should be a higher-res original, but
+  // a real subset of production records only ever had the resized derivative
+  // stored — the stripped URL 404s for those, and with no onerror handling
+  // the marker rendered as a solid black circle. The resized derivative is
+  // already several times larger than this marker's ~62px display size, so
+  // there's no reason to request a different file at all.
+  const img = String(m.image);
+  const fallbackGlyph = glyphSVG(m.type, Math.round(size * 0.34));
+  const title =
+    m.attention?.priority && m.attention.priority !== 'CURRENT'
+      ? ` title="${m.attention.priority} field attention"`
+      : living
+        ? ' title="Living record — documented over time"'
+        : '';
+  const html = `<div${title} style="position:relative;width:${size}px;height:${size}px"><span style="position:absolute;inset:-${selected ? 12 : 8}px;border-radius:50%;background:radial-gradient(circle,${glow},transparent 65%)"></span><span style="position:relative;display:flex;width:${size}px;height:${size}px;border-radius:50%;border:3px solid ${ringColor};overflow:hidden;background:#0a0a0a;box-shadow:0 2px 6px rgba(0,0,0,0.6)${selected ? ',0 0 0 2px ' + mc_color : ''}${living ? ',0 0 8px rgba(237,255,0,0.5)' : ''};align-items:center;justify-content:center">${fallbackGlyph}<img src="${img}" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block" onerror="this.remove()"/></span><span style="position:absolute;right:-3px;bottom:-3px;width:${badge}px;height:${badge}px;border-radius:50%;background:${mc_color};border:2px solid #000;display:flex;align-items:center;justify-content:center;box-shadow:0 0 6px rgba(0,0,0,0.6)">${mc_svg}</span><span style="position:absolute;left:-2px;top:-2px;width:10px;height:10px;border-radius:50%;background:${dotColor};border:2px solid #000"></span></div>`;
   return L.divIcon({
     className: living ? 'ooh-pin ooh-pin--photo ooh-pin--living' : 'ooh-pin ooh-pin--photo',
     html,
@@ -146,6 +171,34 @@ function FlyToHover({ hoverId, selectedId, markers }) {
   return null;
 }
 
+// Result-row <-> marker hover emphasis (flat mode): a ring drawn at the
+// hovered marker's own position, using the theme's --c-flare brand token, so
+// hovering a result row makes the corresponding marker unmistakable -- not
+// just a camera pan (FlyToHover, above), which doesn't visually distinguish
+// the marker itself. Mirrors Globe3D.jsx's ooh-hover-ring layer.
+function HoverRing({ hoverId, selectedId, markers }) {
+  const targetId = resolveHoverRingTarget({ hoverId, selectedId });
+  if (targetId === HOVER_RING_NONE) return null;
+  const m = markers.find((x) => x.id === targetId);
+  if (!m || !isFinite(m.lat) || !isFinite(m.lng)) return null;
+  const flareColor = parseChannelColor(
+    getComputedStyle(document.documentElement).getPropertyValue('--c-flare'),
+  );
+  return (
+    <CircleMarker
+      center={[m.lat, m.lng]}
+      radius={22}
+      pathOptions={{
+        color: flareColor,
+        weight: 2.5,
+        fillColor: flareColor,
+        fillOpacity: 0.16,
+        interactive: false,
+      }}
+    />
+  );
+}
+
 // Emits the current viewport bounds on every pan/zoom so the results feed can
 // follow the map (the "search this area" pattern). Also emits once on mount.
 function BoundsWatcher({ onBoundsChange }) {
@@ -180,7 +233,13 @@ function PinMarker({ m, selected, onSelect, compactPopup, onExpandPin }) {
   return (
     <Marker
       position={[m.lat, m.lng]}
-      icon={m.image ? pinFor(m, selected) : selected ? selIcon(m.type) : pinIcon(m.type)}
+      icon={
+        m.image
+          ? pinFor(m, selected)
+          : selected || m.fieldMission
+            ? selIcon(m.type)
+            : pinIcon(m.type)
+      }
       eventHandlers={{ click: () => onSelect?.(m.id) }}
     >
       <Popup>
@@ -464,6 +523,7 @@ export default function LocationMap({
       <BoundsWatcher onBoundsChange={onBoundsChange} />
       <FlyTo selectedId={selectedId} markers={pins} />
       <FlyToHover hoverId={hoverId} selectedId={selectedId} markers={pins} />
+      <HoverRing hoverId={hoverId} selectedId={selectedId} markers={pins} />
       <FlyToGeocode flyTo={flyTo} />
       <FlyToUser userLoc={userLoc} />
       {userLoc && (

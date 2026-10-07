@@ -18,7 +18,7 @@ export default function XpBar({ xp, compact = false }) {
               style={{ width: `${lvl.progress}%` }}
             />
           </div>
-          <div className="mt-0.5 font-mono text-[7px] uppercase tracking-[0.2em] text-dim">
+          <div className="mt-0.5 font-mono text-[0.625rem] uppercase tracking-[0.2em] text-dim">
             {lvl.title}
           </div>
         </div>
@@ -39,7 +39,7 @@ export default function XpBar({ xp, compact = false }) {
             <div className="font-display text-lg font-black uppercase tracking-tight text-silver">
               {lvl.title}
             </div>
-            <div className="font-mono text-[9px] uppercase tracking-[0.2em] text-dim">
+            <div className="font-mono text-[0.6875rem] uppercase tracking-[0.2em] text-dim">
               Level {lvl.level}
             </div>
           </div>
@@ -48,12 +48,14 @@ export default function XpBar({ xp, compact = false }) {
           <div className="flex items-center gap-1.5 font-mono text-xl font-bold tabular text-ozone">
             <Zap className="h-4 w-4" /> {lvl.xp.toLocaleString()}
           </div>
-          <div className="font-mono text-[8px] uppercase tracking-[0.2em] text-dim">total XP</div>
+          <div className="font-mono text-[0.6875rem] uppercase tracking-[0.2em] text-dim">
+            total XP
+          </div>
         </div>
       </div>
 
       <div className="mt-4">
-        <div className="flex items-center justify-between font-mono text-[9px] uppercase tracking-[0.2em] text-dim">
+        <div className="flex items-center justify-between font-mono text-[0.6875rem] uppercase tracking-[0.2em] text-dim">
           <span>{lvl.isMax ? 'Max level' : `${lvl.xpIntoLevel} / ${lvl.xpForNext} XP`}</span>
           <span>{lvl.isMax ? 'Mythic' : `Next: ${nextLevel?.title || ''}`}</span>
         </div>

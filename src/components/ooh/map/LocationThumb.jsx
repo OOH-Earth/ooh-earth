@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import {
   Megaphone,
   Monitor,
@@ -8,6 +9,9 @@ import {
   BusFront,
   MapPin,
   BadgeCheck,
+  Waves,
+  CircleDot,
+  Goal,
 } from 'lucide-react';
 
 // Category → icon + accent for placeholders
@@ -19,6 +23,9 @@ export const TYPE_META = {
   sticker: { label: 'Sticker', Icon: Sticker, accent: '#EDFF00' },
   mural: { label: 'Mural', Icon: Frame, accent: '#FF5C00' },
   transit: { label: 'Transit', Icon: BusFront, accent: '#EDFF00' },
+  skatepark: { label: 'Skatepark', Icon: Waves, accent: '#39FF14' },
+  basketball_court: { label: 'Basketball Court', Icon: CircleDot, accent: '#39FF14' },
+  multi_use_court: { label: 'Multi-Use Court', Icon: Goal, accent: '#39FF14' },
   other: { label: 'Field', Icon: MapPin, accent: '#B2B2B2' },
 };
 
@@ -45,42 +52,62 @@ const esc = (s) =>
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&#39;');
 
-// HTML string for popup contexts — real photo w/ CONFIRMED badge, else glyph placeholder
+// HTML string for popup contexts — real photo w/ CONFIRMED badge, else glyph
+// placeholder. The glyph placeholder is always rendered first (as the base
+// layer) and the photo is overlaid on top of it — if the photo 404s (some
+// records only ever had a resized derivative stored, not the original; see
+// docs/ops/ooh-earth/02-INCIDENT-MOBILE-LOCATIONS.md), the broken <img>'s own
+// onerror removes just itself, revealing the already-designed placeholder
+// underneath instead of a bare black rectangle. Dimensions never change.
 export function thumbHTML(m) {
   const meta = metaFor(m.type);
   const accent = meta.accent;
-  if (m.image) {
-    return `<div style="position:relative;width:100%;height:110px">
-      <img src="${esc(m.image)}" alt="${esc(m.title)}" style="width:100%;height:110px;object-fit:cover;display:block;background:#111" />
-      <svg viewBox="0 0 24 24" width="14" height="14" style="position:absolute;left:4px;top:4px"><path d="M12 2l2.4 1.8 3 .2.9 2.9 2.2 2-1 2.8 1 2.8-2.2 2-.9 2.9-3 .2L12 22l-2.4-1.8-3-.2-.9-2.9-2.2-2 1-2.8-1-2.8 2.2-2 .9-2.9 3-.2z" fill="#EDFF00"/><path d="M9 12l2 2 4-4" fill="none" stroke="#000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-    </div>`;
-  }
   const glyph = (GLYPH[m.type] || GLYPH.other).replace(/\{A\}/g, accent);
   const leadPill =
     m.status !== 'verified'
       ? `<span style="position:absolute;left:4px;top:4px;border:1px solid rgba(255,92,0,0.5);background:rgba(10,10,10,0.7);padding:1px 4px;font-size:7px;font-weight:700;text-transform:uppercase;letter-spacing:0.2em;color:#FF5C00;font-family:'Inter Tight',sans-serif">Lead</span>`
       : '';
-  return `<div style="position:relative;width:100%;height:110px;background:#0a0a0a;background-image:linear-gradient(rgba(241,241,241,0.04) 1px,transparent 1px),linear-gradient(90deg,rgba(241,241,241,0.04) 1px,transparent 1px);background-size:14px 14px;display:flex;align-items:center;justify-content:center">
+  const placeholder = `<div style="position:relative;width:100%;height:110px;background:#0a0a0a;background-image:linear-gradient(rgba(241,241,241,0.04) 1px,transparent 1px),linear-gradient(90deg,rgba(241,241,241,0.04) 1px,transparent 1px);background-size:14px 14px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px">
     ${leadPill}
-    <svg viewBox="0 0 32 32" width="40" height="40" fill="none">${glyph}</svg>
+    <span style="display:flex;height:40px;width:40px;align-items:center;justify-content:center;border-radius:999px;border:1px solid ${accent}55">
+      <svg viewBox="0 0 32 32" width="22" height="22" fill="none">${glyph}</svg>
+    </span>
+    <span style="font-size:7px;font-weight:700;text-transform:uppercase;letter-spacing:0.2em;color:hsl(var(--muted-foreground));opacity:0.75;font-family:'Inter Tight',sans-serif">No photo yet</span>
     <span style="position:absolute;bottom:4px;left:0;right:0;text-align:center;font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:0.2em;color:${accent};opacity:0.85;font-family:'Inter Tight',sans-serif">${meta.label}</span>
+  </div>`;
+  if (!m.image) return placeholder;
+  return `<div style="position:relative;width:100%;height:110px">
+    ${placeholder}
+    <div style="position:absolute;inset:0">
+      <img src="${esc(m.image)}" alt="${esc(m.title)}" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block" onerror="this.parentElement.remove()" />
+      <svg viewBox="0 0 24 24" width="14" height="14" style="position:absolute;left:4px;top:4px"><path d="M12 2l2.4 1.8 3 .2.9 2.9 2.2 2-1 2.8 1 2.8-2.2 2-.9 2.9-3 .2L12 22l-2.4-1.8-3-.2-.9-2.9-2.2-2 1-2.8-1-2.8 2.2-2 .9-2.9 3-.2z" fill="#EDFF00"/><path d="M9 12l2 2 4-4" fill="none" stroke="#000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </div>
   </div>`;
 }
 
-// React thumbnail — real photo w/ CONFIRMED badge, else designed category glyph
+// React thumbnail — real photo w/ CONFIRMED badge, else designed category
+// glyph. If the photo 404s (see thumbHTML's comment above — same underlying
+// data issue), onError falls back to the same designed placeholder used when
+// there's no image at all, instead of a bare broken-image box.
 export default function LocationThumb({ m, className = '', imgClassName = '' }) {
   const { Icon, accent } = metaFor(m.type);
-  if (m.image) {
+  const [imgFailed, setImgFailed] = useState(false);
+  if (m.image && !imgFailed) {
     return (
       <div className={`relative shrink-0 overflow-hidden ${className}`}>
-        <img src={m.image} alt={m.title} className={`h-full w-full object-cover ${imgClassName}`} />
+        <img
+          src={m.image}
+          alt={m.title}
+          className={`h-full w-full object-cover ${imgClassName}`}
+          onError={() => setImgFailed(true)}
+        />
         <BadgeCheck className="absolute left-1 top-1 h-4 w-4 text-ozone drop-shadow-[0_0_3px_rgba(0,0,0,0.8)]" />
       </div>
     );
   }
   return (
     <div
-      className={`relative flex shrink-0 items-center justify-center grid-bg ${className}`}
+      className={`relative flex shrink-0 flex-col items-center justify-center gap-1 grid-bg ${className}`}
       style={{ backgroundColor: '#0a0a0a' }}
     >
       {m.status !== 'verified' && (
@@ -88,7 +115,15 @@ export default function LocationThumb({ m, className = '', imgClassName = '' }) 
           Lead
         </span>
       )}
-      <Icon className="h-6 w-6" style={{ color: accent }} strokeWidth={1.5} />
+      <span
+        className="flex h-9 w-9 items-center justify-center rounded-full border"
+        style={{ borderColor: `${accent}55` }}
+      >
+        <Icon className="h-5 w-5" style={{ color: accent }} strokeWidth={1.5} />
+      </span>
+      <span className="font-mono text-[6px] font-bold uppercase tracking-[0.2em] text-dim/75">
+        No photo yet
+      </span>
       <span
         className="absolute bottom-1 font-mono text-[7px] font-bold uppercase tracking-[0.2em]"
         style={{ color: accent, opacity: 0.8 }}

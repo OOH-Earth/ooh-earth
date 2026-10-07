@@ -332,7 +332,10 @@ test.describe('Traction instrumentation — badge_unlocked', () => {
     await expect(page.getByRole('heading', { name: 'Merit Badges' })).toBeVisible({
       timeout: 20_000,
     });
-    await expect(page.getByText('1 / 19 earned')).toBeVisible();
+    // 21 = BADGES.length (gamification.js) -- update alongside any future
+    // badge addition/removal, same as the two occurrences in
+    // new-badge-recognition.spec.ts.
+    await expect(page.getByText('1 / 21 earned')).toBeVisible();
 
     expect(events.filter((e) => e.event_name === 'badge_unlocked')).toHaveLength(0);
   });

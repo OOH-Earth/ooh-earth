@@ -39,7 +39,13 @@ export default function MapBottomSheet({
     return () => window.removeEventListener('resize', onResize);
   }, []);
 
-  const peekH = 132;
+  // Peek height defaults to the full ~132px header strip, but on short
+  // landscape viewports (e.g. 844x390) that fixed height plus the 76px
+  // bottom-nav offset reaches high enough to cover the floating map
+  // controls (Capture/Graffiti/Report), which sit at a vh-independent
+  // ~210px from the top. Shrinking peek on short viewports keeps an 8px
+  // gap below those controls; 132px is unchanged above ~430px tall.
+  const peekH = Math.min(132, Math.max(64, vh - 294));
   const halfH = Math.round(vh * 0.42);
   const fullH = Math.round(vh * 0.88);
   const stateH = { peek: peekH, half: halfH, full: fullH };

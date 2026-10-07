@@ -1,5 +1,10 @@
-import { isAppAdmin } from '../_shared/auth.ts';
-import { correlationHeaders, telemetryFor } from '../_shared/telemetry.ts';
+import { correlationHeaders, telemetryFor } from './telemetry.ts';
+
+function isAppAdmin(user: any) {
+  const role = user?.role ?? user?.data?.role ?? 'user';
+  const access = user?.access ?? user?.data?.access ?? 'member';
+  return !!user && (role === 'admin' || access === 'admin');
+}
 
 export async function handleRuntimeHealth(
   req: Request,

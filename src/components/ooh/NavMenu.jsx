@@ -1,9 +1,10 @@
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { useAuth } from '@/lib/AuthContext';
 import { base44 } from '@/api/base44Client';
+import { useAuthGatedSubscribe } from '@/hooks/useAuthGatedSubscribe';
 import { useFocusTrap } from '@/hooks/useFocusTrap';
 import {
   X,
@@ -102,6 +103,7 @@ const SITEMAP = [
     group: 'Campaigns',
     tier: 'primary',
     items: [
+      { to: '/hackers-club', label: 'Hackers Club', status: 'testing' },
       { to: '/adbusting', label: 'Adbusting', status: 'live' },
       { to: '/graffiti', label: 'Graffiti', status: 'live' },
       { to: '/ecology', label: 'Ecology', status: 'live' },
@@ -334,12 +336,10 @@ const list = {
 // `visible` and only checks `access`), so direct links still resolve.
 function useLabNavItems() {
   const [items, setItems] = useState([{ to: '/lab', label: 'Hex Engine Lab', status: 'live' }]);
-  useEffect(() => {
-    let active = true;
-    const fetch = () =>
+  const fetchLabItems = useCallback(
+    () =>
       base44.entities.LabPrototype.list('sort_order', 100)
         .then((rows) => {
-          if (!active) return;
           const vis = (rows || []).filter((r) => r.visible !== false);
           setItems([
             { to: '/lab', label: 'Hex Engine Lab', status: 'live' },
@@ -350,19 +350,16 @@ function useLabNavItems() {
             })),
           ]);
         })
-        .catch(() => {});
-    fetch();
-    let unsub;
-    try {
-      unsub = base44.entities.LabPrototype?.subscribe?.(fetch);
-    } catch {
-      unsub = null;
-    }
-    return () => {
-      active = false;
-      if (unsub) unsub();
-    };
-  }, []);
+        .catch(() => {}),
+    [],
+  );
+
+  useEffect(() => {
+    fetchLabItems();
+  }, [fetchLabItems]);
+
+  useAuthGatedSubscribe('LabPrototype', fetchLabItems);
+
   return items;
 }
 

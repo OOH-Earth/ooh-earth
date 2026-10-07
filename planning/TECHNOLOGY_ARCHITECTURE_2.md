@@ -1,7 +1,7 @@
 # OOH Earth Technology Architecture 2.0
 
-**Status:** P0 observability slice implemented locally for qualification; AI gateway, domain events, spatial aggregates, and agents remain future architecture  
-**Evidence date:** 2026-08-27  
+**Status:** P0 observability slice implemented locally for qualification; AI gateway, domain events, spatial aggregates, and agents remain future architecture
+**Evidence date:** 2026-08-27
 **Source of truth:** repository code, committed schemas, CI configuration, and previously recorded BACKUP/Production verification. Claims below are labelled where runtime evidence is incomplete.
 
 ## A. Executive assessment

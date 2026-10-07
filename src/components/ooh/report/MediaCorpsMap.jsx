@@ -1,5 +1,8 @@
 import { MapContainer, TileLayer, Marker, Popup, Circle, useMap } from 'react-leaflet';
 import L from 'leaflet';
+// Own the stylesheet: this page is a lazy route, so relying on another map component's
+// import leaves the Leaflet panes/tiles unpositioned on a direct visit.
+import 'leaflet/dist/leaflet.css';
 import { useEffect } from 'react';
 import { useMapStyle } from '@/lib/mapStyleContext';
 
@@ -35,7 +38,20 @@ function panelLabel(panels) {
   return '';
 }
 
+// react-leaflet calls setIcon whenever the icon prop identity changes, which rebuilds the marker
+// DOM (dropping keyboard focus and any open popup). Reuse one icon per visual state.
+const iconCache = new Map();
 function corpIcon(corp, isSelected) {
+  const key = `${corp.scope}|${panelLabel(corp.panels)}|${isSelected ? 1 : 0}`;
+  let icon = iconCache.get(key);
+  if (!icon) {
+    icon = buildCorpIcon(corp, isSelected);
+    iconCache.set(key, icon);
+  }
+  return icon;
+}
+
+function buildCorpIcon(corp, isSelected) {
   const color = SCOPE_COLOR[corp.scope] || SCOPE_COLOR.local;
   const size = isSelected ? 34 : 26;
   const h = Math.round((size * 36) / 28);
@@ -147,7 +163,19 @@ export default function MediaCorpsMap({
           key={corp.id || corp.name}
           position={[corp.lat, corp.lng]}
           icon={corpIcon(corp, selected?.id === corp.id || selected?.name === corp.name)}
-          eventHandlers={{ click: () => onSelect?.(corp) }}
+          title={corp.name}
+          eventHandlers={{
+            click: () => onSelect?.(corp),
+            // Pins are role=button. Leaflet only maps Enter to its popup toggle, never Space,
+            // and neither reaches onSelect, so keyboard users never got the details drawer.
+            keydown: (e) => {
+              const key = e.originalEvent?.key;
+              if (key !== 'Enter' && key !== ' ') return;
+              e.originalEvent.preventDefault();
+              e.target.openPopup();
+              onSelect?.(corp);
+            },
+          }}
         >
           <Popup>
             <div className="min-w-[200px]">

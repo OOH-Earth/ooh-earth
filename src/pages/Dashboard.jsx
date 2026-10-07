@@ -1,5 +1,6 @@
 import { useEffect, useState, useCallback } from 'react';
 import { base44 } from '@/api/base44Client';
+import { useAuthGatedSubscribe } from '@/hooks/useAuthGatedSubscribe';
 import { roleOf, accessOf, payload } from '@/lib/clearance';
 import Nav from '@/components/ooh/Nav';
 import HorizonProgress from '@/components/ooh/HorizonProgress';
@@ -25,6 +26,7 @@ import {
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import LocationThumb from '@/components/ooh/map/LocationThumb';
+import { relationshipTypeLabel } from '@/lib/publicSpace';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -77,6 +79,13 @@ const normFieldCheck = (c) => ({
   _title: c.location_title || c.brand_name || 'Field check',
   _sub: [c.brand_name, c.address].filter(Boolean).join(' · '),
   _type: c.location_type,
+});
+const normRelationship = (r) => ({
+  ...r,
+  _entity: 'LocationRelationship',
+  _title: r.location_title || r.brand_name || 'Relationship claim',
+  _sub: [r.brand_name, relationshipTypeLabel(r.relationship_type)].filter(Boolean).join(' · '),
+  _type: null,
 });
 
 const timeAgo = (iso) => {
@@ -159,6 +168,11 @@ function Row({
           {n._entity === 'FieldCheck' && (
             <span className="shrink-0 border border-ozone/30 px-1.5 py-0.5 font-mono text-[8px] uppercase tracking-[0.2em] text-ozone/70">
               re-check
+            </span>
+          )}
+          {n._entity === 'LocationRelationship' && (
+            <span className="shrink-0 border border-flare/30 px-1.5 py-0.5 font-mono text-[8px] uppercase tracking-[0.2em] text-flare/70">
+              claim
             </span>
           )}
           {triage && (
@@ -261,6 +275,7 @@ export default function Dashboard() {
               ...(d.locations || []).map(normLoc),
               ...(d.digital_busts || []).map(normBust),
               ...(d.field_checks || []).map(normFieldCheck),
+              ...(d.location_relationships || []).map(normRelationship),
             ];
           })
           .catch(() => [])
@@ -282,32 +297,10 @@ export default function Dashboard() {
     })();
   }, [load]);
 
-  useEffect(() => {
-    const u1 = base44.entities.Location.subscribe(() => {
-      load();
-    });
-    let u2;
-    try {
-      u2 = base44.entities.DigitalBust?.subscribe?.(() => {
-        load();
-      });
-    } catch {
-      u2 = null;
-    }
-    let u3;
-    try {
-      u3 = base44.entities.FieldCheck?.subscribe?.(() => {
-        load();
-      });
-    } catch {
-      u3 = null;
-    }
-    return () => {
-      if (u1) u1();
-      if (u2) u2();
-      if (u3) u3();
-    };
-  }, [load]);
+  useAuthGatedSubscribe('Location', () => load());
+  useAuthGatedSubscribe('DigitalBust', () => load());
+  useAuthGatedSubscribe('FieldCheck', () => load());
+  useAuthGatedSubscribe('LocationRelationship', () => load());
 
   const refresh = async () => {
     setRefreshing(true);

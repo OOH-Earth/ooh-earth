@@ -80,7 +80,9 @@ test.describe('OperativeProfile — New badge recognition', () => {
     await expect(b.getByText('First Report', { exact: true })).toBeVisible();
 
     // Merit Badges grid itself is unaffected by the new banner existing.
-    await expect(page.getByText('1 / 19 earned')).toBeVisible();
+    // 21 = BADGES.length (gamification.js) -- update alongside any future
+    // badge addition/removal.
+    await expect(page.getByText('1 / 21 earned')).toBeVisible();
 
     // The snapshot must have already advanced past this badge so a later
     // visit (which would read this exact stored value) does not recognize
@@ -155,7 +157,7 @@ test.describe('OperativeProfile — New badge recognition', () => {
     await expect(page.getByRole('heading', { name: 'Merit Badges' })).toBeVisible({
       timeout: 20_000,
     });
-    await expect(page.getByText('1 / 19 earned')).toBeVisible();
+    await expect(page.getByText('1 / 21 earned')).toBeVisible();
     await expect(banner(page)).toHaveCount(0);
 
     const crashes = errors.filter(

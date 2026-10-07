@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import * as maplibregl from 'maplibre-gl';
+import '@/lib/maplibreWorkerSetup';
 import { ZoomIn, ZoomOut, Compass, RotateCw } from 'lucide-react';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import { useMapStyle } from '@/lib/mapStyleContext';
@@ -20,11 +21,15 @@ function panelLabel(panels) {
   return String(panels);
 }
 
+// Drawn at devicePixelRatio so the bitmap map.addImage() registers actually
+// matches the screen's real pixel density — see Globe3D.jsx's makePinIcon().
 function makeCorpPinIcon(scope, selected, panels) {
   const S = 64;
+  const dpr = typeof window !== 'undefined' ? window.devicePixelRatio || 1 : 1;
   const canvas = document.createElement('canvas');
-  canvas.width = canvas.height = S;
+  canvas.width = canvas.height = S * dpr;
   const ctx = canvas.getContext('2d');
+  ctx.scale(dpr, dpr);
   const cx = S / 2;
   const cy = S / 2 - 6;
   const r = selected ? 20 : 16;
@@ -187,6 +192,10 @@ export default function MediaCorpGlobe({
     popupRef.current = new maplibregl.Popup({
       closeButton: true,
       closeOnClick: true,
+      // Keep selected location context clear of the canvas pin. The selected
+      // glyph is roughly 61px across, so the default zero offset lets the
+      // popup content intrude into the marker's visual anchor.
+      offset: 44,
       maxWidth: '260px',
     });
 
@@ -239,14 +248,15 @@ export default function MediaCorpGlobe({
         data: /** @type {GeoJSON.GeoJSON} */ (dataRef.current),
       });
 
+      const iconPixelRatio = typeof window !== 'undefined' ? window.devicePixelRatio || 1 : 1;
       SCOPES.forEach((s) => {
         const a = makeCorpPinIcon(s, false, 0);
         map.addImage(`mc-pin-${s}`, a.getContext('2d').getImageData(0, 0, a.width, a.height), {
-          pixelRatio: 1,
+          pixelRatio: iconPixelRatio,
         });
         const b = makeCorpPinIcon(s, true, 0);
         map.addImage(`mc-pin-${s}-sel`, b.getContext('2d').getImageData(0, 0, b.width, b.height), {
-          pixelRatio: 1,
+          pixelRatio: iconPixelRatio,
         });
       });
 
@@ -296,7 +306,7 @@ export default function MediaCorpGlobe({
             'circle-stroke-opacity': 0.2,
           },
         },
-        'mc-clusters',
+        // No beforeId: 'mc-clusters' does not exist yet. Adding it later keeps these circles below it.
       );
 
       // Clusters

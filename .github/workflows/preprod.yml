@@ -1,0 +1,117 @@
+name: Preprod Real-Backend E2E
+
+# Runs the e2e/preprod/* suite (playwright.preprod.config.ts) against the
+# already-deployed BACKUP Base44 app -- no entity mocking. See
+# docs/TESTING_AND_RELEASE.md for what this proves that the hermetic `CI`
+# workflow's Playwright jobs (fully mocked) cannot.
+#
+# This is intentionally NOT wired into ci.yml: it needs real credentials
+# (GitHub Environment secrets, see below) and a real deployed BACKUP
+# candidate to test against, neither of which exist for an arbitrary PR
+# branch. It runs after a candidate has been deployed to BACKUP (manually,
+# via `npm run release:backup -- --execute`, until deploy is itself
+# automated) -- workflow_dispatch with the candidate SHA to verify, so a
+# human always triggers it deliberately and can see exactly what was
+# checked. It is a required input to the Production approval decision, not
+# an automatic trigger on push.
+#
+# Requires a `preprod` GitHub Environment with these secrets configured --
+# see docs/TESTING_AND_RELEASE.md "Pre-production test identities" for
+# exactly what to create and how to obtain each value. Until that
+# environment exists, every job below fails fast with a clear message
+# instead of silently reporting green.
+on:
+  workflow_dispatch:
+    inputs:
+      candidate_sha:
+        description: Full git SHA currently deployed to BACKUP (must match release-manifest.json)
+        required: true
+        type: string
+
+concurrency:
+  group: preprod-e2e
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+env:
+  NODE_VERSION: '20'
+
+jobs:
+  check-secrets:
+    name: Verify preprod credentials are configured
+    runs-on: ubuntu-latest
+    environment: preprod
+    outputs:
+      configured: ${{ steps.check.outputs.configured }}
+    steps:
+      - id: check
+        run: |
+          if [ -z "${{ secrets.PREPROD_CREATOR_PASSWORD }}" ] || [ -z "${{ secrets.PREPROD_OTHER_USER_PASSWORD }}" ] || [ -z "${{ secrets.PREPROD_ADMIN_PASSWORD }}" ]; then
+            echo "configured=false" >> "$GITHUB_OUTPUT"
+            echo "::error::Preprod test identities are not configured. See docs/TESTING_AND_RELEASE.md 'Pre-production test identities' -- this workflow cannot run real-backend E2E without them, and will not report a false pass."
+            exit 1
+          fi
+          echo "configured=true" >> "$GITHUB_OUTPUT"
+
+  real-backend-e2e:
+    name: Preprod / Real Backend E2E (${{ matrix.project }})
+    needs: check-secrets
+    if: needs.check-secrets.outputs.configured == 'true'
+    environment: preprod
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        project: [chromium, mobile-chromium]
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          ref: ${{ inputs.candidate_sha }}
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+      - run: npm ci
+      - name: Cache Playwright browsers
+        id: pw-cache
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
+      - name: Install Playwright browsers
+        if: steps.pw-cache.outputs.cache-hit != 'true'
+        run: npx playwright install --with-deps chromium
+      - name: Install Playwright OS deps (cache hit)
+        if: steps.pw-cache.outputs.cache-hit == 'true'
+        run: npx playwright install-deps chromium
+      - name: Verify candidate SHA is actually live on BACKUP before testing it
+        run: |
+          live_sha=$(curl -fsS https://ooh-earth-backup.base44.app/release-manifest.json | node -e "let d='';process.stdin.on('data',c=>d+=c);process.stdin.on('end',()=>console.log(JSON.parse(d).git_sha))")
+          if [ "$live_sha" != "${{ inputs.candidate_sha }}" ]; then
+            echo "::error::BACKUP is serving $live_sha, not the candidate ${{ inputs.candidate_sha }} this run was asked to verify. Refusing to test the wrong artifact."
+            exit 1
+          fi
+      - name: Run real-backend preprod suite
+        run: npx playwright test --config=playwright.preprod.config.ts --project=${{ matrix.project }}
+        env:
+          CI: 'true'
+          PREPROD_RUN_ID: ${{ github.run_id }}-${{ github.run_attempt }}-${{ matrix.project }}
+          PREPROD_CREATOR_PASSWORD: ${{ secrets.PREPROD_CREATOR_PASSWORD }}
+          PREPROD_OTHER_USER_PASSWORD: ${{ secrets.PREPROD_OTHER_USER_PASSWORD }}
+          PREPROD_ADMIN_PASSWORD: ${{ secrets.PREPROD_ADMIN_PASSWORD }}
+      - name: Cleanup any orphaned test-owned BACKUP records
+        if: always()
+        run: node e2e/preprod/cleanup.mjs --run-id "${{ github.run_id }}-${{ github.run_attempt }}-${{ matrix.project }}"
+        env:
+          PREPROD_ADMIN_PASSWORD: ${{ secrets.PREPROD_ADMIN_PASSWORD }}
+      - name: Upload Playwright report (screenshots, video -- trace is OFF for this suite; see playwright.preprod.config.ts for why)
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: preprod-report-${{ matrix.project }}
+          path: |
+            playwright-report-preprod
+            test-results
+          retention-days: 14

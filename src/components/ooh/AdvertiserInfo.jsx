@@ -1,21 +1,6 @@
 import { Tag, Building2, Flag, Megaphone, Ban } from 'lucide-react';
 import { BrandIcon } from '@/components/ooh/BrandBadge';
-import { lookupParentCorpSector } from '@/components/ooh/report/advertiserRegistry';
-
-const SECTOR_LABELS = {
-  fossil_fuel: 'Fossil Fuel',
-  tobacco: 'Tobacco',
-  alcohol: 'Alcohol',
-  gambling: 'Gambling',
-  ultra_processed_food: 'Ultra-processed Food',
-  surveillance: 'Surveillance',
-  finance: 'Finance',
-  real_estate: 'Real Estate',
-  fashion: 'Fashion',
-  automotive: 'Automotive',
-  pharma: 'Pharma',
-  other: 'Other',
-};
+import { lookupParentCorpSector, SECTOR_LABELS } from '@/components/ooh/report/advertiserRegistry';
 
 function Field({ icon: Icon = null, label, value, brand = false }) {
   if (!value) return null;

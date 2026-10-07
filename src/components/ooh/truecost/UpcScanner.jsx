@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { ScanLine, Keyboard, X } from 'lucide-react';
+import { normalizeProductIdentifier, productIdentifierError } from '@/lib/productIdentifier';
 
 // Dependency-free UPC/EAN scanner using the native BarcodeDetector API
 // (Chrome/Edge on mobile + most Android webviews). Falls back to manual entry
@@ -50,10 +51,14 @@ export default function UpcScanner({ onDetected }) {
         try {
           const codes = await detector.detect(v);
           if (codes && codes.length) {
-            const val = String(codes[0].rawValue).replace(/\D/g, '');
-            if (val.length >= 8) {
+            const detected = codes[0];
+            const identifier = normalizeProductIdentifier(detected.rawValue, {
+              source: 'camera',
+              symbology: detected.format,
+            });
+            if (identifier.valid) {
               stop();
-              onDetected(val);
+              onDetected(identifier);
               return;
             }
           }
@@ -70,8 +75,13 @@ export default function UpcScanner({ onDetected }) {
 
   const submitManual = (e) => {
     e.preventDefault();
-    const v = manualVal.replace(/\D/g, '');
-    if (v.length >= 8) onDetected(v);
+    const identifier = normalizeProductIdentifier(manualVal, { source: 'manual' });
+    if (identifier.valid) {
+      setErr('');
+      onDetected(identifier);
+    } else {
+      setErr(productIdentifierError(identifier.reason));
+    }
   };
 
   return (
@@ -89,7 +99,7 @@ export default function UpcScanner({ onDetected }) {
       </div>
       <div className="p-4">
         {manual ? (
-          <form onSubmit={submitManual} className="flex gap-2">
+          <form onSubmit={submitManual} className="flex flex-col gap-2 sm:flex-row">
             <input
               value={manualVal}
               onChange={(e) => setManualVal(e.target.value)}
@@ -103,6 +113,7 @@ export default function UpcScanner({ onDetected }) {
             >
               Decode
             </button>
+            {err && <p className="font-mono text-[9px] text-flare sm:col-span-2">{err}</p>}
           </form>
         ) : (
           <div className="relative aspect-video w-full overflow-hidden bg-void">

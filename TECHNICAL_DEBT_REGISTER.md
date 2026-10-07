@@ -56,9 +56,9 @@ All fixes verified: `npm run lint` (0), `npm run typecheck` (0), `npm run build`
 
 Nothing here was touched. These are genuine product/design questions, not type debt.
 
-### 1. Globe's space-fog effect is silently broken (verified, not guessed)
+### 1. Globe's space-fog effect is silently broken — FIXED (this session, 2026-08-29), see KNOWN_ISSUES.md #6
 
-`Globe3D.jsx` calls `map.setFog({...})` to render the black-void/star-field atmosphere around the globe. That method **does not exist** on the installed maplibre-gl version (5.24.0) — confirmed by reading the package's own type declarations, not inferred from the type error alone. The call throws at runtime and is caught by a `try/catch`, so there's no crash, just a missing visual effect that's presumably part of the intended "Orbital Perspective" design. Restoring it needs someone to port to `map.setSky(...)` or a style-level fog property and confirm the result looks right — a design call, not a type fix.
+`Globe3D.jsx` called `map.setFog({...})`, which doesn't exist on the installed maplibre-gl (5.24.0). Ported to `map.setSky({'sky-color', 'horizon-color', 'sky-horizon-blend', 'atmosphere-blend'})` — the properties that apply without 3D terrain (`Globe3D.jsx` sets up none). Verified live: `map.getSky()` reads back the applied values with zero exception against a real browser render. See `KNOWN_ISSUES.md` #6 for the full history, including why an earlier attempt at this exact fix never actually reached `origin/main` despite documentation claiming it had.
 
 ### 2. Shadcn UI primitive typing is now done for every component actually in use
 
