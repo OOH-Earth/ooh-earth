@@ -48,6 +48,7 @@ export default function EnvironmentMap({
   inspectNoun = noun.toLowerCase(),
   layerToggles = null,
   onViewportChange = null,
+  onMoveStart = null,
   children = null,
   keepZoomOnSelect = false,
   initialView = { center: [15, 25], zoom: 1.6 },
@@ -60,6 +61,8 @@ export default function EnvironmentMap({
   const inspectBtnRef = useRef(null);
   const cardRef = useRef(null);
   const openedByKeyboardRef = useRef(false);
+  const onMoveStartRef = useRef(onMoveStart);
+  onMoveStartRef.current = onMoveStart;
   const onViewportRef = useRef(onViewportChange);
   onViewportRef.current = onViewportChange;
   const onSelectPointRef = useRef(onSelectPoint);
@@ -264,12 +267,15 @@ export default function EnvironmentMap({
     const reportViewport = () => {
       const b = map.getBounds();
       const c = map.getCenter();
+      if (rootRef.current)
+        rootRef.current.dataset.center = `${c.lat.toFixed(3)},${c.lng.toFixed(3)}`;
       onViewportRef.current?.({
         center: [c.lng, c.lat],
         zoom: map.getZoom(),
         bounds: { west: b.getWest(), south: b.getSouth(), east: b.getEast(), north: b.getNorth() },
       });
     };
+    map.on('movestart', () => onMoveStartRef.current?.());
     map.on('moveend', reportViewport);
     map.on('load', reportViewport);
     map.on('click', REF_LAYER, (e) => {
