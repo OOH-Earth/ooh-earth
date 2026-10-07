@@ -83,7 +83,9 @@ test.describe('bounded place research', () => {
     await page.locator('button').filter({ hasText: 'Research this place' }).first().click();
     await page.getByTestId('load-live-research').click();
     await expect(page.getByTestId('research-fixture-card')).toBeVisible();
-    await expect(page.getByRole('status')).toContainText('USGS returned 503');
+    await expect(page.getByRole('status').filter({ hasText: 'USGS returned 503' })).toContainText(
+      'USGS returned 503',
+    );
     await expect(page.getByText('OOH-verified evidence')).toBeVisible();
   });
 
