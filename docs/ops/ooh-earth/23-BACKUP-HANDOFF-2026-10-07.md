@@ -25,3 +25,25 @@ Owner WSL `npx --yes base44@0.1.14 whoami` reports the owner logged in. This res
 5. Reconcile harness state, plan and release evidence against the observed result. Any later merge/source change needs qualification of that new head. Do not replace the frozen production candidate or deploy production as a side effect.
 
 The script preserves the owner's dirty weather checkout and unpublished local documentation commits by using a fresh clone. Evidence is printed before operations and on failure. A pre-deploy entry reference is retained, but is not called a qualified rollback artifact. A classifier denial remains a STOP/report checkpoint; never retry through another tool, host or encoding.
+
+## Result: BACKUP qualified for `b57cc46` (2026-10-07, run from the owner's authenticated WSL)
+
+State vocabulary: **merged** (in `main`), **CI-qualified** (exact-head required checks green), **BACKUP-qualified** (deployed to BACKUP, bytes verified, rendered checks pass), **production-shipped**.
+
+| Item | State |
+|---|---|
+| `b57cc46` (#336) | CI-qualified (CI `37641011927`, CodeQL `37641012186`, interactions `37641012022`); **BACKUP-qualified**; **not merged**; **not production-shipped** |
+| `bd2ce4c` (#345 handoff script) | CI-qualified after re-run (CI `37642225772` attempt 2, CodeQL `37642225766` attempt 2); **not merged** |
+| Production | frozen at `a1868f122aa965fd96ab023492bed62470fb1106`, untouched |
+
+- Script commit `bd2ce4c` ran `deploy` with Base44 CLI 0.1.14 (`whoami`: owner logged in, no new login). Evidence directory (local): `/tmp/q/evidence/ooh-place-backup.ol8f2Z`.
+- Build proof: entry `/assets/index-BucNanu3.js`, SHA-256 `af7aac7545e29b023e1a3dea6294ff9f792f54e612302497866b985191260ab0`, identical to the owner's earlier validate run; BACKUP app id only, manifest identities all `b57cc46`.
+- Deploy: `base44@0.1.14 site deploy --no-build --yes --app-id 6a6748e009b947cb29591871` reported success. Live homepage entry, every JavaScript chunk and the manifest matched the pinned build.
+- Browser: 12/12 passed against the deployed bytes, serial, zero retries, write guards on (activity logs absorbed, unmatched non-GET blocked, production runtime target fails the test).
+- Bounded real-USGS check (separate; library-level, 2 requests): Tokyo returned 5 real events (latest M4.5 near Satte, 2026-10-01), London a real empty result.
+
+### Failures retained, not erased
+- #345 head `bd2ce4c` attempt 1: CodeQL analysis completed and the failure was at the SARIF upload step; the CI run recorded no failed job (two skipped Playwright jobs). Attempt 2 of both passed without a code change. Treated as GitHub infrastructure, evidenced in `/tmp/q/evidence-345`.
+
+### Limits
+Mocked providers and entities: this does not establish current live-source behaviour on the deployed page, physical-phone coverage, or production readiness. BACKUP carries the pre-#346 lockfile (production audit: 2 findings, low and moderate, neither reachable: moment is not bundled, dompurify's affected option is unused); see doc 24 on #346.
