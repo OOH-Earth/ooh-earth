@@ -11,6 +11,9 @@ Rivers: bundled Natural Earth major rivers (public domain) crossfading into the 
 - DECISION (not blocking): Open-Meteo's free tier is non-commercial (CC BY 4.0, fair use). The app already uses it for air quality; confirm against OOH Earth's status before conditions are used at scale.
 - NOTE: iNaturalist coverage tracks observer density, not biodiversity; copy must keep saying so.
 
+## VARANASI_SAMPLE_PROVENANCE_REQUIRED
+The legacy static river sample "Varanasi Monitoring Station" is plotted at 22.3N 89.0E (Bangladesh delta), about 700 km from Varanasi (25.3N 83.0E). Provenance of its coordinates and of every legacy sample's WQI/pH/turbidity is unknown. Until an owner establishes provenance: the samples are classified DEMO / LEGACY REFERENCE (never observations), the Varanasi sample is hidden from the authoritative map and list, and its record is retained in `riverData.js` as evidence. Do not invent or silently "fix" coordinates.
+
 ## MEDIA CORPS MAPS — MERGED 2026-10-05, NOT DEPLOYED TO PRODUCTION (PR #333, merge `13f23dfaf4874c8c81f04ae311aaad9ab264c81f`)
 Root causes (reproduced on production and BACKUP): the lazy `/media-corps` map did
 not own its Leaflet CSS (unstyled panes, giant unpositioned tiles, no usable pins);
