@@ -5,13 +5,21 @@ import { getCached } from './layerDataCache';
 // Shared data hook — fetches current conflict zone and humanitarian alert data
 // via LLM web search. Uses a module-level cache so multiple consumers share a
 // single API call.
-export function useWarZoneData() {
+// `enabled`: the LLM request is only made once the layer is actually switched on.
+export function useWarZoneData(enabled = true) {
   const [zones, setZones] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(enabled);
   const mounted = useRef(true);
 
   useEffect(() => {
     mounted.current = true;
+    if (!enabled) {
+      setLoading(false);
+      return () => {
+        mounted.current = false;
+      };
+    }
+    setLoading(true);
     getCached('warzones', async () => {
       const res = await base44.integrations.Core.InvokeLLM({
         prompt:
@@ -60,7 +68,7 @@ export function useWarZoneData() {
     return () => {
       mounted.current = false;
     };
-  }, []);
+  }, [enabled]);
 
   return { zones, loading };
 }

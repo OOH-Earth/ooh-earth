@@ -5,13 +5,21 @@ import { getCached } from './layerDataCache';
 // Shared data hook — fetches mushroom foraging hotspot data via LLM web search.
 // Uses a module-level cache so multiple consumers (Leaflet layer, globe manager,
 // filter bar) share a single API call.
-export function useMushroomData() {
+// `enabled`: the LLM request is only made once the layer is actually switched on.
+export function useMushroomData(enabled = true) {
   const [spots, setSpots] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(enabled);
   const mounted = useRef(true);
 
   useEffect(() => {
     mounted.current = true;
+    if (!enabled) {
+      setLoading(false);
+      return () => {
+        mounted.current = false;
+      };
+    }
+    setLoading(true);
     getCached('mushrooms', async () => {
       const res = await base44.integrations.Core.InvokeLLM({
         prompt:
@@ -59,7 +67,7 @@ export function useMushroomData() {
     return () => {
       mounted.current = false;
     };
-  }, []);
+  }, [enabled]);
 
   return { spots, loading };
 }
