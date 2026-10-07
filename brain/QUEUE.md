@@ -1,5 +1,46 @@
 # QUEUE — priority lanes, stable IDs
 
+## QUICKCAPTURE MANUAL COORDINATE INPUT — INTERMITTENT KEYSTROKE LOSS (follow-up)
+`e2e/capture-manual-coordinates.spec.ts` fails ~25% locally on clean `main` at 844x390/1440x900 with the typed value truncated ("-73", "-73.98"). The input is a plain controlled field, so suspect surrounding Map-page handlers or re-render timing. Investigate with a CPU-throttled repro before relying on #322 for slow devices. Not a regression of the release train.
+
+## MEDIA CORPS MAPS — MERGED 2026-10-05, NOT DEPLOYED TO PRODUCTION (PR #333, merge `13f23dfaf4874c8c81f04ae311aaad9ab264c81f`)
+Root causes (reproduced on production and BACKUP): the lazy `/media-corps` map did
+not own its Leaflet CSS (unstyled panes, giant unpositioned tiles, no usable pins);
+the MapLibre Coverage layer was added `before` a layer that did not exist yet;
+short landscape collapsed the map to 35px; pins had no accessible name and no
+Space support; the empty message lived in a sidebar hidden below `lg`. Fix is
+frontend-only: local Leaflet CSS, safe Coverage setup, document-scrolled 300px
+landscape map (an inner scroller lost the first pin click: Leaflet focuses the map
+on mousedown and only compensates window scroll), accessible pins/dialog, visible
+empty states, cached pin icons. Proof: new spec 8/8, existing Media Corps specs
+green, lint/typecheck/`prettier --check .`/security/build green, real-basemap
+check, Map x4 and Globe+Coverage x3 viewport matrices, empty-registry matrix, BACKUP
+entry/chunk/manifest byte-identical (`index-Bod7xzCb.js`), BACKUP `/media-corps`
+rendered with its real empty registry. No backend/schema/permission/data change.
+- PRODUCTION: HELD. Fresh `main` also contains #322 (pinned, owner terminal, typed
+  DEPLOY), #325, #327, #328 and #331 (Hackers Club, Dave feedback pending). Shipping
+  main would release them all together and breaks "one production candidate at a
+  time". Options: (a) include in the next combined release after #322; (b) approve an
+  isolated hotfix of live #319 (`31617284`) + #333 only. Prepared and locally verified
+  for (b), not deployed. Decision needed from Adil.
+- DEFECT FOUND BY THIS WORK, FIXED: CodeQL `js/regex/missing-regexp-anchor` on the new
+  spec's tile stub (host match is now exact).
+
+## MEDIA CORPS REGISTRY POPULATION — DECISION REQUIRED
+Production and BACKUP `MediaCorp` tables are both empty (0 corps), so the page shows a
+truthful empty state. `src/components/ooh/report/oohMediaCorps.js` holds a 24-company
+seed (JCDecaux, Clear Channel Outdoor, Lamar, ...) that is NOT used by `/media-corps`.
+Decide before seeding or adding records: source/accuracy review of the 24 entries,
+who owns ongoing curation, whether records are public, and how they connect to
+PLACE -> OBSERVATION -> ORGANIZATION/CAMPAIGN CONTEXT -> FIELD ACTION. No data was
+written and none should be until this is decided.
+
+## MEDIA CORPS FOLLOW-UPS (not blocking)
+- Popup/drawer consolidation: a pin opens both; the drawer backdrop covers the popup.
+  No information loss or focus problem found.
+- Mobile quick-pick chips use the first word of each name (first 8 corps only); no
+  collisions in the 24-company seed, but labels like "Big" are weak.
+
 ## SOCIAL VERIFIED ACTIVITY → PLACE — CLOSED 2026-09-30
 Use the existing public verified FieldCheck event and Live Activity surface
 to connect a real contribution back to its Location Detail. Frontend-only;
