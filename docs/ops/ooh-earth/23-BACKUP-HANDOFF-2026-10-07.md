@@ -10,7 +10,17 @@ Production remains frozen at `a1868f122aa965fd96ab023492bed62470fb1106`. Nothing
 
 Required exact-head qualification, all discovered by commit SHA (not by PR) and checked by the script before any deploy: `CI` and `CodeQL` (push to main) and `Interaction regression (zero retries)` (workflow_dispatch on main). The script also requires the commit to be on `main`, every merge above to be an ancestor, the lockfile to carry moment 2.31.0 / dompurify 3.4.16 / source-map-js 1.2.2, and the mushroom hook to contain no model call.
 
-State: **merged**; exact-head CI/CodeQL/interaction regression pending at time of writing; **not BACKUP-qualified**; not production-shipped. This section is updated only with observed evidence.
+State: **merged**; **CI-qualified** (exact-head runs on `4fb6cad`: CI `37741933887`, CodeQL `37741933461`, interaction regression `37741959755`, all success); audits at that commit: production `npm audit` 0, full tree 7 (Tailwind 3 build chain, not accepted, see doc 24/25); unit tests 33/33 (hydro 21 + place research 12); **BACKUP-qualified** on attempt 2 (below); **not production-shipped**.
+
+### Attempts (both retained)
+| Attempt | Evidence directory (local) | Result |
+|---|---|---|
+| 1 | `/tmp/q/evidence/ooh-place-backup.JTYEhL` | Deploy + live bytes/chunks/manifest matched; browser gate **35/36, FAILED**: `manual capture coordinates remain editable at 360x800` never saw the Capture button within its 5 s expectation. Trace: the `/map` document request itself took 5.7 s (host latency); the page was still on the loading splash. Isolated repeat on the deployed build: 5/5 pass (4-6 s). Not a pass, not erased. |
+| 2 | `/tmp/q/evidence/ooh-place-backup.rNU5AO` | Same script, same candidate, no test change: live entry `/assets/index-DYBFc-cG.js` (SHA-256 `97f04d66ec2c0f6936a3ec9ba876c7e6d4cb19cfce1e0748eb3cd25f7be80f31`), all JS chunks and manifest matched; **36/36 passed, zero retries** (3.9 min). |
+
+Attempt 2 is a fresh whole-gate run after a measured, host-latency explanation of attempt 1; it is not an in-test retry. The 5 s first-render expectation is sensitive to BACKUP hosting latency; that sensitivity is a known limit of this gate.
+
+Real-provider browser check (separate from the mocked 36): attempt 2 OK. USGS Water Data, Maryland/Virginia: 275 stations from the live API; UK Environment Agency, Thames: 140 stations (130 current, 7 recent, 3 no recent observation at the time). In attempt 1's first real-provider run the USGS request failed once and the page correctly showed `PROVIDER UNAVAILABLE: USGS could not be reached`; two immediate browser repeats returned 200 with `access-control-allow-origin: *`. The first run also marked both providers NOT OK because the label is CSS-uppercased (fixed in the check, `beeabbf`).
 
 Browser gate: 36 serial zero-retry tests in 5 files (place research, manual-coordinate capture, Ecology keyboard selection, observed Rivers, Main Map generated-layer controls) against the deployed BACKUP bytes, mocked providers/entities, write guards on. A separate bounded real-provider browser check (USGS Water Data, UK Environment Agency; 2 page loads, GET only) is recorded in `real-provider-browser.json` and never changes the qualification result.
 
