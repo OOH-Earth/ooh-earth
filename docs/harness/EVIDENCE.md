@@ -10,3 +10,8 @@
 - Historical audit: zero high/critical; remaining 1 low and 2 moderate (`dompurify`, `fflate`, `moment`) were not claimed fixed.
 
 Reconcile this index against fresh CI and live evidence after the merge. Do not treat historical BACKUP evidence as proof of the new head.
+
+## 2026-10-08 reconciliation
+- Merge SHAs: #346 `beadb98`, #336 `7877f05`, #342 `4d7db21`, #343 `9adcf92550245eb2401601380532e1eb77a5433f`.
+- b57cc46 BACKUP (historical, script-reported): entry `/assets/index-BucNanu3.js`, SHA-256 `af7aac7545e29b023e1a3dea6294ff9f792f54e612302497866b985191260ab0`; evidence directory `/tmp/q/evidence/ooh-place-backup.ol8f2Z` (not independently reviewed by the agent after the classifier denial).
+- Audit reconciliation: doc 24. CI infrastructure incidents retained: #345 CodeQL upload failure and CI run with no failed job (re-run passed); #343 mobile Playwright job cancelled after 6 h at "Install Playwright OS deps" (re-run).

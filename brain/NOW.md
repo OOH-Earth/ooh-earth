@@ -1,5 +1,12 @@
 # NOW — current truth only
 
+## ENVIRONMENT / PLACE RESEARCH / BACKUP CANDIDATE — 2026-10-08 (merged, NOT production-shipped)
+- Merged to `main`: #346 `beadb98` (lockfile bumps; production audit 0), #336 `7877f05` (place research + focus correction), #342 `4d7db21` (observed Rivers), #343 `9adcf92550245eb2401601380532e1eb77a5433f` (Main Map: no model-generated coordinates; opt-in labelled news summary only). #344 closed as superseded by #336.
+- BACKUP: `b57cc46` was deployed 2026-10-07 and is HISTORICAL (script-reported 12/12 mocked zero-retry browser checks; evidence not independently reviewed after a classifier denial). A new combined candidate (pinned in `scripts/release/place-research-backup.sh`, doc 23) is not qualified until its own exact-head evidence exists.
+- Production is still #319; frozen candidate `a1868f122aa965fd96ab023492bed62470fb1106` is untouched. Mocked providers/entities and no physical-phone testing are the standing limits.
+- Audit: doc 24. Remaining 7 full-tree findings need the Tailwind 4 migration (#348 plan); they are not accepted.
+- Harness state: `docs/harness/` (reconciled this date).
+
 ## RELEASE TRAIN CANDIDATE — 2026-10-06 (built, proven, production deploy DENIED by classifier; owner terminal required)
 - Candidate: branch `release/train-2026-10-06`, head `a1868f122aa965fd96ab023492bed62470fb1106` = `origin/main` `13f23df` with #331 reverted (diff vs main is exactly the inverse of #331: 440 deletions, 8 files). Production base `31617284` (#319).
 - INCLUDED: #322 (`20db711`), #323 tests, #325 (`4717841`), #328 (`46268d8`), #327 (`629f5cc`), #332 (`9fc4154`, build classification only), #333 (`13f23df`). EXCLUDED/HELD: **#331 Hackers Club** (`42637f7`, BACKUP-only until Dave feedback). All frontend-only; no schema/auth/data change.
