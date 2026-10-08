@@ -61,6 +61,7 @@ export default function EnvironmentMap({
   const inspectBtnRef = useRef(null);
   const cardRef = useRef(null);
   const openedByKeyboardRef = useRef(false);
+  const lastSelectionFlight = useRef(null);
   const onMoveStartRef = useRef(onMoveStart);
   onMoveStartRef.current = onMoveStart;
   const onViewportRef = useRef(onViewportChange);
@@ -372,6 +373,9 @@ export default function EnvironmentMap({
       return;
     }
     setSelection({ type: 'point', point: p, lngLat: { lat: p.lat, lng: p.lng } });
+    const flightKey = `${p.id}:${p.lng}:${p.lat}`;
+    if (lastSelectionFlight.current === flightKey) return;
+    lastSelectionFlight.current = flightKey;
     map.flyTo({
       center: [p.lng, p.lat],
       zoom: keepZoomOnSelect ? Math.max(map.getZoom(), 7) : 7,
@@ -408,6 +412,7 @@ export default function EnvironmentMap({
     setSelection(null);
     if (openedByKeyboardRef.current) inspectBtnRef.current?.focus();
     openedByKeyboardRef.current = false;
+    lastSelectionFlight.current = null;
     onSelectPointRef.current?.(null);
   };
 

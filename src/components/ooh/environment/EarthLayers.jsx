@@ -237,11 +237,12 @@ function EarthLayers({ map, engine, interactive = true }) {
   const message = useMemo(() => {
     if (!groups.length)
       return rivers ? 'Major rivers · reference geography' : 'Environmental layers off';
+    if (moving) return 'Map moving; observations load after it settles.';
     if (obs.status === 'zoom') return `Zoom in to load observations (zoom ${OBS_MIN_ZOOM}+).`;
     if (obs.status === 'error') return 'iNaturalist unavailable. No observations loaded.';
     if (obs.status === 'loading') return 'Loading dated observations…';
     return `${obs.points.length} dated observations; not a wildlife census.`;
-  }, [groups.length, obs.status, obs.points.length, rivers]);
+  }, [groups.length, obs.status, obs.points.length, rivers, moving]);
 
   if (!interactive) return null;
   return (

@@ -9,7 +9,7 @@ legend obscures much of the map. A sparse view must not be described as an absen
 Shared `LocationMap` (Leaflet) and `Globe3D` (MapLibre) now show the existing bundled major-river
 reference at world scale. This covers Home's orbital atlas, Main Map, Location Detail and the
 public portals using those components. Ecology enables the same reference network, water,
-habitat and park layers by default, includes animals, collapses its legend initially and puts
+habitat and park layers by default, includes animals, adds river labels to satellite imagery, collapses its legend initially and puts
 observation guidance outside the legend. Rivers keeps its existing detailed OSM network and
 observed USGS/EA stations. Specialist report/store mini-globes are not environmental explorers
 and are not changed in this slice. No claim of complete all-route coverage.
@@ -49,13 +49,13 @@ non-finite/out-of-range coordinates, duplicate IDs and unsafe/non-provider sourc
 excluded. No user profiles/photos/private coordinates requested. Public viewport bounds and IP
 reach iNaturalist on activation; no OOH account identifiers. At most three group requests per
 settled view; no bulk world query or pagination. Dateline-crossing queries still need a separate
-provider-safe split: invalid bounds fail rather than invent coverage. Rate-limit errors are
-surfaced, not retried in a loop. Empty/provider-error/reference data are different states.
+provider-safe split: invalid bounds fail rather than invent coverage. Request starts are capped at 45/minute per browser tab, and provider Retry-After is honoured
+without a retry loop. Empty/provider-error/reference data are different states.
 
 ## Evidence and release state
 
 - Fresh `npm ci`, lint, typecheck and BACKUP-targeted production build: passed locally.
-- Adapter unit tests: 6/6 passed; added to CI's offline checks.
+- Adapter unit tests: 8/8 passed; added to CI's offline checks.
 - Production-scope npm audit: 0 findings. Existing full-tree build-chain findings not fixed here.
 - Read-only live Animalia lookup near Bangkok returned source observation 406739331,
   `Brachythemis contaminata`, with 35 m provider accuracy. This proves the endpoint/fields, not

@@ -9,6 +9,8 @@ const LS_KEY = 'ooh-map-style';
 
 const SATELLITE_GL = {
   version: 8,
+  // Same glyph service as CARTO's existing base styles; enables sourced river labels on imagery.
+  glyphs: 'https://tiles.basemaps.cartocdn.com/fonts/{fontstack}/{range}.pbf',
   sources: {
     satellite: {
       type: 'raster',

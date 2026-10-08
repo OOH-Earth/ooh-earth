@@ -12,6 +12,9 @@ const cache = new Map();
 const pending = new Map();
 const TTL = 5 * 60000;
 const MAX_CACHE = 32;
+const REQUESTS_PER_MINUTE = 45; // Below iNaturalist's recommended 60/minute.
+let requestTimes = [];
+let blockedUntil = 0;
 
 export function urlFor(group, b, since) {
   const q = new URLSearchParams({
@@ -34,7 +37,7 @@ export function urlFor(group, b, since) {
 export function normalise(group, json) {
   const results = Array.isArray(json?.results) ? json.results : [];
   const points = [];
-  for (const r of results) {
+  for (const r of results.slice(0, PER_PAGE)) {
     const c = r?.geojson?.coordinates;
     if (
       r?.obscured ||
@@ -54,6 +57,10 @@ export function normalise(group, json) {
       const u = new URL(r.uri);
       if (
         u.protocol === 'https:' &&
+        !u.username &&
+        !u.password &&
+        !u.search &&
+        !u.hash &&
         u.hostname === 'www.inaturalist.org' &&
         /^\/observations\/[^/?#]+$/.test(u.pathname)
       )
@@ -78,7 +85,11 @@ export function normalise(group, json) {
           : null,
     });
   }
-  return { points, total: Number(json?.total_results) || points.length };
+  const total = Number(json?.total_results);
+  return {
+    points,
+    total: Number.isFinite(total) && total >= points.length ? total : points.length,
+  };
 }
 
 export function requestObservations(group, bounds, since, signal) {
@@ -100,6 +111,11 @@ export function requestObservations(group, bounds, since, signal) {
   if (signal?.aborted) return Promise.reject(new DOMException('Aborted', 'AbortError'));
   let entry = pending.get(url);
   if (!entry) {
+    const now = Date.now();
+    requestTimes = requestTimes.filter((at) => now - at < 60000);
+    if (now < blockedUntil || requestTimes.length >= REQUESTS_PER_MINUTE)
+      return Promise.reject(new Error('Observation provider rate limited; try again later'));
+    requestTimes.push(now);
     const ctl = new AbortController();
     const timer = setTimeout(() => ctl.abort(), 10000);
     entry = { ctl, users: 0, promise: null };
@@ -110,7 +126,18 @@ export function requestObservations(group, bounds, since, signal) {
       referrerPolicy: 'no-referrer',
     })
       .then(async (res) => {
-        if (!res.ok) throw new Error(`iNaturalist HTTP ${res.status}`);
+        if (!res.ok) {
+          const retry = res.headers?.get('Retry-After');
+          const delay =
+            retry && /^\d+$/.test(retry)
+              ? Number(retry) * 1000
+              : Date.parse(retry || '') - Date.now();
+          if (res.status === 429 || (Number.isFinite(delay) && delay > 0))
+            blockedUntil =
+              Date.now() +
+              Math.min(10 * 60000, Number.isFinite(delay) && delay > 0 ? delay : 60000);
+          throw new Error(`iNaturalist HTTP ${res.status}`);
+        }
         const json = await res.json();
         if (!Array.isArray(json?.results)) throw new Error('Malformed observation response');
         const data = { ...normalise(group, json), retrievedAt: new Date().toISOString() };

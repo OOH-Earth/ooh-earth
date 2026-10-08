@@ -112,3 +112,25 @@ test('invalid viewports fail without fetching', async () => {
     /Invalid/,
   );
 });
+
+test('upstream result count cannot bypass the 100-record client cap', () => {
+  const results = Array.from({ length: 120 }, (_, n) => row({ uuid: `cap-${n}` }));
+  assert.equal(normalise('plants', { results, total_results: Infinity }).points.length, 100);
+  assert.equal(normalise('plants', { results, total_results: Infinity }).total, 100);
+});
+
+test('Retry-After stops new provider requests without a retry loop', async () => {
+  const original = globalThis.fetch;
+  let calls = 0;
+  globalThis.fetch = async () => {
+    calls += 1;
+    return { ok: false, status: 429, headers: new Headers({ 'Retry-After': '60' }) };
+  };
+  try {
+    await assert.rejects(requestObservations('animals', bounds, '2026-04-15'), /429/);
+    await assert.rejects(requestObservations('animals', bounds, '2026-04-16'), /rate limited/);
+    assert.equal(calls, 1);
+  } finally {
+    globalThis.fetch = original;
+  }
+});
