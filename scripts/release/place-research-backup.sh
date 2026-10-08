@@ -284,11 +284,11 @@ for (const check of checks) {
     const button = page.getByRole('button', { name: /observed station status/ });
     await button.waitFor({ timeout: 45000 });
     // The label carries the live count; wait for a real, non-zero result or a provider status line.
-    await page.waitForFunction(() => /Observed stations . [1-9]/.test(document.body.innerText), null, { timeout: 45000 }).catch(() => {});
+    await page.waitForFunction(() => /Observed stations . [1-9]/i.test(document.body.innerText), null, { timeout: 45000 }).catch(() => {});
     record.label = (await button.innerText()).replace(/\s+/g, ' ');
     await button.click();
     record.status = (await page.getByTestId('station-status').innerText()).replace(/\s+/g, ' ').slice(0, 400);
-    record.ok = /Observed stations . [1-9]/.test(record.label);
+    record.ok = /Observed stations . [1-9]/i.test(record.label);
     await page.screenshot({ path: `${process.env.EVIDENCE_DIR}/real-provider-${check.host}.png` });
   } catch (error) {
     record.error = String(error.message).slice(0, 300);
