@@ -3,6 +3,7 @@ import * as maplibregl from 'maplibre-gl';
 import { useMushroomData } from './useMushroomData';
 import { useFloraData } from './useFloraData';
 import { useWarZoneData } from './useWarZoneData';
+import { GENERATED_BADGE, GENERATED_NOTE_ECOLOGY, GENERATED_NOTE_WAR } from './generatedLayer';
 import {
   riversToGeoJSON,
   riverSourcesToGeoJSON,
@@ -134,12 +135,13 @@ function mushroomPopupHTML(p) {
   return `
     <div style="width:180px;font-family:'Inter Tight',sans-serif">
       <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px">
-        <span style="font-size:9px;text-transform:uppercase;letter-spacing:0.2em;color:#FF5C00;font-weight:700">Mushroom Index</span>
+        <span style="font-size:9px;text-transform:uppercase;letter-spacing:0.2em;color:#FF5C00;font-weight:700">Mushroom Index · ${esc(GENERATED_BADGE)}</span>
       </div>
       <div style="font-weight:700;font-size:14px;color:hsl(var(--foreground))">${esc(p.region || 'Unknown')}</div>
       <div style="font-size:11px;color:#FF5C00;margin-top:4px;font-style:italic">${esc(p.species)}</div>
       ${p.habitat ? `<div style="font-size:10px;color:hsl(var(--muted-foreground));margin-top:4px"><span style="text-transform:uppercase;letter-spacing:0.1em;font-weight:700;font-size:8">Habitat</span><br/>${esc(p.habitat)}</div>` : ''}
       ${p.note ? `<div style="font-size:10px;color:hsl(var(--muted-foreground));margin-top:4px;line-height:1.4">${esc(p.note)}</div>` : ''}
+      <div style="font-size:9px;color:#FF9A3D;margin-top:8px;line-height:1.4">${esc(GENERATED_NOTE_ECOLOGY)}</div>
     </div>`;
 }
 
@@ -209,12 +211,13 @@ function floraPopupHTML(p) {
   return `
     <div style="width:180px;font-family:'Inter Tight',sans-serif">
       <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px">
-        <span style="font-size:9px;text-transform:uppercase;letter-spacing:0.2em;color:#39FF14;font-weight:700">Flora Index</span>
+        <span style="font-size:9px;text-transform:uppercase;letter-spacing:0.2em;color:#39FF14;font-weight:700">Flora Index · ${esc(GENERATED_BADGE)}</span>
       </div>
       <div style="font-weight:700;font-size:14px;color:hsl(var(--foreground))">${esc(p.region || 'Unknown')}</div>
       <div style="font-size:11px;color:#39FF14;margin-top:4px;font-style:italic">${esc(p.species)}</div>
       ${p.ecosystem ? `<div style="font-size:10px;color:hsl(var(--muted-foreground));margin-top:4px"><span style="text-transform:uppercase;letter-spacing:0.1em;font-weight:700;font-size:8">Ecosystem</span><br/>${esc(p.ecosystem)}</div>` : ''}
       ${p.note ? `<div style="font-size:10px;color:hsl(var(--muted-foreground));margin-top:4px;line-height:1.4">${esc(p.note)}</div>` : ''}
+      <div style="font-size:9px;color:#FF9A3D;margin-top:8px;line-height:1.4">${esc(GENERATED_NOTE_ECOLOGY)}</div>
     </div>`;
 }
 
@@ -286,12 +289,13 @@ function warPopupHTML(z) {
   return `
     <div style="width:200px;font-family:'Inter Tight',sans-serif">
       <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px">
-        <span style="font-size:9px;text-transform:uppercase;letter-spacing:0.2em;color:${color};font-weight:700">${critical ? 'Critical Zone' : 'Advisory'}</span>
+        <span style="font-size:9px;text-transform:uppercase;letter-spacing:0.2em;color:${color};font-weight:700">${critical ? 'Critical Zone' : 'Advisory'} · ${esc(GENERATED_BADGE)}</span>
       </div>
       <div style="font-weight:700;font-size:14px;color:hsl(var(--foreground));line-height:1.25">${esc(z.title)}</div>
       ${z.region ? `<div style="font-size:11px;color:hsl(var(--muted-foreground));margin-top:3px">${esc(z.region)}</div>` : ''}
       ${z.advisory ? `<div style="font-size:10px;color:hsl(var(--foreground));margin-top:6px;line-height:1.45;opacity:0.85">${esc(z.advisory)}</div>` : ''}
-      ${z.source ? `<div style="font-size:8px;color:hsl(var(--muted-foreground));margin-top:8px;text-transform:uppercase;letter-spacing:0.15em">Src: ${esc(z.source)}</div>` : ''}
+      ${z.source ? `<div style="font-size:8px;color:hsl(var(--muted-foreground));margin-top:8px;text-transform:uppercase;letter-spacing:0.15em">Model-named source (unverified): ${esc(z.source)}</div>` : ''}
+      <div style="font-size:9px;color:#FF9A3D;margin-top:8px;line-height:1.4">${esc(GENERATED_NOTE_WAR)}</div>
     </div>`;
 }
 
@@ -445,9 +449,11 @@ function removeRadio(map) {
 // ---- Main component ----
 export default function GlobeLayerManager({ map, activeLayers }) {
   const popupRef = useRef(null);
-  const { spots: mushrooms, loading: mushLoading } = useMushroomData();
-  const { spots: floraSpots, loading: floraLoading } = useFloraData();
-  const { zones: warZones, loading: warLoading } = useWarZoneData();
+  const { spots: mushrooms, loading: mushLoading } = useMushroomData(
+    activeLayers.includes('mushrooms'),
+  );
+  const { spots: floraSpots, loading: floraLoading } = useFloraData(activeLayers.includes('flora'));
+  const { zones: warZones, loading: warLoading } = useWarZoneData(activeLayers.includes('war'));
   const { selectStation } = useRadio();
 
   // Initialize popup instance once

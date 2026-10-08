@@ -1,4 +1,5 @@
 import { CircleMarker, Tooltip, Popup } from 'react-leaflet';
+import { GENERATED_BADGE, GENERATED_NOTE_ECOLOGY } from './generatedLayer';
 import { Leaf, Loader2 } from 'lucide-react';
 import { useMushroomData } from './useMushroomData';
 
@@ -88,7 +89,7 @@ export default function MushroomLayer() {
                 fontWeight: 700,
               }}
             >
-              Mushroom Index
+              Mushroom Index · {GENERATED_BADGE}
             </span>
           </div>
           <div style={{ fontWeight: 700, fontSize: 14, color: 'hsl(var(--foreground))' }}>
@@ -135,6 +136,16 @@ export default function MushroomLayer() {
             }}
           >
             {Number(s.lat).toFixed(4)}, {Number(s.lng).toFixed(4)}
+          </div>
+          <div
+            style={{
+              fontSize: 9,
+              color: '#FF9A3D',
+              marginTop: 8,
+              lineHeight: 1.4,
+            }}
+          >
+            {GENERATED_NOTE_ECOLOGY}
           </div>
         </div>
       </Popup>

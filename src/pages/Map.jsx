@@ -159,9 +159,11 @@ export default function Map() {
   const [missionNotice, setMissionNotice] = useState('');
   const [missionLinkReady, setMissionLinkReady] = useState(false);
   const { style: mapStyle } = useMapStyle();
-  const { spots: mushrooms, loading: mushLoading } = useMushroomData();
-  const { spots: floraSpots, loading: floraLoading } = useFloraData();
-  const { zones: warZones, loading: warLoading } = useWarZoneData();
+  const { spots: mushrooms, loading: mushLoading } = useMushroomData(
+    activeLayers.includes('mushrooms'),
+  );
+  const { spots: floraSpots, loading: floraLoading } = useFloraData(activeLayers.includes('flora'));
+  const { zones: warZones, loading: warLoading } = useWarZoneData(activeLayers.includes('war'));
 
   const toggleLayer = (id) => {
     setActiveLayers((prev) => (prev.includes(id) ? prev.filter((l) => l !== id) : [...prev, id]));
