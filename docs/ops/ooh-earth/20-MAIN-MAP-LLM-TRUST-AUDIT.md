@@ -27,8 +27,13 @@ All three call `base44.integrations.Core.InvokeLLM` with web context.
 - **Authority risk is highest for conflict zones.** An LLM-generated "critical" conflict pin with a made-up-looking source line can be read as an authoritative claim about real places and people.
 
 ## Decision made in this audit
-- **Mushrooms and flora:** replace with the proven Ecology architecture (iNaturalist recent observations, with provenance, freshness and no-coverage semantics) and make the data **lazy** (fetched only when the layer is active). Frontend-only; implemented as a bounded PR. LLM calls removed: 2 per tab session.
-- **Conflict zones:** do not ship model-generated conflict claims as map data. Immediate bounded change: fetch only when the layer is active, and label it "AI-generated, unverified" until the owner decides. Real replacement needs a licensed, sourced dataset (e.g. ACLED or UCDP), which is a licensing and sensitivity decision, **not** taken here.
+- **Mushrooms and flora:** the Main Map observation replacement is still pending, not implemented. Reuse the proven Ecology architecture (iNaturalist recent observations, provenance, freshness and coverage semantics) in a separate bounded slice. Until then these Main Map controls are disabled, the legacy hooks return no coordinates without calling the model, and the UI links to `/ecology`.
+- **Conflict zones:** do not ship model-generated conflict claims as map data, even with an opt-in and warning. The control is disabled and its hook returns no coordinates without making a model call. A replacement needs a licensed, sourced dataset and sensitivity review; no vendor choice is made here.
+
+## 2026-10-07 invariant correction
+The initial #343 patch removed model calls on page load but still requested and plotted generated coordinates after a layer activation. That did not satisfy `brain/INVARIANTS.md` (LLM output is never map data). The correction removes these three request paths and disables their controls while preserving the consumer contracts for Leaflet, globe and filter components. A revised browser regression asserts all three controls are disabled and make no generated-layer calls. The separate news-summary ticker remains explicit opt-in, labelled unverified/not an official warning, with safe link protocols; it does not supply map coordinates. Three unrelated Home model calls remain a separate finding.
+
+This source correction invalidates prior exact-head qualification. New CI/CodeQL and BACKUP rendered qualification are required; it is not deployed by this document.
 
 ## Not changed
 No backend, schema or permission change. Existing entities untouched.

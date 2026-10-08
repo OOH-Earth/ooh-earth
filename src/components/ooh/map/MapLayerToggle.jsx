@@ -78,6 +78,7 @@ export const ALL_LAYERS = LAYER_GROUPS.flatMap((g) => g.layers);
 export const DEFAULT_LAYERS = ALL_LAYERS.filter((l) => l.defaultOn).map((l) => l.id);
 
 export default function MapLayerToggle({ activeLayers, onToggle, hiddenLayerIds = [] }) {
+  const unavailable = new Set(['mushrooms', 'flora', 'war']);
   const hidden = new Set(hiddenLayerIds);
   const visibleGroups = LAYER_GROUPS.map((group) => ({
     ...group,
@@ -88,6 +89,12 @@ export default function MapLayerToggle({ activeLayers, onToggle, hiddenLayerIds 
     <div className="atlas-track flex items-center gap-1 overflow-x-auto border-b border-slate2/40 px-5 py-2 md:px-8">
       <span className="shrink-0 font-mono text-[8px] uppercase tracking-[0.25em] text-dim">
         Layers
+      </span>
+      <a href="/ecology" className="shrink-0 font-mono text-[9px] text-ozone underline">
+        Ecology observations
+      </a>
+      <span className="shrink-0 font-mono text-[8px] text-dim">
+        Mushroom, flora and conflict layers unavailable pending sourced data
       </span>
       {visibleGroups.map((group, gi) => (
         <div key={group.id} className="flex shrink-0 items-center gap-1.5">
@@ -104,8 +111,12 @@ export default function MapLayerToggle({ activeLayers, onToggle, hiddenLayerIds 
             return (
               <button
                 key={l.id}
+                disabled={unavailable.has(l.id)}
+                title={
+                  unavailable.has(l.id) ? 'Unavailable: sourced map data is required' : undefined
+                }
                 onClick={() => onToggle(l.id)}
-                className={`flex shrink-0 items-center gap-1.5 border px-2.5 py-1 font-mono text-[9px] font-bold uppercase tracking-[0.12em] transition-colors ${
+                className={`flex shrink-0 items-center gap-1.5 border px-2.5 py-1 font-mono text-[9px] font-bold uppercase tracking-[0.12em] transition-colors disabled:cursor-not-allowed disabled:opacity-50 ${
                   active
                     ? 'border-ozone bg-ozone text-void'
                     : 'border-slate2/60 text-darkgray hover:border-ozone hover:text-ozone'
