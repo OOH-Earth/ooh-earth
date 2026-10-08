@@ -15,3 +15,5 @@ Reconcile this index against fresh CI and live evidence after the merge. Do not 
 - Merge SHAs: #346 `beadb98`, #336 `7877f05`, #342 `4d7db21`, #343 `9adcf92550245eb2401601380532e1eb77a5433f`.
 - b57cc46 BACKUP (historical, script-reported): entry `/assets/index-BucNanu3.js`, SHA-256 `af7aac7545e29b023e1a3dea6294ff9f792f54e612302497866b985191260ab0`; evidence directory `/tmp/q/evidence/ooh-place-backup.ol8f2Z` (not independently reviewed by the agent after the classifier denial).
 - Audit reconciliation: doc 24. CI infrastructure incidents retained: #345 CodeQL upload failure and CI run with no failed job (re-run passed); #343 mobile Playwright job cancelled after 6 h at "Install Playwright OS deps" (re-run).
+
+- 2026-10-08 BACKUP qualification of `4fb6cad`: attempt 1 `/tmp/q/evidence/ooh-place-backup.JTYEhL` (35 passed / 1 failed), attempt 2 `/tmp/q/evidence/ooh-place-backup.rNU5AO` (36/36); both retained. Full table in doc 23.
