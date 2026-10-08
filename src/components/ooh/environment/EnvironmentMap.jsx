@@ -73,6 +73,7 @@ export default function EnvironmentMap({
   const [gpuUnavailable, setGpuUnavailable] = useState(false);
   const [status, setStatus] = useState('loading'); // loading | ready | error
   const [partialFailure, setPartialFailure] = useState(false);
+  const [referenceFailure, setReferenceFailure] = useState(false);
   const [view, setView] = useState({ zoom: initialView.zoom, segments: 0, names: 0 });
   const [selection, setSelection] = useState(null); // { type: 'waterway' | 'point', ... }
   const [legendOpen, setLegendOpen] = useState(
@@ -134,6 +135,7 @@ export default function EnvironmentMap({
     setReady(false);
     setStatus('loading');
     setPartialFailure(false);
+    setReferenceFailure(false);
     // Deep link: ?lat=&lng=&z= sets the starting view (validated; ignored if malformed).
     const params = new URLSearchParams(window.location.search);
     const dl = {
@@ -173,7 +175,7 @@ export default function EnvironmentMap({
     mapRef.current = map;
 
     const timeout = setTimeout(() => {
-      if (!loadedRef.current) setStatus('error');
+      if (!loadedRef.current && map.getZoom() >= VECTOR_MIN_ZOOM) setStatus('error');
     }, TILE_TIMEOUT_MS);
 
     const applyProjection = () => {
@@ -217,10 +219,15 @@ export default function EnvironmentMap({
           data: { type: 'FeatureCollection', features: [] },
           attribution: NE_ATTRIBUTION,
         });
-        // Bundled and lazy: only the Rivers page ever downloads this chunk.
-        import('./data/naturalEarthRivers.json').then((m) => {
-          /** @type {any} */ (map.getSource(NE_SOURCE_ID))?.setData(m.default);
-        });
+        // Bundled and lazy: shared reference geography, not a live provider request.
+        import('./data/naturalEarthRivers.json')
+          .then((m) => {
+            if (mapRef.current === map)
+              /** @type {any} */ (map.getSource(NE_SOURCE_ID))?.setData(m.default);
+          })
+          .catch(() => {
+            if (mapRef.current === map) setReferenceFailure(true);
+          });
       }
       // Keep base-map labels above our overlays.
       const firstSymbol = map.getStyle().layers?.find((l) => l.type === 'symbol')?.id;
@@ -471,6 +478,11 @@ export default function EnvironmentMap({
             {noun === 'River'
               ? 'The detailed river network could not be loaded. Showing major rivers only.'
               : 'Detailed reference tiles are unavailable. Bundled major rivers remain available when enabled.'}
+          </span>
+        )}
+        {referenceFailure && layers.includes('waterways') && (
+          <span className="w-fit max-w-xs border border-flare/50 bg-void/90 px-2 py-1 text-[10px] text-silver">
+            Major-river reference unavailable. Detailed tiles and observations are separate sources.
           </span>
         )}
         {partialFailure && status === 'ready' && (

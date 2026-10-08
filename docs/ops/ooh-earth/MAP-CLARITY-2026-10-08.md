@@ -4,7 +4,8 @@
 
 The owner's Ecology screenshot starts at world zoom: detailed habitat polygons require zoom 5,
 observations require zoom 6, water is off by default, and there is no fauna group. The expanded
-legend obscures much of the map. A sparse view must not be described as an absence of life.
+legend obscures much of the map. A 12-second timeout also falsely reported detail-tile failure
+at world zoom, where no detail tiles were requested; it now applies only at detail zoom. A sparse view must not be described as an absence of life.
 
 Shared `LocationMap` (Leaflet) and `Globe3D` (MapLibre) now show the existing bundled major-river
 reference at world scale. This covers Home's orbital atlas, Main Map, Location Detail and the

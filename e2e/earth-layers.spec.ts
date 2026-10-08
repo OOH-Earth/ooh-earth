@@ -37,6 +37,7 @@ function renderedGeometry(
 test('Ecology world view visibly marks bundled rivers and explains the observation zoom gate', async ({
   page,
 }) => {
+  test.setTimeout(45_000);
   await mockBase44(page, { user: null, locations: {} });
   const net = await stubEnvironmentNetwork(page, 'ecology');
   const api = await stubEcologyApis(page);
@@ -48,6 +49,10 @@ test('Ecology world view visibly marks bundled rivers and explains the observati
   await expect(page.getByTestId('ecology-guidance')).toContainText('Zoom in');
   await expect(page.getByTestId('env-legend')).toHaveCount(0);
   expect(api.inatRequests).toHaveLength(0);
+  expect(net.tileRequests).toHaveLength(0);
+  // The old 12-second detail-tile timer falsely failed a view that requested no detail tiles.
+  await page.waitForTimeout(12_500);
+  await expect(map).toHaveAttribute('data-status', 'ready');
   expect(net.tileRequests).toHaveLength(0);
 });
 

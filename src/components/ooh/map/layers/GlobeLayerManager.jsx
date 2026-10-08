@@ -468,7 +468,7 @@ export default function GlobeLayerManager({ map, activeLayers }) {
   useEffect(() => {
     if (!map || !popupRef.current) return;
     if (activeLayers.includes('rivers')) {
-      if (!map.getSource('ooh-rivers')) addRivers(map, popupRef.current);
+      if (!map.getSource('ooh-river-sources')) addRivers(map, popupRef.current);
     } else {
       removeRivers(map);
     }
