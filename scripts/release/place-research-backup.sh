@@ -1,10 +1,11 @@
 #!/usr/bin/env bash
 # Owner-terminal BACKUP handoff. Source candidate is independent of this script's commit.
+# The candidate is a commit on main; its exact-head CI is discovered by commit SHA, not by PR.
 set -euo pipefail
 
 MODE="${1:-validate}"
 [[ "$MODE" == validate || "$MODE" == deploy ]] || { echo 'Use validate or deploy'; exit 2; }
-export CANDIDATE_SHA=b57cc4645592f6e696f917fc860d672c397895b0
+export CANDIDATE_SHA=4fb6cad3c2c908be7f9d559ea825e363f9a9e240
 export BACKUP_APP_ID=6a6748e009b947cb29591871
 export PROD_APP_ID=6a62213cff3ccbca88c04ff5
 export EVIDENCE_DIR
@@ -18,8 +19,23 @@ node -e 'if(Number(process.versions.node.split(".")[0])<20)throw Error("Node 20+
 git clone --no-checkout https://github.com/OOH-Earth/ooh-earth.git "$EVIDENCE_DIR/source"
 cd "$EVIDENCE_DIR/source"
 git checkout --detach "$CANDIDATE_SHA"
-git merge-base --is-ancestor df43402ce2d33c015e7b153c20a14113371a7077 HEAD
-git merge-base --is-ancestor 13bffdecce4c423918f04fd7b83b2607a71a5278 HEAD
+# Every merge that makes up the combined candidate must be in its history.
+for ancestor in beadb9878229cd1841d9a99512d2928b19eab25b 7877f0598b4c4d3983d5e98cb8b9ab42edb54edb \
+  4d7db218981984609d18780b3158e32d89f7650d 9adcf92550245eb2401601380532e1eb77a5433f; do
+  git merge-base --is-ancestor "$ancestor" HEAD
+done
+# Historical b57cc46 was a pre-squash head and is intentionally not required.
+node -e '
+const lock = require("./package-lock.json").packages;
+const need = { moment: "2.31.0", dompurify: "3.4.16", "source-map-js": "1.2.2" };
+for (const [name, version] of Object.entries(need))
+  if (lock[`node_modules/${name}`]?.version !== version) throw Error(`lockfile ${name} is not ${version}`);
+const fs = require("fs");
+for (const file of ["src/lib/hydro/hydroApi.js", "src/lib/placeResearch.js", "e2e/rivers-observed.spec.ts"])
+  if (!fs.existsSync(file)) throw Error(`missing ${file}`);
+if (/InvokeLLM/.test(fs.readFileSync("src/components/ooh/map/layers/useMushroomData.js", "utf8")))
+  throw Error("model-generated map coordinates are back in the mushroom hook");
+'
 npm ci
 GITHUB_SHA="$CANDIDATE_SHA" GIT_SHA="$CANDIDATE_SHA" RELEASE_ID="$CANDIDATE_SHA" \
   RELEASE_STATE=CANDIDATE VITE_BASE44_APP_ID="$BACKUP_APP_ID" \
@@ -95,7 +111,7 @@ export const test = base.extend<{ releaseGuard: void }>({
 TS
 node --input-type=module - <<'JS'
 import fs from 'node:fs';
-for (const file of ['place-research', 'capture-manual-coordinates', 'ecology-map']) {
+for (const file of ['place-research', 'capture-manual-coordinates', 'ecology-map', 'rivers-observed', 'main-map-generated-layers']) {
   const path = `e2e/${file}.spec.ts`;
   const source = fs.readFileSync(path, 'utf8');
   const adjusted = source.replace("from '@playwright/test';", "from './fixtures/backupReleaseGuard';");
@@ -112,23 +128,25 @@ export default defineConfig({ ...original, webServer: undefined, workers: 1, ret
   use: { ...original.use, baseURL: 'https://ooh-earth-backup.base44.app', trace: 'on', screenshot: 'on' },
 });
 TS
-SPECS=(e2e/place-research.spec.ts e2e/capture-manual-coordinates.spec.ts e2e/ecology-map.spec.ts)
-FILTER='bounded place research|manual capture coordinates|delayed dialog autofocus|selecting an observation'
+SPECS=(e2e/place-research.spec.ts e2e/capture-manual-coordinates.spec.ts e2e/ecology-map.spec.ts
+  e2e/rivers-observed.spec.ts e2e/main-map-generated-layers.spec.ts)
+FILTER='bounded place research|manual capture coordinates|delayed dialog autofocus|selecting an observation|observed stations|AI-generated layers'
 npx playwright test --config=playwright.backup-release.config.ts "${SPECS[@]}" \
   --grep "$FILTER" --list > "$EVIDENCE_DIR/test-discovery.txt"
 cat "$EVIDENCE_DIR/test-discovery.txt"
-grep -q 'Total: 12 tests in 3 files' "$EVIDENCE_DIR/test-discovery.txt" \
+grep -q 'Total: 36 tests in 5 files' "$EVIDENCE_DIR/test-discovery.txt" \
   || { echo 'Unexpected discovery count; inspect before deploying'; exit 3; }
 if [[ "$MODE" == validate ]]; then
   echo 'VALIDATED: build/target/manifest/test discovery only; no browser run, Base44 command or deployment.'
   exit 0
 fi
 
-# Public GitHub read only. The pinned source commit must still have successful
-# exact-head runs. A timeout, authentication wall or rate limit fails closed.
+# Public GitHub read only. The pinned candidate commit must have successful exact-head runs of
+# every required workflow, discovered by commit SHA (not by PR). A timeout, authentication wall,
+# rate limit, failed or cancelled run, or a candidate that is not on main fails closed.
 node --input-type=module - <<'JS'
 import fs from 'node:fs';
-const runs = [37641011927, 37641012186, 37641012022];
+const required = ['CI', 'CodeQL', 'Interaction regression (zero retries)'];
 const getGithub = async path => {
   const response = await fetch(`https://api.github.com/repos/OOH-Earth/ooh-earth/${path}`, {
     headers: { Accept: 'application/vnd.github+json' }, signal: AbortSignal.timeout(20000),
@@ -139,26 +157,28 @@ const getGithub = async path => {
 const deadline = Date.now() + 1200000;
 let evidence;
 while (true) {
-  const results = await Promise.allSettled(runs.map(id => getGithub(`actions/runs/${id}`)));
-  const current = results.map(result => {
-    if (result.status !== 'fulfilled') throw result.reason;
-    return result.value;
-  });
-  for (const run of current) {
-    if (run.head_sha !== process.env.CANDIDATE_SHA) throw Error('CI head mismatch');
+  const listing = await getGithub(`actions/runs?head_sha=${process.env.CANDIDATE_SHA}&per_page=100`);
+  const all = listing.workflow_runs || [];
+  if (all.some(run => run.head_sha !== process.env.CANDIDATE_SHA)) throw Error('CI head mismatch');
+  const runs = all.filter(run => ['push', 'workflow_dispatch'].includes(run.event));
+  const latest = required.map(name =>
+    runs.filter(run => run.name === name).sort((a, b) => b.run_number - a.run_number)[0]);
+  for (const run of latest.filter(Boolean)) {
     if (run.status === 'completed' && run.conclusion !== 'success')
       throw Error(`Exact-head CI failed: ${run.name}/${run.conclusion}`);
   }
-  if (current.every(run => run.status === 'completed' && run.conclusion === 'success')) {
-    evidence = current.map(run => ({ id: run.id, name: run.name, head: run.head_sha, conclusion: run.conclusion, url: run.html_url }));
+  if (latest.every(run => run && run.status === 'completed' && run.conclusion === 'success')) {
+    evidence = latest.map(run => ({ id: run.id, name: run.name, head: run.head_sha, conclusion: run.conclusion, url: run.html_url }));
     break;
   }
   if (Date.now() >= deadline) throw Error('Exact-head CI did not finish within 20 minutes; nothing deployed');
-  console.log('Waiting for exact-head qualification:', current.map(run => `${run.name}: ${run.status}`).join('; '));
+  console.log('Waiting for exact-head qualification:', required.map((name, i) =>
+    `${name}: ${latest[i] ? latest[i].status : 'not started'}`).join('; '));
   await new Promise(resolve => setTimeout(resolve, 30000));
 }
-const pr = await getGithub('pulls/336');
-if (pr.head?.sha !== process.env.CANDIDATE_SHA) throw Error('PR source advanced; review the new candidate before deploying');
+const comparison = await getGithub(`compare/${process.env.CANDIDATE_SHA}...main`);
+if (!['identical', 'ahead'].includes(comparison.status))
+  throw Error(`Candidate is not on main (${comparison.status}); review before deploying`);
 fs.writeFileSync(`${process.env.EVIDENCE_DIR}/ci-proof.json`, JSON.stringify(evidence, null, 2));
 const before = await fetch('https://ooh-earth-backup.base44.app/', { cache: 'no-store', signal: AbortSignal.timeout(20000) });
 if (!before.ok) throw Error(`Pre-deploy BACKUP homepage: HTTP ${before.status}`);
@@ -229,9 +249,59 @@ node --input-type=module - <<'JS'
 import fs from 'node:fs';
 const report = JSON.parse(fs.readFileSync(`${process.env.EVIDENCE_DIR}/results.json`, 'utf8'));
 const stats = report.stats;
-if (stats.expected !== 12 || stats.unexpected || stats.flaky || stats.skipped || report.errors?.length)
+if (stats.expected !== 36 || stats.unexpected || stats.flaky || stats.skipped || report.errors?.length)
   throw Error(`Browser gate failed: ${JSON.stringify(stats)}`);
-console.log('12/12 deployed-artifact browser checks passed, zero retries. Data/providers were mocked; this is not natural live-source or physical-phone qualification.');
+console.log('36/36 deployed-artifact browser checks passed, zero retries. Data/providers were mocked; this is not natural live-source or physical-phone qualification.');
+JS
+# Bounded REAL-provider browser check, recorded separately from the mocked suite above. It never
+# changes the qualification result: it reports whether the deployed page works against the live
+# USGS Water Data and UK Environment Agency APIs right now (2 page loads, GET only, non-GET aborted).
+node --input-type=module - <<'JS' || echo 'Real-provider check could not complete; recorded as unavailable, mocked result unaffected.'
+import fs from 'node:fs';
+import { chromium } from '@playwright/test';
+const origin = 'https://ooh-earth-backup.base44.app';
+const checks = [
+  { name: 'USGS Water Data, Maryland/Virginia', path: '/rivers?lat=39.2&lng=-76.7&z=9', host: 'api.waterdata.usgs.gov' },
+  { name: 'UK Environment Agency, Thames', path: '/rivers?lat=51.42&lng=-0.25&z=9', host: 'environment.data.gov.uk' },
+];
+const browser = await chromium.launch();
+const results = [];
+for (const check of checks) {
+  const context = await browser.newContext({ viewport: { width: 1440, height: 900 } });
+  const page = await context.newPage();
+  const providerRequests = [];
+  const blocked = [];
+  await page.route('**/*', route => {
+    const request = route.request();
+    const url = new URL(request.url());
+    if (!['GET', 'HEAD', 'OPTIONS'].includes(request.method())) { blocked.push(request.method() + ' ' + url.origin + url.pathname); return route.abort(); }
+    if (url.hostname === check.host) providerRequests.push(url.pathname);
+    return route.continue();
+  });
+  const record = { check: check.name, observedAt: new Date().toISOString(), ok: false };
+  try {
+    await page.goto(origin + check.path, { waitUntil: 'domcontentloaded', timeout: 30000 });
+    const button = page.getByRole('button', { name: /observed station status/ });
+    await button.waitFor({ timeout: 45000 });
+    // The label carries the live count; wait for a real, non-zero result or a provider status line.
+    await page.waitForFunction(() => /Observed stations . [1-9]/.test(document.body.innerText), null, { timeout: 45000 }).catch(() => {});
+    record.label = (await button.innerText()).replace(/\s+/g, ' ');
+    await button.click();
+    record.status = (await page.getByTestId('station-status').innerText()).replace(/\s+/g, ' ').slice(0, 400);
+    record.ok = /Observed stations . [1-9]/.test(record.label);
+    await page.screenshot({ path: `${process.env.EVIDENCE_DIR}/real-provider-${check.host}.png` });
+  } catch (error) {
+    record.error = String(error.message).slice(0, 300);
+  }
+  record.providerRequests = providerRequests.length;
+  record.blockedWrites = blocked;
+  results.push(record);
+  await context.close();
+}
+await browser.close();
+fs.writeFileSync(`${process.env.EVIDENCE_DIR}/real-provider-browser.json`, JSON.stringify(results, null, 2));
+console.log('REAL-PROVIDER browser check (separate from the mocked suite):');
+for (const r of results) console.log(' ', r.ok ? 'OK ' : 'NOT OK', r.check, r.label || r.error || '', `provider requests: ${r.providerRequests}`);
 JS
 echo "BACKUP evidence ready: $EVIDENCE_DIR. Production remains outside this script."
 } 2>&1 | tee "$EVIDENCE_DIR/session.log"

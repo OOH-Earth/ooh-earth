@@ -44,11 +44,11 @@ jobs:
             use: { ...guarded.use, baseURL: 'http://localhost:4173' },
           });
           TS
-          npx playwright test --config=playwright.handoff-local.config.ts e2e/place-research.spec.ts e2e/capture-manual-coordinates.spec.ts e2e/ecology-map.spec.ts --grep 'bounded place research|manual capture coordinates|delayed dialog autofocus|selecting an observation' --workers=1 --retries=0 --trace=on
+          npx playwright test --config=playwright.handoff-local.config.ts e2e/place-research.spec.ts e2e/capture-manual-coordinates.spec.ts e2e/ecology-map.spec.ts e2e/rivers-observed.spec.ts e2e/main-map-generated-layers.spec.ts --grep 'bounded place research|manual capture coordinates|delayed dialog autofocus|selecting an observation|observed stations|AI-generated layers' --workers=1 --retries=0 --trace=on
           node --input-type=module - <<'JS'
           import fs from 'node:fs';
           const report = JSON.parse(fs.readFileSync(`${process.env.EVIDENCE_DIR}/results.json`, 'utf8'));
-          if (report.stats.expected !== 12 || report.stats.unexpected || report.stats.flaky || report.stats.skipped || report.errors?.length)
+          if (report.stats.expected !== 36 || report.stats.unexpected || report.stats.flaky || report.stats.skipped || report.errors?.length)
             throw Error(`Guarded browser validation failed: ${JSON.stringify(report.stats)}`);
           JS
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
@@ -60,5 +60,6 @@ jobs:
             ${{ runner.temp }}/ooh-place-backup.*/build-proof.json
             ${{ runner.temp }}/ooh-place-backup.*/test-discovery.txt
             ${{ runner.temp }}/ooh-place-backup.*/results.json
+            ${{ runner.temp }}/ooh-place-backup.*/real-provider-*
             ${{ runner.temp }}/ooh-place-backup.*/browser-results
           retention-days: 14
