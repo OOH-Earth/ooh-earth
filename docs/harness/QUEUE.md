@@ -1,6 +1,6 @@
 # Ordered queue (reconciled 2026-10-08)
 
-1. Re-pin and re-qualify the combined BACKUP candidate (doc 23). Acceptance: exact-head CI + CodeQL + interaction regression on the pinned commit, both audit scopes, relevant unit tests, serial zero-retry deployed-artifact browser run, live bytes/manifest/target proof. Record a bounded real-provider browser check separately from mocked coverage.
+1. DONE 2026-10-08: combined BACKUP candidate `4fb6cad` qualified (attempt 1 35/36 failed, attempt 2 36/36; doc 23). Any change to its source needs a new pin and a fresh qualification.
 2. Physical-phone testing of place research, observed Rivers and the manual-coordinate field (explicitly outstanding; no one has done it).
 3. Tailwind 3 -> 4 migration (#348 plan): decide the browser baseline, then screenshot baselines first. Isolated from any release candidate.
 4. Investigate the manual-coordinate keystroke-loss reproduction on slow devices beyond the delayed-autofocus cause already proven; no retries or weaker assertions.

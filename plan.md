@@ -6,7 +6,8 @@ Updated 2026-10-02. Follow `brain/PRODUCT.md`, `brain/INVARIANTS.md` and the own
 - [x] #346 dependency lockfile bumps merged (`beadb98`); production audit 0, full tree 7 (Tailwind 3 chain, plan in #348).
 - [x] #336 place research + focus correction merged (`7877f05`); #344 closed as superseded.
 - [x] #342 observed Rivers merged (`4d7db21`); #343 Main Map trust correction merged (`9adcf92550245eb2401601380532e1eb77a5433f`).
-- [ ] Re-pin and qualify the combined BACKUP candidate (doc 23); then owner physical-phone testing. `b57cc46` is historical evidence only.
+- [x] Combined BACKUP candidate `4fb6cad` qualified: attempt 1 35/36 (failed, slow document), attempt 2 36/36, zero retries; real-provider check separate. `b57cc46` is historical evidence only.
+- [ ] Owner physical-phone testing of the BACKUP candidate (not yet performed).
 - [ ] Tailwind 4 migration (isolated, #348) and `ci.yml` job timeouts (own PRs).
 
 ## SHIP — one production candidate

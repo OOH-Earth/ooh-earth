@@ -2,7 +2,7 @@
 
 ## ENVIRONMENT / PLACE RESEARCH / BACKUP CANDIDATE — 2026-10-08 (merged, NOT production-shipped)
 - Merged to `main`: #346 `beadb98` (lockfile bumps; production audit 0), #336 `7877f05` (place research + focus correction), #342 `4d7db21` (observed Rivers), #343 `9adcf92550245eb2401601380532e1eb77a5433f` (Main Map: no model-generated coordinates; opt-in labelled news summary only). #344 closed as superseded by #336.
-- BACKUP: `b57cc46` was deployed 2026-10-07 and is HISTORICAL (script-reported 12/12 mocked zero-retry browser checks; evidence not independently reviewed after a classifier denial). A new combined candidate (pinned in `scripts/release/place-research-backup.sh`, doc 23) is not qualified until its own exact-head evidence exists.
+- BACKUP serves candidate `4fb6cad3c2c908be7f9d559ea825e363f9a9e240` (entry `/assets/index-DYBFc-cG.js`). Qualification: attempt 1 35 passed / 1 failed at zero retries (slow `/map` document, 5.7 s); attempt 2 36/36 at zero retries; real-provider browser check separate (USGS 275, EA 140); mocked providers; no physical-phone testing. Later main commits do not change it. `b57cc46` is historical, script-reported only. See `docs/harness/STATE.md` and doc 23.
 - Production is still #319; frozen candidate `a1868f122aa965fd96ab023492bed62470fb1106` is untouched. Mocked providers/entities and no physical-phone testing are the standing limits.
 - Audit: doc 24. Remaining 7 full-tree findings need the Tailwind 4 migration (#348 plan); they are not accepted.
 - Harness state: `docs/harness/` (reconciled this date).
