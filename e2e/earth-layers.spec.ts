@@ -33,6 +33,8 @@ function renderedGeometry(
   return null;
 }
 
+test.describe.configure({ retries: 0 });
+
 // Rendering and behaviour are asserted independently from API-200 and canvas presence.
 test('Ecology world view visibly marks bundled rivers and explains the observation zoom gate', async ({
   page,
@@ -64,6 +66,9 @@ test('fauna is a source-linked dated observation with positional uncertainty, no
   const api = await stubEcologyApis(page);
   await page.goto('/ecology?lat=13.75&lng=100.5&z=7');
   const mobileList = (page.viewportSize()?.width ?? 1280) < 1024;
+  await expect(page.getByRole('button', { name: /^Animals 1$/ })).toBeVisible({
+    timeout: 20_000,
+  });
   if (mobileList) await page.getByRole('button', { name: 'List', exact: true }).click();
   const card = page.getByRole('button', { name: /Eurasian tree sparrow/ });
   await expect(card).toBeVisible({ timeout: 20_000 });
