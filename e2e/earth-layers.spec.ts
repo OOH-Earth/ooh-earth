@@ -2,6 +2,37 @@ import { test, expect } from '@playwright/test';
 import { mockBase44 } from './fixtures/mockBase44';
 import { stubEnvironmentNetwork, stubEcologyApis } from './fixtures/environmentNetwork';
 
+function renderedGeometry(
+  element: Element,
+  { sourceId, layerId }: { sourceId: string; layerId: string },
+) {
+  let node: Element | null = element;
+  let fiber: any;
+  while (node && !fiber) {
+    const key = Object.keys(node).find((name) => name.startsWith('__reactFiber$'));
+    if (key) fiber = (node as any)[key];
+    node = node.parentElement;
+  }
+  for (let hops = 0; fiber && hops < 40; hops++, fiber = fiber.return) {
+    let map = fiber.memoizedProps?.map;
+    let hook = fiber.memoizedState;
+    while (!map && hook) {
+      const candidate = hook.memoizedState?.current;
+      if (typeof candidate?.getSource === 'function') map = candidate;
+      hook = hook.next;
+    }
+    if (typeof map?.getSource !== 'function') continue;
+    const source = map.getSource(sourceId);
+    if (!source || !map.getLayer(layerId)) return null;
+    return {
+      loaded: source.loaded(),
+      features: source.serialize().data.features,
+      rendered: map.queryRenderedFeatures({ layers: [layerId] }).map((f: any) => f.properties.id),
+    };
+  }
+  return null;
+}
+
 // Rendering and behaviour are asserted independently from API-200 and canvas presence.
 test('Ecology world view visibly marks bundled rivers and explains the observation zoom gate', async ({
   page,
@@ -38,7 +69,33 @@ test('fauna is a source-linked dated observation with positional uncertainty, no
     'href',
     'https://www.inaturalist.org/observations/a1',
   );
+  await expect
+    .poll(
+      async () =>
+        page
+          .getByTestId('env-map')
+          .evaluate(renderedGeometry, { sourceId: 'ooh-env-ref', layerId: 'ooh-env-ref-points' }),
+      { timeout: 20_000 },
+    )
+    .not.toBeNull();
   expect(api.inatRequests.some((u) => u.searchParams.get('taxon_id') === '1')).toBe(true);
+  await expect
+    .poll(
+      async () =>
+        (
+          await page
+            .getByTestId('env-map')
+            .evaluate(renderedGeometry, { sourceId: 'ooh-env-ref', layerId: 'ooh-env-ref-points' })
+        )?.rendered.includes('animals:a1'),
+      { timeout: 20_000 },
+    )
+    .toBe(true);
+  const geometry = await page
+    .getByTestId('env-map')
+    .evaluate(renderedGeometry, { sourceId: 'ooh-env-ref', layerId: 'ooh-env-ref-points' });
+  expect(
+    geometry?.features.find((f: any) => f.properties.id === 'animals:a1').geometry.coordinates,
+  ).toEqual([100.55, 13.746]);
   expect(api.stats.llmCalls).toBe(0);
 });
 
@@ -72,3 +129,30 @@ for (const viewport of [
     );
   });
 }
+
+test('shared Main Map globe renders sourced rivers without activating observation requests', async ({
+  page,
+}) => {
+  await page.addInitScript(() => {
+    localStorage.setItem('ooh-map-view', JSON.stringify('globe'));
+  });
+  await mockBase44(page, { user: null, locations: {} });
+  await stubEnvironmentNetwork(page);
+  const api = await stubEcologyApis(page);
+  await page.goto('/map');
+  const layers = page.getByTestId('earth-layers');
+  await expect(layers).toHaveAttribute('data-engine', 'maplibre', { timeout: 20_000 });
+  await expect
+    .poll(
+      async () =>
+        (
+          await layers.evaluate(renderedGeometry, {
+            sourceId: 'ooh-earth-reference',
+            layerId: 'ooh-earth-rivers',
+          })
+        )?.rendered.length ?? 0,
+      { timeout: 20_000 },
+    )
+    .toBeGreaterThan(0);
+  expect(api.inatRequests).toHaveLength(0);
+});

@@ -67,6 +67,9 @@ without a retry loop. Empty/provider-error/reference data are different states.
   browser pass claimed. New tests cover world-view rendered segment counts, fauna/source and
   uncertainty, and flat-map marker interaction at 360×800 and 844×390. Existing Ecology/Rivers/
   Home-globe regressions remain in CI. CI and fresh BACKUP rendered qualification are pending.
+- Base44 CLI identity check was blocked by automatic approval review: its ancillary PostHog
+  telemetry request had an unknown payload that could include environment/project metadata.
+  No retry via another tool, route or host. Deployment remains blocked pending owner review.
 - No merge, BACKUP deployment, production deployment, backend/schema/permission changes or
   production candidate changes. The currently qualified candidate remains separate.
 

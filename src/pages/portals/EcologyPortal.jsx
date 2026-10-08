@@ -84,6 +84,8 @@ export default function EcologyPortal() {
     if (obs.status === 'loading') return 'Loading observations…';
     if (obs.status === 'error') return 'iNaturalist is unavailable right now. Try again shortly.';
     if (obs.status !== 'ready') return null;
+    if (!(group in obs.totals))
+      return 'This observation group is unavailable; not an empty result.';
     const mine = obs.points.filter((p) => p.group === group);
     if (!mine.length) {
       return `No research-grade observations in the last ${RECENT_DAYS} days in view. That is not evidence that nothing lives here.`;
