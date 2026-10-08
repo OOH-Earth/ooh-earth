@@ -126,6 +126,7 @@ for (const viewport of [
     await layers.getByRole('button', { name: 'Earth layers', exact: true }).click();
     await layers.getByRole('button', { name: 'Animals · observations', exact: true }).click();
     await expect(layers).toHaveAttribute('data-observations', '1', { timeout: 20_000 });
+    await layers.getByRole('button', { name: 'Earth layers', exact: true }).click();
     const marker = page.locator('.leaflet-interactive').last();
     await marker.click();
     await expect(page.locator('.leaflet-popup-content')).toContainText('Eurasian tree sparrow');

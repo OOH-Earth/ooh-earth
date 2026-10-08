@@ -616,7 +616,7 @@ export default function EnvironmentMap({
               : `${selection.name || `Unnamed ${(selection.kind || 'feature').toLowerCase()}`} details`
           }
           data-testid="env-detail"
-          className="absolute bottom-3 left-3 right-16 z-[950] max-w-sm border border-slate2 bg-card/95 p-3 backdrop-blur-md focus:outline-none sm:right-auto"
+          className="absolute bottom-3 left-3 right-16 z-[950] max-h-[calc(100%-2rem)] max-w-sm overflow-y-auto border border-slate2 bg-card/95 p-3 backdrop-blur-md focus:outline-none sm:right-auto"
         >
           <div className="flex items-start justify-between gap-2">
             <div className="min-w-0">

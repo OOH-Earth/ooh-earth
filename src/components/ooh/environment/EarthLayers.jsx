@@ -181,7 +181,11 @@ function EarthLayers({ map, engine, interactive = true }) {
             weight: 2,
             fillColor: OBS_GROUPS[p.group].color,
             fillOpacity: 0.95,
-          }).bindPopup(recordContent(p)),
+          }).bindPopup(recordContent(p), {
+            autoPan: false,
+            maxWidth: 240,
+            maxHeight: Math.max(44, Math.min(160, map.getSize().y / 2 - 48)),
+          }),
         ),
       ).addTo(map);
       return () => {
@@ -251,7 +255,7 @@ function EarthLayers({ map, engine, interactive = true }) {
       data-testid="earth-layers"
       data-engine={engine}
       data-observations={obs.points.length}
-      className="absolute bottom-12 left-3 z-[900] max-w-[min(18rem,calc(100%-5.5rem))] border border-slate2 bg-void/90 p-2 text-silver backdrop-blur-md"
+      className="absolute bottom-12 left-3 z-[900] max-h-[calc(100%-4rem)] max-w-[min(18rem,calc(100%-5.5rem))] overflow-y-auto border border-slate2 bg-void/90 p-2 text-silver backdrop-blur-md"
     >
       <button
         type="button"
