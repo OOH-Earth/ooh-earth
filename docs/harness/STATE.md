@@ -11,10 +11,9 @@ State vocabulary: **merged** (in `main`) / **CI-qualified** (exact-head required
 
 ## Merged since (documentation/tooling): #345 `15c931c` pinned BACKUP release script + doc 23 (script commit identity is independent of the candidate), #350 `4fb6cad` state docs.
 
-## Merged since (continued): #348 `ec3ef6f` Tailwind 3 -> 4 migration plan (docs only; a plan, not risk acceptance).
+## Merged since (continued): #348 `ec3ef6f` Tailwind 3 -> 4 migration plan (docs only; a plan, not risk acceptance). #352 `0156ce2` CI job/step timeouts (a Playwright job hung 6 h at "Install Playwright OS deps"; limits from 37 observed runs; no retry or assertion change).
 
 ## Open
-- #352 CI job/step timeouts (a Playwright job hung 6 h at "Install Playwright OS deps"; limits from 37 observed runs; no retry or assertion change).
 - #353 pre-migration visual baselines at `4fb6cad` (24 reviewed shots, separate from CI, doc 26).
 - #354 browser-support evidence and the Tailwind 4 floor trade-off (doc 27; recommendation only, owner decision).
 - The 7 remaining full-tree audit findings are NOT accepted; a simulated clean lockfile does not prove application compatibility. No browser-support reduction and no migration deployment is authorized.
