@@ -1,5 +1,6 @@
 import { MapPin, Leaf, Sprout, AlertTriangle, Droplets } from 'lucide-react';
 import { POLLUTION_META } from './layers/riverData';
+import { GENERATED_BADGE } from './layers/generatedLayer';
 
 const LAYER_META = {
   mushrooms: { label: 'Mushroom Index', accent: '#FF5C00', Icon: Leaf },
@@ -98,6 +99,11 @@ export default function LayerResultCard({ item, layer, onSelect = null, selected
         </div>
         {subtitle && (
           <div className="mt-0.5 truncate font-mono text-[10px] italic text-dim">{subtitle}</div>
+        )}
+        {layer !== 'rivers' && (
+          <div className="mt-1 font-mono text-[8px] uppercase tracking-[0.15em] text-[#FF9A3D]">
+            {GENERATED_BADGE} · not an observation
+          </div>
         )}
         {layer === 'rivers' && (
           <div className="mt-1 font-mono text-[8px] uppercase tracking-[0.15em] text-dim/80">

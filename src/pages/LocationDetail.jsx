@@ -13,6 +13,7 @@ import {
   Navigation,
   SprayCan,
   Share2,
+  ShieldCheck,
 } from 'lucide-react';
 import { metaFor } from '@/components/ooh/map/LocationThumb';
 import { keyInfo, isKeyedType, ACCESS_KEYS } from '@/components/ooh/accessKeys';
@@ -32,6 +33,7 @@ import RelatedLocations from '@/components/ooh/RelatedLocations';
 import LocationContextEvidence from '@/components/ooh/LocationContextEvidence';
 import EvidenceTimeline from '@/components/ooh/EvidenceTimeline';
 import ConceptPreview from '@/components/ooh/ConceptPreview';
+import PlaceResearchPanel from '@/components/ooh/PlaceResearchPanel';
 import { useSeo } from '@/lib/seoContext';
 import { getStatusBadgeClasses } from '@/lib/statusBadge';
 import { shareLocation } from '@/lib/shareLocation';
@@ -59,6 +61,7 @@ export default function LocationDetail() {
   const [searchParams] = useSearchParams();
   const [shareState, setShareState] = useState('');
   const [routeState, setRouteState] = useState('');
+  const [researchOpen, setResearchOpen] = useState(false);
   // Deep-link hint from PortalOps' Verification Priority Queue (or any other
   // future caller) -- a pure navigation signal, nothing else. Any value other
   // than exactly 'recheck' (missing, misspelled, tampered) is silently
@@ -392,7 +395,22 @@ export default function LocationDetail() {
               )}
             </div>
           )}
+
+          <button
+            type="button"
+            onClick={() => setResearchOpen((open) => !open)}
+            aria-expanded={researchOpen}
+            aria-controls="place-research-title"
+            className="mt-4 inline-flex min-h-11 items-center gap-2 border border-ozone bg-ozone px-3 py-2 font-mono text-[9px] font-bold uppercase tracking-[0.2em] text-void transition-colors hover:border-flare hover:bg-flare focus-visible:outline focus-visible:outline-2 focus-visible:outline-ozone"
+          >
+            <ShieldCheck className="h-3.5 w-3.5" />{' '}
+            {researchOpen ? 'Close research' : 'Research this place'}
+          </button>
         </header>
+
+        {researchOpen && (
+          <PlaceResearchPanel location={loc} onClose={() => setResearchOpen(false)} />
+        )}
 
         {/* ── Half-split: media left, details right ── */}
         <section className="mb-8 grid gap-4 md:grid-cols-2">
@@ -591,7 +609,7 @@ export default function LocationDetail() {
         <EvidenceTimeline location={loc} />
 
         {/* ── Field activity ── */}
-        <section className="mb-8">
+        <section id="ooh-verified-evidence" className="mb-8">
           <FieldCheckPanel location={loc} focusRecheck={isRecheckDeepLink} />
           {returnToMission && (
             <div className="mt-3 flex flex-wrap items-center justify-between gap-3 border border-ozone/30 bg-ozone/[0.04] p-3">

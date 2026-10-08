@@ -100,9 +100,9 @@ export default function DynamicFilterBar({
   layerFilter,
   setLayerFilter,
 }) {
-  const { spots: mushrooms } = useMushroomData();
-  const { spots: flora } = useFloraData();
-  const { zones: warZones } = useWarZoneData();
+  const { spots: mushrooms } = useMushroomData(primaryLayer === 'mushrooms');
+  const { spots: flora } = useFloraData(primaryLayer === 'flora');
+  const { zones: warZones } = useWarZoneData(primaryLayer === 'war');
 
   const tags = useMemo(() => {
     switch (primaryLayer) {

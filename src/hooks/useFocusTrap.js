@@ -68,6 +68,9 @@ export function useFocusTrap(containerRef, open, { label } = {}) {
       ).filter(isVisible);
 
     const focusFirst = () => {
+      // A user may already have focused an input before this deferred frame runs.
+      // Preserve that choice rather than stealing focus during typing.
+      if (container.contains(document.activeElement)) return;
       const focusables = getFocusable();
       if (focusables.length) {
         focusables[0].focus();

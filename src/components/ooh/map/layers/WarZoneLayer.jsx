@@ -1,4 +1,5 @@
 import { CircleMarker, Tooltip, Popup } from 'react-leaflet';
+import { GENERATED_BADGE, GENERATED_NOTE_WAR } from './generatedLayer';
 import { AlertTriangle, Loader2 } from 'lucide-react';
 import { useWarZoneData } from './useWarZoneData';
 
@@ -98,7 +99,7 @@ export default function WarZoneLayer() {
                   fontWeight: 700,
                 }}
               >
-                {critical ? 'Critical Zone' : 'Advisory'}
+                {critical ? 'Critical Zone' : 'Advisory'} · {GENERATED_BADGE}
               </span>
             </div>
             <div
@@ -139,7 +140,7 @@ export default function WarZoneLayer() {
                   letterSpacing: '0.15em',
                 }}
               >
-                Src: {z.source}
+                Model-named source (unverified): {z.source}
               </div>
             )}
             <div
@@ -152,6 +153,16 @@ export default function WarZoneLayer() {
               }}
             >
               {Number(z.lat).toFixed(4)}, {Number(z.lng).toFixed(4)}
+            </div>
+            <div
+              style={{
+                fontSize: 9,
+                color: '#FF9A3D',
+                marginTop: 8,
+                lineHeight: 1.4,
+              }}
+            >
+              {GENERATED_NOTE_WAR}
             </div>
           </div>
         </Popup>

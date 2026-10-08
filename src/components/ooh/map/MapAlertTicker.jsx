@@ -3,10 +3,14 @@ import { base44 } from '@/api/base44Client';
 import { AlertTriangle, Loader2, Radio, X } from 'lucide-react';
 import DraggableTicker from '@/components/ooh/DraggableTicker';
 import { shuffleArray } from '@/hooks/useNewsHeadlines';
+import { GENERATED_BADGE } from './layers/generatedLayer';
 
-// Compact environmental alert ticker overlaid on the map.
-// Pulls real urgent alerts from verified open-source feeds via LLM + web search.
-// Severity: "flash" (flare) for critical hazards, "watch" (ozone) for regional updates.
+// Compact environmental summary ticker overlaid on the map.
+// The items are written by a language model with web context. They are NOT official warnings, and
+// the titles, regions, sources and links are not verified. So: nothing is requested until the
+// user asks for it, every state is labelled AI-generated, and links are limited to http(s).
+// Severity: "flash" (flare) for hazards the model flags as urgent, "watch" (ozone) otherwise.
+const safeUrl = (u) => (/^https?:\/\//i.test(String(u || '')) ? u : null);
 
 function Row({ items }) {
   return (
@@ -14,7 +18,7 @@ function Row({ items }) {
       {items.map((it, i) => (
         <a
           key={i}
-          href={it.url || '#'}
+          href={safeUrl(it.url) || undefined}
           target="_blank"
           rel="noreferrer"
           className="flex shrink-0 items-center gap-2 px-4"
@@ -34,7 +38,7 @@ function Row({ items }) {
           </span>
           {it.source && (
             <span className="font-mono text-[8px] uppercase tracking-[0.2em] text-dim">
-              · {it.source}
+              · model-named source: {it.source}
             </span>
           )}
           <span className="text-slate2">◆</span>
@@ -46,12 +50,15 @@ function Row({ items }) {
 
 export default function MapAlertTicker({ onClose = null }) {
   const [items, setItems] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [requested, setRequested] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [dismissed, setDismissed] = useState(false);
   const mounted = useRef(true);
 
   useEffect(() => {
     mounted.current = true;
+    if (!requested) return undefined;
+    setLoading(true);
     (async () => {
       try {
         const res = await base44.integrations.Core.InvokeLLM({
@@ -94,7 +101,7 @@ export default function MapAlertTicker({ onClose = null }) {
     return () => {
       mounted.current = false;
     };
-  }, []);
+  }, [requested]);
 
   const handleClose = () => {
     setDismissed(true);
@@ -103,12 +110,34 @@ export default function MapAlertTicker({ onClose = null }) {
 
   if (dismissed) return null;
 
+  if (!requested) {
+    return (
+      <div className="pointer-events-auto flex h-8 items-center gap-2 border border-slate2/60 bg-void/90 px-2 backdrop-blur-md">
+        <button
+          type="button"
+          onClick={() => setRequested(true)}
+          className="flex min-h-[32px] items-center gap-2 px-2 font-mono text-[9px] uppercase tracking-[0.2em] text-darkgray transition-colors hover:text-ozone focus-visible:outline focus-visible:outline-2 focus-visible:outline-ozone"
+        >
+          <Radio className="h-3 w-3" />
+          Load AI summary of environmental news · {GENERATED_BADGE}
+        </button>
+        <button
+          onClick={handleClose}
+          aria-label="Dismiss ticker"
+          className="ml-auto flex items-center justify-center px-2 text-dim transition-colors hover:text-ozone"
+        >
+          <X className="h-3.5 w-3.5" />
+        </button>
+      </div>
+    );
+  }
+
   if (loading) {
     return (
       <div className="pointer-events-auto flex h-8 items-center gap-2 border border-slate2/60 bg-void/90 px-4 backdrop-blur-md">
         <Loader2 className="h-3 w-3 animate-spin text-ozone" />
         <span className="font-mono text-[9px] uppercase tracking-[0.25em] text-dim">
-          // acquiring alert feed…
+          // asking the model for a summary…
         </span>
       </div>
     );
@@ -131,7 +160,13 @@ export default function MapAlertTicker({ onClose = null }) {
           <Radio className="h-3 w-3 animate-pulse" />
         )}
         <span className="font-mono text-[8px] font-bold uppercase tracking-[0.25em]">
-          {hasFlash ? 'Alert' : 'Intel'}
+          AI summary
+        </span>
+        <span
+          className="hidden font-mono text-[8px] uppercase tracking-[0.15em] text-[#FF9A3D] sm:inline"
+          title="Written by a language model. Not an official warning. Titles, sources and links are not verified."
+        >
+          · unverified, not an official warning
         </span>
       </span>
       <DraggableTicker>
