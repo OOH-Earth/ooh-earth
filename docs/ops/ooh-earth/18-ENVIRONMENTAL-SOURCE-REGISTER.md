@@ -12,14 +12,16 @@ Data types: **REFERENCE** (map geography), **OBSERVED** (a provider-dated measur
 ---
 
 ## Natural Earth
-- **Dataset:** `ne_50m_rivers_lake_centerlines` (rivers only, scalerank <= 5, 194 named features, coordinates rounded to 2 decimals).
+
+Pinned upstream revision `ca96624a56bd078437bca8184e78163e5039ad19`; reproducible offline import: `scripts/import-natural-earth-rivers.mjs`. File-level SHA-256 and filter recorded in `naturalEarthRivers.source.json`.
+- **Dataset:** `ne_50m_rivers_lake_centerlines` (rivers only, scalerank <= 5, 194 named features, upstream coordinates preserved without rounding/thinning).
 - **Type:** REFERENCE. **Coverage:** global major rivers. **Temporal:** static cartographic dataset (no observation date).
 - **Freshness:** n/a (bundled, versioned with the app). **Licence:** public domain (verified at naturalearthdata.com/about/terms-of-use).
 - **Attribution:** not required; OOH credits it anyway ("Natural Earth (public domain)").
-- **Access:** bundled JSON, lazy chunk (~74 KB gzipped) loaded only on the Rivers page. **Rate limit / caching:** none (static asset).
+- **Access:** bundled JSON, lazy chunk (lazy shared chunk; size measured in the build report) shared lazily by public map/globe explorers. **Rate limit / caching:** none (static asset).
 - **Known biases:** generalised at 1:50m, so small rivers and exact channels are absent; names are English only; not a hydrological authority.
 - **Failure modes:** none at runtime (bundled). A failed chunk import leaves the OSM layer only.
-- **OOH usage:** Rivers world view (RIVERS-1, #337).
+- **OOH usage:** Rivers/Ecology and shared LocationMap/Globe3D world views (reference only, hidden above zoom 6 in the shared explorers).
 
 ## OpenStreetMap via CARTO vector tiles
 - **Dataset:** CARTO `carto.streets` v1 vector tiles (OpenMapTiles schema), layers `waterway`, `water`, `landcover`, `park`.
@@ -37,11 +39,11 @@ Data types: **REFERENCE** (map geography), **OBSERVED** (a provider-dated measur
 - **Temporal:** per-record `observed_on` (calendar day). **Freshness:** minutes to days in active regions; sparse regions return nothing for 180 days.
 - **Licence:** per-record (`cc-by`, `cc-by-nc`, null = all rights reserved). OOH shows only metadata (taxon, date, source link) and **no photos**.
 - **Attribution:** every record links back to its iNaturalist observation page. **Access:** client, CORS open.
-- **Rate limit:** **UNVERIFIED in-session** (provider page is JavaScript-rendered). OOH issues at most 2 requests per settled viewport, 600 ms debounce, 5 minute cache, cancellation on movement.
+- **Rate limit:** **UNVERIFIED in-session** (provider page is JavaScript-rendered). OOH issues at most 3 group requests per settled viewport, 600 ms debounce, 5 minute/32-entry cache, shared in-flight dedupe and cancellation on movement. New starts are capped at 45/minute per browser tab; provider Retry-After is honoured without a retry loop.
 - **Caching:** responses carry `Cache-Control: public, max-age=300`.
 - **Known biases:** urban and wealthy-country observer bias; taxon-group bias; "no records" is not "no life".
 - **Failure modes:** provider error and empty results are separate UI states. Obscured records exist and are excluded rather than shown at false precision.
-- **OOH usage:** Ecology (#338); proposed Main Map replacement (see 20-MAIN-MAP-LLM-TRUST-AUDIT.md).
+- **OOH usage:** Ecology and opt-in shared public map/globe explorer layers (plants, fungi, animals). No photos or private locations; per-record source link, licence, retrieval time and provider accuracy. Existing disabled generated flora/fungi hooks remain empty.
 
 ## Open-Meteo
 - **Dataset:** Air Quality API (CAMS ENSEMBLE) and Forecast API (national weather models), `current` block.

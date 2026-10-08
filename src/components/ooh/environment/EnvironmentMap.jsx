@@ -61,6 +61,7 @@ export default function EnvironmentMap({
   const inspectBtnRef = useRef(null);
   const cardRef = useRef(null);
   const openedByKeyboardRef = useRef(false);
+  const lastSelectionFlight = useRef(null);
   const onMoveStartRef = useRef(onMoveStart);
   onMoveStartRef.current = onMoveStart;
   const onViewportRef = useRef(onViewportChange);
@@ -72,10 +73,13 @@ export default function EnvironmentMap({
   const [gpuUnavailable, setGpuUnavailable] = useState(false);
   const [status, setStatus] = useState('loading'); // loading | ready | error
   const [partialFailure, setPartialFailure] = useState(false);
+  const [referenceFailure, setReferenceFailure] = useState(false);
   const [view, setView] = useState({ zoom: initialView.zoom, segments: 0, names: 0 });
   const [selection, setSelection] = useState(null); // { type: 'waterway' | 'point', ... }
-  const [legendOpen, setLegendOpen] = useState(() =>
-    typeof window === 'undefined' ? true : window.matchMedia('(min-width: 768px)').matches,
+  const [legendOpen, setLegendOpen] = useState(
+    () =>
+      !layerToggles &&
+      (typeof window === 'undefined' || window.matchMedia('(min-width: 768px)').matches),
   );
 
   const activeDefs = useMemo(
@@ -89,7 +93,13 @@ export default function EnvironmentMap({
       activeDefs.flatMap((d) =>
         d.layers
           .filter(
-            (l) => !(l.id.includes('hit') || l.id.includes('selected') || l.id.endsWith('-line')),
+            (l) =>
+              !(
+                l.type === 'symbol' ||
+                l.id.includes('hit') ||
+                l.id.includes('selected') ||
+                l.id.endsWith('-line')
+              ),
           )
           .map((l) => l.id),
       ),
@@ -125,6 +135,7 @@ export default function EnvironmentMap({
     setReady(false);
     setStatus('loading');
     setPartialFailure(false);
+    setReferenceFailure(false);
     // Deep link: ?lat=&lng=&z= sets the starting view (validated; ignored if malformed).
     const params = new URLSearchParams(window.location.search);
     const dl = {
@@ -164,7 +175,7 @@ export default function EnvironmentMap({
     mapRef.current = map;
 
     const timeout = setTimeout(() => {
-      if (!loadedRef.current) setStatus('error');
+      if (!loadedRef.current && map.getZoom() >= VECTOR_MIN_ZOOM) setStatus('error');
     }, TILE_TIMEOUT_MS);
 
     const applyProjection = () => {
@@ -208,15 +219,21 @@ export default function EnvironmentMap({
           data: { type: 'FeatureCollection', features: [] },
           attribution: NE_ATTRIBUTION,
         });
-        // Bundled and lazy: only the Rivers page ever downloads this chunk.
-        import('./data/naturalEarthRivers.json').then((m) => {
-          /** @type {any} */ (map.getSource(NE_SOURCE_ID))?.setData(m.default);
-        });
+        // Bundled and lazy: shared reference geography, not a live provider request.
+        import('./data/naturalEarthRivers.json')
+          .then((m) => {
+            if (mapRef.current === map)
+              /** @type {any} */ (map.getSource(NE_SOURCE_ID))?.setData(m.default);
+          })
+          .catch(() => {
+            if (mapRef.current === map) setReferenceFailure(true);
+          });
       }
       // Keep base-map labels above our overlays.
       const firstSymbol = map.getStyle().layers?.find((l) => l.type === 'symbol')?.id;
       for (const def of Object.values(ENVIRONMENT_LAYERS)) {
         for (const spec of def.layers) {
+          if (spec.type === 'symbol' && !map.getStyle().glyphs) continue;
           if (!map.getLayer(spec.id)) {
             map.addLayer(
               /** @type {any} */ ({
@@ -265,6 +282,9 @@ export default function EnvironmentMap({
     map.on('idle', refresh);
     map.on('zoomend', refresh);
     const reportViewport = () => {
+      // List mode hides the canvas; retain the last useful viewport and its records.
+      const container = map.getContainer();
+      if (!container.clientWidth || !container.clientHeight) return;
       const b = map.getBounds();
       const c = map.getCenter();
       if (rootRef.current)
@@ -275,7 +295,10 @@ export default function EnvironmentMap({
         bounds: { west: b.getWest(), south: b.getSouth(), east: b.getEast(), north: b.getNorth() },
       });
     };
-    map.on('movestart', () => onMoveStartRef.current?.());
+    map.on('movestart', () => {
+      const container = map.getContainer();
+      if (container.clientWidth && container.clientHeight) onMoveStartRef.current?.();
+    });
     map.on('moveend', reportViewport);
     map.on('load', reportViewport);
     map.on('click', REF_LAYER, (e) => {
@@ -363,6 +386,9 @@ export default function EnvironmentMap({
       return;
     }
     setSelection({ type: 'point', point: p, lngLat: { lat: p.lat, lng: p.lng } });
+    const flightKey = `${p.id}:${p.lng}:${p.lat}`;
+    if (lastSelectionFlight.current === flightKey) return;
+    lastSelectionFlight.current = flightKey;
     map.flyTo({
       center: [p.lng, p.lat],
       zoom: keepZoomOnSelect ? Math.max(map.getZoom(), 7) : 7,
@@ -399,6 +425,7 @@ export default function EnvironmentMap({
     setSelection(null);
     if (openedByKeyboardRef.current) inspectBtnRef.current?.focus();
     openedByKeyboardRef.current = false;
+    lastSelectionFlight.current = null;
     onSelectPointRef.current?.(null);
   };
 
@@ -454,7 +481,14 @@ export default function EnvironmentMap({
         </span>
         {status === 'error' && (
           <span className="w-fit max-w-xs border border-flare/50 bg-void/90 px-2 py-1 text-[10px] leading-snug text-silver">
-            The detailed river network could not be loaded. Showing major rivers only.
+            {noun === 'River'
+              ? 'The detailed river network could not be loaded. Showing major rivers only.'
+              : 'Detailed reference tiles are unavailable. Bundled major rivers remain available when enabled.'}
+          </span>
+        )}
+        {referenceFailure && layers.includes('waterways') && (
+          <span className="w-fit max-w-xs border border-flare/50 bg-void/90 px-2 py-1 text-[10px] text-silver">
+            Major-river reference unavailable. Detailed tiles and observations are separate sources.
           </span>
         )}
         {partialFailure && status === 'ready' && (
@@ -464,7 +498,8 @@ export default function EnvironmentMap({
         )}
         {showHint && (
           <span className="w-fit border border-slate2/60 bg-void/80 px-2 py-1 text-[10px] text-dim">
-            Showing major rivers. Zoom in for the detailed network.
+            World-scale reference geography. Zoom in for detailed waterways, habitat and
+            observations.
           </span>
         )}
         {noCoverage && (
@@ -587,7 +622,7 @@ export default function EnvironmentMap({
               : `${selection.name || `Unnamed ${(selection.kind || 'feature').toLowerCase()}`} details`
           }
           data-testid="env-detail"
-          className="absolute bottom-3 left-3 right-16 z-[950] max-w-sm border border-slate2 bg-card/95 p-3 backdrop-blur-md focus:outline-none sm:right-auto"
+          className="absolute bottom-3 left-3 right-16 z-[950] max-h-[calc(100%-2rem)] max-w-sm overflow-y-auto border border-slate2 bg-card/95 p-3 backdrop-blur-md focus:outline-none sm:right-auto"
         >
           <div className="flex items-start justify-between gap-2">
             <div className="min-w-0">

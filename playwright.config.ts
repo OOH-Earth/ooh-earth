@@ -67,6 +67,7 @@ export default defineConfig({
         'public-space-moderation.spec.ts',
         'founding-profile.spec.ts',
         'place-research.spec.ts',
+        'earth-layers.spec.ts',
       ],
     },
   ],

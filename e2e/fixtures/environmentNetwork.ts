@@ -245,6 +245,18 @@ export const INAT_FIXTURE = {
       license: null,
     },
   ],
+  animals: [
+    {
+      uuid: 'a1',
+      name: 'Passer montanus',
+      common: 'Eurasian tree sparrow',
+      days: 1,
+      lng: 100.55,
+      lat: 13.746,
+      obscured: false,
+      license: 'cc-by',
+    },
+  ],
   fungi: [
     {
       uuid: 'f1',
@@ -275,8 +287,14 @@ export async function stubEcologyApis(
       const url = new URL(route.request().url());
       inatRequests.push(url);
       if (inatMode === 'error') return route.fulfill({ status: 500, body: 'nope' });
-      const group = url.searchParams.get('iconic_taxa') === 'Plantae' ? 'plants' : 'fungi';
-      const rows = inatMode === 'empty' ? [] : INAT_FIXTURE[group as 'plants' | 'fungi'];
+      const group =
+        url.searchParams.get('taxon_id') === '1'
+          ? 'animals'
+          : url.searchParams.get('iconic_taxa') === 'Plantae'
+            ? 'plants'
+            : 'fungi';
+      const rows =
+        inatMode === 'empty' ? [] : INAT_FIXTURE[group as 'plants' | 'fungi' | 'animals'];
       return route.fulfill({
         json: {
           total_results: inatMode === 'empty' ? 0 : group === 'plants' ? 57 : 9,
