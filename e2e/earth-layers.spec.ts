@@ -73,7 +73,7 @@ test('fauna is a source-linked dated observation with positional uncertainty, no
   const card = page.getByRole('button', { name: /Eurasian tree sparrow/ });
   await expect(card).toBeVisible({ timeout: 20_000 });
   await card.click();
-  if (mobileList) await page.getByRole('button', { name: 'Map', exact: true }).click();
+  if (mobileList) await page.getByText('Map', { exact: true }).click();
   const detail = page.getByTestId('env-detail');
   await expect(detail).toContainText('Animals');
   await expect(detail).toContainText('Position accuracy');
