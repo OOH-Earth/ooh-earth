@@ -74,8 +74,10 @@ export default function EnvironmentMap({
   const [partialFailure, setPartialFailure] = useState(false);
   const [view, setView] = useState({ zoom: initialView.zoom, segments: 0, names: 0 });
   const [selection, setSelection] = useState(null); // { type: 'waterway' | 'point', ... }
-  const [legendOpen, setLegendOpen] = useState(() =>
-    typeof window === 'undefined' ? true : window.matchMedia('(min-width: 768px)').matches,
+  const [legendOpen, setLegendOpen] = useState(
+    () =>
+      !layerToggles &&
+      (typeof window === 'undefined' || window.matchMedia('(min-width: 768px)').matches),
   );
 
   const activeDefs = useMemo(
@@ -89,7 +91,13 @@ export default function EnvironmentMap({
       activeDefs.flatMap((d) =>
         d.layers
           .filter(
-            (l) => !(l.id.includes('hit') || l.id.includes('selected') || l.id.endsWith('-line')),
+            (l) =>
+              !(
+                l.type === 'symbol' ||
+                l.id.includes('hit') ||
+                l.id.includes('selected') ||
+                l.id.endsWith('-line')
+              ),
           )
           .map((l) => l.id),
       ),
@@ -217,6 +225,7 @@ export default function EnvironmentMap({
       const firstSymbol = map.getStyle().layers?.find((l) => l.type === 'symbol')?.id;
       for (const def of Object.values(ENVIRONMENT_LAYERS)) {
         for (const spec of def.layers) {
+          if (spec.type === 'symbol' && !map.getStyle().glyphs) continue;
           if (!map.getLayer(spec.id)) {
             map.addLayer(
               /** @type {any} */ ({
@@ -454,7 +463,9 @@ export default function EnvironmentMap({
         </span>
         {status === 'error' && (
           <span className="w-fit max-w-xs border border-flare/50 bg-void/90 px-2 py-1 text-[10px] leading-snug text-silver">
-            The detailed river network could not be loaded. Showing major rivers only.
+            {noun === 'River'
+              ? 'The detailed river network could not be loaded. Showing major rivers only.'
+              : 'Detailed reference tiles are unavailable. Bundled major rivers remain available when enabled.'}
           </span>
         )}
         {partialFailure && status === 'ready' && (
@@ -464,7 +475,8 @@ export default function EnvironmentMap({
         )}
         {showHint && (
           <span className="w-fit border border-slate2/60 bg-void/80 px-2 py-1 text-[10px] text-dim">
-            Showing major rivers. Zoom in for the detailed network.
+            World-scale reference geography. Zoom in for detailed waterways, habitat and
+            observations.
           </span>
         )}
         {noCoverage && (

@@ -5,7 +5,6 @@ import { useFloraData } from './useFloraData';
 import { useWarZoneData } from './useWarZoneData';
 import { GENERATED_BADGE, GENERATED_NOTE_ECOLOGY, GENERATED_NOTE_WAR } from './generatedLayer';
 import {
-  riversToGeoJSON,
   riverSourcesToGeoJSON,
   POLLUTION_META,
   LEGACY_SAMPLE_BADGE,
@@ -38,17 +37,7 @@ function removeLayerAndSource(map, layerId, sourceId) {
 
 // ---- Rivers ----
 function addRivers(map, popup) {
-  const rivers = riversToGeoJSON();
   const sources = riverSourcesToGeoJSON();
-
-  map.addSource('ooh-rivers', { type: 'geojson', data: rivers });
-  map.addLayer({
-    id: 'ooh-river-lines',
-    type: 'line',
-    source: 'ooh-rivers',
-    layout: { 'line-join': 'round', 'line-cap': 'round' },
-    paint: { 'line-color': '#39FF14', 'line-width': 2.5, 'line-opacity': 0.7 },
-  });
 
   map.addSource('ooh-river-sources', { type: 'geojson', data: sources });
   map.addLayer({

@@ -115,6 +115,21 @@ const majorRiverLayers = [
   neLine('ooh-env-ne-mid', [3, 4], 2.2, ['interpolate', ['linear'], ['zoom'], 2, 0.8, 5, 1.8]),
   neLine('ooh-env-ne-minor', [5], 3.6, ['interpolate', ['linear'], ['zoom'], 3.6, 0.6, 5, 1.3]),
   {
+    id: 'ooh-env-ne-names',
+    type: 'symbol',
+    source: NE_SOURCE_ID,
+    minzoom: 2.2,
+    maxzoom: NE_MAX_ZOOM,
+    layout: {
+      'symbol-placement': 'line',
+      'text-field': ['get', 'name'],
+      'text-size': 12,
+      'text-font': ['Open Sans Regular'],
+      'symbol-spacing': 200,
+    },
+    paint: { 'text-color': '#91B8FF', 'text-halo-color': '#080C14', 'text-halo-width': 1.5 },
+  },
+  {
     id: 'ooh-env-ne-hit',
     type: 'line',
     source: NE_SOURCE_ID,

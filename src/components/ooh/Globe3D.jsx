@@ -1,3 +1,4 @@
+import { GlobeEarthLayers } from '@/components/ooh/environment/EarthLayers';
 import { useEffect, useRef, useState } from 'react';
 import * as maplibregl from 'maplibre-gl';
 import '@/lib/maplibreWorkerSetup';
@@ -769,6 +770,7 @@ export default function Globe3D({
       {ready && mapRef.current && (
         <GlobeLayerManager map={mapRef.current} activeLayers={activeLayers} />
       )}
+      {ready && <GlobeEarthLayers map={mapRef.current} interactive={interactive} />}
       {ready && <GlobeHud map={mapRef.current} />}
       {ready && <FieldStatsHud />}
     </div>

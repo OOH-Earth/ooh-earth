@@ -1,3 +1,4 @@
+import { LeafletEarthLayers } from '@/components/ooh/environment/EarthLayers';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   MapContainer,
@@ -566,6 +567,7 @@ export default function LocationMap({
         />
       )}
       <FutureLayer futures={futures} />
+      <LeafletEarthLayers />
       <LayerManager activeLayers={activeLayers} pins={pins} onExpandPin={onExpandPin} />
     </MapContainer>
   );

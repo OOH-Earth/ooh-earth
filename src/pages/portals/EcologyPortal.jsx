@@ -15,7 +15,7 @@ import {
 // Ecology: reference geography (water, natural cover, protected areas) and real, dated community
 // observations from iNaturalist, each labelled by what kind of data it is. Replaces the previous
 // LLM-generated "hotspots", which were neither observations nor verifiable.
-const REFERENCE_IDS = ['water', 'habitat', 'protected'];
+const REFERENCE_IDS = ['waterways', 'water', 'habitat', 'protected'];
 const ACCENT = '#39FF14';
 
 function ObservationCard({ item, selected, onSelect }) {
@@ -62,13 +62,18 @@ function ObservationCard({ item, selected, onSelect }) {
 export default function EcologyPortal() {
   const [query, setQuery] = useState('');
   const [filterValue, setFilterValue] = useState('all');
-  const [enabledRef, setEnabledRef] = useState(['habitat', 'protected']);
-  const [enabledObs, setEnabledObs] = useState(['plants', 'fungi']);
+  const [enabledRef, setEnabledRef] = useState(['waterways', 'water', 'habitat', 'protected']);
+  const [enabledObs, setEnabledObs] = useState(['plants', 'fungi', 'animals']);
   const [viewport, setViewport] = useState(null);
   const [selectedId, setSelectedId] = useState(null);
 
-  const onViewportChange = useCallback((v) => setViewport(v), []);
-  const obs = useObservations(viewport, enabledObs);
+  const [moving, setMoving] = useState(false);
+  const onMoveStart = useCallback(() => setMoving(true), []);
+  const onViewportChange = useCallback((v) => {
+    setViewport(v);
+    setMoving(false);
+  }, []);
+  const obs = useObservations(viewport, enabledObs, moving);
 
   const toggle = (list, setList, id) =>
     setList((cur) => (cur.includes(id) ? cur.filter((x) => x !== id) : [...cur, id]));
@@ -150,6 +155,14 @@ export default function EcologyPortal() {
           { label: 'Scientific', value: p.scientific },
           { label: 'Quality', value: 'Research grade (community verified)' },
           { label: 'Source', value: 'iNaturalist' },
+          {
+            label: 'Position accuracy',
+            value:
+              p.accuracy === null
+                ? 'Unknown; not an exact location'
+                : `±${p.accuracy} m (provider reported)`,
+          },
+          { label: 'Retrieved', value: p.retrievedAt },
           ...(p.license ? [{ label: 'Licence', value: String(p.license).toUpperCase() }] : []),
           ...(p.uri ? [{ label: 'Record', value: 'View on iNaturalist', href: p.uri }] : []),
         ],
@@ -193,12 +206,29 @@ export default function EcologyPortal() {
           selectedPointId={selectedId}
           onSelectPoint={setSelectedId}
           onViewportChange={onViewportChange}
+          onMoveStart={onMoveStart}
           keepZoomOnSelect
           noun="Ecology"
           inspectNoun="feature"
           unitNoun="feature"
           initialView={{ center: [100.5, 13.75], zoom: view === 'globe' ? 1.8 : 2 }}
         >
+          <div
+            className="absolute left-3 top-28 z-[900] max-w-[calc(100%-5rem)] border border-slate2 bg-void/90 px-2 py-1 text-[11px] text-silver"
+            role="status"
+            data-testid="ecology-guidance"
+          >
+            {obs.status === 'zoom'
+              ? 'Zoom in to see plants, fungi and animals. Records load from zoom 6.'
+              : obs.status === 'loading'
+                ? 'Loading dated community observations…'
+                : obs.status === 'error'
+                  ? 'Observation provider unavailable. Reference geography is separate.'
+                  : obs.status === 'ready'
+                    ? `${obs.points.length} dated observations in view. Not a wildlife census.`
+                    : 'Community observations load after the map settles.'}
+            {obs.note && <p>{obs.note}</p>}
+          </div>
           <ConditionsCard center={viewport?.center} />
         </EnvironmentMap>
       )}
