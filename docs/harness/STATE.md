@@ -11,8 +11,13 @@ State vocabulary: **merged** (in `main`) / **CI-qualified** (exact-head required
 
 ## Merged since (documentation/tooling): #345 `15c931c` pinned BACKUP release script + doc 23 (script commit identity is independent of the candidate), #350 `4fb6cad` state docs.
 
+## Merged since (continued): #348 `ec3ef6f` Tailwind 3 -> 4 migration plan (docs only; a plan, not risk acceptance).
+
 ## Open
-- #348 Tailwind 3 -> 4 migration plan (docs only; a plan, not risk acceptance). The 7 remaining full-tree audit findings are NOT accepted; the simulated clean lockfile does not prove application compatibility. No browser-support reduction and no migration deployment is authorized.
+- #352 CI job/step timeouts (a Playwright job hung 6 h at "Install Playwright OS deps"; limits from 37 observed runs; no retry or assertion change).
+- #353 pre-migration visual baselines at `4fb6cad` (24 reviewed shots, separate from CI, doc 26).
+- #354 browser-support evidence and the Tailwind 4 floor trade-off (doc 27; recommendation only, owner decision).
+- The 7 remaining full-tree audit findings are NOT accepted; a simulated clean lockfile does not prove application compatibility. No browser-support reduction and no migration deployment is authorized.
 
 ## Candidates (identity is the pinned commit, not the latest main)
 - **BACKUP candidate `4fb6cad3c2c908be7f9d559ea825e363f9a9e240`** (main tip after #346/#336/#342/#343/#350; application source identical to `9adcf92`). Exact-head CI `37741933887`, CodeQL `37741933461`, interaction regression `37741959755` green; production audit 0, full tree 7; unit tests 33/33. Deployed to BACKUP from the pinned script: entry `/assets/index-DYBFc-cG.js`, SHA-256 `97f04d66ec2c0f6936a3ec9ba876c7e6d4cb19cfce1e0748eb3cd25f7be80f31`.
