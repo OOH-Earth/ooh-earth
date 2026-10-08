@@ -63,9 +63,12 @@ test('fauna is a source-linked dated observation with positional uncertainty, no
   await stubEnvironmentNetwork(page, 'ecology');
   const api = await stubEcologyApis(page);
   await page.goto('/ecology?lat=13.75&lng=100.5&z=7');
+  const mobileList = (page.viewportSize()?.width ?? 1280) < 1024;
+  if (mobileList) await page.getByRole('button', { name: 'List', exact: true }).click();
   const card = page.getByRole('button', { name: /Eurasian tree sparrow/ });
   await expect(card).toBeVisible({ timeout: 20_000 });
   await card.click();
+  if (mobileList) await page.getByRole('button', { name: 'Map', exact: true }).click();
   const detail = page.getByTestId('env-detail');
   await expect(detail).toContainText('Animals');
   await expect(detail).toContainText('Position accuracy');
@@ -127,7 +130,7 @@ for (const viewport of [
     await layers.getByRole('button', { name: 'Animals · observations', exact: true }).click();
     await expect(layers).toHaveAttribute('data-observations', '1', { timeout: 20_000 });
     await layers.getByRole('button', { name: 'Earth layers', exact: true }).click();
-    const marker = page.locator('.leaflet-interactive').last();
+    const marker = page.locator('path.ooh-earth-observation');
     await marker.click();
     await expect(page.locator('.leaflet-popup-content')).toContainText('Eurasian tree sparrow');
     expect(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth)).toBe(

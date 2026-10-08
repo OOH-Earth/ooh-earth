@@ -282,6 +282,9 @@ export default function EnvironmentMap({
     map.on('idle', refresh);
     map.on('zoomend', refresh);
     const reportViewport = () => {
+      // List mode hides the canvas; retain the last useful viewport and its records.
+      const container = map.getContainer();
+      if (!container.clientWidth || !container.clientHeight) return;
       const b = map.getBounds();
       const c = map.getCenter();
       if (rootRef.current)
@@ -292,7 +295,10 @@ export default function EnvironmentMap({
         bounds: { west: b.getWest(), south: b.getSouth(), east: b.getEast(), north: b.getNorth() },
       });
     };
-    map.on('movestart', () => onMoveStartRef.current?.());
+    map.on('movestart', () => {
+      const container = map.getContainer();
+      if (container.clientWidth && container.clientHeight) onMoveStartRef.current?.();
+    });
     map.on('moveend', reportViewport);
     map.on('load', reportViewport);
     map.on('click', REF_LAYER, (e) => {

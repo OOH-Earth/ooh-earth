@@ -177,6 +177,7 @@ function EarthLayers({ map, engine, interactive = true }) {
         obs.points.map((p) =>
           L.circleMarker([p.lat, p.lng], {
             radius: 7,
+            className: 'ooh-earth-observation',
             color: '#080C14',
             weight: 2,
             fillColor: OBS_GROUPS[p.group].color,
