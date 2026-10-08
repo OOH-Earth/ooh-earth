@@ -26,10 +26,18 @@ permissions:
 env:
   NODE_VERSION: '20'
 
+# Execution bounds (2026-10-08). A Playwright job once hung for 6 h (the GitHub default limit) at
+# "Install Playwright OS deps (cache hit)". Limits are set from 37 successful runs, with headroom:
+#   lint 81 s max, prettier 44 s, build 51 s, audit 49 s, dependency review 42 s, PR summary 26 s -> 10 min
+#   Playwright smoke+a11y 1476 s max (24.6 min) -> 45 min; mobile 620 s max -> 25 min
+#   step: Install Playwright OS deps 234 s max -> 15 min; Install Playwright browsers 427 s max -> 20 min
+# Retries and assertions are unchanged. A timed-out job still runs its `if: always()` summary and
+# artifact steps. Re-measure before tightening.
 jobs:
   lint-and-typecheck:
     name: Lint & Typecheck
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
       - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
@@ -59,6 +67,7 @@ jobs:
   format-check:
     name: Prettier
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     # Blocking as of 2026-08-12 -- the one-time 444-file formatting PR
     # (CI_PIPELINE.md Decision Register #1) landed, so there's no longer a
     # pre-existing backlog to hide behind. Was "Prettier (informational)"
@@ -82,6 +91,7 @@ jobs:
   build:
     name: Build
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
       - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
@@ -128,6 +138,7 @@ jobs:
     name: Playwright (smoke + accessibility)
     needs: build
     runs-on: ubuntu-latest
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
       - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
@@ -147,9 +158,11 @@ jobs:
           key: playwright-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
       - name: Install Playwright browsers
         if: steps.pw-cache.outputs.cache-hit != 'true'
+        timeout-minutes: 20
         run: npx playwright install --with-deps chromium
       - name: Install Playwright OS deps (cache hit)
         if: steps.pw-cache.outputs.cache-hit == 'true'
+        timeout-minutes: 15
         run: npx playwright install-deps chromium
       - name: Run smoke + accessibility tests
         run: npx playwright test --project=chromium
@@ -172,6 +185,7 @@ jobs:
     name: Playwright (mobile Chromium)
     needs: build
     runs-on: ubuntu-latest
+    timeout-minutes: 25
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
       - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
@@ -191,9 +205,11 @@ jobs:
           key: playwright-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
       - name: Install Playwright browsers
         if: steps.pw-cache.outputs.cache-hit != 'true'
+        timeout-minutes: 20
         run: npx playwright install --with-deps chromium
       - name: Install Playwright OS deps (cache hit)
         if: steps.pw-cache.outputs.cache-hit == 'true'
+        timeout-minutes: 15
         run: npx playwright install-deps chromium
       - name: Run mobile-chromium feature tests
         run: npx playwright test --project=mobile-chromium
@@ -215,6 +231,7 @@ jobs:
   dependency-audit:
     name: Dependency audit (fails on high/critical only)
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     # Moderate/low findings are surfaced via the uploaded report and PR
     # summary but don't block — a transitive moderate CVE shouldn't stop an
     # unrelated PR from merging. High/critical does block: as of 2026-08-10
@@ -243,6 +260,7 @@ jobs:
   dependency-review:
     name: Dependency Review
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     # Also runs on workflow_dispatch so release-please.yml can re-verify a
     # release PR (its GITHUB_TOKEN-authored push never fires a pull_request
     # event -- see release-please.yml). dependency-review-action needs
@@ -271,6 +289,7 @@ jobs:
       ]
     if: always() && github.event_name == 'pull_request'
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
         with:
