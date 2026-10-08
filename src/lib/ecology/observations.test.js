@@ -1,4 +1,6 @@
 import test from 'node:test';
+import { readFileSync } from 'node:fs';
+import { createHash } from 'node:crypto';
 import assert from 'node:assert/strict';
 import { normalise, requestObservations, urlFor } from './observations.js';
 
@@ -132,5 +134,33 @@ test('Retry-After stops new provider requests without a retry loop', async () =>
     assert.equal(calls, 1);
   } finally {
     globalThis.fetch = original;
+  }
+});
+
+test('bundled river coordinates retain the pinned upstream precision and provenance', () => {
+  const bytes = readFileSync(
+    new URL('../../components/ooh/environment/data/naturalEarthRivers.json', import.meta.url),
+  );
+  const data = JSON.parse(bytes.toString());
+  const source = JSON.parse(
+    readFileSync(
+      new URL(
+        '../../components/ooh/environment/data/naturalEarthRivers.source.json',
+        import.meta.url,
+      ),
+      'utf8',
+    ),
+  );
+  assert.equal(source.commit, 'ca96624a56bd078437bca8184e78163e5039ad19');
+  assert.equal(source.datasetSha256, createHash('sha256').update(bytes).digest('hex'));
+  assert.equal(data.features.length, 194);
+  assert.deepEqual(data.features[0].geometry.coordinates[0][0], [37.178951, 11.035761]);
+  for (const f of data.features) {
+    const lines =
+      f.geometry.type === 'LineString' ? [f.geometry.coordinates] : f.geometry.coordinates;
+    for (const line of lines)
+      for (const p of line) {
+        assert(p.every(Number.isFinite) && Math.abs(p[0]) <= 180 && Math.abs(p[1]) <= 90);
+      }
   }
 });

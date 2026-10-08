@@ -22,13 +22,13 @@ point samples remain explicitly labelled separately. No new observation is writt
 
 ## Sources and precision
 
-- Reused GitHub-sourced `naturalEarthRivers.json`: Natural Earth
+- Refreshed from hash-verified, pinned GitHub source `naturalEarthRivers.json`: Natural Earth
   `ne_50m_rivers_lake_centerlines`, public domain, 194 features with coordinates previously
-  rounded to two decimals. https://github.com/nvkelso/natural-earth-vector
+  supplied upstream, without the previous rounding/thinning. https://github.com/nvkelso/natural-earth-vector
   and https://github.com/nvkelso/natural-earth-vector/blob/master/LICENSE.md.
   This is generalised reference geometry, **not an exact channel survey or live measurement**.
   It displays below zoom 6; users can open Rivers for detailed mapped waterways and readings.
-  No new dataset download, package, API key or subscription.
+  Upstream commit: ca96624a56bd078437bca8184e78163e5039ad19. Offline importer verifies SHA-256 before writing the bundle; source manifest records provenance. No package, API key or subscription.
 - Existing iNaturalist v2 API, extended to Animalia (`taxon_id=1`). Research grade, last 180 days,
   at most 100 records per group and settled viewport. https://www.inaturalist.org/pages/developers
   and https://www.inaturalist.org/api. Open-source application code does not make every
@@ -55,7 +55,7 @@ without a retry loop. Empty/provider-error/reference data are different states.
 ## Evidence and release state
 
 - Fresh `npm ci`, lint, typecheck and BACKUP-targeted production build: passed locally.
-- Adapter unit tests: 8/8 passed; added to CI's offline checks.
+- Adapter unit tests: 9/9 passed; added to CI's offline checks.
 - Production-scope npm audit: 0 findings. Existing full-tree build-chain findings not fixed here.
 - Read-only live Animalia lookup near Bangkok returned source observation 406739331,
   `Brachythemis contaminata`, with 35 m provider accuracy. This proves the endpoint/fields, not

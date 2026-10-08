@@ -12,11 +12,13 @@ Data types: **REFERENCE** (map geography), **OBSERVED** (a provider-dated measur
 ---
 
 ## Natural Earth
-- **Dataset:** `ne_50m_rivers_lake_centerlines` (rivers only, scalerank <= 5, 194 named features, coordinates rounded to 2 decimals).
+
+Pinned upstream revision `ca96624a56bd078437bca8184e78163e5039ad19`; reproducible offline import: `scripts/import-natural-earth-rivers.mjs`. File-level SHA-256 and filter recorded in `naturalEarthRivers.source.json`.
+- **Dataset:** `ne_50m_rivers_lake_centerlines` (rivers only, scalerank <= 5, 194 named features, upstream coordinates preserved without rounding/thinning).
 - **Type:** REFERENCE. **Coverage:** global major rivers. **Temporal:** static cartographic dataset (no observation date).
 - **Freshness:** n/a (bundled, versioned with the app). **Licence:** public domain (verified at naturalearthdata.com/about/terms-of-use).
 - **Attribution:** not required; OOH credits it anyway ("Natural Earth (public domain)").
-- **Access:** bundled JSON, lazy chunk (~74 KB gzipped) shared lazily by public map/globe explorers. **Rate limit / caching:** none (static asset).
+- **Access:** bundled JSON, lazy chunk (lazy shared chunk; size measured in the build report) shared lazily by public map/globe explorers. **Rate limit / caching:** none (static asset).
 - **Known biases:** generalised at 1:50m, so small rivers and exact channels are absent; names are English only; not a hydrological authority.
 - **Failure modes:** none at runtime (bundled). A failed chunk import leaves the OSM layer only.
 - **OOH usage:** Rivers/Ecology and shared LocationMap/Globe3D world views (reference only, hidden above zoom 6 in the shared explorers).
