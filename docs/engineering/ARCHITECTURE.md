@@ -2,7 +2,7 @@
 
 Status: verified snapshot
 
-Verified: 2026-10-11 against `origin/main` at `e1b979d`, repository source, package scripts, CI/release files, and the read-only Lynxie harness source. PR #356 was rechecked separately against GitHub; it is still open and its live head is `33cc9b3`, not the historical candidate `17c22ac`.
+Verified: 2026-10-11 against `origin/main` at `e1b979d`, repository source, package scripts, CI/release files, and the read-only Lynxie harness source. PR #356 was rechecked separately against GitHub; it is still open at live head `90466b8`, not the historical candidate `17c22ac`.
 
 This document describes the current system and proposes small follow-up slices. It is guidance, not authorization for a refactor, dependency migration, backend/schema/RLS change, merge, deployment, or release-certification change. The active first-user release remains the priority.
 
@@ -92,7 +92,7 @@ Any move must name its import impact, route-discovery impact, test/tooling impac
 
 ### P0 — Preserve and requalify the first-user release
 
-PR #356 is open at live head `33cc9b3`; the historical candidate `17c22ac` is not the current candidate. GitHub showed lint/typecheck, Prettier, build, dependency checks, CodeQL, and dependency review passing, with desktop/mobile Playwright still running when inspected. This is release evidence, not a substitute for checking the final run. Do not stack architecture changes into that qualification.
+PR #356 is open at live head `90466b8`; the historical candidate `17c22ac` is not the current candidate. GitHub showed lint/typecheck, Prettier, build, dependency checks, CodeQL, dependency review, and desktop/mobile Playwright passing at the final recheck. This is release evidence, not a substitute for checking the final run again before merge. Do not stack architecture changes into that qualification.
 
 ### P1 — Read failures are collapsed into empty/seed data
 
