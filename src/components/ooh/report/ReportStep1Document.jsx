@@ -34,15 +34,32 @@ export default function ReportStep1Document({ data, onChange }) {
   const captureTrigger = useKeyboardFilePicker(uploading);
   const uploadTrigger = useKeyboardFilePicker(uploading);
 
+  const [locError, setLocError] = useState('');
+  const [locSource, setLocSource] = useState('');
+
   const locate = () => {
-    if (!navigator.geolocation) return;
+    setLocError('');
+    if (!navigator.geolocation) {
+      setLocError('This browser cannot share your location — tap the map or enter coordinates.');
+      return;
+    }
     setLocating(true);
     navigator.geolocation.getCurrentPosition(
       (p) => {
         onChange({ lat: p.coords.latitude.toFixed(5), lng: p.coords.longitude.toFixed(5) });
+        setLocSource('your device location');
         setLocating(false);
       },
-      () => setLocating(false),
+      (err) => {
+        setLocError(
+          err?.code === 1
+            ? 'Location permission was denied — tap the map to place the pin, or enter coordinates.'
+            : err?.code === 3
+              ? 'Locating timed out — try again, tap the map, or enter coordinates.'
+              : 'Your location is unavailable — tap the map or enter coordinates.',
+        );
+        setLocating(false);
+      },
       { enableHighAccuracy: true, timeout: 10000 },
     );
   };
@@ -63,6 +80,7 @@ export default function ReportStep1Document({ data, onChange }) {
       const gps = await exifr.gps(file);
       if (gps && isFinite(gps.latitude) && isFinite(gps.longitude)) {
         onChange({ lat: gps.latitude.toFixed(5), lng: gps.longitude.toFixed(5) });
+        setLocSource('the photo');
       }
     } catch {
       /* no EXIF GPS */
@@ -254,8 +272,29 @@ export default function ReportStep1Document({ data, onChange }) {
         <MapPinDropper
           lat={data.lat}
           lng={data.lng}
-          onPick={({ lat, lng }) => onChange({ lat: String(lat), lng: String(lng) })}
+          onPick={({ lat, lng }) => {
+            onChange({ lat: String(lat), lng: String(lng) });
+            setLocSource('the map pin');
+          }}
         />
+        {locError && (
+          <p
+            className="mt-2 font-mono text-[10px] uppercase tracking-[0.15em] text-flare"
+            role="alert"
+          >
+            {locError}
+          </p>
+        )}
+        {isFinite(parseFloat(data.lat)) && isFinite(parseFloat(data.lng)) && (
+          <p
+            className="mt-2 font-mono text-[10px] uppercase tracking-[0.15em] text-ozone"
+            role="status"
+            data-testid="location-confirmation"
+          >
+            Location set from {locSource || 'your entry'}: {data.lat}, {data.lng} — drag or tap the
+            map to adjust.
+          </p>
+        )}
         <details className="group mt-2">
           <summary className="cursor-pointer font-mono text-[9px] uppercase tracking-[0.2em] text-dim/60 transition-colors hover:text-ozone">
             Enter coordinates manually

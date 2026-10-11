@@ -82,7 +82,9 @@ test.describe('Traction instrumentation — report_submitted', () => {
     const events = await captureAnalyticsEvents(page);
 
     await fillAndSubmitReport(page, { brand: 'Shell' });
-    await expect(page.getByText(/Transmission received/i)).toBeVisible({ timeout: 10_000 });
+    await expect(page.getByRole('heading', { name: 'Submitted for review' })).toBeVisible({
+      timeout: 10_000,
+    });
     await waitForEvent(events, 'report_submitted');
 
     const matches = events.filter((e) => e.event_name === 'report_submitted');
