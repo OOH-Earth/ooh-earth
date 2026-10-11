@@ -61,7 +61,13 @@ const EMPTY = {
   // Discovery panel; never persisted, never fabricated if the scan didn't
   // return one.
   ai_confidence: null,
+  // Client-only location provenance/confirmation (never sent to Location.create).
+  loc_source: '',
+  loc_confirmed: false,
 };
+
+const LOC_CONFIRM_REQUIRED =
+  'Confirm the location first — tap "Yes, this is where it is", or tap the map to place the pin yourself.';
 
 const COORDS_REQUIRED =
   'Set the location first — tap the map, use Locate me, or enter coordinates manually.';
@@ -133,6 +139,10 @@ export default function FieldReport() {
       setError(COORDS_REQUIRED);
       return;
     }
+    if (step === 1 && !data.loc_confirmed) {
+      setError(LOC_CONFIRM_REQUIRED);
+      return;
+    }
     setError('');
     setStep((s) => Math.min(s + 1, 4));
   };
@@ -143,9 +153,9 @@ export default function FieldReport() {
     setError('');
     const latN = parseFloat(data.lat);
     const lngN = parseFloat(data.lng);
-    if (!hasValidCoords(data)) {
+    if (!hasValidCoords(data) || !data.loc_confirmed) {
       setStep(1);
-      setError(COORDS_REQUIRED);
+      setError(hasValidCoords(data) ? LOC_CONFIRM_REQUIRED : COORDS_REQUIRED);
       return;
     }
     setSubmitting(true);

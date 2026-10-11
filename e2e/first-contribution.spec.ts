@@ -134,3 +134,65 @@ test('typing coordinates after an auto-dropped device location updates the sourc
   );
   await expect(page.getByTestId('location-confirmation')).not.toContainText('device location');
 });
+
+async function stubGeolocation(page: import('@playwright/test').Page, positions: number[]) {
+  await page.addInitScript((list: number[]) => {
+    let i = 0;
+    Object.defineProperty(navigator, 'geolocation', {
+      value: {
+        getCurrentPosition: (ok: Function) => {
+          const v = list[Math.min(i++, list.length - 1)];
+          ok({ coords: { latitude: v, longitude: v, accuracy: 10 } });
+        },
+      },
+    });
+  }, positions);
+}
+
+test('an automatic device location must be acknowledged before Continue', async ({ page }) => {
+  await mockBase44(page, { user: null, locations: {} });
+  await stubGeolocation(page, [0.001]);
+  await page.goto('/report');
+  await expect(page.getByTestId('location-confirmation')).toContainText('your device location');
+  await page.getByRole('button', { name: /^continue$/i }).click();
+  await expect(page.getByText(/confirm the location first/i)).toBeVisible();
+  await expect(page.getByText('// Step 1 of 4')).toBeVisible();
+  await page.getByRole('button', { name: /yes, this is where it is/i }).click();
+  await expect(page.getByTestId('location-confirmation')).toContainText('Location confirmed');
+  await page.getByRole('button', { name: /^continue$/i }).click();
+  await expect(page.getByText('// Step 2 of 4')).toBeVisible();
+});
+
+test('a deliberate map tap counts as confirmation', async ({ page }) => {
+  await mockBase44(page, { user: null, locations: {} });
+  await page.goto('/report');
+  await page.locator('.leaflet-container').click({ position: { x: 60, y: 60 } });
+  await expect(page.getByTestId('location-confirmation')).toContainText('the map pin');
+  await expect(page.getByRole('button', { name: /yes, this is where it is/i })).toHaveCount(0);
+  await page.getByRole('button', { name: /^continue$/i }).click();
+  await expect(page.getByText('// Step 2 of 4')).toBeVisible();
+});
+
+test('an automatic change of location resets a previous confirmation', async ({ page }) => {
+  await mockBase44(page, { user: null, locations: {} });
+  await stubGeolocation(page, [0.001, 0.002]);
+  await page.goto('/report');
+  await page.getByRole('button', { name: /yes, this is where it is/i }).click();
+  await expect(page.getByTestId('location-confirmation')).toContainText('Location confirmed');
+  await page.getByRole('button', { name: /locate me/i }).click();
+  await expect(page.getByPlaceholder('Latitude')).toHaveValue('0.00200');
+  await expect(page.getByRole('button', { name: /yes, this is where it is/i })).toBeVisible();
+});
+
+test('submitting cannot bypass an unconfirmed automatic location via the step tabs', async ({
+  page,
+}) => {
+  await mockBase44(page, { user: null, locations: {} });
+  await stubGeolocation(page, [0.001]);
+  await page.goto('/report');
+  await page.getByRole('button', { name: '04 Respond' }).click();
+  await page.getByRole('button', { name: /transmit report/i }).click();
+  await expect(page.getByText(/confirm the location first/i)).toBeVisible();
+  await expect(page.getByText('// Step 1 of 4')).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Submitted for review' })).toHaveCount(0);
+});

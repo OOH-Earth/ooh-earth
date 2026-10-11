@@ -4,7 +4,7 @@ import { base44 } from '@/api/base44Client';
 import { compressImage } from '@/lib/imageCompress';
 import { validateImageFile } from '@/lib/validateUpload';
 import { useKeyboardFilePicker } from '@/hooks/useKeyboardFilePicker';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import ReportScanner from '@/components/ooh/report/ReportScanner';
 import MapPinDropper from '@/components/ooh/report/MapPinDropper';
 import MultiPhotoUpload from '@/components/ooh/gallery/MultiPhotoUpload';
@@ -24,6 +24,10 @@ const TYPES = [
   { value: 'other', label: 'Other' },
 ];
 
+// Location sources supplied automatically (not chosen by the person).
+const AUTO_SOURCES = ['your device location', "the photo's embedded location"];
+const USER_CHOSEN_SOURCES = ['the map pin', 'the coordinates you typed'];
+
 const inp =
   'w-full bg-void border border-slate2 px-4 py-3 font-display text-sm text-silver outline-none transition-colors placeholder:text-dim focus:border-ozone';
 
@@ -35,11 +39,23 @@ export default function ReportStep1Document({ data, onChange }) {
   const uploadTrigger = useKeyboardFilePicker(uploading);
 
   const [locError, setLocError] = useState('');
-  const [locSource, setLocSource] = useState('');
-  // Sources the person chose deliberately -- later automatic sources (photo EXIF)
-  // must not replace these.
-  const USER_CHOSEN = ['the map pin', 'the coordinates you typed'];
-  const userChosen = USER_CHOSEN.includes(locSource);
+  // Latest form data, read when async work (EXIF, geolocation) resolves so a
+  // location the person chose in the meantime is never replaced.
+  const dataRef = useRef(data);
+  dataRef.current = data;
+  const locSource = data.loc_source || '';
+
+  // Set the effective coordinates. Automatically supplied locations (device,
+  // photo EXIF) need an explicit acknowledgement; a deliberate map tap or typed
+  // coordinates count as the person's own confirmation. Any automatic change
+  // resets confirmation.
+  const setLocation = (lat, lng, source) =>
+    onChange({
+      lat: String(lat),
+      lng: String(lng),
+      loc_source: source,
+      loc_confirmed: !AUTO_SOURCES.includes(source),
+    });
 
   const locate = () => {
     setLocError('');
@@ -50,8 +66,11 @@ export default function ReportStep1Document({ data, onChange }) {
     setLocating(true);
     navigator.geolocation.getCurrentPosition(
       (p) => {
-        onChange({ lat: p.coords.latitude.toFixed(5), lng: p.coords.longitude.toFixed(5) });
-        setLocSource('your device location');
+        setLocation(
+          p.coords.latitude.toFixed(5),
+          p.coords.longitude.toFixed(5),
+          'your device location',
+        );
         setLocating(false);
       },
       (err) => {
@@ -82,9 +101,17 @@ export default function ReportStep1Document({ data, onChange }) {
     // Try EXIF GPS from the photo
     try {
       const gps = await exifr.gps(file);
-      if (gps && isFinite(gps.latitude) && isFinite(gps.longitude) && !userChosen) {
-        onChange({ lat: gps.latitude.toFixed(5), lng: gps.longitude.toFixed(5) });
-        setLocSource("the photo's embedded location");
+      if (
+        gps &&
+        isFinite(gps.latitude) &&
+        isFinite(gps.longitude) &&
+        !USER_CHOSEN_SOURCES.includes(dataRef.current.loc_source)
+      ) {
+        setLocation(
+          gps.latitude.toFixed(5),
+          gps.longitude.toFixed(5),
+          "the photo's embedded location",
+        );
       }
     } catch {
       /* no EXIF GPS */
@@ -276,10 +303,7 @@ export default function ReportStep1Document({ data, onChange }) {
         <MapPinDropper
           lat={data.lat}
           lng={data.lng}
-          onPick={({ lat, lng, source }) => {
-            onChange({ lat: String(lat), lng: String(lng) });
-            setLocSource(source || 'the map pin');
-          }}
+          onPick={({ lat, lng, source }) => setLocation(lat, lng, source || 'the map pin')}
         />
         {locError && (
           <p
@@ -290,14 +314,32 @@ export default function ReportStep1Document({ data, onChange }) {
           </p>
         )}
         {isFinite(parseFloat(data.lat)) && isFinite(parseFloat(data.lng)) && (
-          <p
+          <div
             className="mt-2 font-mono text-[10px] uppercase tracking-[0.15em] text-ozone"
             role="status"
             data-testid="location-confirmation"
           >
-            Location set from {locSource || 'your entry'}: {data.lat}, {data.lng} — tap the map to
-            move the pin.
-          </p>
+            {data.loc_confirmed ? (
+              <p>
+                Location confirmed ({locSource || 'your entry'}): {data.lat}, {data.lng} — tap the
+                map to move the pin.
+              </p>
+            ) : (
+              <>
+                <p>
+                  Location set from {locSource || 'your entry'}: {data.lat}, {data.lng}. Check the
+                  pin is where you took the photo — tap the map to move it.
+                </p>
+                <button
+                  type="button"
+                  onClick={() => onChange({ loc_confirmed: true })}
+                  className="mt-2 border border-ozone px-3 py-2 font-bold text-ozone transition-colors hover:bg-ozone hover:text-void"
+                >
+                  Yes, this is where it is
+                </button>
+              </>
+            )}
+          </div>
         )}
         <details className="group mt-2">
           <summary className="cursor-pointer font-mono text-[9px] uppercase tracking-[0.2em] text-dim/60 transition-colors hover:text-ozone">
@@ -307,8 +349,11 @@ export default function ReportStep1Document({ data, onChange }) {
             <input
               value={data.lat}
               onChange={(e) => {
-                onChange({ lat: e.target.value });
-                setLocSource('the coordinates you typed');
+                onChange({
+                  lat: e.target.value,
+                  loc_source: 'the coordinates you typed',
+                  loc_confirmed: true,
+                });
               }}
               placeholder="Latitude"
               inputMode="decimal"
@@ -317,8 +362,11 @@ export default function ReportStep1Document({ data, onChange }) {
             <input
               value={data.lng}
               onChange={(e) => {
-                onChange({ lng: e.target.value });
-                setLocSource('the coordinates you typed');
+                onChange({
+                  lng: e.target.value,
+                  loc_source: 'the coordinates you typed',
+                  loc_confirmed: true,
+                });
               }}
               placeholder="Longitude"
               inputMode="decimal"
