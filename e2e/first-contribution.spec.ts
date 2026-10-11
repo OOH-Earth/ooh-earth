@@ -72,3 +72,65 @@ test('server failure is reported as saved-on-device, not as submitted', async ({
   await expect(page.getByText(/has not been submitted yet/i)).toBeVisible();
   await expect(page.getByRole('heading', { name: 'Submitted for review' })).toHaveCount(0);
 });
+
+test('auto-dropped device location is labelled as device location, not a user entry', async ({
+  page,
+}) => {
+  await mockBase44(page, { user: null, locations: {} });
+  await page.addInitScript(() => {
+    Object.defineProperty(navigator, 'geolocation', {
+      value: {
+        getCurrentPosition: (ok: Function) =>
+          ok({ coords: { latitude: 0.001, longitude: 0.001, accuracy: 10 } }),
+      },
+    });
+  });
+  await page.goto('/report');
+  await expect(page.getByTestId('location-confirmation')).toContainText('your device location');
+});
+
+test('late device location never overwrites coordinates the person already typed', async ({
+  page,
+}) => {
+  await mockBase44(page, { user: null, locations: {} });
+  await page.addInitScript(() => {
+    Object.defineProperty(navigator, 'geolocation', {
+      value: {
+        getCurrentPosition: (ok: Function) =>
+          setTimeout(() => ok({ coords: { latitude: 10, longitude: 20, accuracy: 10 } }), 2500),
+      },
+    });
+  });
+  await page.goto('/report');
+  await page.getByText('Enter coordinates manually', { exact: true }).click();
+  await page.getByPlaceholder('Latitude').fill('51.4545');
+  await page.getByPlaceholder('Longitude').fill('-2.5879');
+  await page.waitForTimeout(4000);
+  await expect(page.getByPlaceholder('Latitude')).toHaveValue('51.4545');
+  await expect(page.getByPlaceholder('Longitude')).toHaveValue('-2.5879');
+  await expect(page.getByTestId('location-confirmation')).toContainText(
+    'the coordinates you typed',
+  );
+});
+
+test('typing coordinates after an auto-dropped device location updates the source label', async ({
+  page,
+}) => {
+  await mockBase44(page, { user: null, locations: {} });
+  await page.addInitScript(() => {
+    Object.defineProperty(navigator, 'geolocation', {
+      value: {
+        getCurrentPosition: (ok: Function) =>
+          ok({ coords: { latitude: 0.001, longitude: 0.001, accuracy: 10 } }),
+      },
+    });
+  });
+  await page.goto('/report');
+  await expect(page.getByTestId('location-confirmation')).toContainText('your device location');
+  await page.getByText('Enter coordinates manually', { exact: true }).click();
+  await page.getByPlaceholder('Latitude').fill('51.4545');
+  await expect(page.getByTestId('location-confirmation')).toContainText(
+    'the coordinates you typed',
+  );
+  await expect(page.getByTestId('location-confirmation')).not.toContainText('device location');
+});

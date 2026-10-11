@@ -36,6 +36,10 @@ export default function ReportStep1Document({ data, onChange }) {
 
   const [locError, setLocError] = useState('');
   const [locSource, setLocSource] = useState('');
+  // Sources the person chose deliberately -- later automatic sources (photo EXIF)
+  // must not replace these.
+  const USER_CHOSEN = ['the map pin', 'the coordinates you typed'];
+  const userChosen = USER_CHOSEN.includes(locSource);
 
   const locate = () => {
     setLocError('');
@@ -78,9 +82,9 @@ export default function ReportStep1Document({ data, onChange }) {
     // Try EXIF GPS from the photo
     try {
       const gps = await exifr.gps(file);
-      if (gps && isFinite(gps.latitude) && isFinite(gps.longitude)) {
+      if (gps && isFinite(gps.latitude) && isFinite(gps.longitude) && !userChosen) {
         onChange({ lat: gps.latitude.toFixed(5), lng: gps.longitude.toFixed(5) });
-        setLocSource('the photo');
+        setLocSource("the photo's embedded location");
       }
     } catch {
       /* no EXIF GPS */
@@ -272,9 +276,9 @@ export default function ReportStep1Document({ data, onChange }) {
         <MapPinDropper
           lat={data.lat}
           lng={data.lng}
-          onPick={({ lat, lng }) => {
+          onPick={({ lat, lng, source }) => {
             onChange({ lat: String(lat), lng: String(lng) });
-            setLocSource('the map pin');
+            setLocSource(source || 'the map pin');
           }}
         />
         {locError && (
@@ -291,8 +295,8 @@ export default function ReportStep1Document({ data, onChange }) {
             role="status"
             data-testid="location-confirmation"
           >
-            Location set from {locSource || 'your entry'}: {data.lat}, {data.lng} — drag or tap the
-            map to adjust.
+            Location set from {locSource || 'your entry'}: {data.lat}, {data.lng} — tap the map to
+            move the pin.
           </p>
         )}
         <details className="group mt-2">
@@ -302,14 +306,20 @@ export default function ReportStep1Document({ data, onChange }) {
           <div className="mt-2 grid grid-cols-2 gap-px border border-slate2/60 bg-slate2/40">
             <input
               value={data.lat}
-              onChange={(e) => onChange({ lat: e.target.value })}
+              onChange={(e) => {
+                onChange({ lat: e.target.value });
+                setLocSource('the coordinates you typed');
+              }}
               placeholder="Latitude"
               inputMode="decimal"
               className={`${inp} border-0`}
             />
             <input
               value={data.lng}
-              onChange={(e) => onChange({ lng: e.target.value })}
+              onChange={(e) => {
+                onChange({ lng: e.target.value });
+                setLocSource('the coordinates you typed');
+              }}
               placeholder="Longitude"
               inputMode="decimal"
               className={`${inp} border-0`}
