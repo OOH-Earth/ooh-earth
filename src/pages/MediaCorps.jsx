@@ -36,6 +36,37 @@ const VIEW_MODES = [
 
 const isGlobalSouth = (c) => isFinite(c.lat) && c.lat < 35;
 
+// Quick-pick chip labels: drop generic corporate words instead of keeping only the first word,
+// so "Clear Channel Outdoor" and "Clear Media" stay distinguishable. Falls back to the full name
+// when two visible chips would still collide. The full name is always the accessible name.
+const GENERIC_WORDS = new Set([
+  'inc',
+  'ltd',
+  'llc',
+  'plc',
+  'sa',
+  'co',
+  'group',
+  'media',
+  'outdoor',
+  'advertising',
+  'holdings',
+  'networks',
+  'network',
+]);
+function chipLabel(name = '') {
+  const words = name.replace(/[()]/g, ' ').replace(/\s+/g, ' ').trim().split(' ');
+  const kept = words.filter((w) => !GENERIC_WORDS.has(w.toLowerCase().replace(/[.,]/g, '')));
+  const label = (kept.length ? kept : words).join(' ');
+  return label.length > 16 ? `${label.slice(0, 15)}…` : label;
+}
+function chipLabels(list) {
+  const labels = list.map((c) => chipLabel(c.name));
+  return list.map((c, i) =>
+    labels.filter((l) => l === labels[i]).length > 1 ? c.name : labels[i],
+  );
+}
+
 export default function MediaCorps() {
   const [scopeFilter, setScopeFilter] = useState('all');
   const [search, setSearch] = useState('');
@@ -436,15 +467,21 @@ export default function MediaCorps() {
                 {/* Mobile list toggle */}
                 <div className="absolute bottom-3 left-3 right-3 z-[1000] lg:hidden">
                   <div className="flex gap-1 overflow-x-auto border border-slate2 bg-void/90 p-1.5 backdrop-blur-md">
-                    {(searchAsMove ? visibleCorps : filtered).slice(0, 8).map((corp) => (
-                      <button
-                        key={corp.id}
-                        onClick={() => setSelected(corp)}
-                        className={`shrink-0 px-2 py-1 font-mono text-[8px] font-bold uppercase tracking-[0.1em] border transition-colors ${selected?.id === corp.id ? 'border-ozone bg-ozone/10 text-ozone' : 'border-slate2 text-darkgray'}`}
-                      >
-                        {corp.name.split(' ')[0]}
-                      </button>
-                    ))}
+                    {(() => {
+                      const chips = (searchAsMove ? visibleCorps : filtered).slice(0, 8);
+                      const labels = chipLabels(chips);
+                      return chips.map((corp, i) => (
+                        <button
+                          key={corp.id}
+                          title={corp.name}
+                          aria-label={corp.name}
+                          onClick={() => setSelected(corp)}
+                          className={`shrink-0 px-2 py-1 font-mono text-[8px] font-bold uppercase tracking-[0.1em] border transition-colors ${selected?.id === corp.id ? 'border-ozone bg-ozone/10 text-ozone' : 'border-slate2 text-darkgray'}`}
+                        >
+                          {labels[i]}
+                        </button>
+                      ));
+                    })()}
                   </div>
                 </div>
 
