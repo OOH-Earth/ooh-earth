@@ -22,6 +22,27 @@ const STRIPPED_FIELDS = new Set([
   'status_updated_at',
 ]);
 
+// What a replay may reveal about an existing (possibly pending, private) record.
+// Deliberately excludes ownership, notes, address, photo and coordinates: a retry
+// only needs to know the report exists and its id/status.
+const REPLAY_FIELDS = [
+  'id',
+  'status',
+  'client_operation_id',
+  'created_date',
+  'type',
+  'brand_name',
+  'parent_corp',
+  'ooh_operator',
+  'ad_agency',
+];
+
+function replayReceipt(record: Record<string, unknown>) {
+  return Object.fromEntries(
+    REPLAY_FIELDS.filter((key) => key in record).map((k) => [k, record[k]]),
+  );
+}
+
 type Dependencies = {
   createClientFromRequest: (req: Request) => any;
   now?: () => number;
@@ -114,7 +135,7 @@ export async function handleSubmitOffline(
       telemetry.finish('success', { operation: 'replay', entity: entityType });
       await recordHealth?.('success', now() - startedAt);
       return Response.json(
-        { ok: true, duplicate: true, record: existing[0] },
+        { ok: true, duplicate: true, record: replayReceipt(existing[0]) },
         { headers: correlationHeaders(telemetry) },
       );
     }

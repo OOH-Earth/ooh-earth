@@ -2016,3 +2016,101 @@ Deno.test(
     assertEquals((await run(new Error('network down'))).status, 503);
   },
 );
+
+Deno.test(
+  'submitOffline replay reveals only a minimal receipt, never ownership, notes, address, photo or coordinates',
+  async () => {
+    const existing = {
+      id: 'loc-1',
+      status: 'pending',
+      client_operation_id: 'capture.op-1',
+      created_by_id: 'anonymous',
+      created_by: 'someone@example.com',
+      notes: 'private note',
+      address: '1 Private Street',
+      image_url: 'https://files/private.jpg',
+      lat: 51.5,
+      lng: -2.5,
+      brand_name: 'Brand',
+    };
+    const client = {
+      entities: { Location: { filter: async () => [], create: async () => ({ id: 'x' }) } },
+      asServiceRole: { entities: { Location: { filter: async () => [existing] } } },
+    };
+    const res = await handleSubmitOffline(request('POST', submitBody()), {
+      createClientFromRequest: () => client,
+    });
+    const body = await res.json();
+    assertEquals(body.duplicate, true);
+    assertEquals(body.record.id, 'loc-1');
+    assertEquals(body.record.status, 'pending');
+    for (const secret of [
+      'created_by_id',
+      'created_by',
+      'notes',
+      'address',
+      'image_url',
+      'lat',
+      'lng',
+    ]) {
+      assert(!(secret in body.record), `replay must not disclose ${secret}`);
+    }
+  },
+);
+
+Deno.test(
+  'submitOffline: an anonymous caller cannot replay or reuse an operation id owned by a signed-in user',
+  async () => {
+    const client = {
+      entities: { Location: { filter: async () => [], create: async () => ({ id: 'x' }) } },
+      // no auth.me for an anonymous caller
+      asServiceRole: {
+        entities: { Location: { filter: async () => [{ id: 'loc-A', created_by_id: 'user-A' }] } },
+      },
+    };
+    const res = await handleSubmitOffline(request('POST', submitBody()), {
+      createClientFromRequest: () => client,
+    });
+    assertEquals(res.status, 409);
+    const text = JSON.stringify(await res.json());
+    assert(
+      !text.includes('loc-A') && !text.includes('user-A'),
+      'conflict must not leak the record',
+    );
+  },
+);
+
+Deno.test(
+  'KNOWN LIMITATION: lookup-before-create is not atomic, so truly concurrent identical requests can both create',
+  async () => {
+    // Both lookups run before either create commits (the interleaving a real
+    // concurrent double-send can produce). This test documents the window; it
+    // does not endorse it. Closing it needs a uniqueness guarantee on
+    // client_operation_id (a schema change), not more application code.
+    let creates = 0;
+    const gate: Array<() => void> = [];
+    const waitForBoth = () =>
+      new Promise<void>((resolve) => {
+        gate.push(resolve);
+        if (gate.length === 2) gate.forEach((release) => release());
+      });
+    const client = {
+      entities: {
+        Location: {
+          filter: async () => [],
+          create: async (payload: any) => {
+            await waitForBoth();
+            creates++;
+            return { id: `loc-${creates}`, ...payload };
+          },
+        },
+      },
+    };
+    const deps = { createClientFromRequest: () => client };
+    await Promise.all([
+      handleSubmitOffline(request('POST', submitBody()), deps),
+      handleSubmitOffline(request('POST', submitBody()), deps),
+    ]);
+    assertEquals(creates, 2, 'documented: the concurrent window can produce two records');
+  },
+);
