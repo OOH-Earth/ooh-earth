@@ -32,8 +32,15 @@ type Dependencies = {
   ) => Promise<void> | void;
 };
 
-function jsonError(error: string, status: number, headers?: Record<string, string>) {
-  return Response.json({ error }, { status, headers });
+function jsonError(error: string, status: number, headers?: Record<string, string>, code?: string) {
+  return Response.json(code ? { error, code } : { error }, { status, headers });
+}
+
+// HTTP status carried by an SDK/platform error, if any (Base44Error.status, or
+// an axios-style response.status).
+function statusOf(error: any): number | undefined {
+  const status = Number(error?.status ?? error?.response?.status);
+  return Number.isFinite(status) ? status : undefined;
 }
 
 export async function handleSubmitOffline(
@@ -79,8 +86,31 @@ export async function handleSubmitOffline(
   try {
     const base44 = createClientFromRequest(req);
     const entity = base44.entities[entityType];
-    const existing = await entity.filter({ client_operation_id: operationId }, '-created_date', 1);
+    // Idempotency lookup runs with the service role: a pending report is
+    // invisible to its own anonymous submitter (read RLS is verified-only /
+    // own-by-user-id), so a caller-scoped lookup never finds the record an
+    // anonymous retry already created and a replay would create a duplicate.
+    // The operation id is an unguessable client UUID, so possession of it is
+    // the capability to replay. The create below stays caller-scoped, so RLS,
+    // field locks and ownership are unchanged.
+    const lookup = (base44.asServiceRole ?? base44).entities[entityType];
+    const existing = await lookup.filter({ client_operation_id: operationId }, '-created_date', 1);
     if (existing?.[0]) {
+      // A record owned by a signed-in user may only be replayed by that user;
+      // anonymous-owned records are replayable by whoever holds the operation id.
+      const owner = existing[0].created_by_id;
+      if (owner && owner !== 'anonymous') {
+        const me = await base44.auth?.me?.().catch?.(() => null);
+        if (me?.id !== owner) {
+          telemetry.finish('rejected', { error_code: 'OPERATION_ID_CONFLICT' });
+          return jsonError(
+            'Operation id already used',
+            409,
+            correlationHeaders(telemetry),
+            'CONFLICT',
+          );
+        }
+      }
       telemetry.finish('success', { operation: 'replay', entity: entityType });
       await recordHealth?.('success', now() - startedAt);
       return Response.json(
@@ -96,6 +126,18 @@ export async function handleSubmitOffline(
       { headers: correlationHeaders(telemetry) },
     );
   } catch (error) {
+    // Permanent client errors must not look like a transient outage: the
+    // client would queue and retry a request that can never succeed. Only
+    // genuinely unknown/server-side failures stay 503 (retryable).
+    const status = statusOf(error);
+    if (status === 400 || status === 422) {
+      telemetry.finish('rejected', { error_code: 'VALIDATION_REJECTED' });
+      return jsonError('Invalid submission', 422, correlationHeaders(telemetry), 'VALIDATION');
+    }
+    if (status === 403) {
+      telemetry.finish('rejected', { error_code: 'FORBIDDEN' });
+      return jsonError('Not permitted', 403, correlationHeaders(telemetry), 'FORBIDDEN');
+    }
     telemetry.finish('failed', { error_code: 'DEPENDENCY_FAILURE' });
     await recordHealth?.('failed', now() - startedAt, 'DEPENDENCY_FAILURE');
     console.error('submitOffline failed:', error instanceof Error ? error.name : 'unknown');

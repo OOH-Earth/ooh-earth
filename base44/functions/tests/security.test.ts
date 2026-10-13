@@ -1869,3 +1869,150 @@ Deno.test(
     assertEquals(blocked.status, 207, 'delete blocked fallback state');
   },
 );
+
+// ---- submitOffline: anonymous idempotency, ownership, privileged fields, error classes ----
+
+const submitBody = (extra: Record<string, unknown> = {}) => ({
+  entity_type: 'Location',
+  payload: { client_operation_id: 'capture.op-1', title: 'Test report', lat: 1, lng: 2, ...extra },
+});
+
+Deno.test(
+  'submitOffline replays an anonymous retry via the service-role lookup and creates exactly one record',
+  async () => {
+    // The caller-scoped client cannot see a pending record (anonymous submitter
+    // has no read access to it); only the service role can.
+    const stored: any[] = [];
+    const creates: any[] = [];
+    const client = {
+      entities: {
+        Location: {
+          filter: async () => [],
+          create: async (payload: any) => {
+            creates.push(payload);
+            const rec = { id: 'loc-1', status: 'pending', created_by_id: 'anonymous', ...payload };
+            stored.push(rec);
+            return rec;
+          },
+        },
+      },
+      asServiceRole: {
+        entities: { Location: { filter: async () => stored } },
+      },
+    };
+    const deps = { createClientFromRequest: () => client };
+    const first = await handleSubmitOffline(request('POST', submitBody()), deps);
+    const retry = await handleSubmitOffline(request('POST', submitBody()), deps);
+    assertEquals(first.status, 200);
+    assertEquals((await first.json()).duplicate, false);
+    const replay = await retry.json();
+    assertEquals(retry.status, 200);
+    assertEquals(replay.duplicate, true, 'retry must be recognised as a replay');
+    assertEquals(creates.length, 1, 'exactly one record may be created');
+  },
+);
+
+Deno.test(
+  'submitOffline refuses to replay a record owned by a different signed-in user',
+  async () => {
+    const client = {
+      entities: { Location: { filter: async () => [], create: async () => ({ id: 'x' }) } },
+      auth: { me: async () => ({ id: 'user-B' }) },
+      asServiceRole: {
+        entities: {
+          Location: {
+            filter: async () => [{ id: 'loc-A', created_by_id: 'user-A', status: 'pending' }],
+          },
+        },
+      },
+    };
+    const res = await handleSubmitOffline(request('POST', submitBody()), {
+      createClientFromRequest: () => client,
+    });
+    assertEquals(res.status, 409);
+    assertEquals((await res.json()).code, 'CONFLICT');
+    // the rightful owner still gets an idempotent replay
+    const ownerClient = { ...client, auth: { me: async () => ({ id: 'user-A' }) } };
+    const ok = await handleSubmitOffline(request('POST', submitBody()), {
+      createClientFromRequest: () => ownerClient,
+    });
+    assertEquals(ok.status, 200);
+    assertEquals((await ok.json()).duplicate, true);
+  },
+);
+
+Deno.test(
+  'submitOffline strips every privileged/moderation field and relies on the pending default',
+  async () => {
+    let created: any = null;
+    const client = {
+      entities: {
+        Location: {
+          filter: async () => [],
+          create: async (payload: any) => {
+            created = payload;
+            return { id: 'loc-1', status: 'pending', ...payload };
+          },
+        },
+      },
+    };
+    const res = await handleSubmitOffline(
+      request(
+        'POST',
+        submitBody({
+          status: 'verified',
+          status_updated_at: '2020-01-01T00:00:00Z',
+          created_by_id: 'admin-1',
+          id: 'forced-id',
+          created_date: '2020-01-01T00:00:00Z',
+          updated_date: '2020-01-01T00:00:00Z',
+        }),
+      ),
+      { createClientFromRequest: () => client },
+    );
+    assertEquals(res.status, 200);
+    for (const key of [
+      'status',
+      'status_updated_at',
+      'created_by_id',
+      'id',
+      'created_date',
+      'updated_date',
+    ]) {
+      assert(!(key in created), `${key} must never reach entity.create()`);
+    }
+    assertEquals(created.title, 'Test report', 'ordinary fields are preserved');
+  },
+);
+
+Deno.test(
+  'submitOffline classifies permission and validation failures as permanent, not as an outage',
+  async () => {
+    const failWith = (error: any) => ({
+      entities: {
+        Location: {
+          filter: async () => [],
+          create: async () => {
+            throw error;
+          },
+        },
+      },
+    });
+    const run = (error: any) =>
+      handleSubmitOffline(request('POST', submitBody()), {
+        createClientFromRequest: () => failWith(error),
+      });
+    const forbidden = await run(Object.assign(new Error('no'), { status: 403 }));
+    assertEquals(forbidden.status, 403);
+    assertEquals((await forbidden.json()).code, 'FORBIDDEN');
+    const invalid = await run(Object.assign(new Error('bad'), { status: 422 }));
+    assertEquals(invalid.status, 422);
+    assertEquals((await invalid.json()).code, 'VALIDATION');
+    const badRequest = await run(Object.assign(new Error('bad'), { response: { status: 400 } }));
+    assertEquals(badRequest.status, 422);
+    // genuinely transient or unknown failures stay retryable 503
+    assertEquals((await run(Object.assign(new Error('x'), { status: 500 }))).status, 503);
+    assertEquals((await run(Object.assign(new Error('x'), { status: 502 }))).status, 503);
+    assertEquals((await run(new Error('network down'))).status, 503);
+  },
+);
