@@ -384,6 +384,8 @@ Deno.test(
     const payload = {
       client_operation_id: 'capture.test-1',
       title: 'A capture',
+      lat: 51.45,
+      lng: -2.58,
       id: 'client-forged-id',
       created_by_id: 'client-forged-user',
     };
@@ -430,6 +432,8 @@ Deno.test(
     const payload = {
       client_operation_id: 'capture.status-forge-1',
       title: 'Forged verification attempt',
+      lat: 51.45,
+      lng: -2.58,
       status: 'verified',
       status_updated_at: '2020-01-01T00:00:00.000Z',
     };
@@ -1867,5 +1871,726 @@ Deno.test(
       createClientFromRequest: () => makeClient({ id: 'user-1' }, 'blocked'),
     });
     assertEquals(blocked.status, 207, 'delete blocked fallback state');
+  },
+);
+
+// ---- submitOffline: anonymous idempotency, ownership, privileged fields, error classes ----
+
+const submitBody = (extra: Record<string, unknown> = {}) => ({
+  entity_type: 'Location',
+  payload: { client_operation_id: 'capture.op-1', title: 'Test report', lat: 1, lng: 2, ...extra },
+});
+
+Deno.test(
+  'submitOffline replays an anonymous retry via the service-role lookup and creates exactly one record',
+  async () => {
+    // The caller-scoped client cannot see a pending record (anonymous submitter
+    // has no read access to it); only the service role can.
+    const stored: any[] = [];
+    const creates: any[] = [];
+    const client = {
+      entities: {
+        Location: {
+          filter: async () => [],
+          create: async (payload: any) => {
+            creates.push(payload);
+            const rec = { id: 'loc-1', status: 'pending', created_by_id: 'anonymous', ...payload };
+            stored.push(rec);
+            return rec;
+          },
+        },
+      },
+      asServiceRole: {
+        entities: { Location: { filter: async () => stored } },
+      },
+    };
+    const deps = { createClientFromRequest: () => client };
+    const first = await handleSubmitOffline(request('POST', submitBody()), deps);
+    const retry = await handleSubmitOffline(request('POST', submitBody()), deps);
+    assertEquals(first.status, 200);
+    assertEquals((await first.json()).duplicate, false);
+    const replay = await retry.json();
+    assertEquals(retry.status, 200);
+    assertEquals(replay.duplicate, true, 'retry must be recognised as a replay');
+    assertEquals(creates.length, 1, 'exactly one record may be created');
+  },
+);
+
+Deno.test(
+  'submitOffline refuses to replay a record owned by a different signed-in user',
+  async () => {
+    const client = {
+      entities: { Location: { filter: async () => [], create: async () => ({ id: 'x' }) } },
+      auth: { me: async () => ({ id: 'user-B' }) },
+      asServiceRole: {
+        entities: {
+          Location: {
+            filter: async () => [{ id: 'loc-A', created_by_id: 'user-A', status: 'pending' }],
+          },
+        },
+      },
+    };
+    const res = await handleSubmitOffline(request('POST', submitBody()), {
+      createClientFromRequest: () => client,
+    });
+    assertEquals(res.status, 409);
+    assertEquals((await res.json()).code, 'CONFLICT');
+    // the rightful owner still gets an idempotent replay
+    const ownerClient = { ...client, auth: { me: async () => ({ id: 'user-A' }) } };
+    const ok = await handleSubmitOffline(request('POST', submitBody()), {
+      createClientFromRequest: () => ownerClient,
+    });
+    assertEquals(ok.status, 200);
+    assertEquals((await ok.json()).duplicate, true);
+  },
+);
+
+Deno.test(
+  'submitOffline strips every privileged/moderation field and relies on the pending default',
+  async () => {
+    let created: any = null;
+    const client = {
+      entities: {
+        Location: {
+          filter: async () => [],
+          create: async (payload: any) => {
+            created = payload;
+            return { id: 'loc-1', status: 'pending', ...payload };
+          },
+        },
+      },
+    };
+    const res = await handleSubmitOffline(
+      request(
+        'POST',
+        submitBody({
+          status: 'verified',
+          status_updated_at: '2020-01-01T00:00:00Z',
+          created_by_id: 'admin-1',
+          id: 'forced-id',
+          created_date: '2020-01-01T00:00:00Z',
+          updated_date: '2020-01-01T00:00:00Z',
+        }),
+      ),
+      { createClientFromRequest: () => client },
+    );
+    assertEquals(res.status, 200);
+    for (const key of [
+      'status',
+      'status_updated_at',
+      'created_by_id',
+      'id',
+      'created_date',
+      'updated_date',
+    ]) {
+      assert(!(key in created), `${key} must never reach entity.create()`);
+    }
+    assertEquals(created.title, 'Test report', 'ordinary fields are preserved');
+  },
+);
+
+Deno.test(
+  'submitOffline classifies permission and validation failures as permanent, not as an outage',
+  async () => {
+    const failWith = (error: any) => ({
+      entities: {
+        Location: {
+          filter: async () => [],
+          create: async () => {
+            throw error;
+          },
+        },
+      },
+    });
+    const run = (error: any) =>
+      handleSubmitOffline(request('POST', submitBody()), {
+        createClientFromRequest: () => failWith(error),
+      });
+    const forbidden = await run(Object.assign(new Error('no'), { status: 403 }));
+    assertEquals(forbidden.status, 403);
+    assertEquals((await forbidden.json()).code, 'FORBIDDEN');
+    const invalid = await run(Object.assign(new Error('bad'), { status: 422 }));
+    assertEquals(invalid.status, 422);
+    assertEquals((await invalid.json()).code, 'VALIDATION');
+    const badRequest = await run(Object.assign(new Error('bad'), { response: { status: 400 } }));
+    assertEquals(badRequest.status, 422);
+    // genuinely transient or unknown failures stay retryable 503
+    assertEquals((await run(Object.assign(new Error('x'), { status: 500 }))).status, 503);
+    assertEquals((await run(Object.assign(new Error('x'), { status: 502 }))).status, 503);
+    assertEquals((await run(new Error('network down'))).status, 503);
+  },
+);
+
+Deno.test(
+  'submitOffline replay reveals only a minimal receipt, never ownership, notes, address, photo or coordinates',
+  async () => {
+    const existing = {
+      id: 'loc-1',
+      status: 'pending',
+      client_operation_id: 'capture.op-1',
+      created_by_id: 'anonymous',
+      created_by: 'someone@example.com',
+      notes: 'private note',
+      address: '1 Private Street',
+      image_url: 'https://files/private.jpg',
+      lat: 51.5,
+      lng: -2.5,
+      brand_name: 'Brand',
+    };
+    const client = {
+      entities: { Location: { filter: async () => [], create: async () => ({ id: 'x' }) } },
+      asServiceRole: { entities: { Location: { filter: async () => [existing] } } },
+    };
+    const res = await handleSubmitOffline(request('POST', submitBody()), {
+      createClientFromRequest: () => client,
+    });
+    const body = await res.json();
+    assertEquals(body.duplicate, true);
+    assertEquals(body.record.id, 'loc-1');
+    assertEquals(body.record.status, 'pending');
+    for (const secret of [
+      'created_by_id',
+      'created_by',
+      'notes',
+      'address',
+      'image_url',
+      'lat',
+      'lng',
+    ]) {
+      assert(!(secret in body.record), `replay must not disclose ${secret}`);
+    }
+  },
+);
+
+Deno.test(
+  'submitOffline: an anonymous caller cannot replay or reuse an operation id owned by a signed-in user',
+  async () => {
+    const client = {
+      entities: { Location: { filter: async () => [], create: async () => ({ id: 'x' }) } },
+      // no auth.me for an anonymous caller
+      asServiceRole: {
+        entities: { Location: { filter: async () => [{ id: 'loc-A', created_by_id: 'user-A' }] } },
+      },
+    };
+    const res = await handleSubmitOffline(request('POST', submitBody()), {
+      createClientFromRequest: () => client,
+    });
+    assertEquals(res.status, 409);
+    const text = JSON.stringify(await res.json());
+    assert(
+      !text.includes('loc-A') && !text.includes('user-A'),
+      'conflict must not leak the record',
+    );
+  },
+);
+
+Deno.test(
+  'KNOWN LIMITATION: lookup-before-create is not atomic, so truly concurrent identical requests can both create',
+  async () => {
+    // Both lookups run before either create commits (the interleaving a real
+    // concurrent double-send can produce). This test documents the window; it
+    // does not endorse it. Closing it needs a uniqueness guarantee on
+    // client_operation_id (a schema change), not more application code.
+    let creates = 0;
+    const gate: Array<() => void> = [];
+    const waitForBoth = () =>
+      new Promise<void>((resolve) => {
+        gate.push(resolve);
+        if (gate.length === 2) gate.forEach((release) => release());
+      });
+    const client = {
+      entities: {
+        Location: {
+          filter: async () => [],
+          create: async (payload: any) => {
+            await waitForBoth();
+            creates++;
+            return { id: `loc-${creates}`, ...payload };
+          },
+        },
+      },
+    };
+    const deps = { createClientFromRequest: () => client };
+    await Promise.all([
+      handleSubmitOffline(request('POST', submitBody()), deps),
+      handleSubmitOffline(request('POST', submitBody()), deps),
+    ]);
+    assertEquals(creates, 2, 'documented: the concurrent window can produce two records');
+  },
+);
+
+// ---- submitOffline: server-side validation (validate.ts) ----
+
+import {
+  FIELD_CHECK_RULES,
+  LOCATION_RULES,
+  validateSubmission,
+} from '../submitOffline/validate.ts';
+
+const readSchema = (name: string) => {
+  const raw = Deno.readTextFileSync(new URL(`../../entities/${name}.jsonc`, import.meta.url))
+    .split('\n')
+    .filter((line) => !line.trim().startsWith('//'))
+    .join('\n');
+  return JSON.parse(raw);
+};
+const SERVER_OWNED = ['status', 'status_updated_at'];
+
+Deno.test('submitOffline validation tables match the entity schemas (no drift)', () => {
+  for (const [entity, rules] of [
+    ['Location', LOCATION_RULES],
+    ['FieldCheck', FIELD_CHECK_RULES],
+  ] as const) {
+    const schema = readSchema(entity);
+    const schemaFields = Object.keys(schema.properties).filter((f) => !SERVER_OWNED.includes(f));
+    assertEquals(
+      Object.keys(rules).sort(),
+      schemaFields.sort(),
+      `${entity}: validated fields must equal the schema fields minus server-owned ones`,
+    );
+    for (const [field, rule] of Object.entries(rules) as Array<[string, any]>) {
+      const def = schema.properties[field];
+      if (rule.kind === 'enum') {
+        assertEquals(
+          rule.values,
+          def.enum,
+          `${entity}.${field}: enum values must match the schema`,
+        );
+      }
+      if (def.type === 'number')
+        assert(rule.kind === 'number', `${entity}.${field} must be numeric`);
+      if (def.type === 'array')
+        assert(rule.kind === 'strings', `${entity}.${field} must be a list`);
+    }
+    for (const required of schema.required) {
+      assert((rules as any)[required]?.required === true, `${entity}.${required} must be required`);
+    }
+  }
+});
+
+const submit = async (payload: Record<string, unknown>, entity = 'Location') => {
+  let created: any = null;
+  const client = {
+    entities: {
+      [entity]: {
+        filter: async () => [],
+        create: async (p: any) => {
+          created = p;
+          return { id: 'rec-1', status: 'pending', ...p };
+        },
+      },
+    },
+  };
+  const res = await handleSubmitOffline(
+    request('POST', {
+      entity_type: entity,
+      payload: { client_operation_id: 'op-v-1', ...payload },
+    }),
+    { createClientFromRequest: () => client },
+  );
+  return { res, body: await res.json(), created };
+};
+
+Deno.test(
+  'submitOffline accepts the payloads real callers send and preserves supported fields',
+  async () => {
+    const fieldReport = {
+      title: 'Billboard · High Street',
+      type: 'billboard',
+      address: 'High Street, Bristol',
+      lat: 51.4545,
+      lng: -2.5879,
+      image_url: 'https://base44.app/api/apps/x/files/mp/public/x/abc_photo.jpg',
+      notes: 'Harm statement: x\n\nViolations: a, b',
+      source_link: '',
+      status: 'pending',
+      brand_name: 'Nike',
+      campaign_name: '',
+      ooh_operator: 'JCDecaux',
+      ad_agency: '',
+      parent_corp: '',
+      industry_sector: '', // legitimate: the form's empty default
+      harm_tags: ['greenwashing'],
+      harm_statement: 'x',
+      condition: 'functional',
+      adbust_type: 'none',
+      adbust_image_url: '',
+      action_flags: ['reported'],
+      setting: 'unknown',
+      public_access: 'unknown',
+    };
+    const r = await submit(fieldReport);
+    assertEquals(r.res.status, 200, 'FieldReport payload accepted');
+    for (const key of Object.keys(fieldReport).filter(
+      (k) => k !== 'status' && k !== 'industry_sector',
+    )) {
+      assertEquals(r.created[key], (fieldReport as any)[key], `${key} preserved`);
+    }
+    assert(!('status' in r.created), 'status is never passed through');
+    assert(!r.body.notices, 'a clean payload produces no notices');
+
+    const graffiti = await submit({
+      title: 'Throw-up',
+      type: 'mural',
+      lat: 1,
+      lng: 2,
+      image_url: 'https://example.com/a.jpg',
+      graffiti_medium: 'spray_paint',
+      graffiti_style: 'throw_up',
+      graffiti_surface_m2: 12.5,
+      graffiti_coverage_pct: 40,
+      status: 'pending',
+    });
+    assertEquals(graffiti.res.status, 200, 'graffiti payload accepted');
+    assertEquals(graffiti.created.graffiti_surface_m2, 12.5, 'optional numbers preserved');
+
+    const check = await submit(
+      {
+        location_id: '6a6748e009b947cb29591871',
+        location_title: 'Billboard',
+        location_type: 'billboard',
+        lat: 1,
+        lng: 2,
+        image_url: 'https://example.com/a.jpg',
+        condition: 'damaged',
+        adbust_type: 'subverted',
+        brand_name: 'Nike',
+        status: 'pending',
+      },
+      'FieldCheck',
+    );
+    assertEquals(check.res.status, 200, 'FieldCheck payload accepted');
+  },
+);
+
+Deno.test(
+  'submitOffline rejects malformed input as a permanent 422 naming fields, never echoing values',
+  async () => {
+    const cases: Array<[string, Record<string, unknown>, string, string]> = [
+      ['missing title', { lat: 1, lng: 2 }, 'title', 'required'],
+      ['blank title', { title: '   ', lat: 1, lng: 2 }, 'title', 'required'],
+      ['over-long title', { title: 'x'.repeat(201), lat: 1, lng: 2 }, 'title', 'too_long'],
+      ['non-text title', { title: 5, lat: 1, lng: 2 }, 'title', 'must_be_text'],
+      ['missing lat', { title: 't', lng: 2 }, 'lat', 'required'],
+      ['string lat', { title: 't', lat: '51.4', lng: 2 }, 'lat', 'must_be_a_finite_number'],
+      ['lat out of range', { title: 't', lat: 91, lng: 2 }, 'lat', 'out_of_range'],
+      ['lng out of range', { title: 't', lat: 1, lng: -181 }, 'lng', 'out_of_range'],
+      [
+        'unknown type',
+        { title: 't', lat: 1, lng: 2, type: 'not-a-real-type' },
+        'type',
+        'not_allowed',
+      ],
+      [
+        'javascript url',
+        { title: 't', lat: 1, lng: 2, image_url: 'javascript:alert(1)' },
+        'image_url',
+        'invalid_url',
+      ],
+      [
+        'data url',
+        { title: 't', lat: 1, lng: 2, image_url: 'data:text/html,hi' },
+        'image_url',
+        'invalid_url',
+      ],
+      [
+        'over-long notes',
+        { title: 't', lat: 1, lng: 2, notes: 'n'.repeat(10001) },
+        'notes',
+        'too_long',
+      ],
+      [
+        'too many tags',
+        { title: 't', lat: 1, lng: 2, harm_tags: Array(31).fill('a') },
+        'harm_tags',
+        'too_many_items',
+      ],
+      ['non-text tag', { title: 't', lat: 1, lng: 2, harm_tags: [1] }, 'harm_tags', 'invalid_item'],
+      [
+        'tags not a list',
+        { title: 't', lat: 1, lng: 2, harm_tags: 'a' },
+        'harm_tags',
+        'must_be_a_list',
+      ],
+      [
+        'coverage out of range',
+        { title: 't', lat: 1, lng: 2, graffiti_coverage_pct: 140 },
+        'graffiti_coverage_pct',
+        'out_of_range',
+      ],
+    ];
+    for (const [label, payload, field, reason] of cases) {
+      const { res, body } = await submit(payload);
+      assertEquals(res.status, 422, `${label}: status`);
+      assertEquals(body.code, 'VALIDATION', `${label}: code`);
+      assert(
+        body.fields.some((f: any) => f.field === field && f.reason === reason),
+        `${label}: must name ${field}/${reason}, got ${JSON.stringify(body.fields)}`,
+      );
+      const text = JSON.stringify(body);
+      assert(
+        !text.includes('not-a-real-type') && !text.includes('alert(1)'),
+        `${label}: no value echoed`,
+      );
+    }
+    const noLoc = await submit({ lat: 1, lng: 2 }, 'FieldCheck');
+    assertEquals(noLoc.res.status, 422, 'FieldCheck without location_id');
+    const badId = await submit({ location_id: '../../etc', lat: 1, lng: 2 }, 'FieldCheck');
+    assertEquals(badId.res.status, 422, 'FieldCheck location_id format');
+  },
+);
+
+Deno.test('submitOffline never calls create for an invalid submission', async () => {
+  let creates = 0;
+  const client = {
+    entities: {
+      Location: {
+        filter: async () => [],
+        create: async () => {
+          creates++;
+          return {};
+        },
+      },
+    },
+  };
+  const res = await handleSubmitOffline(
+    request('POST', {
+      entity_type: 'Location',
+      payload: { client_operation_id: 'op-v-2', title: 't', lat: 'x', lng: 2 },
+    }),
+    { createClientFromRequest: () => client },
+  );
+  assertEquals(res.status, 422, 'rejected');
+  assertEquals(creates, 0, 'no record may be created for a rejected submission');
+});
+
+Deno.test(
+  'submitOffline drops (never stores) out-of-vocabulary optional enums and unknown fields, and says so',
+  async () => {
+    const { res, body, created } = await submit({
+      title: 't',
+      lat: 1,
+      lng: 2,
+      industry_sector: 'oil_and_gas', // an AI scan can return an unlisted sector
+      adbust_type: 'graffiti_wall',
+      is_sample: true, // not a client-settable field
+      access_level: 'admin',
+    });
+    assertEquals(res.status, 200, 'the contribution is kept');
+    assert(
+      !('industry_sector' in created) && !('adbust_type' in created),
+      'invalid enum values are not stored',
+    );
+    assert(
+      !('is_sample' in created) && !('access_level' in created),
+      'unknown fields are not stored',
+    );
+    assertEquals(
+      body.notices.normalized_fields.sort(),
+      ['adbust_type', 'industry_sector'],
+      'reported',
+    );
+    assertEquals(body.notices.ignored_fields.sort(), ['access_level', 'is_sample'], 'reported');
+  },
+);
+
+Deno.test(
+  'validateSubmission treats null and empty enums as not provided and enforces a strict type',
+  () => {
+    const ok = validateSubmission('Location', {
+      title: 't',
+      lat: 0,
+      lng: 0,
+      type: '',
+      condition: null,
+      industry_sector: '',
+    });
+    assert(ok.ok, 'null and empty optional values are fine (lat/lng 0 is valid)');
+    if (ok.ok)
+      assert(
+        !('type' in ok.payload) && !('condition' in ok.payload),
+        'omitted so schema defaults apply',
+      );
+    const bad = validateSubmission('Location', { title: 't', lat: 0, lng: 0, type: 'bus_stop' });
+    assert(!bad.ok, 'unknown type is rejected');
+  },
+);
+
+// ---- submitOffline: bounded duplicate mitigation (NOT atomic idempotency) ----
+
+// A small in-memory "database" shared by a caller-scoped client (cannot read pending
+// records it did not create as someone else) and a service-role view of everything.
+const makeStore = (opts: { failDelete?: boolean } = {}) => {
+  const rows: any[] = [];
+  let tick = 0;
+  const entity = {
+    // caller-scoped filter: an anonymous caller cannot read pending records
+    filter: async () => [],
+    create: async (p: any) => {
+      const row = {
+        id: `r${++tick}`,
+        created_date: `2026-10-13T00:00:00.${String(tick).padStart(6, '0')}Z`,
+        created_by_id: 'anonymous',
+        status: 'pending',
+        ...p,
+      };
+      rows.push(row);
+      return { ...row };
+    },
+  };
+  const service = {
+    filter: async (q: any) =>
+      rows
+        .filter((r) => r.client_operation_id === q.client_operation_id)
+        .sort((a, b) => a.created_date.localeCompare(b.created_date))
+        .map((r) => ({ ...r })),
+    delete: async (id: string) => {
+      if (opts.failDelete) throw new Error('delete failed');
+      const i = rows.findIndex((r) => r.id === id);
+      if (i >= 0) rows.splice(i, 1);
+    },
+  };
+  const client = {
+    entities: { Location: entity },
+    asServiceRole: { entities: { Location: service } },
+  };
+  return { rows, client };
+};
+// Simulates the race: at lookup time the other request's record is not visible yet,
+// but by the time this request re-reads (reconcile) it is.
+const hideFromFirstLookup = (client: any) => {
+  const service = client.asServiceRole.entities.Location;
+  const realFilter = service.filter;
+  let calls = 0;
+  service.filter = async (q: any) => (++calls === 1 ? [] : realFilter(q));
+};
+const send = (client: any, extra: Record<string, unknown> = {}) =>
+  handleSubmitOffline(request('POST', submitBody(extra)), {
+    createClientFromRequest: () => client,
+  });
+
+Deno.test(
+  'duplicate mitigation: both created before either re-reads -> exactly one record survives',
+  async () => {
+    const { rows, client } = makeStore();
+    // make both requests pass the lookup and create before either reconciles
+    const created: Array<() => void> = [];
+    const barrier = () =>
+      new Promise<void>((resolve) => {
+        created.push(resolve);
+        if (created.length === 2) created.forEach((go) => go());
+      });
+    const originalCreate = client.entities.Location.create;
+    client.entities.Location.create = async (p: any) => {
+      const row = await originalCreate(p);
+      await barrier(); // both rows exist before anyone re-reads
+      return row;
+    };
+    const [a, b] = await Promise.all([send(client), send(client)]);
+    const bodies = [await a.json(), await b.json()];
+    assertEquals(rows.length, 1, 'exactly one record may remain');
+    assertEquals(
+      bodies.filter((x) => x.duplicate).length,
+      1,
+      'the loser is told it was a duplicate',
+    );
+    assertEquals(
+      new Set(bodies.map((x) => x.record.id)).size,
+      1,
+      'both requests are pointed at the same surviving record',
+    );
+  },
+);
+
+Deno.test(
+  'duplicate mitigation: RESIDUAL WINDOW - if the other write is not visible yet, both survive',
+  async () => {
+    const { rows, client } = makeStore();
+    // each request re-reads before the other commits: it sees only itself
+    let phase = 0;
+    const service = client.asServiceRole.entities.Location;
+    const realFilter = service.filter;
+    service.filter = async (q: any) => {
+      phase++;
+      return phase <= 2 ? realFilter(q).then((r: any[]) => r.slice(0, 1)) : realFilter(q);
+    };
+    await Promise.all([send(client), send(client)]);
+    // documented limitation: this is why the mitigation is not claimed as atomic
+    assert(rows.length >= 1, 'at least one record exists');
+  },
+);
+
+Deno.test('duplicate mitigation never deletes a record from a different submitter', async () => {
+  const { rows, client } = makeStore();
+  rows.push({
+    id: 'r0',
+    created_date: '2026-10-13T00:00:00.000000Z',
+    created_by_id: 'user-A',
+    client_operation_id: 'capture.op-1',
+    status: 'pending',
+  });
+  hideFromFirstLookup(client); // the pre-create lookup misses it (race), so create proceeds
+  const res = await send(client);
+  assertEquals(res.status, 200, 'accepted');
+  assert(
+    rows.some((r) => r.id === 'r0'),
+    "another submitter's record is never deleted",
+  );
+  assertEquals(rows.length, 2, 'the new record was kept (different submitter)');
+});
+
+Deno.test('duplicate mitigation never fails the request when the delete fails', async () => {
+  const { rows, client } = makeStore({ failDelete: true });
+  rows.push({
+    id: 'r0',
+    created_date: '2026-10-13T00:00:00.000000Z',
+    created_by_id: 'anonymous',
+    client_operation_id: 'capture.op-1',
+    status: 'pending',
+  });
+  hideFromFirstLookup(client);
+  const res = await send(client);
+  assertEquals(res.status, 200, 'the submission still succeeds');
+  assertEquals((await res.json()).duplicate, false, 'duplicate stays pending for moderators');
+  assertEquals(rows.length, 2, 'nothing was removed');
+});
+
+Deno.test(
+  "operation-id reuse: anonymous replays get a minimal receipt; nobody learns another identity's record",
+  async () => {
+    const { rows, client } = makeStore();
+    const first = await send(client, { notes: 'PRIVATE', address: 'PRIVATE' });
+    assertEquals(first.status, 200);
+    const replay = await send(client, { notes: 'PRIVATE', address: 'PRIVATE' });
+    const body = await replay.json();
+    assertEquals(body.duplicate, true, 'recognised as a replay');
+    assertEquals(
+      Object.keys(body.record).sort(),
+      ['client_operation_id', 'created_date', 'id', 'status', 'type']
+        .filter((k) => k in body.record)
+        .sort(),
+      'receipt keys',
+    );
+    for (const k of [
+      'created_by_id',
+      'notes',
+      'address',
+      'lat',
+      'lng',
+      'image_url',
+      'brand_name',
+    ]) {
+      assert(!(k in body.record), `receipt must not include ${k}`);
+    }
+    assertEquals(rows.length, 1, 'still one record');
+    // an operation id owned by a signed-in user cannot be reused by an anonymous caller or another user
+    rows[0].created_by_id = 'user-A';
+    const anon = await send(client);
+    assertEquals(anon.status, 409, 'anonymous caller is refused');
+    assert(!JSON.stringify(await anon.json()).includes('r1'), 'no record id leaked in the refusal');
+    const other = { ...client, auth: { me: async () => ({ id: 'user-B' }) } };
+    assertEquals((await send(other)).status, 409, 'a different signed-in user is refused');
+    const owner = { ...client, auth: { me: async () => ({ id: 'user-A' }) } };
+    assertEquals((await send(owner)).status, 200, 'the owner still gets an idempotent replay');
   },
 );

@@ -38,7 +38,7 @@ export default function Nav() {
           </Link>
           <BetaTag className="hidden sm:inline-flex" />
           <TypeEnhancer />
-          <div className="hidden md:block">
+          <div className="hidden lg:block">
             <DashboardDropdown />
           </div>
         </div>
@@ -47,7 +47,7 @@ export default function Nav() {
           <OfflineSyncBadge />
           <RadioMiniPlayer />
           <ThemeToggle />
-          <span data-tour="theme" className="hidden md:flex items-center gap-1.5">
+          <span data-tour="theme" className="hidden lg:flex items-center gap-1.5">
             <HapticsToggle />
             <SoundToggle />
             <ReadAloudToggle />
@@ -56,7 +56,7 @@ export default function Nav() {
             to="/map"
             aria-label="Field map"
             title="Map"
-            className="hidden h-8 w-8 items-center justify-center border border-slate2 text-silver transition-colors hover:border-ozone hover:text-ozone md:flex"
+            className="hidden h-8 w-8 items-center justify-center border border-slate2 text-silver transition-colors hover:border-ozone hover:text-ozone lg:flex"
           >
             <MapIcon className="h-3.5 w-3.5" />
           </Link>
@@ -64,7 +64,7 @@ export default function Nav() {
             onClick={startTour}
             aria-label="Start walkthrough"
             title="Tour"
-            className="hidden h-8 w-8 items-center justify-center border border-slate2 text-silver transition-colors hover:border-ozone hover:text-ozone md:flex"
+            className="hidden h-8 w-8 items-center justify-center border border-slate2 text-silver transition-colors hover:border-ozone hover:text-ozone lg:flex"
           >
             <Compass className="h-3.5 w-3.5" />
           </button>
@@ -72,7 +72,7 @@ export default function Nav() {
             to="/operative"
             aria-label="Member profile"
             title="Member"
-            className="hidden h-8 w-8 items-center justify-center border border-slate2 text-silver transition-colors hover:border-ozone hover:text-ozone md:flex"
+            className="hidden h-8 w-8 items-center justify-center border border-slate2 text-silver transition-colors hover:border-ozone hover:text-ozone lg:flex"
           >
             <Zap className="h-3.5 w-3.5" />
           </Link>
@@ -80,7 +80,7 @@ export default function Nav() {
             to="/channel"
             aria-label="OOH·TV channel"
             title="OOH·TV"
-            className="hidden h-8 w-8 items-center justify-center border border-slate2 text-silver transition-colors hover:border-ozone hover:text-ozone md:flex"
+            className="hidden h-8 w-8 items-center justify-center border border-slate2 text-silver transition-colors hover:border-ozone hover:text-ozone lg:flex"
           >
             <Tv className="h-3.5 w-3.5" />
           </Link>

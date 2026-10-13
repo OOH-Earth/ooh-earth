@@ -1,4 +1,7 @@
 import { base44 } from '@/api/base44Client';
+import { SubmissionRejectedError, toSubmitError } from '@/lib/submitErrors';
+import { IdentityChangedError, canSendNow, ownerForNewItem } from '@/lib/queueIdentity';
+import { withOperationLock } from '@/lib/operationLock';
 
 const DB_NAME = 'ooh_offline';
 const STORE = 'captures';
@@ -40,10 +43,17 @@ function withOperationId(payload) {
 }
 
 async function submitRemote(payload, entityType) {
-  const response = await base44.functions.invoke('submitOffline', {
-    entity_type: entityType,
-    payload,
-  });
+  let response;
+  try {
+    response = await base44.functions.invoke('submitOffline', {
+      entity_type: entityType,
+      payload,
+    });
+  } catch (err) {
+    // Permanent failures (403/422/...) become a SubmissionRejectedError so
+    // callers show them instead of queueing a request that can never succeed.
+    throw toSubmitError(err);
+  }
   const result = response?.data ?? response;
   if (!result?.ok || !result.record) throw new Error('Submission unavailable');
   return result.record;
@@ -64,6 +74,10 @@ export async function enqueueCapture(payload, entityType = 'Location') {
       const tx = db.transaction(STORE, 'readwrite');
       const req = tx.objectStore(STORE).add({
         payload: normalized,
+        // Who saved this draft. The queue only auto-sends items owned by the
+        // identity currently signed in (see queueIdentity.js); `owner` stays
+        // out of the payload so it is never sent to the server.
+        owner: ownerForNewItem(),
         operation_id: normalized.client_operation_id,
         entityType,
         created: Date.now(),
@@ -136,12 +150,60 @@ export async function incrementRetries(id) {
   notify();
 }
 
+// Explicit, user-confirmed choice to send a held draft under the identity now
+// signed in (or anonymously). Never called automatically. The previous owner is
+// kept on the item for traceability.
+export async function adoptCapture(id, newOwner) {
+  const db = await openDB();
+  await new Promise((resolve, reject) => {
+    const tx = db.transaction(STORE, 'readwrite');
+    const store = tx.objectStore(STORE);
+    const getReq = store.get(id);
+    getReq.onsuccess = () => {
+      const rec = getReq.result;
+      if (!rec) return resolve();
+      rec.adopted_from = rec.owner ?? null;
+      rec.adopted_at = Date.now();
+      rec.owner = newOwner;
+      const putReq = store.put(rec);
+      putReq.onsuccess = () => resolve();
+      putReq.onerror = () => reject(putReq.error);
+    };
+    getReq.onerror = () => reject(getReq.error);
+  });
+  notify();
+}
+
+// A permanent rejection (permission/validation) can never succeed on retry, so
+// mark the item 'failed' immediately -- kept on the device and visible, never
+// deleted -- instead of burning MAX_RETRIES identical requests at the server.
+export async function markFailed(id, status) {
+  const db = await openDB();
+  await new Promise((resolve, reject) => {
+    const tx = db.transaction(STORE, 'readwrite');
+    const store = tx.objectStore(STORE);
+    const getReq = store.get(id);
+    getReq.onsuccess = () => {
+      const rec = getReq.result;
+      if (!rec) return resolve();
+      rec.status = 'failed';
+      rec.retries = MAX_RETRIES;
+      rec.last_error_status = status;
+      const putReq = store.put(rec);
+      putReq.onsuccess = () => resolve();
+      putReq.onerror = () => reject(putReq.error);
+    };
+    getReq.onerror = () => reject(getReq.error);
+  });
+  notify();
+}
+
 // Explicit user-initiated retry for an item that already exhausted
 // automatic retries. Not looped or timer-driven -- the automatic flush
 // path (useOfflineSync's flush()) deliberately excludes 'failed' items so
 // they don't hammer the backend forever; this is the only path back to
 // synced, at the user's own pace.
-export async function retryCapture(id) {
+export async function retryCapture(id, expectedOwner) {
   const db = await openDB();
   const rec = await new Promise((resolve, reject) => {
     const tx = db.transaction(STORE, 'readonly');
@@ -150,16 +212,18 @@ export async function retryCapture(id) {
     req.onerror = () => reject(req.error);
   });
   if (!rec) return { status: 'missing' };
+  if (expectedOwner !== undefined && !canSendNow(rec, expectedOwner)) return { status: 'held' };
   try {
-    // submitOffline is idempotent on client_operation_id (see
-    // base44/functions/submitOffline's own duplicate-detection branch) --
-    // safe to resend even if a prior attempt actually succeeded
-    // server-side but the client never saw the ack, so this can't create a
-    // duplicate record.
-    await submitRemote(rec.payload, rec.entityType);
+    // submitOffline checks client_operation_id before creating, so resending
+    // after a lost ack normally returns the existing record. That check is not
+    // atomic: two truly concurrent identical requests can still both create.
+    await withOperationLock(rec.payload?.client_operation_id, () =>
+      submitRemote(rec.payload, rec.entityType),
+    );
     await removeCapture(id);
     return { status: 'synced' };
   } catch (err) {
+    if (err?.busy) return { status: 'busy' }; // another tab is sending it right now
     console.warn('Manual retry failed for item', id, err?.message);
     // Stays 'failed' -- still visible, still recoverable, no further
     // automatic action taken.
@@ -174,9 +238,14 @@ export async function submitCapture(payload) {
     return { status: 'queued' };
   }
   try {
-    const rec = await submitRemote(normalized, 'Location');
+    const rec = await withOperationLock(
+      normalized.client_operation_id,
+      () => submitRemote(normalized, 'Location'),
+      { waitIfBusy: true },
+    );
     return { status: 'synced', rec };
   } catch (err) {
+    if (err instanceof SubmissionRejectedError) throw err;
     console.warn('Capture failed, queuing:', err?.message);
     await enqueueCapture(normalized, 'Location');
     return { status: 'queued' };
@@ -190,17 +259,30 @@ export async function submitFieldCheck(payload) {
     return { status: 'queued' };
   }
   try {
-    const rec = await submitRemote(normalized, 'FieldCheck');
+    const rec = await withOperationLock(
+      normalized.client_operation_id,
+      () => submitRemote(normalized, 'FieldCheck'),
+      { waitIfBusy: true },
+    );
     return { status: 'synced', rec };
   } catch (err) {
+    if (err instanceof SubmissionRejectedError) throw err;
     console.warn('Field check failed, queuing:', err?.message);
     await enqueueCapture(normalized, 'FieldCheck');
     return { status: 'queued' };
   }
 }
 
-export async function submitQueuedCapture(payload, entityType) {
-  return submitRemote(withOperationId(payload), entityType);
+// `guard` = { item, expectedOwner }: re-checked synchronously right before the
+// request leaves, so a logout/account switch mid-sync cannot send a draft under
+// the new identity. Throws IdentityChangedError (not counted as a failure).
+export async function submitQueuedCapture(payload, entityType, guard) {
+  if (guard && !canSendNow(guard.item, guard.expectedOwner)) throw new IdentityChangedError();
+  const normalized = withOperationId(payload);
+  // another tab already sending this report -> skipped cycle (OperationBusyError)
+  return withOperationLock(normalized.client_operation_id, () =>
+    submitRemote(normalized, entityType),
+  );
 }
 
 export { MAX_RETRIES };

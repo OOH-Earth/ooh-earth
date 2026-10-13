@@ -136,7 +136,9 @@ test.describe('FieldReport (/report) — multi-photo upload', () => {
     await submitBtn.click();
     await expect(submitBtn).toHaveText(/Transmit report/i);
     await submitBtn.click();
-    await expect(page.getByText(/Transmission received/i)).toBeVisible({ timeout: 10_000 });
+    await expect(page.getByRole('heading', { name: 'Submitted for review' })).toBeVisible({
+      timeout: 10_000,
+    });
     await expect.poll(() => photoCreates.length, { timeout: 20_000 }).toBe(11);
   });
 
@@ -211,7 +213,9 @@ test.describe('FieldReport (/report) — multi-photo upload', () => {
     await submitBtn.click(); // -> step 4
     await expect(submitBtn).toHaveText(/Transmit report/i);
     await submitBtn.click(); // submit
-    await expect(page.getByText(/Transmission received/i)).toBeVisible({ timeout: 10_000 });
+    await expect(page.getByRole('heading', { name: 'Submitted for review' })).toBeVisible({
+      timeout: 10_000,
+    });
 
     await shot(page, testInfo, 'field-report-transmission-received');
 
