@@ -20,13 +20,13 @@ export const OG_IMAGES = {
 };
 
 const D =
-  'An open-source, community-funded app reclaiming the visual commons. Mapping every corporate advertising offense on the public record and coordinating creative resistance worldwide.';
+  'OOH Earth is an open-source, community-funded adbusting platform that documents outdoor advertising and supports community-led creative resistance.';
 
 export const META = {
   '/': { title: 'OOH Earth — Street Art & Adbusting Maps', desc: D, image: OG_IMAGES.default },
   '/map': {
     title: 'Field Atlas — OOH Earth',
-    desc: 'Interactive global map of every billboard, digital screen, and advertising surface — logged, verified, and ready for adbusting.',
+    desc: 'An interactive atlas of documented outdoor advertising and public-space records, with moderation status shown where available.',
     image: OG_IMAGES.map,
   },
   '/hackers-club': {
@@ -56,12 +56,12 @@ export const META = {
   },
   '/report': {
     title: 'Field Report — OOH Earth',
-    desc: 'Log a billboard, digital screen, or advertising offense. Photo, location, access key, and notes — on the public record.',
+    desc: 'Document a billboard, digital screen, or advertising surface with a photo, location, and notes. A submission is a record for review, not proof of ownership or permission.',
     image: OG_IMAGES.map,
   },
   '/about': {
     title: 'About — OOH Earth',
-    desc: 'OOH Earth is an open-source, community-funded platform reclaiming the visual commons through mapping, adbusting, and creative resistance.',
+    desc: 'OOH Earth documents outdoor advertising and supports community-led adbusting, research, photography, and creative remixes.',
     image: OG_IMAGES.default,
   },
   '/support': {
@@ -76,7 +76,7 @@ export const META = {
   },
   '/campaign': {
     title: 'Fund the Offensive — OOH Earth',
-    desc: 'Community-funded treasury for adbusting, mapping, and creative resistance. Support the offensive.',
+    desc: 'Support OOH Earth’s community-funded work documenting outdoor advertising and developing creative adbusting tools.',
     image: OG_IMAGES.campaign,
   },
   '/store': {

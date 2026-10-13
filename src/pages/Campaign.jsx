@@ -19,6 +19,7 @@ const CONFIRM_POLL_DELAY_MS = 2500;
 export default function Campaign() {
   const [thanks, setThanks] = useState(false);
   const [raised, setRaised] = useState(CAMPAIGN.raisedUsd);
+  const [raisedState, setRaisedState] = useState('loading');
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
     if (urlParams.get('status') === 'thanks') setThanks(true);
@@ -65,10 +66,15 @@ export default function Campaign() {
       .then((res) => {
         const s = res?.data ?? res;
         const r = Number(s?.raised);
-        if (!cancelled && Number.isFinite(r) && r >= 0) setRaised(r);
+        if (!cancelled && Number.isFinite(r) && r >= 0) {
+          setRaised(r);
+          setRaisedState('available');
+        } else if (!cancelled) {
+          setRaisedState('unavailable');
+        }
       })
       .catch(() => {
-        /* keep configured fallback */
+        if (!cancelled) setRaisedState('unavailable');
       });
     return () => {
       cancelled = true;
@@ -104,15 +110,25 @@ export default function Campaign() {
 
           <div className="mt-6 overflow-hidden border border-slate2/60 bg-card p-4 md:p-5">
             <div className="flex items-end justify-between font-mono text-[10px] uppercase tracking-[0.25em]">
-              <span className="text-ozone">${raised.toLocaleString()} raised</span>
+              <span className="text-ozone">
+                {raisedState === 'available'
+                  ? `$${raised.toLocaleString()} confirmed`
+                  : 'Total unavailable'}
+              </span>
               <span className="text-dim">goal ${CAMPAIGN.goalUsd.toLocaleString()}</span>
             </div>
             <div className="mt-2 h-1.5 w-full overflow-hidden bg-slate2/40">
               <div
                 className="h-full bg-ozone transition-all duration-500"
-                style={{ width: `${pct}%` }}
+                style={{ width: raisedState === 'available' ? `${pct}%` : '0%' }}
               />
             </div>
+            {raisedState === 'unavailable' && (
+              <p className="mt-2 font-mono text-[9px] uppercase tracking-[0.18em] text-dim">
+                Confirmed contribution total is temporarily unavailable; the goal remains configured
+                at ${CAMPAIGN.goalUsd.toLocaleString()}.
+              </p>
+            )}
           </div>
 
           <div className="mt-8 grid gap-4 md:mt-10 md:grid-cols-3">
@@ -138,8 +154,8 @@ export default function Campaign() {
           <div className="mt-10 flex items-start gap-3 border-t border-slate2/40 pt-6">
             <Megaphone className="mt-0.5 h-5 w-5 shrink-0 text-ozone" />
             <p className="font-display text-sm leading-[1.6] text-darkgray">
-              Every contribution is logged in the public record. Funding deploys field teams,
-              cameras, and counter-narrative infrastructure across the global advertising offensive.
+              Confirmed contributions support the open record, field documentation, and creative
+              adbusting work. Funding is not evidence of reach, impact, or complete coverage.
             </p>
           </div>
         </div>
