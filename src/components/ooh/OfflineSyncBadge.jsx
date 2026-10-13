@@ -1,15 +1,40 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { useOfflineSync } from '@/hooks/useOfflineSync';
 import { CloudOff, Loader2, AlertTriangle, ShieldQuestion } from 'lucide-react';
+import * as AlertDialogPrimitive from '@radix-ui/react-alert-dialog';
 import {
   AlertDialog,
   AlertDialogCancel,
-  AlertDialogContent,
   AlertDialogDescription,
   AlertDialogFooter,
   AlertDialogHeader,
+  AlertDialogOverlay,
+  AlertDialogPortal,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+import { cn } from '@/lib/utils';
+
+// This dialog is composed locally (not via the shared AlertDialogContent) so it
+// can sit ABOVE the app's fixed chrome: the shared dialog is z-50, while the
+// mobile bottom tabs are z-[1000] and the bottom nudge bar z-[70] -- without this
+// they draw over the dialog and stay clickable while it is open. The shared
+// component's layering is deliberately left untouched. The content is capped to
+// the visible height and scrolls inside, so nothing is clipped in short landscape.
+/** @param {{ className?: string, children?: any, [key: string]: any }} props */
+function HeldDraftsDialogContent({ className, ...props }) {
+  return (
+    <AlertDialogPortal>
+      <AlertDialogOverlay className="z-[2090]" />
+      <AlertDialogPrimitive.Content
+        className={cn(
+          'fixed left-1/2 top-1/2 z-[2100] grid max-h-[calc(100dvh-1.5rem)] w-[calc(100%-1.5rem)] max-w-lg -translate-x-1/2 -translate-y-1/2 gap-4 overflow-y-auto border bg-background p-4 shadow-lg sm:p-6',
+          className,
+        )}
+        {...props}
+      />
+    </AlertDialogPortal>
+  );
+}
 
 export default function OfflineSyncBadge() {
   const {
@@ -25,6 +50,9 @@ export default function OfflineSyncBadge() {
     retryFailed,
   } = useOfflineSync();
   const [confirmOpen, setConfirmOpen] = useState(false);
+  // Radix only restores focus to a <Trigger>; this dialog is opened by a plain
+  // button, so return focus to it explicitly when the dialog closes.
+  const holdButtonRef = useRef(null);
   if (!pendingCount && !failedCount && !adoptableCount && !foreignCount) return null;
   const signedIn = identity?.id && identity.id !== 'anonymous';
   return (
@@ -49,6 +77,7 @@ export default function OfflineSyncBadge() {
         // earlier session). Never sent automatically: the person decides.
         <>
           <button
+            ref={holdButtonRef}
             onClick={() => setConfirmOpen(true)}
             aria-label={`${adoptableCount} saved report${adoptableCount === 1 ? '' : 's'} on this device ${adoptableCount === 1 ? 'is' : 'are'} on hold. Review before sending.`}
             className="flex items-center gap-1.5 border border-ozone/60 px-2.5 py-2 font-mono text-[9px] font-bold uppercase tracking-[0.2em] text-ozone transition-colors hover:bg-ozone hover:text-void"
@@ -57,7 +86,12 @@ export default function OfflineSyncBadge() {
             <span>{adoptableCount} on hold</span>
           </button>
           <AlertDialog open={confirmOpen} onOpenChange={setConfirmOpen}>
-            <AlertDialogContent>
+            <HeldDraftsDialogContent
+              onCloseAutoFocus={(event) => {
+                event.preventDefault();
+                holdButtonRef.current?.focus();
+              }}
+            >
               <AlertDialogHeader>
                 <AlertDialogTitle>
                   {adoptableCount} saved report{adoptableCount === 1 ? '' : 's'} on hold
@@ -73,7 +107,7 @@ export default function OfflineSyncBadge() {
                   on the map.
                 </AlertDialogDescription>
               </AlertDialogHeader>
-              <ul className="max-h-60 space-y-2 overflow-y-auto">
+              <ul className="max-h-[32dvh] space-y-2 overflow-y-auto">
                 {adoptable.map((draft) => (
                   <li
                     key={draft.id}
@@ -101,7 +135,7 @@ export default function OfflineSyncBadge() {
               <AlertDialogFooter>
                 <AlertDialogCancel>Keep on this device</AlertDialogCancel>
               </AlertDialogFooter>
-            </AlertDialogContent>
+            </HeldDraftsDialogContent>
           </AlertDialog>
         </>
       )}

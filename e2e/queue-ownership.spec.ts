@@ -255,3 +255,114 @@ test('held drafts survive reloads and are still not sent', async ({ page }) => {
   expect(sent).toHaveLength(0);
   expect(await queue(page)).toHaveLength(1);
 });
+
+for (const size of [
+  { width: 844, height: 390 },
+  { width: 390, height: 844 },
+  { width: 360, height: 640 },
+]) {
+  test(`the held-drafts dialog is fully reachable above the app chrome at ${size.width}x${size.height}`, async ({
+    page,
+  }) => {
+    await page.setViewportSize(size);
+    await mockBase44(page, { user: MEMBER_A, locations: {} });
+    await page.route('**/functions/submitOffline', (route) =>
+      route.fulfill({
+        json: { ok: true, duplicate: false, record: { id: 's', status: 'pending' } },
+      }),
+    );
+    await page.goto('/report?access_token=mock-token');
+    await expect
+      .poll(() =>
+        page.evaluate(async () =>
+          (await indexedDB.databases()).some((d) => d.name === 'ooh_offline'),
+        ),
+      )
+      .toBe(true);
+    await page.evaluate(
+      () =>
+        new Promise<void>((resolve) => {
+          const open = indexedDB.open('ooh_offline');
+          open.onsuccess = () => {
+            const tx = open.result.transaction('captures', 'readwrite');
+            [
+              'A fairly long saved report title to check truncation inside the list',
+              'Second saved report',
+            ].forEach((t, i) =>
+              tx.objectStore('captures').add({
+                payload: {
+                  title: t,
+                  type: 'billboard',
+                  lat: 1,
+                  lng: 2,
+                  image_url: 'x',
+                  client_operation_id: `op-d${i}`,
+                },
+                operation_id: `op-d${i}`,
+                entityType: 'Location',
+                created: Date.now(),
+                retries: 0,
+                owner: 'anonymous',
+              }),
+            );
+            tx.oncomplete = () => resolve();
+          };
+        }),
+    );
+    await page.reload();
+    // let the fixed bottom nudge bar appear so the layering is really exercised
+    await page
+      .getByText(/fuel the next action/i)
+      .waitFor({ timeout: 8000 })
+      .catch(() => {});
+    const trigger = page.getByRole('button', { name: /2 saved reports .* on hold/i });
+    await trigger.click();
+    const dialog = page.getByRole('alertdialog');
+    await expect(dialog).toBeVisible();
+
+    const probe = await page.evaluate(() => {
+      const d = document.querySelector('[role=alertdialog]') as HTMLElement;
+      const r = d.getBoundingClientRect();
+      const hit = (el: Element) => {
+        el.scrollIntoView({ block: 'nearest' });
+        const b = el.getBoundingClientRect();
+        const top = document.elementFromPoint(b.left + b.width / 2, b.top + b.height / 2);
+        return !!top && (el === top || el.contains(top) || top.contains(el));
+      };
+      const buttons = [...d.querySelectorAll('button')];
+      const nav = document.querySelector(
+        'nav[aria-label="Mobile navigation"]',
+      ) as HTMLElement | null;
+      let navBlocked = true;
+      if (nav) {
+        const nb = nav.getBoundingClientRect();
+        const top = document.elementFromPoint(nb.left + nb.width / 2, nb.top + nb.height / 2);
+        navBlocked = !nav.contains(top);
+      }
+      return {
+        withinViewport:
+          r.top >= 0 && r.bottom <= innerHeight + 1 && r.left >= 0 && r.right <= innerWidth + 1,
+        scrollsInside:
+          d.scrollHeight > d.clientHeight ? getComputedStyle(d).overflowY !== 'visible' : true,
+        buttonsHit: buttons.map((b) => hit(b)),
+        buttonCount: buttons.length,
+        navBlocked,
+      };
+    });
+    expect(probe.withinViewport, 'dialog must fit the visible viewport').toBe(true);
+    expect(probe.scrollsInside).toBe(true);
+    expect(probe.buttonCount).toBeGreaterThanOrEqual(3);
+    expect(
+      probe.buttonsHit.every(Boolean),
+      `every dialog button must be hit-testable: ${probe.buttonsHit}`,
+    ).toBe(true);
+    expect(probe.navBlocked, 'the bottom nav must not be clickable through the open dialog').toBe(
+      true,
+    );
+
+    // keyboard: Escape closes, focus returns to the trigger
+    await page.keyboard.press('Escape');
+    await expect(dialog).toBeHidden();
+    await expect(trigger).toBeFocused();
+  });
+}
