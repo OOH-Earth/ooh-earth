@@ -71,6 +71,10 @@ async function setup(page: Page, user: any | null, seed: any[]) {
   return sent;
 }
 
+// The queue syncs on reconnect, every 30s, and on the badge; a test triggers the
+// reconnect path explicitly instead of waiting for the interval.
+const reconnect = (page: Page) => page.evaluate(() => window.dispatchEvent(new Event('online')));
+
 const queue = (page: Page) =>
   page.evaluate(
     () =>
@@ -153,13 +157,29 @@ test('a legacy draft with no recorded owner is held, not guessed', async ({ page
 
 test("a member's own draft still syncs automatically", async ({ page }) => {
   const sent = await setup(page, MEMBER_A, [draft('own draft', 'op-own-1', MEMBER_A.id)]);
-  await expect.poll(() => sent.length, { timeout: 15000 }).toBe(1);
+  await expect
+    .poll(
+      async () => {
+        await reconnect(page);
+        return sent.length;
+      },
+      { timeout: 15000 },
+    )
+    .toBe(1);
   await expect.poll(async () => (await queue(page)).length, { timeout: 15000 }).toBe(0);
 });
 
 test("an anonymous visitor's own draft still syncs automatically", async ({ page }) => {
   const sent = await setup(page, null, [draft('anon own', 'op-anon-own', 'anonymous')]);
-  await expect.poll(() => sent.length, { timeout: 15000 }).toBe(1);
+  await expect
+    .poll(
+      async () => {
+        await reconnect(page);
+        return sent.length;
+      },
+      { timeout: 15000 },
+    )
+    .toBe(1);
 });
 
 test('new queued drafts are tagged with the identity that saved them', async ({ page }) => {
@@ -214,7 +234,15 @@ test("an expired session turns a member's own drafts into held drafts, never ano
   page,
 }) => {
   const sent = await setup(page, MEMBER_A, [draft('own draft', 'op-exp-1', MEMBER_A.id)]);
-  await expect.poll(() => sent.length, { timeout: 15000 }).toBe(1);
+  await expect
+    .poll(
+      async () => {
+        await reconnect(page);
+        return sent.length;
+      },
+      { timeout: 15000 },
+    )
+    .toBe(1);
   // new draft saved while signed in, then the session expires and the page reloads
   await page.evaluate(
     (item) =>

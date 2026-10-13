@@ -135,12 +135,6 @@ export function useOfflineSync() {
     };
   }, [refresh]);
 
-  // When the confirmed identity changes (sign-in, sign-out, account switch), send
-  // whatever belongs to the new identity.
-  useEffect(() => {
-    if (identity.confirmed && navigator.onLine) flush();
-  }, [identity.id, identity.confirmed, flush]);
-
   // Explicit, per-report choice: send ONE held draft under the current identity
   // (an anonymous or legacy draft -> the account signed in now, or anonymously).
   // Never bulk, never automatic. Re-checks the draft is still adoptable and that
