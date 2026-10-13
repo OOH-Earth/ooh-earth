@@ -384,6 +384,8 @@ Deno.test(
     const payload = {
       client_operation_id: 'capture.test-1',
       title: 'A capture',
+      lat: 51.45,
+      lng: -2.58,
       id: 'client-forged-id',
       created_by_id: 'client-forged-user',
     };
@@ -430,6 +432,8 @@ Deno.test(
     const payload = {
       client_operation_id: 'capture.status-forge-1',
       title: 'Forged verification attempt',
+      lat: 51.45,
+      lng: -2.58,
       status: 'verified',
       status_updated_at: '2020-01-01T00:00:00.000Z',
     };
@@ -2112,5 +2116,302 @@ Deno.test(
       handleSubmitOffline(request('POST', submitBody()), deps),
     ]);
     assertEquals(creates, 2, 'documented: the concurrent window can produce two records');
+  },
+);
+
+// ---- submitOffline: server-side validation (validate.ts) ----
+
+import {
+  FIELD_CHECK_RULES,
+  LOCATION_RULES,
+  validateSubmission,
+} from '../submitOffline/validate.ts';
+
+const readSchema = (name: string) => {
+  const raw = Deno.readTextFileSync(new URL(`../../entities/${name}.jsonc`, import.meta.url))
+    .split('\n')
+    .filter((line) => !line.trim().startsWith('//'))
+    .join('\n');
+  return JSON.parse(raw);
+};
+const SERVER_OWNED = ['status', 'status_updated_at'];
+
+Deno.test('submitOffline validation tables match the entity schemas (no drift)', () => {
+  for (const [entity, rules] of [
+    ['Location', LOCATION_RULES],
+    ['FieldCheck', FIELD_CHECK_RULES],
+  ] as const) {
+    const schema = readSchema(entity);
+    const schemaFields = Object.keys(schema.properties).filter((f) => !SERVER_OWNED.includes(f));
+    assertEquals(
+      Object.keys(rules).sort(),
+      schemaFields.sort(),
+      `${entity}: validated fields must equal the schema fields minus server-owned ones`,
+    );
+    for (const [field, rule] of Object.entries(rules) as Array<[string, any]>) {
+      const def = schema.properties[field];
+      if (rule.kind === 'enum') {
+        assertEquals(
+          rule.values,
+          def.enum,
+          `${entity}.${field}: enum values must match the schema`,
+        );
+      }
+      if (def.type === 'number')
+        assert(rule.kind === 'number', `${entity}.${field} must be numeric`);
+      if (def.type === 'array')
+        assert(rule.kind === 'strings', `${entity}.${field} must be a list`);
+    }
+    for (const required of schema.required) {
+      assert((rules as any)[required]?.required === true, `${entity}.${required} must be required`);
+    }
+  }
+});
+
+const submit = async (payload: Record<string, unknown>, entity = 'Location') => {
+  let created: any = null;
+  const client = {
+    entities: {
+      [entity]: {
+        filter: async () => [],
+        create: async (p: any) => {
+          created = p;
+          return { id: 'rec-1', status: 'pending', ...p };
+        },
+      },
+    },
+  };
+  const res = await handleSubmitOffline(
+    request('POST', {
+      entity_type: entity,
+      payload: { client_operation_id: 'op-v-1', ...payload },
+    }),
+    { createClientFromRequest: () => client },
+  );
+  return { res, body: await res.json(), created };
+};
+
+Deno.test(
+  'submitOffline accepts the payloads real callers send and preserves supported fields',
+  async () => {
+    const fieldReport = {
+      title: 'Billboard · High Street',
+      type: 'billboard',
+      address: 'High Street, Bristol',
+      lat: 51.4545,
+      lng: -2.5879,
+      image_url: 'https://base44.app/api/apps/x/files/mp/public/x/abc_photo.jpg',
+      notes: 'Harm statement: x\n\nViolations: a, b',
+      source_link: '',
+      status: 'pending',
+      brand_name: 'Nike',
+      campaign_name: '',
+      ooh_operator: 'JCDecaux',
+      ad_agency: '',
+      parent_corp: '',
+      industry_sector: '', // legitimate: the form's empty default
+      harm_tags: ['greenwashing'],
+      harm_statement: 'x',
+      condition: 'functional',
+      adbust_type: 'none',
+      adbust_image_url: '',
+      action_flags: ['reported'],
+      setting: 'unknown',
+      public_access: 'unknown',
+    };
+    const r = await submit(fieldReport);
+    assertEquals(r.res.status, 200, 'FieldReport payload accepted');
+    for (const key of Object.keys(fieldReport).filter(
+      (k) => k !== 'status' && k !== 'industry_sector',
+    )) {
+      assertEquals(r.created[key], (fieldReport as any)[key], `${key} preserved`);
+    }
+    assert(!('status' in r.created), 'status is never passed through');
+    assert(!r.body.notices, 'a clean payload produces no notices');
+
+    const graffiti = await submit({
+      title: 'Throw-up',
+      type: 'mural',
+      lat: 1,
+      lng: 2,
+      image_url: 'https://example.com/a.jpg',
+      graffiti_medium: 'spray_paint',
+      graffiti_style: 'throw_up',
+      graffiti_surface_m2: 12.5,
+      graffiti_coverage_pct: 40,
+      status: 'pending',
+    });
+    assertEquals(graffiti.res.status, 200, 'graffiti payload accepted');
+    assertEquals(graffiti.created.graffiti_surface_m2, 12.5, 'optional numbers preserved');
+
+    const check = await submit(
+      {
+        location_id: '6a6748e009b947cb29591871',
+        location_title: 'Billboard',
+        location_type: 'billboard',
+        lat: 1,
+        lng: 2,
+        image_url: 'https://example.com/a.jpg',
+        condition: 'damaged',
+        adbust_type: 'subverted',
+        brand_name: 'Nike',
+        status: 'pending',
+      },
+      'FieldCheck',
+    );
+    assertEquals(check.res.status, 200, 'FieldCheck payload accepted');
+  },
+);
+
+Deno.test(
+  'submitOffline rejects malformed input as a permanent 422 naming fields, never echoing values',
+  async () => {
+    const cases: Array<[string, Record<string, unknown>, string, string]> = [
+      ['missing title', { lat: 1, lng: 2 }, 'title', 'required'],
+      ['blank title', { title: '   ', lat: 1, lng: 2 }, 'title', 'required'],
+      ['over-long title', { title: 'x'.repeat(201), lat: 1, lng: 2 }, 'title', 'too_long'],
+      ['non-text title', { title: 5, lat: 1, lng: 2 }, 'title', 'must_be_text'],
+      ['missing lat', { title: 't', lng: 2 }, 'lat', 'required'],
+      ['string lat', { title: 't', lat: '51.4', lng: 2 }, 'lat', 'must_be_a_finite_number'],
+      ['lat out of range', { title: 't', lat: 91, lng: 2 }, 'lat', 'out_of_range'],
+      ['lng out of range', { title: 't', lat: 1, lng: -181 }, 'lng', 'out_of_range'],
+      [
+        'unknown type',
+        { title: 't', lat: 1, lng: 2, type: 'not-a-real-type' },
+        'type',
+        'not_allowed',
+      ],
+      [
+        'javascript url',
+        { title: 't', lat: 1, lng: 2, image_url: 'javascript:alert(1)' },
+        'image_url',
+        'invalid_url',
+      ],
+      [
+        'data url',
+        { title: 't', lat: 1, lng: 2, image_url: 'data:text/html,hi' },
+        'image_url',
+        'invalid_url',
+      ],
+      [
+        'over-long notes',
+        { title: 't', lat: 1, lng: 2, notes: 'n'.repeat(10001) },
+        'notes',
+        'too_long',
+      ],
+      [
+        'too many tags',
+        { title: 't', lat: 1, lng: 2, harm_tags: Array(31).fill('a') },
+        'harm_tags',
+        'too_many_items',
+      ],
+      ['non-text tag', { title: 't', lat: 1, lng: 2, harm_tags: [1] }, 'harm_tags', 'invalid_item'],
+      [
+        'tags not a list',
+        { title: 't', lat: 1, lng: 2, harm_tags: 'a' },
+        'harm_tags',
+        'must_be_a_list',
+      ],
+      [
+        'coverage out of range',
+        { title: 't', lat: 1, lng: 2, graffiti_coverage_pct: 140 },
+        'graffiti_coverage_pct',
+        'out_of_range',
+      ],
+    ];
+    for (const [label, payload, field, reason] of cases) {
+      const { res, body } = await submit(payload);
+      assertEquals(res.status, 422, `${label}: status`);
+      assertEquals(body.code, 'VALIDATION', `${label}: code`);
+      assert(
+        body.fields.some((f: any) => f.field === field && f.reason === reason),
+        `${label}: must name ${field}/${reason}, got ${JSON.stringify(body.fields)}`,
+      );
+      const text = JSON.stringify(body);
+      assert(
+        !text.includes('not-a-real-type') && !text.includes('alert(1)'),
+        `${label}: no value echoed`,
+      );
+    }
+    const noLoc = await submit({ lat: 1, lng: 2 }, 'FieldCheck');
+    assertEquals(noLoc.res.status, 422, 'FieldCheck without location_id');
+    const badId = await submit({ location_id: '../../etc', lat: 1, lng: 2 }, 'FieldCheck');
+    assertEquals(badId.res.status, 422, 'FieldCheck location_id format');
+  },
+);
+
+Deno.test('submitOffline never calls create for an invalid submission', async () => {
+  let creates = 0;
+  const client = {
+    entities: {
+      Location: {
+        filter: async () => [],
+        create: async () => {
+          creates++;
+          return {};
+        },
+      },
+    },
+  };
+  const res = await handleSubmitOffline(
+    request('POST', {
+      entity_type: 'Location',
+      payload: { client_operation_id: 'op-v-2', title: 't', lat: 'x', lng: 2 },
+    }),
+    { createClientFromRequest: () => client },
+  );
+  assertEquals(res.status, 422, 'rejected');
+  assertEquals(creates, 0, 'no record may be created for a rejected submission');
+});
+
+Deno.test(
+  'submitOffline drops (never stores) out-of-vocabulary optional enums and unknown fields, and says so',
+  async () => {
+    const { res, body, created } = await submit({
+      title: 't',
+      lat: 1,
+      lng: 2,
+      industry_sector: 'oil_and_gas', // an AI scan can return an unlisted sector
+      adbust_type: 'graffiti_wall',
+      is_sample: true, // not a client-settable field
+      access_level: 'admin',
+    });
+    assertEquals(res.status, 200, 'the contribution is kept');
+    assert(
+      !('industry_sector' in created) && !('adbust_type' in created),
+      'invalid enum values are not stored',
+    );
+    assert(
+      !('is_sample' in created) && !('access_level' in created),
+      'unknown fields are not stored',
+    );
+    assertEquals(
+      body.notices.normalized_fields.sort(),
+      ['adbust_type', 'industry_sector'],
+      'reported',
+    );
+    assertEquals(body.notices.ignored_fields.sort(), ['access_level', 'is_sample'], 'reported');
+  },
+);
+
+Deno.test(
+  'validateSubmission treats null and empty enums as not provided and enforces a strict type',
+  () => {
+    const ok = validateSubmission('Location', {
+      title: 't',
+      lat: 0,
+      lng: 0,
+      type: '',
+      condition: null,
+      industry_sector: '',
+    });
+    assert(ok.ok, 'null and empty optional values are fine (lat/lng 0 is valid)');
+    if (ok.ok)
+      assert(
+        !('type' in ok.payload) && !('condition' in ok.payload),
+        'omitted so schema defaults apply',
+      );
+    const bad = validateSubmission('Location', { title: 't', lat: 0, lng: 0, type: 'bus_stop' });
+    assert(!bad.ok, 'unknown type is rejected');
   },
 );

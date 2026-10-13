@@ -50,4 +50,27 @@ t('already-classified errors are not wrapped twice', () => {
   const once = toSubmitError(err(403));
   assert.equal(toSubmitError(once), once);
 });
+t('a validation error names the rejected parts without echoing values', () => {
+  const out = toSubmitError(
+    err(422, {
+      data: {
+        code: 'VALIDATION',
+        fields: [
+          { field: 'lat', reason: 'out_of_range' },
+          { field: 'lng', reason: 'out_of_range' },
+          { field: 'image_url', reason: 'invalid_url' },
+        ],
+      },
+    }),
+  );
+  assert.match(out.message, /Some details were rejected \(location, photo\)/);
+  assert.equal(out.permanent, true);
+});
+t('a validation error with unknown fields still gets a generic permanent message', () => {
+  assert.match(
+    toSubmitError(err(422, { data: { fields: [{ field: 'weird' }] } })).message,
+    /\(a field\)/,
+  );
+  assert.match(toSubmitError(err(422)).message, /Some details were rejected — /);
+});
 if (failed) process.exitCode = 1;

@@ -45,7 +45,7 @@
     "test:e2e:ui": "playwright test --ui",
     "test:a11y": "playwright test a11y.spec.ts",
     "test:security-functions": "node scripts/server-function-security-check.mjs",
-    "test:server-functions": "./node_modules/.bin/deno test --no-check base44/functions/tests/security.test.ts",
+    "test:server-functions": "./node_modules/.bin/deno test --no-check --allow-read=base44/entities base44/functions/tests/security.test.ts",
     "typecheck:functions": "cd base44/functions && deno check --node-modules-dir=none */entry.ts"
   },
   "dependencies": {

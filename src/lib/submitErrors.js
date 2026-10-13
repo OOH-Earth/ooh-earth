@@ -33,13 +33,33 @@ export function isPermanentSubmitFailure(err) {
   return status !== undefined && PERMANENT_STATUSES.has(status);
 }
 
-/** @param {number | undefined} status */
-function messageFor(status) {
+const FIELD_LABELS = {
+  lat: 'location',
+  lng: 'location',
+  title: 'title',
+  image_url: 'photo',
+  adbust_image_url: 'photo',
+  type: 'media type',
+  location_id: 'original location',
+  location_type: 'media type',
+};
+
+/**
+ * @param {number | undefined} status
+ * @param {any} [data] response body; a validation error carries `fields: [{field, reason}]`
+ */
+function messageFor(status, data) {
   if (status === 403)
     return "This report couldn't be accepted — you may not have permission to submit it. Your details are still on this page; try signing in, then submit again.";
   if (status === 409) return 'This report was already submitted from a different account.';
   if (status === 413) return 'A file is too large to upload — try a smaller photo.';
-  return 'Some details were rejected — check the form and try again.';
+  const fields = Array.isArray(data?.fields) ? data.fields : [];
+  const labels = [
+    ...new Set(fields.map((/** @type {any} */ f) => FIELD_LABELS[f?.field] || 'a field')),
+  ];
+  return labels.length
+    ? `Some details were rejected (${labels.join(', ')}) — check the form and try again.`
+    : 'Some details were rejected — check the form and try again.';
 }
 
 // Returns a SubmissionRejectedError for permanent failures, otherwise the
@@ -49,7 +69,7 @@ export function toSubmitError(err) {
   if (err instanceof SubmissionRejectedError) return err;
   if (!isPermanentSubmitFailure(err)) return err;
   const status = statusOf(err);
-  return new SubmissionRejectedError(messageFor(status), {
+  return new SubmissionRejectedError(messageFor(status, err?.data), {
     status,
     code: err?.data?.code ?? err?.code,
   });

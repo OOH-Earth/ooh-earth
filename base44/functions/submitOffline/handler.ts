@@ -1,4 +1,5 @@
 import { correlationHeaders, telemetryFor } from './telemetry.ts';
+import { validateSubmission } from './validate.ts';
 
 const OPERATION_ID = /^[A-Za-z0-9][A-Za-z0-9._:-]{0,119}$/;
 const ENTITY_NAMES = new Set(['Location', 'FieldCheck']);
@@ -101,9 +102,29 @@ export async function handleSubmitOffline(
     return jsonError('Invalid operation id', 400, correlationHeaders(telemetry));
   }
 
-  const safePayload = Object.fromEntries(
+  // Privileged / server-owned fields are removed first, then everything else is
+  // validated against the entity's allowlist and bounds (see validate.ts). A wrong
+  // value is a permanent 422 -- the client must not queue and retry it.
+  const stripped = Object.fromEntries(
     Object.entries(payload).filter(([key]) => !STRIPPED_FIELDS.has(key)),
   );
+  const checked = validateSubmission(entityType, stripped);
+  if (!checked.ok) {
+    telemetry.finish('rejected', {
+      error_code: 'VALIDATION_REJECTED',
+      issue_count: checked.issues.length,
+    });
+    return Response.json(
+      { error: 'Invalid submission', code: 'VALIDATION', fields: checked.issues },
+      { status: 422, headers: correlationHeaders(telemetry) },
+    );
+  }
+  const safePayload = checked.payload;
+  // Dropped fields are reported (names only) so a caller/telemetry can see them.
+  const notices =
+    checked.ignored.length || checked.normalized.length
+      ? { ignored_fields: checked.ignored, normalized_fields: checked.normalized }
+      : undefined;
   try {
     const base44 = createClientFromRequest(req);
     const entity = base44.entities[entityType];
@@ -143,7 +164,7 @@ export async function handleSubmitOffline(
     telemetry.finish('success', { operation: 'create', entity: entityType });
     await recordHealth?.('success', now() - startedAt);
     return Response.json(
-      { ok: true, duplicate: false, record },
+      { ok: true, duplicate: false, record, ...(notices ? { notices } : {}) },
       { headers: correlationHeaders(telemetry) },
     );
   } catch (error) {
