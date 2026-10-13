@@ -73,4 +73,20 @@ t('a validation error with unknown fields still gets a generic permanent message
   );
   assert.match(toSubmitError(err(422)).message, /Some details were rejected — /);
 });
+t(
+  'a raw axios error (body at response.data, as the functions client throws) keeps its field details',
+  () => {
+    const axiosShaped = Object.assign(new Error('Request failed with status code 422'), {
+      status: 422,
+      response: {
+        status: 422,
+        data: { code: 'VALIDATION', fields: [{ field: 'type', reason: 'not_allowed' }] },
+      },
+    });
+    const out = toSubmitError(axiosShaped);
+    assert.match(out.message, /Some details were rejected \(media type\)/);
+    assert.equal(out.code, 'VALIDATION');
+    assert.equal(out.permanent, true);
+  },
+);
 if (failed) process.exitCode = 1;

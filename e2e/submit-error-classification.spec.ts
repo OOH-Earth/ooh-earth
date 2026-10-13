@@ -52,7 +52,7 @@ async function queue(page: Page) {
 
 for (const [status, text] of [
   [403, /couldn't be accepted/i],
-  [422, /details were rejected/i],
+  [422, /details were rejected \(media type\)/i],
 ] as const) {
   test(`a ${status} response is shown to the person, keeps the form, and is never queued or retried`, async ({
     page,
@@ -61,7 +61,17 @@ for (const [status, text] of [
     let calls = 0;
     await page.route('**/functions/submitOffline', (route) => {
       calls++;
-      return route.fulfill({ status, json: { error: 'rejected', code: 'X' } });
+      return route.fulfill({
+        status,
+        json:
+          status === 422
+            ? {
+                error: 'Invalid submission',
+                code: 'VALIDATION',
+                fields: [{ field: 'type', reason: 'not_allowed' }],
+              }
+            : { error: 'rejected', code: 'X' },
+      });
     });
     await fillAndSubmit(page);
     await expect(page.getByText(text)).toBeVisible();

@@ -21,6 +21,13 @@ export class SubmissionRejectedError extends Error {
   }
 }
 
+// The functions client throws a raw axios error (body at err.response.data); the SDK's
+// wrapped Base44Error keeps it at err.data. Read both so field details are never lost.
+/** @param {any} err */
+function bodyOf(err) {
+  return err?.response?.data ?? err?.data;
+}
+
 /** @param {any} err */
 function statusOf(err) {
   const status = Number(err?.status ?? err?.response?.status);
@@ -69,8 +76,8 @@ export function toSubmitError(err) {
   if (err instanceof SubmissionRejectedError) return err;
   if (!isPermanentSubmitFailure(err)) return err;
   const status = statusOf(err);
-  return new SubmissionRejectedError(messageFor(status, err?.data), {
+  return new SubmissionRejectedError(messageFor(status, bodyOf(err)), {
     status,
-    code: err?.data?.code ?? err?.code,
+    code: bodyOf(err)?.code ?? err?.code,
   });
 }
