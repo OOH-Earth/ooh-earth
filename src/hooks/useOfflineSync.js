@@ -66,6 +66,8 @@ export function useOfflineSync() {
         } catch (err) {
           // Not a delivery failure: the identity changed, so leave the draft untouched.
           if (err?.identityChanged) break;
+          // Another tab is sending this exact report right now: skip, do not count a retry.
+          if (err?.busy) continue;
           console.warn('Offline sync failed for item', item.id, err?.message);
           try {
             // A genuine IndexedDB write failure here (rare -- quota, a

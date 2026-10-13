@@ -1,6 +1,7 @@
 import { base44 } from '@/api/base44Client';
 import { SubmissionRejectedError, toSubmitError } from '@/lib/submitErrors';
 import { IdentityChangedError, canSendNow, ownerForNewItem } from '@/lib/queueIdentity';
+import { withOperationLock } from '@/lib/operationLock';
 
 const DB_NAME = 'ooh_offline';
 const STORE = 'captures';
@@ -216,10 +217,13 @@ export async function retryCapture(id, expectedOwner) {
     // submitOffline checks client_operation_id before creating, so resending
     // after a lost ack normally returns the existing record. That check is not
     // atomic: two truly concurrent identical requests can still both create.
-    await submitRemote(rec.payload, rec.entityType);
+    await withOperationLock(rec.payload?.client_operation_id, () =>
+      submitRemote(rec.payload, rec.entityType),
+    );
     await removeCapture(id);
     return { status: 'synced' };
   } catch (err) {
+    if (err?.busy) return { status: 'busy' }; // another tab is sending it right now
     console.warn('Manual retry failed for item', id, err?.message);
     // Stays 'failed' -- still visible, still recoverable, no further
     // automatic action taken.
@@ -234,7 +238,11 @@ export async function submitCapture(payload) {
     return { status: 'queued' };
   }
   try {
-    const rec = await submitRemote(normalized, 'Location');
+    const rec = await withOperationLock(
+      normalized.client_operation_id,
+      () => submitRemote(normalized, 'Location'),
+      { waitIfBusy: true },
+    );
     return { status: 'synced', rec };
   } catch (err) {
     if (err instanceof SubmissionRejectedError) throw err;
@@ -251,7 +259,11 @@ export async function submitFieldCheck(payload) {
     return { status: 'queued' };
   }
   try {
-    const rec = await submitRemote(normalized, 'FieldCheck');
+    const rec = await withOperationLock(
+      normalized.client_operation_id,
+      () => submitRemote(normalized, 'FieldCheck'),
+      { waitIfBusy: true },
+    );
     return { status: 'synced', rec };
   } catch (err) {
     if (err instanceof SubmissionRejectedError) throw err;
@@ -266,7 +278,11 @@ export async function submitFieldCheck(payload) {
 // the new identity. Throws IdentityChangedError (not counted as a failure).
 export async function submitQueuedCapture(payload, entityType, guard) {
   if (guard && !canSendNow(guard.item, guard.expectedOwner)) throw new IdentityChangedError();
-  return submitRemote(withOperationId(payload), entityType);
+  const normalized = withOperationId(payload);
+  // another tab already sending this report -> skipped cycle (OperationBusyError)
+  return withOperationLock(normalized.client_operation_id, () =>
+    submitRemote(normalized, entityType),
+  );
 }
 
 export { MAX_RETRIES };
