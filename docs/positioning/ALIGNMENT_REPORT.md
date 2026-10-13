@@ -134,7 +134,7 @@ metadata, and public ticker correction.
 | 1. Clear structure | Yes, architecture doc | No; proposed slices only | Partial: current paths mapped |
 | 2. UI/business separation | Yes | No; proposed metrics adapter | Partial: boundaries inspected |
 | 3. Duplication/dead code | Yes | Ticker caller removed; component deferred | Yes for ticker caller search |
-| 4. Naming | Yes | Founder attribution only | Yes for changed references |
+| 4. Naming | Yes | No; founder changes are identity/copy corrections only | Yes for changed references |
 | 5. Error handling | Yes | No broad state refactor | Partial: count/share boundaries inspected |
 | 6. Environment isolation | Yes | No | Existing release gate preserved; no deployment |
 | 7. Reusable components | Yes | No design-system work | Not applicable |

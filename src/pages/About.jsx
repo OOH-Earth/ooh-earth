@@ -41,9 +41,10 @@ export default function About() {
               A call to reclaim our streets and our skies, our senses and our minds.
             </h1>
             <p className="mt-5 max-w-xl font-display text-sm font-normal leading-[1.4] text-darkgray md:text-base">
-              OOH Earth documents Out-of-Home (OOH) advertising and supports community-led adbusting,
-              research, photography, and creative remixes. A photograph is a record of what was seen,
-              not proof of ownership, permission, legality, reach, or environmental impact.
+              OOH Earth documents Out-of-Home (OOH) advertising and supports community-led
+              adbusting, research, photography, and creative remixes. A photograph is a record of
+              what was seen, not proof of ownership, permission, legality, reach, or environmental
+              impact.
             </p>
           </div>
         </section>
@@ -158,9 +159,10 @@ export default function About() {
                 resistance
               </h2>
               <p className="mt-4 max-w-md font-display text-sm font-normal leading-[1.4] text-darkgray">
-                By funding OOH Earth, you support an open platform for documenting outdoor advertising,
-                community research, and creative resistance. See the current campaign page for the
-                live goal, confirmed contribution total, and available ways to contribute.
+                By funding OOH Earth, you support an open platform for documenting outdoor
+                advertising, community research, and creative resistance. See the current campaign
+                page for the live goal, confirmed contribution total, and available ways to
+                contribute.
               </p>
               <div className="mt-8 flex flex-wrap gap-3">
                 <a
