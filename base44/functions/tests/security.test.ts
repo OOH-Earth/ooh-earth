@@ -2415,3 +2415,182 @@ Deno.test(
     assert(!bad.ok, 'unknown type is rejected');
   },
 );
+
+// ---- submitOffline: bounded duplicate mitigation (NOT atomic idempotency) ----
+
+// A small in-memory "database" shared by a caller-scoped client (cannot read pending
+// records it did not create as someone else) and a service-role view of everything.
+const makeStore = (opts: { failDelete?: boolean } = {}) => {
+  const rows: any[] = [];
+  let tick = 0;
+  const entity = {
+    // caller-scoped filter: an anonymous caller cannot read pending records
+    filter: async () => [],
+    create: async (p: any) => {
+      const row = {
+        id: `r${++tick}`,
+        created_date: `2026-10-13T00:00:00.${String(tick).padStart(6, '0')}Z`,
+        created_by_id: 'anonymous',
+        status: 'pending',
+        ...p,
+      };
+      rows.push(row);
+      return { ...row };
+    },
+  };
+  const service = {
+    filter: async (q: any) =>
+      rows
+        .filter((r) => r.client_operation_id === q.client_operation_id)
+        .sort((a, b) => a.created_date.localeCompare(b.created_date))
+        .map((r) => ({ ...r })),
+    delete: async (id: string) => {
+      if (opts.failDelete) throw new Error('delete failed');
+      const i = rows.findIndex((r) => r.id === id);
+      if (i >= 0) rows.splice(i, 1);
+    },
+  };
+  const client = {
+    entities: { Location: entity },
+    asServiceRole: { entities: { Location: service } },
+  };
+  return { rows, client };
+};
+// Simulates the race: at lookup time the other request's record is not visible yet,
+// but by the time this request re-reads (reconcile) it is.
+const hideFromFirstLookup = (client: any) => {
+  const service = client.asServiceRole.entities.Location;
+  const realFilter = service.filter;
+  let calls = 0;
+  service.filter = async (q: any) => (++calls === 1 ? [] : realFilter(q));
+};
+const send = (client: any, extra: Record<string, unknown> = {}) =>
+  handleSubmitOffline(request('POST', submitBody(extra)), {
+    createClientFromRequest: () => client,
+  });
+
+Deno.test(
+  'duplicate mitigation: both created before either re-reads -> exactly one record survives',
+  async () => {
+    const { rows, client } = makeStore();
+    // make both requests pass the lookup and create before either reconciles
+    const created: Array<() => void> = [];
+    const barrier = () =>
+      new Promise<void>((resolve) => {
+        created.push(resolve);
+        if (created.length === 2) created.forEach((go) => go());
+      });
+    const originalCreate = client.entities.Location.create;
+    client.entities.Location.create = async (p: any) => {
+      const row = await originalCreate(p);
+      await barrier(); // both rows exist before anyone re-reads
+      return row;
+    };
+    const [a, b] = await Promise.all([send(client), send(client)]);
+    const bodies = [await a.json(), await b.json()];
+    assertEquals(rows.length, 1, 'exactly one record may remain');
+    assertEquals(
+      bodies.filter((x) => x.duplicate).length,
+      1,
+      'the loser is told it was a duplicate',
+    );
+    assertEquals(
+      new Set(bodies.map((x) => x.record.id)).size,
+      1,
+      'both requests are pointed at the same surviving record',
+    );
+  },
+);
+
+Deno.test(
+  'duplicate mitigation: RESIDUAL WINDOW - if the other write is not visible yet, both survive',
+  async () => {
+    const { rows, client } = makeStore();
+    // each request re-reads before the other commits: it sees only itself
+    let phase = 0;
+    const service = client.asServiceRole.entities.Location;
+    const realFilter = service.filter;
+    service.filter = async (q: any) => {
+      phase++;
+      return phase <= 2 ? realFilter(q).then((r: any[]) => r.slice(0, 1)) : realFilter(q);
+    };
+    await Promise.all([send(client), send(client)]);
+    // documented limitation: this is why the mitigation is not claimed as atomic
+    assert(rows.length >= 1, 'at least one record exists');
+  },
+);
+
+Deno.test('duplicate mitigation never deletes a record from a different submitter', async () => {
+  const { rows, client } = makeStore();
+  rows.push({
+    id: 'r0',
+    created_date: '2026-10-13T00:00:00.000000Z',
+    created_by_id: 'user-A',
+    client_operation_id: 'capture.op-1',
+    status: 'pending',
+  });
+  hideFromFirstLookup(client); // the pre-create lookup misses it (race), so create proceeds
+  const res = await send(client);
+  assertEquals(res.status, 200, 'accepted');
+  assert(
+    rows.some((r) => r.id === 'r0'),
+    "another submitter's record is never deleted",
+  );
+  assertEquals(rows.length, 2, 'the new record was kept (different submitter)');
+});
+
+Deno.test('duplicate mitigation never fails the request when the delete fails', async () => {
+  const { rows, client } = makeStore({ failDelete: true });
+  rows.push({
+    id: 'r0',
+    created_date: '2026-10-13T00:00:00.000000Z',
+    created_by_id: 'anonymous',
+    client_operation_id: 'capture.op-1',
+    status: 'pending',
+  });
+  hideFromFirstLookup(client);
+  const res = await send(client);
+  assertEquals(res.status, 200, 'the submission still succeeds');
+  assertEquals((await res.json()).duplicate, false, 'duplicate stays pending for moderators');
+  assertEquals(rows.length, 2, 'nothing was removed');
+});
+
+Deno.test(
+  "operation-id reuse: anonymous replays get a minimal receipt; nobody learns another identity's record",
+  async () => {
+    const { rows, client } = makeStore();
+    const first = await send(client, { notes: 'PRIVATE', address: 'PRIVATE' });
+    assertEquals(first.status, 200);
+    const replay = await send(client, { notes: 'PRIVATE', address: 'PRIVATE' });
+    const body = await replay.json();
+    assertEquals(body.duplicate, true, 'recognised as a replay');
+    assertEquals(
+      Object.keys(body.record).sort(),
+      ['client_operation_id', 'created_date', 'id', 'status', 'type']
+        .filter((k) => k in body.record)
+        .sort(),
+      'receipt keys',
+    );
+    for (const k of [
+      'created_by_id',
+      'notes',
+      'address',
+      'lat',
+      'lng',
+      'image_url',
+      'brand_name',
+    ]) {
+      assert(!(k in body.record), `receipt must not include ${k}`);
+    }
+    assertEquals(rows.length, 1, 'still one record');
+    // an operation id owned by a signed-in user cannot be reused by an anonymous caller or another user
+    rows[0].created_by_id = 'user-A';
+    const anon = await send(client);
+    assertEquals(anon.status, 409, 'anonymous caller is refused');
+    assert(!JSON.stringify(await anon.json()).includes('r1'), 'no record id leaked in the refusal');
+    const other = { ...client, auth: { me: async () => ({ id: 'user-B' }) } };
+    assertEquals((await send(other)).status, 409, 'a different signed-in user is refused');
+    const owner = { ...client, auth: { me: async () => ({ id: 'user-A' }) } };
+    assertEquals((await send(owner)).status, 200, 'the owner still gets an idempotent replay');
+  },
+);

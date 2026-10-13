@@ -26,22 +26,47 @@ const STRIPPED_FIELDS = new Set([
 // What a replay may reveal about an existing (possibly pending, private) record.
 // Deliberately excludes ownership, notes, address, photo and coordinates: a retry
 // only needs to know the report exists and its id/status.
-const REPLAY_FIELDS = [
-  'id',
-  'status',
-  'client_operation_id',
-  'created_date',
-  'type',
-  'brand_name',
-  'parent_corp',
-  'ooh_operator',
-  'ad_agency',
-];
+const REPLAY_FIELDS = ['id', 'status', 'client_operation_id', 'created_date', 'type'];
 
 function replayReceipt(record: Record<string, unknown>) {
   return Object.fromEntries(
     REPLAY_FIELDS.filter((key) => key in record).map((k) => [k, record[k]]),
   );
+}
+
+// BOUNDED MITIGATION, NOT ATOMIC IDEMPOTENCY. The platform has no unique constraint
+// ("Base44 entities don't support unique constraints") and ignores a caller-chosen
+// id, so lookup-before-create cannot stop two truly concurrent identical requests
+// from both creating (measured on BACKUP: 8 of 10 simultaneous pairs).
+//
+// After a create, re-read by operation id (service role, which can see pending
+// records). If a strictly earlier record from the SAME submitter exists, this
+// request deletes only the record it just created and returns the earlier one.
+// It never deletes a record it did not create, never touches another identity's
+// record, and never fails the request: any error leaves the duplicate in place
+// (pending, visible to moderators). Residual window: if the other request has not
+// committed when this one re-reads, both survive.
+async function reconcileDuplicate(
+  lookup: any,
+  operationId: string,
+  created: Record<string, any>,
+): Promise<{ record: Record<string, any>; removedDuplicate: boolean }> {
+  try {
+    const siblings: Array<Record<string, any>> =
+      (await lookup.filter({ client_operation_id: operationId }, 'created_date', 10)) ?? [];
+    const others = siblings.filter((r) => r?.id && r.id !== created.id);
+    if (!others.length) return { record: created, removedDuplicate: false };
+    const order = (r: Record<string, any>) => `${r.created_date ?? ''}|${r.id}`;
+    const earliest = others.reduce((a, b) => (order(a) <= order(b) ? a : b));
+    const sameSubmitter = (earliest.created_by_id ?? null) === (created.created_by_id ?? null);
+    if (!sameSubmitter || order(earliest) >= order(created)) {
+      return { record: created, removedDuplicate: false };
+    }
+    await lookup.delete(created.id);
+    return { record: earliest, removedDuplicate: true };
+  } catch {
+    return { record: created, removedDuplicate: false };
+  }
 }
 
 type Dependencies = {
@@ -160,9 +185,19 @@ export async function handleSubmitOffline(
         { headers: correlationHeaders(telemetry) },
       );
     }
-    const record = await entity.create(safePayload);
-    telemetry.finish('success', { operation: 'create', entity: entityType });
+    const created = await entity.create(safePayload);
+    const { record, removedDuplicate } = await reconcileDuplicate(lookup, operationId, created);
+    telemetry.finish('success', {
+      operation: removedDuplicate ? 'create_reconciled' : 'create',
+      entity: entityType,
+    });
     await recordHealth?.('success', now() - startedAt);
+    if (removedDuplicate) {
+      return Response.json(
+        { ok: true, duplicate: true, record: replayReceipt(record) },
+        { headers: correlationHeaders(telemetry) },
+      );
+    }
     return Response.json(
       { ok: true, duplicate: false, record, ...(notices ? { notices } : {}) },
       { headers: correlationHeaders(telemetry) },
