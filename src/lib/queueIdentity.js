@@ -61,3 +61,23 @@ export function classifyQueueItem(item, identity = state) {
   if (identity.id === ANONYMOUS) return owner === null ? 'adoptable' : 'foreign';
   return owner === ANONYMOUS || owner === null ? 'adoptable' : 'foreign';
 }
+
+export class IdentityChangedError extends Error {
+  constructor() {
+    super('The signed-in identity changed; the queued report was not sent.');
+    this.name = 'IdentityChangedError';
+    this.identityChanged = true;
+  }
+}
+
+// True only if, RIGHT NOW, the confirmed identity is still `expectedId` and the
+// item belongs to it. Called immediately before every send so a sign-out or
+// account switch that happens during a sync never lets a draft go out under the
+// new identity. (The server derives ownership from the live session on its own;
+// this guard only decides whether to send at all.)
+export function canSendNow(item, expectedId) {
+  const identity = state;
+  return (
+    identity.confirmed && identity.id === expectedId && classifyQueueItem(item, identity) === 'own'
+  );
+}

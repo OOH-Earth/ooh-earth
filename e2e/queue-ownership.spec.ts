@@ -104,15 +104,21 @@ test('an anonymous draft is NOT sent when a member signs in; it is held, kept, a
   // declining keeps it
   await page.getByRole('button', { name: /on hold/i }).click();
   await expect(page.getByRole('alertdialog')).toContainText('before you signed in');
+  await expect(page.getByRole('alertdialog')).toContainText(
+    'records your account as its contributor',
+  );
+  await expect(page.getByRole('alertdialog')).toContainText('moderator review');
   await page.getByRole('button', { name: /keep on this device/i }).click();
   await page.waitForTimeout(1500);
   expect(sent).toHaveLength(0);
   expect(await queue(page)).toHaveLength(1);
   // explicit choice sends it, once, under the signed-in account
   await page.getByRole('button', { name: /on hold/i }).click();
-  await page.getByRole('button', { name: /send under this account/i }).click();
+  await page.getByRole('button', { name: /send under my account: anon draft/i }).click();
   await expect.poll(() => sent.length, { timeout: 15000 }).toBe(1);
   expect(sent[0].client_operation_id).toBe('op-anon-1');
+  expect(sent[0]).not.toHaveProperty('owner');
+  expect(sent[0]).not.toHaveProperty('adopted_from');
   await expect.poll(async () => (await queue(page)).length, { timeout: 15000 }).toBe(0);
 });
 
@@ -170,4 +176,82 @@ test('new queued drafts are tagged with the identity that saved them', async ({ 
   await expect(page.getByRole('heading', { name: 'Saved on this device' })).toBeVisible();
   const [item] = await queue(page);
   expect(item.owner).toBe(MEMBER_A.id);
+});
+
+test('choosing one held draft sends only that one; repeated taps send it once', async ({
+  page,
+}) => {
+  const sent = await setup(page, MEMBER_A, [
+    draft('first held', 'op-h-1', 'anonymous'),
+    draft('second held', 'op-h-2', 'anonymous'),
+  ]);
+  await page.getByRole('button', { name: /2 saved reports .* on hold/i }).click();
+  const send = page.getByRole('button', { name: /send under my account: first held/i });
+  // rapid repeated taps inside one action (the button disappears after the first)
+  await send.click({ clickCount: 3, delay: 0 });
+  await expect.poll(() => sent.length, { timeout: 15000 }).toBe(1);
+  await page.waitForTimeout(2500);
+  expect(sent).toHaveLength(1);
+  expect(sent[0].client_operation_id).toBe('op-h-1');
+  const left = await queue(page);
+  expect(left.map((i) => i.title)).toEqual(['second held']);
+});
+
+test("another member's draft details are never exposed in the page", async ({ page }) => {
+  const foreign = draft('SECRET-TITLE-A', 'op-a-9', MEMBER_A.id);
+  (foreign.payload as any).notes = 'SECRET-NOTE-A';
+  (foreign.payload as any).lat = 51.123456;
+  (foreign.payload as any).image_url = 'https://example.com/SECRET-PHOTO-A.jpg';
+  await setup(page, MEMBER_B, [foreign]);
+  await expect(page.getByRole('status', { name: /another account/i })).toBeVisible();
+  const html = await page.content();
+  for (const secret of ['SECRET-TITLE-A', 'SECRET-NOTE-A', '51.123456', 'SECRET-PHOTO-A']) {
+    expect(html, `${secret} must not appear in the page`).not.toContain(secret);
+  }
+});
+
+test("an expired session turns a member's own drafts into held drafts, never anonymous sends", async ({
+  page,
+}) => {
+  const sent = await setup(page, MEMBER_A, [draft('own draft', 'op-exp-1', MEMBER_A.id)]);
+  await expect.poll(() => sent.length, { timeout: 15000 }).toBe(1);
+  // new draft saved while signed in, then the session expires and the page reloads
+  await page.evaluate(
+    (item) =>
+      new Promise<void>((resolve) => {
+        const open = indexedDB.open('ooh_offline');
+        open.onsuccess = () => {
+          const tx = open.result.transaction('captures', 'readwrite');
+          tx.objectStore('captures').add(item);
+          tx.oncomplete = () => resolve();
+        };
+      }),
+    draft('saved before expiry', 'op-exp-2', MEMBER_A.id),
+  );
+  await page.route('**/entities/User/me', (route) =>
+    route.fulfill({ status: 401, json: { message: 'expired' } }),
+  );
+  const before = sent.length;
+  await page.reload();
+  // the app sends an expired session to /login (existing behaviour)
+  await page.waitForURL(/\/login/);
+  await page.waitForTimeout(3500);
+  expect(sent.length, 'nothing may be sent anonymously after expiry').toBe(before);
+  expect(await queue(page)).toHaveLength(1);
+  // next anonymous visit: the member's draft is held as another account's, never sent
+  await page.goto('/report');
+  await expect(page.getByRole('status', { name: /another account/i })).toBeVisible();
+  await page.waitForTimeout(3000);
+  expect(sent.length).toBe(before);
+  expect(await queue(page)).toHaveLength(1);
+});
+
+test('held drafts survive reloads and are still not sent', async ({ page }) => {
+  const sent = await setup(page, MEMBER_A, [draft('held', 'op-r-1', 'anonymous')]);
+  await page.reload();
+  await page.reload();
+  await expect(page.getByRole('button', { name: /on hold/i })).toBeVisible();
+  await page.waitForTimeout(3000);
+  expect(sent).toHaveLength(0);
+  expect(await queue(page)).toHaveLength(1);
 });

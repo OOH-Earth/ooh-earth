@@ -8,7 +8,7 @@ import {
   retryCapture,
   submitQueuedCapture,
 } from '@/lib/offlineQueue';
-import { classifyQueueItem, getQueueIdentity } from '@/lib/queueIdentity';
+import { canSendNow, classifyQueueItem, getQueueIdentity } from '@/lib/queueIdentity';
 
 export function useOfflineSync() {
   const [pending, setPending] = useState([]);
@@ -53,11 +53,19 @@ export function useOfflineSync() {
 
       let changed = false;
       for (const item of retryable) {
+        // Re-check the identity immediately before each send: a sign-out or
+        // account switch during this sync must stop it, not redirect it.
+        if (!canSendNow(item, identity.id)) break;
         try {
-          await submitQueuedCapture(item.payload, item.entityType);
+          await submitQueuedCapture(item.payload, item.entityType, {
+            item,
+            expectedOwner: identity.id,
+          });
           await removeCapture(item.id);
           changed = true;
         } catch (err) {
+          // Not a delivery failure: the identity changed, so leave the draft untouched.
+          if (err?.identityChanged) break;
           console.warn('Offline sync failed for item', item.id, err?.message);
           try {
             // A genuine IndexedDB write failure here (rare -- quota, a
@@ -95,7 +103,7 @@ export function useOfflineSync() {
       if (!failed.length) return;
       for (const item of failed) {
         try {
-          await retryCapture(item.id);
+          await retryCapture(item.id, identity.id);
         } catch (err) {
           // retryCapture already catches its own remote-submit failure and
           // returns {status:'failed'} for that case -- this only guards the
@@ -133,18 +141,30 @@ export function useOfflineSync() {
     if (identity.confirmed && navigator.onLine) flush();
   }, [identity.id, identity.confirmed, flush]);
 
-  // Explicit user choice: send the held drafts that can be adopted under the
-  // current identity (anonymous drafts -> this signed-in user, or legacy drafts).
-  const adoptHeld = useCallback(async () => {
-    const current = getQueueIdentity();
-    if (!current.confirmed) return;
-    const items = await listCaptures();
-    for (const item of items) {
-      if (classifyQueueItem(item, current) === 'adoptable') await adoptCapture(item.id, current.id);
-    }
-    await refresh();
-    await flush();
-  }, [refresh, flush]);
+  // Explicit, per-report choice: send ONE held draft under the current identity
+  // (an anonymous or legacy draft -> the account signed in now, or anonymously).
+  // Never bulk, never automatic. Re-checks the draft is still adoptable and that
+  // the identity is still confirmed at the moment of the tap, so a repeated tap
+  // (the draft is already its own by then) or a mid-air sign-out does nothing.
+  const adoptingRef = useRef(new Set());
+  const adoptOne = useCallback(
+    async (id) => {
+      if (adoptingRef.current.has(id)) return;
+      adoptingRef.current.add(id);
+      try {
+        const current = getQueueIdentity();
+        if (!current.confirmed) return;
+        const item = (await listCaptures()).find((i) => i.id === id);
+        if (!item || classifyQueueItem(item, current) !== 'adoptable') return;
+        await adoptCapture(id, current.id);
+        await refresh();
+        await flush();
+      } finally {
+        adoptingRef.current.delete(id);
+      }
+    },
+    [refresh, flush],
+  );
 
   useEffect(() => {
     const onOnline = () => flush();
@@ -162,7 +182,17 @@ export function useOfflineSync() {
   const own = classified.filter((c) => c.kind === 'own').map((c) => c.item);
   const pendingOnly = own.filter((item) => item.status !== 'failed');
   const failedOnly = own.filter((item) => item.status === 'failed');
-  const adoptableCount = classified.filter((c) => c.kind === 'adoptable').length;
+  // Only what the person needs to recognise their own report -- never a
+  // foreign draft's photo, notes or coordinates, and no coordinates at all.
+  const adoptable = classified
+    .filter((c) => c.kind === 'adoptable')
+    .map(({ item }) => ({
+      id: item.id,
+      title: item.payload?.title || 'Untitled report',
+      savedAt: item.created,
+      hasPhoto: Boolean(item.payload?.image_url),
+    }));
+  const adoptableCount = adoptable.length;
   const foreignCount = classified.filter((c) => c.kind === 'foreign').length;
 
   return {
@@ -170,10 +200,11 @@ export function useOfflineSync() {
     pendingCount: pendingOnly.length,
     failed: failedOnly,
     failedCount: failedOnly.length,
+    adoptable,
     adoptableCount,
     foreignCount,
     identity,
-    adoptHeld,
+    adoptOne,
     syncing,
     flush,
     retryFailed,

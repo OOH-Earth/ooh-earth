@@ -1,6 +1,6 @@
 import { base44 } from '@/api/base44Client';
 import { SubmissionRejectedError, toSubmitError } from '@/lib/submitErrors';
-import { ownerForNewItem } from '@/lib/queueIdentity';
+import { IdentityChangedError, canSendNow, ownerForNewItem } from '@/lib/queueIdentity';
 
 const DB_NAME = 'ooh_offline';
 const STORE = 'captures';
@@ -202,7 +202,7 @@ export async function markFailed(id, status) {
 // path (useOfflineSync's flush()) deliberately excludes 'failed' items so
 // they don't hammer the backend forever; this is the only path back to
 // synced, at the user's own pace.
-export async function retryCapture(id) {
+export async function retryCapture(id, expectedOwner) {
   const db = await openDB();
   const rec = await new Promise((resolve, reject) => {
     const tx = db.transaction(STORE, 'readonly');
@@ -211,12 +211,11 @@ export async function retryCapture(id) {
     req.onerror = () => reject(req.error);
   });
   if (!rec) return { status: 'missing' };
+  if (expectedOwner !== undefined && !canSendNow(rec, expectedOwner)) return { status: 'held' };
   try {
-    // submitOffline is idempotent on client_operation_id (see
-    // base44/functions/submitOffline's own duplicate-detection branch) --
-    // safe to resend even if a prior attempt actually succeeded
-    // server-side but the client never saw the ack, so this can't create a
-    // duplicate record.
+    // submitOffline checks client_operation_id before creating, so resending
+    // after a lost ack normally returns the existing record. That check is not
+    // atomic: two truly concurrent identical requests can still both create.
     await submitRemote(rec.payload, rec.entityType);
     await removeCapture(id);
     return { status: 'synced' };
@@ -262,7 +261,11 @@ export async function submitFieldCheck(payload) {
   }
 }
 
-export async function submitQueuedCapture(payload, entityType) {
+// `guard` = { item, expectedOwner }: re-checked synchronously right before the
+// request leaves, so a logout/account switch mid-sync cannot send a draft under
+// the new identity. Throws IdentityChangedError (not counted as a failure).
+export async function submitQueuedCapture(payload, entityType, guard) {
+  if (guard && !canSendNow(guard.item, guard.expectedOwner)) throw new IdentityChangedError();
   return submitRemote(withOperationId(payload), entityType);
 }
 

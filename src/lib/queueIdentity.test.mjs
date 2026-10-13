@@ -6,7 +6,8 @@ import assert from 'node:assert/strict';
 globalThis.window = { dispatchEvent() {} };
 globalThis.CustomEvent = class {};
 globalThis.localStorage = { getItem: () => null, setItem() {} };
-const { classifyQueueItem, ANONYMOUS } = await import('./queueIdentity.js');
+const { classifyQueueItem, ANONYMOUS, canSendNow, setQueueIdentity, IdentityChangedError } =
+  await import('./queueIdentity.js');
 
 let failed = false;
 function t(name, fn) {
@@ -40,5 +41,31 @@ t("logout: a member's draft is held, not sent anonymously", () => {
 t('legacy items (no owner) are held for explicit choice in either state', () => {
   assert.equal(classifyQueueItem({}, id('u1')), 'adoptable');
   assert.equal(classifyQueueItem({ owner: null }, id(ANONYMOUS)), 'adoptable');
+});
+t('canSendNow re-checks the live identity: a mid-sync switch or sign-out blocks the send', () => {
+  const item = { owner: 'u1' };
+  setQueueIdentity('u1');
+  assert.equal(canSendNow(item, 'u1'), true);
+  setQueueIdentity('u2'); // account switch during the sync
+  assert.equal(canSendNow(item, 'u1'), false);
+  setQueueIdentity('u1');
+  setQueueIdentity(null); // sign-out during the sync
+  assert.equal(canSendNow(item, 'u1'), false);
+  setQueueIdentity('u1', { confirmed: false }); // identity no longer confirmed
+  assert.equal(canSendNow(item, 'u1'), false);
+});
+t(
+  'a draft owned by someone else is never sendable even if the expected id matches the session',
+  () => {
+    setQueueIdentity('u1');
+    assert.equal(canSendNow({ owner: 'u2' }, 'u1'), false);
+    assert.equal(canSendNow({ owner: 'anonymous' }, 'u1'), false);
+    assert.equal(canSendNow({}, 'u1'), false);
+  },
+);
+t('IdentityChangedError is distinguishable from a delivery failure', () => {
+  const e = new IdentityChangedError();
+  assert.equal(e.identityChanged, true);
+  assert.equal(e.permanent, undefined);
 });
 if (failed) process.exitCode = 1;

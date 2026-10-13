@@ -3,7 +3,6 @@ import { useOfflineSync } from '@/hooks/useOfflineSync';
 import { CloudOff, Loader2, AlertTriangle, ShieldQuestion } from 'lucide-react';
 import {
   AlertDialog,
-  AlertDialogAction,
   AlertDialogCancel,
   AlertDialogContent,
   AlertDialogDescription,
@@ -16,10 +15,11 @@ export default function OfflineSyncBadge() {
   const {
     pendingCount,
     failedCount,
+    adoptable,
     adoptableCount,
     foreignCount,
     identity,
-    adoptHeld,
+    adoptOne,
     syncing,
     flush,
     retryFailed,
@@ -60,22 +60,46 @@ export default function OfflineSyncBadge() {
             <AlertDialogContent>
               <AlertDialogHeader>
                 <AlertDialogTitle>
-                  Send {adoptableCount} saved report{adoptableCount === 1 ? '' : 's'}?
+                  {adoptableCount} saved report{adoptableCount === 1 ? '' : 's'} on hold
                 </AlertDialogTitle>
                 <AlertDialogDescription>
                   {adoptableCount === 1 ? 'This report was' : 'These reports were'} saved on this
-                  device {signedIn ? 'before you signed in' : 'by an earlier session'}.{' '}
+                  device {signedIn ? 'before you signed in' : 'by an earlier session'} and have not
+                  been sent. Choose each one separately.{' '}
                   {signedIn
-                    ? 'Sending will put them under the account you are signed in to now.'
-                    : 'Sending will submit them without an account.'}{' '}
-                  They stay on this device until you choose.
+                    ? 'Sending a report records your account as its contributor.'
+                    : 'Sending a report submits it without an account, so you will not be able to find it afterwards.'}{' '}
+                  Sent reports are not public: they wait for moderator review before they can appear
+                  on the map.
                 </AlertDialogDescription>
               </AlertDialogHeader>
+              <ul className="max-h-60 space-y-2 overflow-y-auto">
+                {adoptable.map((draft) => (
+                  <li
+                    key={draft.id}
+                    className="flex items-center justify-between gap-3 border border-slate2 px-3 py-2"
+                  >
+                    <span className="min-w-0 font-display text-sm">
+                      <span className="block truncate">{draft.title}</span>
+                      <span className="block font-mono text-[10px] uppercase tracking-[0.15em] text-dim">
+                        Saved {new Date(draft.savedAt).toLocaleString()}
+                        {draft.hasPhoto ? ' · photo' : ''}
+                      </span>
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => adoptOne(draft.id)}
+                      disabled={syncing}
+                      aria-label={`${signedIn ? 'Send under my account' : 'Send without an account'}: ${draft.title}`}
+                      className="shrink-0 border border-ozone px-3 py-2 font-mono text-[10px] font-bold uppercase tracking-[0.2em] text-ozone transition-colors hover:bg-ozone hover:text-void disabled:opacity-50"
+                    >
+                      {signedIn ? 'Send under my account' : 'Send without account'}
+                    </button>
+                  </li>
+                ))}
+              </ul>
               <AlertDialogFooter>
                 <AlertDialogCancel>Keep on this device</AlertDialogCancel>
-                <AlertDialogAction onClick={adoptHeld}>
-                  {signedIn ? 'Send under this account' : 'Send without an account'}
-                </AlertDialogAction>
               </AlertDialogFooter>
             </AlertDialogContent>
           </AlertDialog>
