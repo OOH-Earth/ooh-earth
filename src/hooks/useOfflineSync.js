@@ -4,9 +4,11 @@ import {
   removeCapture,
   incrementRetries,
   markFailed,
+  adoptCapture,
   retryCapture,
   submitQueuedCapture,
 } from '@/lib/offlineQueue';
+import { classifyQueueItem, getQueueIdentity } from '@/lib/queueIdentity';
 
 export function useOfflineSync() {
   const [pending, setPending] = useState([]);
@@ -41,7 +43,12 @@ export function useOfflineSync() {
       // Automatic retries only ever touch pending items -- a 'failed' item
       // stopped being retried automatically the moment it hit MAX_RETRIES;
       // retryCapture() (via retryFailed below) is the only path back.
-      const retryable = items.filter((item) => item.status !== 'failed');
+      // Only items saved by the identity that is signed in right now are sent
+      // automatically; anything else is held (never discarded, never reassigned).
+      const identity = getQueueIdentity();
+      const retryable = items.filter(
+        (item) => item.status !== 'failed' && classifyQueueItem(item, identity) === 'own',
+      );
       if (!retryable.length) return;
 
       let changed = false;
@@ -81,7 +88,10 @@ export function useOfflineSync() {
     setSyncing(true);
     try {
       const items = await listCaptures();
-      const failed = items.filter((item) => item.status === 'failed');
+      const identity = getQueueIdentity();
+      const failed = items.filter(
+        (item) => item.status === 'failed' && classifyQueueItem(item, identity) === 'own',
+      );
       if (!failed.length) return;
       for (const item of failed) {
         try {
@@ -100,12 +110,41 @@ export function useOfflineSync() {
     }
   }, [refresh]);
 
+  const [identity, setIdentity] = useState(getQueueIdentity());
+
   useEffect(() => {
     refresh();
     const onChange = () => refresh();
+    const onIdentity = () => {
+      setIdentity({ ...getQueueIdentity() });
+      refresh();
+    };
     window.addEventListener('ooh-queue-changed', onChange);
-    return () => window.removeEventListener('ooh-queue-changed', onChange);
+    window.addEventListener('ooh-queue-identity-changed', onIdentity);
+    return () => {
+      window.removeEventListener('ooh-queue-changed', onChange);
+      window.removeEventListener('ooh-queue-identity-changed', onIdentity);
+    };
   }, [refresh]);
+
+  // When the confirmed identity changes (sign-in, sign-out, account switch), send
+  // whatever belongs to the new identity.
+  useEffect(() => {
+    if (identity.confirmed && navigator.onLine) flush();
+  }, [identity.id, identity.confirmed, flush]);
+
+  // Explicit user choice: send the held drafts that can be adopted under the
+  // current identity (anonymous drafts -> this signed-in user, or legacy drafts).
+  const adoptHeld = useCallback(async () => {
+    const current = getQueueIdentity();
+    if (!current.confirmed) return;
+    const items = await listCaptures();
+    for (const item of items) {
+      if (classifyQueueItem(item, current) === 'adoptable') await adoptCapture(item.id, current.id);
+    }
+    await refresh();
+    await flush();
+  }, [refresh, flush]);
 
   useEffect(() => {
     const onOnline = () => flush();
@@ -119,14 +158,22 @@ export function useOfflineSync() {
     };
   }, [flush]);
 
-  const pendingOnly = pending.filter((item) => item.status !== 'failed');
-  const failedOnly = pending.filter((item) => item.status === 'failed');
+  const classified = pending.map((item) => ({ item, kind: classifyQueueItem(item, identity) }));
+  const own = classified.filter((c) => c.kind === 'own').map((c) => c.item);
+  const pendingOnly = own.filter((item) => item.status !== 'failed');
+  const failedOnly = own.filter((item) => item.status === 'failed');
+  const adoptableCount = classified.filter((c) => c.kind === 'adoptable').length;
+  const foreignCount = classified.filter((c) => c.kind === 'foreign').length;
 
   return {
     pending: pendingOnly,
     pendingCount: pendingOnly.length,
     failed: failedOnly,
     failedCount: failedOnly.length,
+    adoptableCount,
+    foreignCount,
+    identity,
+    adoptHeld,
     syncing,
     flush,
     retryFailed,

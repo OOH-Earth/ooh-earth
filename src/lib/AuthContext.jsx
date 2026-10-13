@@ -3,6 +3,7 @@ import React, { createContext, useState, useContext, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { appParams, clearAccessToken } from '@/lib/app-params';
 import { createAxiosClient } from '@base44/sdk/dist/utils/axios-client';
+import { setQueueIdentity, setQueueIdentityUnresolved } from '@/lib/queueIdentity';
 
 const AuthContext = createContext();
 
@@ -48,6 +49,7 @@ export const AuthProvider = ({ children }) => {
           setIsLoadingAuth(false);
           setIsAuthenticated(false);
           setAuthChecked(true);
+          setQueueIdentity(null); // no session: anonymous visitor
         }
         setIsLoadingPublicSettings(false);
       } catch (appError) {
@@ -102,6 +104,7 @@ export const AuthProvider = ({ children }) => {
       setIsLoadingAuth(true);
       const currentUser = await base44.auth.me();
       setUser(currentUser);
+      setQueueIdentity(currentUser?.id);
       setIsAuthenticated(true);
       setIsLoadingAuth(false);
       setAuthChecked(true);
@@ -110,11 +113,15 @@ export const AuthProvider = ({ children }) => {
       setIsLoadingAuth(false);
       setIsAuthenticated(false);
       setAuthChecked(true);
+      // No answer (e.g. offline at load): do not guess an identity, so the queue
+      // sends nothing until the check can complete.
+      if (error.status !== 401 && error.status !== 403) setQueueIdentityUnresolved();
 
       // If user auth fails, it might be an expired token -- clear it so it
       // isn't retried (and re-rejected) on every subsequent page load,
       // including /login itself.
       if (error.status === 401 || error.status === 403) {
+        setQueueIdentity(null); // the session is gone: anonymous
         clearAccessToken();
         setAuthError({
           type: 'auth_required',
@@ -127,6 +134,7 @@ export const AuthProvider = ({ children }) => {
   const logout = (shouldRedirect = true) => {
     setUser(null);
     setIsAuthenticated(false);
+    setQueueIdentity(null); // queued drafts stay on the device, held for their owner
 
     if (shouldRedirect) {
       // Use the SDK's logout method which handles token cleanup and redirect

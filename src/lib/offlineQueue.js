@@ -1,5 +1,6 @@
 import { base44 } from '@/api/base44Client';
 import { SubmissionRejectedError, toSubmitError } from '@/lib/submitErrors';
+import { ownerForNewItem } from '@/lib/queueIdentity';
 
 const DB_NAME = 'ooh_offline';
 const STORE = 'captures';
@@ -72,6 +73,10 @@ export async function enqueueCapture(payload, entityType = 'Location') {
       const tx = db.transaction(STORE, 'readwrite');
       const req = tx.objectStore(STORE).add({
         payload: normalized,
+        // Who saved this draft. The queue only auto-sends items owned by the
+        // identity currently signed in (see queueIdentity.js); `owner` stays
+        // out of the payload so it is never sent to the server.
+        owner: ownerForNewItem(),
         operation_id: normalized.client_operation_id,
         entityType,
         created: Date.now(),
@@ -135,6 +140,30 @@ export async function incrementRetries(id) {
       // permanently disabling the retry button (stuck syncing:true) and
       // blocking the rest of the queue loop from ever reaching later
       // items, since the for-of loop awaits this call sequentially.
+      const putReq = store.put(rec);
+      putReq.onsuccess = () => resolve();
+      putReq.onerror = () => reject(putReq.error);
+    };
+    getReq.onerror = () => reject(getReq.error);
+  });
+  notify();
+}
+
+// Explicit, user-confirmed choice to send a held draft under the identity now
+// signed in (or anonymously). Never called automatically. The previous owner is
+// kept on the item for traceability.
+export async function adoptCapture(id, newOwner) {
+  const db = await openDB();
+  await new Promise((resolve, reject) => {
+    const tx = db.transaction(STORE, 'readwrite');
+    const store = tx.objectStore(STORE);
+    const getReq = store.get(id);
+    getReq.onsuccess = () => {
+      const rec = getReq.result;
+      if (!rec) return resolve();
+      rec.adopted_from = rec.owner ?? null;
+      rec.adopted_at = Date.now();
+      rec.owner = newOwner;
       const putReq = store.put(rec);
       putReq.onsuccess = () => resolve();
       putReq.onerror = () => reject(putReq.error);
