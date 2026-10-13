@@ -1,5 +1,4 @@
 import { Columns, Map as MapIcon, List } from 'lucide-react';
-import CryptoTicker from '@/components/ooh/CryptoTicker';
 import DynamicFilterBar from '@/components/ooh/map/DynamicFilterBar';
 
 export const TYPES = [
@@ -36,7 +35,6 @@ export default function MapToolbar({
 }) {
   return (
     <div className="shrink-0 border-b border-slate2/60 bg-void/90 backdrop-blur-md">
-      <CryptoTicker />
       <div className="flex items-center gap-3 px-5 py-2.5 md:px-8">
         <span className="font-display text-sm font-black uppercase tracking-[0.25em] text-silver">
           OOH MAP
