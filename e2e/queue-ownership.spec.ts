@@ -108,6 +108,9 @@ test('an anonymous draft is NOT sent when a member signs in; it is held, kept, a
   // declining keeps it
   await page.getByRole('button', { name: /on hold/i }).click();
   await expect(page.getByRole('alertdialog')).toContainText('before you signed in');
+  // singular wording for a single draft (no "have", no "each one")
+  await expect(page.getByRole('alertdialog')).toContainText('has not been sent');
+  await expect(page.getByRole('alertdialog')).not.toContainText('Choose each one');
   await expect(page.getByRole('alertdialog')).toContainText(
     'records your account as its contributor',
   );

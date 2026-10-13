@@ -98,8 +98,9 @@ export default function OfflineSyncBadge() {
                 </AlertDialogTitle>
                 <AlertDialogDescription>
                   {adoptableCount === 1 ? 'This report was' : 'These reports were'} saved on this
-                  device {signedIn ? 'before you signed in' : 'by an earlier session'} and have not
-                  been sent. Choose each one separately.{' '}
+                  device {signedIn ? 'before you signed in' : 'by an earlier session'} and{' '}
+                  {adoptableCount === 1 ? 'has' : 'have'} not been sent.
+                  {adoptableCount === 1 ? '' : ' Choose each one separately.'}{' '}
                   {signedIn
                     ? 'Sending a report records your account as its contributor.'
                     : 'Sending a report submits it without an account, so you will not be able to find it afterwards.'}{' '}
