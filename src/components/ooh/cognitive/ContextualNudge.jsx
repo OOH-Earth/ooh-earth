@@ -50,7 +50,10 @@ export default function ContextualNudge() {
 
   return (
     <div
-      className={`fixed left-1/2 z-[70] -translate-x-1/2 transition-all duration-300 bottom-[calc(88px+env(safe-area-inset-bottom))] lg:bottom-6 ${
+      // Not shown on short screens (phones in landscape): beside the fixed header and
+      // bottom tabs it leaves no unobstructed band, so form controls such as the
+      // manual-coordinates fallback cannot be pressed. It is a promo nudge, not content.
+      className={`fixed left-1/2 z-[70] -translate-x-1/2 transition-all duration-300 bottom-[calc(88px+env(safe-area-inset-bottom))] lg:bottom-6 [@media(max-height:500px)]:hidden ${
         show ? 'translate-y-0 opacity-100' : 'pointer-events-none translate-y-4 opacity-0'
       }`}
     >
