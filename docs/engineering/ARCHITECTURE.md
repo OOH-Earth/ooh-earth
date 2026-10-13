@@ -161,6 +161,8 @@ Release proof remains: candidate SHA → CI → BACKUP deploy/verification → p
 
 Rollback is evidence/state-driven: `ROLLBACK_REQUIRED` → `ROLLED_BACK`, with the previous known-good candidate retained in release evidence. A documentation PR must not alter release state, production data, authentication sessions, test identities, or deployed artifacts.
 
+Source rollback and runtime rollback are different operations. Reverting a PR restores the repository's source history; it does not restore a frontend bundle or a deployed Base44 function that is already live. A compatible runtime rollback must use the preserved artifact for the previous known-good candidate: for frontend-only changes, rebuild or reuse the verified `dist/` and run `base44 site deploy --no-build --yes --app-id <target-app-id>`; for a function change, restore the exact saved function directory and run `base44 functions deploy <function-name>`; for entity changes, use the complete pre-change schema snapshot and `entities push`, recognizing that this is whole-folder and is not a data rollback. Verify the resulting frontend entry from `dist/index.html` against the served entry and verify functions with a fresh `base44 functions pull`. A PR revert is therefore a source step in the rollback record, not proof that runtime state has been restored.
+
 ## 7. Testing and release gates
 
 Verified commands from `package.json` include:
