@@ -66,7 +66,9 @@ test.describe('FieldReport — Discovery Intelligence panel', () => {
   }) => {
     await mockBase44(page, { user: ADMIN_USER, locations: seededNike(3) });
     await fillAndSubmit(page, { brand: 'Nike' });
-    await expect(page.getByText(/Transmission received/i)).toBeVisible({ timeout: 10_000 });
+    await expect(page.getByRole('heading', { name: 'Submitted for review' })).toBeVisible({
+      timeout: 10_000,
+    });
 
     const panel = panelFor(page);
     await expect(panel).toBeVisible({ timeout: 10_000 });
@@ -89,7 +91,9 @@ test.describe('FieldReport — Discovery Intelligence panel', () => {
   }) => {
     await mockBase44(page, { user: ADMIN_USER, locations: {} });
     await fillAndSubmit(page, { brand: 'Shell', withPhoto: true });
-    await expect(page.getByText(/Transmission received/i)).toBeVisible({ timeout: 10_000 });
+    await expect(page.getByRole('heading', { name: 'Submitted for review' })).toBeVisible({
+      timeout: 10_000,
+    });
 
     const panel = panelFor(page);
     await expect(panel).toBeVisible({ timeout: 10_000 });
@@ -102,7 +106,9 @@ test.describe('FieldReport — Discovery Intelligence panel', () => {
   }) => {
     await mockBase44(page, { user: ADMIN_USER, locations: seededNike(4) });
     await fillAndSubmit(page, { brand: 'Nike' });
-    await expect(page.getByText(/Transmission received/i)).toBeVisible({ timeout: 10_000 });
+    await expect(page.getByRole('heading', { name: 'Submitted for review' })).toBeVisible({
+      timeout: 10_000,
+    });
 
     const panel = panelFor(page);
     await expect(panel).toBeVisible({ timeout: 10_000 });
@@ -116,7 +122,9 @@ test.describe('FieldReport — Discovery Intelligence panel', () => {
   test('anonymous submission: no personal collection/XP data is shown', async ({ page }) => {
     await mockBase44(page, { user: null, locations: {} });
     await fillAndSubmit(page, { brand: 'Nike' });
-    await expect(page.getByText(/Transmission received/i)).toBeVisible({ timeout: 10_000 });
+    await expect(page.getByRole('heading', { name: 'Submitted for review' })).toBeVisible({
+      timeout: 10_000,
+    });
 
     // The existing, pre-existing "Ad chain logged" line is brand-only and
     // still fine to show -- only the personal collector panel is withheld.
@@ -142,7 +150,9 @@ test.describe('FieldReport — Discovery Intelligence panel', () => {
     await page.context().setOffline(true);
     try {
       await submitBtn.click();
-      await expect(page.getByText(/Queued offline/i)).toBeVisible({ timeout: 10_000 });
+      await expect(page.getByRole('heading', { name: 'Saved on this device' })).toBeVisible({
+        timeout: 10_000,
+      });
       await expect(page.getByText('Discovery Intelligence')).toHaveCount(0);
     } finally {
       await page.context().setOffline(false);
@@ -152,7 +162,9 @@ test.describe('FieldReport — Discovery Intelligence panel', () => {
   test('blank brand: no brand-specific panel or ad-chain block renders', async ({ page }) => {
     await mockBase44(page, { user: ADMIN_USER, locations: {} });
     await fillAndSubmit(page, {}); // brand left blank
-    await expect(page.getByText(/Transmission received/i)).toBeVisible({ timeout: 10_000 });
+    await expect(page.getByRole('heading', { name: 'Submitted for review' })).toBeVisible({
+      timeout: 10_000,
+    });
 
     await expect(page.getByText(/Ad chain logged/i)).toHaveCount(0);
     await expect(page.getByText('Discovery Intelligence')).toHaveCount(0);

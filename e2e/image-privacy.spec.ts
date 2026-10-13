@@ -244,7 +244,9 @@ test.describe('Image privacy — EXIF/device metadata stripped before upload', (
     await submitBtn.click();
     await expect(submitBtn).toHaveText(/Transmit report/i);
     await submitBtn.click();
-    await expect(page.getByText(/Transmission received/i)).toBeVisible({ timeout: 10_000 });
+    await expect(page.getByRole('heading', { name: 'Submitted for review' })).toBeVisible({
+      timeout: 10_000,
+    });
 
     // uploadLocationPhotos() fires after the Location record exists, not
     // awaited by the UI transition -- give its Promise.allSettled a moment

@@ -1,4 +1,5 @@
 import { base44 } from '@/api/base44Client';
+import { SubmissionRejectedError, toSubmitError } from '@/lib/submitErrors';
 
 const DB_NAME = 'ooh_offline';
 const STORE = 'captures';
@@ -40,10 +41,17 @@ function withOperationId(payload) {
 }
 
 async function submitRemote(payload, entityType) {
-  const response = await base44.functions.invoke('submitOffline', {
-    entity_type: entityType,
-    payload,
-  });
+  let response;
+  try {
+    response = await base44.functions.invoke('submitOffline', {
+      entity_type: entityType,
+      payload,
+    });
+  } catch (err) {
+    // Permanent failures (403/422/...) become a SubmissionRejectedError so
+    // callers show them instead of queueing a request that can never succeed.
+    throw toSubmitError(err);
+  }
   const result = response?.data ?? response;
   if (!result?.ok || !result.record) throw new Error('Submission unavailable');
   return result.record;
@@ -136,6 +144,30 @@ export async function incrementRetries(id) {
   notify();
 }
 
+// A permanent rejection (permission/validation) can never succeed on retry, so
+// mark the item 'failed' immediately -- kept on the device and visible, never
+// deleted -- instead of burning MAX_RETRIES identical requests at the server.
+export async function markFailed(id, status) {
+  const db = await openDB();
+  await new Promise((resolve, reject) => {
+    const tx = db.transaction(STORE, 'readwrite');
+    const store = tx.objectStore(STORE);
+    const getReq = store.get(id);
+    getReq.onsuccess = () => {
+      const rec = getReq.result;
+      if (!rec) return resolve();
+      rec.status = 'failed';
+      rec.retries = MAX_RETRIES;
+      rec.last_error_status = status;
+      const putReq = store.put(rec);
+      putReq.onsuccess = () => resolve();
+      putReq.onerror = () => reject(putReq.error);
+    };
+    getReq.onerror = () => reject(getReq.error);
+  });
+  notify();
+}
+
 // Explicit user-initiated retry for an item that already exhausted
 // automatic retries. Not looped or timer-driven -- the automatic flush
 // path (useOfflineSync's flush()) deliberately excludes 'failed' items so
@@ -177,6 +209,7 @@ export async function submitCapture(payload) {
     const rec = await submitRemote(normalized, 'Location');
     return { status: 'synced', rec };
   } catch (err) {
+    if (err instanceof SubmissionRejectedError) throw err;
     console.warn('Capture failed, queuing:', err?.message);
     await enqueueCapture(normalized, 'Location');
     return { status: 'queued' };
@@ -193,6 +226,7 @@ export async function submitFieldCheck(payload) {
     const rec = await submitRemote(normalized, 'FieldCheck');
     return { status: 'synced', rec };
   } catch (err) {
+    if (err instanceof SubmissionRejectedError) throw err;
     console.warn('Field check failed, queuing:', err?.message);
     await enqueueCapture(normalized, 'FieldCheck');
     return { status: 'queued' };
