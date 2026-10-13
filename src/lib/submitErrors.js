@@ -8,25 +8,32 @@
 const PERMANENT_STATUSES = new Set([400, 403, 404, 409, 413, 422]);
 
 export class SubmissionRejectedError extends Error {
-  constructor(message, { status, code } = {}) {
+  /**
+   * @param {string} message person-readable explanation
+   * @param {{ status?: number, code?: string }} [info]
+   */
+  constructor(message, info = {}) {
     super(message);
     this.name = 'SubmissionRejectedError';
     this.permanent = true;
-    this.status = status;
-    this.code = code;
+    this.status = info.status;
+    this.code = info.code;
   }
 }
 
+/** @param {any} err */
 function statusOf(err) {
   const status = Number(err?.status ?? err?.response?.status);
   return Number.isFinite(status) ? status : undefined;
 }
 
+/** @param {any} err */
 export function isPermanentSubmitFailure(err) {
   const status = statusOf(err);
   return status !== undefined && PERMANENT_STATUSES.has(status);
 }
 
+/** @param {number | undefined} status */
 function messageFor(status) {
   if (status === 403)
     return "This report couldn't be accepted — you may not have permission to submit it. Your details are still on this page; try signing in, then submit again.";
@@ -37,6 +44,7 @@ function messageFor(status) {
 
 // Returns a SubmissionRejectedError for permanent failures, otherwise the
 // original error unchanged (so transient failures keep today's queue/retry path).
+/** @param {any} err */
 export function toSubmitError(err) {
   if (err instanceof SubmissionRejectedError) return err;
   if (!isPermanentSubmitFailure(err)) return err;
