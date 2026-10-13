@@ -111,7 +111,9 @@ export default function Campaign() {
           <div className="mt-6 overflow-hidden border border-slate2/60 bg-card p-4 md:p-5">
             <div className="flex items-end justify-between font-mono text-[10px] uppercase tracking-[0.25em]">
               <span className="text-ozone">
-                {raisedState === 'available' ? `$${raised.toLocaleString()} confirmed` : 'Total unavailable'}
+                {raisedState === 'available'
+                  ? `$${raised.toLocaleString()} confirmed`
+                  : 'Total unavailable'}
               </span>
               <span className="text-dim">goal ${CAMPAIGN.goalUsd.toLocaleString()}</span>
             </div>
@@ -123,7 +125,8 @@ export default function Campaign() {
             </div>
             {raisedState === 'unavailable' && (
               <p className="mt-2 font-mono text-[9px] uppercase tracking-[0.18em] text-dim">
-                Confirmed contribution total is temporarily unavailable; the goal remains configured at ${CAMPAIGN.goalUsd.toLocaleString()}.
+                Confirmed contribution total is temporarily unavailable; the goal remains configured
+                at ${CAMPAIGN.goalUsd.toLocaleString()}.
               </p>
             )}
           </div>
