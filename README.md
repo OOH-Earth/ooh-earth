@@ -83,4 +83,4 @@ Trading as **Out of Hell** · hello@outofhell.org
 
 ---
 
-*Built and maintained by Dee Sidhom, Founder. Zen anarchist, ex-adland, now on the other side of the billboard.*
+*Built and maintained by David Sidhom, Founder. Zen anarchist, ex-adland, now on the other side of the billboard.*

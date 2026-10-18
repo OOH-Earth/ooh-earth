@@ -123,7 +123,7 @@ export async function handleLocationShare(
       publicImage(location.image_url) || publicImage(photos?.[0]?.url) || FALLBACK_IMAGE;
     const title = `${String(location.title || 'Public Location').slice(0, 160)} | OOH Earth`;
     const type = String(location.type || 'location').slice(0, 64);
-    const description = `Verified ${type} Location on OOH Earth.`;
+    const description = `Verified public-space record of a ${type} on OOH Earth.`;
     const canonical = `${CANONICAL_ORIGIN}/location/${encodeURIComponent(id)}`;
     return htmlDocument({ title, description, image, canonical });
   } catch {

@@ -1850,7 +1850,7 @@ function ConsoleView({ queue, onVerify, busy }) {
 function RosterView() {
   const PEOPLE = [
     [
-      'Dee Sidhom',
+      'David Sidhom',
       'Founder',
       'ADMIN',
       'role: admin',
