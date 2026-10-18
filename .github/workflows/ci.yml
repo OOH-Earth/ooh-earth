@@ -49,6 +49,8 @@ jobs:
         run: npm run test:ci-workflow-guard
       - name: Hydro adapter unit tests (offline)
         run: npm run test:hydro
+      - name: Server function tests (offline, no credentials)
+        run: npm run test:server-functions
       - name: Typecheck
         run: |
           npm run typecheck > typecheck.log 2>&1; code=$?
