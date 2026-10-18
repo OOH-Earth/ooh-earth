@@ -41,8 +41,10 @@ export default function About() {
               A call to reclaim our streets and our skies, our senses and our minds.
             </h1>
             <p className="mt-5 max-w-xl font-display text-sm font-normal leading-[1.4] text-darkgray md:text-base">
-              An adbusting platform for Out-of-Home (OOH) advertising. Union-made by subvertisers
-              and advertising-industry war veterans.
+              OOH Earth documents Out-of-Home (OOH) advertising and supports community-led
+              adbusting, research, photography, and creative remixes. A photograph is a record of
+              what was seen, not proof of ownership, permission, legality, reach, or environmental
+              impact.
             </p>
           </div>
         </section>
@@ -92,18 +94,20 @@ export default function About() {
           </div>
         </section>
 
-        {/* Stat */}
+        {/* Evidence boundary */}
         <section className="border-t border-slate2/40 bg-card">
           <div className="px-5 py-16 md:px-8 md:py-20">
-            <div className="mx-auto max-w-4xl text-center">
-              <div className="font-display text-6xl font-black leading-none tracking-[-0.03em] text-ozone md:text-8xl">
-                2%
-              </div>
-              <p className="mt-4 font-display text-lg font-medium leading-[1.3] text-silver md:text-2xl">
-                only 2% of OOH ads are being challenged.
-              </p>
-              <p className="mt-2 font-mono text-[10px] uppercase tracking-[0.3em] text-dim">
-                We exist to close the gap.
+            <div className="mx-auto max-w-3xl">
+              <span className="font-mono text-[10px] uppercase tracking-[0.3em] text-ozone">
+                // Evidence boundary
+              </span>
+              <h2 className="mt-3 font-display text-4xl font-bold leading-[1.05] text-silver md:text-6xl">
+                Document first. Interpret carefully.
+              </h2>
+              <p className="mt-4 font-display text-base leading-[1.5] text-darkgray md:text-lg">
+                The atlas separates factual, dated documentation from community advocacy, creative
+                adbusting, artistic parody, and research. Commercial research can help investigate a
+                question, but its claims remain limited to the evidence collected and cited.
               </p>
             </div>
           </div>
@@ -155,9 +159,10 @@ export default function About() {
                 resistance
               </h2>
               <p className="mt-4 max-w-md font-display text-sm font-normal leading-[1.4] text-darkgray">
-                By funding OOH Earth, you support a platform that fights corporate overreach, backs
-                grassroots artists, and inspires real change in public spaces. Target: $10,000 for
-                growth, platform development, and community outreach.
+                By funding OOH Earth, you support an open platform for documenting outdoor
+                advertising, community research, and creative resistance. See the current campaign
+                page for the live goal, confirmed contribution total, and available ways to
+                contribute.
               </p>
               <div className="mt-8 flex flex-wrap gap-3">
                 <a

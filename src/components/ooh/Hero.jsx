@@ -86,9 +86,9 @@ export default function Hero() {
               ))}
             </h1>
             <p className="mt-6 max-w-[42ch] font-display text-[15px] font-medium leading-[1.6] text-silver/70 md:text-base">
-              An open-source, community-funded app reclaiming the visual commons. Mapping corporate
-              advertising offenses and street-art adbusting worldwide — SDG-aligned, from the
-              orbital perspective.
+              An open-source, community-funded adbusting platform. OOH Earth documents outdoor
+              advertising, supports creative interventions, and helps communities reclaim the visual
+              commons.
             </p>
             <div className="mt-8 flex flex-wrap gap-3">
               <Link
