@@ -89,7 +89,7 @@ const TOUR = [
   {
     target: '[data-tour="report"]',
     title: 'Log a spot',
-    body: 'File a new field report — GPS + photo, no login. Reports appear here instantly.',
+    body: 'File a new field report — GPS + photo, no login. A report appears here only after a moderator verifies it.',
   },
   {
     target: '[data-tour="theme"]',

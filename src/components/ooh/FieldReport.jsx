@@ -258,7 +258,7 @@ export default function FieldReport() {
         <p className="mt-2 font-display text-sm leading-[1.4] text-darkgray">
           {done.queued
             ? `Offline — saved on this device, transmits when you reconnect. Position ${done.lat?.toFixed(4)}, ${done.lng?.toFixed(4)}.`
-            : `Field report logged to the public archive. Pending verification — renders on the live map immediately.`}
+            : `Saved and waiting for review. It is not public and will not appear on the map until a moderator verifies it, and review is not guaranteed.`}
         </p>
         {done.brand_name && (
           <div className="mt-4 border border-slate2/60 bg-void px-4 py-3">
