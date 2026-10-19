@@ -10,6 +10,7 @@ import DonationWatcher from '@/components/ooh/campaign/DonationWatcher';
 import { CAMPAIGN } from '@/components/ooh/fundConfig';
 import { base44 } from '@/api/base44Client';
 import { trackEvent } from '@/lib/trackEvent';
+import { fundingTotalView, FUNDING_UNAVAILABLE_LABEL } from '@/lib/fundingTotal';
 import { Megaphone, CheckCircle2 } from 'lucide-react';
 
 const PAYMENT_CONFIRMED_SESSION_KEY = 'ooh_payment_confirmed_session';
@@ -18,8 +19,11 @@ const CONFIRM_POLL_DELAY_MS = 2500;
 
 export default function Campaign() {
   const [thanks, setThanks] = useState(false);
-  const [raised, setRaised] = useState(CAMPAIGN.raisedUsd);
-  const [raisedState, setRaisedState] = useState('loading');
+  const [funding, setFunding] = useState(
+    /** @type {import('@/lib/fundingTotal').FundingTotalView | { state: 'loading' }} */ ({
+      state: 'loading',
+    }),
+  );
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
     if (urlParams.get('status') === 'thanks') setThanks(true);
@@ -57,31 +61,29 @@ export default function Campaign() {
     };
   }, []);
 
-  // Live raised total — same confirmed-funds source (fieldStats) the rest of the
-  // app uses; falls back to the configured figure if the call fails.
+  // Funding total: fieldStats.raised is an unverified sum of FundingLead rows
+  // (pledges/manual entries/unchecked provider rows), so it is never shown as
+  // money raised. A total appears only if the backend returns a provider-verified
+  // object (see src/lib/fundingTotal.js); otherwise it is "unavailable", not $0.
   useEffect(() => {
     let cancelled = false;
     base44.functions
       .invoke('fieldStats', {})
       .then((res) => {
-        const s = res?.data ?? res;
-        const r = Number(s?.raised);
-        if (!cancelled && Number.isFinite(r) && r >= 0) {
-          setRaised(r);
-          setRaisedState('available');
-        } else if (!cancelled) {
-          setRaisedState('unavailable');
-        }
+        if (!cancelled) setFunding(fundingTotalView(res?.data ?? res));
       })
       .catch(() => {
-        if (!cancelled) setRaisedState('unavailable');
+        if (!cancelled) setFunding({ state: 'unavailable' });
       });
     return () => {
       cancelled = true;
     };
   }, []);
 
-  const pct = Math.min(100, Math.round((raised / CAMPAIGN.goalUsd) * 100));
+  const pct =
+    funding.state === 'verified'
+      ? Math.min(100, Math.round((funding.amount / CAMPAIGN.goalUsd) * 100))
+      : 0;
 
   return (
     <div className="relative min-h-screen bg-void">
@@ -103,32 +105,35 @@ export default function Campaign() {
             <div className="mt-6 flex items-center gap-2 border border-ozone/50 bg-ozone/5 px-4 py-3">
               <CheckCircle2 className="h-4 w-4 text-ozone" />
               <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-ozone">
-                Contribution received — gratitude logged in the public record.
+                Thank you. A payment counts as received only once the payment provider confirms it.
               </span>
             </div>
           )}
 
           <div className="mt-6 overflow-hidden border border-slate2/60 bg-card p-4 md:p-5">
-            <div className="flex items-end justify-between font-mono text-[10px] uppercase tracking-[0.25em]">
-              <span className="text-ozone">
-                {raisedState === 'available'
-                  ? `$${raised.toLocaleString()} confirmed`
-                  : 'Total unavailable'}
+            <div className="flex items-end justify-between gap-4 font-mono text-[10px] uppercase tracking-[0.25em]">
+              <span className="text-ozone" data-testid="funding-total">
+                {funding.state === 'verified'
+                  ? `$${funding.amount.toLocaleString()} verified`
+                  : funding.state === 'loading'
+                    ? 'Checking funding total…'
+                    : FUNDING_UNAVAILABLE_LABEL}
               </span>
-              <span className="text-dim">goal ${CAMPAIGN.goalUsd.toLocaleString()}</span>
+              <span className="text-dim">Target ${CAMPAIGN.goalUsd.toLocaleString()}</span>
             </div>
-            <div className="mt-2 h-1.5 w-full overflow-hidden bg-slate2/40">
-              <div
-                className="h-full bg-ozone transition-all duration-500"
-                style={{ width: raisedState === 'available' ? `${pct}%` : '0%' }}
-              />
-            </div>
-            {raisedState === 'unavailable' && (
-              <p className="mt-2 font-mono text-[9px] uppercase tracking-[0.18em] text-dim">
-                Confirmed contribution total is temporarily unavailable; the goal remains configured
-                at ${CAMPAIGN.goalUsd.toLocaleString()}.
-              </p>
+            {funding.state === 'verified' && (
+              <div className="mt-2 h-1.5 w-full overflow-hidden bg-slate2/40">
+                <div
+                  className="h-full bg-ozone transition-all duration-500"
+                  style={{ width: `${pct}%` }}
+                />
+              </div>
             )}
+            <p className="mt-2 font-mono text-[9px] uppercase tracking-[0.18em] text-dim">
+              {funding.state === 'verified'
+                ? `Provider-verified as of ${new Date(funding.asOf).toLocaleDateString('en-GB')}. The target is a goal, not a result.`
+                : 'Payments are not yet reconciled against provider records, so no total is shown. This does not mean nothing has been received. The target is a goal, not a result.'}
+            </p>
           </div>
 
           <div className="mt-8 grid gap-4 md:mt-10 md:grid-cols-3">

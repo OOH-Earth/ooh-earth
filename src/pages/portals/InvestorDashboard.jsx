@@ -69,9 +69,9 @@ export default function InvestorDashboard() {
       ? [fmt(live.reports), 'Documented (live)', false]
       : ['~12,000', 'Documented (beta)', true],
     ['14', 'Ecosystem entities', false],
-    live && live.raised != null
-      ? [`$${fmt(Math.round(live.raised))}`, 'Raised (live)', false]
-      : ['~$55k', 'Raised of $100k', true],
+    // fieldStats.raised is an unverified sum of funding records, not provider-verified
+    // money received, so it is not presented as funds raised.
+    ['Unavailable', 'Verified funding total', true],
   ];
 
   return (

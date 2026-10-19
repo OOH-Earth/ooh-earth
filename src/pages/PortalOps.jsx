@@ -483,8 +483,8 @@ function ExecView({ stats, intel }) {
     ['Verified', stats?.verified],
     ['Members', stats?.operatives],
     ['Cities', stats?.cities],
-    ['Raised', stats?.raised],
-    ['Donors', stats?.donors],
+    ['Funding records (unverified)', stats?.raised],
+    ['Funding-record count (unverified)', stats?.donors],
     ['Digital Busts', stats?.digital_busts],
     ['Points', stats?.points],
   ];

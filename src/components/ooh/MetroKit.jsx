@@ -77,7 +77,7 @@ function Ring({ pct, label, color }) {
 }
 
 export default function MetroKit() {
-  const [s, setS] = useState({ reports: 0, verified: 0, raised: 0 });
+  const [s, setS] = useState({ loaded: false, reports: 0, verified: 0 });
 
   useEffect(() => {
     let active = true;
@@ -85,8 +85,7 @@ export default function MetroKit() {
       try {
         const res = await base44.functions.invoke('fieldStats', {});
         const d = res.data || {};
-        if (active)
-          setS({ reports: d.reports || 0, verified: d.verified || 0, raised: d.raised || 0 });
+        if (active) setS({ loaded: true, reports: d.reports || 0, verified: d.verified || 0 });
       } catch {}
     })();
     return () => {
@@ -94,9 +93,8 @@ export default function MetroKit() {
     };
   }, []);
 
-  const billboardsPct = Math.min(100, Math.round((s.reports / 200) * 100) || 15);
-  const actionsPct = s.reports ? Math.min(100, Math.round((s.verified / s.reports) * 100)) : 100;
-  const fundedPct = Math.min(100, Math.round((s.raised / 50000) * 100) || 71);
+  const billboardsPct = Math.min(100, Math.round((s.reports / 200) * 100));
+  const actionsPct = s.reports ? Math.min(100, Math.round((s.verified / s.reports) * 100)) : 0;
 
   return (
     <section className="border-t border-border bg-background">
@@ -260,18 +258,23 @@ export default function MetroKit() {
 
             <div className="metro-sub rounded-lg border border-primary-foreground/10 bg-primary-foreground/5 p-5">
               <div className="mb-4 font-mono text-[9px] uppercase tracking-[0.2em] text-primary-foreground/70">
-                Your city this month
+                Platform-wide snapshot
               </div>
-              <div className="flex items-center justify-around">
-                <Ring pct={billboardsPct} label="Billboards" color="#FF8A00" />
-                <Ring pct={actionsPct} label="Actions" color="#8A2BE2" />
-                <Ring pct={fundedPct} label="Funded" color="#39FF14" />
-              </div>
+              {s.loaded ? (
+                <div className="flex items-center justify-around">
+                  <Ring pct={billboardsPct} label="Reports / 200" color="#FF8A00" />
+                  <Ring pct={actionsPct} label="Verified" color="#8A2BE2" />
+                </div>
+              ) : (
+                <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-primary-foreground/60">
+                  Snapshot unavailable
+                </p>
+              )}
             </div>
 
             <div className="mt-auto flex items-center gap-2 font-mono text-[9px] uppercase tracking-[0.2em] text-primary-foreground/50">
-              <MapPin className="h-3 w-3 text-primary-foreground/70" /> Live telemetry · updates
-              hourly
+              <MapPin className="h-3 w-3 text-primary-foreground/70" /> Platform-wide figures from
+              the field-stats service
             </div>
           </article>
         </div>
