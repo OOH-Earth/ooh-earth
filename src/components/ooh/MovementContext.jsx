@@ -77,7 +77,7 @@ export default function MovementContext({
       <p className="border-t border-slate2/40 px-6 py-3 font-mono text-[9px] leading-relaxed tracking-[0.1em] text-dim md:px-8">
         // Movement-wide estimates (est.) since {MOVEMENT.since} — the global subvertising movement,
         not OOH Earth platform metrics. Order-of-magnitude, conservative. OOH Earth&rsquo;s own
-        numbers are live and audited elsewhere on the platform.
+        platform counts are shown separately and are not independently audited.
       </p>
     </section>
   );

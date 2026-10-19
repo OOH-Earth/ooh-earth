@@ -199,7 +199,7 @@ export default function InvestorHub() {
             <b>OOH Earth · {PLATFORM_STATUS}.</b> Movement figures are order-of-magnitude estimates
             of the wider subvertising movement (Brandalism, Subvertisers International, Adfree
             Cities, Les Déboulonneurs, Adbusters, independents) — sourced, and distinct from our own
-            live, audited platform counts.
+            live platform counts (not independently audited).
           </p>
         </section>
 
