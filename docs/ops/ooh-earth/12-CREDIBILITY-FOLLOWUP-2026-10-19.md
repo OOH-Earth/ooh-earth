@@ -7,7 +7,7 @@
 | Item | Value | Evidence type |
 | --- | --- | --- |
 | Production commit | `f6d053b` (R1M), entry `index-C6yXr6Hc.js`, 373/373 assets byte-identical to the build | live HTTP, 2026-10-19 |
-| This branch | `f6d053b` + 4 commits (below) | git |
+| This branch | `f6d053b` + 4 code commits + this doc (below) | git |
 | Metadata | **NOT PASSED / PLATFORM-OVERRIDDEN** (unchanged by this branch) | live HTTP + browser |
 
 ## 2. Classification
@@ -97,7 +97,7 @@ Inspected read-only (`FieldReport.jsx`, `ReportStep1Document.jsx`, `offlineQueue
 ## 7. Operator accountability
 
 - Routes that exist: `/about`, `/contact` (hello@ooh.earth and social handles), `/support`, `/careers`, `/investor-access`. Missing: `/privacy`, `/terms`.
-- David Sidhom's name is confirmed (credited on the authenticated Ops page); legal entity, operator status, address, funding authority and contractual title are not evidenced anywhere in the repo and are not asserted.
+- David Sidhom's name is confirmed (listed in `src/pages/PortalOps.jsx`; role not established there); legal entity, operator status, address, funding authority and contractual title are not evidenced anywhere in the repo and are not asserted.
 - Proposed copy (NEEDS DAVID; do not publish until each fact is supplied): "OOH Earth is an open-source project operated by [legal entity / individual — to be confirmed]. Contact: [mailbox]. Funding enquiries are handled only through [authorized receiving route]. Open-source licensing does not replace this accountability: [named contact] is responsible for moderation, corrections and removal requests."
 - Proposed privacy/terms scope (draft for David and counsel, not legal advice): what is collected (photos, approximate/precise coordinates, email), who can see it, moderation and removal route, analytics used.
 - Existing routes to point people to: explore (`/map`), contribute (`/report`), collaborate (`/contact`). No service offer, investment offer, donation change, tax claim or fiscal host is added.
