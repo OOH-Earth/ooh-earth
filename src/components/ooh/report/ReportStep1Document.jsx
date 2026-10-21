@@ -207,7 +207,7 @@ export default function ReportStep1Document({ data, onChange }) {
           </p>
         )}
         <p
-          className="mt-2 font-display text-xs leading-[1.5] text-darkgray"
+          className="mt-2 font-display text-xs leading-[1.5] text-silver"
           data-testid="photo-privacy-guidance"
         >
           Photograph the advertising surface and its setting. Avoid close-ups of faces, number
@@ -266,7 +266,7 @@ export default function ReportStep1Document({ data, onChange }) {
           onPick={({ lat, lng }) => onChange({ lat: String(lat), lng: String(lng) })}
         />
         <details className="group mt-2">
-          <summary className="cursor-pointer font-mono text-[9px] uppercase tracking-[0.2em] text-dim/60 transition-colors hover:text-ozone">
+          <summary className="cursor-pointer font-mono text-[9px] uppercase tracking-[0.2em] text-dim transition-colors hover:text-ozone">
             Enter coordinates manually
           </summary>
           <div className="mt-2 grid grid-cols-2 gap-px border border-slate2/60 bg-slate2/40">
@@ -291,7 +291,7 @@ export default function ReportStep1Document({ data, onChange }) {
       {/* Title (optional) */}
       <div>
         <label className="mb-2 block font-mono text-[10px] uppercase tracking-[0.3em] text-dim">
-          Unit label <span className="text-dim/50">(optional)</span>
+          Unit label <span className="text-dim">(optional)</span>
         </label>
         <input
           value={data.title}

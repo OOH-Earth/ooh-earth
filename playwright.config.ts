@@ -48,6 +48,8 @@ export default defineConfig({
       testMatch: [
         'location-detail.spec.ts',
         'multi-photo-upload.spec.ts',
+        'report-release-r1m2.spec.ts',
+        'report-trust.spec.ts',
         'verify-reject-workflow.spec.ts',
         'focus-trap.spec.ts',
         'nav-menu-disclosure.spec.ts',
