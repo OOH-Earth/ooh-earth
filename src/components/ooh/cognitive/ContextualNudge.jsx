@@ -6,7 +6,7 @@ import { X, ArrowRight } from 'lucide-react';
 const ROUTE_HINTS = {
   '/': [{ id: 'home_report', label: 'Log a field bust', to: '/report' }],
   '/map': [{ id: 'map_report', label: 'Document a new billboard', to: '/report' }],
-  '/report': [{ id: 'report_fund', label: 'Fuel the next action window', to: '/campaign' }],
+  // No '/report' hint: the contribution page does not solicit funds mid-submission.
   '/inhome': [{ id: 'inhome_ar', label: 'Deploy the AR lens', to: '/ar' }],
   '/ar': [{ id: 'ar_scan', label: 'Run a TrueCost scan', to: '/scan' }],
 };
