@@ -139,7 +139,7 @@ export default function ReportStep1Document({ data, onChange }) {
       {/* Photo — capture or upload */}
       <div>
         <label className="mb-2 block font-mono text-[10px] uppercase tracking-[0.3em] text-dim">
-          Cover photo <span className="text-silver/70">(required)</span>
+          Cover photo <span className="text-silver/70">(recommended)</span>
         </label>
         {data.image_url ? (
           <div className="relative overflow-hidden border border-slate2 bg-card">
@@ -206,6 +206,15 @@ export default function ReportStep1Document({ data, onChange }) {
             {uploadError}
           </p>
         )}
+        <p
+          className="mt-2 font-display text-xs leading-[1.5] text-silver"
+          data-testid="photo-privacy-guidance"
+        >
+          Photograph the advertising surface and its setting. Avoid close-ups of faces, number
+          plates, private property or personal information. Location and camera details embedded in
+          a photo are removed from the uploaded copy. If a moderator verifies the report, its photo,
+          pin location and the details you enter may be shown publicly.
+        </p>
       </div>
 
       {/* Additional gallery photos */}
@@ -257,7 +266,7 @@ export default function ReportStep1Document({ data, onChange }) {
           onPick={({ lat, lng }) => onChange({ lat: String(lat), lng: String(lng) })}
         />
         <details className="group mt-2">
-          <summary className="cursor-pointer font-mono text-[9px] uppercase tracking-[0.2em] text-dim/60 transition-colors hover:text-ozone">
+          <summary className="cursor-pointer font-mono text-[9px] uppercase tracking-[0.2em] text-dim transition-colors hover:text-ozone">
             Enter coordinates manually
           </summary>
           <div className="mt-2 grid grid-cols-2 gap-px border border-slate2/60 bg-slate2/40">
@@ -282,7 +291,7 @@ export default function ReportStep1Document({ data, onChange }) {
       {/* Title (optional) */}
       <div>
         <label className="mb-2 block font-mono text-[10px] uppercase tracking-[0.3em] text-dim">
-          Unit label <span className="text-dim/50">(optional)</span>
+          Unit label <span className="text-dim">(optional)</span>
         </label>
         <input
           value={data.title}

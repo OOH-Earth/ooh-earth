@@ -38,7 +38,6 @@ const GamificationWidget = lazy(() => import('@/components/ooh/gamification/Gami
 const Manifesto = lazy(() => import('@/components/ooh/Manifesto'));
 const OnChain = lazy(() => import('@/components/ooh/OnChain'));
 const SkyIntel = lazy(() => import('@/components/ooh/SkyIntel'));
-const KlimaWidget = lazy(() => import('@/components/ooh/KlimaWidget'));
 const DonationMomentum = lazy(() => import('@/components/ooh/DonationMomentum'));
 const ImpactLedger = lazy(() => import('@/components/ooh/ImpactLedger'));
 const LiveActivityFeed = lazy(() => import('@/components/ooh/LiveActivityFeed'));
@@ -138,9 +137,6 @@ export default function Home() {
           </Reveal>
           <Reveal>
             <SkyIntel />
-          </Reveal>
-          <Reveal>
-            <KlimaWidget />
           </Reveal>
           <Reveal>
             <DonationMomentum />

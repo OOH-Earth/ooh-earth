@@ -13,7 +13,7 @@ const TOUR_STEPS = [
   {
     target: '[data-tour="report-header"]',
     title: 'Start Adbusting',
-    body: 'This is the field console — your entry point for documenting OOH advertising in public space. Every report enters the public archive. No login, no gatekeeper.',
+    body: 'This is the field console — your entry point for documenting OOH advertising in public space. Reports are saved for moderator review; a report becomes public only if it is verified. No login is needed to submit.',
   },
   {
     target: '[data-tour="report-protocol"]',
@@ -57,12 +57,13 @@ export default function Report() {
             </h1>
             <TerminalTooltip
               label="field console"
-              text="The entry point for documenting OOH advertising in public space. Reports enter the public archive."
+              text="The entry point for documenting OOH advertising in public space. Submitted reports are reviewed before anything is published."
             />
           </div>
           <p className="mt-4 max-w-md font-display text-sm leading-[1.4] text-darkgray">
             Document the billboard. Identify the brand, the agency, the operator. Classify the harm.
-            Respond. Every report enters the public archive — no login, no gatekeeper.
+            Respond. Reports are saved for moderator review and become public only if verified — no
+            login needed to submit.
           </p>
 
           {/* Quick nav pills */}
