@@ -74,7 +74,7 @@ export default function GenesisCoin() {
             <span className="text-ozone">CRYPTO CHIP · CULTURAL ARTIFACT</span> — The Genesis Chip
             is a physical crypto chip: a 64mm precision-minted metal artifact paired 1:1 with an
             on-chain twin. It is not currency. It documents participation in the visual commons,
-            bound cryptographically to a wallet via embedded NFC. Aligned to UN SDGs 11, 16, 17.
+            bound cryptographically to a wallet via embedded NFC.
           </p>
         </div>
 
@@ -104,7 +104,7 @@ export default function GenesisCoin() {
             </div>
             <p className="mt-2 font-mono text-[11px] leading-relaxed text-silver/55">
               Not currency. A crypto chip — an artifact of participation in the visual commons,
-              documenting public-space reclamation, aligned to UN SDGs, minted union-made.
+              documenting public-space reclamation.
             </p>
           </div>
         </div>

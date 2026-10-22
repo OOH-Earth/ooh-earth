@@ -8,7 +8,7 @@ import {
 const FAQS = [
   {
     q: 'Is OOH Earth really open-source?',
-    a: 'Yes — AGPL-3.0 for code, CC BY-SA 4.0 for content. The platform, maps, and field record are community-owned and aligned to the UN Sustainable Development Goals.',
+    a: 'Yes — AGPL-3.0 for code, CC BY-SA 4.0 for content. The code and content licences are published in the repository.',
   },
   {
     q: 'Do I need an account to use the map?',

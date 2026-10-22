@@ -1,23 +1,13 @@
 import { useEffect, useState } from 'react';
 import { base44 } from '@/api/base44Client';
-import {
-  Zap,
-  MapPin,
-  BadgeCheck,
-  Users,
-  Building2,
-  DollarSign,
-  Monitor,
-  Flag,
-  Globe2,
-} from 'lucide-react';
+import { Zap, MapPin, BadgeCheck, Users, Building2, Monitor, Flag, Globe2 } from 'lucide-react';
 import { MOVEMENT, PLATFORM_STATUS, MOVEMENT_NOTE, fmtK } from '@/components/ooh/movementEstimate';
 
 // Live streaming "Field Pulse" strip for the orbital HUD. Two clearly-separated
 // layers: (1) a MOVEMENT-WIDE ESTIMATE of global subvertising since 2012 (tagged
 // "EST", never presented as ours) and (2) OOH Earth's own LIVE platform numbers
 // from the audited fieldStats function — kept honest, with a founding-stage status
-// chip so our day-one scale is never mistaken for the movement's. Plus live markets.
+// chip so our day-one scale is never mistaken for the movement's.
 export default function FieldStatsHud() {
   const [items, setItems] = useState([]);
 
@@ -89,33 +79,6 @@ export default function FieldStatsHud() {
       }
       // Founding-stage status — makes the early-access, seeking-backers reality explicit.
       out.push({ divider: true, tone: 'ozone', pulse: true, label: PLATFORM_STATUS });
-
-      // — Live markets —
-      try {
-        const r = await fetch(
-          'https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum,solana&vs_currencies=usd&include_24hr_change=true',
-        );
-        const j = await r.json();
-        const coin = (id, sym, dp) => {
-          const c = j[id];
-          if (!c) return null;
-          const chg = c.usd_24h_change || 0;
-          return {
-            icon: DollarSign,
-            label: sym,
-            value: `$${Number(c.usd).toLocaleString(undefined, { maximumFractionDigits: dp })}`,
-            delta: `${Math.abs(chg).toFixed(1)}%`,
-            up: chg >= 0,
-          };
-        };
-        [coin('bitcoin', 'BTC', 0), coin('ethereum', 'ETH', 0), coin('solana', 'SOL', 2)].forEach(
-          (c) => {
-            if (c) out.push(c);
-          },
-        );
-      } catch (e) {
-        /* crypto feed unreachable */
-      }
 
       if (active) setItems(out);
     };

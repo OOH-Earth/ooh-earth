@@ -590,7 +590,7 @@ export default function Brand() {
 
           <footer className="mt-8 flex flex-wrap items-center justify-between gap-3 border-t border-slate2/40 pt-6">
             <p className="font-mono text-[9px] uppercase tracking-[0.3em] text-dim">
-              // brand standards · ad free streets · aligned to UN SDG 11.7
+              // brand standards · ad free streets
             </p>
             <Link
               to="/kit"

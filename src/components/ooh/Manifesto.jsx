@@ -26,7 +26,7 @@ export default function Manifesto() {
             data-cursor="view"
             className="inline-flex items-center gap-2 border border-ozone px-4 py-3 font-mono text-[10px] uppercase tracking-[0.25em] text-ozone transition-colors hover:bg-ozone hover:text-void"
           >
-            Union made · Advertisers Anonymous
+            Advertisers Anonymous
           </a>
         </div>
       </div>

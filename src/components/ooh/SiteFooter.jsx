@@ -182,8 +182,8 @@ export default function SiteFooter() {
 
         <div className="mt-12 flex flex-col items-start justify-between gap-4 border-t border-white/5 pt-6 md:flex-row md:items-center">
           <span className="font-mono text-[10px] uppercase tracking-[0.25em] text-dim">
-            © {new Date().getFullYear()} OOH Street Art & Adbusting Maps · Aligned to UN SDGs ·
-            Union made · <span className="text-flare/70">AGPL-3.0 · CC BY-SA 4.0</span>
+            © {new Date().getFullYear()} OOH Street Art & Adbusting Maps ·{' '}
+            <span className="text-flare/70">AGPL-3.0 · CC BY-SA 4.0</span>
           </span>
           <button
             onClick={openCommand}

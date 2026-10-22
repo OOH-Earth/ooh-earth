@@ -50,6 +50,8 @@ export default defineConfig({
         'multi-photo-upload.spec.ts',
         'report-release-r1m2.spec.ts',
         'report-trust.spec.ts',
+        'unsupported-claims.spec.ts',
+        'image-privacy.spec.ts',
         'verify-reject-workflow.spec.ts',
         'focus-trap.spec.ts',
         'nav-menu-disclosure.spec.ts',

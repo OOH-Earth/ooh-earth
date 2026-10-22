@@ -210,10 +210,11 @@ export default function ReportStep1Document({ data, onChange }) {
           className="mt-2 font-display text-xs leading-[1.5] text-silver"
           data-testid="photo-privacy-guidance"
         >
-          Photograph the advertising surface and its setting. Avoid close-ups of faces, number
-          plates, private property or personal information. Location and camera details embedded in
-          a photo are removed from the uploaded copy. If a moderator verifies the report, its photo,
-          pin location and the details you enter may be shown publicly.
+          Use a JPG, PNG, WebP or HEIC photo (HEIC does not work in every browser; GIF is not
+          accepted). Photograph the advertising surface and its setting. Avoid close-ups of faces,
+          number plates, private property or personal information. Location and camera details
+          embedded in a photo are removed from the uploaded copy. If a moderator verifies the
+          report, its photo, pin location and the details you enter may be shown publicly.
         </p>
       </div>
 

@@ -167,7 +167,7 @@ export default function Channel() {
         </section>
 
         <footer className="mt-16 border-t border-slate2/40 pt-5 font-mono text-[9px] uppercase tracking-[0.2em] text-dim/40">
-          // videos hosted on youtube · open-access footage · no autoplay · union made
+          // videos hosted on youtube · open-access footage · no autoplay
         </footer>
       </main>
     </div>

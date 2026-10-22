@@ -1,7 +1,7 @@
 const CODE = [
   'Document every corporate advertising offense on the public record.',
   'Reclaim the visual commons — no vandalism, no harm, no destruction.',
-  'Operate with integrity: verified, union-made, open-source.',
+  'Operate with integrity: open-source.',
 ];
 
 export default function FieldIdBack({ op }) {

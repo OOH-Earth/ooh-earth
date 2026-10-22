@@ -75,7 +75,7 @@ const GOALS = [
   {
     n: '17',
     title: 'Partnerships for the goals',
-    body: 'A union of ad-industry veterans, street artists and on-chain communities.',
+    body: 'Open to ad-industry veterans, street artists and on-chain communities.',
   },
 ];
 
@@ -96,8 +96,6 @@ export default function Mandate() {
           </div>
           <p className="max-w-sm font-display text-sm font-normal leading-[1.4] text-darkgray">
             OOH operates as a community-funded app reclaiming public space from corporate occupation
-            — aligned to the UN Sustainable Development Goals and accountable to the communities it
-            serves.
           </p>
         </div>
 
@@ -161,7 +159,7 @@ export default function Mandate() {
         <div className="mt-10 flex flex-col gap-4 border-t border-slate2/40 pt-8 md:flex-row md:items-center md:justify-between">
           <div className="flex items-center gap-3 font-mono text-[10px] uppercase tracking-[0.25em] text-darkgray">
             <ShieldCheck className="h-4 w-4 text-ozone" />
-            Non-state · Community-funded · Union-made · Open-source field protocol
+            Non-state · Community-funded · Open-source field protocol
           </div>
           <a
             href="#ledger"
