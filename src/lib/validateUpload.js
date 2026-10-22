@@ -7,6 +7,9 @@
 // anything server-side is unknown from this repo (see KNOWN_ISSUES.md #21)
 // -- that gap still exists after this file, unchanged.
 
+// GIF is deliberately NOT accepted: photos are never GIFs, and a GIF can't be
+// re-encoded here without flattening it, so its bytes would reach storage
+// unchanged and any embedded metadata with them (see imageCompress.js).
 export const MAX_UPLOAD_BYTES = 15 * 1024 * 1024; // 15MB -- phone photos are typically 3-8MB (see imageCompress.js); generous headroom before compression runs
 
 // Extensions accepted per MIME type. Checked against the two independently
@@ -16,7 +19,6 @@ const ACCEPTED_EXTENSIONS = {
   'image/jpeg': ['jpg', 'jpeg'],
   'image/png': ['png'],
   'image/webp': ['webp'],
-  'image/gif': ['gif'],
   'image/heic': ['heic'],
   'image/heif': ['heif'],
 };
@@ -29,7 +31,6 @@ const ACCEPTED_EXTENSIONS = {
 const SIGNATURES = {
   'image/jpeg': [{ offset: 0, bytes: [0xff, 0xd8, 0xff] }],
   'image/png': [{ offset: 0, bytes: [0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a] }],
-  'image/gif': [{ offset: 0, bytes: [0x47, 0x49, 0x46, 0x38] }],
   'image/webp': [
     { offset: 0, bytes: [0x52, 0x49, 0x46, 0x46] }, // "RIFF"
     { offset: 8, bytes: [0x57, 0x45, 0x42, 0x50] }, // "WEBP"
@@ -62,7 +63,11 @@ export async function validateImageFile(file) {
   const mime = (file.type || '').toLowerCase();
   const allowedExts = ACCEPTED_EXTENSIONS[mime];
   if (!allowedExts) {
-    return { ok: false, error: 'Unsupported file type — use JPG, PNG, WebP, GIF or HEIC.' };
+    return {
+      ok: false,
+      error:
+        'Unsupported file type — use a JPG, PNG, WebP or HEIC photo. GIF files are not accepted.',
+    };
   }
 
   const ext = (file.name?.split('.').pop() || '').toLowerCase();

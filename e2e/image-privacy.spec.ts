@@ -258,3 +258,72 @@ test.describe('Image privacy — EXIF/device metadata stripped before upload', (
     ).toBe(0);
   });
 });
+
+test.describe('Accepted formats — GIF is rejected before upload', () => {
+  // A minimal valid GIF89a with a comment extension: the kind of file whose
+  // bytes would previously have reached storage unchanged.
+  const GIF_WITH_COMMENT = Buffer.from(
+    '474946383961010001008000000000ffffff2c00000000010001000002024401003b',
+    'hex',
+  );
+
+  test('a GIF is refused with a clear message, never uploaded, and the form keeps its data', async ({
+    page,
+  }) => {
+    test.setTimeout(30_000);
+    await mockBase44(page, { user: null, locations: {}, locationPhotos: [] });
+    let uploads = 0;
+    await page.route('**/integration-endpoints/Core/UploadFile', async (route) => {
+      uploads += 1;
+      await route.fulfill({ json: { file_url: 'https://example.com/mock-upload.jpg' } });
+    });
+
+    await fillMinimalReportFields(page);
+    await page.getByText('Enter coordinates manually').click();
+    await page.getByPlaceholder('Latitude').fill('51.50100');
+    await page.getByPlaceholder('Longitude').fill('-0.14200');
+
+    await page
+      .getByRole('button', { name: 'Upload' })
+      .locator('input[type="file"]')
+      .setInputFiles({ name: 'meme.gif', mimeType: 'image/gif', buffer: GIF_WITH_COMMENT });
+
+    await expect(page.getByText(/GIF files are not accepted/i)).toBeVisible();
+    expect(uploads, 'a GIF must never reach UploadFile').toBe(0);
+    await expect(page.getByPlaceholder('Street, district, city')).toHaveValue(
+      '900 Test Ave, Testville',
+    );
+    await expect(page.getByPlaceholder('Latitude')).toHaveValue('51.50100');
+    await expect(page.getByText(/^Replace$/i)).toHaveCount(0);
+  });
+
+  test('guidance lists the supported formats and no longer implies GIF works', async ({ page }) => {
+    await mockBase44(page, { user: null, locations: {}, locationPhotos: [] });
+    await page.goto('/report');
+    const guidance = page.getByTestId('photo-privacy-guidance');
+    await expect(guidance).toContainText('JPG, PNG, WebP or HEIC');
+    await expect(guidance).toContainText('GIF is not accepted');
+  });
+
+  test('a supported JPEG still uploads and a failed upload keeps the form data', async ({
+    page,
+  }) => {
+    test.setTimeout(30_000);
+    await mockBase44(page, { user: null, locations: {}, locationPhotos: [] });
+    let fail = true;
+    await page.route('**/integration-endpoints/Core/UploadFile', async (route) => {
+      if (fail) return route.fulfill({ status: 500, json: { error: 'x' } });
+      await route.fulfill({ json: { file_url: 'https://example.com/mock-upload.jpg' } });
+    });
+    await fillMinimalReportFields(page);
+    const input = page.getByRole('button', { name: 'Upload' }).locator('input[type="file"]');
+    await input.setInputFiles(ORIENTATION_FIXTURE);
+    await expect(page.getByText(/Photo upload failed/i)).toBeVisible();
+    await expect(page.getByPlaceholder('Street, district, city')).toHaveValue(
+      '900 Test Ave, Testville',
+    );
+    fail = false;
+    await input.setInputFiles(ORIENTATION_FIXTURE);
+    await expect(page.getByText(/Replace/i)).toBeVisible({ timeout: 10_000 });
+  });
+});

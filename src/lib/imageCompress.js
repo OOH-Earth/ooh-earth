@@ -36,10 +36,8 @@
 // doesn't add new unhandled-rejection risk (see KNOWN_ISSUES).
 //
 // Explicit limitations, not covered by the guarantee above:
-// - GIF: never re-encoded (canvas would collapse an animated GIF to one
-//   frame). GIF from real camera hardware essentially never carries EXIF —
-//   the format has no standard slot for it — so the exposure is low, but
-//   this function does not verify or strip whatever a GIF file might carry.
+// - GIF and SVG: not accepted. validateUpload.js rejects them before upload and
+//   this function throws if one reaches it, so their bytes are never forwarded.
 // - HEIC/HEIF: accepted by this app's upload validation (see
 //   validateUpload.js) because it's the default photo format on iPhones,
 //   but most non-Safari browsers cannot decode HEIC via canvas at all —
@@ -76,7 +74,10 @@ export async function compressImage(file, opts = {}) {
   if (!file || typeof file !== 'object' || !(file instanceof Blob)) return file;
   const type = file.type || '';
   if (!type.startsWith('image/')) return file;
-  if (/gif|svg/i.test(type)) return file; // don't rasterise animated / vector -- see file header
+  // GIF/SVG are not photos and are rejected by validateImageFile before upload.
+  // Fail closed if one still arrives here: re-encoding would flatten it, and
+  // forwarding it would pass its bytes (and any metadata) through unchanged.
+  if (/gif|svg/i.test(type)) throw new Error('Unsupported image type.');
 
   // From here on, every path either returns a metadata-stripped File or
   // throws -- never the original, metadata-bearing one.
