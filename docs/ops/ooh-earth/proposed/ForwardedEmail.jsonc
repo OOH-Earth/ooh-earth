@@ -1,0 +1,26 @@
+{
+  "name": "ForwardedEmail",
+  "type": "object",
+  "properties": {
+    "provider": { "type": "string", "enum": ["resend"] },
+    "provider_email_id": { "type": "string" },
+    "status": {
+      "type": "string",
+      "enum": ["received", "attempting", "accepted", "failed_retryable", "failed_permanent"]
+    },
+    "attempt_count": { "type": "number" },
+    "received_at": { "type": "number" },
+    "attempt_started_at": { "type": "number" },
+    "accepted_at": { "type": "number" },
+    "failed_at": { "type": "number" },
+    "provider_send_id": { "type": "string" },
+    "last_error_code": { "type": "string" }
+  },
+  "required": ["provider", "provider_email_id", "status"],
+  "rls": {
+    "create": { "user_condition": { "role": "admin" } },
+    "read": { "user_condition": { "role": "admin" } },
+    "update": { "user_condition": { "role": "admin" } },
+    "delete": { "user_condition": { "role": "admin" } }
+  }
+}
