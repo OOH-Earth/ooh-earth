@@ -22,6 +22,8 @@ export const FORWARD_SENDER = 'OOH Earth Research <research@oohearth.app>';
 const OWN_SENDER_ADDRESS = 'research@oohearth.app';
 const LOOP_HEADER = 'x-ooh-forwarded';
 
+const DAILY_FORWARD_CAP = 50;
+const DAY_MS = 24 * 60 * 60 * 1000;
 const MAX_WEBHOOK_BYTES = 64 * 1024;
 const MAX_BODY_CHARS = 20000;
 const MAX_SUBJECT_CHARS = 200;
@@ -109,6 +111,20 @@ export function singleAddress(value: unknown) {
   return /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(candidate) && candidate.length <= 254
     ? candidate.toLowerCase()
     : null;
+}
+
+// Fail-closed sender eligibility for the internal pilot. FORWARD_ALLOWED_SENDERS
+// is a comma-separated list of exact addresses or "@domain" entries. Unset or
+// empty means NOTHING is forwarded. The match uses the From address the sender
+// claims; it is not proof of identity (see docs/ops/ooh-earth/16-...).
+export function isEligibleSender(from: unknown, allowlist: string | undefined) {
+  const address = singleAddress(from);
+  if (!address || !allowlist) return false;
+  return allowlist
+    .split(',')
+    .map((entry) => entry.trim().toLowerCase())
+    .filter(Boolean)
+    .some((entry) => (entry.startsWith('@') ? address.endsWith(entry) : address === entry));
 }
 
 export function htmlToText(html: string) {
@@ -245,6 +261,13 @@ export async function handleForwardReceivedEmail(
 
   if (singleAddress(data.from) === OWN_SENDER_ADDRESS) return json({ status: 'ignored_loop' }, 200);
 
+  // Unlisted senders are acknowledged and dropped without a ledger row or any
+  // provider call, so abuse cannot grow storage or spend send quota.
+  if (!isEligibleSender(data.from, getEnv('FORWARD_ALLOWED_SENDERS'))) {
+    console.log(`forwardReceivedEmail ignored_unlisted id=${emailId}`);
+    return json({ status: 'ignored_unlisted' }, 200);
+  }
+
   const base44 = createClientFromRequest(req);
   const ledger = base44.asServiceRole?.entities?.ForwardedEmail;
   if (!ledger) return json({ error: 'Forwarding unavailable' }, 503);
@@ -256,6 +279,12 @@ export async function handleForwardReceivedEmail(
     if (done) return json({ status: 'duplicate' }, 200);
     if (existing.some((r: any) => r.status === 'failed_permanent'))
       return json({ status: 'failed_permanent_recorded' }, 200);
+    const recent =
+      (await ledger.filter({ status: 'accepted' }, '-created_date', DAILY_FORWARD_CAP + 1)) || [];
+    if (
+      recent.filter((r: any) => Number(r.accepted_at || 0) > t - DAY_MS).length >= DAILY_FORWARD_CAP
+    )
+      return json({ error: 'Daily forwarding cap reached' }, 503);
     const live = existing.find(
       (r: any) => r.status === 'attempting' && Number(r.attempt_started_at || 0) > t - LEASE_MS,
     );

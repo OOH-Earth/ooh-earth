@@ -3,12 +3,24 @@
 Status: **HOLD / NOT ACTIVE.** Local source + offline tests only. Nothing deployed, no secret set, no webhook created, no email sent.
 Date: 2026-10-22. Branch `feat/inbound-email-forward` (base: maintenance/production-2026-10-02 @ 6ce2010).
 
-## Baseline finding
-The brief described `base44/functions/forwardReceivedEmail/entry.ts` and a `ForwardedEmail` entity as existing. **Neither exists** in any local worktree, branch or git history (searched all refs and sibling worktrees). If a version exists inside Base44's stored code, it was not in GitHub and is unreviewed; this implementation is new and should replace it. Verify with `base44 functions` listing before deploying so a stored version is not silently overwritten or duplicated.
+## Production baseline (read-only, 2026-10-22) and reconciliation plan
+Evidence (all read-only CLI calls against the real apps):
+- `functions list`: production `6a62213cff3ccbca88c04ff5` has 39 deployed functions and **no `forwardReceivedEmail`**; BACKUP `6a6748e009b947cb29591871` has 38, also none.
+- Git: no function source or history anywhere (all refs and sibling worktrees).
+- `secrets list` (names only): production `OOH_EARTH_ENVIRONMENT, BASE44_RELEASE_ID, INVESTOR_TOKEN_SECRET, INVESTOR_ACCESS_CODE`; BACKUP `OOH_EARTH_ENVIRONMENT, BASE44_RELEASE_ID, N8N_WEBHOOK_URL, STRIPE_PUBLISHABLE_KEY`. **No `RESEND_*` secret on either.**
+- Entity: `ForwardedEmail.list()` on production **succeeds with 0 rows — the entity already exists in production** with an unknown schema (not in git, not in `base44/entities/`). On BACKUP: "Entity schema ForwardedEmail not found".
+- Not checked: whether a Resend webhook already exists (needs the Resend account), and the exact production entity schema/RLS (no read-only CLI for it).
+
+Conclusion: no runtime function exists, but a schema was created out-of-band in production. Reconciliation plan before anything is pushed:
+1. Owner views the production `ForwardedEmail` schema and RLS in the Base44 dashboard and pastes it into this doc.
+2. If its fields differ from `proposed/ForwardedEmail.jsonc`, either adapt the proposed schema/handler to the existing fields (preferred, avoids a schema change) or approve an explicit change. A blind `entities push` could overwrite it.
+3. Confirm RLS is admin-only for all four operations; fix if not (public read of this ledger would leak ids/timestamps).
+4. Only then add the reconciled `.jsonc` to `base44/entities/`, update the approved manifests, and run the BACKUP qualification.
+PR base for this branch: it is backend-only and must not ride the frontend release. Recommended base **`main`** (normal development line) after David's explicit instruction, with a separate BACKUP-first functions-only deploy; opening it against the production maintenance branch is not recommended. No PR is opened yet.
 
 ## What was built (files)
 - `base44/functions/forwardReceivedEmail/handler.ts`, `entry.ts` (SDK pin `npm:@base44/sdk@0.8.54`, as reported; stripeWebhook uses 0.8.40 — confirm the pin exists in the runtime before deploy).
-- `base44/functions/tests/forwardReceivedEmail.test.ts` (13 tests; added to `npm run test:server-functions`).
+- `base44/functions/tests/forwardReceivedEmail.test.ts` (16 tests; added to `npm run test:server-functions`).
 - `docs/ops/ooh-earth/proposed/ForwardedEmail.jsonc` — proposed ledger schema, **deliberately outside `base44/entities/`** because a new entity is a schema change that fails `scripts/base44-entity-preflight` until the approved manifests are updated (separate gate). Without the entity the function fails closed (503 "Forwarding unavailable").
 
 ## Evidence for the provider contract (fetched 2026-10-22)
@@ -32,7 +44,8 @@ The brief described `base44/functions/forwardReceivedEmail/entry.ts` and a `Forw
 | Payload bound 64 KB; body 20k chars; subject 200 | tested |
 | No historical replay: events older than 72 h ignored | tested |
 | Logs contain only email id + error code, never addresses/subject/body | review |
-| Eligible-sender / spam policy | **NOT IMPLEMENTED — decision needed.** Today any sender who can reach the mailbox is forwarded (rate = Resend's inbound limits + 10 req/s send limit). Options: allowlist, subject/DMARC gate, daily cap with a counter row. |
+| Sender eligibility: fail closed. `FORWARD_ALLOWED_SENDERS` (exact addresses or `@domain`) must be set; unset/empty/unlisted senders are acknowledged and dropped with no ledger row and no provider call | tested (3 tests) |
+| Daily cap: 50 forwards per rolling 24 h, then 503 (provider retries later) | tested |
 
 ## Delivery correctness — honest limits
 States recorded: received/attempting → accepted | failed_retryable | failed_permanent. **"accepted" = Resend accepted the send, not delivered.** A `delivered` state needs a second subscription (`email.delivered`/`email.bounced` on the sent mail) and is **not built**; until then confirm delivery by `GET /emails/{provider_send_id}` (`last_event`) or in David's inbox.
@@ -51,6 +64,28 @@ States recorded: received/attempting → accepted | failed_retryable | failed_pe
 6. **Webhook:** list existing Resend webhooks first; reuse a correct `email.received` one or create exactly one pointing at the verified URL; no other event types.
 7. **One synthetic test** from an owner-controlled external address to `research@reply.oohearth.app`, harmless text, no attachment. Expect: one ledger row `accepted`, one email at david@ooh.earth with banner + reply-to, Resend send id shows `delivered`. Resend the same webhook from the dashboard → ledger `duplicate`, no second email.
 8. **Disable/rollback:** delete or disable the Resend webhook (stops all traffic); remove the function; rotate `RESEND_WEBHOOK_SECRET` and `RESEND_API_KEY`; ledger rows may stay (admin-only).
+
+## Sender policy choices for David (the allowlist is only the pilot default)
+| Option | Behaviour | Risk |
+|---|---|---|
+| A. Allowlist pilot (built) | Only listed addresses/domains forward; everything else is dropped silently | New legitimate correspondents are **not** forwarded; the sender sees no error — acceptable only for the internal pilot |
+| B. Open with controls | Forward anyone, with daily cap, untrusted banner, and a DMARC/auth check (needs the provider's authentication result, unverified) | Spam/abuse reaches David; cost bounded only by the cap |
+| C. Allowlist + review digest | A, plus a daily count of dropped senders (no content stored) so David can add legitimate ones | Needs a small counter row/schema addition |
+The allowlist matches the *claimed* From address; it is not proof of identity.
+
+## Retention, privilege and logging
+- Ledger holds ids, timestamps, status, provider send id, error code only; delete rows older than 90 days (manual or scheduled; the scheduler is not built).
+- Entity RLS admin-only (create/read/update/delete); the function uses `asServiceRole`. The Resend API key should be the narrowest key that can send and read received mail (key scoping options unverified).
+- Logs: email id + error code only.
+- Disable fast: delete the Resend webhook, or empty `FORWARD_ALLOWED_SENDERS` (fails closed immediately).
+
+## Integration approval package (nothing below is done)
+1. Reconciled schema (step 3 above) — schema gate.
+2. Functions-only BACKUP deploy of `forwardReceivedEmail` — deploy gate.
+3. Secrets, entered by the key owner: `RESEND_API_KEY`, `RESEND_WEBHOOK_SECRET`, `FORWARD_ALLOWED_SENDERS` (pilot list) — secret gate.
+4. List existing Resend webhooks; reuse or create exactly one `email.received` webhook at the verified URL — webhook gate.
+5. One synthetic test from a listed address; verify ledger, single delivery, duplicate replay → no second email, then the 24-hour idempotency limit stated — test gate.
+6. Production repeat of 2–5 only after BACKUP passes.
 
 Concrete approval needed: **(a)** target branch for the PR, **(b)** schema change, **(c)** sender-eligibility policy, **(d)** David/key owner to provision the two secrets and run the single synthetic test.
 

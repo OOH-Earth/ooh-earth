@@ -2,6 +2,7 @@ import {
   buildForward,
   handleForwardReceivedEmail,
   htmlToText,
+  isEligibleSender,
   singleAddress,
   verifyWebhookSignature,
 } from '../forwardReceivedEmail/handler.ts';
@@ -67,7 +68,7 @@ function harness(opts: { receiving?: any; sendStatus?: number; seed?: any[]; env
   let n = 0;
   const calls: { url: string; init: any }[] = [];
   const ledger = {
-    filter: async (q: any) => rows.filter((r) => r.provider_email_id === q.provider_email_id),
+    filter: async (q: any) => rows.filter((r) => Object.entries(q).every(([k, v]) => r[k] === v)),
     create: async (r: any) => {
       const row = { id: `r${++n}`, created_date: n, ...r };
       rows.push(row);
@@ -101,6 +102,7 @@ function harness(opts: { receiving?: any; sendStatus?: number; seed?: any[]; env
   const env: Record<string, string> = {
     RESEND_WEBHOOK_SECRET: SECRET,
     RESEND_API_KEY: 're_test',
+    FORWARD_ALLOWED_SENDERS: '@example.org',
     ...opts.env,
   };
   return {
@@ -344,4 +346,42 @@ Deno.test('oversized webhook rejected before verification work', async () => {
     h.deps,
   );
   eq(res.status, 413, 'too large');
+});
+
+Deno.test(
+  'sender eligibility fails closed: unset/empty/unlisted senders are dropped with no ledger row or provider call',
+  async () => {
+    for (const env of [
+      { FORWARD_ALLOWED_SENDERS: '' },
+      { FORWARD_ALLOWED_SENDERS: '@other.test, bob@example.org' },
+    ]) {
+      const h = harness({ env });
+      const res = await handleForwardReceivedEmail(await signedRequest(eventBody()), h.deps);
+      eq((await res.json()).status, 'ignored_unlisted', 'unlisted');
+      eq(h.calls.length, 0, 'no provider calls');
+      eq(h.rows.length, 0, 'no ledger row');
+    }
+  },
+);
+
+Deno.test('eligibility matching: exact address or @domain only', () => {
+  assert(isEligibleSender('A <alice@example.org>', 'alice@example.org'), 'exact');
+  assert(isEligibleSender('alice@example.org', ' @example.org '), 'domain');
+  assert(!isEligibleSender('alice@evil-example.org', '@example.org'), 'suffix trick');
+  assert(!isEligibleSender('alice@example.org', ''), 'empty list');
+  assert(!isEligibleSender('alice@example.org', undefined), 'unset list');
+  assert(!isEligibleSender('a@b.co, c@example.org', '@example.org'), 'multiple addresses rejected');
+});
+
+Deno.test('daily forwarding cap stops sending and asks the provider to retry', async () => {
+  const seed = Array.from({ length: 50 }, (_, i) => ({
+    id: `s${i}`,
+    provider_email_id: `old-${i}`,
+    status: 'accepted',
+    accepted_at: NOW - 60_000,
+  }));
+  const h = harness({ seed });
+  const res = await handleForwardReceivedEmail(await signedRequest(eventBody()), h.deps);
+  eq(res.status, 503, 'cap');
+  assert(!h.calls.some((c) => c.url.endsWith('/emails')), 'nothing sent');
 });
