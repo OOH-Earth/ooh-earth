@@ -94,5 +94,28 @@ export async function validateImageFile(file) {
     }
   }
 
+  // HEIC/HEIF can only be re-encoded (which is what strips its metadata) where the
+  // browser can decode it. Say so before upload instead of failing later with a
+  // generic "upload failed" that retrying cannot fix.
+  if (mime === 'image/heic' || mime === 'image/heif') {
+    let decodable = false;
+    try {
+      if (typeof createImageBitmap === 'function') {
+        const bitmap = await createImageBitmap(file);
+        bitmap.close?.();
+        decodable = true;
+      }
+    } catch {
+      decodable = false;
+    }
+    if (!decodable) {
+      return {
+        ok: false,
+        error:
+          "This browser can't read HEIC photos. Use a JPG, PNG or WebP photo, or set your camera to its most compatible format.",
+      };
+    }
+  }
+
   return { ok: true, error: null };
 }

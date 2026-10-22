@@ -326,4 +326,52 @@ test.describe('Accepted formats — GIF is rejected before upload', () => {
     await input.setInputFiles(ORIENTATION_FIXTURE);
     await expect(page.getByText(/Replace/i)).toBeVisible({ timeout: 10_000 });
   });
+
+  test('an undecodable HEIC is refused before upload with a clear message, form data kept', async ({
+    page,
+    browserName,
+  }) => {
+    test.skip(
+      browserName === 'webkit',
+      'Safari can decode HEIC; this asserts the non-decoding path',
+    );
+    await mockBase44(page, { user: null, locations: {}, locationPhotos: [] });
+    let uploads = 0;
+    await page.route('**/integration-endpoints/Core/UploadFile', async (route) => {
+      uploads += 1;
+      await route.fulfill({ json: { file_url: 'https://example.com/mock-upload.jpg' } });
+    });
+    await fillMinimalReportFields(page);
+    // ISO-BMFF "ftypheic" header only: a HEIC by label that no browser here can decode.
+    const fakeHeic = Buffer.from(
+      '000000186674797068656963000000006d696631686569630000000000',
+      'hex',
+    );
+    await page
+      .getByRole('button', { name: 'Upload' })
+      .locator('input[type="file"]')
+      .setInputFiles({ name: 'IMG_0001.heic', mimeType: 'image/heic', buffer: fakeHeic });
+    await expect(page.getByText(/can't read HEIC photos/i)).toBeVisible();
+    expect(uploads, 'an undecodable HEIC must never reach UploadFile').toBe(0);
+    await expect(page.getByPlaceholder('Street, district, city')).toHaveValue(
+      '900 Test Ave, Testville',
+    );
+  });
+
+  test('a supported JPEG shows a preview and sends exactly one upload', async ({ page }) => {
+    test.setTimeout(30_000);
+    await mockBase44(page, { user: null, locations: {}, locationPhotos: [] });
+    let uploads = 0;
+    await page.route('**/integration-endpoints/Core/UploadFile', async (route) => {
+      uploads += 1;
+      await route.fulfill({ json: { file_url: 'https://example.com/mock-upload.jpg' } });
+    });
+    await fillMinimalReportFields(page);
+    await page
+      .getByRole('button', { name: 'Upload' })
+      .locator('input[type="file"]')
+      .setInputFiles(ORIENTATION_FIXTURE);
+    await expect(page.getByText(/Replace/i)).toBeVisible({ timeout: 10_000 });
+    expect(uploads).toBe(1);
+  });
 });
