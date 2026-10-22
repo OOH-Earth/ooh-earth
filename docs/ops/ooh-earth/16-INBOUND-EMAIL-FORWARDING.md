@@ -45,7 +45,7 @@ PR base for this branch: it is backend-only and must not ride the frontend relea
 | No historical replay: events older than 72 h ignored | tested |
 | Logs contain only email id + error code, never addresses/subject/body | review |
 | Sender eligibility: fail closed. `FORWARD_ALLOWED_SENDERS` (exact addresses or `@domain`) must be set; unset/empty/unlisted senders are acknowledged and dropped with no ledger row and no provider call | tested (3 tests) |
-| Daily cap: 50 forwards per rolling 24 h, then 503 (provider retries later) | tested |
+| Daily cap: 50 forwards per rolling 24 h, then 503 (provider retries later) | tested sequentially only. **Not a strict limit:** the count is read-then-send with no atomic counter, so concurrent webhooks can overshoot it; treat it as a cost brake, not a guarantee |
 
 ## Delivery correctness — honest limits
 States recorded: received/attempting → accepted | failed_retryable | failed_permanent. **"accepted" = Resend accepted the send, not delivered.** A `delivered` state needs a second subscription (`email.delivered`/`email.bounced` on the sent mail) and is **not built**; until then confirm delivery by `GET /emails/{provider_send_id}` (`last_event`) or in David's inbox.
@@ -86,6 +86,8 @@ The allowlist matches the *claimed* From address; it is not proof of identity.
 4. List existing Resend webhooks; reuse or create exactly one `email.received` webhook at the verified URL — webhook gate.
 5. One synthetic test from a listed address; verify ledger, single delivery, duplicate replay → no second email, then the 24-hour idempotency limit stated — test gate.
 6. Production repeat of 2–5 only after BACKUP passes.
+
+David's sender-policy answer: **not yet supplied** (record here when given). The allowlist pilot stays inactive until schema reconciliation, secret provisioning, webhook setup and an authorized test are complete. The existing production `ForwardedEmail` entity and data must not be overwritten (no blind `entities push`).
 
 Concrete approval needed: **(a)** target branch for the PR, **(b)** schema change, **(c)** sender-eligibility policy, **(d)** David/key owner to provision the two secrets and run the single synthetic test.
 
