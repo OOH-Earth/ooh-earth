@@ -309,7 +309,7 @@ export default function HeroConsole() {
       {/* Actions */}
       <div className="col-span-2 flex items-center justify-between gap-2 border border-border bg-card px-3 py-2 rounded-xl">
         <span className="font-mono text-[9px] leading-[1.3] text-muted-foreground">
-          Union-made by veterans &amp; street artists.
+          Open-source adbusting maps.
         </span>
         <div className="flex gap-1.5">
           <button

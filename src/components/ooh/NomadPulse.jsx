@@ -112,7 +112,7 @@ export default function NomadPulse({ compact = false }) {
         <div className="flex items-center gap-3 font-mono text-[9px] uppercase tracking-[0.2em] text-darkgray">
           <span className="hidden sm:inline">snapshot · {NOMAD_CAPTURED}</span>
           <span className="flex items-center gap-1 border border-ozone/50 px-2 py-0.5 text-ozone">
-            <Globe2 className="h-3 w-3" /> Web7 · sovereign
+            <Globe2 className="h-3 w-3" /> Third-party snapshot
           </span>
         </div>
       </div>

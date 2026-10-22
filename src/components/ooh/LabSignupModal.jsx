@@ -83,7 +83,6 @@ export default function LabSignupModal({ open, action, onClose }) {
               </p>
               <p className="mt-2 font-mono text-[11px] leading-relaxed text-silver/45">
                 Registered members can mint, export, claim field leads, and join the DAO.
-                Union-made, aligned to the UN SDGs.
               </p>
 
               <div className="mt-6 flex flex-col gap-2.5">
