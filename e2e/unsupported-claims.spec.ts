@@ -35,7 +35,10 @@ test.describe('unsupported public claims stay removed', () => {
     test(`${route} has none of the retired claims`, async ({ page }) => {
       await mockBase44(page, { user: null, locations: {} });
       await page.goto(route);
-      await page.waitForLoadState('networkidle');
+      await page.waitForLoadState('load');
+      // These pages poll or animate indefinitely, so networkidle never settles; give lazy
+      // sections a fixed moment to render before reading the text.
+      await page.waitForTimeout(2500);
       const text = await page.evaluate(() => document.body.innerText);
       for (const pattern of FORBIDDEN) expect(text).not.toMatch(pattern);
     });
