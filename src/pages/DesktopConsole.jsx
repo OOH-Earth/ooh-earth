@@ -34,7 +34,7 @@ const QUEUE = [
 
 const SPECS = [
   ['Runtime', 'Tauri · Rust core'],
-  ['Sync', 'Offline-first · Web7'],
+  ['Sync', 'Offline-first'],
   ['Bulk', 'CSV / KML / GeoJSON'],
   ['Export', 'PDF · PNG · GeoJSON'],
   ['Auth', 'Wallet + SE bridge'],
@@ -158,7 +158,7 @@ export default function DesktopConsole() {
           <p className="mt-4 font-mono text-[11px] leading-relaxed text-silver/50">
             A thick-client for field ops: moderate submissions in bulk, import KML/CSV spot data,
             watch the treasury, and overlay the offense map on a big screen. Offline-first — caches
-            every report and syncs over Web7 on reconnect.
+            every report and syncs on reconnect.
           </p>
         </div>
 

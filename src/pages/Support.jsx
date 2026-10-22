@@ -46,8 +46,8 @@ export default function Support() {
               Help &amp; <span className="text-ozone">funding</span>
             </h1>
             <p className="mt-4 max-w-xl font-display text-sm leading-[1.5] text-darkgray md:text-base">
-              Get answers, reach the agency, or back the offensive. OOH Earth is open-source,
-              union-made, and community-funded — every transmission counts.
+              Get answers, reach the agency, or back the offensive. OOH Earth is open-source and
+              community-funded.
             </p>
           </div>
         </section>

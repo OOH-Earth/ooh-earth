@@ -185,7 +185,7 @@ export default function SmartDashboard({ open, onClose }) {
             <div className="flex items-center justify-between border-t border-slate2/60 px-5 py-3">
               <CopyleftLogo className="h-4 w-4 text-dim" />
               <span className="font-mono text-[8px] uppercase tracking-[0.25em] text-dim">
-                open-source · union-made
+                open-source
               </span>
             </div>
           </motion.aside>

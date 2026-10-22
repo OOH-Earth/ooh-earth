@@ -31,11 +31,10 @@ export default function Contact() {
                 // Contact
               </span>
               <h1 className="mt-3 font-display text-4xl font-bold leading-[1.04] tracking-[-0.02em] text-silver md:text-6xl">
-                Get in touch with the movement
+                Get in touch
               </h1>
               <p className="mt-5 max-w-xl font-display text-sm font-normal leading-[1.5] text-darkgray md:text-base">
-                Reach out to join, collaborate, report a billboard, or support the work. We read
-                every message — union-made, community-funded.
+                Reach out to join, collaborate, report a billboard, or support the work.
               </p>
             </div>
           </div>

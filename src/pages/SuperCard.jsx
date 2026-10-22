@@ -32,7 +32,7 @@ const FEATURES = [
   {
     icon: Scale,
     title: 'Legal Standing',
-    body: "References UN SDG 11.7 and A/69/286 — internationally recognised frameworks for public space access and cultural rights. You're exercising documented rights.",
+    body: 'Documents what you saw, where and when, as a dated record for review. It is not legal advice and does not by itself grant permission or protection.',
   },
 ];
 
@@ -86,9 +86,8 @@ export default function SuperCard() {
                 union card
               </h1>
               <p className="mt-5 max-w-md font-body text-sm leading-[1.6] text-darkgray">
-                The OOH Earth Field Card identifies you as a registered member in the global network
-                documenting corporate advertising harm. Your access credential, your site-tagging
-                tool, your proof of standing under UN SDG 11.7.
+                The OOH Earth Field Card identifies you as a registered OOH Earth contributor. It is
+                an access credential and a site-tagging tool.
               </p>
               <div className="mt-7 flex flex-wrap items-center gap-3">
                 <Link

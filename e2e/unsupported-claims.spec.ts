@@ -9,10 +9,29 @@ const FORBIDDEN = [
   /union-made by veterans/i,
   /aligned to (the )?UN SDGs/i,
   /Web7 · sovereign/i,
+  /union[- ]made/i,
+  /UN SDG 11\.7/i,
+  /Get in touch with the movement/i,
+  /full-service agency studio/i,
+  /proof of standing/i,
 ];
 
 test.describe('unsupported public claims stay removed', () => {
-  for (const route of ['/', '/about', '/contact', '/report']) {
+  for (const route of [
+    '/',
+    '/about',
+    '/contact',
+    '/report',
+    '/support',
+    '/guides',
+    '/campaign',
+    '/card',
+    '/channel',
+    '/lab/coin',
+    '/lab/devices/desktop',
+    '/brand',
+    '/console',
+  ]) {
     test(`${route} has none of the retired claims`, async ({ page }) => {
       await mockBase44(page, { user: null, locations: {} });
       await page.goto(route);

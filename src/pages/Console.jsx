@@ -147,10 +147,8 @@ export default function Console() {
             Public space isn't <em>blank space.</em>
           </h1>
           <p className="ic-lede">
-            OOH Earth is a community-funded civic institution documenting the outdoor advertising
-            the public never agreed to — and arming communities with the evidence to push back. A
-            live platform, a 14-entity ecosystem and a full-service agency studio, aligned to UN SDG
-            11.7, 12.8, 16.7 &amp; 17.
+            OOH Earth is an open-source, community-funded platform for documenting outdoor
+            advertising and supporting community-led adbusting.
           </p>
 
           <div className="ic-askrow">

@@ -96,8 +96,6 @@ export default function Mandate() {
           </div>
           <p className="max-w-sm font-display text-sm font-normal leading-[1.4] text-darkgray">
             OOH operates as a community-funded app reclaiming public space from corporate occupation
-            — aligned to the UN Sustainable Development Goals and accountable to the communities it
-            serves.
           </p>
         </div>
 

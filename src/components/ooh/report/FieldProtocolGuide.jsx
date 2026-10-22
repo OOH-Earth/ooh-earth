@@ -188,7 +188,7 @@ export default function FieldProtocolGuide() {
           {/* Manual footer */}
           <div className="flex items-center justify-between border-t border-slate2/60 bg-void px-4 py-2.5">
             <span className="font-mono text-[8px] uppercase tracking-[0.2em] text-dim">
-              OOH Earth · Field Protocol v01 · Union Made
+              OOH Earth · Field Protocol v01
             </span>
             <button
               type="button"

@@ -55,7 +55,7 @@ export default function NfcFieldCard({ handle = 'operative', memberId = 'OOH-000
       </div>
 
       <div className="absolute bottom-[10px] left-3 font-mono text-[8px] leading-tight text-dim">
-        <div>UN SDG 11.7 · A/69/286</div>
+        <div>OOH Earth field card</div>
         <div className="text-silver/70">{memberId}</div>
       </div>
     </div>

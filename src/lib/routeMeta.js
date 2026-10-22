@@ -326,7 +326,7 @@ export const META = {
   },
   '/contact': {
     title: 'Contact — OOH Earth',
-    desc: 'Get in touch with the movement — join, collaborate, report a billboard, or support the work.',
+    desc: 'Get in touch with OOH Earth — join, collaborate, report a billboard, or support the work.',
     image: OG_IMAGES.default,
   },
   '/graffiti': {

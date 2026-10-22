@@ -69,10 +69,10 @@ export default function FieldWorkflow() {
       <div className="mx-auto max-w-7xl px-4 py-20 md:px-8 md:py-28">
         <Reveal>
           <span className="font-mono text-[10px] font-bold uppercase tracking-[0.3em] text-ozone">
-            // union made by subvertisers & advertising industry war veterans
+            // how it works
           </span>
           <h2 className="mt-4 max-w-3xl font-display text-3xl font-bold leading-[1.02] tracking-[-0.02em] text-silver md:text-5xl">
-            Join a global network documenting corporate visual pollution.
+            Document corporate visual pollution where you live.
           </h2>
           <p className="mt-5 max-w-2xl font-display text-base leading-relaxed text-darkgray">
             Every pin on the map is data the advertising industry doesn't want public. Every upload
