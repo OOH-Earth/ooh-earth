@@ -1,15 +1,6 @@
 import { useEffect, useState } from 'react';
 import { base44 } from '@/api/base44Client';
-import {
-  Zap,
-  MapPin,
-  BadgeCheck,
-  Users,
-  Building2,
-  Monitor,
-  Flag,
-  Globe2,
-} from 'lucide-react';
+import { Zap, MapPin, BadgeCheck, Users, Building2, Monitor, Flag, Globe2 } from 'lucide-react';
 import { MOVEMENT, PLATFORM_STATUS, MOVEMENT_NOTE, fmtK } from '@/components/ooh/movementEstimate';
 
 // Live streaming "Field Pulse" strip for the orbital HUD. Two clearly-separated

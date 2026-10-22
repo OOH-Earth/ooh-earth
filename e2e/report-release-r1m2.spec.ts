@@ -76,6 +76,9 @@ test.describe('short landscape and keyboard behaviour on /report', () => {
   test('keyboard users can reach the photo controls', async ({ page }) => {
     await mockBase44(page, { user: null, locations: {} });
     await page.goto('/report');
+    // Tab order is only meaningful once the lazy-loaded form has settled.
+    await expect(page.getByTestId('photo-privacy-guidance')).toBeVisible();
+    await page.waitForLoadState('networkidle');
     let reached = false;
     for (let i = 0; i < 80 && !reached; i++) {
       await page.keyboard.press('Tab');
