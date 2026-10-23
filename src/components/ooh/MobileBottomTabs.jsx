@@ -43,7 +43,7 @@ export default function MobileBottomTabs() {
         key={to}
         onClick={() => navigate(to)}
         aria-label={label}
-        className="relative flex h-11 w-11 items-center justify-center"
+        className="relative flex h-11 w-11 min-w-0 shrink items-center justify-center"
         style={{ WebkitTapHighlightColor: 'transparent' }}
       >
         <motion.div
@@ -70,7 +70,7 @@ export default function MobileBottomTabs() {
           key={to}
           onClick={() => navigate(to)}
           aria-label={label}
-          className="relative flex h-12 w-12 items-center justify-center"
+          className="relative flex h-12 w-12 min-w-0 shrink items-center justify-center"
           style={{ WebkitTapHighlightColor: 'transparent' }}
         >
           <motion.div
@@ -94,7 +94,7 @@ export default function MobileBottomTabs() {
         key={to}
         onClick={() => navigate(to)}
         aria-label={label}
-        className="relative flex h-11 w-11 items-center justify-center"
+        className="relative flex h-11 w-11 min-w-0 shrink items-center justify-center"
         style={{ WebkitTapHighlightColor: 'transparent' }}
       >
         {isActive && (
@@ -128,7 +128,7 @@ export default function MobileBottomTabs() {
       style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 10px)' }}
       aria-label="Mobile navigation"
     >
-      <div className="ooh-mobile-nav flex items-center gap-1 rounded-full border border-border bg-card px-2 py-2 shadow-[0_8px_32px_rgba(0,0,0,0.5)] backdrop-blur-xl">
+      <div className="ooh-mobile-nav flex max-w-[calc(100vw-16px)] items-center gap-1 max-[359px]:gap-0.5 max-[359px]:px-1.5 rounded-full border border-border bg-card px-2 py-2 shadow-[0_8px_32px_rgba(0,0,0,0.5)] backdrop-blur-xl">
         {/* Home → Map → Report → Channel */}
         {TABS.map((t, i) => renderTab(t, i))}
         {/* Divider */}

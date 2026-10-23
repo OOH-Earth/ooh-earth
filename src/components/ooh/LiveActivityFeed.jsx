@@ -107,8 +107,13 @@ export default function LiveActivityFeed() {
           Live feed
         </span>
         <span className="h-px min-w-0 flex-1 bg-slate2/50" />
-        <span className="shrink-0 whitespace-nowrap font-mono text-[9px] uppercase tracking-[0.25em] text-ozone">
-          ON AIR
+        {/* "ON AIR" only while an event is actually showing; otherwise neutral. The subscription
+            (auth-gated) is unchanged — anonymous sessions never receive events. */}
+        <span
+          data-testid="live-activity-feed-state"
+          className={`shrink-0 whitespace-nowrap font-mono text-[9px] uppercase tracking-[0.25em] ${events.length > 0 ? 'text-ozone' : 'text-silver/60'}`}
+        >
+          {events.length > 0 ? 'ON AIR' : 'Standby'}
         </span>
       </div>
       <AnimatePresence initial={false}>
