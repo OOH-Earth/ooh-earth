@@ -163,7 +163,7 @@ export default function GlobeHud({ map }) {
   const overWHO = pm ? pm.filter((p) => p.v != null && p.v > WHO_PM25).length : 0;
 
   return (
-    <div className="pointer-events-none absolute inset-0 z-[900] select-none font-mono text-[10px] uppercase tracking-[0.18em] text-silver/70">
+    <div className="pointer-events-none absolute inset-0 z-[900] select-none font-mono [container-type:size] text-[10px] uppercase tracking-[0.18em] text-silver/70">
       {/* viewfinder corner brackets */}
       <span className="absolute left-2 top-2 h-3 w-3 border-l border-t border-ozone/60" />
       <span className="absolute right-2 top-2 h-3 w-3 border-r border-t border-ozone/60" />
@@ -171,7 +171,7 @@ export default function GlobeHud({ map }) {
       <span className="absolute bottom-2 right-2 h-3 w-3 border-r border-b border-ozone/60" />
 
       {/* TL: mission header + clock */}
-      <div className="absolute left-3 top-16 max-w-[230px]">
+      <div className="absolute left-3 top-[calc(var(--map-overlay-bottom,3.5rem)+0.5rem)] max-w-[230px] [[data-map-room]_&]:max-md:hidden [[data-map-room=none]_&]:hidden">
         <div className="flex items-center gap-1.5 text-ozone">
           <span className="h-1.5 w-1.5 animate-blink rounded-full bg-flare" />
           <span className="text-glow-ozone">OOH · ORBITAL TELEMETRY</span>
@@ -180,7 +180,7 @@ export default function GlobeHud({ map }) {
           UTC {clock || '--:--:--'} · T+{elapsed}
         </div>
         <div className="mt-0.5 text-dim">SIG ▮▮▮▯ · DATALINK OPEN</div>
-        <div className="mt-2 flex items-center gap-2 border-t border-slate2/40 pt-2">
+        <div className="mt-2 flex items-center gap-2 border-t border-slate2/40 pt-2 [[data-map-room]_&]:[@media(max-height:700px)]:hidden [[data-map-room=tight]_&]:hidden">
           <MoonGlyph phase={moon.phase} />
           <div>
             <div className="text-ozone">{moon.name}</div>
@@ -194,7 +194,7 @@ export default function GlobeHud({ map }) {
       {/* TC: telemetry strip */}
       <div
         data-tour="hud-tel"
-        className="absolute left-1/2 top-12 hidden -translate-x-1/2 lg:block"
+        className="absolute left-1/2 top-[calc(var(--map-overlay-bottom,2.5rem)+0.5rem)] hidden -translate-x-1/2 lg:block [[data-map-room]_&]:[@container(max-width:59.99rem)]:hidden"
       >
         <div className="flex gap-4 border border-slate2/70 bg-void/70 px-3 py-1.5 backdrop-blur-md">
           <span className="text-dim">
@@ -222,7 +222,7 @@ export default function GlobeHud({ map }) {
       {showAir ? (
         <div
           data-tour="hud-pm25"
-          className="pointer-events-auto absolute right-3 top-16 hidden w-[230px] md:block"
+          className="pointer-events-auto absolute right-3 top-[calc(var(--map-overlay-right-bottom,3.5rem)+0.5rem)] hidden w-[230px] md:block [[data-map-room]_&]:[@container(max-width:43.99rem)]:hidden [[data-map-room]_&]:[@container(max-height:19.99rem)]:hidden"
         >
           <div className="border border-slate2/70 bg-void/70 backdrop-blur-md">
             <div className="flex items-center justify-between border-b border-slate2/60 px-3 py-1.5">
@@ -244,7 +244,14 @@ export default function GlobeHud({ map }) {
                 <span className="text-flare">{overWHO} OVER</span>
               </div>
             </div>
-            <div className="max-h-[210px] overflow-y-auto px-3 pb-2">
+            <div
+              // --map-overlay-right-bottom is only set by the /map frame; the -100rem fallback keeps the
+              // old 210px cap everywhere else (Home globe, PortalShell).
+              tabIndex={0}
+              role="region"
+              aria-label="Air commons stations"
+              className="max-h-[clamp(3rem,calc(100cqh-var(--map-overlay-right-bottom,-100rem)-16rem),210px)] overflow-y-auto px-3 pb-2"
+            >
               {pm === null ? (
                 <div className="py-2 text-dim">// acquiring air data…</div>
               ) : (
@@ -273,7 +280,7 @@ export default function GlobeHud({ map }) {
       ) : (
         <button
           onClick={() => setShowAir(true)}
-          className="pointer-events-auto absolute right-3 top-16 hidden border border-slate2/70 bg-void/70 px-2.5 py-1.5 text-ozone backdrop-blur-md transition-colors hover:border-ozone md:block"
+          className="pointer-events-auto absolute right-3 top-[calc(var(--map-overlay-right-bottom,3.5rem)+0.5rem)] hidden border border-slate2/70 bg-void/70 px-2.5 py-1.5 text-ozone backdrop-blur-md transition-colors hover:border-ozone md:block [[data-map-room]_&]:[@container(max-width:43.99rem)]:hidden [[data-map-room]_&]:[@container(max-height:19.99rem)]:hidden"
         >
           AIR
         </button>

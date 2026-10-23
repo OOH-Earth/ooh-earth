@@ -243,6 +243,61 @@ export default function Map() {
     return () => mq.removeEventListener('change', update);
   }, []);
 
+  // Publishes the overlay frame's measurements on the map box so layers that cannot know them
+  // (GlobeHud, the frame's own max-height) never guess an offset:
+  //   --map-overlay-bottom        bottom edge of the whole frame
+  //   --map-overlay-right-bottom  bottom edge of the action toolbar
+  //   --map-sheet-overlap         how far the fixed mobile bottom sheet covers the map box
+  //   data-map-room               full | tight | none -- space left under the frame for the HUD
+  // Re-measured whenever the frame, the box or the sheet resizes (expanded filters, wrapped
+  // toolbar, larger text, sheet snap).
+  const overlayRef = useRef(null);
+  const overlayCleanupRef = useRef(null);
+  const measureOverlay = useCallback(() => {
+    const frame = overlayRef.current;
+    const box = frame?.parentElement;
+    if (!frame || !box) return;
+    const boxRect = box.getBoundingClientRect();
+    const edge = (el) => `${Math.ceil(el.getBoundingClientRect().bottom - boxRect.top)}px`;
+    const toolbar = frame.querySelector('[data-map-toolbar]');
+    const sheet = document.querySelector('.ooh-bottom-sheet');
+    const overlap =
+      sheet && getComputedStyle(sheet).display !== 'none'
+        ? Math.max(0, Math.ceil(boxRect.bottom - sheet.getBoundingClientRect().top))
+        : 0;
+    box.style.setProperty('--map-overlay-bottom', edge(frame));
+    box.style.setProperty('--map-overlay-right-bottom', edge(toolbar || frame));
+    box.style.setProperty('--map-sheet-overlap', `${overlap}px`);
+    const room = boxRect.height - overlap - (frame.getBoundingClientRect().bottom - boxRect.top);
+    box.dataset.mapRoom = room >= 130 ? 'full' : room >= 80 ? 'tight' : 'none';
+  }, []);
+  const overlayCallbackRef = useCallback(
+    (frame) => {
+      overlayCleanupRef.current?.();
+      overlayCleanupRef.current = null;
+      overlayRef.current = frame;
+      if (!frame) return;
+      measureOverlay();
+      if (typeof ResizeObserver === 'undefined') return;
+      const ro = new ResizeObserver(measureOverlay);
+      ro.observe(frame);
+      ro.observe(frame.parentElement);
+      const toolbar = frame.querySelector('[data-map-toolbar]');
+      if (toolbar) ro.observe(toolbar);
+      overlayCleanupRef.current = () => ro.disconnect();
+    },
+    [measureOverlay],
+  );
+  // The sheet mounts after the map box and animates between snaps; follow it.
+  useEffect(() => {
+    const sheet = document.querySelector('.ooh-bottom-sheet');
+    measureOverlay();
+    if (!sheet || typeof ResizeObserver === 'undefined') return undefined;
+    const ro = new ResizeObserver(measureOverlay);
+    ro.observe(sheet);
+    return () => ro.disconnect();
+  }, [measureOverlay, raw, sheetSnap, fullscreen, detailItem]);
+
   // Fullscreen body class — hides the global mobile bottom tabs.
   useEffect(() => {
     if (fullscreen) document.body.classList.add('map-fullscreen');
@@ -1006,51 +1061,136 @@ export default function Map() {
                 )}
               </div>
             )}
-            <div className="absolute left-3 top-3 z-[1000] flex border border-slate2 bg-void/80 backdrop-blur-md landscape:top-16">
-              <button
-                onClick={() => setView('flat')}
-                aria-label="Flat map"
-                className={`flex items-center gap-1.5 px-2.5 py-2 font-mono text-[10px] font-bold uppercase tracking-[0.25em] transition-colors ${view === 'flat' ? 'bg-ozone text-void' : 'text-darkgray hover:text-ozone'}`}
-              >
-                <MapIcon className="h-3.5 w-3.5" /> <span className="hidden sm:inline">Flat</span>
-              </button>
-              <button
-                onClick={() => setView('globe')}
-                aria-label="Globe view"
-                className={`flex items-center gap-1.5 px-2.5 py-2 font-mono text-[10px] font-bold uppercase tracking-[0.25em] transition-colors ${view === 'globe' ? 'bg-ozone text-void' : 'text-darkgray hover:text-ozone'}`}
-              >
-                <Globe className="h-3.5 w-3.5" /> <span className="hidden sm:inline">Globe</span>
-              </button>
-            </div>
-            <div className="absolute left-3 top-14 z-[1000] max-w-[calc(100vw-1.5rem)] landscape:top-28">
-              <button
-                type="button"
-                data-testid="field-attention-toggle"
-                aria-label="Field attention"
-                aria-pressed={attentionMode}
-                onClick={() => setAttentionMode(!attentionMode)}
-                className={`flex min-h-9 items-center gap-1.5 border px-2.5 py-2 font-mono text-[10px] font-bold uppercase tracking-[0.18em] backdrop-blur-md transition-colors ${attentionMode ? 'border-flare bg-flare text-void' : 'border-slate2 bg-void/80 text-darkgray hover:border-flare hover:text-flare'}`}
-              >
-                <AlertTriangle className="h-3.5 w-3.5" /> Field attention
-              </button>
-              {attentionMode && (
-                <div
-                  data-testid="attention-filters"
-                  className="mt-1 flex max-w-full gap-1 overflow-x-auto border border-slate2 bg-void/90 p-1 backdrop-blur-md"
-                >
-                  {Object.values(MAP_ATTENTION_FILTERS).map((filter) => (
-                    <button
-                      key={filter}
-                      type="button"
-                      aria-pressed={attentionFilter === filter}
-                      onClick={() => setAttentionFilter(filter)}
-                      className={`min-h-8 shrink-0 px-2 font-mono text-[9px] font-bold uppercase tracking-[0.12em] ${attentionFilter === filter ? 'bg-ozone text-void' : 'text-darkgray hover:text-ozone'}`}
-                    >
-                      {filter}
-                    </button>
-                  ))}
+            {/* Overlay frame: every control that sits over the map lives in this one
+                flow, so nothing can collide by construction. Row 1 wraps the view
+                switcher and the action toolbar; the left stack follows (attention,
+                tally) and the ticker spans the width. Its bottom edge is published as
+                --map-overlay-bottom so decorative HUD layers (GlobeHud) start below it
+                instead of guessing an offset. p-0.5 + inset-2.5 keeps the visual inset at 12px while leaving
+                room for focus outlines inside the frame's scroll clip. The stack and ticker stop 3.5rem
+                short of the right edge, keeping the Globe3D zoom column clear. */}
+            <div
+              ref={overlayCallbackRef}
+              className="pointer-events-none absolute inset-x-2.5 top-2.5 z-[1000] flex max-h-[calc(100%-1.25rem-var(--map-sheet-overlap,0px))] flex-col gap-1 overflow-y-auto overscroll-contain p-0.5 [@media(orientation:landscape)_and_(max-width:1023px)]:top-[3.875rem] [@media(orientation:landscape)_and_(max-width:1023px)]:max-h-[calc(100%-4.875rem)]"
+            >
+              <div className="flex shrink-0 flex-wrap items-start justify-between gap-x-2 gap-y-1">
+                <div className="pointer-events-auto flex border border-slate2 bg-void/80 backdrop-blur-md">
+                  <button
+                    onClick={() => setView('flat')}
+                    aria-label="Flat map"
+                    className={`flex items-center gap-1.5 px-2.5 py-2 font-mono text-[10px] font-bold uppercase tracking-[0.25em] transition-colors ${view === 'flat' ? 'bg-ozone text-void' : 'text-darkgray hover:text-ozone'}`}
+                  >
+                    <MapIcon className="h-3.5 w-3.5" />{' '}
+                    <span className="hidden sm:inline">Flat</span>
+                  </button>
+                  <button
+                    onClick={() => setView('globe')}
+                    aria-label="Globe view"
+                    className={`flex items-center gap-1.5 px-2.5 py-2 font-mono text-[10px] font-bold uppercase tracking-[0.25em] transition-colors ${view === 'globe' ? 'bg-ozone text-void' : 'text-darkgray hover:text-ozone'}`}
+                  >
+                    <Globe className="h-3.5 w-3.5" />{' '}
+                    <span className="hidden sm:inline">Globe</span>
+                  </button>
                 </div>
-              )}
+                <div
+                  data-map-toolbar
+                  className="pointer-events-auto flex flex-wrap items-center justify-end gap-1.5"
+                >
+                  <div className="hidden md:flex flex-wrap items-center justify-end gap-1.5">
+                    <MapStyleSwitcher />
+                    <button
+                      onClick={() => setFinderOpen(true)}
+                      aria-label="Find units"
+                      className="hidden md:flex items-center gap-1.5 border border-ozone/60 bg-void/80 px-2.5 py-2 font-mono text-[10px] font-bold uppercase tracking-[0.25em] text-ozone backdrop-blur-md transition-colors hover:bg-ozone hover:text-void"
+                    >
+                      <ScanSearch className="h-3.5 w-3.5" />{' '}
+                      <span className="hidden sm:inline">Find</span>
+                    </button>
+                    <button
+                      onClick={exportGeoJSON}
+                      aria-label="Export GeoJSON"
+                      className="hidden md:flex items-center gap-1.5 border border-slate2 bg-void/80 px-2.5 py-2 font-mono text-[10px] font-bold uppercase tracking-[0.25em] text-darkgray backdrop-blur-md transition-colors hover:border-ozone hover:text-ozone"
+                    >
+                      <FileDown className="h-3.5 w-3.5" />{' '}
+                      <span className="hidden sm:inline">GeoJSON</span>
+                    </button>
+                    <a
+                      href="https://oohearth.app/access-keys/"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      aria-label="Access keys reference"
+                      className="hidden md:flex items-center gap-1.5 border border-slate2 bg-void/80 px-2.5 py-2 font-mono text-[10px] font-bold uppercase tracking-[0.25em] text-darkgray backdrop-blur-md transition-colors hover:border-ozone hover:text-ozone"
+                    >
+                      <Key className="h-3.5 w-3.5" /> <span className="hidden sm:inline">Keys</span>
+                    </a>
+                  </div>
+                  <div className="hidden md:block h-8 w-px bg-slate2/60" />
+                  <button
+                    onClick={() => setGraffitiCamOpen(true)}
+                    aria-label="Graffiti camera"
+                    className="flex items-center gap-1.5 border border-flare bg-flare px-2.5 py-2 font-mono text-[10px] font-bold uppercase tracking-[0.25em] text-void transition-colors hover:bg-ozone hover:border-ozone"
+                  >
+                    <SprayCan className="h-3.5 w-3.5" />{' '}
+                    <span className="hidden sm:inline">Graffiti</span>
+                  </button>
+                  <button
+                    onClick={() => setCaptureOpen(true)}
+                    aria-label="Capture photo"
+                    className="flex items-center gap-1.5 border border-ozone bg-ozone px-2.5 py-2 font-mono text-[10px] font-bold uppercase tracking-[0.25em] text-void transition-colors hover:bg-flare hover:border-flare"
+                  >
+                    <Camera className="h-3.5 w-3.5" />{' '}
+                    <span className="hidden sm:inline">Capture</span>
+                  </button>
+                  <Link
+                    data-tour="report"
+                    to="/report"
+                    aria-label="Report"
+                    className="flex items-center gap-1.5 border border-ozone bg-ozone px-2.5 py-2 font-mono text-[10px] font-bold uppercase tracking-[0.25em] text-void transition-colors hover:bg-flare hover:border-flare"
+                  >
+                    <Megaphone className="h-3.5 w-3.5" />{' '}
+                    <span className="hidden sm:inline">Report</span>
+                  </Link>
+                </div>
+              </div>
+              <div className="flex max-w-[calc(100%-3.5rem)] shrink-0 flex-col items-start gap-1">
+                <div className="pointer-events-auto max-w-full">
+                  <button
+                    type="button"
+                    data-testid="field-attention-toggle"
+                    aria-label="Field attention"
+                    aria-pressed={attentionMode}
+                    onClick={() => setAttentionMode(!attentionMode)}
+                    className={`flex min-h-9 items-center gap-1.5 border px-2.5 py-2 font-mono text-[10px] font-bold uppercase tracking-[0.18em] backdrop-blur-md transition-colors ${attentionMode ? 'border-flare bg-flare text-void' : 'border-slate2 bg-void/80 text-darkgray hover:border-flare hover:text-flare'}`}
+                  >
+                    <AlertTriangle className="h-3.5 w-3.5" /> Field attention
+                  </button>
+                  {attentionMode && (
+                    <div
+                      data-testid="attention-filters"
+                      className="mt-1 flex max-w-full flex-wrap gap-1 border border-slate2 bg-void/90 p-1 backdrop-blur-md"
+                    >
+                      {Object.values(MAP_ATTENTION_FILTERS).map((filter) => (
+                        <button
+                          key={filter}
+                          type="button"
+                          aria-pressed={attentionFilter === filter}
+                          onClick={() => setAttentionFilter(filter)}
+                          className={`min-h-8 shrink-0 px-2 font-mono text-[9px] font-bold uppercase tracking-[0.12em] ${attentionFilter === filter ? 'bg-ozone text-void' : 'text-darkgray hover:text-ozone'}`}
+                        >
+                          {filter}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+                <FieldTallyWidget
+                  markers={layerFiltered}
+                  clusters={view === 'globe' ? globeClusters : 0}
+                />
+              </div>
+              <div className="pointer-events-none w-[calc(100%-3.5rem)] shrink-0 md:w-[min(calc(100%-3.5rem),28rem)]">
+                <MapAlertTicker />
+              </div>
             </div>
             {attentionMode && selectedAttention?.attention && (
               <div
@@ -1138,83 +1278,11 @@ export default function Map() {
                 onExpandPin={handleExpandPin}
               />
             )}
-            <FieldTallyWidget
-              markers={layerFiltered}
-              clusters={view === 'globe' ? globeClusters : 0}
-              className={view === 'flat' ? 'bottom-[60px]' : 'bottom-3'}
-            />
-            {/* top-24 clears the Field attention toggle immediately to its
-                left (absolute, top-14 + min-h-9 => bottom edge ~92px) at
-                every breakpoint -- top-12/md:top-14 used to sit directly
-                underneath it, so the full-width ticker text visibly
-                collided with the toggle's own label on mobile. Drops further
-                (top-36) while the attention filter row is expanded, since
-                that adds another ~36px below the toggle. */}
-            <div
-              className={`pointer-events-none absolute left-3 right-3 z-[900] ${attentionMode ? 'top-36 landscape:top-48' : 'top-24 landscape:top-40'}`}
-            >
-              <MapAlertTicker />
-            </div>
             {view === 'flat' && (
               <div className="pointer-events-none absolute inset-x-0 bottom-0 z-[900]">
                 <SpecsBar counts={counts} total={raw?.markers?.length || 0} />
               </div>
             )}
-            <div className="absolute right-3 top-3 z-[1000] flex items-center gap-1.5 landscape:top-16">
-              <div className="hidden md:flex items-center gap-1.5">
-                <MapStyleSwitcher />
-                <button
-                  onClick={() => setFinderOpen(true)}
-                  aria-label="Find units"
-                  className="hidden md:flex items-center gap-1.5 border border-ozone/60 bg-void/80 px-2.5 py-2 font-mono text-[10px] font-bold uppercase tracking-[0.25em] text-ozone backdrop-blur-md transition-colors hover:bg-ozone hover:text-void"
-                >
-                  <ScanSearch className="h-3.5 w-3.5" />{' '}
-                  <span className="hidden sm:inline">Find</span>
-                </button>
-                <button
-                  onClick={exportGeoJSON}
-                  aria-label="Export GeoJSON"
-                  className="hidden md:flex items-center gap-1.5 border border-slate2 bg-void/80 px-2.5 py-2 font-mono text-[10px] font-bold uppercase tracking-[0.25em] text-darkgray backdrop-blur-md transition-colors hover:border-ozone hover:text-ozone"
-                >
-                  <FileDown className="h-3.5 w-3.5" />{' '}
-                  <span className="hidden sm:inline">GeoJSON</span>
-                </button>
-                <a
-                  href="https://oohearth.app/access-keys/"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  aria-label="Access keys reference"
-                  className="hidden md:flex items-center gap-1.5 border border-slate2 bg-void/80 px-2.5 py-2 font-mono text-[10px] font-bold uppercase tracking-[0.25em] text-darkgray backdrop-blur-md transition-colors hover:border-ozone hover:text-ozone"
-                >
-                  <Key className="h-3.5 w-3.5" /> <span className="hidden sm:inline">Keys</span>
-                </a>
-              </div>
-              <div className="hidden md:block h-8 w-px bg-slate2/60" />
-              <button
-                onClick={() => setGraffitiCamOpen(true)}
-                aria-label="Graffiti camera"
-                className="flex items-center gap-1.5 border border-flare bg-flare px-2.5 py-2 font-mono text-[10px] font-bold uppercase tracking-[0.25em] text-void transition-colors hover:bg-ozone hover:border-ozone"
-              >
-                <SprayCan className="h-3.5 w-3.5" />{' '}
-                <span className="hidden sm:inline">Graffiti</span>
-              </button>
-              <button
-                onClick={() => setCaptureOpen(true)}
-                aria-label="Capture photo"
-                className="flex items-center gap-1.5 border border-ozone bg-ozone px-2.5 py-2 font-mono text-[10px] font-bold uppercase tracking-[0.25em] text-void transition-colors hover:bg-flare hover:border-flare"
-              >
-                <Camera className="h-3.5 w-3.5" /> <span className="hidden sm:inline">Capture</span>
-              </button>
-              <Link
-                data-tour="report"
-                to="/report"
-                aria-label="Report"
-                className="flex items-center gap-1.5 border border-ozone bg-ozone px-2.5 py-2 font-mono text-[10px] font-bold uppercase tracking-[0.25em] text-void transition-colors hover:bg-flare hover:border-flare"
-              >
-                <Megaphone className="h-3.5 w-3.5" />{' '}
-                <span className="hidden sm:inline">Report</span>
-              </Link>
-            </div>
           </div>
         </div>
       )}
