@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { X, ArrowRight } from 'lucide-react';
 
@@ -28,6 +28,30 @@ export default function ContextualNudge() {
   const { pathname } = useLocation();
   const [hint, setHint] = useState(null);
   const [show, setShow] = useState(false);
+  const boxRef = useRef(null);
+
+  // While visible, publish this card's height so LiveActivityFeed (also fixed, bottom-left) stacks
+  // above it instead of overlapping. 14px = the 6px difference in bottom offsets + an 8px gap.
+  useEffect(() => {
+    const root = document.documentElement;
+    const box = boxRef.current;
+    if (!show || !box) {
+      root.style.removeProperty('--ooh-nudge-clearance');
+      return undefined;
+    }
+    const publish = () =>
+      root.style.setProperty('--ooh-nudge-clearance', `${Math.ceil(box.offsetHeight) + 14}px`);
+    publish();
+    let ro;
+    if (typeof ResizeObserver === 'function') {
+      ro = new ResizeObserver(publish);
+      ro.observe(box);
+    }
+    return () => {
+      ro?.disconnect();
+      root.style.removeProperty('--ooh-nudge-clearance');
+    };
+  }, [show, hint]);
 
   useEffect(() => {
     const list = ROUTE_HINTS[pathname];
@@ -54,7 +78,10 @@ export default function ContextualNudge() {
         show ? 'translate-y-0 opacity-100' : 'pointer-events-none translate-y-4 opacity-0'
       }`}
     >
-      <div className="relative w-[min(92vw,380px)] border border-ozone/40 bg-[#0d0d0d] shadow-[0_0_0_1px_rgba(237,255,0,0.06),0_8px_32px_rgba(0,0,0,0.7),0_0_24px_rgba(237,255,0,0.08)] backdrop-blur-xl">
+      <div
+        ref={boxRef}
+        className="relative w-[min(92vw,380px)] border border-ozone/40 bg-[#0d0d0d] shadow-[0_0_0_1px_rgba(237,255,0,0.06),0_8px_32px_rgba(0,0,0,0.7),0_0_24px_rgba(237,255,0,0.08)] backdrop-blur-xl"
+      >
         {/* Scanline overlay */}
         <div className="crt-scanlines pointer-events-none absolute inset-0 opacity-50" />
 
@@ -80,7 +107,7 @@ export default function ContextualNudge() {
         </div>
 
         {/* Command line */}
-        <div className="flex items-center gap-2 px-3 py-2.5">
+        <div className="flex flex-wrap items-center gap-x-2 gap-y-1 px-3 py-1.5">
           <span className="font-mono text-[11px] text-ozone">{'>'}</span>
           <span className="font-mono text-xs text-white">{hint.label}</span>
           <span className="font-mono text-xs text-ozone animate-blink">_</span>
@@ -88,7 +115,7 @@ export default function ContextualNudge() {
             <Link
               to={hint.to}
               onClick={() => dismiss(hint.id)}
-              className="flex items-center gap-1 border border-ozone/50 px-2.5 py-1 font-mono text-[9px] font-bold uppercase tracking-[0.2em] text-ozone text-glow-ozone transition-colors hover:bg-ozone/10 hover:shadow-[0_0_12px_rgba(237,255,0,0.3)]"
+              className="flex min-h-11 items-center gap-1 border border-ozone/50 px-3 font-mono text-[9px] font-bold uppercase tracking-[0.2em] text-ozone text-glow-ozone transition-colors hover:bg-ozone/10 hover:shadow-[0_0_12px_rgba(237,255,0,0.3)]"
             >
               Execute <ArrowRight className="h-3 w-3" />
             </Link>
@@ -98,7 +125,7 @@ export default function ContextualNudge() {
                 setShow(false);
               }}
               aria-label="Abort"
-              className="flex items-center justify-center border border-flare/30 px-1.5 py-1 font-mono text-[9px] font-bold uppercase tracking-[0.2em] text-flare/60 transition-colors hover:bg-flare/10 hover:text-flare"
+              className="flex min-h-11 min-w-11 items-center justify-center border border-flare/30 font-mono text-[9px] font-bold uppercase tracking-[0.2em] text-flare/60 transition-colors hover:bg-flare/10 hover:text-flare"
             >
               <X className="h-3 w-3" />
             </button>

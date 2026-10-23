@@ -95,14 +95,26 @@ export default function LiveActivityFeed() {
   );
 
   return (
-    <div className="pointer-events-none fixed bottom-[calc(82px+env(safe-area-inset-bottom))] left-3 z-[80] flex w-[300px] max-w-[calc(100vw-24px)] flex-col gap-2 md:bottom-3">
-      <div className="flex items-center gap-2 px-1">
-        <Radio className="h-3 w-3 animate-flicker text-ozone" />
-        <span className="font-mono text-[9px] uppercase tracking-[0.3em] text-silver/70">
+    // Sits above the mobile/tablet bottom nav (hidden from lg up). ContextualNudge publishes its
+    // height in --ooh-nudge-clearance while visible so the two fixed overlays never share space.
+    <div
+      data-testid="live-activity-feed"
+      className="pointer-events-none fixed bottom-[calc(82px+env(safe-area-inset-bottom)+var(--ooh-nudge-clearance,0px))] left-3 z-[80] flex w-[300px] max-w-[calc(100vw-24px)] flex-col gap-2 transition-[bottom] duration-300 motion-reduce:transition-none lg:bottom-3"
+    >
+      <div data-testid="live-activity-feed-header" className="flex items-center gap-2 px-1">
+        <Radio className="h-3 w-3 shrink-0 animate-flicker text-ozone" />
+        <span className="shrink-0 whitespace-nowrap font-mono text-[9px] uppercase tracking-[0.3em] text-silver/70">
           Live feed
         </span>
-        <span className="h-px flex-1 bg-slate2/50" />
-        <span className="font-mono text-[9px] uppercase tracking-[0.25em] text-ozone">ON AIR</span>
+        <span className="h-px min-w-0 flex-1 bg-slate2/50" />
+        {/* "ON AIR" only while an event is actually showing; otherwise neutral. The subscription
+            (auth-gated) is unchanged — anonymous sessions never receive events. */}
+        <span
+          data-testid="live-activity-feed-state"
+          className={`shrink-0 whitespace-nowrap font-mono text-[9px] uppercase tracking-[0.25em] ${events.length > 0 ? 'text-ozone' : 'text-silver/60'}`}
+        >
+          {events.length > 0 ? 'ON AIR' : 'Standby'}
+        </span>
       </div>
       <AnimatePresence initial={false}>
         {events.map((ev) => {
