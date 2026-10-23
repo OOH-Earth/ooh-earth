@@ -71,3 +71,33 @@ test('stripComment only cuts real comments', () => {
   assert.equal(stripComment('run: echo "a # b"'), 'run: echo "a # b"');
   assert.equal(stripComment("branches: ['x#y']"), "branches: ['x#y']");
 });
+test('fixture: job-level write-all permissions are rejected', () => {
+  const bad = base().replace('    steps:', '    permissions: write-all\n    steps:');
+  assert.ok(
+    scan(bad).some((p) => /write-all/.test(p)),
+    scan(bad).join('; '),
+  );
+});
+
+test('fixture: top-level write-all is rejected (with a specific message)', () => {
+  const top = base().replace(
+    'permissions:\n  contents: read\n  pull-requests: write\n  checks: write\n',
+    'permissions: write-all\n',
+  );
+  assert.ok(
+    scan(top).some((p) => /write-all/.test(p)),
+    scan(top).join('; '),
+  );
+});
+
+test('fixture: write-all in a COMMENT or in quoted/embedded text is allowed', () => {
+  const comment = base('      # permissions: write-all would be bad here\n');
+  assert.deepEqual(scan(comment), []);
+  const quoted = base('      - run: echo "permissions: write-all"\n');
+  assert.deepEqual(scan(quoted), []);
+  const trailing = base().replace(
+    '    steps:',
+    '    permissions:\n      contents: read # not write-all\n    steps:',
+  );
+  assert.deepEqual(scan(trailing), []);
+});

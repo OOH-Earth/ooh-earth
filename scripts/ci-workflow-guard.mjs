@@ -2,7 +2,8 @@
 // dependency (js-yaml is only a transitive dev dep). Comments are stripped first, so prose that
 // merely MENTIONS e.g. pull_request_target is fine; active configuration is not.
 // LIMITS — not a YAML validator: assumes 2-space indentation and the inline `branches: [a, b]`
-// form (a block-list rewrite fails loudly); checks only top-level `permissions`, `uses:` at line
+// form (a block-list rewrite fails loudly); rejects the scalar `permissions: write-all` at any level but
+// checks scope lists only at top level (flow maps like `permissions: {contents: write}` are NOT parsed), `uses:` at line
 // start and `${{ secrets.* }}`; does not evaluate job conditions. A real PR run is authoritative.
 
 // Remove a YAML comment from one line: a `#` at line start or after whitespace, outside quotes.
@@ -54,6 +55,9 @@ export function scan(text) {
       );
     if (/workflow_run/.test(l))
       problems.push(`line ${n + 1}: workflow_run runs with base-repo privileges`);
+    // Runs on comment-stripped lines and is anchored to the key, so prose / quoted text can't trip it.
+    if (/^\s*permissions:\s*write-all\b/.test(l))
+      problems.push(`line ${n + 1}: permissions: write-all grants every token scope`);
     if (/\$\{\{\s*secrets\./.test(l)) problems.push(`line ${n + 1}: CI must not reference secrets`);
     if (/^\s*-?\s*uses:/.test(l) && !/@[0-9a-f]{40}\b/.test(l))
       problems.push(`line ${n + 1}: action not pinned to a full commit SHA: ${l.trim()}`);
