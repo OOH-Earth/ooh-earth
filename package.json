@@ -31,6 +31,7 @@
     "entities:preflight:production": "node scripts/base44-entity-preflight.mjs production",
     "test:entities-preflight": "node --test scripts/base44-entity-preflight.test.mjs",
     "test:release": "node --test scripts/release-state.test.mjs",
+    "test:ci-workflow-guard": "node --test scripts/ci-workflow-guard.test.mjs",
     "test:release-utils": "node --test scripts/release-utils.test.mjs",
     "test:release-evidence": "node --test scripts/release-evidence.test.mjs",
     "test:jarvis": "node --test src/lib/jarvisReasoning.test.js",
