@@ -101,3 +101,20 @@ test('fixture: write-all in a COMMENT or in quoted/embedded text is allowed', ()
   );
   assert.deepEqual(scan(trailing), []);
 });
+
+test('policy scope: GITHUB_TOKEN and a subset of write scopes are allowed; other secrets/scopes are not', () => {
+  const tokenUse = base('      - run: echo ${{ secrets.GITHUB_TOKEN }}\n');
+  assert.deepEqual(scan(tokenUse), []);
+  const subset = base().replace('  pull-requests: write\n  checks: write\n', '  checks: write\n');
+  assert.deepEqual(scan(subset), []);
+  const otherSecret = base('      - run: echo ${{ secrets.DEPLOY_KEY }}\n');
+  assert.ok(
+    scan(otherSecret).some((p) => /secrets/.test(p)),
+    scan(otherSecret).join('; '),
+  );
+  const extraScope = base().replace('  checks: write\n', '  checks: write\n  contents: write\n');
+  assert.ok(
+    scan(extraScope).some((p) => /write scopes: contents/.test(p)),
+    scan(extraScope).join('; '),
+  );
+});

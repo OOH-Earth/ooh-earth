@@ -4,7 +4,13 @@
 // LIMITS — not a YAML validator: assumes 2-space indentation and the inline `branches: [a, b]`
 // form (a block-list rewrite fails loudly); rejects the scalar `permissions: write-all` at any level but
 // checks scope lists only at top level (flow maps like `permissions: {contents: write}` are NOT parsed), `uses:` at line
-// start and `${{ secrets.* }}`; does not evaluate job conditions. A real PR run is authoritative.
+// start and `${{ secrets.* }}` (GITHUB_TOKEN excepted); does not evaluate job conditions. It enforces the
+// agreed CI policy only (no privileged triggers, no repo secrets, pinned actions, write-scope allowlist,
+// maintenance trigger) — it does NOT validate YAML structure or prove least privilege in general.
+// A real PR-triggered run is the authoritative evidence.
+
+// Token write scopes the agreed CI policy allows at workflow level (read scopes are unrestricted).
+const ALLOWED_WRITE_SCOPES = ['checks', 'pull-requests'];
 
 // Remove a YAML comment from one line: a `#` at line start or after whitespace, outside quotes.
 export function stripComment(line) {
@@ -58,7 +64,9 @@ export function scan(text) {
     // Runs on comment-stripped lines and is anchored to the key, so prose / quoted text can't trip it.
     if (/^\s*permissions:\s*write-all\b/.test(l))
       problems.push(`line ${n + 1}: permissions: write-all grants every token scope`);
-    if (/\$\{\{\s*secrets\./.test(l)) problems.push(`line ${n + 1}: CI must not reference secrets`);
+    // The auto-issued GITHUB_TOKEN is not a repository secret; any other secrets.* is.
+    if (/\$\{\{\s*secrets\.(?!GITHUB_TOKEN\b)/.test(l))
+      problems.push(`line ${n + 1}: CI must not reference secrets`);
     if (/^\s*-?\s*uses:/.test(l) && !/@[0-9a-f]{40}\b/.test(l))
       problems.push(`line ${n + 1}: action not pinned to a full commit SHA: ${l.trim()}`);
   });
@@ -71,8 +79,9 @@ export function scan(text) {
       const m = lines[j].trim().match(/^([\w-]+):\s*write$/);
       if (m) writes.push(m[1]);
     }
-    if (writes.sort().join() !== 'checks,pull-requests')
-      problems.push(`unexpected token write scopes: ${writes}`);
+    // Policy is an allowlist of write scopes (a subset is fine; anything else is not).
+    const extra = writes.filter((w) => !ALLOWED_WRITE_SCOPES.includes(w));
+    if (extra.length) problems.push(`unexpected token write scopes: ${extra}`);
   }
   return problems;
 }
