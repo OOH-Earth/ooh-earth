@@ -107,7 +107,7 @@ export default function ContextualNudge() {
         </div>
 
         {/* Command line */}
-        <div className="flex items-center gap-2 px-3 py-2.5">
+        <div className="flex flex-wrap items-center gap-x-2 gap-y-1 px-3 py-1.5">
           <span className="font-mono text-[11px] text-ozone">{'>'}</span>
           <span className="font-mono text-xs text-white">{hint.label}</span>
           <span className="font-mono text-xs text-ozone animate-blink">_</span>
@@ -115,7 +115,7 @@ export default function ContextualNudge() {
             <Link
               to={hint.to}
               onClick={() => dismiss(hint.id)}
-              className="flex items-center gap-1 border border-ozone/50 px-2.5 py-1 font-mono text-[9px] font-bold uppercase tracking-[0.2em] text-ozone text-glow-ozone transition-colors hover:bg-ozone/10 hover:shadow-[0_0_12px_rgba(237,255,0,0.3)]"
+              className="flex min-h-11 items-center gap-1 border border-ozone/50 px-3 font-mono text-[9px] font-bold uppercase tracking-[0.2em] text-ozone text-glow-ozone transition-colors hover:bg-ozone/10 hover:shadow-[0_0_12px_rgba(237,255,0,0.3)]"
             >
               Execute <ArrowRight className="h-3 w-3" />
             </Link>
@@ -125,7 +125,7 @@ export default function ContextualNudge() {
                 setShow(false);
               }}
               aria-label="Abort"
-              className="flex items-center justify-center border border-flare/30 px-1.5 py-1 font-mono text-[9px] font-bold uppercase tracking-[0.2em] text-flare/60 transition-colors hover:bg-flare/10 hover:text-flare"
+              className="flex min-h-11 min-w-11 items-center justify-center border border-flare/30 font-mono text-[9px] font-bold uppercase tracking-[0.2em] text-flare/60 transition-colors hover:bg-flare/10 hover:text-flare"
             >
               <X className="h-3 w-3" />
             </button>
