@@ -7,6 +7,7 @@ name: CI
 # run build` on every PR). See CI_PIPELINE.md for the full job graph and
 # which gates are blocking vs informational.
 #
+# TEMP-FIXTURE (do not merge): pull_request_target
 on:
   push:
     branches: [main]
