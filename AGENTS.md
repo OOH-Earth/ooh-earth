@@ -33,6 +33,14 @@ Cited elsewhere in this repo's docs as "CLAUDE.md rule #N" (`CI_PIPELINE.md`, `B
 3. **No direct commits, pushes, or PRs against `main` without explicit instruction in that session** — human or agent, no exceptions. Every change goes through a PR (`BRANCHING_STRATEGY.md`).
 4. **CI workflows never require or use repository secrets or live backend credentials.** See `CI_PIPELINE.md` for what that means in practice (offline-artifact console noise is expected and not treated as a failure).
 
+## Engineering workflow (where things live)
+
+Opening these is not automatic — a session must read them. In order of precedence: this file, `brain/INVARIANTS.md`, `brain/PRODUCT.md`, then the rest.
+
+- Product direction and hard invariants: `brain/PRODUCT.md`, `brain/INVARIANTS.md`; active decisions `brain/DECISIONS.md` (closed ones: `docs/ops/ooh-earth/07-DECISION-LOG.md`).
+- Process and templates: `docs/engineering/WORKFLOW.md` (lifecycle, when a spec is needed), `docs/engineering/CONSTITUTION.md` (labelled index of principles), `docs/engineering/REVIEW-CHECKLIST.md`, `docs/engineering/HISTORY.md`, root `SPEC.md`, `specs/_TEMPLATE/`.
+- Non-trivial work gets `specs/<issue>-<name>/` (spec → plan → tasks → validation) with exact SHA/tree and evidence; keep AI review advisory and record the reviewed SHA.
+
 ## Working Notes
 
 - Use `base44 dev` as the default local development command when you need the local Base44 backend. It can run the backend and frontend together.

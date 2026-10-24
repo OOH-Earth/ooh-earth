@@ -17,6 +17,8 @@
 - [ ] User-facing copy matches the campaign-page voice (punchy, direct, not corporate)
 - [ ] Commit messages follow [Conventional Commits](../RELEASE_PROCESS.md) (`feat:`, `fix:`, `chore:`, …)
 - [ ] My contribution is released under AGPL-3.0 (code) / CC BY-SA 4.0 (content)
+- [ ] Non-trivial change: linked `specs/<id>-<name>/` (spec + validation with exact SHA/tree), or stated why not needed — see `docs/engineering/WORKFLOW.md`
+- [ ] If an AI review was run: reviewer, exact SHA reviewed, and that it is advisory (not formal human review)
 
 CI also runs Playwright smoke + accessibility tests, a Prettier check, a bundle-size report, and a dependency audit — see the PR summary comment for results. Prettier is informational; the dependency audit blocks only on high/critical findings (see CI_PIPELINE.md).
 
