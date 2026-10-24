@@ -1,3 +1,4 @@
+import { useEffect, useRef } from 'react';
 import { Image } from '@/components/ui/image';
 import {
   X,
@@ -27,6 +28,23 @@ function StatCell({ icon: Icon, label, value }) {
 }
 
 export default function MediaCorpDetail({ corp, onClose }) {
+  const closeRef = useRef(null);
+  const isOpen = Boolean(corp);
+  useEffect(() => {
+    if (!isOpen) return undefined;
+    // Dialog behaviour: move focus in, close on Escape, and hand focus back to whatever
+    // opened it (the pin or list item) so keyboard users keep their place.
+    const opener = document.activeElement;
+    closeRef.current?.focus();
+    const onKey = (e) => {
+      if (e.key === 'Escape') onClose?.();
+    };
+    document.addEventListener('keydown', onKey);
+    return () => {
+      document.removeEventListener('keydown', onKey);
+      if (opener instanceof HTMLElement && document.contains(opener)) opener.focus();
+    };
+  }, [isOpen, onClose]);
   if (!corp) return null;
   const scopeColor =
     corp.scope === 'global'
@@ -56,6 +74,7 @@ export default function MediaCorpDetail({ corp, onClose }) {
           />
           <div className="absolute inset-0 bg-gradient-to-t from-card via-card/60 to-transparent" />
           <button
+            ref={closeRef}
             type="button"
             aria-label="Close details"
             onClick={onClose}
