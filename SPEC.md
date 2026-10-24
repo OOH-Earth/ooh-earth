@@ -4,7 +4,7 @@ A short index, not a master specification. Direction lives in `brain/PRODUCT.md`
 
 | Spec | Status | Evidence |
 |---|---|---|
-| `specs/363-offline-server-function-tests/` | Pilot — validated, awaiting owner review (Q1) | validation.md |
+| `specs/363-offline-server-function-tests/` | Done — merged #363 (`8a60069`), Q1 resolved | validation.md |
 | (retrospective, no pre-existing spec) CI on `maintenance/**` + workflow guard | Done, merged #374 #375 #376 | `docs/engineering/HISTORY.md` |
 
 Add a row when a spec is created; set status to Done only with a validation record.

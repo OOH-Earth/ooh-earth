@@ -25,7 +25,7 @@ Every line links its source. Labels: **[ENFORCED]** a control (CI/branch protect
 - Production data is never edited as a substitute for understanding a bug. [OWNER] `07-DECISION-LOG.md`
 
 ## UI
-- Accessible names, visible keyboard focus, ≥44px touch targets for primary controls, no horizontal scroll at 320px, layouts verified by measured DOM bounds not screenshots alone. [PROPOSED] (exercised in `e2e/live-feed-nudge-overlap.spec.ts`); fuller standards: `docs/design/UI-STANDARDS.md` **pending on the UI-audit branch**.
+- Accessible names, visible keyboard focus, ≥44px touch targets for primary controls, no horizontal scroll at 320px, layouts verified by measured DOM bounds not screenshots alone. [PROPOSED] (exercised in `e2e/live-feed-nudge-overlap.spec.ts` — exists on `maintenance/production-2026-10-02` only, not on `main`); fuller standards: `docs/design/UI-STANDARDS.md` **pending on the UI-audit branch**.
 
 ## Environments, testing, release
 - Production vs BACKUP are distinct; verify the runtime app-id in the HTML-referenced entry before deploy; qualify the exact artifact on BACKUP; keep a verified rollback artifact. [OWNER] `brain/INVARIANTS.md`, `brain/ENVIRONMENTS.md`; the frontend-only verification scripts are **not yet in version control** [PROPOSED follow-up]

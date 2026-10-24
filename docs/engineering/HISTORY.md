@@ -10,6 +10,7 @@ Index only. Each record separates the **decision date** (when the decision was m
 | 2026-10-22 | R1M3: unsupported claims removed, GIF uploads rejected, price strip dropped | #369 → `94c79fa` |
 | 2026-10-23 | Live-feed overlap fix + DOMPurify 3.4.17 (maintenance); production frontend deploy of `f062e0d` | #371, #372 → `f062e0d` |
 | 2026-10-23 | CI + guard on maintenance; main dependency fixes; CI + guard on main | #374 `0ec2ced`, #376 `ee75604`, #378 `61a7be5`, #375 `b65dde8` |
+| 2026-10-24 | Offline server-function tests (all nine files, owner-approved scope increase) run in CI on `main` | #363 → `8a60069` |
 
 ## Decision record template (use for new significant decisions; then add the active ones to `brain/DECISIONS.md`)
 

@@ -20,7 +20,7 @@ Owner: engineering owner (AdilQuantum) · Status: pilot, owner decision Q1 recor
 | R1 | A PR into `main` runs `npm run test:server-functions` in CI, and a failing server test fails the *Lint & Typecheck* job | proposed |
 | R2 | The suite runs with read access limited to `base44/entities` and no network/env permissions | proposed (as authored in #363) |
 | R3 | Job and required-check names are unchanged | proposed |
-| R4 | The refreshed PR contains only the `ci.yml` step and the one `package.json` script line; it applies cleanly on current `main` next to the workflow-guard step | proposed |
+| R4 | The PR contains only the `ci.yml` step, the one `package.json` script line (now with `--no-lock` so a run leaves no `deno.lock`), and a one-line import pin (`jsr:@std/assert@1`) in `productLookup.test.ts`; it applies cleanly on current `main` next to the workflow-guard step | proposed |
 | R5 | The suite passes on the refreshed head (offline). Baseline at `6bf5a98`: 72 tests across 9 files — a **reference point, not a required count** (tests may be added or removed) | proposed |
 
 ## States
@@ -37,4 +37,4 @@ No secrets, no live backend, no production data. Tests use mocks. `--allow-read`
 Measurable: green/red of the step per PR; wall time of the step. Not measurable now: how many real regressions it will catch.
 
 ## Approval gates
-Owner review of #363 + answer to Q1 before merge. No deploy, no schema, no cost. Branch protection unchanged.
+Q1 answered (2026-10-24). Normal review/merge controls apply; independent AI review is advisory only. No deploy, no schema, no cost. Branch protection unchanged.
