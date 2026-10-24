@@ -43,6 +43,8 @@
     "test:hydro": "node --test src/lib/hydro/*.test.js",
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
+    "test:visual": "playwright test --config=playwright.visual.config.ts",
+    "test:visual:update": "playwright test --config=playwright.visual.config.ts --update-snapshots",
     "test:a11y": "playwright test a11y.spec.ts",
     "test:ci-workflow-guard": "node --test scripts/ci-workflow-guard.test.mjs",
     "test:security-functions": "node scripts/server-function-security-check.mjs",

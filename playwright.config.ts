@@ -11,7 +11,10 @@ export default defineConfig({
   // of this hermetic per-PR suite. e2e/contracts/* stays IN this suite: it
   // never touches a network, it's fast, and it's exactly the kind of test
   // that should gate every PR (see docs/TESTING_AND_RELEASE.md).
-  testIgnore: ['**/preprod/**'],
+  // e2e/visual/* is the pre-migration visual reference suite (playwright.visual.config.ts, `npm run
+  // test:visual`): screenshot baselines depend on the machine's fonts/rasteriser, so it is run
+  // deliberately, in the environment that produced the baselines, never as part of per-PR CI.
+  testIgnore: ['**/preprod/**', '**/visual/**'],
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
