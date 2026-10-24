@@ -46,7 +46,7 @@
     "test:a11y": "playwright test a11y.spec.ts",
     "test:ci-workflow-guard": "node --test scripts/ci-workflow-guard.test.mjs",
     "test:security-functions": "node scripts/server-function-security-check.mjs",
-    "test:server-functions": "./node_modules/.bin/deno test --no-check --allow-read=base44/entities base44/functions/tests/",
+    "test:server-functions": "./node_modules/.bin/deno test --no-check --no-lock --allow-read=base44/entities base44/functions/tests/",
     "typecheck:functions": "cd base44/functions && deno check --node-modules-dir=none */entry.ts"
   },
   "dependencies": {

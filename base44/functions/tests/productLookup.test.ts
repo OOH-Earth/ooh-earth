@@ -1,4 +1,4 @@
-import { assertEquals, assertMatch } from 'jsr:@std/assert';
+import { assertEquals, assertMatch } from 'jsr:@std/assert@1';
 import { resolveProductLookup } from '../productLookup/handler.ts';
 
 const response = (payload: unknown, status = 200) =>
