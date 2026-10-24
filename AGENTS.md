@@ -41,3 +41,7 @@ Cited elsewhere in this repo's docs as "CLAUDE.md rule #N" (`CI_PIPELINE.md`, `B
 - Prefer the existing Base44 CLI workflow over adding new npm scripts for Base44-specific tasks.
 - Reuse the existing SDK client and Vite plugin patterns before adding new Base44 integration paths.
 - Run the relevant checks from `package.json` before finishing code changes.
+
+## Architecture guidance
+
+Before making relevant frontend, Base44, state-management, error-handling, environment, testing, or release changes, read [docs/engineering/ARCHITECTURE.md](docs/engineering/ARCHITECTURE.md). It is subordinate to this file and the repository's release/security instructions: it documents the current architecture and proposes follow-up slices, but does not authorize broad refactors, backend/schema/RLS changes, deployment, or changes to release gates.
