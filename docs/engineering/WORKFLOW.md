@@ -17,6 +17,7 @@ Status: **PROPOSED process** (written 2026-10-24; adopted by use, not yet formal
 | Current work / queue | `plan.md`, `brain/NOW.md`, `brain/QUEUE.md` | |
 | Evidence log | `docs/ops/ooh-earth/06-EVIDENCE-LOG.md` | append-only |
 | UI standards | `docs/design/UI-STANDARDS.md` | **pending**: lives on the UI-audit branch, not on `main` yet |
+| Architecture guidance | `docs/engineering/ARCHITECTURE.md` | **pending**: open PR #357, not on `main` yet |
 
 New in this change: `docs/engineering/{CONSTITUTION,WORKFLOW,REVIEW-CHECKLIST,HISTORY}.md`, `specs/`, root `SPEC.md`.
 

@@ -1,5 +1,5 @@
 # 363 Offline server-function tests in CI — spec
-Owner: engineering owner (AdilQuantum) · Status: pilot, **draft** · Date: 2026-10-24 · Evidence baseline: `main` @ `b65dde8` (CI + guard merged); PR #363 head `60b6d01` (based on older `main` `e1b979d`), local run on that head: 72 passed / 0 failed / 14 s.
+Owner: engineering owner (AdilQuantum) · Status: pilot, owner decision Q1 recorded · Date: 2026-10-24 · Evidence baseline: `main` @ `b65dde8` (CI + guard merged); PR #363 head `60b6d01` (based on older `main` `e1b979d`), local run on that head: 72 passed / 0 failed / 14 s.
 
 ## Problem and outcome
 `npm run test:server-functions` runs only `base44/functions/tests/security.test.ts` and is **not run in CI**, so the other offline server-function tests (8 more files today) can regress unnoticed on any PR. Outcome: the same offline Deno suite #363 proposes runs on every PR, with no credentials and no network.
@@ -21,7 +21,7 @@ Owner: engineering owner (AdilQuantum) · Status: pilot, **draft** · Date: 2026
 | R2 | The suite runs with read access limited to `base44/entities` and no network/env permissions | proposed (as authored in #363) |
 | R3 | Job and required-check names are unchanged | proposed |
 | R4 | The refreshed PR contains only the `ci.yml` step and the one `package.json` script line; it applies cleanly on current `main` next to the workflow-guard step | proposed |
-| R5 | The suite passes on the refreshed head (offline) | proposed |
+| R5 | The suite passes on the refreshed head (offline). Baseline at `6bf5a98`: 72 tests across 9 files — a **reference point, not a required count** (tests may be added or removed) | proposed |
 
 ## States
 Pass → job continues to typecheck. Fail → job fails at the step with the Deno output (no retry). Missing Deno binary → `npm ci` provides it (devDependency); a failure there is a visible job failure, not a skip.
@@ -30,7 +30,7 @@ Pass → job continues to typecheck. Fail → job fails at the step with the Den
 No secrets, no live backend, no production data. Tests use mocks. `--allow-read` is scoped to the entities directory.
 
 ## Assumptions and open questions
-- ASSUMPTION: the owner wants the whole `tests/` directory (what #363 authored), not only `security.test.ts`. **Q1 (owner):** keep the directory, or narrow to `security.test.ts` (today's `main` behaviour)? Blocks only the *merge decision*, not this validation.
+- **Q1 RESOLVED (owner, 2026-10-24):** retain all nine files in the `tests/` directory. The scope increase from one file (`security.test.ts`) to nine is **intentional**, conditional on inspection confirming: no external network calls or live writes, no secrets/production credentials, isolated fixtures and no persistent local state, and reliable CI failure on test failure (evidence in `validation.md`).
 - ASSUMPTION: ~14 s extra CI time inside an existing job is acceptable.
 
 ## Success measures · not measurable

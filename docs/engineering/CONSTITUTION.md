@@ -32,4 +32,4 @@ Every line links its source. Labels: **[ENFORCED]** a control (CI/branch protect
 - Required CI on `main`: Lint & Typecheck, Build, Playwright (×2), Dependency audit, Dependency Review, CodeQL, Prettier; strict, linear history, admins enforced, 0 required approvals. [ENFORCED] branch protection (read 2026-10-23); `maintenance/**` is unprotected but now gets the same CI on PRs. [ENFORCED] `ci.yml`
 - Merge/deploy only through existing review controls; recorded permission denials are not bypassed by another tool or route. [OWNER]
 - No new recurring cost, paid service, scheduler or unattended agent without approval. [OWNER]
-- Agent OS infrastructure/provider/scheduler freeze is in force. [OWNER instruction in session; **no repo document found — UNKNOWN source**]
+- Agent OS infrastructure/provider/scheduler freeze is in force. [OWNER instruction from this engagement; repository provenance **unverified** — no document found (see `HISTORY.md` RDR-0007)]
