@@ -7,13 +7,14 @@ import SiteFooter from '@/components/ooh/SiteFooter';
 import TerminalTooltip from '@/components/ooh/TerminalTooltip';
 import { useWalkthrough } from '@/lib/walkthroughContext';
 import { Link } from 'react-router-dom';
+import { useAuth } from '@/lib/AuthContext';
 import { ArrowRight, Map, Zap, Compass } from 'lucide-react';
 
 const TOUR_STEPS = [
   {
     target: '[data-tour="report-header"]',
     title: 'Start Adbusting',
-    body: 'This is the field console — your entry point for documenting OOH advertising in public space. Every report enters the public archive. No login, no gatekeeper.',
+    body: 'This is the field console — your entry point for documenting OOH advertising in public space. No account needed to submit; reports are reviewed before they appear on the public map.',
   },
   {
     target: '[data-tour="report-protocol"]',
@@ -34,6 +35,7 @@ const TOUR_STEPS = [
 
 export default function Report() {
   const { registerSteps, startTour } = useWalkthrough();
+  const { isAuthenticated } = useAuth();
 
   useEffect(() => {
     registerSteps(TOUR_STEPS);
@@ -62,7 +64,8 @@ export default function Report() {
           </div>
           <p className="mt-4 max-w-md font-display text-sm leading-[1.4] text-darkgray">
             Document the billboard. Identify the brand, the agency, the operator. Classify the harm.
-            Respond. Every report enters the public archive — no login, no gatekeeper.
+            Respond. No account is needed to submit. Reports are reviewed by moderators before they
+            appear on the public map — sign in to keep track of yours.
           </p>
 
           {/* Quick nav pills */}
@@ -74,7 +77,7 @@ export default function Report() {
               <Map className="h-3 w-3" /> Live map
             </Link>
             <Link
-              to="/location/new"
+              to={isAuthenticated ? '/dashboard' : '/login?returnTo=/dashboard'}
               className="inline-flex items-center gap-1.5 border border-slate2 px-3 py-1.5 font-mono text-[9px] uppercase tracking-[0.2em] text-darkgray transition-colors hover:border-ozone hover:text-ozone"
             >
               <Zap className="h-3 w-3" /> My reports

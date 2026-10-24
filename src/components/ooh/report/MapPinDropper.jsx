@@ -67,6 +67,11 @@ export default function MapPinDropper({
   const [reverseLabel, setReverseLabel] = useState('');
   const boxRef = useRef(null);
   const timer = useRef(null);
+  // Latest pin values, so the async device-location auto-drop below checks the
+  // pin as it is when geolocation resolves, not as it was at mount -- a pin the
+  // person set (or a photo's EXIF set) in the meantime must never be replaced.
+  const pinRef = useRef({ lat, lng });
+  pinRef.current = { lat, lng };
 
   // Initialize map to device location on mount
   useEffect(() => {
@@ -76,7 +81,8 @@ export default function MapPinDropper({
         setCenter([loc.lat, loc.lng]);
         setZoom(15);
         // If no pin yet, auto-drop on current location
-        if (!lat && !lng) onPick({ lat: loc.lat, lng: loc.lng });
+        if (!pinRef.current.lat && !pinRef.current.lng)
+          onPick({ lat: loc.lat, lng: loc.lng, source: 'your device location' });
       }
     })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -164,7 +170,7 @@ export default function MapPinDropper({
     if (loc) {
       setCenter([loc.lat, loc.lng]);
       setFlyTarget({ lat: loc.lat, lng: loc.lng });
-      handlePick(loc);
+      handlePick({ ...loc, source: 'your device location' });
     }
   };
 
