@@ -3,6 +3,7 @@ import {
   listCaptures,
   removeCapture,
   incrementRetries,
+  markFailed,
   retryCapture,
   submitQueuedCapture,
 } from '@/lib/offlineQueue';
@@ -56,7 +57,10 @@ export function useOfflineSync() {
             // storage-layer error) must not abort the rest of this loop:
             // one item's write failure has nothing to do with whether the
             // NEXT item's own remote submit will succeed.
-            await incrementRetries(item.id); // marks 'failed' at MAX_RETRIES, never deletes
+            // A permanent rejection (permission/validation) cannot succeed on
+            // retry: fail it immediately rather than repeating it MAX_RETRIES times.
+            if (err?.permanent) await markFailed(item.id, err.status);
+            else await incrementRetries(item.id); // marks 'failed' at MAX_RETRIES, never deletes
           } catch (dbErr) {
             console.warn('Failed to record retry for item', item.id, dbErr?.message);
           }

@@ -46,7 +46,9 @@ async function submitOneReport(
   // second submitOneReport()) would otherwise abort this one's in-flight
   // request, since page.goto() cancels pending requests from the page it's
   // leaving.
-  await expect(page.getByText(/Transmission received|Queued offline/i)).toBeVisible({
+  await expect(
+    page.getByRole('heading', { name: /Submitted for review|Saved on this device/ }),
+  ).toBeVisible({
     timeout: 10_000,
   });
 }

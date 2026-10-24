@@ -4,7 +4,7 @@ import { base44 } from '@/api/base44Client';
 import { compressImage } from '@/lib/imageCompress';
 import { validateImageFile } from '@/lib/validateUpload';
 import { useKeyboardFilePicker } from '@/hooks/useKeyboardFilePicker';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import ReportScanner from '@/components/ooh/report/ReportScanner';
 import MapPinDropper from '@/components/ooh/report/MapPinDropper';
 import MultiPhotoUpload from '@/components/ooh/gallery/MultiPhotoUpload';
@@ -24,6 +24,10 @@ const TYPES = [
   { value: 'other', label: 'Other' },
 ];
 
+// Location sources supplied automatically (not chosen by the person).
+const AUTO_SOURCES = ['your device location', "the photo's embedded location"];
+const USER_CHOSEN_SOURCES = ['the map pin', 'the coordinates you typed'];
+
 const inp =
   'w-full bg-void border border-slate2 px-4 py-3 font-display text-sm text-silver outline-none transition-colors placeholder:text-dim focus:border-ozone';
 
@@ -34,15 +38,51 @@ export default function ReportStep1Document({ data, onChange }) {
   const captureTrigger = useKeyboardFilePicker(uploading);
   const uploadTrigger = useKeyboardFilePicker(uploading);
 
+  const [locError, setLocError] = useState('');
+  // Latest form data, read when async work (EXIF, geolocation) resolves so a
+  // location the person chose in the meantime is never replaced.
+  const dataRef = useRef(data);
+  dataRef.current = data;
+  const locSource = data.loc_source || '';
+
+  // Set the effective coordinates. Automatically supplied locations (device,
+  // photo EXIF) need an explicit acknowledgement; a deliberate map tap or typed
+  // coordinates count as the person's own confirmation. Any automatic change
+  // resets confirmation.
+  const setLocation = (lat, lng, source) =>
+    onChange({
+      lat: String(lat),
+      lng: String(lng),
+      loc_source: source,
+      loc_confirmed: !AUTO_SOURCES.includes(source),
+    });
+
   const locate = () => {
-    if (!navigator.geolocation) return;
+    setLocError('');
+    if (!navigator.geolocation) {
+      setLocError('This browser cannot share your location — tap the map or enter coordinates.');
+      return;
+    }
     setLocating(true);
     navigator.geolocation.getCurrentPosition(
       (p) => {
-        onChange({ lat: p.coords.latitude.toFixed(5), lng: p.coords.longitude.toFixed(5) });
+        setLocation(
+          p.coords.latitude.toFixed(5),
+          p.coords.longitude.toFixed(5),
+          'your device location',
+        );
         setLocating(false);
       },
-      () => setLocating(false),
+      (err) => {
+        setLocError(
+          err?.code === 1
+            ? 'Location permission was denied — tap the map to place the pin, or enter coordinates.'
+            : err?.code === 3
+              ? 'Locating timed out — try again, tap the map, or enter coordinates.'
+              : 'Your location is unavailable — tap the map or enter coordinates.',
+        );
+        setLocating(false);
+      },
       { enableHighAccuracy: true, timeout: 10000 },
     );
   };
@@ -61,8 +101,17 @@ export default function ReportStep1Document({ data, onChange }) {
     // Try EXIF GPS from the photo
     try {
       const gps = await exifr.gps(file);
-      if (gps && isFinite(gps.latitude) && isFinite(gps.longitude)) {
-        onChange({ lat: gps.latitude.toFixed(5), lng: gps.longitude.toFixed(5) });
+      if (
+        gps &&
+        isFinite(gps.latitude) &&
+        isFinite(gps.longitude) &&
+        !USER_CHOSEN_SOURCES.includes(dataRef.current.loc_source)
+      ) {
+        setLocation(
+          gps.latitude.toFixed(5),
+          gps.longitude.toFixed(5),
+          "the photo's embedded location",
+        );
       }
     } catch {
       /* no EXIF GPS */
@@ -254,8 +303,44 @@ export default function ReportStep1Document({ data, onChange }) {
         <MapPinDropper
           lat={data.lat}
           lng={data.lng}
-          onPick={({ lat, lng }) => onChange({ lat: String(lat), lng: String(lng) })}
+          onPick={({ lat, lng, source }) => setLocation(lat, lng, source || 'the map pin')}
         />
+        {locError && (
+          <p
+            className="mt-2 font-mono text-[10px] uppercase tracking-[0.15em] text-flare"
+            role="alert"
+          >
+            {locError}
+          </p>
+        )}
+        {isFinite(parseFloat(data.lat)) && isFinite(parseFloat(data.lng)) && (
+          <div
+            className="mt-2 font-mono text-[10px] uppercase tracking-[0.15em] text-ozone"
+            role="status"
+            data-testid="location-confirmation"
+          >
+            {data.loc_confirmed ? (
+              <p>
+                Location confirmed ({locSource || 'your entry'}): {data.lat}, {data.lng} — tap the
+                map to move the pin.
+              </p>
+            ) : (
+              <>
+                <p>
+                  Location set from {locSource || 'your entry'}: {data.lat}, {data.lng}. Check the
+                  pin is where you took the photo — tap the map to move it.
+                </p>
+                <button
+                  type="button"
+                  onClick={() => onChange({ loc_confirmed: true })}
+                  className="mt-2 border border-ozone px-3 py-2 font-bold text-ozone transition-colors hover:bg-ozone hover:text-void"
+                >
+                  Yes, this is where it is
+                </button>
+              </>
+            )}
+          </div>
+        )}
         <details className="group mt-2">
           <summary className="cursor-pointer font-mono text-[9px] uppercase tracking-[0.2em] text-dim/60 transition-colors hover:text-ozone">
             Enter coordinates manually
@@ -263,14 +348,26 @@ export default function ReportStep1Document({ data, onChange }) {
           <div className="mt-2 grid grid-cols-2 gap-px border border-slate2/60 bg-slate2/40">
             <input
               value={data.lat}
-              onChange={(e) => onChange({ lat: e.target.value })}
+              onChange={(e) => {
+                onChange({
+                  lat: e.target.value,
+                  loc_source: 'the coordinates you typed',
+                  loc_confirmed: true,
+                });
+              }}
               placeholder="Latitude"
               inputMode="decimal"
               className={`${inp} border-0`}
             />
             <input
               value={data.lng}
-              onChange={(e) => onChange({ lng: e.target.value })}
+              onChange={(e) => {
+                onChange({
+                  lng: e.target.value,
+                  loc_source: 'the coordinates you typed',
+                  loc_confirmed: true,
+                });
+              }}
               placeholder="Longitude"
               inputMode="decimal"
               className={`${inp} border-0`}

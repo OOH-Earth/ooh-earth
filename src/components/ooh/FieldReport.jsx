@@ -61,7 +61,22 @@ const EMPTY = {
   // Discovery panel; never persisted, never fabricated if the scan didn't
   // return one.
   ai_confidence: null,
+  // Client-only location provenance/confirmation (never sent to Location.create).
+  loc_source: '',
+  loc_confirmed: false,
 };
+
+const LOC_CONFIRM_REQUIRED =
+  'Confirm the location first — tap "Yes, this is where it is", or tap the map to place the pin yourself.';
+
+const COORDS_REQUIRED =
+  'Set the location first — tap the map, use Locate me, or enter coordinates manually.';
+
+function hasValidCoords(d) {
+  const lat = parseFloat(d.lat);
+  const lng = parseFloat(d.lng);
+  return isFinite(lat) && isFinite(lng) && Math.abs(lat) <= 90 && Math.abs(lng) <= 180;
+}
 
 export default function FieldReport() {
   const [step, setStep] = useState(1);
@@ -119,7 +134,18 @@ export default function FieldReport() {
     setPending(null);
   }, [stats, pending, earnedBadges, allBadges]);
 
-  const next = () => setStep((s) => Math.min(s + 1, 4));
+  const next = () => {
+    if (step === 1 && !hasValidCoords(data)) {
+      setError(COORDS_REQUIRED);
+      return;
+    }
+    if (step === 1 && !data.loc_confirmed) {
+      setError(LOC_CONFIRM_REQUIRED);
+      return;
+    }
+    setError('');
+    setStep((s) => Math.min(s + 1, 4));
+  };
   const prev = () => setStep((s) => Math.max(s - 1, 1));
 
   const submit = async (e) => {
@@ -127,9 +153,9 @@ export default function FieldReport() {
     setError('');
     const latN = parseFloat(data.lat);
     const lngN = parseFloat(data.lng);
-    if (!isFinite(latN) || !isFinite(lngN)) {
+    if (!hasValidCoords(data) || !data.loc_confirmed) {
       setStep(1);
-      setError('GPS coordinates required — use Locate me or enter manually.');
+      setError(hasValidCoords(data) ? LOC_CONFIRM_REQUIRED : COORDS_REQUIRED);
       return;
     }
     setSubmitting(true);
@@ -200,7 +226,12 @@ export default function FieldReport() {
           });
         }
       } else {
-        setDone({ queued: true, lat: latN, lng: lngN });
+        setDone({
+          queued: true,
+          offline: typeof navigator !== 'undefined' && navigator.onLine === false,
+          lat: latN,
+          lng: lngN,
+        });
       }
     } catch (err) {
       setError(err?.message || 'Transmission failed.');
@@ -253,12 +284,12 @@ export default function FieldReport() {
           <Check className="h-7 w-7 text-ozone" />
         )}
         <h3 className="mt-4 font-display text-3xl font-bold tracking-[-0.02em] text-silver">
-          {done.queued ? 'Queued offline' : 'Transmission received'}
+          {done.queued ? 'Saved on this device' : 'Submitted for review'}
         </h3>
         <p className="mt-2 font-display text-sm leading-[1.4] text-darkgray">
           {done.queued
-            ? `Offline — saved on this device, transmits when you reconnect. Position ${done.lat?.toFixed(4)}, ${done.lng?.toFixed(4)}.`
-            : `Field report logged to the public archive. Pending verification — renders on the live map immediately.`}
+            ? `${done.offline ? 'You appear to be offline.' : 'We could not reach the server.'} Your report is saved on this device and will be sent automatically when the connection returns — it has not been submitted yet. Position ${done.lat?.toFixed(4)}, ${done.lng?.toFixed(4)}.`
+            : `Your report is saved and waiting for moderator review. It will appear on the public map once it is verified — it is not public yet.`}
         </p>
         {done.brand_name && (
           <div className="mt-4 border border-slate2/60 bg-void px-4 py-3">
@@ -270,10 +301,16 @@ export default function FieldReport() {
             </div>
           </div>
         )}
+        {!done.queued && !user && (
+          <p className="mt-3 font-display text-xs leading-[1.4] text-darkgray">
+            You submitted without an account, so this report can't be looked up later. Create one to
+            keep track of your reports.
+          </p>
+        )}
         <DiscoveryPanel data={discovery} />
         <PhotoSyncStatus state={photoSync} onRetry={retryFailedPhotos} />
         <div className="mt-6 flex flex-wrap gap-3">
-          {done.id && (
+          {done.id && user && (
             <Link
               to={`/location/${done.id}`}
               className="inline-flex items-center gap-2 bg-ozone px-5 py-3 font-mono text-[11px] font-bold uppercase tracking-[0.25em] text-void transition-colors hover:bg-flare"
@@ -281,11 +318,26 @@ export default function FieldReport() {
               View your report <ArrowRight className="h-3.5 w-3.5" />
             </Link>
           )}
+          {user ? (
+            <Link
+              to="/dashboard"
+              className="inline-flex items-center gap-2 border border-slate2 px-5 py-3 font-mono text-[11px] font-bold uppercase tracking-[0.25em] text-darkgray transition-colors hover:border-ozone hover:text-ozone"
+            >
+              My reports <ArrowRight className="h-3.5 w-3.5" />
+            </Link>
+          ) : (
+            <Link
+              to="/register?returnTo=/dashboard"
+              className="inline-flex items-center gap-2 bg-ozone px-5 py-3 font-mono text-[11px] font-bold uppercase tracking-[0.25em] text-void transition-colors hover:bg-flare"
+            >
+              Create an account to track it <ArrowRight className="h-3.5 w-3.5" />
+            </Link>
+          )}
           <Link
-            to={done.id ? `/map?highlight=${done.id}` : '/map'}
-            className={`inline-flex items-center gap-2 px-5 py-3 font-mono text-[11px] font-bold uppercase tracking-[0.25em] transition-colors ${done.id ? 'border border-slate2 text-darkgray hover:border-ozone hover:text-ozone' : 'bg-ozone text-void hover:bg-flare'}`}
+            to="/map"
+            className="inline-flex items-center gap-2 border border-slate2 px-5 py-3 font-mono text-[11px] font-bold uppercase tracking-[0.25em] text-darkgray transition-colors hover:border-ozone hover:text-ozone"
           >
-            View on map <ArrowRight className="h-3.5 w-3.5" />
+            Explore the map <ArrowRight className="h-3.5 w-3.5" />
           </Link>
           <button
             onClick={reset}
