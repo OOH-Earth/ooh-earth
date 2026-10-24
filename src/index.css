@@ -1456,6 +1456,43 @@
 .leaflet-control-zoom a:last-child {
   border-bottom: none !important;
 }
+/* Map page only. Map.jsx publishes --map-sheet-overlap (how far the mobile sheet covers the map)
+   and --map-specs-h (flat-view spec bar) on [data-map-room]; the bottom Leaflet/MapLibre control
+   groups (zoom, attribution) stack above them. Everywhere else the vars are absent, so these
+   resolve to 0 and nothing moves. Zoom buttons are 40px here (AA floor is 24, project goal 44). */
+[data-map-room] .leaflet-bottom,
+[data-map-room] .maplibregl-ctrl-bottom-right,
+[data-map-room] .maplibregl-ctrl-bottom-left {
+  bottom: calc(var(--map-sheet-overlap, 0px) + var(--map-specs-h, 0px));
+}
+/* Little free height (short landscape, small phones): the zoom pair lies in a row instead. */
+[data-map-free='tight'] .leaflet-control-zoom,
+[data-map-free='minimal'] .leaflet-control-zoom {
+  display: flex;
+}
+/* Minimal free height (640x360 at 200% zoom, short landscape): zoom sits beside attribution in a row. */
+[data-map-free='minimal'] .leaflet-bottom.leaflet-right {
+  display: flex;
+  flex-direction: row-reverse;
+  align-items: flex-end;
+}
+[data-map-free='minimal'] .leaflet-bottom.leaflet-right .leaflet-control {
+  float: none;
+  clear: none;
+}
+[data-map-free='minimal'] .leaflet-control-zoom {
+  margin: 6px !important;
+}
+[data-map-free='tight'] .leaflet-control-zoom a,
+[data-map-free='minimal'] .leaflet-control-zoom a {
+  border-bottom: none !important;
+}
+[data-map-room] .leaflet-control-zoom a {
+  width: 40px !important;
+  height: 40px !important;
+  line-height: 40px !important;
+}
+
 .light .leaflet-control-zoom {
   border-color: rgba(0, 0, 0, 0.1) !important;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.18) !important;

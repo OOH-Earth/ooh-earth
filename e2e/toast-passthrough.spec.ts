@@ -13,7 +13,7 @@ for (const [w, h] of [
     await page.setViewportSize({ width: w, height: h });
     await mockBase44(page, { user: null, locations: {}, fieldChecks: {} });
     await page.goto('/map');
-    await page.getByTestId('field-attention-toggle').waitFor({ timeout: 30_000 });
+    await page.getByRole('button', { name: 'Flat map' }).first().waitFor({ timeout: 30_000 });
     const report = await page.evaluate(() => {
       const boxes = [...document.querySelectorAll('div.fixed')].filter((e) =>
         /(^|\s)z-\[100\](\s|$)/.test(e.className),

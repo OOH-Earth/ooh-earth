@@ -27,7 +27,10 @@ import {
   Maximize2,
   ChevronLeft,
   ChevronRight,
+  ChevronDown,
   Fingerprint,
+  SlidersHorizontal,
+  X,
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useWalkthrough } from '@/lib/walkthroughContext';
@@ -243,12 +246,79 @@ export default function Map() {
     return () => mq.removeEventListener('change', update);
   }, []);
 
+  // Compact map chrome: phones (< 768 px) and short landscape (< 500 px tall, < 1024 px wide) -- the
+  // same width-OR-short-height rule OSIRIS uses for its mobile mode. Secondary controls (field
+  // attention, tally, news ticker, optional tools) then live behind one labelled disclosure
+  // instead of stacking over a map that has almost no room left.
+  const COMPACT_QUERY = '(max-width: 767px), (max-height: 499px) and (max-width: 1023px)';
+  const [compactMq, setCompact] = useState(() => window.matchMedia(COMPACT_QUERY).matches);
+  // The map pane can be much narrower than the window (split layout at 1024px leaves ~380px), so
+  // chrome density follows the pane width too. Set from the measured box in measureOverlay.
+  const [paneNarrow, setPaneNarrow] = useState(false);
+  const compact = compactMq || paneNarrow;
+  useEffect(() => {
+    const mq = window.matchMedia(COMPACT_QUERY);
+    const update = () => setCompact(mq.matches);
+    update();
+    mq.addEventListener('change', update);
+    return () => mq.removeEventListener('change', update);
+  }, []);
+  // Short landscape: the in-map search joins the controls row instead of taking a row of its own.
+  const SHORT_LANDSCAPE_QUERY =
+    '(max-height: 499px) and (max-width: 1023px) and (orientation: landscape)';
+  const [shortLand, setShortLand] = useState(
+    () => window.matchMedia(SHORT_LANDSCAPE_QUERY).matches,
+  );
+  useEffect(() => {
+    const mq = window.matchMedia(SHORT_LANDSCAPE_QUERY);
+    const update = () => setShortLand(mq.matches);
+    update();
+    mq.addEventListener('change', update);
+    return () => mq.removeEventListener('change', update);
+  }, []);
+  const [toolsOpen, setToolsOpen] = useState(false);
+  const toolsButtonRef = useRef(null);
+  const toolsPanelRef = useRef(null);
+  useEffect(() => {
+    if (!compact) setToolsOpen(false);
+  }, [compact]);
+  // Focus returns to the Tools button on close. In short landscape the panel lives in the sheet,
+  // which covers the map (making the button inert) until it has collapsed, so the actual focus
+  // call is deferred to measureOverlay, which clears `inert`.
+  const pendingFocusRef = useRef(false);
+  const closeTools = useCallback(() => {
+    setToolsOpen(false);
+    pendingFocusRef.current = true;
+    if (!toolsButtonRef.current?.closest('[inert]')) {
+      pendingFocusRef.current = false;
+      toolsButtonRef.current?.focus();
+    }
+  }, []);
+  // Opening the panel moves focus into it so keyboard users land on its content, not past it
+  // on the toolbar; Escape / the close button return focus to the Tools button. Escape is
+  // handled at the document so it still works after a control inside the panel unmounts
+  // (focus then falls back to <body>), and yields to anything that already handled it.
+  useEffect(() => {
+    if (!toolsOpen) return undefined;
+    toolsPanelRef.current?.focus();
+    const onKey = (e) => {
+      if (e.key === 'Escape' && !e.defaultPrevented) closeTools();
+    };
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, [toolsOpen, closeTools]);
+
   // Publishes the overlay frame's measurements on the map box so layers that cannot know them
   // (GlobeHud, the frame's own max-height) never guess an offset:
   //   --map-overlay-bottom        bottom edge of the whole frame
   //   --map-overlay-right-bottom  bottom edge of the action toolbar
   //   --map-sheet-overlap         how far the fixed mobile bottom sheet covers the map box
+  //   --map-specs-h               height of the flat-view spec bar (0 when absent)
+  //   --map-bottom-reserve        spec bar + attribution line: the zone the overlay frame stays out of
   //   data-map-room               full | tight | none -- space left under the frame for the HUD
+  //   --map-panel-max             height the compact Tools panel may use below the controls row
+  //   data-map-free               ok | tight | minimal -- how the bottom-right control column must be laid out
+  //   data-map-covered / inert    set when the sheet covers (nearly) the whole map box
   // Re-measured whenever the frame, the box or the sheet resizes (expanded filters, wrapped
   // toolbar, larger text, sheet snap).
   const overlayRef = useRef(null);
@@ -268,8 +338,41 @@ export default function Map() {
     box.style.setProperty('--map-overlay-bottom', edge(frame));
     box.style.setProperty('--map-overlay-right-bottom', edge(toolbar || frame));
     box.style.setProperty('--map-sheet-overlap', `${overlap}px`);
+    const specs = box.querySelector('[data-map-specs]');
+    const specsH = specs ? Math.ceil(specs.offsetHeight) : 0;
+    box.style.setProperty('--map-specs-h', `${specsH}px`);
+    // Bottom zone owned by attribution (44px) and the spec bar: the frame never extends into it.
+    box.style.setProperty('--map-bottom-reserve', `${specsH + 44}px`);
+    // Space under the whole frame (decorative HUD placement)...
     const room = boxRect.height - overlap - (frame.getBoundingClientRect().bottom - boxRect.top);
-    box.dataset.mapRoom = room >= 130 ? 'full' : room >= 80 ? 'tight' : 'none';
+    // The HUD text block (54px) shares this band with the globe hint along the bottom edge (48px)
+    // and the control row, so it needs ~110px before it shows at all.
+    box.dataset.mapRoom = room >= 150 ? 'full' : room >= 110 ? 'tight' : 'none';
+    // ...and the space the bottom-right control column has. When the Tools panel is open it is
+    // excluded: the panel is itself bounded by this value (below), so including it would feed
+    // back into its own size.
+    const rowA = frame.firstElementChild;
+    const rowBottom = rowA ? rowA.getBoundingClientRect().bottom - boxRect.top : 0;
+    const panelOpen = !!frame.querySelector('#map-tools-panel');
+    const frameBottom = frame.getBoundingClientRect().bottom - boxRect.top;
+    const ctrlRoom = boxRect.height - overlap - (panelOpen ? rowBottom : frameBottom);
+    box.dataset.mapFree = ctrlRoom >= 230 ? 'ok' : ctrlRoom >= 120 ? 'tight' : 'minimal';
+    // Height the Tools panel may use: from the controls row down to the sheet, clear of the
+    // attribution line (44px) and, when free space is minimal, of the control row above it.
+    box.style.setProperty(
+      '--map-panel-max',
+      `${Math.max(96, Math.floor(boxRect.height - overlap - rowBottom - (ctrlRoom < 120 ? 100 : 44)))}px`,
+    );
+    // A full-height sheet hides the whole map: take the covered controls out of the focus order
+    // and pointer path instead of leaving them focusable underneath it.
+    const covered = overlap > 0 && overlap >= boxRect.height - 64;
+    box.inert = covered;
+    if (!covered && pendingFocusRef.current) {
+      pendingFocusRef.current = false;
+      toolsButtonRef.current?.focus();
+    }
+    setPaneNarrow(boxRect.width < 600);
+    box.dataset.mapCovered = covered ? 'true' : 'false';
   }, []);
   const overlayCallbackRef = useCallback(
     (frame) => {
@@ -823,7 +926,16 @@ export default function Map() {
 
   // Shared results list — rendered in the desktop cards panel and the mobile
   // bottom sheet so both stay in sync from the same state.
-  const renderResultsContent = () => (
+  // Shared retry for an unreadable view (desktop results panel and the mobile sheet header).
+  const retryView = () => {
+    requestedViewportRef.current = '';
+    if (view === 'globe') reloadLocations();
+    else if (bounds) loadViewportLocations(bounds);
+  };
+
+  // `inSheet`: the mobile sheet shows the recoverable error (and its Retry action) in its
+  // fixed header, so the scrolling body only explains it and does not repeat the alert.
+  const renderResultsContent = (inSheet = false) => (
     <PullToRefresh onRefresh={reloadLocations} className="min-h-0 flex-1">
       <div className="space-y-px">
         {!primaryLayer ? (
@@ -842,24 +954,24 @@ export default function Map() {
             // Reading evidence for this view…
           </div>
         ) : isStreet && raw?.locationState === 'unavailable' ? (
-          <div role="alert" className="p-6 text-center">
-            <div className="font-mono text-[10px] uppercase tracking-[0.25em] text-flare">
-              // View evidence UNKNOWN
-            </div>
-            <p className="mt-1 font-mono text-[9px] uppercase tracking-[0.16em] text-dim/70">
+          <div role={inSheet ? undefined : 'alert'} className="p-6 text-center">
+            {!inSheet && (
+              <div className="font-mono text-[10px] uppercase tracking-[0.25em] text-flare">
+                // View evidence UNKNOWN
+              </div>
+            )}
+            <p className="mt-1 font-mono text-[10px] uppercase tracking-[0.16em] text-dim">
               The atlas could not read this geographic window. No absence is being claimed.
             </p>
-            <button
-              type="button"
-              onClick={() => {
-                requestedViewportRef.current = '';
-                if (view === 'globe') reloadLocations();
-                else if (bounds) loadViewportLocations(bounds);
-              }}
-              className="mt-3 inline-flex items-center border border-ozone px-3 py-1.5 font-mono text-[9px] font-bold uppercase tracking-[0.2em] text-ozone transition-colors hover:bg-ozone hover:text-void"
-            >
-              Retry view
-            </button>
+            {!inSheet && (
+              <button
+                type="button"
+                onClick={retryView}
+                className="mt-3 inline-flex min-h-10 items-center border border-ozone px-3 font-mono text-[10px] font-bold uppercase tracking-[0.2em] text-ozone transition-colors hover:bg-ozone hover:text-void"
+              >
+                Retry view
+              </button>
+            )}
           </div>
         ) : layerResults.length ? (
           isStreet ? (
@@ -921,6 +1033,132 @@ export default function Map() {
         )}
       </div>
     </PullToRefresh>
+  );
+
+  // Pieces of the overlay frame. Inline from md up on tall screens; in compact chrome they move
+  // into the Tools disclosure. They are built once so both placements share the same markup/state.
+  const attentionBlock = (
+    <div className="pointer-events-auto max-w-full">
+      <button
+        type="button"
+        data-testid="field-attention-toggle"
+        aria-label="Field attention"
+        aria-pressed={attentionMode}
+        onClick={() => setAttentionMode(!attentionMode)}
+        className={`flex min-h-10 items-center gap-1.5 border px-2.5 font-mono text-[10px] font-bold uppercase tracking-[0.18em] backdrop-blur-md transition-colors ${attentionMode ? 'border-flare bg-flare text-void' : 'border-slate2 bg-void/80 text-darkgray hover:border-flare hover:text-flare'}`}
+      >
+        <AlertTriangle className="h-3.5 w-3.5" /> Field attention
+      </button>
+      {attentionMode && (
+        <div
+          data-testid="attention-filters"
+          className="mt-1 flex max-w-full flex-wrap gap-1 border border-slate2 bg-void/90 p-1 backdrop-blur-md"
+        >
+          {Object.values(MAP_ATTENTION_FILTERS).map((filter) => (
+            <button
+              key={filter}
+              type="button"
+              aria-pressed={attentionFilter === filter}
+              onClick={() => setAttentionFilter(filter)}
+              className={`min-h-10 shrink-0 px-2 font-mono text-[10px] font-bold uppercase tracking-[0.12em] ${attentionFilter === filter ? 'bg-ozone text-void' : 'text-darkgray hover:text-ozone'}`}
+            >
+              {filter}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+  const secondaryToolsGroup = (
+    <>
+      <div className="hidden md:flex flex-wrap items-center justify-end gap-1.5">
+        <MapStyleSwitcher />
+        <button
+          onClick={() => setFinderOpen(true)}
+          aria-label="Find units"
+          className="hidden md:flex items-center gap-1.5 border border-ozone/60 bg-void/80 min-h-10 px-2.5 font-mono text-[10px] font-bold uppercase tracking-[0.25em] text-ozone backdrop-blur-md transition-colors hover:bg-ozone hover:text-void"
+        >
+          <ScanSearch className="h-3.5 w-3.5" /> <span className="hidden sm:inline">Find</span>
+        </button>
+        <button
+          onClick={exportGeoJSON}
+          aria-label="Export GeoJSON"
+          className="hidden md:flex items-center gap-1.5 border border-slate2 bg-void/80 min-h-10 px-2.5 font-mono text-[10px] font-bold uppercase tracking-[0.25em] text-darkgray backdrop-blur-md transition-colors hover:border-ozone hover:text-ozone"
+        >
+          <FileDown className="h-3.5 w-3.5" /> <span className="hidden sm:inline">GeoJSON</span>
+        </button>
+        <a
+          href="https://oohearth.app/access-keys/"
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label="Access keys reference"
+          className="hidden md:flex items-center gap-1.5 border border-slate2 bg-void/80 min-h-10 px-2.5 font-mono text-[10px] font-bold uppercase tracking-[0.25em] text-darkgray backdrop-blur-md transition-colors hover:border-ozone hover:text-ozone"
+        >
+          <Key className="h-3.5 w-3.5" /> <span className="hidden sm:inline">Keys</span>
+        </a>
+      </div>
+    </>
+  );
+  const secondaryTools = (
+    <div className="hidden md:flex flex-wrap items-center justify-end gap-1.5">
+      {secondaryToolsGroup}
+    </div>
+  );
+  const statusItems = (
+    <>
+      {attentionBlock}
+      <FieldTallyWidget markers={layerFiltered} clusters={view === 'globe' ? globeClusters : 0} />
+      <div className="pointer-events-none">
+        <MapAlertTicker />
+      </div>
+    </>
+  );
+  const statusStack = (
+    <>
+      {attentionBlock}
+      <FieldTallyWidget markers={layerFiltered} clusters={view === 'globe' ? globeClusters : 0} />
+    </>
+  );
+
+  // Short landscape has no free height for a floating panel (the map box is ~200px), so Tools
+  // opens in the bottom sheet there, the way OSIRIS's mobile drawer does: title, close, scroll body.
+  const toolsInSheet = shortLand;
+  const toolsPanel = (
+    <div
+      id="map-tools-panel"
+      ref={toolsPanelRef}
+      role="region"
+      aria-label="Map tools and status"
+      tabIndex={-1}
+      className={
+        toolsInSheet
+          ? 'pointer-events-auto flex flex-col gap-2 p-3 outline-none'
+          : 'pointer-events-auto flex max-h-[var(--map-panel-max,60vh)] max-w-[calc(100%-3.5rem)] shrink-0 [[data-map-free=tight]_&]:max-w-[calc(100%-6.5rem)] flex-col gap-2 overflow-y-auto overscroll-contain border border-slate2 bg-void/95 p-2 backdrop-blur-md'
+      }
+    >
+      {!toolsInSheet && (
+        <div className="flex items-center justify-between gap-2">
+          <span className="font-mono text-[10px] font-bold uppercase tracking-[0.2em] text-ozone">
+            // Map tools
+          </span>
+          <button
+            type="button"
+            onClick={closeTools}
+            aria-label="Close map tools"
+            className="flex h-10 w-10 items-center justify-center text-dim transition-colors hover:text-ozone"
+          >
+            <X className="h-3.5 w-3.5" />
+          </button>
+        </div>
+      )}
+      {statusItems}
+      {view === 'flat' && (
+        <div className="pointer-events-none">
+          <SpecsBar counts={counts} total={raw?.markers?.length || 0} />
+        </div>
+      )}
+      {secondaryTools}
+    </div>
   );
 
   return (
@@ -1033,6 +1271,7 @@ export default function Map() {
 
           <div data-tour="map" className={`relative min-h-0 isolate ${mapClass}`}>
             {!fullscreen &&
+              !shortLand &&
               compactMapBar(
                 'hidden items-center gap-1.5 border-b border-slate2/60 bg-void/95 px-2 py-1.5 backdrop-blur-md [@media(orientation:landscape)_and_(max-width:1023px)]:flex absolute inset-x-0 top-0 z-[900]',
               )}
@@ -1071,126 +1310,107 @@ export default function Map() {
                 short of the right edge, keeping the Globe3D zoom column clear. */}
             <div
               ref={overlayCallbackRef}
-              className="pointer-events-none absolute inset-x-2.5 top-2.5 z-[1000] flex max-h-[calc(100%-1.25rem-var(--map-sheet-overlap,0px))] flex-col gap-1 overflow-y-auto overscroll-contain p-0.5 [@media(orientation:landscape)_and_(max-width:1023px)]:top-[3.875rem] [@media(orientation:landscape)_and_(max-width:1023px)]:max-h-[calc(100%-4.875rem)]"
+              className={`pointer-events-none absolute inset-x-2.5 top-2.5 z-[1000] flex max-h-[calc(100%-1.25rem-var(--map-sheet-overlap,0px)-var(--map-bottom-reserve,0px))] flex-col gap-1 p-0.5 ${compact ? '' : 'overflow-y-auto overscroll-contain'} ${shortLand ? '' : '[@media(orientation:landscape)_and_(max-width:1023px)]:top-[3.875rem] [@media(orientation:landscape)_and_(max-width:1023px)]:max-h-[calc(100%-4.875rem-var(--map-sheet-overlap,0px)-var(--map-bottom-reserve,0px))]'}`}
             >
               <div className="flex shrink-0 flex-wrap items-start justify-between gap-x-2 gap-y-1">
-                <div className="pointer-events-auto flex border border-slate2 bg-void/80 backdrop-blur-md">
-                  <button
-                    onClick={() => setView('flat')}
-                    aria-label="Flat map"
-                    className={`flex items-center gap-1.5 px-2.5 py-2 font-mono text-[10px] font-bold uppercase tracking-[0.25em] transition-colors ${view === 'flat' ? 'bg-ozone text-void' : 'text-darkgray hover:text-ozone'}`}
-                  >
-                    <MapIcon className="h-3.5 w-3.5" />{' '}
-                    <span className="hidden sm:inline">Flat</span>
-                  </button>
-                  <button
-                    onClick={() => setView('globe')}
-                    aria-label="Globe view"
-                    className={`flex items-center gap-1.5 px-2.5 py-2 font-mono text-[10px] font-bold uppercase tracking-[0.25em] transition-colors ${view === 'globe' ? 'bg-ozone text-void' : 'text-darkgray hover:text-ozone'}`}
-                  >
-                    <Globe className="h-3.5 w-3.5" />{' '}
-                    <span className="hidden sm:inline">Globe</span>
-                  </button>
+                <div
+                  className={`flex items-start gap-1 ${shortLand ? 'flex-[1_1_22rem]' : 'flex-wrap'}`}
+                >
+                  {shortLand &&
+                    !fullscreen &&
+                    compactMapBar(
+                      'pointer-events-auto flex min-w-[10rem] flex-1 items-center gap-1.5 border border-slate2 bg-void/90 px-1.5 backdrop-blur-md',
+                    )}
+                  <div className="pointer-events-auto flex border border-slate2 bg-void/80 backdrop-blur-md">
+                    <button
+                      onClick={() => setView('flat')}
+                      aria-label="Flat map"
+                      className={`flex items-center gap-1.5 min-h-10 min-w-10 justify-center px-2.5 font-mono text-[10px] font-bold uppercase tracking-[0.25em] transition-colors ${view === 'flat' ? 'bg-ozone text-void' : 'text-darkgray hover:text-ozone'}`}
+                    >
+                      <MapIcon className="h-3.5 w-3.5" />{' '}
+                      <span className={compact ? 'sr-only' : 'hidden sm:inline'}>Flat</span>
+                    </button>
+                    <button
+                      onClick={() => setView('globe')}
+                      aria-label="Globe view"
+                      className={`flex items-center gap-1.5 min-h-10 min-w-10 justify-center px-2.5 font-mono text-[10px] font-bold uppercase tracking-[0.25em] transition-colors ${view === 'globe' ? 'bg-ozone text-void' : 'text-darkgray hover:text-ozone'}`}
+                    >
+                      <Globe className="h-3.5 w-3.5" />{' '}
+                      <span className={compact ? 'sr-only' : 'hidden sm:inline'}>Globe</span>
+                    </button>
+                  </div>
+                  {compact && (
+                    <button
+                      ref={toolsButtonRef}
+                      type="button"
+                      data-testid="map-tools-toggle"
+                      aria-expanded={toolsOpen}
+                      aria-controls="map-tools-panel"
+                      onClick={() => setToolsOpen((o) => !o)}
+                      className={`pointer-events-auto flex min-h-10 items-center gap-1.5 border px-2.5 font-mono text-[10px] font-bold uppercase tracking-[0.18em] backdrop-blur-md transition-colors ${toolsOpen ? 'border-ozone bg-ozone text-void' : 'border-slate2 bg-void/80 text-darkgray hover:border-ozone hover:text-ozone'}`}
+                    >
+                      <SlidersHorizontal className="h-3.5 w-3.5" /> Tools
+                      {attentionMode && (
+                        <span className="flex items-center gap-1 text-flare">
+                          <span aria-hidden className="h-1.5 w-1.5 rounded-full bg-flare" />
+                          <span className="sr-only">Field attention on</span>
+                        </span>
+                      )}
+                      <ChevronDown
+                        className={`h-3.5 w-3.5 transition-transform ${toolsOpen ? 'rotate-180' : ''}`}
+                      />
+                    </button>
+                  )}
                 </div>
                 <div
                   data-map-toolbar
                   className="pointer-events-auto flex flex-wrap items-center justify-end gap-1.5"
                 >
-                  <div className="hidden md:flex flex-wrap items-center justify-end gap-1.5">
-                    <MapStyleSwitcher />
-                    <button
-                      onClick={() => setFinderOpen(true)}
-                      aria-label="Find units"
-                      className="hidden md:flex items-center gap-1.5 border border-ozone/60 bg-void/80 px-2.5 py-2 font-mono text-[10px] font-bold uppercase tracking-[0.25em] text-ozone backdrop-blur-md transition-colors hover:bg-ozone hover:text-void"
-                    >
-                      <ScanSearch className="h-3.5 w-3.5" />{' '}
-                      <span className="hidden sm:inline">Find</span>
-                    </button>
-                    <button
-                      onClick={exportGeoJSON}
-                      aria-label="Export GeoJSON"
-                      className="hidden md:flex items-center gap-1.5 border border-slate2 bg-void/80 px-2.5 py-2 font-mono text-[10px] font-bold uppercase tracking-[0.25em] text-darkgray backdrop-blur-md transition-colors hover:border-ozone hover:text-ozone"
-                    >
-                      <FileDown className="h-3.5 w-3.5" />{' '}
-                      <span className="hidden sm:inline">GeoJSON</span>
-                    </button>
-                    <a
-                      href="https://oohearth.app/access-keys/"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      aria-label="Access keys reference"
-                      className="hidden md:flex items-center gap-1.5 border border-slate2 bg-void/80 px-2.5 py-2 font-mono text-[10px] font-bold uppercase tracking-[0.25em] text-darkgray backdrop-blur-md transition-colors hover:border-ozone hover:text-ozone"
-                    >
-                      <Key className="h-3.5 w-3.5" /> <span className="hidden sm:inline">Keys</span>
-                    </a>
-                  </div>
-                  <div className="hidden md:block h-8 w-px bg-slate2/60" />
+                  {!compact && (
+                    <>
+                      {secondaryTools}
+                      <div className="hidden md:block h-8 w-px bg-slate2/60" />
+                    </>
+                  )}
                   <button
                     onClick={() => setGraffitiCamOpen(true)}
                     aria-label="Graffiti camera"
-                    className="flex items-center gap-1.5 border border-flare bg-flare px-2.5 py-2 font-mono text-[10px] font-bold uppercase tracking-[0.25em] text-void transition-colors hover:bg-ozone hover:border-ozone"
+                    className="flex items-center gap-1.5 border border-flare bg-flare min-h-10 min-w-10 justify-center px-2.5 font-mono text-[10px] font-bold uppercase tracking-[0.25em] text-void transition-colors hover:bg-ozone hover:border-ozone"
                   >
                     <SprayCan className="h-3.5 w-3.5" />{' '}
-                    <span className="hidden sm:inline">Graffiti</span>
+                    <span className={compact ? 'sr-only' : 'hidden sm:inline'}>Graffiti</span>
                   </button>
                   <button
                     onClick={() => setCaptureOpen(true)}
                     aria-label="Capture photo"
-                    className="flex items-center gap-1.5 border border-ozone bg-ozone px-2.5 py-2 font-mono text-[10px] font-bold uppercase tracking-[0.25em] text-void transition-colors hover:bg-flare hover:border-flare"
+                    className="flex items-center gap-1.5 border border-ozone bg-ozone min-h-10 min-w-10 justify-center px-2.5 font-mono text-[10px] font-bold uppercase tracking-[0.25em] text-void transition-colors hover:bg-flare hover:border-flare"
                   >
                     <Camera className="h-3.5 w-3.5" />{' '}
-                    <span className="hidden sm:inline">Capture</span>
+                    <span className={compact ? 'sr-only' : 'hidden sm:inline'}>Capture</span>
                   </button>
                   <Link
                     data-tour="report"
                     to="/report"
                     aria-label="Report"
-                    className="flex items-center gap-1.5 border border-ozone bg-ozone px-2.5 py-2 font-mono text-[10px] font-bold uppercase tracking-[0.25em] text-void transition-colors hover:bg-flare hover:border-flare"
+                    className="flex items-center gap-1.5 border border-ozone bg-ozone min-h-10 min-w-10 justify-center px-2.5 font-mono text-[10px] font-bold uppercase tracking-[0.25em] text-void transition-colors hover:bg-flare hover:border-flare"
                   >
                     <Megaphone className="h-3.5 w-3.5" />{' '}
-                    <span className="hidden sm:inline">Report</span>
+                    <span className={compact ? 'sr-only' : 'hidden sm:inline'}>Report</span>
                   </Link>
                 </div>
               </div>
-              <div className="flex max-w-[calc(100%-3.5rem)] shrink-0 flex-col items-start gap-1">
-                <div className="pointer-events-auto max-w-full">
-                  <button
-                    type="button"
-                    data-testid="field-attention-toggle"
-                    aria-label="Field attention"
-                    aria-pressed={attentionMode}
-                    onClick={() => setAttentionMode(!attentionMode)}
-                    className={`flex min-h-9 items-center gap-1.5 border px-2.5 py-2 font-mono text-[10px] font-bold uppercase tracking-[0.18em] backdrop-blur-md transition-colors ${attentionMode ? 'border-flare bg-flare text-void' : 'border-slate2 bg-void/80 text-darkgray hover:border-flare hover:text-flare'}`}
-                  >
-                    <AlertTriangle className="h-3.5 w-3.5" /> Field attention
-                  </button>
-                  {attentionMode && (
-                    <div
-                      data-testid="attention-filters"
-                      className="mt-1 flex max-w-full flex-wrap gap-1 border border-slate2 bg-void/90 p-1 backdrop-blur-md"
-                    >
-                      {Object.values(MAP_ATTENTION_FILTERS).map((filter) => (
-                        <button
-                          key={filter}
-                          type="button"
-                          aria-pressed={attentionFilter === filter}
-                          onClick={() => setAttentionFilter(filter)}
-                          className={`min-h-8 shrink-0 px-2 font-mono text-[9px] font-bold uppercase tracking-[0.12em] ${attentionFilter === filter ? 'bg-ozone text-void' : 'text-darkgray hover:text-ozone'}`}
-                        >
-                          {filter}
-                        </button>
-                      ))}
-                    </div>
-                  )}
-                </div>
-                <FieldTallyWidget
-                  markers={layerFiltered}
-                  clusters={view === 'globe' ? globeClusters : 0}
-                />
-              </div>
-              <div className="pointer-events-none w-[calc(100%-3.5rem)] shrink-0 md:w-[min(calc(100%-3.5rem),28rem)]">
-                <MapAlertTicker />
-              </div>
+              {compact ? (
+                toolsOpen && !toolsInSheet && toolsPanel
+              ) : (
+                <>
+                  <div className="flex max-w-[calc(100%-3.5rem)] shrink-0 flex-col items-start gap-1 [[data-map-free=tight]_&]:max-w-[calc(100%-6.5rem)]">
+                    {statusStack}
+                  </div>
+                  <div className="pointer-events-none w-[calc(100%-3.5rem)] shrink-0 md:w-[min(calc(100%-3.5rem),28rem)] [[data-map-free=tight]_&]:w-[calc(100%-6.5rem)] [[data-map-free=tight]_&]:md:w-[min(calc(100%-6.5rem),28rem)]">
+                    <MapAlertTicker />
+                  </div>
+                </>
+              )}
             </div>
             {attentionMode && selectedAttention?.attention && (
               <div
@@ -1212,20 +1432,20 @@ export default function Map() {
                 <div className="mt-3 flex flex-wrap gap-2">
                   <Link
                     to={`/location/${selectedAttention.id}`}
-                    className="border border-ozone px-2 py-1.5 font-mono text-[9px] font-bold uppercase tracking-[0.12em] text-ozone"
+                    className="border border-ozone px-2 py-1.5 font-mono text-[10px] font-bold uppercase tracking-[0.12em] text-ozone"
                   >
                     View location
                   </Link>
                   <Link
                     to={`/location/${selectedAttention.id}?action=recheck&from=map-attention`}
-                    className="border border-flare px-2 py-1.5 font-mono text-[9px] font-bold uppercase tracking-[0.12em] text-flare"
+                    className="border border-flare px-2 py-1.5 font-mono text-[10px] font-bold uppercase tracking-[0.12em] text-flare"
                   >
                     Recheck
                   </Link>
                   <button
                     type="button"
                     onClick={addSelectedToMission}
-                    className="border border-slate2 px-2 py-1.5 font-mono text-[9px] font-bold uppercase tracking-[0.12em] text-darkgray hover:border-ozone hover:text-ozone"
+                    className="border border-slate2 px-2 py-1.5 font-mono text-[10px] font-bold uppercase tracking-[0.12em] text-darkgray hover:border-ozone hover:text-ozone"
                   >
                     Add to route
                   </button>
@@ -1233,7 +1453,7 @@ export default function Map() {
                 {missionNotice && (
                   <div
                     role="status"
-                    className="mt-2 font-mono text-[9px] uppercase tracking-[0.12em] text-ozone"
+                    className="mt-2 font-mono text-[10px] uppercase tracking-[0.12em] text-ozone"
                   >
                     {missionNotice}
                     {missionLinkReady && (
@@ -1278,8 +1498,11 @@ export default function Map() {
                 onExpandPin={handleExpandPin}
               />
             )}
-            {view === 'flat' && (
-              <div className="pointer-events-none absolute inset-x-0 bottom-0 z-[900]">
+            {view === 'flat' && !compact && (
+              <div
+                data-map-specs
+                className="pointer-events-none absolute inset-x-0 bottom-[var(--map-sheet-overlap,0px)] z-[900]"
+              >
                 <SpecsBar counts={counts} total={raw?.markers?.length || 0} />
               </div>
             )}
@@ -1298,8 +1521,17 @@ export default function Map() {
           onSnapChange={setSheetSnap}
           fullscreen={fullscreen}
           onToggleFullscreen={() => setFullscreen((f) => !f)}
+          toolsMode={toolsInSheet && toolsOpen}
+          onCloseTools={closeTools}
+          status={
+            isStreet && raw?.locationState === 'unavailable'
+              ? { text: 'View evidence unknown', actionLabel: 'Retry view', onAction: retryView }
+              : null
+          }
         >
-          {detailItem ? (
+          {toolsInSheet && toolsOpen ? (
+            toolsPanel
+          ) : detailItem ? (
             <div className="p-3">
               <LocationCard
                 m={detailItem}
@@ -1312,7 +1544,7 @@ export default function Map() {
               />
             </div>
           ) : (
-            renderResultsContent()
+            renderResultsContent(true)
           )}
         </MapBottomSheet>
       )}

@@ -1,5 +1,6 @@
 import { test, expect, type Page } from '@playwright/test';
 import { mockBase44 } from './fixtures/mockBase44';
+import { openMapTools } from './helpers/mapGeometry';
 
 // Map overlay layout contract. Asserts FULL element bounds (not label visibility):
 //   1. no two overlay boxes intersect,
@@ -12,6 +13,7 @@ import { mockBase44 } from './fixtures/mockBase44';
 
 const VIEWPORTS = [
   { name: 'phone 390x844', w: 390, h: 844, dpr: 3 },
+  { name: 'reflow 320x640', w: 320, h: 640, dpr: 3 }, // WCAG 1.4.10 reflow width
   { name: 'phone-small 360x640', w: 360, h: 640, dpr: 3 },
   { name: 'tablet 820x1180', w: 820, h: 1180, dpr: 2 },
   { name: 'tablet-landscape 1024x768', w: 1024, h: 768, dpr: 2 },
@@ -30,12 +32,31 @@ type Box = {
   h: number;
   interactive: boolean;
   inFrame: boolean;
+  inSheet: boolean;
 };
+
+// The bottom sheet animates its height (320ms) and the frame republishes its measurements through
+// a ResizeObserver. Wait until the sheet has actually reached its target height (the inline style
+// is the target; the first frames of the transition still show the old height) and then give the
+// observer a beat, before measuring.
+async function settle(page: Page) {
+  let stable = 0;
+  for (let i = 0; i < 40 && stable < 2; i++) {
+    const done = await page.evaluate(() => {
+      const el = document.querySelector('.ooh-bottom-sheet') as HTMLElement | null;
+      if (!el) return true; // no sheet on this layout
+      return Math.abs(el.getBoundingClientRect().height - parseFloat(el.style.height)) < 1;
+    });
+    stable = done ? stable + 1 : 0;
+    await page.waitForTimeout(100);
+  }
+  await page.waitForTimeout(250);
+}
 
 async function openMap(page: Page, view: 'flat' | 'globe') {
   // ContextualNudge is a separate shared overlay (fixed, bottom-centre) owned by the nudge/header
   // fix on fix/header-tablet-fit (15492b8). It is dismissed here so this spec measures the map
-  // overlay frame in isolation; its overlap with the zoom controls is tracked by the fixme below.
+  // overlay frame in isolation; its overlap with the zoom controls is tracked by the nudge fixme at the bottom of this file.
   await page.addInitScript(() => {
     localStorage.setItem('ooh-tally-open', 'true');
     localStorage.setItem('ooh_nudge_map_report', '1');
@@ -57,8 +78,10 @@ async function openMap(page: Page, view: 'flat' | 'globe') {
     fieldChecks: {},
   });
   await page.goto('/map');
-  const toggle = page.getByTestId('field-attention-toggle');
-  await expect(toggle).toBeVisible({ timeout: 15_000 });
+  // compact chrome gates the attention toggle behind the Tools disclosure; wait on the view switch
+  await expect(page.getByRole('button', { name: 'Flat map' }).first()).toBeVisible({
+    timeout: 30_000,
+  });
   await page
     .getByRole('button', { name: view === 'flat' ? 'Flat map' : 'Globe view' })
     .first()
@@ -82,20 +105,50 @@ async function collect(page: Page) {
       ?.parentElement as HTMLElement | null;
     if (frameEl) frameEl.scrollTop = 0;
     // Frame children are measured as the user sees them: clipped to the frame's own scroll box.
+    const mapCovered = map.hasAttribute('inert');
+    const sheetEl = document.querySelector('.ooh-bottom-sheet');
     const add = (name: string, e: Element | null | undefined, interactive: boolean) => {
       if (!e || !vis(e)) return;
+      if (mapCovered && map.contains(e)) return; // covered by the sheet: inert, not interactive
       const r = e.getBoundingClientRect();
       let { x, y, width: w, height: h } = r;
       const inFrame = !!frameEl && frameEl.contains(e);
-      if (inFrame) {
-        const fr = frameEl!.getBoundingClientRect();
-        const top = Math.max(y, fr.y);
-        const bottom = Math.min(y + h, fr.bottom);
-        if (bottom - top <= 0.5) return; // fully scrolled out of view: reachable only by scrolling
-        y = top;
-        h = bottom - top;
+      if (!inFrame && sheetEl?.contains(e)) {
+        // sheet-hosted: clip to the sheet's scrolling body; scrolled-out items are reachable by
+        // scrolling (checked per-control below)
+        let p: Element | null = e.parentElement;
+        while (p && sheetEl.contains(p)) {
+          const st = getComputedStyle(p);
+          if (/(auto|scroll|hidden|clip)/.test(st.overflowY)) {
+            const pr = p.getBoundingClientRect();
+            const top = Math.max(y, pr.y);
+            const bottom = Math.min(y + h, pr.bottom);
+            if (bottom - top <= 0.5) return;
+            y = top;
+            h = bottom - top;
+          }
+          p = p.parentElement;
+        }
       }
-      boxes.push({ name, x, y, w, h, interactive, inFrame });
+      if (inFrame) {
+        // As the user sees it: clip to every scrolling/clipping ancestor inside the frame (the
+        // frame itself on desktop, the Tools panel in compact chrome).
+        let p: Element | null = e.parentElement;
+        while ((p && frameEl!.contains(p)) || p === frameEl) {
+          const st = getComputedStyle(p!);
+          if (/(auto|scroll|hidden|clip)/.test(st.overflowY)) {
+            const pr = p!.getBoundingClientRect();
+            const top = Math.max(y, pr.y);
+            const bottom = Math.min(y + h, pr.bottom);
+            if (bottom - top <= 0.5) return; // scrolled out of view: reachable only by scrolling
+            y = top;
+            h = bottom - top;
+          }
+          if (p === frameEl) break;
+          p = p!.parentElement;
+        }
+      }
+      boxes.push({ name, x, y, w, h, interactive, inFrame, inSheet: !!sheetEl?.contains(e) });
     };
     const q = (sel: string) => Array.from(map.querySelectorAll(sel));
     add('view-switcher', map.querySelector('[aria-label="Flat map"]')?.parentElement, false);
@@ -104,6 +157,21 @@ async function collect(page: Page) {
     );
     add('field-attention', map.querySelector('[data-testid="field-attention-toggle"]'), true);
     add('attention-filters', map.querySelector('[data-testid="attention-filters"]'), true);
+    add('tools-toggle', map.querySelector('[data-testid="map-tools-toggle"]'), true);
+    // the Tools panel floats in the frame, or sits in the bottom sheet in short landscape
+    const panelEl = document.querySelector('#map-tools-panel');
+    add('tools-panel', panelEl, false);
+    if (panelEl && sheetEl?.contains(panelEl)) {
+      panelEl
+        .querySelectorAll('button, [data-testid]:not([data-testid="attention-filters"])')
+        .forEach((e, i) =>
+          add(
+            `sheet-tools:${e.getAttribute('data-testid') || e.getAttribute('aria-label') || i}`,
+            e,
+            true,
+          ),
+        );
+    }
     q('[data-map-toolbar] button, [data-map-toolbar] a').forEach((e, i) =>
       add(`toolbar:${e.getAttribute('aria-label') || i}`, e, true),
     );
@@ -132,23 +200,34 @@ async function collect(page: Page) {
     const checks: string[] = [];
     const inter = [
       ...map.querySelectorAll(
-        '[data-map-toolbar] button, [data-map-toolbar] a, [aria-label="Flat map"], [aria-label="Globe view"], [data-testid="field-attention-toggle"], [aria-label="Hide field tally"], [aria-label="Show field tally"], [aria-label="Dismiss ticker"], [data-testid="attention-filters"] button',
+        '[data-map-toolbar] button, [data-map-toolbar] a, [aria-label="Flat map"], [aria-label="Globe view"], [data-testid="field-attention-toggle"], [aria-label="Hide field tally"], [aria-label="Show field tally"], [aria-label="Dismiss ticker"], [data-testid="attention-filters"] button, [data-testid="map-tools-toggle"], #map-tools-panel button',
       ),
-    ].filter(vis);
+      ...document.querySelectorAll(
+        '.ooh-bottom-sheet #map-tools-panel button, .ooh-bottom-sheet #map-tools-panel a',
+      ),
+    ].filter((e) => vis(e) && !(mapCovered && map.contains(e)));
     for (const e of inter) {
       const label = e.getAttribute('aria-label') || e.textContent?.trim().slice(0, 20);
       e.scrollIntoView({ block: 'nearest', inline: 'nearest' });
       const r = e.getBoundingClientRect();
       const m = map.getBoundingClientRect();
       const fr = frame?.getBoundingClientRect();
-      if (
+      const sr = sheetEl?.contains(e) ? sheetEl.getBoundingClientRect() : null;
+      if (sr) {
+        // sheet-hosted control: bounded by the sheet, not the map box
+        if (r.y < sr.y - 0.5 || r.bottom > sr.bottom + 0.5)
+          checks.push(`${label} outside the sheet after scroll-into-view`);
+      } else if (
         r.x < m.x - 0.5 ||
         r.y < m.y - 0.5 ||
         r.right > m.right + 0.5 ||
         r.bottom > m.bottom + 0.5
       )
         checks.push(`${label} outside the map box after scroll-into-view`);
-      if (fr && (r.y < fr.y - 0.5 || r.bottom > fr.bottom + 0.5))
+      // compact chrome has no clipping frame (the Tools panel scrolls itself); the map box and
+      // the sheet-top check below bound it instead
+      const clipsToFrame = !!fr && getComputedStyle(frame!).overflowY !== 'visible';
+      if (clipsToFrame && fr && (r.y < fr.y - 0.5 || r.bottom > fr.bottom + 0.5))
         checks.push(`${label} outside the frame's own clip after scroll-into-view`);
       const pts = [
         [r.x + r.width / 2, r.y + r.height / 2],
@@ -194,18 +273,14 @@ function assertLayout(r: Awaited<ReturnType<typeof collect>>, label: string) {
   const E = 0.5;
   const names = r.boxes.map((b: Box) => b.name);
   // containers that legitimately wrap their children are skipped for pair checks
-  const skip = new Set(['view-switcher']);
-  // Zoom/compass controls belong to the Globe3D bottom region (a separate slice): below 480px of
-  // viewport height the shared chrome leaves them no room (see report), so they are only
-  // checked against the frame and HUD when there is room to do so.
-  const leaf = r.boxes.filter(
-    (b: Box) => !skip.has(b.name) && !(b.name.startsWith('globe-control') && r.vh < 480),
-  );
+  const skip = new Set(['view-switcher', 'tools-panel']);
+  const leaf = r.boxes.filter((b: Box) => !skip.has(b.name));
   for (let i = 0; i < leaf.length; i++) {
     const a = leaf[i];
     // inside the map box + viewport (frame children are checked per-control after scroll-into-view)
     if (
       !a.inFrame &&
+      !a.inSheet &&
       (a.x < r.map.x - E ||
         a.y < r.map.y - E ||
         a.x + a.w > r.map.x + r.map.w + E ||
@@ -216,6 +291,8 @@ function assertLayout(r: Awaited<ReturnType<typeof collect>>, label: string) {
       );
     if (a.x < -E || a.x + a.w > r.vw + E)
       problems.push(`${a.name} clipped horizontally by the viewport`);
+    if (a.inSheet && (a.y < -E || a.y + a.h > r.vh + E))
+      problems.push(`${a.name} (in the sheet) leaves the viewport vertically`);
     for (let j = i + 1; j < leaf.length; j++) {
       const b = leaf[j];
       // tally-toggle is the control inside the tally card
@@ -226,12 +303,15 @@ function assertLayout(r: Awaited<ReturnType<typeof collect>>, label: string) {
         problems.push(`${a.name} overlaps ${b.name} by ${Math.round(ox)}x${Math.round(oy)}`);
     }
   }
-  // Short landscape (<480px tall): the shared chrome (112px header, 76px nav, bottom sheet)
-  // leaves the map ~140px, so per-control reachability is a documented gap (test.fixme below),
-  // not asserted here. Layout overlap among overlay items is still asserted.
-  if (r.vh >= 480) problems.push(...r.covered.map((c) => `hit-test: ${c}`));
+  // Per-control reachability is asserted at every height, short landscape included.
+  problems.push(...r.covered.map((c) => `hit-test: ${c}`));
   if (r.hScroll) problems.push('horizontal page scroll');
-  expect(names, `${label}: expected overlay boxes`).toContain('field-attention');
+  expect(
+    names.includes('field-attention') ||
+      names.includes('tools-toggle') ||
+      names.some((n: string) => n.startsWith('sheet-tools:')),
+    `${label}: expected the attention toggle or the Tools disclosure; got ${names.join(',')}`,
+  ).toBe(true);
   expect(problems, `${label}\n${problems.join('\n')}`).toEqual([]);
 }
 
@@ -248,22 +328,55 @@ for (const vp of VIEWPORTS) {
         const page = await ctx.newPage();
         await openMap(page, view);
 
+        // the map pane's width (not the window's) picks compact chrome, so let the first
+        // measurement land before deciding which layout is under test
+        await page.waitForFunction(
+          () =>
+            !!(document.querySelector('[data-tour="map"]') as HTMLElement | null)?.dataset.mapFree,
+        );
+        await page.waitForTimeout(400);
         assertLayout(await collect(page), `${vp.name}/${view}/default`);
+
+        // Compact chrome (phones, short landscape): secondary controls sit behind one labelled
+        // disclosure. Open it with a real click, read it, close it, reopen it: state is kept.
+        const compactChrome = await page.getByTestId('map-tools-toggle').isVisible();
+        if (compactChrome) {
+          await expect(page.getByTestId('field-attention-toggle')).toHaveCount(0);
+          await openMapTools(page);
+          await settle(page);
+          assertLayout(await collect(page), `${vp.name}/${view}/tools-open`);
+        }
 
         // real (non-forced) click: fails if anything covers the toggle
         await page.getByTestId('field-attention-toggle').click();
         await expect(page.getByTestId('attention-filters')).toBeVisible();
-        await page.waitForTimeout(250);
+        await settle(page);
         const expanded = await collect(page);
-        expect(expanded.boxes.map((b: Box) => b.name)).toContain('attention-filters');
         assertLayout(expanded, `${vp.name}/${view}/attention-expanded`);
 
         const hide = page.getByRole('button', { name: 'Hide field tally' });
         if (await hide.isVisible()) {
           await hide.click();
           await expect(page.getByRole('button', { name: 'Show field tally' })).toBeVisible();
-          await page.waitForTimeout(250);
+          await settle(page);
           assertLayout(await collect(page), `${vp.name}/${view}/tally-collapsed`);
+        }
+
+        if (compactChrome) {
+          await page.keyboard.press('Escape');
+          await expect(page.locator('#map-tools-panel')).toHaveCount(0);
+          await expect(page.getByTestId('map-tools-toggle')).toBeFocused();
+          await expect(page.getByTestId('map-tools-toggle')).toHaveAttribute(
+            'aria-expanded',
+            'false',
+          );
+          await openMapTools(page);
+          await settle(page);
+          await expect(page.getByTestId('field-attention-toggle')).toHaveAttribute(
+            'aria-pressed',
+            'true',
+          );
+          assertLayout(await collect(page), `${vp.name}/${view}/tools-reopened`);
         }
         await ctx.close();
       });
@@ -295,6 +408,8 @@ test.describe('map overlay frame contract', () => {
     const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, hasTouch: true });
     const page = await ctx.newPage();
     await openMap(page, 'flat');
+    await openMapTools(page);
+    await settle(page);
     await page.getByTestId('field-attention-toggle').focus();
     await page.keyboard.press('Enter');
     await expect(page.getByTestId('field-attention-toggle')).toHaveAttribute(
@@ -313,10 +428,10 @@ test.describe('map overlay frame contract', () => {
         if (
           !a ||
           (!a.closest(
-            '[data-map-toolbar], [data-testid="field-attention-toggle"], [data-testid="attention-filters"]',
+            '[data-map-toolbar], [data-testid="field-attention-toggle"], [data-testid="attention-filters"], #map-tools-panel',
           ) &&
             !a.matches(
-              '[aria-label="Flat map"], [aria-label="Globe view"], [aria-label$="field tally"], [aria-label="Dismiss ticker"]',
+              '[aria-label="Flat map"], [aria-label="Globe view"], [aria-label$="field tally"], [aria-label="Dismiss ticker"], [data-testid="map-tools-toggle"]',
             ))
         )
           return null;
@@ -369,5 +484,3 @@ test.describe('map overlay frame contract', () => {
 // map zoom controls on phone widths. Its fix lives on fix/header-tablet-fit; once that is merged
 // this must pass with the nudge visible.
 test.fixme('nudge must not cover the map zoom controls on phones', async () => {});
-
-test.fixme('short landscape (<480px tall): bottom sheet and header leave the map ~140px, so the Field attention row is covered by the sheet', async () => {});
