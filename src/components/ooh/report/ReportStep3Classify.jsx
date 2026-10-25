@@ -74,7 +74,7 @@ export default function ReportStep3Classify({ data, onChange }) {
                   >
                     {h.label}
                   </div>
-                  <div className="font-mono text-[8px] uppercase tracking-[0.15em] text-dim/60">
+                  <div className="font-mono text-[10px] uppercase tracking-[0.15em] text-dim/60">
                     {h.sdg}
                   </div>
                 </div>
@@ -95,7 +95,7 @@ export default function ReportStep3Classify({ data, onChange }) {
               key={c.value}
               type="button"
               onClick={() => onChange({ condition: c.value })}
-              className={`px-3 py-2.5 font-mono text-[9px] font-bold uppercase tracking-[0.12em] transition-colors ${data.condition === c.value ? 'bg-ozone text-void' : 'bg-card text-darkgray hover:text-silver'}`}
+              className={`px-3 py-2.5 font-mono text-[10px] font-bold uppercase tracking-[0.12em] transition-colors ${data.condition === c.value ? 'bg-ozone text-void' : 'bg-card text-darkgray hover:text-silver'}`}
             >
               {c.label}
             </button>

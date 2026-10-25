@@ -70,19 +70,19 @@ export default function Report() {
           <div className="mt-6 flex flex-wrap gap-2">
             <Link
               to="/map"
-              className="inline-flex items-center gap-1.5 border border-slate2 px-3 py-1.5 font-mono text-[9px] uppercase tracking-[0.2em] text-darkgray transition-colors hover:border-ozone hover:text-ozone"
+              className="inline-flex items-center gap-1.5 border border-slate2 px-3 py-1.5 font-mono text-[10px] uppercase tracking-[0.2em] text-darkgray transition-colors hover:border-ozone hover:text-ozone"
             >
               <Map className="h-3 w-3" /> Live map
             </Link>
             <Link
               to="/location/new"
-              className="inline-flex items-center gap-1.5 border border-slate2 px-3 py-1.5 font-mono text-[9px] uppercase tracking-[0.2em] text-darkgray transition-colors hover:border-ozone hover:text-ozone"
+              className="inline-flex items-center gap-1.5 border border-slate2 px-3 py-1.5 font-mono text-[10px] uppercase tracking-[0.2em] text-darkgray transition-colors hover:border-ozone hover:text-ozone"
             >
               <Zap className="h-3 w-3" /> My reports
             </Link>
             <button
               onClick={startTour}
-              className="inline-flex items-center gap-1.5 border-2 border-ozone bg-ozone px-3 py-1.5 font-mono text-[9px] font-bold uppercase tracking-[0.2em] text-void transition-colors hover:bg-flare hover:border-flare"
+              className="inline-flex items-center gap-1.5 border-2 border-ozone bg-ozone px-3 py-1.5 font-mono text-[10px] font-bold uppercase tracking-[0.2em] text-void transition-colors hover:bg-flare hover:border-flare"
             >
               <Compass className="h-3 w-3" /> Start walkthrough
             </button>
@@ -91,7 +91,7 @@ export default function Report() {
           {/* Interactive protocol guide */}
           <div className="mt-8" data-tour="report-protocol">
             <div className="mb-1.5 flex items-center gap-1.5">
-              <span className="font-mono text-[8px] uppercase tracking-[0.2em] text-dim">
+              <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-dim">
                 / Tap to open the safety foldout
               </span>
               <TerminalTooltip
@@ -104,7 +104,7 @@ export default function Report() {
 
           <div className="mt-10" data-tour="report-form">
             <div className="mb-1.5 flex items-center gap-1.5">
-              <span className="font-mono text-[8px] uppercase tracking-[0.2em] text-dim">
+              <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-dim">
                 / Fill the 4-step report form below
               </span>
               <TerminalTooltip
@@ -118,7 +118,7 @@ export default function Report() {
           <div className="mt-10 border-t border-slate2/40 pt-6" data-tour="report-map-link">
             <Link
               to="/map"
-              className="group inline-flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.25em] text-ozone"
+              className="group inline-flex min-h-8 items-center gap-2 font-mono text-[10px] uppercase tracking-[0.25em] text-ozone"
             >
               Open the live map{' '}
               <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />

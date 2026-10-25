@@ -115,7 +115,7 @@ export default function ReportScanner({ data, onChange }) {
             AI Ad Scanner
           </span>
         </div>
-        <span className="border border-flare/40 px-1.5 py-0.5 font-mono text-[7px] font-bold uppercase tracking-[0.2em] text-flare">
+        <span className="border border-flare/40 px-1.5 py-0.5 font-mono text-[10px] font-bold uppercase tracking-[0.2em] text-flare">
           BETA
         </span>
       </div>
@@ -159,7 +159,7 @@ export default function ReportScanner({ data, onChange }) {
                       style={{ width: `${confidencePct}%` }}
                     />
                   </div>
-                  <span className="font-mono text-[9px] tabular text-dim">
+                  <span className="font-mono text-[10px] tabular text-dim">
                     {confidencePct}% confidence
                   </span>
                 </div>
@@ -218,7 +218,7 @@ export default function ReportScanner({ data, onChange }) {
               <ScanLine className="h-4 w-4 text-flare animate-pulse" />
               <div className="absolute inset-0 animate-ping rounded-full border border-flare/40" />
             </div>
-            <span className="font-mono text-[9px] uppercase tracking-[0.15em] text-silver/50">
+            <span className="font-mono text-[10px] uppercase tracking-[0.15em] text-silver/50">
               Analyzing surface, brand, and harm classification…
             </span>
           </div>

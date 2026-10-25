@@ -75,7 +75,7 @@ export default function ReportStep4Adbust({ data, onChange }) {
               key={t.value}
               type="button"
               onClick={() => onChange({ adbust_type: t.value })}
-              className={`px-3 py-2.5 font-mono text-[9px] font-bold uppercase tracking-[0.12em] transition-colors ${data.adbust_type === t.value ? 'bg-ozone text-void' : 'bg-card text-darkgray hover:text-silver'}`}
+              className={`px-3 py-2.5 font-mono text-[10px] font-bold uppercase tracking-[0.12em] transition-colors ${data.adbust_type === t.value ? 'bg-ozone text-void' : 'bg-card text-darkgray hover:text-silver'}`}
             >
               {t.label}
             </button>

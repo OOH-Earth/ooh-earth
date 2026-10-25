@@ -46,7 +46,7 @@ export default function DiscoveryPanel({ data }) {
       <div className="space-y-3 p-4">
         {/* 1. Discovery / brand */}
         <div>
-          <div className="font-mono text-[9px] uppercase tracking-[0.2em] text-dim">
+          <div className="font-mono text-[10px] uppercase tracking-[0.2em] text-dim">
             Brand identified
           </div>
           <div className="mt-0.5 font-display text-lg font-bold text-silver">{brand}</div>
@@ -58,13 +58,13 @@ export default function DiscoveryPanel({ data }) {
                   style={{ width: `${Math.round(confidence * 100)}%` }}
                 />
               </div>
-              <span className="font-mono text-[9px] tabular text-dim">
+              <span className="font-mono text-[10px] tabular text-dim">
                 {Math.round(confidence * 100)}% confidence
               </span>
             </div>
           )}
           {parentCorp && (
-            <div className="mt-1 font-mono text-[9px] uppercase tracking-[0.15em] text-dim">
+            <div className="mt-1 font-mono text-[10px] uppercase tracking-[0.15em] text-dim">
               Parent — {parentCorp}
             </div>
           )}
@@ -73,14 +73,14 @@ export default function DiscoveryPanel({ data }) {
         {/* 2. XP earned */}
         <div className="flex items-center gap-6 border-t border-flare/20 pt-3">
           <div>
-            <div className="font-mono text-[9px] uppercase tracking-[0.2em] text-dim">
+            <div className="font-mono text-[10px] uppercase tracking-[0.2em] text-dim">
               XP earned
             </div>
             <div className="font-mono text-xl font-bold tabular text-ozone">+{xpGained}</div>
           </div>
           {level && (
             <div>
-              <div className="font-mono text-[9px] uppercase tracking-[0.2em] text-dim">
+              <div className="font-mono text-[10px] uppercase tracking-[0.2em] text-dim">
                 Level {level.level}
               </div>
               <div className="font-mono text-xl font-bold tabular text-silver">{level.title}</div>
@@ -91,7 +91,7 @@ export default function DiscoveryPanel({ data }) {
         {/* 3. Collection milestone */}
         {typeof discoveryCount === 'number' && (
           <div className="border-t border-flare/20 pt-3">
-            <div className="font-mono text-[9px] uppercase tracking-[0.2em] text-dim">
+            <div className="font-mono text-[10px] uppercase tracking-[0.2em] text-dim">
               Your {ordinal(discoveryCount)} {brand} discovery
             </div>
 
@@ -108,7 +108,7 @@ export default function DiscoveryPanel({ data }) {
                   style={{ color: TIER_STYLES[newlyUnlocked.tier]?.color }}
                 />
                 <div>
-                  <div className="font-mono text-[8px] font-bold uppercase tracking-[0.2em] text-silver">
+                  <div className="font-mono text-[10px] font-bold uppercase tracking-[0.2em] text-silver">
                     Milestone unlocked
                   </div>
                   <div className="font-mono text-[10px] uppercase tracking-[0.15em] text-dim">
@@ -127,7 +127,7 @@ export default function DiscoveryPanel({ data }) {
                       }}
                     />
                   </div>
-                  <div className="mt-1 font-mono text-[9px] uppercase tracking-[0.1em] text-dim">
+                  <div className="mt-1 font-mono text-[10px] uppercase tracking-[0.1em] text-dim">
                     {milestone.current} / {milestone.target} ·{' '}
                     {milestone.target - milestone.current} more to {milestone.label}
                   </div>

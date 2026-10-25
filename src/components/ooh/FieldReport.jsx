@@ -1,5 +1,5 @@
 // @ts-nocheck -- upload progress state is runtime-shaped per photo.
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { submitCapture } from '@/lib/offlineQueue';
 import { PhotoSyncStatus, uploadLocationPhotos } from '@/components/ooh/gallery/MultiPhotoUpload';
 import { Link } from 'react-router-dom';
@@ -69,6 +69,8 @@ export default function FieldReport() {
   const [submitting, setSubmitting] = useState(false);
   const [done, setDone] = useState(null);
   const [error, setError] = useState('');
+  const [errorTick, setErrorTick] = useState(0);
+  const errorRef = useRef(null);
   const { user, stats, earnedBadges, allBadges, refresh } = useGamification();
   // Snapshot of what this report should contribute to the Discovery panel,
   // set right after a synced+authenticated+brand-identified submission.
@@ -119,6 +121,14 @@ export default function FieldReport() {
     setPending(null);
   }, [stats, pending, earnedBadges, allBadges]);
 
+  // A validation error can be raised from a different step than the one now shown, so bring it
+  // into view and move focus to it (it is a role=alert region) instead of leaving it off-screen.
+  useEffect(() => {
+    if (!errorTick) return;
+    errorRef.current?.scrollIntoView({ block: 'center' });
+    errorRef.current?.focus({ preventScroll: true });
+  }, [errorTick]);
+
   const next = () => setStep((s) => Math.min(s + 1, 4));
   const prev = () => setStep((s) => Math.max(s - 1, 1));
 
@@ -130,6 +140,7 @@ export default function FieldReport() {
     if (!isFinite(latN) || !isFinite(lngN)) {
       setStep(1);
       setError('GPS coordinates required — use Locate me or enter manually.');
+      setErrorTick((t) => t + 1);
       return;
     }
     setSubmitting(true);
@@ -204,6 +215,7 @@ export default function FieldReport() {
       }
     } catch (err) {
       setError(err?.message || 'Transmission failed.');
+      setErrorTick((t) => t + 1);
     } finally {
       setSubmitting(false);
     }
@@ -262,7 +274,7 @@ export default function FieldReport() {
         </p>
         {done.brand_name && (
           <div className="mt-4 border border-slate2/60 bg-void px-4 py-3">
-            <div className="font-mono text-[9px] uppercase tracking-[0.2em] text-dim">
+            <div className="font-mono text-[10px] uppercase tracking-[0.2em] text-dim">
               Ad chain logged
             </div>
             <div className="mt-1 font-display text-sm text-silver">
@@ -310,7 +322,7 @@ export default function FieldReport() {
             className={`flex flex-1 flex-col border px-3 py-2.5 text-left transition-colors ${step === s.id ? 'border-ozone bg-ozone/5' : step > s.id ? 'border-ozone/30 bg-ozone/[0.03]' : 'border-slate2/60 bg-card'}`}
           >
             <span
-              className={`font-mono text-[8px] uppercase tracking-[0.25em] ${step === s.id ? 'text-ozone' : step > s.id ? 'text-ozone/50' : 'text-dim'}`}
+              className={`font-mono text-[10px] uppercase tracking-[0.25em] ${step === s.id ? 'text-ozone' : step > s.id ? 'text-ozone/50' : 'text-dim'}`}
             >
               {String(s.id).padStart(2, '0')}
             </span>
@@ -347,7 +359,12 @@ export default function FieldReport() {
         {step === 4 && <ReportStep4Adbust data={data} onChange={onChange} />}
 
         {error && (
-          <div className="mt-6 flex items-start gap-2 border border-flare/40 bg-flare/5 px-4 py-3">
+          <div
+            ref={errorRef}
+            role="alert"
+            tabIndex={-1}
+            className="mt-6 flex items-start gap-2 border border-flare/40 bg-flare/5 px-4 py-3 outline-none focus-visible:ring-1 focus-visible:ring-flare"
+          >
             <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0 text-flare" />
             <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-flare">
               {error}

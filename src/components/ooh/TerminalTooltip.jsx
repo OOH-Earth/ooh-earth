@@ -93,13 +93,17 @@ export default function TerminalTooltip({ label = 'hint', text, side = 'top', ch
       onMouseLeave={() => setOpen(false)}
       onFocus={() => setOpen(true)}
       onBlur={() => setOpen(false)}
+      onKeyDown={(e) => {
+        if (e.key === 'Escape') setOpen(false);
+      }}
     >
       {children ?? (
         <button
           type="button"
           aria-label={label}
           aria-describedby={tipId}
-          className="inline-flex h-3.5 w-3.5 items-center justify-center text-dim transition-colors hover:text-ozone"
+          onClick={() => setOpen((o) => !o)}
+          className="inline-flex h-6 w-6 items-center justify-center text-dim transition-colors hover:text-ozone"
         >
           <HelpCircle className="h-3.5 w-3.5" />
         </button>
@@ -117,10 +121,10 @@ export default function TerminalTooltip({ label = 'hint', text, side = 'top', ch
             }}
             className="pointer-events-none z-[9999] border border-ozone/50 bg-void p-2.5 shadow-[0_0_0_1px_rgba(237,255,0,0.1),0_4px_20px_rgba(0,0,0,0.8)]"
           >
-            <span className="block font-mono text-[7px] uppercase tracking-[0.25em] text-ozone/70">
+            <span className="block font-mono text-[10px] uppercase tracking-[0.25em] text-ozone/70">
               // {label}
             </span>
-            <span className="mt-1 block font-mono text-[9px] leading-[1.5] text-silver/90">
+            <span className="mt-1 block font-mono text-[10px] leading-[1.5] text-silver/90">
               {text}
             </span>
           </span>,

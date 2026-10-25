@@ -183,7 +183,7 @@ Respond in JSON only.`,
         <label className="mb-2 block font-mono text-[10px] uppercase tracking-[0.3em] text-dim">
           OOH structure owner <span className="text-dim/50">(optional)</span>
         </label>
-        <p className="mb-2 font-mono text-[9px] text-dim/60">
+        <p className="mb-2 font-mono text-[10px] text-dim/60">
           The company that owns the physical ad infrastructure — not the ad agency.
         </p>
         <div className="mb-2 flex flex-wrap gap-1.5">
@@ -192,7 +192,7 @@ Respond in JSON only.`,
               key={op}
               type="button"
               onClick={() => onChange({ ooh_operator: op })}
-              className={`px-2.5 py-1 font-mono text-[9px] font-bold uppercase tracking-[0.15em] transition-colors border ${data.ooh_operator === op ? 'border-ozone bg-ozone/10 text-ozone' : 'border-slate2 text-darkgray hover:border-ozone/50'}`}
+              className={`px-2.5 py-1 font-mono text-[10px] font-bold uppercase tracking-[0.15em] transition-colors border ${data.ooh_operator === op ? 'border-ozone bg-ozone/10 text-ozone' : 'border-slate2 text-darkgray hover:border-ozone/50'}`}
             >
               {op}
             </button>
@@ -212,7 +212,7 @@ Respond in JSON only.`,
         </datalist>
         <Link
           to="/media-corps"
-          className="mt-1.5 inline-flex items-center gap-1 font-mono text-[9px] uppercase tracking-[0.15em] text-ozone/70 transition-colors hover:text-ozone"
+          className="mt-1.5 inline-flex items-center gap-1 font-mono text-[10px] uppercase tracking-[0.15em] text-ozone/70 transition-colors hover:text-ozone"
         >
           <MapPin className="h-2.5 w-2.5" /> View the Media Corps map
         </Link>
@@ -240,7 +240,7 @@ Respond in JSON only.`,
             href="https://cleancreatives.org/f-list"
             target="_blank"
             rel="noreferrer"
-            className="inline-flex items-center gap-1 font-mono text-[9px] uppercase tracking-[0.15em] text-ozone/70 transition-colors hover:text-ozone"
+            className="inline-flex items-center gap-1 font-mono text-[10px] uppercase tracking-[0.15em] text-ozone/70 transition-colors hover:text-ozone"
           >
             <ExternalLink className="h-2.5 w-2.5" /> Clean Creatives F-List (Worldwide)
           </a>
@@ -248,7 +248,7 @@ Respond in JSON only.`,
             href="https://cleancreatives.org/asia-f-list"
             target="_blank"
             rel="noreferrer"
-            className="inline-flex items-center gap-1 font-mono text-[9px] uppercase tracking-[0.15em] text-ozone/70 transition-colors hover:text-ozone"
+            className="inline-flex items-center gap-1 font-mono text-[10px] uppercase tracking-[0.15em] text-ozone/70 transition-colors hover:text-ozone"
           >
             <ExternalLink className="h-2.5 w-2.5" /> F-List Asia
           </a>
@@ -266,7 +266,7 @@ Respond in JSON only.`,
               key={s.value}
               type="button"
               onClick={() => onChange({ industry_sector: s.value })}
-              className={`px-3 py-2.5 font-mono text-[9px] font-bold uppercase tracking-[0.15em] transition-colors ${data.industry_sector === s.value ? 'bg-ozone text-void' : 'bg-card text-darkgray hover:text-silver'}`}
+              className={`px-3 py-2.5 font-mono text-[10px] font-bold uppercase tracking-[0.15em] transition-colors ${data.industry_sector === s.value ? 'bg-ozone text-void' : 'bg-card text-darkgray hover:text-silver'}`}
             >
               {s.label}
             </button>

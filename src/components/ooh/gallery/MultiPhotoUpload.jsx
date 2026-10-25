@@ -114,7 +114,7 @@ export function PhotoSyncStatus({ state, onRetry }) {
       <button
         type="button"
         onClick={onRetry}
-        className="mt-2 border border-flare/60 px-3 py-1.5 font-mono text-[9px] font-bold uppercase tracking-[0.2em] text-flare hover:bg-flare/10"
+        className="mt-2 border border-flare/60 px-3 py-1.5 font-mono text-[10px] font-bold uppercase tracking-[0.2em] text-flare hover:bg-flare/10"
       >
         Retry failed photos
       </button>
@@ -191,7 +191,7 @@ export default function MultiPhotoUpload({ files, onChange, disabled = false, on
           {files.length} / {MAX_EXTRA_PHOTOS} selected
         </span>
       </label>
-      <p className="mb-2 font-mono text-[9px] uppercase tracking-[0.15em] text-silver/70">
+      <p className="mb-2 font-mono text-[10px] uppercase tracking-[0.15em] text-silver/70">
         Add from gallery or camera repeatedly; these attach after submission.
       </p>
       <div className="flex flex-wrap gap-2">
@@ -220,7 +220,7 @@ export default function MultiPhotoUpload({ files, onChange, disabled = false, on
               className="flex h-16 w-16 flex-col items-center justify-center gap-1 border border-dashed border-slate2 text-dim transition-colors hover:border-ozone hover:text-ozone disabled:opacity-40"
             >
               <Plus className="h-4 w-4" />
-              <span className="font-mono text-[7px] uppercase tracking-[0.12em]">Choose</span>
+              <span className="font-mono text-[10px] uppercase tracking-[0.12em]">Choose</span>
             </button>
             <button
               type="button"
@@ -230,14 +230,14 @@ export default function MultiPhotoUpload({ files, onChange, disabled = false, on
               className="flex h-16 w-16 flex-col items-center justify-center gap-1 border border-dashed border-slate2 text-dim transition-colors hover:border-ozone hover:text-ozone disabled:opacity-40"
             >
               <Camera className="h-4 w-4" />
-              <span className="font-mono text-[7px] uppercase tracking-[0.12em]">Take</span>
+              <span className="font-mono text-[10px] uppercase tracking-[0.12em]">Take</span>
             </button>
           </div>
         )}
       </div>
       {selectionNotice && (
         <p
-          className="mt-2 font-mono text-[9px] uppercase tracking-[0.15em] text-amber-200"
+          className="mt-2 font-mono text-[10px] uppercase tracking-[0.15em] text-amber-200"
           role="status"
         >
           {selectionNotice}
@@ -266,7 +266,7 @@ export default function MultiPhotoUpload({ files, onChange, disabled = false, on
         className="hidden"
       />
       {files.length > 0 && (
-        <p className="mt-1.5 font-mono text-[9px] uppercase tracking-[0.2em] text-dim/60">
+        <p className="mt-1.5 font-mono text-[10px] uppercase tracking-[0.2em] text-dim/60">
           // syncs after submission — requires an online connection
         </p>
       )}
