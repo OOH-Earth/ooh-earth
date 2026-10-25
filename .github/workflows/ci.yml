@@ -155,6 +155,13 @@ jobs:
         run: npx playwright test --project=chromium
         env:
           CI: 'true'
+      # TEMPORARY CONTROL (draft PR, never merge): repeat the two specs that flaked on PR #384
+      # with retries disabled, to compare first-attempt failure rates between builds.
+      - name: Temporary flake repeat (control)
+        if: always()
+        run: npx playwright test --project=chromium --repeat-each=10 --retries=0 --workers=1 -g "dismiss control is a 44px target|keyboard users can reach the photo controls" e2e/live-feed-nudge-overlap.spec.ts e2e/report-release-r1m2.spec.ts
+        env:
+          CI: 'true'
       - name: Job summary — test results
         if: always()
         run: node scripts/ci-test-summary.mjs playwright-report/report.json "Playwright (smoke + accessibility)" >> "$GITHUB_STEP_SUMMARY"
