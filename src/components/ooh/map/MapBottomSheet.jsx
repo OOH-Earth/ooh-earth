@@ -44,6 +44,23 @@ export default function MapBottomSheet({
   const liveHRef = useRef(null);
   const [liveH, setLiveH] = useState(null);
 
+  // ContextualNudge (fixed, bottom-centre, shared) publishes its height as --ooh-nudge-clearance
+  // while it is visible. Stack the sheet above it instead of under it, so the header controls stay
+  // reachable; the sheet drops back when the nudge goes away.
+  const [lift, setLift] = useState(0);
+  useEffect(() => {
+    const root = document.documentElement;
+    const read = () => {
+      const v = parseFloat(root.style.getPropertyValue('--ooh-nudge-clearance'));
+      setLift(Number.isFinite(v) && v > 0 ? Math.max(0, Math.ceil(v) - 6) : 0);
+    };
+    read();
+    if (typeof MutationObserver === 'undefined') return undefined;
+    const mo = new MutationObserver(read);
+    mo.observe(root, { attributes: true, attributeFilter: ['style'] });
+    return () => mo.disconnect();
+  }, []);
+
   useEffect(() => {
     const onResize = () => setVh(window.innerHeight);
     window.addEventListener('resize', onResize);
@@ -70,7 +87,7 @@ export default function MapBottomSheet({
   // Never taller than the space between the nav (or the screen bottom in fullscreen) and an 8px
   // top margin: at 390px tall, 88% of the screen plus the 76px nav offset put the header, and
   // with it the Collapse button, above the viewport.
-  const fullH = Math.min(Math.round(vh * 0.88), vh - (fullscreen ? 0 : 76) - 8);
+  const fullH = Math.min(Math.round(vh * 0.88), vh - (fullscreen ? 0 : 76 + lift) - 8);
   const stateH = { peek: peekH, half: halfH, full: fullH };
   const currentH = liveH !== null ? liveH : stateH[effSnap] || peekH;
   const clampH = (h) => Math.max(peekH, Math.min(h, fullH));
@@ -120,6 +137,9 @@ export default function MapBottomSheet({
       className={`ooh-bottom-sheet lg:hidden fixed inset-x-0 z-[1100] flex flex-col border-t border-ozone/30 bg-void/95 backdrop-blur-xl shadow-[0_-8px_32px_rgba(0,0,0,0.6)] ${fullscreen ? 'bottom-0' : 'bottom-[calc(76px+env(safe-area-inset-bottom))]'}`}
       style={{
         height: currentH,
+        ...(fullscreen || !lift
+          ? null
+          : { bottom: `calc(${76 + lift}px + env(safe-area-inset-bottom))` }),
         transition: liveH !== null ? 'none' : 'height 0.32s cubic-bezier(0.32,0.72,0,1)',
       }}
     >

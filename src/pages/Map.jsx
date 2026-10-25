@@ -398,7 +398,13 @@ export default function Map() {
     if (!sheet || typeof ResizeObserver === 'undefined') return undefined;
     const ro = new ResizeObserver(measureOverlay);
     ro.observe(sheet);
-    return () => ro.disconnect();
+    // The sheet also moves (without resizing) when the nudge lifts it: re-measure on that too.
+    const mo = new MutationObserver(measureOverlay);
+    mo.observe(sheet, { attributes: true, attributeFilter: ['style'] });
+    return () => {
+      ro.disconnect();
+      mo.disconnect();
+    };
   }, [measureOverlay, raw, sheetSnap, fullscreen, detailItem]);
 
   // Fullscreen body class — hides the global mobile bottom tabs.

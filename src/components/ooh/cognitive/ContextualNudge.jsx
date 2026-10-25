@@ -55,7 +55,13 @@ export default function ContextualNudge() {
 
   useEffect(() => {
     const list = ROUTE_HINTS[pathname];
-    const next = list?.find((h) => !dismissed(h.id)) || null;
+    // In short landscape the map has no room for a floating card on top of the sheet, header and
+    // nav: it would hide the map and its controls. The map's own Report action is the same step.
+    const shortMap =
+      pathname === '/map' &&
+      typeof window.matchMedia === 'function' &&
+      window.matchMedia('(max-height: 499px)').matches;
+    const next = shortMap ? null : list?.find((h) => !dismissed(h.id)) || null;
     setHint(next);
     setShow(false);
     if (!next) return;

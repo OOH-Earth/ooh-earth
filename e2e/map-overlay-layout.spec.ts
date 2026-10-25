@@ -1,6 +1,6 @@
 import { test, expect, type Page } from '@playwright/test';
 import { mockBase44 } from './fixtures/mockBase44';
-import { openMapTools } from './helpers/mapGeometry';
+import { openMapTools, openMapWithMock, probeMap } from './helpers/mapGeometry';
 
 // Map overlay layout contract. Asserts FULL element bounds (not label visibility):
 //   1. no two overlay boxes intersect,
@@ -480,7 +480,51 @@ test.describe('map overlay frame contract', () => {
   });
 });
 
-// Out of this slice by design: ContextualNudge (shared, fixed bottom-centre) paints over the
-// map zoom controls on phone widths. Its fix lives on fix/header-tablet-fit; once that is merged
-// this must pass with the nudge visible.
-test.fixme('nudge must not cover the map zoom controls on phones', async () => {});
+// ContextualNudge (shared, fixed, bottom-centre) is visible on first visit. With it shown, none of
+// the map's controls may sit under it and it must clear the bottom nav. Asserted by hit-testing
+// every control the probe finds, in both views, on phones and in short landscape.
+const NUDGE_VIEWPORTS: [number, number][] = [
+  [320, 640],
+  [360, 640],
+  [390, 844],
+  [430, 932],
+  [844, 390],
+];
+for (const [w, h] of NUDGE_VIEWPORTS) {
+  for (const view of ['flat', 'globe'] as const) {
+    test(`nudge shown does not cover map controls @ ${w}x${h} ${view}`, async ({ page }) => {
+      test.setTimeout(90_000);
+      await page.setViewportSize({ width: w, height: h });
+      await openMapWithMock(page, { view, nudge: 'shown' });
+      if (h < 500) {
+        // short landscape: the nudge is intentionally not shown on /map (no room); the map's own
+        // Report action covers the same step and must be usable.
+        await page.waitForTimeout(2500);
+        await expect(page.locator('[class*="z-[70]"]').filter({ hasText: /execute/i })).toHaveCount(
+          0,
+        );
+        const p = await probeMap(page);
+        expect(p.items.filter((i) => i.hit !== 'ok' && i.hit !== 'inert')).toEqual([]);
+        expect(p.items.some((i) => i.name === 'toolbar-report')).toBe(true);
+        return;
+      }
+      const nudge = page
+        .locator('[class*="z-[70]"]')
+        .filter({ hasText: /execute/i })
+        .first();
+      await expect(nudge).toBeVisible();
+      // the sheet follows the nudge's published clearance and the HUD follows the sheet
+      await page.waitForTimeout(700);
+      const probe = await probeMap(page);
+      const nb = (await nudge.boundingBox())!;
+      if (probe.nav) {
+        expect(nb.y + nb.height, 'nudge clears the bottom nav').toBeLessThanOrEqual(
+          probe.nav.y + 0.5,
+        );
+      }
+      const covered = probe.items.filter((i) => i.hit !== 'ok' && i.hit !== 'inert');
+      expect(covered, 'controls covered by the nudge').toEqual([]);
+      expect(probe.hScroll).toBe(false);
+    });
+  }
+}
