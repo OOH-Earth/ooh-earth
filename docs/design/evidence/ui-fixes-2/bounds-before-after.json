@@ -1,3245 +1,3185 @@
 {
- "01-phone-390-error-flat": {
-  "before": {
-   "viewport": [
-    390,
-    844
-   ],
-   "mapBox": {
-    "x": 0,
-    "y": 167,
-    "w": 390,
-    "h": 601
-   },
-   "sheet": {
-    "x": 0,
-    "y": 636,
-    "w": 390,
-    "h": 132
-   },
-   "freeMapHeight": 316,
-   "hScroll": false,
-   "missing": [
-    "sheet-collapse",
-    "sheet-close-detail",
-    "globe-reset-north",
-    "globe-auto-spin",
-    "globe-attribution",
-    "nudge-execute",
-    "nudge-abort",
-    "tools-toggle"
-   ],
-   "controls": [
-    {
-     "name": "sheet-expand",
-     "rect": {
-      "x": 326,
-      "y": 657,
-      "w": 24,
-      "h": 24
-     },
-     "hit": "ok"
+  "01-phone-390-error-flat": {
+    "before": {
+      "viewport": [390, 844],
+      "mapBox": {
+        "x": 0,
+        "y": 167,
+        "w": 390,
+        "h": 601
+      },
+      "sheet": {
+        "x": 0,
+        "y": 636,
+        "w": 390,
+        "h": 132
+      },
+      "freeMapHeight": 316,
+      "hScroll": false,
+      "missing": [
+        "sheet-collapse",
+        "sheet-close-detail",
+        "globe-reset-north",
+        "globe-auto-spin",
+        "globe-attribution",
+        "nudge-execute",
+        "nudge-abort",
+        "tools-toggle"
+      ],
+      "controls": [
+        {
+          "name": "sheet-expand",
+          "rect": {
+            "x": 326,
+            "y": 657,
+            "w": 24,
+            "h": 24
+          },
+          "hit": "ok"
+        },
+        {
+          "name": "sheet-fullscreen",
+          "rect": {
+            "x": 354,
+            "y": 657,
+            "w": 24,
+            "h": 24
+          },
+          "hit": "ok"
+        },
+        {
+          "name": "retry-view",
+          "rect": {
+            "x": 152,
+            "y": 774,
+            "w": 87,
+            "h": 28
+          },
+          "hit": "covered at (195,788) by <button \"Channel\" relative flex h-11 w-11 items-center justify-cen>"
+        },
+        {
+          "name": "leaflet-zoom-in",
+          "rect": {
+            "x": 345,
+            "y": 674,
+            "w": 32,
+            "h": 32
+          },
+          "hit": "covered at (361,690) by <div p-6 text-center>"
+        },
+        {
+          "name": "leaflet-zoom-out",
+          "rect": {
+            "x": 345,
+            "y": 706,
+            "w": 32,
+            "h": 32
+          },
+          "hit": "covered at (361,722) by <div font-mono text-[10px] uppercase tracking-[0.25em>"
+        },
+        {
+          "name": "leaflet-attribution",
+          "rect": {
+            "x": 124,
+            "y": 751,
+            "w": 266,
+            "h": 17
+          },
+          "hit": "covered at (257,760) by <p mt-1 font-mono text-[9px] uppercase tracking-[0.>"
+        },
+        {
+          "name": "globe-zoom-in",
+          "rect": {
+            "x": 345,
+            "y": 674,
+            "w": 32,
+            "h": 32
+          },
+          "hit": "covered at (361,690) by <div p-6 text-center>"
+        },
+        {
+          "name": "globe-zoom-out",
+          "rect": {
+            "x": 345,
+            "y": 706,
+            "w": 32,
+            "h": 32
+          },
+          "hit": "covered at (361,722) by <div font-mono text-[10px] uppercase tracking-[0.25em>"
+        },
+        {
+          "name": "field-attention",
+          "rect": {
+            "x": 12,
+            "y": 215,
+            "w": 150,
+            "h": 36
+          },
+          "hit": "ok"
+        },
+        {
+          "name": "toolbar-report",
+          "rect": {
+            "x": 342,
+            "y": 179,
+            "w": 36,
+            "h": 32
+          },
+          "hit": "ok"
+        },
+        {
+          "name": "flat-globe#0",
+          "rect": {
+            "x": 13,
+            "y": 180,
+            "w": 34,
+            "h": 30
+          },
+          "hit": "ok"
+        },
+        {
+          "name": "flat-globe#1",
+          "rect": {
+            "x": 47,
+            "y": 180,
+            "w": 34,
+            "h": 30
+          },
+          "hit": "ok"
+        },
+        {
+          "name": "toolbar-graffiti",
+          "rect": {
+            "x": 258,
+            "y": 179,
+            "w": 36,
+            "h": 32
+          },
+          "hit": "ok"
+        },
+        {
+          "name": "toolbar-capture",
+          "rect": {
+            "x": 300,
+            "y": 179,
+            "w": 36,
+            "h": 32
+          },
+          "hit": "ok"
+        }
+      ]
     },
-    {
-     "name": "sheet-fullscreen",
-     "rect": {
-      "x": 354,
-      "y": 657,
-      "w": 24,
-      "h": 24
-     },
-     "hit": "ok"
-    },
-    {
-     "name": "retry-view",
-     "rect": {
-      "x": 152,
-      "y": 774,
-      "w": 87,
-      "h": 28
-     },
-     "hit": "covered at (195,788) by <button \"Channel\" relative flex h-11 w-11 items-center justify-cen>"
-    },
-    {
-     "name": "leaflet-zoom-in",
-     "rect": {
-      "x": 345,
-      "y": 674,
-      "w": 32,
-      "h": 32
-     },
-     "hit": "covered at (361,690) by <div p-6 text-center>"
-    },
-    {
-     "name": "leaflet-zoom-out",
-     "rect": {
-      "x": 345,
-      "y": 706,
-      "w": 32,
-      "h": 32
-     },
-     "hit": "covered at (361,722) by <div font-mono text-[10px] uppercase tracking-[0.25em>"
-    },
-    {
-     "name": "leaflet-attribution",
-     "rect": {
-      "x": 124,
-      "y": 751,
-      "w": 266,
-      "h": 17
-     },
-     "hit": "covered at (257,760) by <p mt-1 font-mono text-[9px] uppercase tracking-[0.>"
-    },
-    {
-     "name": "globe-zoom-in",
-     "rect": {
-      "x": 345,
-      "y": 674,
-      "w": 32,
-      "h": 32
-     },
-     "hit": "covered at (361,690) by <div p-6 text-center>"
-    },
-    {
-     "name": "globe-zoom-out",
-     "rect": {
-      "x": 345,
-      "y": 706,
-      "w": 32,
-      "h": 32
-     },
-     "hit": "covered at (361,722) by <div font-mono text-[10px] uppercase tracking-[0.25em>"
-    },
-    {
-     "name": "field-attention",
-     "rect": {
-      "x": 12,
-      "y": 215,
-      "w": 150,
-      "h": 36
-     },
-     "hit": "ok"
-    },
-    {
-     "name": "toolbar-report",
-     "rect": {
-      "x": 342,
-      "y": 179,
-      "w": 36,
-      "h": 32
-     },
-     "hit": "ok"
-    },
-    {
-     "name": "flat-globe#0",
-     "rect": {
-      "x": 13,
-      "y": 180,
-      "w": 34,
-      "h": 30
-     },
-     "hit": "ok"
-    },
-    {
-     "name": "flat-globe#1",
-     "rect": {
-      "x": 47,
-      "y": 180,
-      "w": 34,
-      "h": 30
-     },
-     "hit": "ok"
-    },
-    {
-     "name": "toolbar-graffiti",
-     "rect": {
-      "x": 258,
-      "y": 179,
-      "w": 36,
-      "h": 32
-     },
-     "hit": "ok"
-    },
-    {
-     "name": "toolbar-capture",
-     "rect": {
-      "x": 300,
-      "y": 179,
-      "w": 36,
-      "h": 32
-     },
-     "hit": "ok"
+    "after": {
+      "viewport": [390, 844],
+      "mapBox": {
+        "x": 0,
+        "y": 167,
+        "w": 390,
+        "h": 601
+      },
+      "sheet": {
+        "x": 0,
+        "y": 588,
+        "w": 390,
+        "h": 180
+      },
+      "freeMapHeight": 365,
+      "hScroll": false,
+      "missing": [
+        "sheet-collapse",
+        "sheet-close-detail",
+        "globe-reset-north",
+        "globe-auto-spin",
+        "globe-attribution",
+        "nudge-execute",
+        "nudge-abort",
+        "field-attention"
+      ],
+      "controls": [
+        {
+          "name": "sheet-expand",
+          "rect": {
+            "x": 294,
+            "y": 603,
+            "w": 40,
+            "h": 40
+          },
+          "hit": "ok"
+        },
+        {
+          "name": "sheet-fullscreen",
+          "rect": {
+            "x": 338,
+            "y": 603,
+            "w": 40,
+            "h": 40
+          },
+          "hit": "ok"
+        },
+        {
+          "name": "retry-view",
+          "rect": {
+            "x": 280,
+            "y": 650,
+            "w": 98,
+            "h": 40
+          },
+          "hit": "ok"
+        },
+        {
+          "name": "leaflet-zoom-in",
+          "rect": {
+            "x": 337,
+            "y": 478,
+            "w": 40,
+            "h": 40
+          },
+          "hit": "ok"
+        },
+        {
+          "name": "leaflet-zoom-out",
+          "rect": {
+            "x": 337,
+            "y": 518,
+            "w": 40,
+            "h": 40
+          },
+          "hit": "ok"
+        },
+        {
+          "name": "leaflet-attribution",
+          "rect": {
+            "x": 124,
+            "y": 571,
+            "w": 266,
+            "h": 17
+          },
+          "hit": "ok"
+        },
+        {
+          "name": "globe-zoom-in",
+          "rect": {
+            "x": 337,
+            "y": 478,
+            "w": 40,
+            "h": 40
+          },
+          "hit": "ok"
+        },
+        {
+          "name": "globe-zoom-out",
+          "rect": {
+            "x": 337,
+            "y": 518,
+            "w": 40,
+            "h": 40
+          },
+          "hit": "ok"
+        },
+        {
+          "name": "toolbar-report",
+          "rect": {
+            "x": 338,
+            "y": 179,
+            "w": 40,
+            "h": 40
+          },
+          "hit": "ok"
+        },
+        {
+          "name": "flat-globe#0",
+          "rect": {
+            "x": 13,
+            "y": 180,
+            "w": 40,
+            "h": 40
+          },
+          "hit": "ok"
+        },
+        {
+          "name": "flat-globe#1",
+          "rect": {
+            "x": 53,
+            "y": 180,
+            "w": 40,
+            "h": 40
+          },
+          "hit": "ok"
+        },
+        {
+          "name": "tools-toggle",
+          "rect": {
+            "x": 98,
+            "y": 179,
+            "w": 98,
+            "h": 40
+          },
+          "hit": "ok"
+        },
+        {
+          "name": "toolbar-graffiti",
+          "rect": {
+            "x": 246,
+            "y": 179,
+            "w": 40,
+            "h": 40
+          },
+          "hit": "ok"
+        },
+        {
+          "name": "toolbar-capture",
+          "rect": {
+            "x": 292,
+            "y": 179,
+            "w": 40,
+            "h": 40
+          },
+          "hit": "ok"
+        }
+      ]
     }
-   ]
   },
-  "after": {
-   "viewport": [
-    390,
-    844
-   ],
-   "mapBox": {
-    "x": 0,
-    "y": 167,
-    "w": 390,
-    "h": 601
-   },
-   "sheet": {
-    "x": 0,
-    "y": 588,
-    "w": 390,
-    "h": 180
-   },
-   "freeMapHeight": 365,
-   "hScroll": false,
-   "missing": [
-    "sheet-collapse",
-    "sheet-close-detail",
-    "globe-reset-north",
-    "globe-auto-spin",
-    "globe-attribution",
-    "nudge-execute",
-    "nudge-abort",
-    "field-attention"
-   ],
-   "controls": [
-    {
-     "name": "sheet-expand",
-     "rect": {
-      "x": 294,
-      "y": 603,
-      "w": 40,
-      "h": 40
-     },
-     "hit": "ok"
+  "02-phone-390-globe": {
+    "before": {
+      "viewport": [390, 844],
+      "mapBox": {
+        "x": 0,
+        "y": 167,
+        "w": 390,
+        "h": 601
+      },
+      "sheet": {
+        "x": 0,
+        "y": 636,
+        "w": 390,
+        "h": 132
+      },
+      "freeMapHeight": 316,
+      "hScroll": false,
+      "missing": [
+        "sheet-collapse",
+        "sheet-close-detail",
+        "retry-view",
+        "leaflet-zoom-in",
+        "leaflet-zoom-out",
+        "leaflet-attribution",
+        "nudge-execute",
+        "nudge-abort",
+        "tools-toggle"
+      ],
+      "controls": [
+        {
+          "name": "sheet-expand",
+          "rect": {
+            "x": 326,
+            "y": 657,
+            "w": 24,
+            "h": 24
+          },
+          "hit": "ok"
+        },
+        {
+          "name": "sheet-fullscreen",
+          "rect": {
+            "x": 354,
+            "y": 657,
+            "w": 24,
+            "h": 24
+          },
+          "hit": "ok"
+        },
+        {
+          "name": "globe-zoom-in",
+          "rect": {
+            "x": 342,
+            "y": 558,
+            "w": 36,
+            "h": 36
+          },
+          "hit": "ok"
+        },
+        {
+          "name": "globe-zoom-out",
+          "rect": {
+            "x": 342,
+            "y": 600,
+            "w": 36,
+            "h": 36
+          },
+          "hit": "ok"
+        },
+        {
+          "name": "globe-reset-north",
+          "rect": {
+            "x": 342,
+            "y": 642,
+            "w": 36,
+            "h": 36
+          },
+          "hit": "covered at (360,660) by <button \"Fullscreen map\" flex h-6 w-6 items-center justify-center text-di>"
+        },
+        {
+          "name": "globe-auto-spin",
+          "rect": {
+            "x": 342,
+            "y": 684,
+            "w": 36,
+            "h": 36
+          },
+          "hit": "covered at (360,702) by <div group flex w-full cursor-pointer gap-3 border-b >"
+        },
+        {
+          "name": "globe-attribution",
+          "rect": {
+            "x": 356,
+            "y": 734,
+            "w": 24,
+            "h": 24
+          },
+          "hit": "covered at (368,746) by <div group flex w-full cursor-pointer gap-3 border-b >"
+        },
+        {
+          "name": "field-attention",
+          "rect": {
+            "x": 12,
+            "y": 215,
+            "w": 150,
+            "h": 36
+          },
+          "hit": "ok"
+        },
+        {
+          "name": "toolbar-report",
+          "rect": {
+            "x": 342,
+            "y": 179,
+            "w": 36,
+            "h": 32
+          },
+          "hit": "ok"
+        },
+        {
+          "name": "flat-globe#0",
+          "rect": {
+            "x": 13,
+            "y": 180,
+            "w": 34,
+            "h": 30
+          },
+          "hit": "ok"
+        },
+        {
+          "name": "flat-globe#1",
+          "rect": {
+            "x": 47,
+            "y": 180,
+            "w": 34,
+            "h": 30
+          },
+          "hit": "ok"
+        },
+        {
+          "name": "toolbar-graffiti",
+          "rect": {
+            "x": 258,
+            "y": 179,
+            "w": 36,
+            "h": 32
+          },
+          "hit": "ok"
+        },
+        {
+          "name": "toolbar-capture",
+          "rect": {
+            "x": 300,
+            "y": 179,
+            "w": 36,
+            "h": 32
+          },
+          "hit": "ok"
+        }
+      ]
     },
-    {
-     "name": "sheet-fullscreen",
-     "rect": {
-      "x": 338,
-      "y": 603,
-      "w": 40,
-      "h": 40
-     },
-     "hit": "ok"
-    },
-    {
-     "name": "retry-view",
-     "rect": {
-      "x": 280,
-      "y": 650,
-      "w": 98,
-      "h": 40
-     },
-     "hit": "ok"
-    },
-    {
-     "name": "leaflet-zoom-in",
-     "rect": {
-      "x": 337,
-      "y": 478,
-      "w": 40,
-      "h": 40
-     },
-     "hit": "ok"
-    },
-    {
-     "name": "leaflet-zoom-out",
-     "rect": {
-      "x": 337,
-      "y": 518,
-      "w": 40,
-      "h": 40
-     },
-     "hit": "ok"
-    },
-    {
-     "name": "leaflet-attribution",
-     "rect": {
-      "x": 124,
-      "y": 571,
-      "w": 266,
-      "h": 17
-     },
-     "hit": "ok"
-    },
-    {
-     "name": "globe-zoom-in",
-     "rect": {
-      "x": 337,
-      "y": 478,
-      "w": 40,
-      "h": 40
-     },
-     "hit": "ok"
-    },
-    {
-     "name": "globe-zoom-out",
-     "rect": {
-      "x": 337,
-      "y": 518,
-      "w": 40,
-      "h": 40
-     },
-     "hit": "ok"
-    },
-    {
-     "name": "toolbar-report",
-     "rect": {
-      "x": 338,
-      "y": 179,
-      "w": 40,
-      "h": 40
-     },
-     "hit": "ok"
-    },
-    {
-     "name": "flat-globe#0",
-     "rect": {
-      "x": 13,
-      "y": 180,
-      "w": 40,
-      "h": 40
-     },
-     "hit": "ok"
-    },
-    {
-     "name": "flat-globe#1",
-     "rect": {
-      "x": 53,
-      "y": 180,
-      "w": 40,
-      "h": 40
-     },
-     "hit": "ok"
-    },
-    {
-     "name": "tools-toggle",
-     "rect": {
-      "x": 98,
-      "y": 179,
-      "w": 98,
-      "h": 40
-     },
-     "hit": "ok"
-    },
-    {
-     "name": "toolbar-graffiti",
-     "rect": {
-      "x": 246,
-      "y": 179,
-      "w": 40,
-      "h": 40
-     },
-     "hit": "ok"
-    },
-    {
-     "name": "toolbar-capture",
-     "rect": {
-      "x": 292,
-      "y": 179,
-      "w": 40,
-      "h": 40
-     },
-     "hit": "ok"
+    "after": {
+      "viewport": [390, 844],
+      "mapBox": {
+        "x": 0,
+        "y": 167,
+        "w": 390,
+        "h": 601
+      },
+      "sheet": {
+        "x": 0,
+        "y": 636,
+        "w": 390,
+        "h": 132
+      },
+      "freeMapHeight": 413,
+      "hScroll": false,
+      "missing": [
+        "sheet-collapse",
+        "sheet-close-detail",
+        "retry-view",
+        "leaflet-zoom-in",
+        "leaflet-zoom-out",
+        "leaflet-attribution",
+        "nudge-execute",
+        "nudge-abort",
+        "field-attention"
+      ],
+      "controls": [
+        {
+          "name": "sheet-expand",
+          "rect": {
+            "x": 294,
+            "y": 651,
+            "w": 40,
+            "h": 40
+          },
+          "hit": "ok"
+        },
+        {
+          "name": "sheet-fullscreen",
+          "rect": {
+            "x": 338,
+            "y": 651,
+            "w": 40,
+            "h": 40
+          },
+          "hit": "ok"
+        },
+        {
+          "name": "globe-zoom-in",
+          "rect": {
+            "x": 342,
+            "y": 426,
+            "w": 36,
+            "h": 36
+          },
+          "hit": "ok"
+        },
+        {
+          "name": "globe-zoom-out",
+          "rect": {
+            "x": 342,
+            "y": 468,
+            "w": 36,
+            "h": 36
+          },
+          "hit": "ok"
+        },
+        {
+          "name": "globe-reset-north",
+          "rect": {
+            "x": 342,
+            "y": 510,
+            "w": 36,
+            "h": 36
+          },
+          "hit": "ok"
+        },
+        {
+          "name": "globe-auto-spin",
+          "rect": {
+            "x": 342,
+            "y": 552,
+            "w": 36,
+            "h": 36
+          },
+          "hit": "ok"
+        },
+        {
+          "name": "globe-attribution",
+          "rect": {
+            "x": 356,
+            "y": 602,
+            "w": 24,
+            "h": 24
+          },
+          "hit": "ok"
+        },
+        {
+          "name": "toolbar-report",
+          "rect": {
+            "x": 338,
+            "y": 179,
+            "w": 40,
+            "h": 40
+          },
+          "hit": "ok"
+        },
+        {
+          "name": "flat-globe#0",
+          "rect": {
+            "x": 13,
+            "y": 180,
+            "w": 40,
+            "h": 40
+          },
+          "hit": "ok"
+        },
+        {
+          "name": "flat-globe#1",
+          "rect": {
+            "x": 53,
+            "y": 180,
+            "w": 40,
+            "h": 40
+          },
+          "hit": "ok"
+        },
+        {
+          "name": "tools-toggle",
+          "rect": {
+            "x": 98,
+            "y": 179,
+            "w": 98,
+            "h": 40
+          },
+          "hit": "ok"
+        },
+        {
+          "name": "toolbar-graffiti",
+          "rect": {
+            "x": 246,
+            "y": 179,
+            "w": 40,
+            "h": 40
+          },
+          "hit": "ok"
+        },
+        {
+          "name": "toolbar-capture",
+          "rect": {
+            "x": 292,
+            "y": 179,
+            "w": 40,
+            "h": 40
+          },
+          "hit": "ok"
+        }
+      ]
     }
-   ]
-  }
- },
- "02-phone-390-globe": {
-  "before": {
-   "viewport": [
-    390,
-    844
-   ],
-   "mapBox": {
-    "x": 0,
-    "y": 167,
-    "w": 390,
-    "h": 601
-   },
-   "sheet": {
-    "x": 0,
-    "y": 636,
-    "w": 390,
-    "h": 132
-   },
-   "freeMapHeight": 316,
-   "hScroll": false,
-   "missing": [
-    "sheet-collapse",
-    "sheet-close-detail",
-    "retry-view",
-    "leaflet-zoom-in",
-    "leaflet-zoom-out",
-    "leaflet-attribution",
-    "nudge-execute",
-    "nudge-abort",
-    "tools-toggle"
-   ],
-   "controls": [
-    {
-     "name": "sheet-expand",
-     "rect": {
-      "x": 326,
-      "y": 657,
-      "w": 24,
-      "h": 24
-     },
-     "hit": "ok"
-    },
-    {
-     "name": "sheet-fullscreen",
-     "rect": {
-      "x": 354,
-      "y": 657,
-      "w": 24,
-      "h": 24
-     },
-     "hit": "ok"
-    },
-    {
-     "name": "globe-zoom-in",
-     "rect": {
-      "x": 342,
-      "y": 558,
-      "w": 36,
-      "h": 36
-     },
-     "hit": "ok"
-    },
-    {
-     "name": "globe-zoom-out",
-     "rect": {
-      "x": 342,
-      "y": 600,
-      "w": 36,
-      "h": 36
-     },
-     "hit": "ok"
-    },
-    {
-     "name": "globe-reset-north",
-     "rect": {
-      "x": 342,
-      "y": 642,
-      "w": 36,
-      "h": 36
-     },
-     "hit": "covered at (360,660) by <button \"Fullscreen map\" flex h-6 w-6 items-center justify-center text-di>"
-    },
-    {
-     "name": "globe-auto-spin",
-     "rect": {
-      "x": 342,
-      "y": 684,
-      "w": 36,
-      "h": 36
-     },
-     "hit": "covered at (360,702) by <div group flex w-full cursor-pointer gap-3 border-b >"
-    },
-    {
-     "name": "globe-attribution",
-     "rect": {
-      "x": 356,
-      "y": 734,
-      "w": 24,
-      "h": 24
-     },
-     "hit": "covered at (368,746) by <div group flex w-full cursor-pointer gap-3 border-b >"
-    },
-    {
-     "name": "field-attention",
-     "rect": {
-      "x": 12,
-      "y": 215,
-      "w": 150,
-      "h": 36
-     },
-     "hit": "ok"
-    },
-    {
-     "name": "toolbar-report",
-     "rect": {
-      "x": 342,
-      "y": 179,
-      "w": 36,
-      "h": 32
-     },
-     "hit": "ok"
-    },
-    {
-     "name": "flat-globe#0",
-     "rect": {
-      "x": 13,
-      "y": 180,
-      "w": 34,
-      "h": 30
-     },
-     "hit": "ok"
-    },
-    {
-     "name": "flat-globe#1",
-     "rect": {
-      "x": 47,
-      "y": 180,
-      "w": 34,
-      "h": 30
-     },
-     "hit": "ok"
-    },
-    {
-     "name": "toolbar-graffiti",
-     "rect": {
-      "x": 258,
-      "y": 179,
-      "w": 36,
-      "h": 32
-     },
-     "hit": "ok"
-    },
-    {
-     "name": "toolbar-capture",
-     "rect": {
-      "x": 300,
-      "y": 179,
-      "w": 36,
-      "h": 32
-     },
-     "hit": "ok"
-    }
-   ]
   },
-  "after": {
-   "viewport": [
-    390,
-    844
-   ],
-   "mapBox": {
-    "x": 0,
-    "y": 167,
-    "w": 390,
-    "h": 601
-   },
-   "sheet": {
-    "x": 0,
-    "y": 636,
-    "w": 390,
-    "h": 132
-   },
-   "freeMapHeight": 413,
-   "hScroll": false,
-   "missing": [
-    "sheet-collapse",
-    "sheet-close-detail",
-    "retry-view",
-    "leaflet-zoom-in",
-    "leaflet-zoom-out",
-    "leaflet-attribution",
-    "nudge-execute",
-    "nudge-abort",
-    "field-attention"
-   ],
-   "controls": [
-    {
-     "name": "sheet-expand",
-     "rect": {
-      "x": 294,
-      "y": 651,
-      "w": 40,
-      "h": 40
-     },
-     "hit": "ok"
+  "03-phone-360-flat": {
+    "before": {
+      "viewport": [360, 640],
+      "mapBox": {
+        "x": 0,
+        "y": 167,
+        "w": 360,
+        "h": 397
+      },
+      "sheet": {
+        "x": 0,
+        "y": 432,
+        "w": 360,
+        "h": 132
+      },
+      "freeMapHeight": 112,
+      "hScroll": false,
+      "missing": [
+        "sheet-collapse",
+        "sheet-close-detail",
+        "retry-view",
+        "globe-reset-north",
+        "globe-auto-spin",
+        "globe-attribution",
+        "nudge-execute",
+        "nudge-abort",
+        "tools-toggle"
+      ],
+      "controls": [
+        {
+          "name": "sheet-expand",
+          "rect": {
+            "x": 296,
+            "y": 453,
+            "w": 24,
+            "h": 24
+          },
+          "hit": "ok"
+        },
+        {
+          "name": "sheet-fullscreen",
+          "rect": {
+            "x": 324,
+            "y": 453,
+            "w": 24,
+            "h": 24
+          },
+          "hit": "ok"
+        },
+        {
+          "name": "leaflet-zoom-in",
+          "rect": {
+            "x": 315,
+            "y": 470,
+            "w": 32,
+            "h": 32
+          },
+          "hit": "covered at (331,486) by <div p-6 text-center>"
+        },
+        {
+          "name": "leaflet-zoom-out",
+          "rect": {
+            "x": 315,
+            "y": 502,
+            "w": 32,
+            "h": 32
+          },
+          "hit": "covered at (331,518) by <div font-mono text-[10px] uppercase tracking-[0.25em>"
+        },
+        {
+          "name": "leaflet-attribution",
+          "rect": {
+            "x": 94,
+            "y": 547,
+            "w": 266,
+            "h": 17
+          },
+          "hit": "covered at (227,556) by <div p-6 text-center>"
+        },
+        {
+          "name": "globe-zoom-in",
+          "rect": {
+            "x": 315,
+            "y": 470,
+            "w": 32,
+            "h": 32
+          },
+          "hit": "covered at (331,486) by <div p-6 text-center>"
+        },
+        {
+          "name": "globe-zoom-out",
+          "rect": {
+            "x": 315,
+            "y": 502,
+            "w": 32,
+            "h": 32
+          },
+          "hit": "covered at (331,518) by <div font-mono text-[10px] uppercase tracking-[0.25em>"
+        },
+        {
+          "name": "field-attention",
+          "rect": {
+            "x": 12,
+            "y": 215,
+            "w": 150,
+            "h": 36
+          },
+          "hit": "ok"
+        },
+        {
+          "name": "toolbar-report",
+          "rect": {
+            "x": 312,
+            "y": 179,
+            "w": 36,
+            "h": 32
+          },
+          "hit": "ok"
+        },
+        {
+          "name": "flat-globe#0",
+          "rect": {
+            "x": 13,
+            "y": 180,
+            "w": 34,
+            "h": 30
+          },
+          "hit": "ok"
+        },
+        {
+          "name": "flat-globe#1",
+          "rect": {
+            "x": 47,
+            "y": 180,
+            "w": 34,
+            "h": 30
+          },
+          "hit": "ok"
+        },
+        {
+          "name": "toolbar-graffiti",
+          "rect": {
+            "x": 228,
+            "y": 179,
+            "w": 36,
+            "h": 32
+          },
+          "hit": "ok"
+        },
+        {
+          "name": "toolbar-capture",
+          "rect": {
+            "x": 270,
+            "y": 179,
+            "w": 36,
+            "h": 32
+          },
+          "hit": "ok"
+        }
+      ]
     },
-    {
-     "name": "sheet-fullscreen",
-     "rect": {
-      "x": 338,
-      "y": 651,
-      "w": 40,
-      "h": 40
-     },
-     "hit": "ok"
-    },
-    {
-     "name": "globe-zoom-in",
-     "rect": {
-      "x": 342,
-      "y": 426,
-      "w": 36,
-      "h": 36
-     },
-     "hit": "ok"
-    },
-    {
-     "name": "globe-zoom-out",
-     "rect": {
-      "x": 342,
-      "y": 468,
-      "w": 36,
-      "h": 36
-     },
-     "hit": "ok"
-    },
-    {
-     "name": "globe-reset-north",
-     "rect": {
-      "x": 342,
-      "y": 510,
-      "w": 36,
-      "h": 36
-     },
-     "hit": "ok"
-    },
-    {
-     "name": "globe-auto-spin",
-     "rect": {
-      "x": 342,
-      "y": 552,
-      "w": 36,
-      "h": 36
-     },
-     "hit": "ok"
-    },
-    {
-     "name": "globe-attribution",
-     "rect": {
-      "x": 356,
-      "y": 602,
-      "w": 24,
-      "h": 24
-     },
-     "hit": "ok"
-    },
-    {
-     "name": "toolbar-report",
-     "rect": {
-      "x": 338,
-      "y": 179,
-      "w": 40,
-      "h": 40
-     },
-     "hit": "ok"
-    },
-    {
-     "name": "flat-globe#0",
-     "rect": {
-      "x": 13,
-      "y": 180,
-      "w": 40,
-      "h": 40
-     },
-     "hit": "ok"
-    },
-    {
-     "name": "flat-globe#1",
-     "rect": {
-      "x": 53,
-      "y": 180,
-      "w": 40,
-      "h": 40
-     },
-     "hit": "ok"
-    },
-    {
-     "name": "tools-toggle",
-     "rect": {
-      "x": 98,
-      "y": 179,
-      "w": 98,
-      "h": 40
-     },
-     "hit": "ok"
-    },
-    {
-     "name": "toolbar-graffiti",
-     "rect": {
-      "x": 246,
-      "y": 179,
-      "w": 40,
-      "h": 40
-     },
-     "hit": "ok"
-    },
-    {
-     "name": "toolbar-capture",
-     "rect": {
-      "x": 292,
-      "y": 179,
-      "w": 40,
-      "h": 40
-     },
-     "hit": "ok"
+    "after": {
+      "viewport": [360, 640],
+      "mapBox": {
+        "x": 0,
+        "y": 167,
+        "w": 360,
+        "h": 397
+      },
+      "sheet": {
+        "x": 0,
+        "y": 432,
+        "w": 360,
+        "h": 132
+      },
+      "freeMapHeight": 209,
+      "hScroll": false,
+      "missing": [
+        "sheet-collapse",
+        "sheet-close-detail",
+        "retry-view",
+        "globe-reset-north",
+        "globe-auto-spin",
+        "globe-attribution",
+        "nudge-execute",
+        "nudge-abort",
+        "field-attention"
+      ],
+      "controls": [
+        {
+          "name": "sheet-expand",
+          "rect": {
+            "x": 264,
+            "y": 447,
+            "w": 40,
+            "h": 40
+          },
+          "hit": "ok"
+        },
+        {
+          "name": "sheet-fullscreen",
+          "rect": {
+            "x": 308,
+            "y": 447,
+            "w": 40,
+            "h": 40
+          },
+          "hit": "ok"
+        },
+        {
+          "name": "leaflet-zoom-in",
+          "rect": {
+            "x": 267,
+            "y": 362,
+            "w": 40,
+            "h": 40
+          },
+          "hit": "ok"
+        },
+        {
+          "name": "leaflet-zoom-out",
+          "rect": {
+            "x": 307,
+            "y": 362,
+            "w": 40,
+            "h": 40
+          },
+          "hit": "ok"
+        },
+        {
+          "name": "leaflet-attribution",
+          "rect": {
+            "x": 94,
+            "y": 415,
+            "w": 266,
+            "h": 17
+          },
+          "hit": "ok"
+        },
+        {
+          "name": "globe-zoom-in",
+          "rect": {
+            "x": 267,
+            "y": 362,
+            "w": 40,
+            "h": 40
+          },
+          "hit": "ok"
+        },
+        {
+          "name": "globe-zoom-out",
+          "rect": {
+            "x": 307,
+            "y": 362,
+            "w": 40,
+            "h": 40
+          },
+          "hit": "ok"
+        },
+        {
+          "name": "toolbar-report",
+          "rect": {
+            "x": 308,
+            "y": 179,
+            "w": 40,
+            "h": 40
+          },
+          "hit": "ok"
+        },
+        {
+          "name": "flat-globe#0",
+          "rect": {
+            "x": 13,
+            "y": 180,
+            "w": 40,
+            "h": 40
+          },
+          "hit": "ok"
+        },
+        {
+          "name": "flat-globe#1",
+          "rect": {
+            "x": 53,
+            "y": 180,
+            "w": 40,
+            "h": 40
+          },
+          "hit": "ok"
+        },
+        {
+          "name": "tools-toggle",
+          "rect": {
+            "x": 98,
+            "y": 179,
+            "w": 98,
+            "h": 40
+          },
+          "hit": "ok"
+        },
+        {
+          "name": "toolbar-graffiti",
+          "rect": {
+            "x": 216,
+            "y": 179,
+            "w": 40,
+            "h": 40
+          },
+          "hit": "ok"
+        },
+        {
+          "name": "toolbar-capture",
+          "rect": {
+            "x": 262,
+            "y": 179,
+            "w": 40,
+            "h": 40
+          },
+          "hit": "ok"
+        }
+      ]
     }
-   ]
-  }
- },
- "03-phone-360-flat": {
-  "before": {
-   "viewport": [
-    360,
-    640
-   ],
-   "mapBox": {
-    "x": 0,
-    "y": 167,
-    "w": 360,
-    "h": 397
-   },
-   "sheet": {
-    "x": 0,
-    "y": 432,
-    "w": 360,
-    "h": 132
-   },
-   "freeMapHeight": 112,
-   "hScroll": false,
-   "missing": [
-    "sheet-collapse",
-    "sheet-close-detail",
-    "retry-view",
-    "globe-reset-north",
-    "globe-auto-spin",
-    "globe-attribution",
-    "nudge-execute",
-    "nudge-abort",
-    "tools-toggle"
-   ],
-   "controls": [
-    {
-     "name": "sheet-expand",
-     "rect": {
-      "x": 296,
-      "y": 453,
-      "w": 24,
-      "h": 24
-     },
-     "hit": "ok"
-    },
-    {
-     "name": "sheet-fullscreen",
-     "rect": {
-      "x": 324,
-      "y": 453,
-      "w": 24,
-      "h": 24
-     },
-     "hit": "ok"
-    },
-    {
-     "name": "leaflet-zoom-in",
-     "rect": {
-      "x": 315,
-      "y": 470,
-      "w": 32,
-      "h": 32
-     },
-     "hit": "covered at (331,486) by <div p-6 text-center>"
-    },
-    {
-     "name": "leaflet-zoom-out",
-     "rect": {
-      "x": 315,
-      "y": 502,
-      "w": 32,
-      "h": 32
-     },
-     "hit": "covered at (331,518) by <div font-mono text-[10px] uppercase tracking-[0.25em>"
-    },
-    {
-     "name": "leaflet-attribution",
-     "rect": {
-      "x": 94,
-      "y": 547,
-      "w": 266,
-      "h": 17
-     },
-     "hit": "covered at (227,556) by <div p-6 text-center>"
-    },
-    {
-     "name": "globe-zoom-in",
-     "rect": {
-      "x": 315,
-      "y": 470,
-      "w": 32,
-      "h": 32
-     },
-     "hit": "covered at (331,486) by <div p-6 text-center>"
-    },
-    {
-     "name": "globe-zoom-out",
-     "rect": {
-      "x": 315,
-      "y": 502,
-      "w": 32,
-      "h": 32
-     },
-     "hit": "covered at (331,518) by <div font-mono text-[10px] uppercase tracking-[0.25em>"
-    },
-    {
-     "name": "field-attention",
-     "rect": {
-      "x": 12,
-      "y": 215,
-      "w": 150,
-      "h": 36
-     },
-     "hit": "ok"
-    },
-    {
-     "name": "toolbar-report",
-     "rect": {
-      "x": 312,
-      "y": 179,
-      "w": 36,
-      "h": 32
-     },
-     "hit": "ok"
-    },
-    {
-     "name": "flat-globe#0",
-     "rect": {
-      "x": 13,
-      "y": 180,
-      "w": 34,
-      "h": 30
-     },
-     "hit": "ok"
-    },
-    {
-     "name": "flat-globe#1",
-     "rect": {
-      "x": 47,
-      "y": 180,
-      "w": 34,
-      "h": 30
-     },
-     "hit": "ok"
-    },
-    {
-     "name": "toolbar-graffiti",
-     "rect": {
-      "x": 228,
-      "y": 179,
-      "w": 36,
-      "h": 32
-     },
-     "hit": "ok"
-    },
-    {
-     "name": "toolbar-capture",
-     "rect": {
-      "x": 270,
-      "y": 179,
-      "w": 36,
-      "h": 32
-     },
-     "hit": "ok"
-    }
-   ]
   },
-  "after": {
-   "viewport": [
-    360,
-    640
-   ],
-   "mapBox": {
-    "x": 0,
-    "y": 167,
-    "w": 360,
-    "h": 397
-   },
-   "sheet": {
-    "x": 0,
-    "y": 432,
-    "w": 360,
-    "h": 132
-   },
-   "freeMapHeight": 209,
-   "hScroll": false,
-   "missing": [
-    "sheet-collapse",
-    "sheet-close-detail",
-    "retry-view",
-    "globe-reset-north",
-    "globe-auto-spin",
-    "globe-attribution",
-    "nudge-execute",
-    "nudge-abort",
-    "field-attention"
-   ],
-   "controls": [
-    {
-     "name": "sheet-expand",
-     "rect": {
-      "x": 264,
-      "y": 447,
-      "w": 40,
-      "h": 40
-     },
-     "hit": "ok"
+  "04-tablet-820-globe": {
+    "before": {
+      "viewport": [820, 1180],
+      "mapBox": {
+        "x": 0,
+        "y": 183,
+        "w": 820,
+        "h": 921
+      },
+      "sheet": {
+        "x": 0,
+        "y": 972,
+        "w": 820,
+        "h": 132
+      },
+      "freeMapHeight": 596,
+      "hScroll": false,
+      "missing": [
+        "sheet-collapse",
+        "sheet-close-detail",
+        "retry-view",
+        "leaflet-zoom-in",
+        "leaflet-zoom-out",
+        "leaflet-attribution",
+        "nudge-execute",
+        "nudge-abort",
+        "tools-toggle"
+      ],
+      "controls": [
+        {
+          "name": "sheet-expand",
+          "rect": {
+            "x": 756,
+            "y": 993,
+            "w": 24,
+            "h": 24
+          },
+          "hit": "ok"
+        },
+        {
+          "name": "sheet-fullscreen",
+          "rect": {
+            "x": 784,
+            "y": 993,
+            "w": 24,
+            "h": 24
+          },
+          "hit": "ok"
+        },
+        {
+          "name": "globe-zoom-in",
+          "rect": {
+            "x": 772,
+            "y": 894,
+            "w": 36,
+            "h": 36
+          },
+          "hit": "ok"
+        },
+        {
+          "name": "globe-zoom-out",
+          "rect": {
+            "x": 772,
+            "y": 936,
+            "w": 36,
+            "h": 36
+          },
+          "hit": "ok"
+        },
+        {
+          "name": "globe-reset-north",
+          "rect": {
+            "x": 772,
+            "y": 978,
+            "w": 36,
+            "h": 36
+          },
+          "hit": "covered at (790,996) by <button \"Fullscreen map\" flex h-6 w-6 items-center justify-center text-di>"
+        },
+        {
+          "name": "globe-auto-spin",
+          "rect": {
+            "x": 772,
+            "y": 1020,
+            "w": 36,
+            "h": 36
+          },
+          "hit": "covered at (790,1038) by <div group flex w-full cursor-pointer gap-3 border-b >"
+        },
+        {
+          "name": "globe-attribution",
+          "rect": {
+            "x": 786,
+            "y": 1070,
+            "w": 24,
+            "h": 24
+          },
+          "hit": "covered at (798,1082) by <div group flex w-full cursor-pointer gap-3 border-b >"
+        },
+        {
+          "name": "field-attention",
+          "rect": {
+            "x": 12,
+            "y": 271,
+            "w": 150,
+            "h": 36
+          },
+          "hit": "ok"
+        },
+        {
+          "name": "toolbar-report",
+          "rect": {
+            "x": 588,
+            "y": 233,
+            "w": 85,
+            "h": 34
+          },
+          "hit": "ok"
+        },
+        {
+          "name": "flat-globe#0",
+          "rect": {
+            "x": 13,
+            "y": 196,
+            "w": 69,
+            "h": 32
+          },
+          "hit": "ok"
+        },
+        {
+          "name": "flat-globe#1",
+          "rect": {
+            "x": 82,
+            "y": 196,
+            "w": 76,
+            "h": 32
+          },
+          "hit": "ok"
+        },
+        {
+          "name": "toolbar-graffiti",
+          "rect": {
+            "x": 384,
+            "y": 233,
+            "w": 100,
+            "h": 34
+          },
+          "hit": "ok"
+        },
+        {
+          "name": "toolbar-capture",
+          "rect": {
+            "x": 489,
+            "y": 233,
+            "w": 92,
+            "h": 34
+          },
+          "hit": "ok"
+        }
+      ]
     },
-    {
-     "name": "sheet-fullscreen",
-     "rect": {
-      "x": 308,
-      "y": 447,
-      "w": 40,
-      "h": 40
-     },
-     "hit": "ok"
-    },
-    {
-     "name": "leaflet-zoom-in",
-     "rect": {
-      "x": 267,
-      "y": 362,
-      "w": 40,
-      "h": 40
-     },
-     "hit": "ok"
-    },
-    {
-     "name": "leaflet-zoom-out",
-     "rect": {
-      "x": 307,
-      "y": 362,
-      "w": 40,
-      "h": 40
-     },
-     "hit": "ok"
-    },
-    {
-     "name": "leaflet-attribution",
-     "rect": {
-      "x": 94,
-      "y": 415,
-      "w": 266,
-      "h": 17
-     },
-     "hit": "ok"
-    },
-    {
-     "name": "globe-zoom-in",
-     "rect": {
-      "x": 267,
-      "y": 362,
-      "w": 40,
-      "h": 40
-     },
-     "hit": "ok"
-    },
-    {
-     "name": "globe-zoom-out",
-     "rect": {
-      "x": 307,
-      "y": 362,
-      "w": 40,
-      "h": 40
-     },
-     "hit": "ok"
-    },
-    {
-     "name": "toolbar-report",
-     "rect": {
-      "x": 308,
-      "y": 179,
-      "w": 40,
-      "h": 40
-     },
-     "hit": "ok"
-    },
-    {
-     "name": "flat-globe#0",
-     "rect": {
-      "x": 13,
-      "y": 180,
-      "w": 40,
-      "h": 40
-     },
-     "hit": "ok"
-    },
-    {
-     "name": "flat-globe#1",
-     "rect": {
-      "x": 53,
-      "y": 180,
-      "w": 40,
-      "h": 40
-     },
-     "hit": "ok"
-    },
-    {
-     "name": "tools-toggle",
-     "rect": {
-      "x": 98,
-      "y": 179,
-      "w": 98,
-      "h": 40
-     },
-     "hit": "ok"
-    },
-    {
-     "name": "toolbar-graffiti",
-     "rect": {
-      "x": 216,
-      "y": 179,
-      "w": 40,
-      "h": 40
-     },
-     "hit": "ok"
-    },
-    {
-     "name": "toolbar-capture",
-     "rect": {
-      "x": 262,
-      "y": 179,
-      "w": 40,
-      "h": 40
-     },
-     "hit": "ok"
+    "after": {
+      "viewport": [820, 1180],
+      "mapBox": {
+        "x": 0,
+        "y": 183,
+        "w": 820,
+        "h": 921
+      },
+      "sheet": {
+        "x": 0,
+        "y": 972,
+        "w": 820,
+        "h": 132
+      },
+      "freeMapHeight": 555,
+      "hScroll": false,
+      "missing": [
+        "sheet-collapse",
+        "sheet-close-detail",
+        "retry-view",
+        "leaflet-zoom-in",
+        "leaflet-zoom-out",
+        "leaflet-attribution",
+        "nudge-execute",
+        "nudge-abort",
+        "tools-toggle"
+      ],
+      "controls": [
+        {
+          "name": "sheet-expand",
+          "rect": {
+            "x": 724,
+            "y": 987,
+            "w": 40,
+            "h": 40
+          },
+          "hit": "ok"
+        },
+        {
+          "name": "sheet-fullscreen",
+          "rect": {
+            "x": 768,
+            "y": 987,
+            "w": 40,
+            "h": 40
+          },
+          "hit": "ok"
+        },
+        {
+          "name": "globe-zoom-in",
+          "rect": {
+            "x": 772,
+            "y": 762,
+            "w": 36,
+            "h": 36
+          },
+          "hit": "ok"
+        },
+        {
+          "name": "globe-zoom-out",
+          "rect": {
+            "x": 772,
+            "y": 804,
+            "w": 36,
+            "h": 36
+          },
+          "hit": "ok"
+        },
+        {
+          "name": "globe-reset-north",
+          "rect": {
+            "x": 772,
+            "y": 846,
+            "w": 36,
+            "h": 36
+          },
+          "hit": "ok"
+        },
+        {
+          "name": "globe-auto-spin",
+          "rect": {
+            "x": 772,
+            "y": 888,
+            "w": 36,
+            "h": 36
+          },
+          "hit": "ok"
+        },
+        {
+          "name": "globe-attribution",
+          "rect": {
+            "x": 786,
+            "y": 938,
+            "w": 24,
+            "h": 24
+          },
+          "hit": "ok"
+        },
+        {
+          "name": "field-attention",
+          "rect": {
+            "x": 12,
+            "y": 285,
+            "w": 150,
+            "h": 40
+          },
+          "hit": "ok"
+        },
+        {
+          "name": "toolbar-report",
+          "rect": {
+            "x": 588,
+            "y": 241,
+            "w": 85,
+            "h": 40
+          },
+          "hit": "ok"
+        },
+        {
+          "name": "flat-globe#0",
+          "rect": {
+            "x": 13,
+            "y": 196,
+            "w": 69,
+            "h": 40
+          },
+          "hit": "ok"
+        },
+        {
+          "name": "flat-globe#1",
+          "rect": {
+            "x": 82,
+            "y": 196,
+            "w": 76,
+            "h": 40
+          },
+          "hit": "ok"
+        },
+        {
+          "name": "toolbar-graffiti",
+          "rect": {
+            "x": 384,
+            "y": 241,
+            "w": 100,
+            "h": 40
+          },
+          "hit": "ok"
+        },
+        {
+          "name": "toolbar-capture",
+          "rect": {
+            "x": 489,
+            "y": 241,
+            "w": 92,
+            "h": 40
+          },
+          "hit": "ok"
+        }
+      ]
     }
-   ]
-  }
- },
- "04-tablet-820-globe": {
-  "before": {
-   "viewport": [
-    820,
-    1180
-   ],
-   "mapBox": {
-    "x": 0,
-    "y": 183,
-    "w": 820,
-    "h": 921
-   },
-   "sheet": {
-    "x": 0,
-    "y": 972,
-    "w": 820,
-    "h": 132
-   },
-   "freeMapHeight": 596,
-   "hScroll": false,
-   "missing": [
-    "sheet-collapse",
-    "sheet-close-detail",
-    "retry-view",
-    "leaflet-zoom-in",
-    "leaflet-zoom-out",
-    "leaflet-attribution",
-    "nudge-execute",
-    "nudge-abort",
-    "tools-toggle"
-   ],
-   "controls": [
-    {
-     "name": "sheet-expand",
-     "rect": {
-      "x": 756,
-      "y": 993,
-      "w": 24,
-      "h": 24
-     },
-     "hit": "ok"
-    },
-    {
-     "name": "sheet-fullscreen",
-     "rect": {
-      "x": 784,
-      "y": 993,
-      "w": 24,
-      "h": 24
-     },
-     "hit": "ok"
-    },
-    {
-     "name": "globe-zoom-in",
-     "rect": {
-      "x": 772,
-      "y": 894,
-      "w": 36,
-      "h": 36
-     },
-     "hit": "ok"
-    },
-    {
-     "name": "globe-zoom-out",
-     "rect": {
-      "x": 772,
-      "y": 936,
-      "w": 36,
-      "h": 36
-     },
-     "hit": "ok"
-    },
-    {
-     "name": "globe-reset-north",
-     "rect": {
-      "x": 772,
-      "y": 978,
-      "w": 36,
-      "h": 36
-     },
-     "hit": "covered at (790,996) by <button \"Fullscreen map\" flex h-6 w-6 items-center justify-center text-di>"
-    },
-    {
-     "name": "globe-auto-spin",
-     "rect": {
-      "x": 772,
-      "y": 1020,
-      "w": 36,
-      "h": 36
-     },
-     "hit": "covered at (790,1038) by <div group flex w-full cursor-pointer gap-3 border-b >"
-    },
-    {
-     "name": "globe-attribution",
-     "rect": {
-      "x": 786,
-      "y": 1070,
-      "w": 24,
-      "h": 24
-     },
-     "hit": "covered at (798,1082) by <div group flex w-full cursor-pointer gap-3 border-b >"
-    },
-    {
-     "name": "field-attention",
-     "rect": {
-      "x": 12,
-      "y": 271,
-      "w": 150,
-      "h": 36
-     },
-     "hit": "ok"
-    },
-    {
-     "name": "toolbar-report",
-     "rect": {
-      "x": 588,
-      "y": 233,
-      "w": 85,
-      "h": 34
-     },
-     "hit": "ok"
-    },
-    {
-     "name": "flat-globe#0",
-     "rect": {
-      "x": 13,
-      "y": 196,
-      "w": 69,
-      "h": 32
-     },
-     "hit": "ok"
-    },
-    {
-     "name": "flat-globe#1",
-     "rect": {
-      "x": 82,
-      "y": 196,
-      "w": 76,
-      "h": 32
-     },
-     "hit": "ok"
-    },
-    {
-     "name": "toolbar-graffiti",
-     "rect": {
-      "x": 384,
-      "y": 233,
-      "w": 100,
-      "h": 34
-     },
-     "hit": "ok"
-    },
-    {
-     "name": "toolbar-capture",
-     "rect": {
-      "x": 489,
-      "y": 233,
-      "w": 92,
-      "h": 34
-     },
-     "hit": "ok"
-    }
-   ]
   },
-  "after": {
-   "viewport": [
-    820,
-    1180
-   ],
-   "mapBox": {
-    "x": 0,
-    "y": 183,
-    "w": 820,
-    "h": 921
-   },
-   "sheet": {
-    "x": 0,
-    "y": 972,
-    "w": 820,
-    "h": 132
-   },
-   "freeMapHeight": 555,
-   "hScroll": false,
-   "missing": [
-    "sheet-collapse",
-    "sheet-close-detail",
-    "retry-view",
-    "leaflet-zoom-in",
-    "leaflet-zoom-out",
-    "leaflet-attribution",
-    "nudge-execute",
-    "nudge-abort",
-    "tools-toggle"
-   ],
-   "controls": [
-    {
-     "name": "sheet-expand",
-     "rect": {
-      "x": 724,
-      "y": 987,
-      "w": 40,
-      "h": 40
-     },
-     "hit": "ok"
+  "05-short-844x390-flat": {
+    "before": {
+      "viewport": [844, 390],
+      "mapBox": {
+        "x": 0,
+        "y": 112,
+        "w": 844,
+        "h": 202
+      },
+      "sheet": {
+        "x": 0,
+        "y": 218,
+        "w": 844,
+        "h": 96
+      },
+      "freeMapHeight": 0,
+      "hScroll": false,
+      "missing": [
+        "sheet-collapse",
+        "sheet-close-detail",
+        "retry-view",
+        "globe-reset-north",
+        "globe-auto-spin",
+        "globe-attribution",
+        "nudge-execute",
+        "nudge-abort",
+        "tools-toggle"
+      ],
+      "controls": [
+        {
+          "name": "sheet-expand",
+          "rect": {
+            "x": 780,
+            "y": 239,
+            "w": 24,
+            "h": 24
+          },
+          "hit": "ok"
+        },
+        {
+          "name": "sheet-fullscreen",
+          "rect": {
+            "x": 808,
+            "y": 239,
+            "w": 24,
+            "h": 24
+          },
+          "hit": "ok"
+        },
+        {
+          "name": "leaflet-zoom-in",
+          "rect": {
+            "x": 799,
+            "y": 220,
+            "w": 32,
+            "h": 32
+          },
+          "hit": "covered at (815,236) by <div flex w-full items-center justify-between px-3 py>"
+        },
+        {
+          "name": "leaflet-zoom-out",
+          "rect": {
+            "x": 799,
+            "y": 252,
+            "w": 32,
+            "h": 32
+          },
+          "hit": "covered at (815,268) by <div flex w-full items-center justify-between px-3 py>"
+        },
+        {
+          "name": "leaflet-attribution",
+          "rect": {
+            "x": 578,
+            "y": 297,
+            "w": 266,
+            "h": 17
+          },
+          "hit": "covered at (711,306) by <div mt-0.5 flex items-center gap-1.5>"
+        },
+        {
+          "name": "globe-zoom-in",
+          "rect": {
+            "x": 799,
+            "y": 220,
+            "w": 32,
+            "h": 32
+          },
+          "hit": "covered at (815,236) by <div flex w-full items-center justify-between px-3 py>"
+        },
+        {
+          "name": "globe-zoom-out",
+          "rect": {
+            "x": 799,
+            "y": 252,
+            "w": 32,
+            "h": 32
+          },
+          "hit": "covered at (815,268) by <div flex w-full items-center justify-between px-3 py>"
+        },
+        {
+          "name": "field-attention",
+          "rect": {
+            "x": 12,
+            "y": 214,
+            "w": 150,
+            "h": 36
+          },
+          "hit": "covered at (87,232) by <div flex w-full items-center justify-between px-3 py>"
+        },
+        {
+          "name": "toolbar-report",
+          "rect": {
+            "x": 747,
+            "y": 176,
+            "w": 85,
+            "h": 34
+          },
+          "hit": "ok"
+        },
+        {
+          "name": "flat-globe#0",
+          "rect": {
+            "x": 13,
+            "y": 177,
+            "w": 69,
+            "h": 32
+          },
+          "hit": "ok"
+        },
+        {
+          "name": "flat-globe#1",
+          "rect": {
+            "x": 82,
+            "y": 177,
+            "w": 76,
+            "h": 32
+          },
+          "hit": "ok"
+        },
+        {
+          "name": "toolbar-graffiti",
+          "rect": {
+            "x": 543,
+            "y": 176,
+            "w": 100,
+            "h": 34
+          },
+          "hit": "ok"
+        },
+        {
+          "name": "toolbar-capture",
+          "rect": {
+            "x": 648,
+            "y": 176,
+            "w": 92,
+            "h": 34
+          },
+          "hit": "ok"
+        }
+      ]
     },
-    {
-     "name": "sheet-fullscreen",
-     "rect": {
-      "x": 768,
-      "y": 987,
-      "w": 40,
-      "h": 40
-     },
-     "hit": "ok"
-    },
-    {
-     "name": "globe-zoom-in",
-     "rect": {
-      "x": 772,
-      "y": 762,
-      "w": 36,
-      "h": 36
-     },
-     "hit": "ok"
-    },
-    {
-     "name": "globe-zoom-out",
-     "rect": {
-      "x": 772,
-      "y": 804,
-      "w": 36,
-      "h": 36
-     },
-     "hit": "ok"
-    },
-    {
-     "name": "globe-reset-north",
-     "rect": {
-      "x": 772,
-      "y": 846,
-      "w": 36,
-      "h": 36
-     },
-     "hit": "ok"
-    },
-    {
-     "name": "globe-auto-spin",
-     "rect": {
-      "x": 772,
-      "y": 888,
-      "w": 36,
-      "h": 36
-     },
-     "hit": "ok"
-    },
-    {
-     "name": "globe-attribution",
-     "rect": {
-      "x": 786,
-      "y": 938,
-      "w": 24,
-      "h": 24
-     },
-     "hit": "ok"
-    },
-    {
-     "name": "field-attention",
-     "rect": {
-      "x": 12,
-      "y": 285,
-      "w": 150,
-      "h": 40
-     },
-     "hit": "ok"
-    },
-    {
-     "name": "toolbar-report",
-     "rect": {
-      "x": 588,
-      "y": 241,
-      "w": 85,
-      "h": 40
-     },
-     "hit": "ok"
-    },
-    {
-     "name": "flat-globe#0",
-     "rect": {
-      "x": 13,
-      "y": 196,
-      "w": 69,
-      "h": 40
-     },
-     "hit": "ok"
-    },
-    {
-     "name": "flat-globe#1",
-     "rect": {
-      "x": 82,
-      "y": 196,
-      "w": 76,
-      "h": 40
-     },
-     "hit": "ok"
-    },
-    {
-     "name": "toolbar-graffiti",
-     "rect": {
-      "x": 384,
-      "y": 241,
-      "w": 100,
-      "h": 40
-     },
-     "hit": "ok"
-    },
-    {
-     "name": "toolbar-capture",
-     "rect": {
-      "x": 489,
-      "y": 241,
-      "w": 92,
-      "h": 40
-     },
-     "hit": "ok"
+    "after": {
+      "viewport": [844, 390],
+      "mapBox": {
+        "x": 0,
+        "y": 112,
+        "w": 844,
+        "h": 202
+      },
+      "sheet": {
+        "x": 0,
+        "y": 254,
+        "w": 844,
+        "h": 60
+      },
+      "freeMapHeight": 84,
+      "hScroll": false,
+      "missing": [
+        "sheet-collapse",
+        "sheet-close-detail",
+        "retry-view",
+        "globe-reset-north",
+        "globe-auto-spin",
+        "globe-attribution",
+        "nudge-execute",
+        "nudge-abort",
+        "field-attention"
+      ],
+      "controls": [
+        {
+          "name": "sheet-expand",
+          "rect": {
+            "x": 748,
+            "y": 269,
+            "w": 40,
+            "h": 40
+          },
+          "hit": "ok"
+        },
+        {
+          "name": "sheet-fullscreen",
+          "rect": {
+            "x": 792,
+            "y": 269,
+            "w": 40,
+            "h": 40
+          },
+          "hit": "ok"
+        },
+        {
+          "name": "leaflet-zoom-in",
+          "rect": {
+            "x": 757,
+            "y": 207,
+            "w": 40,
+            "h": 40
+          },
+          "hit": "ok"
+        },
+        {
+          "name": "leaflet-zoom-out",
+          "rect": {
+            "x": 797,
+            "y": 207,
+            "w": 40,
+            "h": 40
+          },
+          "hit": "ok"
+        },
+        {
+          "name": "leaflet-attribution",
+          "rect": {
+            "x": 484,
+            "y": 237,
+            "w": 266,
+            "h": 17
+          },
+          "hit": "ok"
+        },
+        {
+          "name": "globe-zoom-in",
+          "rect": {
+            "x": 757,
+            "y": 207,
+            "w": 40,
+            "h": 40
+          },
+          "hit": "ok"
+        },
+        {
+          "name": "globe-zoom-out",
+          "rect": {
+            "x": 797,
+            "y": 207,
+            "w": 40,
+            "h": 40
+          },
+          "hit": "ok"
+        },
+        {
+          "name": "toolbar-report",
+          "rect": {
+            "x": 792,
+            "y": 124,
+            "w": 40,
+            "h": 40
+          },
+          "hit": "ok"
+        },
+        {
+          "name": "flat-globe#0",
+          "rect": {
+            "x": 509,
+            "y": 125,
+            "w": 40,
+            "h": 40
+          },
+          "hit": "ok"
+        },
+        {
+          "name": "flat-globe#1",
+          "rect": {
+            "x": 549,
+            "y": 125,
+            "w": 40,
+            "h": 40
+          },
+          "hit": "ok"
+        },
+        {
+          "name": "tools-toggle",
+          "rect": {
+            "x": 594,
+            "y": 124,
+            "w": 98,
+            "h": 40
+          },
+          "hit": "ok"
+        },
+        {
+          "name": "toolbar-graffiti",
+          "rect": {
+            "x": 700,
+            "y": 124,
+            "w": 40,
+            "h": 40
+          },
+          "hit": "ok"
+        },
+        {
+          "name": "toolbar-capture",
+          "rect": {
+            "x": 746,
+            "y": 124,
+            "w": 40,
+            "h": 40
+          },
+          "hit": "ok"
+        }
+      ]
     }
-   ]
-  }
- },
- "05-short-844x390-flat": {
-  "before": {
-   "viewport": [
-    844,
-    390
-   ],
-   "mapBox": {
-    "x": 0,
-    "y": 112,
-    "w": 844,
-    "h": 202
-   },
-   "sheet": {
-    "x": 0,
-    "y": 218,
-    "w": 844,
-    "h": 96
-   },
-   "freeMapHeight": 0,
-   "hScroll": false,
-   "missing": [
-    "sheet-collapse",
-    "sheet-close-detail",
-    "retry-view",
-    "globe-reset-north",
-    "globe-auto-spin",
-    "globe-attribution",
-    "nudge-execute",
-    "nudge-abort",
-    "tools-toggle"
-   ],
-   "controls": [
-    {
-     "name": "sheet-expand",
-     "rect": {
-      "x": 780,
-      "y": 239,
-      "w": 24,
-      "h": 24
-     },
-     "hit": "ok"
-    },
-    {
-     "name": "sheet-fullscreen",
-     "rect": {
-      "x": 808,
-      "y": 239,
-      "w": 24,
-      "h": 24
-     },
-     "hit": "ok"
-    },
-    {
-     "name": "leaflet-zoom-in",
-     "rect": {
-      "x": 799,
-      "y": 220,
-      "w": 32,
-      "h": 32
-     },
-     "hit": "covered at (815,236) by <div flex w-full items-center justify-between px-3 py>"
-    },
-    {
-     "name": "leaflet-zoom-out",
-     "rect": {
-      "x": 799,
-      "y": 252,
-      "w": 32,
-      "h": 32
-     },
-     "hit": "covered at (815,268) by <div flex w-full items-center justify-between px-3 py>"
-    },
-    {
-     "name": "leaflet-attribution",
-     "rect": {
-      "x": 578,
-      "y": 297,
-      "w": 266,
-      "h": 17
-     },
-     "hit": "covered at (711,306) by <div mt-0.5 flex items-center gap-1.5>"
-    },
-    {
-     "name": "globe-zoom-in",
-     "rect": {
-      "x": 799,
-      "y": 220,
-      "w": 32,
-      "h": 32
-     },
-     "hit": "covered at (815,236) by <div flex w-full items-center justify-between px-3 py>"
-    },
-    {
-     "name": "globe-zoom-out",
-     "rect": {
-      "x": 799,
-      "y": 252,
-      "w": 32,
-      "h": 32
-     },
-     "hit": "covered at (815,268) by <div flex w-full items-center justify-between px-3 py>"
-    },
-    {
-     "name": "field-attention",
-     "rect": {
-      "x": 12,
-      "y": 214,
-      "w": 150,
-      "h": 36
-     },
-     "hit": "covered at (87,232) by <div flex w-full items-center justify-between px-3 py>"
-    },
-    {
-     "name": "toolbar-report",
-     "rect": {
-      "x": 747,
-      "y": 176,
-      "w": 85,
-      "h": 34
-     },
-     "hit": "ok"
-    },
-    {
-     "name": "flat-globe#0",
-     "rect": {
-      "x": 13,
-      "y": 177,
-      "w": 69,
-      "h": 32
-     },
-     "hit": "ok"
-    },
-    {
-     "name": "flat-globe#1",
-     "rect": {
-      "x": 82,
-      "y": 177,
-      "w": 76,
-      "h": 32
-     },
-     "hit": "ok"
-    },
-    {
-     "name": "toolbar-graffiti",
-     "rect": {
-      "x": 543,
-      "y": 176,
-      "w": 100,
-      "h": 34
-     },
-     "hit": "ok"
-    },
-    {
-     "name": "toolbar-capture",
-     "rect": {
-      "x": 648,
-      "y": 176,
-      "w": 92,
-      "h": 34
-     },
-     "hit": "ok"
-    }
-   ]
   },
-  "after": {
-   "viewport": [
-    844,
-    390
-   ],
-   "mapBox": {
-    "x": 0,
-    "y": 112,
-    "w": 844,
-    "h": 202
-   },
-   "sheet": {
-    "x": 0,
-    "y": 254,
-    "w": 844,
-    "h": 60
-   },
-   "freeMapHeight": 84,
-   "hScroll": false,
-   "missing": [
-    "sheet-collapse",
-    "sheet-close-detail",
-    "retry-view",
-    "globe-reset-north",
-    "globe-auto-spin",
-    "globe-attribution",
-    "nudge-execute",
-    "nudge-abort",
-    "field-attention"
-   ],
-   "controls": [
-    {
-     "name": "sheet-expand",
-     "rect": {
-      "x": 748,
-      "y": 269,
-      "w": 40,
-      "h": 40
-     },
-     "hit": "ok"
+  "06-short-667x375-globe": {
+    "before": {
+      "viewport": [667, 375],
+      "mapBox": {
+        "x": 0,
+        "y": 112,
+        "w": 667,
+        "h": 187
+      },
+      "sheet": {
+        "x": 0,
+        "y": 218,
+        "w": 667,
+        "h": 81
+      },
+      "freeMapHeight": 0,
+      "hScroll": false,
+      "missing": [
+        "sheet-collapse",
+        "sheet-close-detail",
+        "retry-view",
+        "leaflet-zoom-in",
+        "leaflet-zoom-out",
+        "leaflet-attribution",
+        "nudge-execute",
+        "nudge-abort",
+        "tools-toggle"
+      ],
+      "controls": [
+        {
+          "name": "sheet-expand",
+          "rect": {
+            "x": 603,
+            "y": 239,
+            "w": 24,
+            "h": 24
+          },
+          "hit": "ok"
+        },
+        {
+          "name": "sheet-fullscreen",
+          "rect": {
+            "x": 631,
+            "y": 239,
+            "w": 24,
+            "h": 24
+          },
+          "hit": "ok"
+        },
+        {
+          "name": "globe-zoom-in",
+          "rect": {
+            "x": 619,
+            "y": 89,
+            "w": 36,
+            "h": 36
+          },
+          "hit": "covered at (621,91) by <div flex flex-1 items-center overflow-hidden>"
+        },
+        {
+          "name": "globe-zoom-out",
+          "rect": {
+            "x": 619,
+            "y": 131,
+            "w": 36,
+            "h": 36
+          },
+          "hit": "ok"
+        },
+        {
+          "name": "globe-reset-north",
+          "rect": {
+            "x": 619,
+            "y": 173,
+            "w": 36,
+            "h": 36
+          },
+          "hit": "ok"
+        },
+        {
+          "name": "globe-auto-spin",
+          "rect": {
+            "x": 619,
+            "y": 215,
+            "w": 36,
+            "h": 36
+          },
+          "hit": "covered at (637,233) by <div flex w-full items-center justify-between px-3 py>"
+        },
+        {
+          "name": "globe-attribution",
+          "rect": {
+            "x": 633,
+            "y": 265,
+            "w": 24,
+            "h": 24
+          },
+          "hit": "covered at (645,277) by <div group flex w-full cursor-pointer gap-3 border-b >"
+        },
+        {
+          "name": "field-attention",
+          "rect": {
+            "x": 12,
+            "y": 214,
+            "w": 150,
+            "h": 36
+          },
+          "hit": "covered at (87,232) by <div flex w-full items-center justify-between px-3 py>"
+        },
+        {
+          "name": "toolbar-report",
+          "rect": {
+            "x": 570,
+            "y": 176,
+            "w": 85,
+            "h": 34
+          },
+          "hit": "covered at (653,178) by <button \"Reset north\" flex h-9 w-9 items-center justify-center border >"
+        },
+        {
+          "name": "flat-globe#0",
+          "rect": {
+            "x": 13,
+            "y": 177,
+            "w": 69,
+            "h": 32
+          },
+          "hit": "ok"
+        },
+        {
+          "name": "flat-globe#1",
+          "rect": {
+            "x": 82,
+            "y": 177,
+            "w": 76,
+            "h": 32
+          },
+          "hit": "ok"
+        },
+        {
+          "name": "toolbar-graffiti",
+          "rect": {
+            "x": 366,
+            "y": 176,
+            "w": 100,
+            "h": 34
+          },
+          "hit": "ok"
+        },
+        {
+          "name": "toolbar-capture",
+          "rect": {
+            "x": 471,
+            "y": 176,
+            "w": 92,
+            "h": 34
+          },
+          "hit": "ok"
+        }
+      ]
     },
-    {
-     "name": "sheet-fullscreen",
-     "rect": {
-      "x": 792,
-      "y": 269,
-      "w": 40,
-      "h": 40
-     },
-     "hit": "ok"
-    },
-    {
-     "name": "leaflet-zoom-in",
-     "rect": {
-      "x": 757,
-      "y": 207,
-      "w": 40,
-      "h": 40
-     },
-     "hit": "ok"
-    },
-    {
-     "name": "leaflet-zoom-out",
-     "rect": {
-      "x": 797,
-      "y": 207,
-      "w": 40,
-      "h": 40
-     },
-     "hit": "ok"
-    },
-    {
-     "name": "leaflet-attribution",
-     "rect": {
-      "x": 484,
-      "y": 237,
-      "w": 266,
-      "h": 17
-     },
-     "hit": "ok"
-    },
-    {
-     "name": "globe-zoom-in",
-     "rect": {
-      "x": 757,
-      "y": 207,
-      "w": 40,
-      "h": 40
-     },
-     "hit": "ok"
-    },
-    {
-     "name": "globe-zoom-out",
-     "rect": {
-      "x": 797,
-      "y": 207,
-      "w": 40,
-      "h": 40
-     },
-     "hit": "ok"
-    },
-    {
-     "name": "toolbar-report",
-     "rect": {
-      "x": 792,
-      "y": 124,
-      "w": 40,
-      "h": 40
-     },
-     "hit": "ok"
-    },
-    {
-     "name": "flat-globe#0",
-     "rect": {
-      "x": 509,
-      "y": 125,
-      "w": 40,
-      "h": 40
-     },
-     "hit": "ok"
-    },
-    {
-     "name": "flat-globe#1",
-     "rect": {
-      "x": 549,
-      "y": 125,
-      "w": 40,
-      "h": 40
-     },
-     "hit": "ok"
-    },
-    {
-     "name": "tools-toggle",
-     "rect": {
-      "x": 594,
-      "y": 124,
-      "w": 98,
-      "h": 40
-     },
-     "hit": "ok"
-    },
-    {
-     "name": "toolbar-graffiti",
-     "rect": {
-      "x": 700,
-      "y": 124,
-      "w": 40,
-      "h": 40
-     },
-     "hit": "ok"
-    },
-    {
-     "name": "toolbar-capture",
-     "rect": {
-      "x": 746,
-      "y": 124,
-      "w": 40,
-      "h": 40
-     },
-     "hit": "ok"
+    "after": {
+      "viewport": [667, 375],
+      "mapBox": {
+        "x": 0,
+        "y": 112,
+        "w": 667,
+        "h": 187
+      },
+      "sheet": {
+        "x": 0,
+        "y": 239,
+        "w": 667,
+        "h": 60
+      },
+      "freeMapHeight": 69,
+      "hScroll": false,
+      "missing": [
+        "sheet-collapse",
+        "sheet-close-detail",
+        "retry-view",
+        "leaflet-zoom-in",
+        "leaflet-zoom-out",
+        "leaflet-attribution",
+        "nudge-execute",
+        "nudge-abort",
+        "field-attention"
+      ],
+      "controls": [
+        {
+          "name": "sheet-expand",
+          "rect": {
+            "x": 571,
+            "y": 254,
+            "w": 40,
+            "h": 40
+          },
+          "hit": "ok"
+        },
+        {
+          "name": "sheet-fullscreen",
+          "rect": {
+            "x": 615,
+            "y": 254,
+            "w": 40,
+            "h": 40
+          },
+          "hit": "ok"
+        },
+        {
+          "name": "globe-zoom-in",
+          "rect": {
+            "x": 449,
+            "y": 195,
+            "w": 36,
+            "h": 36
+          },
+          "hit": "ok"
+        },
+        {
+          "name": "globe-zoom-out",
+          "rect": {
+            "x": 491,
+            "y": 195,
+            "w": 36,
+            "h": 36
+          },
+          "hit": "ok"
+        },
+        {
+          "name": "globe-reset-north",
+          "rect": {
+            "x": 533,
+            "y": 195,
+            "w": 36,
+            "h": 36
+          },
+          "hit": "ok"
+        },
+        {
+          "name": "globe-auto-spin",
+          "rect": {
+            "x": 575,
+            "y": 195,
+            "w": 36,
+            "h": 36
+          },
+          "hit": "ok"
+        },
+        {
+          "name": "globe-attribution",
+          "rect": {
+            "x": 633,
+            "y": 205,
+            "w": 24,
+            "h": 24
+          },
+          "hit": "ok"
+        },
+        {
+          "name": "toolbar-report",
+          "rect": {
+            "x": 615,
+            "y": 124,
+            "w": 40,
+            "h": 40
+          },
+          "hit": "ok"
+        },
+        {
+          "name": "flat-globe#0",
+          "rect": {
+            "x": 332,
+            "y": 125,
+            "w": 40,
+            "h": 40
+          },
+          "hit": "ok"
+        },
+        {
+          "name": "flat-globe#1",
+          "rect": {
+            "x": 372,
+            "y": 125,
+            "w": 40,
+            "h": 40
+          },
+          "hit": "ok"
+        },
+        {
+          "name": "tools-toggle",
+          "rect": {
+            "x": 417,
+            "y": 124,
+            "w": 98,
+            "h": 40
+          },
+          "hit": "ok"
+        },
+        {
+          "name": "toolbar-graffiti",
+          "rect": {
+            "x": 523,
+            "y": 124,
+            "w": 40,
+            "h": 40
+          },
+          "hit": "ok"
+        },
+        {
+          "name": "toolbar-capture",
+          "rect": {
+            "x": 569,
+            "y": 124,
+            "w": 40,
+            "h": 40
+          },
+          "hit": "ok"
+        }
+      ]
     }
-   ]
-  }
- },
- "06-short-667x375-globe": {
-  "before": {
-   "viewport": [
-    667,
-    375
-   ],
-   "mapBox": {
-    "x": 0,
-    "y": 112,
-    "w": 667,
-    "h": 187
-   },
-   "sheet": {
-    "x": 0,
-    "y": 218,
-    "w": 667,
-    "h": 81
-   },
-   "freeMapHeight": 0,
-   "hScroll": false,
-   "missing": [
-    "sheet-collapse",
-    "sheet-close-detail",
-    "retry-view",
-    "leaflet-zoom-in",
-    "leaflet-zoom-out",
-    "leaflet-attribution",
-    "nudge-execute",
-    "nudge-abort",
-    "tools-toggle"
-   ],
-   "controls": [
-    {
-     "name": "sheet-expand",
-     "rect": {
-      "x": 603,
-      "y": 239,
-      "w": 24,
-      "h": 24
-     },
-     "hit": "ok"
-    },
-    {
-     "name": "sheet-fullscreen",
-     "rect": {
-      "x": 631,
-      "y": 239,
-      "w": 24,
-      "h": 24
-     },
-     "hit": "ok"
-    },
-    {
-     "name": "globe-zoom-in",
-     "rect": {
-      "x": 619,
-      "y": 89,
-      "w": 36,
-      "h": 36
-     },
-     "hit": "covered at (621,91) by <div flex flex-1 items-center overflow-hidden>"
-    },
-    {
-     "name": "globe-zoom-out",
-     "rect": {
-      "x": 619,
-      "y": 131,
-      "w": 36,
-      "h": 36
-     },
-     "hit": "ok"
-    },
-    {
-     "name": "globe-reset-north",
-     "rect": {
-      "x": 619,
-      "y": 173,
-      "w": 36,
-      "h": 36
-     },
-     "hit": "ok"
-    },
-    {
-     "name": "globe-auto-spin",
-     "rect": {
-      "x": 619,
-      "y": 215,
-      "w": 36,
-      "h": 36
-     },
-     "hit": "covered at (637,233) by <div flex w-full items-center justify-between px-3 py>"
-    },
-    {
-     "name": "globe-attribution",
-     "rect": {
-      "x": 633,
-      "y": 265,
-      "w": 24,
-      "h": 24
-     },
-     "hit": "covered at (645,277) by <div group flex w-full cursor-pointer gap-3 border-b >"
-    },
-    {
-     "name": "field-attention",
-     "rect": {
-      "x": 12,
-      "y": 214,
-      "w": 150,
-      "h": 36
-     },
-     "hit": "covered at (87,232) by <div flex w-full items-center justify-between px-3 py>"
-    },
-    {
-     "name": "toolbar-report",
-     "rect": {
-      "x": 570,
-      "y": 176,
-      "w": 85,
-      "h": 34
-     },
-     "hit": "covered at (653,178) by <button \"Reset north\" flex h-9 w-9 items-center justify-center border >"
-    },
-    {
-     "name": "flat-globe#0",
-     "rect": {
-      "x": 13,
-      "y": 177,
-      "w": 69,
-      "h": 32
-     },
-     "hit": "ok"
-    },
-    {
-     "name": "flat-globe#1",
-     "rect": {
-      "x": 82,
-      "y": 177,
-      "w": 76,
-      "h": 32
-     },
-     "hit": "ok"
-    },
-    {
-     "name": "toolbar-graffiti",
-     "rect": {
-      "x": 366,
-      "y": 176,
-      "w": 100,
-      "h": 34
-     },
-     "hit": "ok"
-    },
-    {
-     "name": "toolbar-capture",
-     "rect": {
-      "x": 471,
-      "y": 176,
-      "w": 92,
-      "h": 34
-     },
-     "hit": "ok"
-    }
-   ]
   },
-  "after": {
-   "viewport": [
-    667,
-    375
-   ],
-   "mapBox": {
-    "x": 0,
-    "y": 112,
-    "w": 667,
-    "h": 187
-   },
-   "sheet": {
-    "x": 0,
-    "y": 239,
-    "w": 667,
-    "h": 60
-   },
-   "freeMapHeight": 69,
-   "hScroll": false,
-   "missing": [
-    "sheet-collapse",
-    "sheet-close-detail",
-    "retry-view",
-    "leaflet-zoom-in",
-    "leaflet-zoom-out",
-    "leaflet-attribution",
-    "nudge-execute",
-    "nudge-abort",
-    "field-attention"
-   ],
-   "controls": [
-    {
-     "name": "sheet-expand",
-     "rect": {
-      "x": 571,
-      "y": 254,
-      "w": 40,
-      "h": 40
-     },
-     "hit": "ok"
+  "07-zoom200-640x360-flat": {
+    "before": {
+      "viewport": [640, 360],
+      "mapBox": {
+        "x": 0,
+        "y": 112,
+        "w": 640,
+        "h": 172
+      },
+      "sheet": {
+        "x": 0,
+        "y": 218,
+        "w": 640,
+        "h": 66
+      },
+      "freeMapHeight": 0,
+      "hScroll": false,
+      "missing": [
+        "sheet-collapse",
+        "sheet-close-detail",
+        "retry-view",
+        "globe-reset-north",
+        "globe-auto-spin",
+        "globe-attribution",
+        "nudge-execute",
+        "nudge-abort",
+        "tools-toggle"
+      ],
+      "controls": [
+        {
+          "name": "sheet-expand",
+          "rect": {
+            "x": 576,
+            "y": 239,
+            "w": 24,
+            "h": 24
+          },
+          "hit": "ok"
+        },
+        {
+          "name": "sheet-fullscreen",
+          "rect": {
+            "x": 604,
+            "y": 239,
+            "w": 24,
+            "h": 24
+          },
+          "hit": "ok"
+        },
+        {
+          "name": "leaflet-zoom-in",
+          "rect": {
+            "x": 595,
+            "y": 190,
+            "w": 32,
+            "h": 32
+          },
+          "hit": "covered at (597,220) by <div flex justify-center pt-2>"
+        },
+        {
+          "name": "leaflet-zoom-out",
+          "rect": {
+            "x": 595,
+            "y": 222,
+            "w": 32,
+            "h": 32
+          },
+          "hit": "covered at (611,238) by <button \"Fullscreen map\" flex h-6 w-6 items-center justify-center text-di>"
+        },
+        {
+          "name": "leaflet-attribution",
+          "rect": {
+            "x": 374,
+            "y": 267,
+            "w": 266,
+            "h": 17
+          },
+          "hit": "covered at (507,276) by <div group flex w-full cursor-pointer gap-3 border-b >"
+        },
+        {
+          "name": "globe-zoom-in",
+          "rect": {
+            "x": 595,
+            "y": 190,
+            "w": 32,
+            "h": 32
+          },
+          "hit": "covered at (597,220) by <div flex justify-center pt-2>"
+        },
+        {
+          "name": "globe-zoom-out",
+          "rect": {
+            "x": 595,
+            "y": 222,
+            "w": 32,
+            "h": 32
+          },
+          "hit": "covered at (611,238) by <button \"Fullscreen map\" flex h-6 w-6 items-center justify-center text-di>"
+        },
+        {
+          "name": "field-attention",
+          "rect": {
+            "x": 12,
+            "y": 214,
+            "w": 150,
+            "h": 36
+          },
+          "hit": "covered at (87,232) by <div flex w-full items-center justify-between px-3 py>"
+        },
+        {
+          "name": "toolbar-report",
+          "rect": {
+            "x": 543,
+            "y": 176,
+            "w": 85,
+            "h": 34
+          },
+          "hit": "covered at (626,208) by <a \"Zoom in\" leaflet-control-zoom-in>"
+        },
+        {
+          "name": "flat-globe#0",
+          "rect": {
+            "x": 13,
+            "y": 177,
+            "w": 69,
+            "h": 32
+          },
+          "hit": "ok"
+        },
+        {
+          "name": "flat-globe#1",
+          "rect": {
+            "x": 82,
+            "y": 177,
+            "w": 76,
+            "h": 32
+          },
+          "hit": "ok"
+        },
+        {
+          "name": "toolbar-graffiti",
+          "rect": {
+            "x": 339,
+            "y": 176,
+            "w": 100,
+            "h": 34
+          },
+          "hit": "ok"
+        },
+        {
+          "name": "toolbar-capture",
+          "rect": {
+            "x": 444,
+            "y": 176,
+            "w": 92,
+            "h": 34
+          },
+          "hit": "ok"
+        }
+      ]
     },
-    {
-     "name": "sheet-fullscreen",
-     "rect": {
-      "x": 615,
-      "y": 254,
-      "w": 40,
-      "h": 40
-     },
-     "hit": "ok"
-    },
-    {
-     "name": "globe-zoom-in",
-     "rect": {
-      "x": 449,
-      "y": 195,
-      "w": 36,
-      "h": 36
-     },
-     "hit": "ok"
-    },
-    {
-     "name": "globe-zoom-out",
-     "rect": {
-      "x": 491,
-      "y": 195,
-      "w": 36,
-      "h": 36
-     },
-     "hit": "ok"
-    },
-    {
-     "name": "globe-reset-north",
-     "rect": {
-      "x": 533,
-      "y": 195,
-      "w": 36,
-      "h": 36
-     },
-     "hit": "ok"
-    },
-    {
-     "name": "globe-auto-spin",
-     "rect": {
-      "x": 575,
-      "y": 195,
-      "w": 36,
-      "h": 36
-     },
-     "hit": "ok"
-    },
-    {
-     "name": "globe-attribution",
-     "rect": {
-      "x": 633,
-      "y": 205,
-      "w": 24,
-      "h": 24
-     },
-     "hit": "ok"
-    },
-    {
-     "name": "toolbar-report",
-     "rect": {
-      "x": 615,
-      "y": 124,
-      "w": 40,
-      "h": 40
-     },
-     "hit": "ok"
-    },
-    {
-     "name": "flat-globe#0",
-     "rect": {
-      "x": 332,
-      "y": 125,
-      "w": 40,
-      "h": 40
-     },
-     "hit": "ok"
-    },
-    {
-     "name": "flat-globe#1",
-     "rect": {
-      "x": 372,
-      "y": 125,
-      "w": 40,
-      "h": 40
-     },
-     "hit": "ok"
-    },
-    {
-     "name": "tools-toggle",
-     "rect": {
-      "x": 417,
-      "y": 124,
-      "w": 98,
-      "h": 40
-     },
-     "hit": "ok"
-    },
-    {
-     "name": "toolbar-graffiti",
-     "rect": {
-      "x": 523,
-      "y": 124,
-      "w": 40,
-      "h": 40
-     },
-     "hit": "ok"
-    },
-    {
-     "name": "toolbar-capture",
-     "rect": {
-      "x": 569,
-      "y": 124,
-      "w": 40,
-      "h": 40
-     },
-     "hit": "ok"
+    "after": {
+      "viewport": [640, 360],
+      "mapBox": {
+        "x": 0,
+        "y": 112,
+        "w": 640,
+        "h": 172
+      },
+      "sheet": {
+        "x": 0,
+        "y": 224,
+        "w": 640,
+        "h": 60
+      },
+      "freeMapHeight": 54,
+      "hScroll": false,
+      "missing": [
+        "sheet-collapse",
+        "sheet-close-detail",
+        "retry-view",
+        "globe-reset-north",
+        "globe-auto-spin",
+        "globe-attribution",
+        "nudge-execute",
+        "nudge-abort",
+        "field-attention"
+      ],
+      "controls": [
+        {
+          "name": "sheet-expand",
+          "rect": {
+            "x": 544,
+            "y": 239,
+            "w": 40,
+            "h": 40
+          },
+          "hit": "ok"
+        },
+        {
+          "name": "sheet-fullscreen",
+          "rect": {
+            "x": 588,
+            "y": 239,
+            "w": 40,
+            "h": 40
+          },
+          "hit": "ok"
+        },
+        {
+          "name": "leaflet-zoom-in",
+          "rect": {
+            "x": 553,
+            "y": 177,
+            "w": 40,
+            "h": 40
+          },
+          "hit": "ok"
+        },
+        {
+          "name": "leaflet-zoom-out",
+          "rect": {
+            "x": 593,
+            "y": 177,
+            "w": 40,
+            "h": 40
+          },
+          "hit": "ok"
+        },
+        {
+          "name": "leaflet-attribution",
+          "rect": {
+            "x": 280,
+            "y": 207,
+            "w": 266,
+            "h": 17
+          },
+          "hit": "ok"
+        },
+        {
+          "name": "globe-zoom-in",
+          "rect": {
+            "x": 553,
+            "y": 177,
+            "w": 40,
+            "h": 40
+          },
+          "hit": "ok"
+        },
+        {
+          "name": "globe-zoom-out",
+          "rect": {
+            "x": 593,
+            "y": 177,
+            "w": 40,
+            "h": 40
+          },
+          "hit": "ok"
+        },
+        {
+          "name": "toolbar-report",
+          "rect": {
+            "x": 588,
+            "y": 124,
+            "w": 40,
+            "h": 40
+          },
+          "hit": "ok"
+        },
+        {
+          "name": "flat-globe#0",
+          "rect": {
+            "x": 305,
+            "y": 125,
+            "w": 40,
+            "h": 40
+          },
+          "hit": "ok"
+        },
+        {
+          "name": "flat-globe#1",
+          "rect": {
+            "x": 345,
+            "y": 125,
+            "w": 40,
+            "h": 40
+          },
+          "hit": "ok"
+        },
+        {
+          "name": "tools-toggle",
+          "rect": {
+            "x": 390,
+            "y": 124,
+            "w": 98,
+            "h": 40
+          },
+          "hit": "ok"
+        },
+        {
+          "name": "toolbar-graffiti",
+          "rect": {
+            "x": 496,
+            "y": 124,
+            "w": 40,
+            "h": 40
+          },
+          "hit": "ok"
+        },
+        {
+          "name": "toolbar-capture",
+          "rect": {
+            "x": 542,
+            "y": 124,
+            "w": 40,
+            "h": 40
+          },
+          "hit": "ok"
+        }
+      ]
     }
-   ]
-  }
- },
- "07-zoom200-640x360-flat": {
-  "before": {
-   "viewport": [
-    640,
-    360
-   ],
-   "mapBox": {
-    "x": 0,
-    "y": 112,
-    "w": 640,
-    "h": 172
-   },
-   "sheet": {
-    "x": 0,
-    "y": 218,
-    "w": 640,
-    "h": 66
-   },
-   "freeMapHeight": 0,
-   "hScroll": false,
-   "missing": [
-    "sheet-collapse",
-    "sheet-close-detail",
-    "retry-view",
-    "globe-reset-north",
-    "globe-auto-spin",
-    "globe-attribution",
-    "nudge-execute",
-    "nudge-abort",
-    "tools-toggle"
-   ],
-   "controls": [
-    {
-     "name": "sheet-expand",
-     "rect": {
-      "x": 576,
-      "y": 239,
-      "w": 24,
-      "h": 24
-     },
-     "hit": "ok"
-    },
-    {
-     "name": "sheet-fullscreen",
-     "rect": {
-      "x": 604,
-      "y": 239,
-      "w": 24,
-      "h": 24
-     },
-     "hit": "ok"
-    },
-    {
-     "name": "leaflet-zoom-in",
-     "rect": {
-      "x": 595,
-      "y": 190,
-      "w": 32,
-      "h": 32
-     },
-     "hit": "covered at (597,220) by <div flex justify-center pt-2>"
-    },
-    {
-     "name": "leaflet-zoom-out",
-     "rect": {
-      "x": 595,
-      "y": 222,
-      "w": 32,
-      "h": 32
-     },
-     "hit": "covered at (611,238) by <button \"Fullscreen map\" flex h-6 w-6 items-center justify-center text-di>"
-    },
-    {
-     "name": "leaflet-attribution",
-     "rect": {
-      "x": 374,
-      "y": 267,
-      "w": 266,
-      "h": 17
-     },
-     "hit": "covered at (507,276) by <div group flex w-full cursor-pointer gap-3 border-b >"
-    },
-    {
-     "name": "globe-zoom-in",
-     "rect": {
-      "x": 595,
-      "y": 190,
-      "w": 32,
-      "h": 32
-     },
-     "hit": "covered at (597,220) by <div flex justify-center pt-2>"
-    },
-    {
-     "name": "globe-zoom-out",
-     "rect": {
-      "x": 595,
-      "y": 222,
-      "w": 32,
-      "h": 32
-     },
-     "hit": "covered at (611,238) by <button \"Fullscreen map\" flex h-6 w-6 items-center justify-center text-di>"
-    },
-    {
-     "name": "field-attention",
-     "rect": {
-      "x": 12,
-      "y": 214,
-      "w": 150,
-      "h": 36
-     },
-     "hit": "covered at (87,232) by <div flex w-full items-center justify-between px-3 py>"
-    },
-    {
-     "name": "toolbar-report",
-     "rect": {
-      "x": 543,
-      "y": 176,
-      "w": 85,
-      "h": 34
-     },
-     "hit": "covered at (626,208) by <a \"Zoom in\" leaflet-control-zoom-in>"
-    },
-    {
-     "name": "flat-globe#0",
-     "rect": {
-      "x": 13,
-      "y": 177,
-      "w": 69,
-      "h": 32
-     },
-     "hit": "ok"
-    },
-    {
-     "name": "flat-globe#1",
-     "rect": {
-      "x": 82,
-      "y": 177,
-      "w": 76,
-      "h": 32
-     },
-     "hit": "ok"
-    },
-    {
-     "name": "toolbar-graffiti",
-     "rect": {
-      "x": 339,
-      "y": 176,
-      "w": 100,
-      "h": 34
-     },
-     "hit": "ok"
-    },
-    {
-     "name": "toolbar-capture",
-     "rect": {
-      "x": 444,
-      "y": 176,
-      "w": 92,
-      "h": 34
-     },
-     "hit": "ok"
-    }
-   ]
   },
-  "after": {
-   "viewport": [
-    640,
-    360
-   ],
-   "mapBox": {
-    "x": 0,
-    "y": 112,
-    "w": 640,
-    "h": 172
-   },
-   "sheet": {
-    "x": 0,
-    "y": 224,
-    "w": 640,
-    "h": 60
-   },
-   "freeMapHeight": 54,
-   "hScroll": false,
-   "missing": [
-    "sheet-collapse",
-    "sheet-close-detail",
-    "retry-view",
-    "globe-reset-north",
-    "globe-auto-spin",
-    "globe-attribution",
-    "nudge-execute",
-    "nudge-abort",
-    "field-attention"
-   ],
-   "controls": [
-    {
-     "name": "sheet-expand",
-     "rect": {
-      "x": 544,
-      "y": 239,
-      "w": 40,
-      "h": 40
-     },
-     "hit": "ok"
+  "08-laptop-1440-flat": {
+    "before": {
+      "viewport": [1440, 900],
+      "mapBox": {
+        "x": 640,
+        "y": 269,
+        "w": 800,
+        "h": 631
+      },
+      "sheet": null,
+      "freeMapHeight": 438,
+      "hScroll": false,
+      "missing": [
+        "sheet-expand",
+        "sheet-collapse",
+        "sheet-fullscreen",
+        "sheet-close-detail",
+        "retry-view",
+        "globe-reset-north",
+        "globe-auto-spin",
+        "globe-attribution",
+        "nudge-execute",
+        "nudge-abort",
+        "tools-toggle"
+      ],
+      "controls": [
+        {
+          "name": "leaflet-zoom-in",
+          "rect": {
+            "x": 1395,
+            "y": 806,
+            "w": 32,
+            "h": 32
+          },
+          "hit": "ok"
+        },
+        {
+          "name": "leaflet-zoom-out",
+          "rect": {
+            "x": 1395,
+            "y": 838,
+            "w": 32,
+            "h": 32
+          },
+          "hit": "covered at (1397,868) by <div fixed top-0 z-[100] flex max-h-screen w-full fle>"
+        },
+        {
+          "name": "leaflet-attribution",
+          "rect": {
+            "x": 1174,
+            "y": 883,
+            "w": 266,
+            "h": 17
+          },
+          "hit": "covered at (1307,892) by <div fixed top-0 z-[100] flex max-h-screen w-full fle>"
+        },
+        {
+          "name": "globe-zoom-in",
+          "rect": {
+            "x": 1395,
+            "y": 806,
+            "w": 32,
+            "h": 32
+          },
+          "hit": "ok"
+        },
+        {
+          "name": "globe-zoom-out",
+          "rect": {
+            "x": 1395,
+            "y": 838,
+            "w": 32,
+            "h": 32
+          },
+          "hit": "covered at (1397,868) by <div fixed top-0 z-[100] flex max-h-screen w-full fle>"
+        },
+        {
+          "name": "field-attention",
+          "rect": {
+            "x": 652,
+            "y": 357,
+            "w": 150,
+            "h": 36
+          },
+          "hit": "ok"
+        },
+        {
+          "name": "toolbar-report",
+          "rect": {
+            "x": 1228,
+            "y": 319,
+            "w": 85,
+            "h": 34
+          },
+          "hit": "ok"
+        },
+        {
+          "name": "flat-globe#0",
+          "rect": {
+            "x": 653,
+            "y": 282,
+            "w": 69,
+            "h": 32
+          },
+          "hit": "ok"
+        },
+        {
+          "name": "flat-globe#1",
+          "rect": {
+            "x": 722,
+            "y": 282,
+            "w": 76,
+            "h": 32
+          },
+          "hit": "ok"
+        },
+        {
+          "name": "toolbar-graffiti",
+          "rect": {
+            "x": 1024,
+            "y": 319,
+            "w": 100,
+            "h": 34
+          },
+          "hit": "ok"
+        },
+        {
+          "name": "toolbar-capture",
+          "rect": {
+            "x": 1129,
+            "y": 319,
+            "w": 92,
+            "h": 34
+          },
+          "hit": "ok"
+        }
+      ]
     },
-    {
-     "name": "sheet-fullscreen",
-     "rect": {
-      "x": 588,
-      "y": 239,
-      "w": 40,
-      "h": 40
-     },
-     "hit": "ok"
-    },
-    {
-     "name": "leaflet-zoom-in",
-     "rect": {
-      "x": 553,
-      "y": 177,
-      "w": 40,
-      "h": 40
-     },
-     "hit": "ok"
-    },
-    {
-     "name": "leaflet-zoom-out",
-     "rect": {
-      "x": 593,
-      "y": 177,
-      "w": 40,
-      "h": 40
-     },
-     "hit": "ok"
-    },
-    {
-     "name": "leaflet-attribution",
-     "rect": {
-      "x": 280,
-      "y": 207,
-      "w": 266,
-      "h": 17
-     },
-     "hit": "ok"
-    },
-    {
-     "name": "globe-zoom-in",
-     "rect": {
-      "x": 553,
-      "y": 177,
-      "w": 40,
-      "h": 40
-     },
-     "hit": "ok"
-    },
-    {
-     "name": "globe-zoom-out",
-     "rect": {
-      "x": 593,
-      "y": 177,
-      "w": 40,
-      "h": 40
-     },
-     "hit": "ok"
-    },
-    {
-     "name": "toolbar-report",
-     "rect": {
-      "x": 588,
-      "y": 124,
-      "w": 40,
-      "h": 40
-     },
-     "hit": "ok"
-    },
-    {
-     "name": "flat-globe#0",
-     "rect": {
-      "x": 305,
-      "y": 125,
-      "w": 40,
-      "h": 40
-     },
-     "hit": "ok"
-    },
-    {
-     "name": "flat-globe#1",
-     "rect": {
-      "x": 345,
-      "y": 125,
-      "w": 40,
-      "h": 40
-     },
-     "hit": "ok"
-    },
-    {
-     "name": "tools-toggle",
-     "rect": {
-      "x": 390,
-      "y": 124,
-      "w": 98,
-      "h": 40
-     },
-     "hit": "ok"
-    },
-    {
-     "name": "toolbar-graffiti",
-     "rect": {
-      "x": 496,
-      "y": 124,
-      "w": 40,
-      "h": 40
-     },
-     "hit": "ok"
-    },
-    {
-     "name": "toolbar-capture",
-     "rect": {
-      "x": 542,
-      "y": 124,
-      "w": 40,
-      "h": 40
-     },
-     "hit": "ok"
+    "after": {
+      "viewport": [1440, 900],
+      "mapBox": {
+        "x": 640,
+        "y": 269,
+        "w": 800,
+        "h": 631
+      },
+      "sheet": null,
+      "freeMapHeight": 397,
+      "hScroll": false,
+      "missing": [
+        "sheet-expand",
+        "sheet-collapse",
+        "sheet-fullscreen",
+        "sheet-close-detail",
+        "retry-view",
+        "globe-reset-north",
+        "globe-auto-spin",
+        "globe-attribution",
+        "nudge-execute",
+        "nudge-abort",
+        "tools-toggle"
+      ],
+      "controls": [
+        {
+          "name": "leaflet-zoom-in",
+          "rect": {
+            "x": 1387,
+            "y": 727,
+            "w": 40,
+            "h": 40
+          },
+          "hit": "ok"
+        },
+        {
+          "name": "leaflet-zoom-out",
+          "rect": {
+            "x": 1387,
+            "y": 767,
+            "w": 40,
+            "h": 40
+          },
+          "hit": "ok"
+        },
+        {
+          "name": "leaflet-attribution",
+          "rect": {
+            "x": 1174,
+            "y": 820,
+            "w": 266,
+            "h": 17
+          },
+          "hit": "ok"
+        },
+        {
+          "name": "globe-zoom-in",
+          "rect": {
+            "x": 1387,
+            "y": 727,
+            "w": 40,
+            "h": 40
+          },
+          "hit": "ok"
+        },
+        {
+          "name": "globe-zoom-out",
+          "rect": {
+            "x": 1387,
+            "y": 767,
+            "w": 40,
+            "h": 40
+          },
+          "hit": "ok"
+        },
+        {
+          "name": "field-attention",
+          "rect": {
+            "x": 652,
+            "y": 371,
+            "w": 150,
+            "h": 40
+          },
+          "hit": "ok"
+        },
+        {
+          "name": "toolbar-report",
+          "rect": {
+            "x": 1228,
+            "y": 327,
+            "w": 85,
+            "h": 40
+          },
+          "hit": "ok"
+        },
+        {
+          "name": "flat-globe#0",
+          "rect": {
+            "x": 653,
+            "y": 282,
+            "w": 69,
+            "h": 40
+          },
+          "hit": "ok"
+        },
+        {
+          "name": "flat-globe#1",
+          "rect": {
+            "x": 722,
+            "y": 282,
+            "w": 76,
+            "h": 40
+          },
+          "hit": "ok"
+        },
+        {
+          "name": "toolbar-graffiti",
+          "rect": {
+            "x": 1024,
+            "y": 327,
+            "w": 100,
+            "h": 40
+          },
+          "hit": "ok"
+        },
+        {
+          "name": "toolbar-capture",
+          "rect": {
+            "x": 1129,
+            "y": 327,
+            "w": 92,
+            "h": 40
+          },
+          "hit": "ok"
+        }
+      ]
     }
-   ]
-  }
- },
- "08-laptop-1440-flat": {
-  "before": {
-   "viewport": [
-    1440,
-    900
-   ],
-   "mapBox": {
-    "x": 640,
-    "y": 269,
-    "w": 800,
-    "h": 631
-   },
-   "sheet": null,
-   "freeMapHeight": 438,
-   "hScroll": false,
-   "missing": [
-    "sheet-expand",
-    "sheet-collapse",
-    "sheet-fullscreen",
-    "sheet-close-detail",
-    "retry-view",
-    "globe-reset-north",
-    "globe-auto-spin",
-    "globe-attribution",
-    "nudge-execute",
-    "nudge-abort",
-    "tools-toggle"
-   ],
-   "controls": [
-    {
-     "name": "leaflet-zoom-in",
-     "rect": {
-      "x": 1395,
-      "y": 806,
-      "w": 32,
-      "h": 32
-     },
-     "hit": "ok"
-    },
-    {
-     "name": "leaflet-zoom-out",
-     "rect": {
-      "x": 1395,
-      "y": 838,
-      "w": 32,
-      "h": 32
-     },
-     "hit": "covered at (1397,868) by <div fixed top-0 z-[100] flex max-h-screen w-full fle>"
-    },
-    {
-     "name": "leaflet-attribution",
-     "rect": {
-      "x": 1174,
-      "y": 883,
-      "w": 266,
-      "h": 17
-     },
-     "hit": "covered at (1307,892) by <div fixed top-0 z-[100] flex max-h-screen w-full fle>"
-    },
-    {
-     "name": "globe-zoom-in",
-     "rect": {
-      "x": 1395,
-      "y": 806,
-      "w": 32,
-      "h": 32
-     },
-     "hit": "ok"
-    },
-    {
-     "name": "globe-zoom-out",
-     "rect": {
-      "x": 1395,
-      "y": 838,
-      "w": 32,
-      "h": 32
-     },
-     "hit": "covered at (1397,868) by <div fixed top-0 z-[100] flex max-h-screen w-full fle>"
-    },
-    {
-     "name": "field-attention",
-     "rect": {
-      "x": 652,
-      "y": 357,
-      "w": 150,
-      "h": 36
-     },
-     "hit": "ok"
-    },
-    {
-     "name": "toolbar-report",
-     "rect": {
-      "x": 1228,
-      "y": 319,
-      "w": 85,
-      "h": 34
-     },
-     "hit": "ok"
-    },
-    {
-     "name": "flat-globe#0",
-     "rect": {
-      "x": 653,
-      "y": 282,
-      "w": 69,
-      "h": 32
-     },
-     "hit": "ok"
-    },
-    {
-     "name": "flat-globe#1",
-     "rect": {
-      "x": 722,
-      "y": 282,
-      "w": 76,
-      "h": 32
-     },
-     "hit": "ok"
-    },
-    {
-     "name": "toolbar-graffiti",
-     "rect": {
-      "x": 1024,
-      "y": 319,
-      "w": 100,
-      "h": 34
-     },
-     "hit": "ok"
-    },
-    {
-     "name": "toolbar-capture",
-     "rect": {
-      "x": 1129,
-      "y": 319,
-      "w": 92,
-      "h": 34
-     },
-     "hit": "ok"
-    }
-   ]
   },
-  "after": {
-   "viewport": [
-    1440,
-    900
-   ],
-   "mapBox": {
-    "x": 640,
-    "y": 269,
-    "w": 800,
-    "h": 631
-   },
-   "sheet": null,
-   "freeMapHeight": 397,
-   "hScroll": false,
-   "missing": [
-    "sheet-expand",
-    "sheet-collapse",
-    "sheet-fullscreen",
-    "sheet-close-detail",
-    "retry-view",
-    "globe-reset-north",
-    "globe-auto-spin",
-    "globe-attribution",
-    "nudge-execute",
-    "nudge-abort",
-    "tools-toggle"
-   ],
-   "controls": [
-    {
-     "name": "leaflet-zoom-in",
-     "rect": {
-      "x": 1387,
-      "y": 727,
-      "w": 40,
-      "h": 40
-     },
-     "hit": "ok"
+  "09-phone-390-sheet-full": {
+    "before": {
+      "viewport": [390, 844],
+      "mapBox": {
+        "x": 0,
+        "y": 167,
+        "w": 390,
+        "h": 601
+      },
+      "sheet": {
+        "x": 0,
+        "y": 636,
+        "w": 390,
+        "h": 132
+      },
+      "freeMapHeight": 316,
+      "hScroll": false,
+      "missing": [
+        "sheet-collapse",
+        "sheet-close-detail",
+        "retry-view",
+        "globe-reset-north",
+        "globe-auto-spin",
+        "globe-attribution",
+        "nudge-execute",
+        "nudge-abort",
+        "tools-toggle"
+      ],
+      "controls": [
+        {
+          "name": "sheet-expand",
+          "rect": {
+            "x": 326,
+            "y": 657,
+            "w": 24,
+            "h": 24
+          },
+          "hit": "ok"
+        },
+        {
+          "name": "sheet-fullscreen",
+          "rect": {
+            "x": 354,
+            "y": 657,
+            "w": 24,
+            "h": 24
+          },
+          "hit": "ok"
+        },
+        {
+          "name": "leaflet-zoom-in",
+          "rect": {
+            "x": 345,
+            "y": 674,
+            "w": 32,
+            "h": 32
+          },
+          "hit": "covered at (361,690) by <div p-6 text-center>"
+        },
+        {
+          "name": "leaflet-zoom-out",
+          "rect": {
+            "x": 345,
+            "y": 706,
+            "w": 32,
+            "h": 32
+          },
+          "hit": "covered at (361,722) by <div font-mono text-[10px] uppercase tracking-[0.25em>"
+        },
+        {
+          "name": "leaflet-attribution",
+          "rect": {
+            "x": 124,
+            "y": 751,
+            "w": 266,
+            "h": 17
+          },
+          "hit": "covered at (257,760) by <div p-6 text-center>"
+        },
+        {
+          "name": "globe-zoom-in",
+          "rect": {
+            "x": 345,
+            "y": 674,
+            "w": 32,
+            "h": 32
+          },
+          "hit": "covered at (361,690) by <div p-6 text-center>"
+        },
+        {
+          "name": "globe-zoom-out",
+          "rect": {
+            "x": 345,
+            "y": 706,
+            "w": 32,
+            "h": 32
+          },
+          "hit": "covered at (361,722) by <div font-mono text-[10px] uppercase tracking-[0.25em>"
+        },
+        {
+          "name": "field-attention",
+          "rect": {
+            "x": 12,
+            "y": 215,
+            "w": 150,
+            "h": 36
+          },
+          "hit": "ok"
+        },
+        {
+          "name": "toolbar-report",
+          "rect": {
+            "x": 342,
+            "y": 179,
+            "w": 36,
+            "h": 32
+          },
+          "hit": "ok"
+        },
+        {
+          "name": "flat-globe#0",
+          "rect": {
+            "x": 13,
+            "y": 180,
+            "w": 34,
+            "h": 30
+          },
+          "hit": "ok"
+        },
+        {
+          "name": "flat-globe#1",
+          "rect": {
+            "x": 47,
+            "y": 180,
+            "w": 34,
+            "h": 30
+          },
+          "hit": "ok"
+        },
+        {
+          "name": "toolbar-graffiti",
+          "rect": {
+            "x": 258,
+            "y": 179,
+            "w": 36,
+            "h": 32
+          },
+          "hit": "ok"
+        },
+        {
+          "name": "toolbar-capture",
+          "rect": {
+            "x": 300,
+            "y": 179,
+            "w": 36,
+            "h": 32
+          },
+          "hit": "ok"
+        }
+      ]
     },
-    {
-     "name": "leaflet-zoom-out",
-     "rect": {
-      "x": 1387,
-      "y": 767,
-      "w": 40,
-      "h": 40
-     },
-     "hit": "ok"
-    },
-    {
-     "name": "leaflet-attribution",
-     "rect": {
-      "x": 1174,
-      "y": 820,
-      "w": 266,
-      "h": 17
-     },
-     "hit": "ok"
-    },
-    {
-     "name": "globe-zoom-in",
-     "rect": {
-      "x": 1387,
-      "y": 727,
-      "w": 40,
-      "h": 40
-     },
-     "hit": "ok"
-    },
-    {
-     "name": "globe-zoom-out",
-     "rect": {
-      "x": 1387,
-      "y": 767,
-      "w": 40,
-      "h": 40
-     },
-     "hit": "ok"
-    },
-    {
-     "name": "field-attention",
-     "rect": {
-      "x": 652,
-      "y": 371,
-      "w": 150,
-      "h": 40
-     },
-     "hit": "ok"
-    },
-    {
-     "name": "toolbar-report",
-     "rect": {
-      "x": 1228,
-      "y": 327,
-      "w": 85,
-      "h": 40
-     },
-     "hit": "ok"
-    },
-    {
-     "name": "flat-globe#0",
-     "rect": {
-      "x": 653,
-      "y": 282,
-      "w": 69,
-      "h": 40
-     },
-     "hit": "ok"
-    },
-    {
-     "name": "flat-globe#1",
-     "rect": {
-      "x": 722,
-      "y": 282,
-      "w": 76,
-      "h": 40
-     },
-     "hit": "ok"
-    },
-    {
-     "name": "toolbar-graffiti",
-     "rect": {
-      "x": 1024,
-      "y": 327,
-      "w": 100,
-      "h": 40
-     },
-     "hit": "ok"
-    },
-    {
-     "name": "toolbar-capture",
-     "rect": {
-      "x": 1129,
-      "y": 327,
-      "w": 92,
-      "h": 40
-     },
-     "hit": "ok"
+    "after": {
+      "viewport": [390, 844],
+      "mapBox": {
+        "x": 0,
+        "y": 167,
+        "w": 390,
+        "h": 601
+      },
+      "sheet": {
+        "x": 0,
+        "y": 25,
+        "w": 390,
+        "h": 743
+      },
+      "freeMapHeight": 0,
+      "hScroll": false,
+      "missing": [
+        "sheet-expand",
+        "sheet-close-detail",
+        "retry-view",
+        "globe-reset-north",
+        "globe-auto-spin",
+        "globe-attribution",
+        "nudge-execute",
+        "nudge-abort",
+        "field-attention"
+      ],
+      "controls": [
+        {
+          "name": "sheet-collapse",
+          "rect": {
+            "x": 294,
+            "y": 40,
+            "w": 40,
+            "h": 40
+          },
+          "hit": "ok"
+        },
+        {
+          "name": "sheet-fullscreen",
+          "rect": {
+            "x": 338,
+            "y": 40,
+            "w": 40,
+            "h": 40
+          },
+          "hit": "ok"
+        },
+        {
+          "name": "leaflet-zoom-in",
+          "rect": {
+            "x": 303,
+            "y": -22,
+            "w": 40,
+            "h": 40
+          },
+          "hit": "inert"
+        },
+        {
+          "name": "leaflet-zoom-out",
+          "rect": {
+            "x": 343,
+            "y": -22,
+            "w": 40,
+            "h": 40
+          },
+          "hit": "inert"
+        },
+        {
+          "name": "leaflet-attribution",
+          "rect": {
+            "x": 30,
+            "y": 8,
+            "w": 266,
+            "h": 17
+          },
+          "hit": "inert"
+        },
+        {
+          "name": "globe-zoom-in",
+          "rect": {
+            "x": 303,
+            "y": -22,
+            "w": 40,
+            "h": 40
+          },
+          "hit": "inert"
+        },
+        {
+          "name": "globe-zoom-out",
+          "rect": {
+            "x": 343,
+            "y": -22,
+            "w": 40,
+            "h": 40
+          },
+          "hit": "inert"
+        },
+        {
+          "name": "toolbar-report",
+          "rect": {
+            "x": 338,
+            "y": 179,
+            "w": 40,
+            "h": 40
+          },
+          "hit": "inert"
+        },
+        {
+          "name": "flat-globe#0",
+          "rect": {
+            "x": 13,
+            "y": 180,
+            "w": 40,
+            "h": 40
+          },
+          "hit": "inert"
+        },
+        {
+          "name": "flat-globe#1",
+          "rect": {
+            "x": 53,
+            "y": 180,
+            "w": 40,
+            "h": 40
+          },
+          "hit": "inert"
+        },
+        {
+          "name": "tools-toggle",
+          "rect": {
+            "x": 98,
+            "y": 179,
+            "w": 98,
+            "h": 40
+          },
+          "hit": "inert"
+        },
+        {
+          "name": "toolbar-graffiti",
+          "rect": {
+            "x": 246,
+            "y": 179,
+            "w": 40,
+            "h": 40
+          },
+          "hit": "inert"
+        },
+        {
+          "name": "toolbar-capture",
+          "rect": {
+            "x": 292,
+            "y": 179,
+            "w": 40,
+            "h": 40
+          },
+          "hit": "inert"
+        }
+      ]
     }
-   ]
-  }
- },
- "09-phone-390-sheet-full": {
-  "before": {
-   "viewport": [
-    390,
-    844
-   ],
-   "mapBox": {
-    "x": 0,
-    "y": 167,
-    "w": 390,
-    "h": 601
-   },
-   "sheet": {
-    "x": 0,
-    "y": 636,
-    "w": 390,
-    "h": 132
-   },
-   "freeMapHeight": 316,
-   "hScroll": false,
-   "missing": [
-    "sheet-collapse",
-    "sheet-close-detail",
-    "retry-view",
-    "globe-reset-north",
-    "globe-auto-spin",
-    "globe-attribution",
-    "nudge-execute",
-    "nudge-abort",
-    "tools-toggle"
-   ],
-   "controls": [
-    {
-     "name": "sheet-expand",
-     "rect": {
-      "x": 326,
-      "y": 657,
-      "w": 24,
-      "h": 24
-     },
-     "hit": "ok"
-    },
-    {
-     "name": "sheet-fullscreen",
-     "rect": {
-      "x": 354,
-      "y": 657,
-      "w": 24,
-      "h": 24
-     },
-     "hit": "ok"
-    },
-    {
-     "name": "leaflet-zoom-in",
-     "rect": {
-      "x": 345,
-      "y": 674,
-      "w": 32,
-      "h": 32
-     },
-     "hit": "covered at (361,690) by <div p-6 text-center>"
-    },
-    {
-     "name": "leaflet-zoom-out",
-     "rect": {
-      "x": 345,
-      "y": 706,
-      "w": 32,
-      "h": 32
-     },
-     "hit": "covered at (361,722) by <div font-mono text-[10px] uppercase tracking-[0.25em>"
-    },
-    {
-     "name": "leaflet-attribution",
-     "rect": {
-      "x": 124,
-      "y": 751,
-      "w": 266,
-      "h": 17
-     },
-     "hit": "covered at (257,760) by <div p-6 text-center>"
-    },
-    {
-     "name": "globe-zoom-in",
-     "rect": {
-      "x": 345,
-      "y": 674,
-      "w": 32,
-      "h": 32
-     },
-     "hit": "covered at (361,690) by <div p-6 text-center>"
-    },
-    {
-     "name": "globe-zoom-out",
-     "rect": {
-      "x": 345,
-      "y": 706,
-      "w": 32,
-      "h": 32
-     },
-     "hit": "covered at (361,722) by <div font-mono text-[10px] uppercase tracking-[0.25em>"
-    },
-    {
-     "name": "field-attention",
-     "rect": {
-      "x": 12,
-      "y": 215,
-      "w": 150,
-      "h": 36
-     },
-     "hit": "ok"
-    },
-    {
-     "name": "toolbar-report",
-     "rect": {
-      "x": 342,
-      "y": 179,
-      "w": 36,
-      "h": 32
-     },
-     "hit": "ok"
-    },
-    {
-     "name": "flat-globe#0",
-     "rect": {
-      "x": 13,
-      "y": 180,
-      "w": 34,
-      "h": 30
-     },
-     "hit": "ok"
-    },
-    {
-     "name": "flat-globe#1",
-     "rect": {
-      "x": 47,
-      "y": 180,
-      "w": 34,
-      "h": 30
-     },
-     "hit": "ok"
-    },
-    {
-     "name": "toolbar-graffiti",
-     "rect": {
-      "x": 258,
-      "y": 179,
-      "w": 36,
-      "h": 32
-     },
-     "hit": "ok"
-    },
-    {
-     "name": "toolbar-capture",
-     "rect": {
-      "x": 300,
-      "y": 179,
-      "w": 36,
-      "h": 32
-     },
-     "hit": "ok"
-    }
-   ]
   },
-  "after": {
-   "viewport": [
-    390,
-    844
-   ],
-   "mapBox": {
-    "x": 0,
-    "y": 167,
-    "w": 390,
-    "h": 601
-   },
-   "sheet": {
-    "x": 0,
-    "y": 25,
-    "w": 390,
-    "h": 743
-   },
-   "freeMapHeight": 0,
-   "hScroll": false,
-   "missing": [
-    "sheet-expand",
-    "sheet-close-detail",
-    "retry-view",
-    "globe-reset-north",
-    "globe-auto-spin",
-    "globe-attribution",
-    "nudge-execute",
-    "nudge-abort",
-    "field-attention"
-   ],
-   "controls": [
-    {
-     "name": "sheet-collapse",
-     "rect": {
-      "x": 294,
-      "y": 40,
-      "w": 40,
-      "h": 40
-     },
-     "hit": "ok"
+  "10-short-844x390-tools-open": {
+    "before": {
+      "viewport": [844, 390],
+      "mapBox": {
+        "x": 0,
+        "y": 112,
+        "w": 844,
+        "h": 202
+      },
+      "sheet": {
+        "x": 0,
+        "y": 218,
+        "w": 844,
+        "h": 96
+      },
+      "freeMapHeight": 0,
+      "hScroll": false,
+      "missing": [
+        "sheet-collapse",
+        "sheet-close-detail",
+        "retry-view",
+        "leaflet-zoom-in",
+        "leaflet-zoom-out",
+        "leaflet-attribution",
+        "nudge-execute",
+        "nudge-abort",
+        "tools-toggle"
+      ],
+      "controls": [
+        {
+          "name": "sheet-expand",
+          "rect": {
+            "x": 780,
+            "y": 239,
+            "w": 24,
+            "h": 24
+          },
+          "hit": "ok"
+        },
+        {
+          "name": "sheet-fullscreen",
+          "rect": {
+            "x": 808,
+            "y": 239,
+            "w": 24,
+            "h": 24
+          },
+          "hit": "ok"
+        },
+        {
+          "name": "globe-zoom-in",
+          "rect": {
+            "x": 796,
+            "y": 104,
+            "w": 36,
+            "h": 36
+          },
+          "hit": "ok"
+        },
+        {
+          "name": "globe-zoom-out",
+          "rect": {
+            "x": 796,
+            "y": 146,
+            "w": 36,
+            "h": 36
+          },
+          "hit": "ok"
+        },
+        {
+          "name": "globe-reset-north",
+          "rect": {
+            "x": 796,
+            "y": 188,
+            "w": 36,
+            "h": 36
+          },
+          "hit": "covered at (798,222) by <div flex justify-center pt-2>"
+        },
+        {
+          "name": "globe-auto-spin",
+          "rect": {
+            "x": 796,
+            "y": 230,
+            "w": 36,
+            "h": 36
+          },
+          "hit": "covered at (814,248) by <svg [object SVGAnimatedString]>"
+        },
+        {
+          "name": "globe-attribution",
+          "rect": {
+            "x": 810,
+            "y": 280,
+            "w": 24,
+            "h": 24
+          },
+          "hit": "covered at (822,292) by <div group flex w-full cursor-pointer gap-3 border-b >"
+        },
+        {
+          "name": "field-attention",
+          "rect": {
+            "x": 12,
+            "y": 214,
+            "w": 150,
+            "h": 36
+          },
+          "hit": "covered at (87,232) by <div flex w-full items-center justify-between px-3 py>"
+        },
+        {
+          "name": "toolbar-report",
+          "rect": {
+            "x": 747,
+            "y": 176,
+            "w": 85,
+            "h": 34
+          },
+          "hit": "covered at (830,178) by <button \"Zoom out\" flex h-9 w-9 items-center justify-center border >"
+        },
+        {
+          "name": "flat-globe#0",
+          "rect": {
+            "x": 13,
+            "y": 177,
+            "w": 69,
+            "h": 32
+          },
+          "hit": "ok"
+        },
+        {
+          "name": "flat-globe#1",
+          "rect": {
+            "x": 82,
+            "y": 177,
+            "w": 76,
+            "h": 32
+          },
+          "hit": "ok"
+        },
+        {
+          "name": "toolbar-graffiti",
+          "rect": {
+            "x": 543,
+            "y": 176,
+            "w": 100,
+            "h": 34
+          },
+          "hit": "ok"
+        },
+        {
+          "name": "toolbar-capture",
+          "rect": {
+            "x": 648,
+            "y": 176,
+            "w": 92,
+            "h": 34
+          },
+          "hit": "ok"
+        }
+      ]
     },
-    {
-     "name": "sheet-fullscreen",
-     "rect": {
-      "x": 338,
-      "y": 40,
-      "w": 40,
-      "h": 40
-     },
-     "hit": "ok"
-    },
-    {
-     "name": "leaflet-zoom-in",
-     "rect": {
-      "x": 303,
-      "y": -22,
-      "w": 40,
-      "h": 40
-     },
-     "hit": "inert"
-    },
-    {
-     "name": "leaflet-zoom-out",
-     "rect": {
-      "x": 343,
-      "y": -22,
-      "w": 40,
-      "h": 40
-     },
-     "hit": "inert"
-    },
-    {
-     "name": "leaflet-attribution",
-     "rect": {
-      "x": 30,
-      "y": 8,
-      "w": 266,
-      "h": 17
-     },
-     "hit": "inert"
-    },
-    {
-     "name": "globe-zoom-in",
-     "rect": {
-      "x": 303,
-      "y": -22,
-      "w": 40,
-      "h": 40
-     },
-     "hit": "inert"
-    },
-    {
-     "name": "globe-zoom-out",
-     "rect": {
-      "x": 343,
-      "y": -22,
-      "w": 40,
-      "h": 40
-     },
-     "hit": "inert"
-    },
-    {
-     "name": "toolbar-report",
-     "rect": {
-      "x": 338,
-      "y": 179,
-      "w": 40,
-      "h": 40
-     },
-     "hit": "inert"
-    },
-    {
-     "name": "flat-globe#0",
-     "rect": {
-      "x": 13,
-      "y": 180,
-      "w": 40,
-      "h": 40
-     },
-     "hit": "inert"
-    },
-    {
-     "name": "flat-globe#1",
-     "rect": {
-      "x": 53,
-      "y": 180,
-      "w": 40,
-      "h": 40
-     },
-     "hit": "inert"
-    },
-    {
-     "name": "tools-toggle",
-     "rect": {
-      "x": 98,
-      "y": 179,
-      "w": 98,
-      "h": 40
-     },
-     "hit": "inert"
-    },
-    {
-     "name": "toolbar-graffiti",
-     "rect": {
-      "x": 246,
-      "y": 179,
-      "w": 40,
-      "h": 40
-     },
-     "hit": "inert"
-    },
-    {
-     "name": "toolbar-capture",
-     "rect": {
-      "x": 292,
-      "y": 179,
-      "w": 40,
-      "h": 40
-     },
-     "hit": "inert"
+    "after": {
+      "viewport": [844, 390],
+      "mapBox": {
+        "x": 0,
+        "y": 112,
+        "w": 844,
+        "h": 202
+      },
+      "sheet": {
+        "x": 0,
+        "y": 8,
+        "w": 844,
+        "h": 306
+      },
+      "freeMapHeight": 0,
+      "hScroll": false,
+      "missing": [
+        "sheet-expand",
+        "sheet-collapse",
+        "sheet-fullscreen",
+        "sheet-close-detail",
+        "retry-view",
+        "leaflet-zoom-in",
+        "leaflet-zoom-out",
+        "leaflet-attribution",
+        "nudge-execute",
+        "nudge-abort"
+      ],
+      "controls": [
+        {
+          "name": "globe-zoom-in",
+          "rect": {
+            "x": 626,
+            "y": -36,
+            "w": 36,
+            "h": 36
+          },
+          "hit": "inert"
+        },
+        {
+          "name": "globe-zoom-out",
+          "rect": {
+            "x": 668,
+            "y": -36,
+            "w": 36,
+            "h": 36
+          },
+          "hit": "inert"
+        },
+        {
+          "name": "globe-reset-north",
+          "rect": {
+            "x": 710,
+            "y": -36,
+            "w": 36,
+            "h": 36
+          },
+          "hit": "inert"
+        },
+        {
+          "name": "globe-auto-spin",
+          "rect": {
+            "x": 752,
+            "y": -36,
+            "w": 36,
+            "h": 36
+          },
+          "hit": "inert"
+        },
+        {
+          "name": "globe-attribution",
+          "rect": {
+            "x": 810,
+            "y": -26,
+            "w": 24,
+            "h": 24
+          },
+          "hit": "inert"
+        },
+        {
+          "name": "field-attention",
+          "rect": {
+            "x": 12,
+            "y": 77,
+            "w": 150,
+            "h": 40
+          },
+          "hit": "ok"
+        },
+        {
+          "name": "toolbar-report",
+          "rect": {
+            "x": 792,
+            "y": 124,
+            "w": 40,
+            "h": 40
+          },
+          "hit": "inert"
+        },
+        {
+          "name": "flat-globe#0",
+          "rect": {
+            "x": 509,
+            "y": 125,
+            "w": 40,
+            "h": 40
+          },
+          "hit": "inert"
+        },
+        {
+          "name": "flat-globe#1",
+          "rect": {
+            "x": 549,
+            "y": 125,
+            "w": 40,
+            "h": 40
+          },
+          "hit": "inert"
+        },
+        {
+          "name": "tools-toggle",
+          "rect": {
+            "x": 594,
+            "y": 124,
+            "w": 98,
+            "h": 40
+          },
+          "hit": "inert"
+        },
+        {
+          "name": "toolbar-graffiti",
+          "rect": {
+            "x": 700,
+            "y": 124,
+            "w": 40,
+            "h": 40
+          },
+          "hit": "inert"
+        },
+        {
+          "name": "toolbar-capture",
+          "rect": {
+            "x": 746,
+            "y": 124,
+            "w": 40,
+            "h": 40
+          },
+          "hit": "inert"
+        }
+      ]
     }
-   ]
   }
- },
- "10-short-844x390-tools-open": {
-  "before": {
-   "viewport": [
-    844,
-    390
-   ],
-   "mapBox": {
-    "x": 0,
-    "y": 112,
-    "w": 844,
-    "h": 202
-   },
-   "sheet": {
-    "x": 0,
-    "y": 218,
-    "w": 844,
-    "h": 96
-   },
-   "freeMapHeight": 0,
-   "hScroll": false,
-   "missing": [
-    "sheet-collapse",
-    "sheet-close-detail",
-    "retry-view",
-    "leaflet-zoom-in",
-    "leaflet-zoom-out",
-    "leaflet-attribution",
-    "nudge-execute",
-    "nudge-abort",
-    "tools-toggle"
-   ],
-   "controls": [
-    {
-     "name": "sheet-expand",
-     "rect": {
-      "x": 780,
-      "y": 239,
-      "w": 24,
-      "h": 24
-     },
-     "hit": "ok"
-    },
-    {
-     "name": "sheet-fullscreen",
-     "rect": {
-      "x": 808,
-      "y": 239,
-      "w": 24,
-      "h": 24
-     },
-     "hit": "ok"
-    },
-    {
-     "name": "globe-zoom-in",
-     "rect": {
-      "x": 796,
-      "y": 104,
-      "w": 36,
-      "h": 36
-     },
-     "hit": "ok"
-    },
-    {
-     "name": "globe-zoom-out",
-     "rect": {
-      "x": 796,
-      "y": 146,
-      "w": 36,
-      "h": 36
-     },
-     "hit": "ok"
-    },
-    {
-     "name": "globe-reset-north",
-     "rect": {
-      "x": 796,
-      "y": 188,
-      "w": 36,
-      "h": 36
-     },
-     "hit": "covered at (798,222) by <div flex justify-center pt-2>"
-    },
-    {
-     "name": "globe-auto-spin",
-     "rect": {
-      "x": 796,
-      "y": 230,
-      "w": 36,
-      "h": 36
-     },
-     "hit": "covered at (814,248) by <svg [object SVGAnimatedString]>"
-    },
-    {
-     "name": "globe-attribution",
-     "rect": {
-      "x": 810,
-      "y": 280,
-      "w": 24,
-      "h": 24
-     },
-     "hit": "covered at (822,292) by <div group flex w-full cursor-pointer gap-3 border-b >"
-    },
-    {
-     "name": "field-attention",
-     "rect": {
-      "x": 12,
-      "y": 214,
-      "w": 150,
-      "h": 36
-     },
-     "hit": "covered at (87,232) by <div flex w-full items-center justify-between px-3 py>"
-    },
-    {
-     "name": "toolbar-report",
-     "rect": {
-      "x": 747,
-      "y": 176,
-      "w": 85,
-      "h": 34
-     },
-     "hit": "covered at (830,178) by <button \"Zoom out\" flex h-9 w-9 items-center justify-center border >"
-    },
-    {
-     "name": "flat-globe#0",
-     "rect": {
-      "x": 13,
-      "y": 177,
-      "w": 69,
-      "h": 32
-     },
-     "hit": "ok"
-    },
-    {
-     "name": "flat-globe#1",
-     "rect": {
-      "x": 82,
-      "y": 177,
-      "w": 76,
-      "h": 32
-     },
-     "hit": "ok"
-    },
-    {
-     "name": "toolbar-graffiti",
-     "rect": {
-      "x": 543,
-      "y": 176,
-      "w": 100,
-      "h": 34
-     },
-     "hit": "ok"
-    },
-    {
-     "name": "toolbar-capture",
-     "rect": {
-      "x": 648,
-      "y": 176,
-      "w": 92,
-      "h": 34
-     },
-     "hit": "ok"
-    }
-   ]
-  },
-  "after": {
-   "viewport": [
-    844,
-    390
-   ],
-   "mapBox": {
-    "x": 0,
-    "y": 112,
-    "w": 844,
-    "h": 202
-   },
-   "sheet": {
-    "x": 0,
-    "y": 8,
-    "w": 844,
-    "h": 306
-   },
-   "freeMapHeight": 0,
-   "hScroll": false,
-   "missing": [
-    "sheet-expand",
-    "sheet-collapse",
-    "sheet-fullscreen",
-    "sheet-close-detail",
-    "retry-view",
-    "leaflet-zoom-in",
-    "leaflet-zoom-out",
-    "leaflet-attribution",
-    "nudge-execute",
-    "nudge-abort"
-   ],
-   "controls": [
-    {
-     "name": "globe-zoom-in",
-     "rect": {
-      "x": 626,
-      "y": -36,
-      "w": 36,
-      "h": 36
-     },
-     "hit": "inert"
-    },
-    {
-     "name": "globe-zoom-out",
-     "rect": {
-      "x": 668,
-      "y": -36,
-      "w": 36,
-      "h": 36
-     },
-     "hit": "inert"
-    },
-    {
-     "name": "globe-reset-north",
-     "rect": {
-      "x": 710,
-      "y": -36,
-      "w": 36,
-      "h": 36
-     },
-     "hit": "inert"
-    },
-    {
-     "name": "globe-auto-spin",
-     "rect": {
-      "x": 752,
-      "y": -36,
-      "w": 36,
-      "h": 36
-     },
-     "hit": "inert"
-    },
-    {
-     "name": "globe-attribution",
-     "rect": {
-      "x": 810,
-      "y": -26,
-      "w": 24,
-      "h": 24
-     },
-     "hit": "inert"
-    },
-    {
-     "name": "field-attention",
-     "rect": {
-      "x": 12,
-      "y": 77,
-      "w": 150,
-      "h": 40
-     },
-     "hit": "ok"
-    },
-    {
-     "name": "toolbar-report",
-     "rect": {
-      "x": 792,
-      "y": 124,
-      "w": 40,
-      "h": 40
-     },
-     "hit": "inert"
-    },
-    {
-     "name": "flat-globe#0",
-     "rect": {
-      "x": 509,
-      "y": 125,
-      "w": 40,
-      "h": 40
-     },
-     "hit": "inert"
-    },
-    {
-     "name": "flat-globe#1",
-     "rect": {
-      "x": 549,
-      "y": 125,
-      "w": 40,
-      "h": 40
-     },
-     "hit": "inert"
-    },
-    {
-     "name": "tools-toggle",
-     "rect": {
-      "x": 594,
-      "y": 124,
-      "w": 98,
-      "h": 40
-     },
-     "hit": "inert"
-    },
-    {
-     "name": "toolbar-graffiti",
-     "rect": {
-      "x": 700,
-      "y": 124,
-      "w": 40,
-      "h": 40
-     },
-     "hit": "inert"
-    },
-    {
-     "name": "toolbar-capture",
-     "rect": {
-      "x": 746,
-      "y": 124,
-      "w": 40,
-      "h": 40
-     },
-     "hit": "inert"
-    }
-   ]
-  }
- }
 }
