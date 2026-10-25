@@ -41,3 +41,4 @@ Cited elsewhere in this repo's docs as "CLAUDE.md rule #N" (`CI_PIPELINE.md`, `B
 - Prefer the existing Base44 CLI workflow over adding new npm scripts for Base44-specific tasks.
 - Reuse the existing SDK client and Vite plugin patterns before adding new Base44 integration paths.
 - Run the relevant checks from `package.json` before finishing code changes.
+- UI and layout changes: follow `docs/design/UI-STANDARDS.md` (standards vs project preferences) and record defects, evidence and open items in the single ledger `docs/design/UI-Fixes.md`.

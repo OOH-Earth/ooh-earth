@@ -1,5 +1,7 @@
 # OOH Earth UI standards
 
+Ledger of defects, evidence, commits and open items: [`UI-Fixes.md`](./UI-Fixes.md).
+
 Scope: how we lay out and simplify screens **without changing the identity** (black void,
 ozone yellow `#EDFF00`, flare orange `#FF5C00`, IBM Plex Mono labels, Inter Tight body,
 Orbitron brand marks, square corners). This file does not define new colours, fonts or shapes.
@@ -41,7 +43,7 @@ Reading of the 2.4.11 criterion for this repo: "not entirely hidden" is the lega
 | Preference | Value | Rationale |
 | --- | --- | --- |
 | Touch target | 40 x 40 px for primary map actions, 32 px minimum for secondary | Exceeds the 24 px AA floor; matches current tokenised buttons. Reaching 44 px is the target when a control is redesigned. |
-| Smallest text | 10 px mono labels exist today; do not add anything smaller | 7-9 px labels (tally, ticker source line) are existing debt, tracked, not copied. |
+| Smallest text | 10 px (the documented "Label · Mono" step in `TypeScale.jsx`). Informational and recovery text on the map is at least 10 px; the 9 px "Caption" step is for decorative labels only | 7-9 px labels remain on surfaces not yet touched (see the ledger). A project readability decision, not a WCAG minimum font size. |
 | Overlay budget | At most one persistent chrome row plus one transient row over a map | Keeps the map the subject. |
 | Decorative layers | Must yield space to controls and degrade by available room | GlobeHud, scanlines, telemetry. |
 | Colour | Use token classes (`text-ozone`, `border-slate2`, `bg-void/80`); no new hex | Brand tokens are the canonical source. |
@@ -65,9 +67,27 @@ expanded state break in another.
    box.
 4. **Use container queries for "is there room"** (`@container`, `cqh`) instead of viewport
    breakpoints when the available width is the map pane, not the window.
-5. **No** arbitrary `z-index` increases, negative margins, text below 10 px, or hiding of an
+5. **Every edge has one owner.** Top: the overlay frame. Bottom: the mobile sheet and spec bar, measured
+   by `Map.jsx` and published as `--map-sheet-overlap`, `--map-specs-h`, `--map-bottom-reserve`.
+   Zoom, compass, attribution and the frame itself stack against those values; none of them chooses
+   its own bottom offset. A page that does not publish them keeps its old layout (fallback 0).
+6. **A control covered by a surface is not focusable.** When the sheet covers the map, the map box is
+   `inert` (WCAG 2.4.11 Focus Not Obscured); controls are never left reachable underneath, and never
+   pushed off-screen to avoid the overlap.
+7. **Density follows the available box, not only the window.** Compact chrome applies when the width is
+   under 768, **or** in short landscape (< 500px tall, < 1024px wide), **or** when the map pane is under
+   600px (the 1024px split layout leaves ~380px). Secondary controls go behind one labelled
+   disclosure (`aria-expanded`, `aria-controls`, Escape, focus return). Where a floating panel cannot
+   fit (short landscape) the same content opens in the bottom sheet.
+8. **A drag handle never captures the pointer from its own buttons.** Capturing on `pointerdown`
+   retargets the click and silently kills Expand/Collapse/Close/Retry.
+9. **A sheet's header must stay on screen at every snap.** Clamp the tallest snap to the space above
+   the nav; otherwise Collapse can end up above the viewport.
+10. **Recoverable errors live where they cannot be clipped**: the always-visible header/region, with a
+    40px+ action, announced once (`role="alert"`), not under a scroll fold.
+11. **No** arbitrary `z-index` increases, negative margins, text below 10 px, or hiding of an
    essential control to make room.
-6. **Essential content is never removed to declutter**: primary navigation, source and
+12. **Essential content is never removed to declutter**: primary navigation, source and
    provenance text, privacy guidance, errors and confirmation states.
 
 ## 5. Declutter classification
@@ -111,7 +131,6 @@ A layout PR is not done until it shows, for the changed surface:
    another element fails even if "visible").
 4. Expanded and collapsed states of every disclosure on the surface.
 5. Keyboard walk: each focus stop fully on-screen and uncovered.
-6. Zoom: CSS-px viewport with `deviceScaleFactor` emulates Ctrl-+ layout (200% of 1280x720 is
-   640x360 at 2x). Real browser-zoom runs are a manual spot-check.
+6. Zoom: CSS-px viewport with `deviceScaleFactor` emulates Ctrl-+ layout (200% of 1280x720 is 640x360 at 2x). This is **supplementary**: real browser zoom could not be driven headlessly (profile zoom prefs are ignored; DevTools key events do not trigger browser accelerators), so it must be recorded as unavailable coverage and spot-checked manually in a real browser.
 7. A route transition away and back.
 8. Review of every consumer of a shared component you changed (`grep` the import).
