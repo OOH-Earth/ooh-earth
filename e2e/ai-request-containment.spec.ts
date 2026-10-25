@@ -31,6 +31,9 @@ test('Home makes no InvokeLLM request and counts brands from brand_name', async 
   await page.locator('#ad-spend').scrollIntoViewIfNeeded();
   await expect(page.getByTestId('ad-spend-unavailable')).toContainText('Unavailable');
   await expect(page.locator('#ad-spend')).not.toContainText('OOH spend/yr');
+  // heading must not imply figures exist or assert concealment
+  await expect(page.locator('#ad-spend h2')).toContainText('Ad spend');
+  await expect(page.locator('#ad-spend')).not.toContainText(/they bury|climate damage/i);
 });
 
 test('Map makes no InvokeLLM request; removed layers are disabled even if saved', async ({
@@ -57,8 +60,17 @@ test('Map makes no InvokeLLM request; removed layers are disabled even if saved'
   await removed.first().focus();
   await expect(removed.first()).toBeFocused();
   await expect(removed.first()).toHaveAttribute('aria-label', /unavailable/i);
-  await removed.first().click(); // must not activate anything
+  await expect(removed.first()).toHaveAttribute('aria-describedby', 'unsupported-layer-note');
+  await expect(page.locator('#unsupported-layer-note')).toContainText('Unavailable');
+  const saved = () => page.evaluate(() => localStorage.getItem('ooh-map-layers-v2'));
+  const before = await saved();
+  // Playwright treats aria-disabled controls as not actionable, so force the pointer click
+  // and also press Enter/Space on the focused control: none may activate anything.
+  await removed.first().click({ force: true });
+  await page.keyboard.press('Enter');
+  await page.keyboard.press('Space');
   await page.waitForTimeout(1500);
+  expect(await saved()).toEqual(before);
   expect(spy.llm).toEqual([]);
 });
 

@@ -78,6 +78,8 @@ export const ALL_LAYERS = LAYER_GROUPS.flatMap((g) => g.layers);
 // Default active layer IDs
 export const DEFAULT_LAYERS = ALL_LAYERS.filter((l) => l.defaultOn).map((l) => l.id);
 
+const UNAVAILABLE_NOTE_ID = 'unsupported-layer-note';
+
 export default function MapLayerToggle({ activeLayers, onToggle, hiddenLayerIds = [] }) {
   const hidden = new Set(hiddenLayerIds);
   const visibleGroups = LAYER_GROUPS.map((group) => ({
@@ -89,6 +91,10 @@ export default function MapLayerToggle({ activeLayers, onToggle, hiddenLayerIds 
     <div className="atlas-track flex items-center gap-1 overflow-x-auto border-b border-slate2/40 px-5 py-2 md:px-8">
       <span className="shrink-0 font-mono text-[8px] uppercase tracking-[0.25em] text-dim">
         Layers
+      </span>
+      {/* Reason for unavailable layers, announced via aria-describedby (a title tooltip is not). */}
+      <span id={UNAVAILABLE_NOTE_ID} className="sr-only">
+        {UNSUPPORTED_LAYER_NOTE}
       </span>
       {visibleGroups.map((group, gi) => (
         <div key={group.id} className="flex shrink-0 items-center gap-1.5">
@@ -109,6 +115,7 @@ export default function MapLayerToggle({ activeLayers, onToggle, hiddenLayerIds 
                 onClick={() => !unavailable && onToggle(l.id)}
                 aria-disabled={unavailable || undefined}
                 aria-label={unavailable ? `${l.label} (unavailable)` : undefined}
+                aria-describedby={unavailable ? UNAVAILABLE_NOTE_ID : undefined}
                 title={unavailable ? UNSUPPORTED_LAYER_NOTE : undefined}
                 className={`flex shrink-0 items-center gap-1.5 border px-2.5 py-1 font-mono text-[9px] font-bold uppercase tracking-[0.12em] transition-colors ${
                   unavailable
