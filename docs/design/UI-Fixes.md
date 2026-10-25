@@ -238,3 +238,79 @@ skipped (the UI-011 `test.fixme` stays: not resolved); Report-related set 71 pas
 when repeated); `report-form-clarity` 18/18 on the fix and 9/9 failing on the `e1b979d` build.
 Evidence: `docs/design/evidence/ui-fixes-3/` (before/after `/report` at 390x844, 320x640, 844x390,
 error state, Home before).
+
+## 10. Release candidate on the production line (2026-10-25)
+
+Release path: the live app is built from `maintenance/production-2026-10-02` (live entry
+`index-CN5akOBi.js` == the recorded `f062e0d` artifact, verified in the browser 2026-10-25), and `main`
+lacks #371 and carries held, undeployed work. A `main`-based build would silently drop production-only
+fixes, so the candidate is the production line plus this slice:
+branch `release/ui-simplify-prod`, base `ee75604` (`f062e0d` + CI-only commits). `ui/integration-main`
+(base `065ecf8`) and the evidence branch `ui/simplify-map-overlays` are untouched.
+
+Conflicts resolved by understanding both sides, not by taking either wholesale:
+
+- `MapBottomSheet.jsx`: production was unchanged there; kept this slice.
+- `MapAlertTicker.jsx`: production's ticker has no `requested`/AI-summary gating (that is `main` #343); kept
+  production's copy and logic and re-applied only the size/target hunks (10px, `min-h`, 40px dismiss).
+- `main-map-generated-layers.spec.ts` does not exist on the production line: dropped from the replay.
+- `FieldProtocolGuide.jsx`, `ReportStep1Document.jsx`: kept the production copy (the R1 corrections:
+  "Union Made" removed, `text-dim` contrast change) and re-applied only the type-size/target classes.
+
+New defects found on the release candidate (not visible on `main`), reproduced with DevTools bounds on the
+live artifact and fixed:
+
+| ID | Finding | Evidence | Fix |
+| --- | --- | --- | --- |
+| UI-022 | With the 44px #371 nudge visible on `/map`, the nudge (651-756) sits over the bottom sheet (636-768) on the **live** artifact: count, Expand and Fullscreen are covered | `before-PRODUCTION-index-CN5akOBi-map-390x844-nudge.jpg` | Sheet stacks above the nudge using its published `--ooh-nudge-clearance` (+6px, the nudge's own 82px offset) and the HUD re-measures; no `/map` nudge in short landscape (<500px tall: no room, Report is on the toolbar) |
+| UI-011 | Resolved: the former `test.fixme` is now real hit-test + bounds assertions in 10 states (320/360/390/430/844x390, Flat and Globe); 10/10 fail on the build without the fix, 10/10 pass with it | `map-overlay-layout.spec.ts` | as UI-022 |
+| UI-023 | 2px overlap between the toolbar's second row and the globe control row at 320x640 when the nudge lifts the sheet | Playwright hit-test | minimal-room offset 0.5rem -> 0.25rem |
+| UI-024 | `/report` optional/status text used `text-dim/50-60` and `text-flare/70` (below 3:1 on the void background); measured on the candidate: the rest of the report text is 4.99-15:1 | DevTools contrast audit | full tokens (>=4.99:1) |
+| UI-025 | 10px form labels judged against the readability request | | Form labels and helper text move to the existing 11px step; chrome/tooltips stay 10px |
+
+Pre-existing, not caused by this slice (kept honest, not "fixed"):
+
+- `footer-nav-clearance` "Open Command Center" at 320/375/390px on `/support` and `/plans`: 6 failures that
+  reproduce **identically on the live artifact** (`f062e0d` build) in this environment, serially. Cause not
+  investigated; #371's record reports them passing serially on Chromium 153 under another environment.
+- On phones `Map style`, `Find units`, `Export GeoJSON` and `Access keys` are `hidden md:flex` in the
+  production source as well: desktop-only, unchanged.
+
+### Test environment (reproducible)
+
+Playwright 1.63.0 (lockfile unchanged) defaults to Chrome Headless Shell 153.0.8010.12 (build 1243). On
+this WSL2 host `canvas.getContext('webgl2')` never returns on builds 1243 (shell and full) and the
+renderer freezes; build 1223 (Chrome 148.0.7778.96) creates it and the app loads. The `main` baseline
+froze identically, so the earlier "189 of 190 failed" run was the browser, not the code. All local runs
+use build 1223 through an **untracked** `pw.local.config.ts` that sets `launchOptions.executablePath`
+and nothing else; the repository's config and lockfile are not changed. CI (GitHub runners) uses the
+supported default browser and is the authoritative check.
+
+### Checks on this candidate (local, build 1223, `vite preview` of a fresh build)
+
+- Focused set (map, toast, intelligent-map, #371 live-feed/nav/nudge specs, report specs, focus-trap,
+  smoke, a11y; 199 tests): 189 passed, 10 failed on the first run. Isolated reruns: `focus-trap` passes
+  on candidate and on the live artifact (load-intermittent); the zoom200 flat map test passes 2/2 alone;
+  the 6 `footer-nav-clearance` failures are identical on the live artifact; the nudge 320x640 globe case
+  was a real 2px overlap and is fixed (UI-023). After the fixes: map overlay + bottom region + report
+  clarity 82/82 on the final map/report code.
+- DevTools MCP in a real Chrome (member session verified as `justicejonas`, MEMBER, through the account menu
+  on the production tab; that tab was only read): candidate `http://127.0.0.1:4314` (entry
+  `index-C96Hiotp.js`, local only, API calls return 404 so no data and no writes) at 390x844: sheet above
+  the nudge (643 < 651), nav clear, zoom column clear, Retry View in the sheet header; Tools opens (40px
+  controls, panel above the sheet), Escape closes it and returns focus to the toggle; 844x390: no nudge,
+  zoom/Tools/Report visible above a 60px sheet; `/report`: hint buttons 24x24 with accessible names, 11px
+  labels, clicking Transmit with no GPS shows a focused `role=alert` at y=433 of 844 and makes no network
+  request. Member-state behaviour of the candidate was **not** tested: the local origin has no session and no
+  backend; that needs a BACKUP/staging deploy.
+- Real browser zoom: `Ctrl+=` through DevTools does not change `innerWidth` or `devicePixelRatio` (tested
+  2026-10-25), so 200% / 400% are covered only by emulation (640x360@2, 320px width reflow). Unavailable:
+  a physical phone, a virtual keyboard.
+
+### OSIRIS comparison (qualitative; section 2 holds the research)
+
+Adopted patterns that this candidate shows: one clear primary action per surface (map: view switch and
+Report; Report: Continue/Transmit), grouped secondary tools behind a labelled Tools disclosure with
+Escape and focus return, consistent panel headers and dismissal, one owner for the bottom edge. Not
+adopted: 7px labels, hover-only disclosure, overflow-hidden panels. Visual resemblance is not treated
+as a pass: the checks above are bounds, hit-tests, contrast ratios and keyboard behaviour.
