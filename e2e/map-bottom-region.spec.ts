@@ -292,3 +292,39 @@ test.describe('sheet focus handoff @ 390x844', () => {
     await expect(map).not.toHaveJSProperty('inert', true);
   });
 });
+
+for (const [w, h] of [
+  [844, 390],
+  [932, 430],
+] as const) {
+  test.describe(`globe attribution text @ ${w}x${h}`, () => {
+    test.use({ viewport: { width: w, height: h }, hasTouch: true });
+
+    test('the control row does not sit on top of the attribution line', async ({ page }) => {
+      test.setTimeout(90_000);
+      await openMapWithMock(page, { view: 'globe' });
+      const rects = await page.evaluate(() => {
+        const box = (e: Element | null) => {
+          if (!e) return null;
+          const r = e.getBoundingClientRect();
+          return { x: r.x, y: r.y, w: r.width, h: r.height };
+        };
+        return {
+          attrib: box(document.querySelector('.maplibregl-ctrl-attrib')),
+          controls: ['Zoom in', 'Zoom out', 'Reset north', 'Auto-spin'].map((n) =>
+            box(document.querySelector(`[aria-label="${n}"]`)),
+          ),
+        };
+      });
+      expect(rects.attrib, 'attribution present').toBeTruthy();
+      for (const c of rects.controls) {
+        if (!c) continue;
+        const a = rects.attrib!;
+        const overlap =
+          Math.min(a.x + a.w, c.x + c.w) > Math.max(a.x, c.x) &&
+          Math.min(a.y + a.h, c.y + c.h) > Math.max(a.y, c.y);
+        expect(overlap, 'a globe control must not cover the attribution text').toBe(false);
+      }
+    });
+  });
+}
