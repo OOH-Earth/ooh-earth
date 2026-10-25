@@ -3,18 +3,8 @@ import { base44 } from '@/api/base44Client';
 import { countBrands } from '@/components/ooh/brandCounts';
 import { Trophy, Loader2 } from 'lucide-react';
 
-const WATCHLIST = [
-  { brand: 'Coca-Cola', note: "World's largest plastic polluter · top global OOH spender" },
-  { brand: 'Nestlé', note: 'Bottled-water saturation · deforestation-linked supply chains' },
-  { brand: 'Shell', note: 'Greenwashing billboards while expanding fossil production' },
-  { brand: "McDonald's", note: 'Highest-volume fast-food OOH · childhood-targeted ad saturation' },
-  { brand: 'BP', note: 'Beyond Petroleum greenwash · continued oil expansion' },
-  { brand: 'Unilever', note: 'Dove + Axe paradox · prolific billboard presence' },
-];
-
 export default function OffenderRegistry() {
   const [offenders, setOffenders] = useState(null);
-  const [sourced, setSourced] = useState(true);
   const [failed, setFailed] = useState(false);
   const [recordCount, setRecordCount] = useState(0);
 
@@ -26,12 +16,7 @@ export default function OffenderRegistry() {
         if (!active) return;
         const list = countBrands(recs);
         setRecordCount(recs.length);
-        if (!list.length) {
-          setSourced(false);
-          setOffenders(WATCHLIST.map((w) => ({ brand: w.brand, count: 0, note: w.note })));
-        } else {
-          setOffenders(list);
-        }
+        setOffenders(list);
       } catch {
         if (active) {
           setFailed(true);
@@ -59,8 +44,9 @@ export default function OffenderRegistry() {
             </h2>
           </div>
           <p className="max-w-sm font-display text-sm font-normal leading-[1.4] text-darkgray">
-            An atlas is only accountability if it names names. This registry scans every documented
-            location for corporate brands and ranks them by frequency. No brand escapes the ledger.
+            Corporate brand names tagged on the field records loaded here, ranked by how many
+            records carry each tag. Only tagged records count: this is not a complete or verified
+            total.
           </p>
         </div>
 
@@ -78,6 +64,13 @@ export default function OffenderRegistry() {
           >
             // Unavailable: field records could not be loaded
           </div>
+        ) : offenders.length === 0 ? (
+          <div
+            role="status"
+            className="mt-10 border border-slate2/60 p-6 font-mono text-[10px] uppercase tracking-[0.2em] text-dim"
+          >
+            // No brand-tagged field records yet
+          </div>
         ) : (
           <ol className="mt-10 divide-y divide-slate2/40 border border-slate2/60">
             {offenders.map((o, i) => (
@@ -92,14 +85,9 @@ export default function OffenderRegistry() {
                       {o.brand}
                     </span>
                   </div>
-                  {o.note && (
-                    <p className="mt-1 truncate font-mono text-[10px] uppercase tracking-[0.15em] text-dim">
-                      {o.note}
-                    </p>
-                  )}
                 </div>
                 <span className="shrink-0 font-mono text-[10px] uppercase tracking-[0.2em] text-darkgray">
-                  {o.count > 0 ? `${o.count}× logged` : 'watchlist'}
+                  {`${o.count}× logged`}
                 </span>
               </li>
             ))}
@@ -110,9 +98,7 @@ export default function OffenderRegistry() {
           //{' '}
           {failed
             ? 'Counts unavailable'
-            : sourced
-              ? `Counted from the ${recordCount.toLocaleString('en-US')} field records loaded · only records with a brand tag count · not a global total`
-              : 'Field records lacked brand tags · showing global watchlist of top OOH brands'}
+            : `Counted from the ${recordCount.toLocaleString('en-US')} field records loaded · only records with a brand tag count · not a global total`}
         </p>
       </div>
     </section>
