@@ -14,9 +14,8 @@ export default function AdSpendDamage() {
             </h2>
           </div>
           <p className="max-w-sm font-display text-sm font-normal leading-[1.4] text-darkgray">
-            The same corporations buying every billboard are among the world's worst emitters.
-            Here's their outdoor ad spend set against the damage it greenwashes — the cost never
-            appears in their creative briefs.
+            Reserved for published outdoor-advertising spend figures set beside published emissions
+            data, each with a cited source and date. None are shown at the moment.
           </p>
         </div>
 
