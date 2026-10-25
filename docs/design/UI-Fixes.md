@@ -314,3 +314,84 @@ Report; Report: Continue/Transmit), grouped secondary tools behind a labelled To
 Escape and focus return, consistent panel headers and dismissal, one owner for the bottom edge. Not
 adopted: 7px labels, hover-only disclosure, overflow-hidden panels. Visual resemblance is not treated
 as a pass: the checks above are bounds, hit-tests, contrast ratios and keyboard behaviour.
+
+## 11. Release qualification on BACKUP (2026-10-25)
+
+Reservation: `~/ooh-release-records/2026-10-25/BACKUP-RESERVATION.md` (window 19:05:59Z-21:05:59Z, user-authorized,
+frontend only). Peers `oohearth-cf` and `hermes-agent-oci-70` confirmed no claim. Previous BACKUP bytes
+(manifest `git_sha` df4db4e, 372 files) were fetched as served into `backup-before/` with
+`backup-before-sha256.txt`; restore = deploy that directory with the same CLI command.
+
+### Findings from the staging run (anonymous and MEMBER)
+
+| ID | Finding | Disposition |
+| --- | --- | --- |
+| UI-026 | After Collapse (and Expand) keyboard focus fell to `<body>`: the focused button unmounts | Fixed in `8762ba1`; `focus handoff` test fails on the f2e2b06 build served from BACKUP and passes with the fix |
+| UI-027 | Nudge auto-hides after ~14s and the lifted sheet drops back ~94px; a tap aimed at the list can land on a different card | **Reviewer decision.** Accepted trade-off of stacking the sheet above the nudge. Alternative: drop the redundant `/map` nudge (the toolbar has Report), which also removes the shift |
+| UI-028 | MEMBER: the Report form's coordinates were already `0,0` (not empty) on load, so "Transmit" passed validation and created a real `pending` Location at `lat 0, lng 0` | **Pre-existing, not from this PR** (`lat` initial state is `''`; the `0,0` came from a geolocation/air-quality default; `FieldReport` validation only checks `isFinite`). Separate issue recommended: reject `0,0`/require a pin or an explicit location |
+
+**Test-data write (disclosed):** while exercising Report validation as MEMBER I clicked Transmit without first
+checking the coordinates; the form submitted. Effect on BACKUP (not production): one `Location`,
+id `6ade5b174365beea2ccd1286`, status `pending`, `lat 0, lng 0`, title "Billboard · Field report", created
+2026-10-25T19:40:07Z by the staging member. This exceeded the "change no data" scope of the window. It was **not**
+deleted by me (deleting is another data change); it needs the user's or a moderator's decision. Earlier, on
+2026-10-25, I also removed the `ooh_nudge_map_report` localStorage flag in a separate production tab to show
+the nudge (per-viewer convenience flag; it may have been set before).
+
+### Identity and environment
+- Staging: `https://ooh-earth-backup.base44.app` (title prefix `[STAGE]`, banner "STAGE - NOT PRODUCTION"), entry
+  `index-DPrJFKDf.js` = candidate `f2e2b06` built with the BACKUP app id; 372/373 files byte-identical (only the
+  host-rewritten `sitemap.xml` differs, as in earlier qualifications).
+- Anonymous: isolated browser context. MEMBER: the Google chooser offered `justicejonas27@gmail.com`; Google then
+  required phone verification, which I did not attempt; the user completed the sign-in. The app's visible identity
+  is username `oohtestmember1`, role MEMBER, header initials "JU". The API token's subject is the justicejonas27
+  address. A production login does not establish this staging session; they were separate.
+- Anonymous and MEMBER at 390x844 on `/map`: sheet bottom 643 < nudge top 651; zoom in/out, Expand, Tools all
+  topmost; Tools opens above the sheet, Escape closes it and focus returns to the toggle, reopen works; sheet
+  expand (map inert, Collapse visible) and collapse (map usable, zoom topmost). `/report` as MEMBER: six 24x24 hint
+  buttons. Not covered on staging by hand: 320px nav, short landscape, Retry/error state with real backend failure;
+  those are covered by the automated specs run against the staging bytes (below).
+- Specs run against the staging URL with mocked API (88 passed, 6 failed on first attempt): 1 is the new focus test
+  (expected, fixed in `8762ba1`); 5 were intermittent network/timing (`ERR_NETWORK_CHANGED`, 30s load timeouts,
+  a #371 lifecycle assertion): rerun serially they pass (10/11 then 11/11).
+
+### Test environment (reproducible record)
+Playwright 1.63.0, default Chrome for Testing 153.0.8010.12 (headless shell build 1243 and full chromium 1243):
+`document.createElement('canvas').getContext('webgl2')` never returns on this WSL2 host (6.6.87.1-microsoft),
+even on `about:blank`, so any page using WebGL (the Globe) freezes. Chrome for Testing 148.0.7778.96 (build 1223)
+returns immediately. No system Chrome channel is installed in WSL. The real Chrome 155 on the user's Windows
+machine renders the Globe normally (used for the DevTools checks). Chromium 148 results are **supplemental**;
+they do not establish compatibility with current Chrome. GitHub Actions (supported default browser) ran the full
+smoke + accessibility and mobile suites on `f2e2b06` and all passed.
+
+### footer-nav-clearance (6 local failures)
+Assertion: after `window.scrollTo(0, document.body.scrollHeight)` twice with 300ms waits, the "Open Command Center"
+button's gap above the fixed nav must exceed 50px. Measured on both the live artifact and the candidate in this
+environment: the page is not at the bottom when the gap is read (scrollY far from max; `html` has
+`scroll-behavior: smooth` and the 4-6k px page is still scrolling), so the measured gap is negative. The same spec
+passes in CI on `f2e2b06`. Users are not shown a covered control by this: the button sits above the footer
+spacing once scrolling ends. Candidate does not change the behavior (identical on the live artifact). Disposition:
+local timing artefact (smooth scroll), CI green; recommend making the spec wait for scroll end, as a separate
+change. Owner: engineering (spec from #371).
+
+### Zoom and device coverage
+Real browser zoom could not be driven: `Ctrl+=` through DevTools does not change `innerWidth`/`devicePixelRatio`.
+Emulated reflow (640x360@2, 320px width) passes and is labelled emulated. **Manual reviewer check requested:**
+in Chrome open the staging URL, press `Ctrl` and `+` until the zoom badge in the address bar reads 200%, then 400%
+(menu > Zoom, or Ctrl+mouse wheel), at a 1280x720 window; on `/map` and `/report` confirm no horizontal page
+scroll, Tools/sheet/nudge/zoom controls stay reachable, and the Report validation message stays visible. Not
+available here: a physical phone and the virtual keyboard; release policy: they are recorded as unverified
+conditions for the reviewer, not as passed.
+
+### Rollback
+`~/oohearth-livefeed-rollback/dist` is R1M3 `94c79fa` (373 files, checksum list intact): it is **older** than the live
+release `f062e0d` and would remove #371 and dompurify 3.4.17. The current-live artifact (373/373 files, 0 diffs
+against `oohearth.app` on 2026-10-25) was copied to `~/ooh-release-records/2026-10-25/live-f062e0d-dist` with
+`dist-livefeed-merged-PRODUCTION-sha256.txt` (hashes intact). Rollback for this release = deploy that directory:
+`BASE44_DISABLE_TELEMETRY=1 npx base44@0.1.14 site deploy --no-build --yes --app-id 6a62213cff3ccbca88c04ff5`
+from a project dir whose `dist/` is the copy. Not executed.
+
+### Landing order
+This PR first. `oohearth-cf` (`fix/unsupported-ai-claims-containment`, local) lands second after the user's
+approval: it removes the `MapAlertTicker` mount and filters saved layers in `Map.jsx`; it rebases onto this PR and
+re-runs its checks. `MapAlertTicker.jsx` is deleted in a follow-up.
