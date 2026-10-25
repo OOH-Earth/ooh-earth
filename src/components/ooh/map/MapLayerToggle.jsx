@@ -10,6 +10,7 @@ import {
   Flame,
   Fingerprint,
 } from 'lucide-react';
+import { isUnsupportedLayer, UNSUPPORTED_LAYER_NOTE } from './layers/unsupportedLayers';
 
 // Layer groups — ordered by campaign priority.
 // STREET     → Adbusting, Graffiti, Ad Spots & Art (base marker layer)
@@ -100,15 +101,20 @@ export default function MapLayerToggle({ activeLayers, onToggle, hiddenLayerIds 
           </span>
           {group.layers.map((l) => {
             const Icon = l.icon;
-            const active = activeLayers.includes(l.id);
+            const unavailable = isUnsupportedLayer(l.id);
+            const active = !unavailable && activeLayers.includes(l.id);
             return (
               <button
                 key={l.id}
-                onClick={() => onToggle(l.id)}
+                onClick={() => !unavailable && onToggle(l.id)}
+                disabled={unavailable}
+                title={unavailable ? UNSUPPORTED_LAYER_NOTE : undefined}
                 className={`flex shrink-0 items-center gap-1.5 border px-2.5 py-1 font-mono text-[9px] font-bold uppercase tracking-[0.12em] transition-colors ${
-                  active
-                    ? 'border-ozone bg-ozone text-void'
-                    : 'border-slate2/60 text-darkgray hover:border-ozone hover:text-ozone'
+                  unavailable
+                    ? 'cursor-not-allowed border-slate2/40 text-dim line-through opacity-60'
+                    : active
+                      ? 'border-ozone bg-ozone text-void'
+                      : 'border-slate2/60 text-darkgray hover:border-ozone hover:text-ozone'
                 }`}
               >
                 <Icon className="h-3 w-3" style={{ color: active ? undefined : l.color }} />
