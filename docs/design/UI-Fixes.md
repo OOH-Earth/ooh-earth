@@ -327,6 +327,7 @@ frontend only). Peers `oohearth-cf` and `hermes-agent-oci-70` confirmed no claim
 | ID | Finding | Disposition |
 | --- | --- | --- |
 | UI-026 | After Collapse (and Expand) keyboard focus fell to `<body>`: the focused button unmounts | Fixed in `8762ba1`; `focus handoff` test fails on the f2e2b06 build served from BACKUP and passes with the fix |
+| UI-029 | Visual review (MEMBER, 844x390, staging): with MapLibre's attribution pill open the zoom/compass row sat on top of the "(c) Esri, Maxar, Earthstar Geographics" text; hit-tests on the attribution button's centre did not catch it | Fixed in `57ae555`: in minimal-room layouts at >=641px the row moves up 2.25rem; new test asserts control/attribution rectangles do not intersect (fails on the f2e2b06 and 6f25eab builds, passes on 57ae555). `staging-before-attribution-fix-*` / `staging-final-*` screenshots |
 | UI-027 | Nudge auto-hides after ~14s and the lifted sheet drops back ~94px; a tap aimed at the list can land on a different card | **Reviewer decision.** Accepted trade-off of stacking the sheet above the nudge. Alternative: drop the redundant `/map` nudge (the toolbar has Report), which also removes the shift |
 | UI-028 | MEMBER: the Report form's coordinates were already `0,0` (not empty) on load, so "Transmit" passed validation and created a real `pending` Location at `lat 0, lng 0` | **Pre-existing, not from this PR** (`lat` initial state is `''`; the `0,0` came from a geolocation/air-quality default; `FieldReport` validation only checks `isFinite`). Separate issue recommended: reject `0,0`/require a pin or an explicit location |
 
@@ -395,3 +396,15 @@ from a project dir whose `dist/` is the copy. Not executed.
 This PR first. `oohearth-cf` (`fix/unsupported-ai-claims-containment`, local) lands second after the user's
 approval: it removes the `MapAlertTicker` mount and filters saved layers in `Map.jsx`; it rebases onto this PR and
 re-runs its checks. `MapAlertTicker.jsx` is deleted in a follow-up.
+
+### Final candidate on BACKUP
+- Tested artifact: `57ae555e27b11b65c52202c39480005f85c49200`, BACKUP entry `index-DajQkl1k.js`, manifest `git_sha` 57ae555;
+  372/373 files byte-identical to the local build with the BACKUP app id (`candidate-final-BACKUP-sha256.txt`).
+  Later commits on the branch are documentation only. The production artifact is a separate build of the same sources
+  with the **production** app id; asset names are content-hashed, so only the app id, `release-manifest.json` and the
+  hashes derived from them differ. If the squash-merge changes any source byte, the merged commit must be rebuilt and
+  re-qualified before promotion.
+- Checks repeated on 57ae555 on BACKUP (real Chrome 155, MEMBER session): 844x390 map (attribution readable, controls
+  above it, no nudge, all controls topmost); earlier on 6f25eab: Expand/Collapse focus handoff by mouse and keyboard
+  (Enter), 320px Home (nav pill 8-312, 7 buttons inside the viewport, nudge 447-552 vs nav 564, live feed above the
+  nudge: #371 intact).
