@@ -48,12 +48,8 @@ export default function PortalShell({
   const resultsContent = (
     <div className="space-y-px">
       {unavailableNote ? (
-        <div
-          role="status"
-          data-testid="layer-unavailable"
-          className="p-6 text-center font-mono text-[10px] uppercase leading-relaxed tracking-[0.2em] text-dim"
-        >
-          {unavailableNote}
+        <div className="p-6 text-center font-mono text-[10px] uppercase tracking-[0.25em] text-dim">
+          // Unavailable
         </div>
       ) : loading ? (
         <div className="p-6 text-center font-mono text-[10px] uppercase tracking-[0.25em] text-dim">
@@ -135,6 +131,18 @@ export default function PortalShell({
           </div>
         </div>
       </div>
+
+      {/* Explanation for an unavailable layer: outside the results sidebar, which is hidden on
+          small screens in split mode, so the reason is visible at every width. */}
+      {unavailableNote && (
+        <div
+          role="status"
+          data-testid="layer-unavailable"
+          className="border-b border-slate2/40 px-4 py-3 font-mono text-[10px] uppercase leading-relaxed tracking-[0.2em] text-dim md:px-8"
+        >
+          {unavailableNote}
+        </div>
+      )}
 
       {/* Filter tags */}
       {filterTags.length > 1 && (

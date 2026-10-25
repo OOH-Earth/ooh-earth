@@ -65,6 +65,7 @@ export default defineConfig({
         'field-missions.spec.ts',
         'intelligent-map.spec.ts',
         'ad-scanner.spec.ts',
+        'ai-request-containment.spec.ts',
         'public-space-facility.spec.ts',
         'public-space-scanner.spec.ts',
         'public-space-discovery.spec.ts',
