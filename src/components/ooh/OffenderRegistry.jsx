@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { base44 } from '@/api/base44Client';
+import { countBrands } from '@/components/ooh/brandCounts';
 import { Trophy, Loader2 } from 'lucide-react';
 
 const WATCHLIST = [
@@ -14,47 +15,33 @@ const WATCHLIST = [
 export default function OffenderRegistry() {
   const [offenders, setOffenders] = useState(null);
   const [sourced, setSourced] = useState(true);
+  const [failed, setFailed] = useState(false);
+  const [recordCount, setRecordCount] = useState(0);
 
   useEffect(() => {
+    let active = true;
     (async () => {
       try {
-        const recs = await base44.listAllLocations();
-        const corpus = (recs || [])
-          .filter((r) => r.status !== 'rejected')
-          .map((r) => `${r.title || ''} · ${r.notes || ''} · ${r.address || ''}`)
-          .join('\n');
-        const res = await base44.integrations.Core.InvokeLLM({
-          prompt: `Below is a corpus of documented outdoor-advertising locations from a resistance field atlas. Extract any corporate brand, company, or product names mentioned and rank by frequency. Return the top 6. If no brand names appear, return an empty array.\n\nCORPUS:\n${corpus}`,
-          response_json_schema: {
-            type: 'object',
-            properties: {
-              offenders: {
-                type: 'array',
-                items: {
-                  type: 'object',
-                  properties: { brand: { type: 'string' }, count: { type: 'number' } },
-                  required: ['brand', 'count'],
-                },
-              },
-            },
-            required: ['offenders'],
-          },
-        });
-        // InvokeLLM's SDK type is `string | object`; response_json_schema
-        // above guarantees an object at runtime.
-        const data = /** @type {{ offenders?: any[] }} */ (res);
-        const list = data?.offenders || [];
+        const recs = (await base44.listAllLocations()) || [];
+        if (!active) return;
+        const list = countBrands(recs);
+        setRecordCount(recs.length);
         if (!list.length) {
           setSourced(false);
-          setOffenders(WATCHLIST.map((w, i) => ({ brand: w.brand, count: 0, note: w.note })));
+          setOffenders(WATCHLIST.map((w) => ({ brand: w.brand, count: 0, note: w.note })));
         } else {
-          setOffenders(list.slice(0, 6));
+          setOffenders(list);
         }
       } catch {
-        setSourced(false);
-        setOffenders(WATCHLIST.map((w) => ({ brand: w.brand, count: 0, note: w.note })));
+        if (active) {
+          setFailed(true);
+          setOffenders([]);
+        }
       }
     })();
+    return () => {
+      active = false;
+    };
   }, []);
 
   return (
@@ -83,6 +70,13 @@ export default function OffenderRegistry() {
             <span className="font-mono text-[10px] uppercase tracking-[0.3em] text-dim">
               // scanning field records…
             </span>
+          </div>
+        ) : failed ? (
+          <div
+            role="status"
+            className="mt-10 border border-slate2/60 p-6 font-mono text-[10px] uppercase tracking-[0.2em] text-dim"
+          >
+            // Unavailable: field records could not be loaded
           </div>
         ) : (
           <ol className="mt-10 divide-y divide-slate2/40 border border-slate2/60">
@@ -114,9 +108,11 @@ export default function OffenderRegistry() {
 
         <p className="mt-6 font-mono text-[10px] uppercase tracking-[0.25em] text-dim">
           //{' '}
-          {sourced
-            ? 'Brand extraction via field-atlas scan · ranked by documented frequency'
-            : 'Field records lacked brand tags · showing global watchlist of top OOH brands'}
+          {failed
+            ? 'Counts unavailable'
+            : sourced
+              ? `Counted from the ${recordCount.toLocaleString('en-US')} field records loaded · only records with a brand tag count · not a global total`
+              : 'Field records lacked brand tags · showing global watchlist of top OOH brands'}
         </p>
       </div>
     </section>
