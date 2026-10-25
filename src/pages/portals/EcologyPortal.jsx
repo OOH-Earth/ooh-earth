@@ -12,6 +12,7 @@ export default function EcologyPortal() {
       unavailableNote={UNSUPPORTED_LAYER_NOTE}
       renderCard={() => null}
       setQuery={() => {}}
+      onFilterChange={() => {}}
     />
   );
 }

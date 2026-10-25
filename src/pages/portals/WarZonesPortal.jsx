@@ -12,6 +12,7 @@ export default function WarZonesPortal() {
       unavailableNote={UNSUPPORTED_LAYER_NOTE}
       renderCard={() => null}
       setQuery={() => {}}
+      onFilterChange={() => {}}
     />
   );
 }

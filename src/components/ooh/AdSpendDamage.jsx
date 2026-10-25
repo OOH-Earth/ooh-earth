@@ -22,6 +22,7 @@ export default function AdSpendDamage() {
 
         <div
           role="status"
+          data-testid="ad-spend-unavailable"
           className="mt-10 border border-slate2/60 p-6 font-mono text-[10px] uppercase leading-relaxed tracking-[0.2em] text-dim"
         >
           // Unavailable: brand-by-brand ad-spend and emissions figures were AI-generated and not
