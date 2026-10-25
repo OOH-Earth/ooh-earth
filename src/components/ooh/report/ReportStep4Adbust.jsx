@@ -66,8 +66,8 @@ export default function ReportStep4Adbust({ data, onChange }) {
 
       {/* Adbust type */}
       <div>
-        <label className="mb-2 block font-mono text-[10px] uppercase tracking-[0.3em] text-dim">
-          Intervention type <span className="text-dim/50">(if any)</span>
+        <label className="mb-2 block font-mono text-[11px] uppercase tracking-[0.3em] text-dim">
+          Intervention type <span className="text-dim">(if any)</span>
         </label>
         <div className="grid grid-cols-2 gap-px border border-slate2/60 bg-slate2/40 sm:grid-cols-4">
           {ADBUST_TYPES.map((t) => (
@@ -75,7 +75,7 @@ export default function ReportStep4Adbust({ data, onChange }) {
               key={t.value}
               type="button"
               onClick={() => onChange({ adbust_type: t.value })}
-              className={`px-3 py-2.5 font-mono text-[10px] font-bold uppercase tracking-[0.12em] transition-colors ${data.adbust_type === t.value ? 'bg-ozone text-void' : 'bg-card text-darkgray hover:text-silver'}`}
+              className={`px-3 py-2.5 font-mono text-[11px] font-bold uppercase tracking-[0.12em] transition-colors ${data.adbust_type === t.value ? 'bg-ozone text-void' : 'bg-card text-darkgray hover:text-silver'}`}
             >
               {t.label}
             </button>
@@ -86,8 +86,8 @@ export default function ReportStep4Adbust({ data, onChange }) {
       {/* Adbust photo */}
       {data.adbust_type && data.adbust_type !== 'none' && (
         <div>
-          <label className="mb-2 block font-mono text-[10px] uppercase tracking-[0.3em] text-dim">
-            Intervention photo <span className="text-dim/50">(optional)</span>
+          <label className="mb-2 block font-mono text-[11px] uppercase tracking-[0.3em] text-dim">
+            Intervention photo <span className="text-dim">(optional)</span>
           </label>
           <label
             {...photoTrigger.labelProps}
@@ -101,7 +101,7 @@ export default function ReportStep4Adbust({ data, onChange }) {
             ) : (
               <Camera className="h-4 w-4 text-dim" />
             )}
-            <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-darkgray">
+            <span className="font-mono text-[11px] uppercase tracking-[0.2em] text-darkgray">
               {uploading
                 ? 'Uploading…'
                 : data.adbust_image_url
@@ -119,7 +119,7 @@ export default function ReportStep4Adbust({ data, onChange }) {
           </label>
           {uploadError && (
             <p
-              className="mt-2 font-mono text-[10px] uppercase tracking-[0.15em] text-flare"
+              className="mt-2 font-mono text-[11px] uppercase tracking-[0.15em] text-flare"
               role="alert"
             >
               {uploadError}
@@ -130,8 +130,8 @@ export default function ReportStep4Adbust({ data, onChange }) {
 
       {/* Action flags */}
       <div>
-        <label className="mb-2 block font-mono text-[10px] uppercase tracking-[0.3em] text-dim">
-          From witness to action <span className="text-dim/50">(select all that apply)</span>
+        <label className="mb-2 block font-mono text-[11px] uppercase tracking-[0.3em] text-dim">
+          From witness to action <span className="text-dim">(select all that apply)</span>
         </label>
         <div className="space-y-1.5">
           {ACTION_FLAGS.map((f) => {
@@ -147,7 +147,7 @@ export default function ReportStep4Adbust({ data, onChange }) {
                   className={`h-3.5 w-3.5 shrink-0 border ${active ? 'border-ozone bg-ozone' : 'border-slate2'}`}
                 />
                 <span
-                  className={`font-mono text-[10px] font-bold uppercase tracking-[0.12em] ${active ? 'text-ozone' : 'text-darkgray'}`}
+                  className={`font-mono text-[11px] font-bold uppercase tracking-[0.12em] ${active ? 'text-ozone' : 'text-darkgray'}`}
                 >
                   {f.label}
                 </span>

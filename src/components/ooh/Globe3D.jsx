@@ -735,7 +735,7 @@ export default function Globe3D({
         </div>
       )}
       {interactive && (
-        <div className="absolute bottom-[calc(var(--map-sheet-overlap,0px)+3rem)] right-3 z-[1000] flex flex-col gap-1.5 [[data-map-free=tight]_&]:grid [[data-map-free=tight]_&]:grid-cols-2 [[data-map-free=minimal]_&]:grid [[data-map-free=minimal]_&]:grid-cols-4 [[data-map-free=minimal]_&]:bottom-[calc(var(--map-sheet-overlap,0px)+0.5rem)] [[data-map-free=minimal]_&]:right-14">
+        <div className="absolute bottom-[calc(var(--map-sheet-overlap,0px)+3rem)] right-3 z-[1000] flex flex-col gap-1.5 [[data-map-free=tight]_&]:grid [[data-map-free=tight]_&]:grid-cols-2 [[data-map-free=minimal]_&]:grid [[data-map-free=minimal]_&]:grid-cols-4 [[data-map-free=minimal]_&]:bottom-[calc(var(--map-sheet-overlap,0px)+0.25rem)] [[data-map-free=minimal]_&]:right-14">
           <button
             onClick={zoomIn}
             aria-label="Zoom in"

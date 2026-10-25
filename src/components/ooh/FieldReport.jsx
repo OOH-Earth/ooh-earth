@@ -274,7 +274,7 @@ export default function FieldReport() {
         </p>
         {done.brand_name && (
           <div className="mt-4 border border-slate2/60 bg-void px-4 py-3">
-            <div className="font-mono text-[10px] uppercase tracking-[0.2em] text-dim">
+            <div className="font-mono text-[11px] uppercase tracking-[0.2em] text-dim">
               Ad chain logged
             </div>
             <div className="mt-1 font-display text-sm text-silver">
@@ -322,7 +322,7 @@ export default function FieldReport() {
             className={`flex flex-1 flex-col border px-3 py-2.5 text-left transition-colors ${step === s.id ? 'border-ozone bg-ozone/5' : step > s.id ? 'border-ozone/30 bg-ozone/[0.03]' : 'border-slate2/60 bg-card'}`}
           >
             <span
-              className={`font-mono text-[10px] uppercase tracking-[0.25em] ${step === s.id ? 'text-ozone' : step > s.id ? 'text-ozone/50' : 'text-dim'}`}
+              className={`font-mono text-[11px] uppercase tracking-[0.25em] ${step === s.id ? 'text-ozone' : step > s.id ? 'text-ozone/50' : 'text-dim'}`}
             >
               {String(s.id).padStart(2, '0')}
             </span>
@@ -337,7 +337,7 @@ export default function FieldReport() {
 
       {/* Step header */}
       <div className="mb-6">
-        <div className="font-mono text-[10px] uppercase tracking-[0.3em] text-ozone">
+        <div className="font-mono text-[11px] uppercase tracking-[0.3em] text-ozone">
           // Step {step} of 4
         </div>
         <h2 className="mt-1 font-display text-xl font-bold tracking-tight text-silver">
@@ -366,7 +366,7 @@ export default function FieldReport() {
             className="mt-6 flex items-start gap-2 border border-flare/40 bg-flare/5 px-4 py-3 outline-none focus-visible:ring-1 focus-visible:ring-flare"
           >
             <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0 text-flare" />
-            <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-flare">
+            <span className="font-mono text-[11px] uppercase tracking-[0.2em] text-flare">
               {error}
             </span>
           </div>

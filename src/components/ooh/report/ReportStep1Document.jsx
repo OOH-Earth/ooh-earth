@@ -81,7 +81,7 @@ export default function ReportStep1Document({ data, onChange }) {
     <div className="space-y-7">
       {/* Type */}
       <div>
-        <label className="mb-2 block font-mono text-[10px] uppercase tracking-[0.3em] text-dim">
+        <label className="mb-2 block font-mono text-[11px] uppercase tracking-[0.3em] text-dim">
           Media type
         </label>
         <div className="grid grid-cols-2 gap-px border border-slate2/60 bg-slate2/40 sm:grid-cols-4">
@@ -90,7 +90,7 @@ export default function ReportStep1Document({ data, onChange }) {
               key={t.value}
               type="button"
               onClick={() => onChange({ type: t.value })}
-              className={`px-3 py-3 font-mono text-[10px] font-bold uppercase tracking-[0.2em] transition-colors ${data.type === t.value ? 'bg-ozone text-void' : 'bg-card text-darkgray hover:text-silver'}`}
+              className={`px-3 py-3 font-mono text-[11px] font-bold uppercase tracking-[0.2em] transition-colors ${data.type === t.value ? 'bg-ozone text-void' : 'bg-card text-darkgray hover:text-silver'}`}
             >
               {t.label}
             </button>
@@ -102,7 +102,7 @@ export default function ReportStep1Document({ data, onChange }) {
       {isPublicSpaceType(data.type) && (
         <div className="grid gap-3 border border-ozone/30 bg-ozone/5 p-3 sm:grid-cols-2">
           <label className="flex flex-col gap-1">
-            <span className="font-mono text-[10px] uppercase tracking-[0.15em] text-dim">
+            <span className="font-mono text-[11px] uppercase tracking-[0.15em] text-dim">
               Setting
             </span>
             <select
@@ -118,7 +118,7 @@ export default function ReportStep1Document({ data, onChange }) {
             </select>
           </label>
           <label className="flex flex-col gap-1">
-            <span className="font-mono text-[10px] uppercase tracking-[0.15em] text-dim">
+            <span className="font-mono text-[11px] uppercase tracking-[0.15em] text-dim">
               Public Access
             </span>
             <select
@@ -138,7 +138,7 @@ export default function ReportStep1Document({ data, onChange }) {
 
       {/* Photo — capture or upload */}
       <div>
-        <label className="mb-2 block font-mono text-[10px] uppercase tracking-[0.3em] text-dim">
+        <label className="mb-2 block font-mono text-[11px] uppercase tracking-[0.3em] text-dim">
           Cover photo <span className="text-silver/70">(recommended)</span>
         </label>
         {data.image_url ? (
@@ -147,7 +147,7 @@ export default function ReportStep1Document({ data, onChange }) {
             <button
               type="button"
               onClick={() => onChange({ image_url: '' })}
-              className="absolute right-2 top-2 flex items-center gap-1.5 border border-slate2 bg-void/80 px-2.5 py-1.5 font-mono text-[10px] uppercase tracking-[0.2em] text-silver backdrop-blur-sm transition-colors hover:border-flare hover:text-flare"
+              className="absolute right-2 top-2 flex items-center gap-1.5 border border-slate2 bg-void/80 px-2.5 py-1.5 font-mono text-[11px] uppercase tracking-[0.2em] text-silver backdrop-blur-sm transition-colors hover:border-flare hover:text-flare"
             >
               <Camera className="h-3 w-3" /> Replace
             </button>
@@ -155,7 +155,7 @@ export default function ReportStep1Document({ data, onChange }) {
         ) : uploading ? (
           <div className="flex items-center gap-3 border border-ozone/40 bg-card px-4 py-6">
             <Loader2 className="h-4 w-4 animate-spin text-ozone" />
-            <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-ozone">
+            <span className="font-mono text-[11px] uppercase tracking-[0.2em] text-ozone">
               Uploading…
             </span>
           </div>
@@ -167,7 +167,7 @@ export default function ReportStep1Document({ data, onChange }) {
               className="group flex cursor-pointer flex-col items-center gap-2 bg-card px-4 py-6 transition-colors hover:border-ozone"
             >
               <Camera className="h-5 w-5 text-ozone transition-transform group-hover:scale-110" />
-              <span className="font-mono text-[10px] font-bold uppercase tracking-[0.2em] text-silver">
+              <span className="font-mono text-[11px] font-bold uppercase tracking-[0.2em] text-silver">
                 Capture live
               </span>
               <input
@@ -185,7 +185,7 @@ export default function ReportStep1Document({ data, onChange }) {
               className="group flex cursor-pointer flex-col items-center gap-2 bg-card px-4 py-6 transition-colors hover:border-flare"
             >
               <Upload className="h-5 w-5 text-flare transition-transform group-hover:scale-110" />
-              <span className="font-mono text-[10px] font-bold uppercase tracking-[0.2em] text-silver">
+              <span className="font-mono text-[11px] font-bold uppercase tracking-[0.2em] text-silver">
                 Upload
               </span>
               <input
@@ -200,7 +200,7 @@ export default function ReportStep1Document({ data, onChange }) {
         )}
         {uploadError && (
           <p
-            className="mt-2 font-mono text-[10px] uppercase tracking-[0.15em] text-flare"
+            className="mt-2 font-mono text-[11px] uppercase tracking-[0.15em] text-flare"
             role="alert"
           >
             {uploadError}
@@ -230,7 +230,7 @@ export default function ReportStep1Document({ data, onChange }) {
 
       {/* Address */}
       <div>
-        <label className="mb-2 block font-mono text-[10px] uppercase tracking-[0.3em] text-dim">
+        <label className="mb-2 block font-mono text-[11px] uppercase tracking-[0.3em] text-dim">
           Location / address
         </label>
         <input
@@ -244,14 +244,14 @@ export default function ReportStep1Document({ data, onChange }) {
       {/* Coordinates — live map pin dropper + locate me */}
       <div>
         <div className="mb-2 flex items-center justify-between">
-          <label className="font-mono text-[10px] uppercase tracking-[0.3em] text-dim">
+          <label className="font-mono text-[11px] uppercase tracking-[0.3em] text-dim">
             GPS coordinates
           </label>
           <button
             type="button"
             onClick={locate}
             disabled={locating}
-            className="inline-flex min-h-8 items-center gap-1.5 font-mono text-[10px] font-bold uppercase tracking-[0.25em] text-ozone transition-opacity hover:opacity-70 disabled:opacity-40"
+            className="inline-flex min-h-8 items-center gap-1.5 font-mono text-[11px] font-bold uppercase tracking-[0.25em] text-ozone transition-opacity hover:opacity-70 disabled:opacity-40"
           >
             {locating ? (
               <Loader2 className="h-3.5 w-3.5 animate-spin" />
@@ -267,7 +267,7 @@ export default function ReportStep1Document({ data, onChange }) {
           onPick={({ lat, lng }) => onChange({ lat: String(lat), lng: String(lng) })}
         />
         <details className="group mt-2">
-          <summary className="cursor-pointer font-mono text-[10px] uppercase tracking-[0.2em] text-dim transition-colors hover:text-ozone">
+          <summary className="cursor-pointer font-mono text-[11px] uppercase tracking-[0.2em] text-dim transition-colors hover:text-ozone">
             Enter coordinates manually
           </summary>
           <div className="mt-2 grid grid-cols-2 gap-px border border-slate2/60 bg-slate2/40">
@@ -291,7 +291,7 @@ export default function ReportStep1Document({ data, onChange }) {
 
       {/* Title (optional) */}
       <div>
-        <label className="mb-2 block font-mono text-[10px] uppercase tracking-[0.3em] text-dim">
+        <label className="mb-2 block font-mono text-[11px] uppercase tracking-[0.3em] text-dim">
           Unit label <span className="text-dim">(optional)</span>
         </label>
         <input

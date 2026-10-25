@@ -98,7 +98,7 @@ export function PhotoSyncStatus({ state, onRetry }) {
   if (state.status === 'uploading') {
     return (
       <p
-        className="mt-3 font-mono text-[10px] uppercase tracking-[0.18em] text-ozone"
+        className="mt-3 font-mono text-[11px] uppercase tracking-[0.18em] text-ozone"
         role="status"
       >
         // Uploading additional photos: {state.completed}/{state.total}
@@ -107,14 +107,14 @@ export function PhotoSyncStatus({ state, onRetry }) {
   }
   return (
     <div className="mt-3 border border-flare/40 bg-flare/5 px-3 py-2">
-      <p className="font-mono text-[10px] uppercase tracking-[0.15em] text-flare" role="alert">
+      <p className="font-mono text-[11px] uppercase tracking-[0.15em] text-flare" role="alert">
         {state.failed.length} additional photo{state.failed.length === 1 ? '' : 's'} failed. The
         successful photos remain attached to this Location.
       </p>
       <button
         type="button"
         onClick={onRetry}
-        className="mt-2 border border-flare/60 px-3 py-1.5 font-mono text-[10px] font-bold uppercase tracking-[0.2em] text-flare hover:bg-flare/10"
+        className="mt-2 border border-flare/60 px-3 py-1.5 font-mono text-[11px] font-bold uppercase tracking-[0.2em] text-flare hover:bg-flare/10"
       >
         Retry failed photos
       </button>
@@ -185,13 +185,13 @@ export default function MultiPhotoUpload({ files, onChange, disabled = false, on
 
   return (
     <div>
-      <label className="mb-2 flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-[0.3em] text-dim">
+      <label className="mb-2 flex items-center gap-1.5 font-mono text-[11px] uppercase tracking-[0.3em] text-dim">
         <Images className="h-3.5 w-3.5" /> Additional photos
         <span className="text-ozone">
           {files.length} / {MAX_EXTRA_PHOTOS} selected
         </span>
       </label>
-      <p className="mb-2 font-mono text-[10px] uppercase tracking-[0.15em] text-silver/70">
+      <p className="mb-2 font-mono text-[11px] uppercase tracking-[0.15em] text-silver/70">
         Add from gallery or camera repeatedly; these attach after submission.
       </p>
       <div className="flex flex-wrap gap-2">
@@ -220,7 +220,7 @@ export default function MultiPhotoUpload({ files, onChange, disabled = false, on
               className="flex h-16 w-16 flex-col items-center justify-center gap-1 border border-dashed border-slate2 text-dim transition-colors hover:border-ozone hover:text-ozone disabled:opacity-40"
             >
               <Plus className="h-4 w-4" />
-              <span className="font-mono text-[10px] uppercase tracking-[0.12em]">Choose</span>
+              <span className="font-mono text-[11px] uppercase tracking-[0.12em]">Choose</span>
             </button>
             <button
               type="button"
@@ -230,14 +230,14 @@ export default function MultiPhotoUpload({ files, onChange, disabled = false, on
               className="flex h-16 w-16 flex-col items-center justify-center gap-1 border border-dashed border-slate2 text-dim transition-colors hover:border-ozone hover:text-ozone disabled:opacity-40"
             >
               <Camera className="h-4 w-4" />
-              <span className="font-mono text-[10px] uppercase tracking-[0.12em]">Take</span>
+              <span className="font-mono text-[11px] uppercase tracking-[0.12em]">Take</span>
             </button>
           </div>
         )}
       </div>
       {selectionNotice && (
         <p
-          className="mt-2 font-mono text-[10px] uppercase tracking-[0.15em] text-amber-200"
+          className="mt-2 font-mono text-[11px] uppercase tracking-[0.15em] text-amber-200"
           role="status"
         >
           {selectionNotice}
@@ -266,7 +266,7 @@ export default function MultiPhotoUpload({ files, onChange, disabled = false, on
         className="hidden"
       />
       {files.length > 0 && (
-        <p className="mt-1.5 font-mono text-[10px] uppercase tracking-[0.2em] text-dim/60">
+        <p className="mt-1.5 font-mono text-[11px] uppercase tracking-[0.2em] text-dim">
           // syncs after submission — requires an online connection
         </p>
       )}

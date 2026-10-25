@@ -35,10 +35,10 @@ export default function ReportStep3Classify({ data, onChange }) {
     <div className="space-y-8">
       {/* Harm statement */}
       <div>
-        <label className="mb-1 block font-mono text-[10px] uppercase tracking-[0.3em] text-dim">
+        <label className="mb-1 block font-mono text-[11px] uppercase tracking-[0.3em] text-dim">
           What is this ad doing to this space?
         </label>
-        <p className="mb-2 font-mono text-[10px] text-dim/60">
+        <p className="mb-2 font-mono text-[11px] text-dim">
           To this community? To you? Speak with truth — not for clicks, but for change.
         </p>
         <textarea
@@ -52,8 +52,8 @@ export default function ReportStep3Classify({ data, onChange }) {
 
       {/* Harm tags */}
       <div>
-        <label className="mb-2 block font-mono text-[10px] uppercase tracking-[0.3em] text-dim">
-          Categorise the violation <span className="text-dim/50">(select all that apply)</span>
+        <label className="mb-2 block font-mono text-[11px] uppercase tracking-[0.3em] text-dim">
+          Categorise the violation <span className="text-dim">(select all that apply)</span>
         </label>
         <div className="grid gap-1.5 sm:grid-cols-2">
           {HARM_TAGS.map((h) => {
@@ -70,11 +70,11 @@ export default function ReportStep3Classify({ data, onChange }) {
                 />
                 <div>
                   <div
-                    className={`font-mono text-[10px] font-bold uppercase tracking-[0.12em] ${active ? 'text-flare' : 'text-darkgray'}`}
+                    className={`font-mono text-[11px] font-bold uppercase tracking-[0.12em] ${active ? 'text-flare' : 'text-darkgray'}`}
                   >
                     {h.label}
                   </div>
-                  <div className="font-mono text-[10px] uppercase tracking-[0.15em] text-dim/60">
+                  <div className="font-mono text-[11px] uppercase tracking-[0.15em] text-dim">
                     {h.sdg}
                   </div>
                 </div>
@@ -86,7 +86,7 @@ export default function ReportStep3Classify({ data, onChange }) {
 
       {/* Infrastructure condition */}
       <div>
-        <label className="mb-2 block font-mono text-[10px] uppercase tracking-[0.3em] text-dim">
+        <label className="mb-2 block font-mono text-[11px] uppercase tracking-[0.3em] text-dim">
           Infrastructure condition
         </label>
         <div className="grid grid-cols-2 gap-px border border-slate2/60 bg-slate2/40 sm:grid-cols-3">
@@ -95,7 +95,7 @@ export default function ReportStep3Classify({ data, onChange }) {
               key={c.value}
               type="button"
               onClick={() => onChange({ condition: c.value })}
-              className={`px-3 py-2.5 font-mono text-[10px] font-bold uppercase tracking-[0.12em] transition-colors ${data.condition === c.value ? 'bg-ozone text-void' : 'bg-card text-darkgray hover:text-silver'}`}
+              className={`px-3 py-2.5 font-mono text-[11px] font-bold uppercase tracking-[0.12em] transition-colors ${data.condition === c.value ? 'bg-ozone text-void' : 'bg-card text-darkgray hover:text-silver'}`}
             >
               {c.label}
             </button>
@@ -105,8 +105,8 @@ export default function ReportStep3Classify({ data, onChange }) {
 
       {/* Field notes */}
       <div>
-        <label className="mb-2 block font-mono text-[10px] uppercase tracking-[0.3em] text-dim">
-          Field notes <span className="text-dim/50">(optional)</span>
+        <label className="mb-2 block font-mono text-[11px] uppercase tracking-[0.3em] text-dim">
+          Field notes <span className="text-dim">(optional)</span>
         </label>
         <textarea
           value={data.notes}

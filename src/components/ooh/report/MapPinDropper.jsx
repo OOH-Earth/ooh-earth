@@ -297,7 +297,7 @@ export default function MapPinDropper({
             )}
           </>
         ) : (
-          <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-flare/70">
+          <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-flare">
             // awaiting coordinates…
           </span>
         )}
