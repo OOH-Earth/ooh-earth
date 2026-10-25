@@ -52,7 +52,7 @@ export default function MapBottomSheet({
     const root = document.documentElement;
     const read = () => {
       const v = parseFloat(root.style.getPropertyValue('--ooh-nudge-clearance'));
-      setLift(Number.isFinite(v) && v > 0 ? Math.max(0, Math.ceil(v) - 6) : 0);
+      setLift(Number.isFinite(v) && v > 0 ? Math.ceil(v) + 6 : 0);
     };
     read();
     if (typeof MutationObserver === 'undefined') return undefined;

@@ -522,6 +522,13 @@ for (const [w, h] of NUDGE_VIEWPORTS) {
           probe.nav.y + 0.5,
         );
       }
+      if (probe.sheet) {
+        // bounds, not just hit-tests: the sheet's top edge may not sit under the nudge either
+        expect(
+          probe.sheet.y + probe.sheet.h,
+          'sheet bottom is above the nudge top',
+        ).toBeLessThanOrEqual(nb.y + 0.5);
+      }
       const covered = probe.items.filter((i) => i.hit !== 'ok' && i.hit !== 'inert');
       expect(covered, 'controls covered by the nudge').toEqual([]);
       expect(probe.hScroll).toBe(false);
