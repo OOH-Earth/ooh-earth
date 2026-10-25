@@ -50,6 +50,7 @@ export default function PortalShell({
       {unavailableNote ? (
         <div
           role="status"
+          data-testid="layer-unavailable"
           className="p-6 text-center font-mono text-[10px] uppercase leading-relaxed tracking-[0.2em] text-dim"
         >
           {unavailableNote}
