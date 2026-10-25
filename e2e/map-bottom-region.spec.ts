@@ -273,3 +273,22 @@ for (const [w, h] of [
     });
   });
 }
+
+test.describe('sheet focus handoff @ 390x844', () => {
+  test.use({ viewport: { width: 390, height: 844 }, hasTouch: true });
+
+  test('Expand then Collapse keep keyboard focus inside the sheet and the map is usable again', async ({
+    page,
+  }) => {
+    test.setTimeout(90_000);
+    await openMapWithMock(page, { view: 'flat' });
+    const sheet = page.locator('.ooh-bottom-sheet');
+    await sheet.getByRole('button', { name: 'Expand sheet' }).click();
+    await expect(sheet.getByRole('button', { name: 'Collapse sheet' })).toBeFocused();
+    await sheet.getByRole('button', { name: 'Collapse sheet' }).click();
+    await expect(sheet.getByRole('button', { name: 'Expand sheet' })).toBeFocused();
+    const map = page.locator('[data-tour="map"]');
+    await expect(map).toHaveAttribute('data-map-covered', 'false');
+    await expect(map).not.toHaveJSProperty('inert', true);
+  });
+});

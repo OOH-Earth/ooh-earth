@@ -47,6 +47,16 @@ export default function MapBottomSheet({
   // ContextualNudge (fixed, bottom-centre, shared) publishes its height as --ooh-nudge-clearance
   // while it is visible. Stack the sheet above it instead of under it, so the header controls stay
   // reachable; the sheet drops back when the nudge goes away.
+  const rootRef = useRef(null);
+  const pendingFocus = useRef(null);
+  // Expand/Collapse swap which button is rendered, so the focused one unmounts. Hand focus to its
+  // counterpart so keyboard and screen-reader users are not dropped on <body>.
+  useEffect(() => {
+    const label = pendingFocus.current;
+    if (!label) return;
+    pendingFocus.current = null;
+    rootRef.current?.querySelector(`[aria-label="${label}"]`)?.focus();
+  }, [snap]);
   const [lift, setLift] = useState(0);
   useEffect(() => {
     const root = document.documentElement;
@@ -134,6 +144,7 @@ export default function MapBottomSheet({
 
   return (
     <div
+      ref={rootRef}
       className={`ooh-bottom-sheet lg:hidden fixed inset-x-0 z-[1100] flex flex-col border-t border-ozone/30 bg-void/95 backdrop-blur-xl shadow-[0_-8px_32px_rgba(0,0,0,0.6)] ${fullscreen ? 'bottom-0' : 'bottom-[calc(76px+env(safe-area-inset-bottom))]'}`}
       style={{
         height: currentH,
@@ -184,7 +195,10 @@ export default function MapBottomSheet({
             )}
             {!toolsMode && !detailMode && snap !== 'full' && (
               <button
-                onClick={() => onSnapChange('full')}
+                onClick={() => {
+                  pendingFocus.current = 'Collapse sheet';
+                  onSnapChange('full');
+                }}
                 aria-label="Expand sheet"
                 className="flex h-10 w-10 items-center justify-center text-dim transition-colors hover:text-ozone"
               >
@@ -193,7 +207,10 @@ export default function MapBottomSheet({
             )}
             {!toolsMode && !detailMode && snap !== 'peek' && (
               <button
-                onClick={() => onSnapChange('peek')}
+                onClick={() => {
+                  pendingFocus.current = 'Expand sheet';
+                  onSnapChange('peek');
+                }}
                 aria-label="Collapse sheet"
                 className="flex h-10 w-10 items-center justify-center text-dim transition-colors hover:text-ozone"
               >
