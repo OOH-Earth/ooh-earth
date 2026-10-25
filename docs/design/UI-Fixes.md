@@ -80,6 +80,10 @@ baseline passes on the candidate; it is not a production claim.
 | UI-015 | `/map` Tools panel | Medium (a11y) | Collapsing the tally swaps one button for another, so keyboard focus fell to `<body>` and Escape stopped reaching the panel | Fixed locally (commit 3): focus handed to the new toggle; Escape handled at the document |
 | UI-016 | `/map` ticker | Medium | Offer/loading states used a fixed `h-8`; the label wrapped to five lines at 320px and overflowed onto the controls above; the dismiss target was 24x14px | Fixed locally (commit 3): bar grows (`min-h`), dismiss 40px |
 | UI-017 | all routes at 320px | Medium | The shared bottom nav pill is clipped at both edges at 320px on `main`. **Fixed on the production line by #371** (`MobileBottomTabs` `max-w` + `shrink`), which is not on `main` | **Blocked**: shared file, peer/production-line owned |
+| UI-018 | `/report` | Medium (a11y) | The four help-hint buttons (`TerminalTooltip`) were 14x14px (WCAG 2.5.8 minimum is 24px); search input had no accessible name; recenter button 20px with only a `title`; hints could not be dismissed with Escape (WCAG 1.4.13) | Fixed locally (commit 5121484): 24px hint buttons, tap toggle, Escape; named input; 32px recenter; `min-h-8` on Locate me and the map link. Shared `TerminalTooltip` has 4 consumers, all on `/report`/pin-drop |
+| UI-019 | `/report` | Medium | Form labels, step tabs, chips, photo-picker tiles and hints at 7-9px | Fixed locally (commit 5121484): all `/report`-only components raised to the 10px Label step (also `MultiPhotoUpload`, shared with QuickCapture: text size only). Shared header/footer/nudge text under 10px remains (UI-012 slice) |
+| UI-020 | `/report` validation | High | Submitting from step 4 without GPS jumps to step 1 and raises the error with no scroll, focus or `role=alert`: at 844x390 it sat at y=612 in a 390px viewport (invisible), and in every viewport focus stayed on the old button | Fixed locally (commit 5121484): focused `role=alert` region scrolled into view; asserted at 390x844, 320x640, 844x390, 1280x720 |
+| UI-021 | `/` (Home) | Medium | On `main`, the Home bottom nudge (z-70, y 684-756) paints over the Live feed / ON AIR strip (y 748) at 390x844 (`before-home-390x844.jpg`). Primary action (Explore the map) and hierarchy are clear; no horizontal scroll at 320-1440 | **Not duplicated here**: fixed on the production line by #371 (`f062e0d`); needs the coordinated forward-port. Home otherwise audited at 5 viewports with no further defect worth a change |
 
 ## 5. Before / after (measured)
 
@@ -204,4 +208,33 @@ Final SHAs: see section 9.
 - Remaining sub-10px labels exist outside the map surfaces touched here.
 - Not available: real browser zoom, real iOS Safari/Android, virtual-keyboard behaviour. Reduced-motion
   was not separately exercised.
-- Routes not yet audited: Home, `/report`, dashboard/detail, scanners.
+- Routes audited: `/map` (fixed), `/report` (fixed, UI-018..020), Home (UI-021, deferred to the #371 forward-port). Not audited: dashboard/detail, scanners, `/plans`, others.
+- `/report` forward-port to the production line conflicts: `FieldProtocolGuide.jsx` and `ReportStep1Document.jsx` were edited there by the R1 copy corrections (`git merge-tree` of `f062e0d`). My hunks are size-class changes only; resolve by keeping the production copy and re-applying the 10px class.
+
+## 9. Integration branch and final commits
+
+Integration target: `origin/main` @ `065ecf8` (checked 2026-10-25). Production maintenance line
+`maintenance/production-2026-10-02` @ `f062e0d` has diverged (main 30 commits ahead, production 7 ahead,
+merge base `3161728`); main lacks #371, so the Home/nudge/bottom-nav fixes are **not** on main. The
+evidence branch is untouched; `ui/integration-main` replays the same commits on `main` without
+rewriting it.
+
+| Branch | SHA | Content |
+| --- | --- | --- |
+| `ui/simplify-map-overlays` (evidence, base `e1b979d`) | `52e9f12` | measured map overlay flow |
+| | `61ec546` | toast containers pass clicks |
+| | `bbd9dd5` | single bottom owner + compact map chrome |
+| | `50f6cce` | standards, ledger, evidence |
+| `ui/integration-main` (base `065ecf8`) | `900ade0`, `6406ee8`, `e92a260` | the three code commits replayed cleanly |
+| | `82b7ef3` | docs (replay; no conflict with the engineering section) |
+| | `bb8071c` | engineering docs now point at the landed standards/ledger; evidence JSON formatted |
+| | `5121484` | `/report` fixes + `report-form-clarity.spec.ts` |
+| | (this ledger edit) | reported in the delivery message |
+
+Checks on the integrated build (Chromium headless-shell 1223, preview of a fresh `npm run build`):
+`eslint . --quiet` clean; `prettier --check` clean for tracked files; map/toast specs 74 passed + 1
+skipped (the UI-011 `test.fixme` stays: not resolved); Report-related set 71 passed + 1 intermittent
+(`offline-queue-retry` "does not block a different item": 5/5 pass on both baseline and integration
+when repeated); `report-form-clarity` 18/18 on the fix and 9/9 failing on the `e1b979d` build.
+Evidence: `docs/design/evidence/ui-fixes-3/` (before/after `/report` at 390x844, 320x640, 844x390,
+error state, Home before).
