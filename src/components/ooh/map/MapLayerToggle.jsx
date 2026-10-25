@@ -107,7 +107,8 @@ export default function MapLayerToggle({ activeLayers, onToggle, hiddenLayerIds 
               <button
                 key={l.id}
                 onClick={() => !unavailable && onToggle(l.id)}
-                disabled={unavailable}
+                aria-disabled={unavailable || undefined}
+                aria-label={unavailable ? `${l.label} (unavailable)` : undefined}
                 title={unavailable ? UNSUPPORTED_LAYER_NOTE : undefined}
                 className={`flex shrink-0 items-center gap-1.5 border px-2.5 py-1 font-mono text-[9px] font-bold uppercase tracking-[0.12em] transition-colors ${
                   unavailable

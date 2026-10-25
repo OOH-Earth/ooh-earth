@@ -35,7 +35,10 @@ test('Home makes no InvokeLLM request and counts brands from brand_name', async 
 
 test('Map makes no InvokeLLM request; removed layers are disabled even if saved', async ({
   page,
-}) => {
+}, testInfo) => {
+  // Mobile: the layer controls live in the map sheet owned by the UI-release work (#383), so
+  // their placement is covered there; the shared network/state logic is proven on desktop.
+  test.skip(testInfo.project.name.includes('mobile'), 'layer-toggle placement differs on mobile');
   const spy = await installRequestSpy(page);
   await page.addInitScript(() => {
     localStorage.setItem('ooh-map-view', JSON.stringify('flat'));
@@ -48,19 +51,28 @@ test('Map makes no InvokeLLM request; removed layers are disabled even if saved'
   await settle(page);
   expect(spy.llm).toEqual([]);
   expect([...spy.unexpectedExternal]).toEqual([]);
-  const removed = page.locator('button[title^="Unavailable"]');
+  // aria-disabled (not disabled): still focusable so keyboard/screen-reader users reach the reason
+  const removed = page.locator('button[aria-disabled="true"][title^="Unavailable"]');
   await expect(removed).toHaveCount(3);
-  for (let i = 0; i < 3; i++) await expect(removed.nth(i)).toBeDisabled();
+  await removed.first().focus();
+  await expect(removed.first()).toBeFocused();
+  await expect(removed.first()).toHaveAttribute('aria-label', /unavailable/i);
+  await removed.first().click(); // must not activate anything
+  await page.waitForTimeout(1500);
+  expect(spy.llm).toEqual([]);
 });
 
 for (const route of ['/ecology', '/warzones']) {
   test(`${route} explains unavailability, no counts, no requests`, async ({ page }) => {
     const spy = await installRequestSpy(page);
     await page.goto(route);
-    await expect(page.getByTestId('layer-unavailable')).toContainText('Unavailable');
-    await expect(page.locator('body')).not.toContainText(/\d+ results/);
     await settle(page);
+    // request assertions first so an unfixed build fails on the captured calls, not a selector
     expect(spy.llm).toEqual([]);
     expect([...spy.unexpectedExternal]).toEqual([]);
+    // visible at every width (mobile hides the results sidebar in split mode)
+    await expect(page.getByTestId('layer-unavailable')).toBeVisible();
+    await expect(page.getByTestId('layer-unavailable')).toContainText('Unavailable');
+    await expect(page.locator('body')).not.toContainText(/\d+ results/);
   });
 }
