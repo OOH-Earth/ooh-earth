@@ -35,8 +35,8 @@ import UnitFinder from '@/components/ooh/UnitFinder';
 import QuickCapture from '@/components/ooh/QuickCapture';
 import GraffitiCamera from '@/components/ooh/GraffitiCamera';
 import Globe3D from '@/components/ooh/Globe3D';
-import MapAlertTicker from '@/components/ooh/map/MapAlertTicker';
 import MapLayerToggle, { DEFAULT_LAYERS } from '@/components/ooh/map/MapLayerToggle';
+import { withoutUnsupportedLayers } from '@/components/ooh/map/layers/unsupportedLayers';
 import PullToRefresh from '@/components/ooh/PullToRefresh';
 import ClaimLeadDialog from '@/components/ooh/map/ClaimLeadDialog';
 import SpecsBar from '@/components/ooh/uikit/pinlab/SpecsBar';
@@ -150,7 +150,9 @@ export default function Map() {
   const { startTour, registerSteps } = useWalkthrough();
   const [finderOpen, setFinderOpen] = useState(false);
   const [flyTo, setFlyTo] = useState(null);
-  const [activeLayers, setActiveLayers] = usePersistentState('ooh-map-layers-v2', DEFAULT_LAYERS);
+  const [storedLayers, setActiveLayers] = usePersistentState('ooh-map-layers-v2', DEFAULT_LAYERS);
+  // Persisted selections may still name layers that were removed (see unsupportedLayers.js).
+  const activeLayers = useMemo(() => withoutUnsupportedLayers(storedLayers), [storedLayers]);
   const [layerFilter, setLayerFilter] = useState('all');
   const [attentionMode, setAttentionMode] = usePersistentState('ooh-map-attention-mode', false);
   const [attentionFilter, setAttentionFilter] = useState(
@@ -1152,9 +1154,7 @@ export default function Map() {
                 that adds another ~36px below the toggle. */}
             <div
               className={`pointer-events-none absolute left-3 right-3 z-[900] ${attentionMode ? 'top-36 landscape:top-48' : 'top-24 landscape:top-40'}`}
-            >
-              <MapAlertTicker />
-            </div>
+            ></div>
             {view === 'flat' && (
               <div className="pointer-events-none absolute inset-x-0 bottom-0 z-[900]">
                 <SpecsBar counts={counts} total={raw?.markers?.length || 0} />

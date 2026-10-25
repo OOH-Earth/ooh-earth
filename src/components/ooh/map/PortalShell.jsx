@@ -29,6 +29,7 @@ export default function PortalShell({
   onRefresh = null,
   mapActions = null,
   live = undefined,
+  unavailableNote = null,
 }) {
   const [selectedId, setSelectedId] = useState(null);
   const [hoverId, setHoverId] = useState(null);
@@ -46,7 +47,14 @@ export default function PortalShell({
 
   const resultsContent = (
     <div className="space-y-px">
-      {loading ? (
+      {unavailableNote ? (
+        <div
+          role="status"
+          className="p-6 text-center font-mono text-[10px] uppercase leading-relaxed tracking-[0.2em] text-dim"
+        >
+          {unavailableNote}
+        </div>
+      ) : loading ? (
         <div className="p-6 text-center font-mono text-[10px] uppercase tracking-[0.25em] text-dim">
           // Loading…
         </div>
@@ -76,7 +84,7 @@ export default function PortalShell({
         </span>
         {loading && <Loader2 className="h-3 w-3 animate-spin text-dim" />}
         <span className="font-mono text-[9px] uppercase tracking-[0.2em] text-dim">
-          {results.length} results
+          {unavailableNote ? 'unavailable' : `${results.length} results`}
         </span>
         {live !== undefined && (
           <span
@@ -154,7 +162,7 @@ export default function PortalShell({
         <div className={`min-h-0 flex-col border-r border-slate2/60 ${cardsClass}`}>
           <div className="flex items-center justify-between border-b border-slate2/60 px-4 py-2">
             <span className="font-mono text-[10px] uppercase tracking-[0.25em] text-dim">
-              // {results.length} results
+              // {unavailableNote ? 'unavailable' : `${results.length} results`}
             </span>
           </div>
           {onRefresh ? (
