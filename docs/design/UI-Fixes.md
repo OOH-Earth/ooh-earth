@@ -408,3 +408,34 @@ re-runs its checks. `MapAlertTicker.jsx` is deleted in a follow-up.
   above it, no nudge, all controls topmost); earlier on 6f25eab: Expand/Collapse focus handoff by mouse and keyboard
   (Enter), 320px Home (nav pill 8-312, 7 buttons inside the viewport, nudge 447-552 vs nav 564, live feed above the
   nudge: #371 intact).
+
+## 12. Production release record (2026-10-26)
+
+**Scope:** frontend only. No entities, functions, data, permissions or configuration changed.
+
+| Item | Value |
+| --- | --- |
+| PR | #383, squash-merged into `maintenance/production-2026-10-02` |
+| Merged SHA | `f63fdb1` (tree `c860f5d…`, identical to the CI-green PR head `9749669`; no app source, dependency or build-input change) |
+| Review | Owner approval was given in the session. No GitHub review record exists and the branch is unprotected. |
+| Artifact | Production build with app id `6a62213cff3ccbca88c04ff5`, entry `index-GursbtQf.js`, 374 files; hashes in the release records |
+| Deployed | `base44@0.1.14 site deploy --no-build`, frontend only, the exact built `dist` (verified unchanged before promotion) |
+| Served check | 373 of 373 non-sitemap files match the release hashes, 0 diffs |
+| Previous live | `f062e0d`, entry `index-CN5akOBi.js`. Verified 373 of 373 against the saved copy immediately before deploy. |
+
+**Checks.** Full CI on the identical tree was green. On the production-id build, the focused map and Report specs ran with supplemental Chromium 148:
+- First attempt: 56 passed and 29 failed, all in the `chromium` project. The errors were `ERR_NETWORK_CHANGED`, pages not rendering and timeouts under parallel load. The log is preserved separately.
+- Serial rerun: Report spec 9 of 9 and map specs 76 of 76 passed. A passing rerun does not prove the first-attempt failures were harmless, so this is recorded as the intermittent host-network pattern in issue #373.
+
+**Live read-only smoke (390×844 emulated, Chrome 155).** I used keyboard interaction because tap clicks timed out in the isolated tab.
+- Anonymous (isolated context) and MEMBER (`justicejonas`, shown in the account menu): entry bundle correct; the mobile nav sits at y=768 with the sheet header above it.
+- Sheet: Expand moves focus to "Collapse sheet" (on screen) and Collapse returns focus to "Expand sheet".
+- Tools: opens with focus in the panel, Escape closes it and returns focus to Tools, and it reopens.
+- Map controls: zoom-in is 36px tall and attribution sits at y=601–625, clear of the sheet.
+- Report: the hint opens on focus and Escape closes it (24px target). Continue advanced step 1 to 2 client-side.
+- Not exercised: the nudge did not appear in these sessions, so nudge clearance wasn't checked live. The Report step 4 validation alert wasn't triggered, since it requires a submit attempt. Neither was forced.
+- One 429 on an unidentified resource appeared in the MEMBER Report console.
+
+**Accepted limitations (follow-up ledger).** Real 200% and 400% browser zoom; physical phone and virtual keyboard; a real backend-error Retry run; the stray BACKUP Location `6ade5b174365beea2ccd1286` pending decision; UI-027 sheet-shift decision; UI-028 (0,0 coordinates accepted); the Chrome 153 WebGL2 hang on WSL2.
+
+**Rollback.** The saved current-live copy is `~/ooh-release-records/2026-10-25/live-f062e0d-dist` (373 files; hashes in `live-f062e0d-sha256.txt`). Restore means deploying that directory with the same CLI command and `--no-build`. It was not executed. The older R1M3 directory must not be used.
