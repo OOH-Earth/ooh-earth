@@ -96,16 +96,16 @@ export default function FieldProtocolGuide() {
             <BookOpen className="h-3.5 w-3.5 text-ozone" />
           </div>
           <div className="text-left">
-            <div className="font-mono text-[9px] uppercase tracking-[0.3em] text-ozone">
+            <div className="font-mono text-[10px] uppercase tracking-[0.3em] text-ozone">
               Field Protocol 01
             </div>
-            <div className="font-mono text-[8px] uppercase tracking-[0.2em] text-dim">
+            <div className="font-mono text-[10px] uppercase tracking-[0.2em] text-dim">
               Safety & Field Manual
             </div>
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <span className="hidden font-mono text-[8px] uppercase tracking-[0.2em] text-dim sm:inline">
+          <span className="hidden font-mono text-[10px] uppercase tracking-[0.2em] text-dim sm:inline">
             {open ? 'Close manual' : 'Open manual'}
           </span>
           <ChevronDown
@@ -119,7 +119,7 @@ export default function FieldProtocolGuide() {
         <div className="border-t border-slate2/60">
           {/* Manual intro strip */}
           <div className="border-b border-slate2/60 bg-void px-4 py-2.5">
-            <p className="font-mono text-[9px] uppercase tracking-[0.15em] text-dim">
+            <p className="font-mono text-[10px] uppercase tracking-[0.15em] text-dim">
               // Read before deployment · 4-step field protocol for documenting OOH advertising
             </p>
           </div>
@@ -173,7 +173,7 @@ export default function FieldProtocolGuide() {
                       {step.tips.map((t, ti) => (
                         <div key={ti} className="flex items-start gap-2">
                           <span className={`mt-1 h-1 w-1 shrink-0 ${COLOR[step.color].dot}`} />
-                          <span className="font-mono text-[8px] uppercase tracking-[0.1em] text-dim">
+                          <span className="font-mono text-[10px] uppercase tracking-[0.1em] text-dim">
                             {t}
                           </span>
                         </div>
@@ -187,13 +187,13 @@ export default function FieldProtocolGuide() {
 
           {/* Manual footer */}
           <div className="flex items-center justify-between border-t border-slate2/60 bg-void px-4 py-2.5">
-            <span className="font-mono text-[8px] uppercase tracking-[0.2em] text-dim">
+            <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-dim">
               OOH Earth · Field Protocol v01
             </span>
             <button
               type="button"
               onClick={() => setOpen(false)}
-              className="inline-flex items-center gap-1 font-mono text-[8px] font-bold uppercase tracking-[0.2em] text-ozone transition-colors hover:opacity-70"
+              className="inline-flex items-center gap-1 font-mono text-[10px] font-bold uppercase tracking-[0.2em] text-ozone transition-colors hover:opacity-70"
             >
               <Check className="h-3 w-3" /> Got it
             </button>

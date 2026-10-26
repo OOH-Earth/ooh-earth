@@ -88,7 +88,7 @@ Respond in JSON only.`,
         <div className="border border-ozone/30 bg-ozone/5 p-4">
           <div className="flex items-start justify-between gap-4">
             <div>
-              <div className="font-mono text-[10px] uppercase tracking-[0.25em] text-ozone">
+              <div className="font-mono text-[11px] uppercase tracking-[0.25em] text-ozone">
                 AI brand scanner
               </div>
               {data.ai_scanned && !detected ? (
@@ -102,12 +102,12 @@ Respond in JSON only.`,
                 </p>
               )}
               {detected?.error && (
-                <p className="mt-1 font-mono text-[10px] text-flare">
+                <p className="mt-1 font-mono text-[11px] text-flare">
                   Detection failed — fill manually below.
                 </p>
               )}
               {detected && !detected.error && (
-                <p className="mt-1 font-mono text-[10px] text-ozone">
+                <p className="mt-1 font-mono text-[11px] text-ozone">
                   ✓ Detection applied — review and correct below.
                 </p>
               )}
@@ -116,7 +116,7 @@ Respond in JSON only.`,
               type="button"
               onClick={aiDetect}
               disabled={detecting}
-              className={`flex shrink-0 items-center gap-2 px-4 py-2.5 font-mono text-[10px] font-bold uppercase tracking-[0.2em] transition-colors disabled:opacity-40 ${
+              className={`flex shrink-0 items-center gap-2 px-4 py-2.5 font-mono text-[11px] font-bold uppercase tracking-[0.2em] transition-colors disabled:opacity-40 ${
                 data.ai_scanned && !detected
                   ? 'border border-ozone/40 text-ozone hover:bg-ozone/10'
                   : 'bg-ozone text-void hover:bg-flare'
@@ -135,7 +135,7 @@ Respond in JSON only.`,
 
       {/* Brand */}
       <div>
-        <label className="mb-2 block font-mono text-[10px] uppercase tracking-[0.3em] text-dim">
+        <label className="mb-2 block font-mono text-[11px] uppercase tracking-[0.3em] text-dim">
           Brand / Advertiser
         </label>
         <input
@@ -148,8 +148,8 @@ Respond in JSON only.`,
 
       {/* Campaign */}
       <div>
-        <label className="mb-2 block font-mono text-[10px] uppercase tracking-[0.3em] text-dim">
-          Campaign / Tagline <span className="text-dim/50">(optional)</span>
+        <label className="mb-2 block font-mono text-[11px] uppercase tracking-[0.3em] text-dim">
+          Campaign / Tagline <span className="text-dim">(optional)</span>
         </label>
         <input
           value={data.campaign_name}
@@ -161,8 +161,8 @@ Respond in JSON only.`,
 
       {/* Parent corp */}
       <div>
-        <label className="mb-2 block font-mono text-[10px] uppercase tracking-[0.3em] text-dim">
-          Parent / Holding company <span className="text-dim/50">(optional)</span>
+        <label className="mb-2 block font-mono text-[11px] uppercase tracking-[0.3em] text-dim">
+          Parent / Holding company <span className="text-dim">(optional)</span>
         </label>
         <input
           value={data.parent_corp}
@@ -180,10 +180,10 @@ Respond in JSON only.`,
 
       {/* OOH Operator */}
       <div>
-        <label className="mb-2 block font-mono text-[10px] uppercase tracking-[0.3em] text-dim">
-          OOH structure owner <span className="text-dim/50">(optional)</span>
+        <label className="mb-2 block font-mono text-[11px] uppercase tracking-[0.3em] text-dim">
+          OOH structure owner <span className="text-dim">(optional)</span>
         </label>
-        <p className="mb-2 font-mono text-[9px] text-dim/60">
+        <p className="mb-2 font-mono text-[11px] text-dim">
           The company that owns the physical ad infrastructure — not the ad agency.
         </p>
         <div className="mb-2 flex flex-wrap gap-1.5">
@@ -192,7 +192,7 @@ Respond in JSON only.`,
               key={op}
               type="button"
               onClick={() => onChange({ ooh_operator: op })}
-              className={`px-2.5 py-1 font-mono text-[9px] font-bold uppercase tracking-[0.15em] transition-colors border ${data.ooh_operator === op ? 'border-ozone bg-ozone/10 text-ozone' : 'border-slate2 text-darkgray hover:border-ozone/50'}`}
+              className={`px-2.5 py-1 font-mono text-[11px] font-bold uppercase tracking-[0.15em] transition-colors border ${data.ooh_operator === op ? 'border-ozone bg-ozone/10 text-ozone' : 'border-slate2 text-darkgray hover:border-ozone/50'}`}
             >
               {op}
             </button>
@@ -212,7 +212,7 @@ Respond in JSON only.`,
         </datalist>
         <Link
           to="/media-corps"
-          className="mt-1.5 inline-flex items-center gap-1 font-mono text-[9px] uppercase tracking-[0.15em] text-ozone/70 transition-colors hover:text-ozone"
+          className="mt-1.5 inline-flex items-center gap-1 font-mono text-[11px] uppercase tracking-[0.15em] text-ozone/70 transition-colors hover:text-ozone"
         >
           <MapPin className="h-2.5 w-2.5" /> View the Media Corps map
         </Link>
@@ -220,8 +220,8 @@ Respond in JSON only.`,
 
       {/* Ad Agency */}
       <div>
-        <label className="mb-2 block font-mono text-[10px] uppercase tracking-[0.3em] text-dim">
-          Ad agency (creative) <span className="text-dim/50">(optional)</span>
+        <label className="mb-2 block font-mono text-[11px] uppercase tracking-[0.3em] text-dim">
+          Ad agency (creative) <span className="text-dim">(optional)</span>
         </label>
         <input
           value={data.ad_agency}
@@ -240,7 +240,7 @@ Respond in JSON only.`,
             href="https://cleancreatives.org/f-list"
             target="_blank"
             rel="noreferrer"
-            className="inline-flex items-center gap-1 font-mono text-[9px] uppercase tracking-[0.15em] text-ozone/70 transition-colors hover:text-ozone"
+            className="inline-flex items-center gap-1 font-mono text-[11px] uppercase tracking-[0.15em] text-ozone/70 transition-colors hover:text-ozone"
           >
             <ExternalLink className="h-2.5 w-2.5" /> Clean Creatives F-List (Worldwide)
           </a>
@@ -248,7 +248,7 @@ Respond in JSON only.`,
             href="https://cleancreatives.org/asia-f-list"
             target="_blank"
             rel="noreferrer"
-            className="inline-flex items-center gap-1 font-mono text-[9px] uppercase tracking-[0.15em] text-ozone/70 transition-colors hover:text-ozone"
+            className="inline-flex items-center gap-1 font-mono text-[11px] uppercase tracking-[0.15em] text-ozone/70 transition-colors hover:text-ozone"
           >
             <ExternalLink className="h-2.5 w-2.5" /> F-List Asia
           </a>
@@ -257,7 +257,7 @@ Respond in JSON only.`,
 
       {/* Industry sector */}
       <div>
-        <label className="mb-2 block font-mono text-[10px] uppercase tracking-[0.3em] text-dim">
+        <label className="mb-2 block font-mono text-[11px] uppercase tracking-[0.3em] text-dim">
           Industry sector
         </label>
         <div className="grid grid-cols-2 gap-px border border-slate2/60 bg-slate2/40 sm:grid-cols-3">
@@ -266,7 +266,7 @@ Respond in JSON only.`,
               key={s.value}
               type="button"
               onClick={() => onChange({ industry_sector: s.value })}
-              className={`px-3 py-2.5 font-mono text-[9px] font-bold uppercase tracking-[0.15em] transition-colors ${data.industry_sector === s.value ? 'bg-ozone text-void' : 'bg-card text-darkgray hover:text-silver'}`}
+              className={`px-3 py-2.5 font-mono text-[11px] font-bold uppercase tracking-[0.15em] transition-colors ${data.industry_sector === s.value ? 'bg-ozone text-void' : 'bg-card text-darkgray hover:text-silver'}`}
             >
               {s.label}
             </button>

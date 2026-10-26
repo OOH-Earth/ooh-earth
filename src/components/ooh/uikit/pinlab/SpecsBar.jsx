@@ -20,7 +20,30 @@ function HexIcon({ className }) {
   );
 }
 
-export default function SpecsBar({ counts = {}, total = 0, className = '' }) {
+// Pin-key legend row (key glyphs + spot total). Split out so compact map chrome can show it inside
+// the Tools disclosure instead of as a second strip over the map.
+export function SpecsLegend({ total = 0 }) {
+  return (
+    <div className="pointer-events-none flex items-center gap-2 border border-t-0 border-[#00FF00]/40 bg-black/90 px-2 py-1">
+      <span className="font-mono text-[10px] font-bold uppercase tracking-[0.2em] text-[#00FF00]">
+        Keys
+      </span>
+      <div className="flex items-center gap-1 border border-[#00FF00]/40 px-1.5 py-0.5">
+        <KeyGlyph slug="h60" className="h-3 w-3 text-[#00FF00]" />
+        <span className="font-mono text-[10px] font-bold text-[#00FF00]">H60</span>
+      </div>
+      <div className="flex items-center gap-1 border border-[#00FF00]/40 px-1.5 py-0.5">
+        <HexIcon className="h-3 w-3 text-[#00FF00]" />
+        <span className="font-mono text-[10px] font-bold text-[#00FF00]">TX30</span>
+      </div>
+      <span className="ml-auto font-mono text-[10px] uppercase tracking-[0.2em] text-[#00FF00]/70">
+        {total} spots
+      </span>
+    </div>
+  );
+}
+
+export default function SpecsBar({ counts = {}, total = 0, className = '', showLegend = true }) {
   return (
     <div className={`pointer-events-none select-none ${className}`}>
       {/* category tally — dark grey (#333) */}
@@ -34,7 +57,7 @@ export default function SpecsBar({ counts = {}, total = 0, className = '' }) {
             >
               <Icon className="h-3 w-3 text-ozone" />
               <span className="font-mono text-[11px] font-bold tabular-nums text-silver">{n}</span>
-              <span className="hidden font-mono text-[8px] uppercase tracking-[0.15em] text-dim sm:inline">
+              <span className="hidden font-mono text-[10px] uppercase tracking-[0.15em] text-dim sm:inline">
                 {label}
               </span>
             </div>
@@ -42,23 +65,7 @@ export default function SpecsBar({ counts = {}, total = 0, className = '' }) {
         })}
       </div>
 
-      {/* utility — neon green (#00FF00) key standard */}
-      <div className="flex items-center gap-2 border border-t-0 border-[#00FF00]/40 bg-black/90 px-2 py-1">
-        <span className="font-mono text-[8px] font-bold uppercase tracking-[0.2em] text-[#00FF00]">
-          Keys
-        </span>
-        <div className="flex items-center gap-1 border border-[#00FF00]/40 px-1.5 py-0.5">
-          <KeyGlyph slug="h60" className="h-3 w-3 text-[#00FF00]" />
-          <span className="font-mono text-[8px] font-bold text-[#00FF00]">H60</span>
-        </div>
-        <div className="flex items-center gap-1 border border-[#00FF00]/40 px-1.5 py-0.5">
-          <HexIcon className="h-3 w-3 text-[#00FF00]" />
-          <span className="font-mono text-[8px] font-bold text-[#00FF00]">TX30</span>
-        </div>
-        <span className="ml-auto font-mono text-[8px] uppercase tracking-[0.2em] text-[#00FF00]/60">
-          {total} spots
-        </span>
-      </div>
+      {showLegend && <SpecsLegend total={total} />}
     </div>
   );
 }

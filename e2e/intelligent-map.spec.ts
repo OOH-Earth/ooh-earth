@@ -1,5 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { mockBase44, filterCrashes } from './fixtures/mockBase44';
+import { openMapTools } from './helpers/mapGeometry';
 
 test.describe('Intelligent Map — bounded field attention mode', () => {
   test('shows deterministic attention controls and selected reasons without provider fanout', async ({
@@ -34,6 +35,7 @@ test.describe('Intelligent Map — bounded field attention mode', () => {
     });
     await page.goto('/map');
     await page.getByRole('button', { name: 'Flat map' }).dispatchEvent('click');
+    await openMapTools(page);
     const toggle = page.getByTestId('field-attention-toggle');
     await expect(toggle).toBeVisible({ timeout: 10_000 });
     await toggle.dispatchEvent('click');

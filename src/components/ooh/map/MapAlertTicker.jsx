@@ -33,7 +33,7 @@ function Row({ items }) {
             {it.title}
           </span>
           {it.source && (
-            <span className="font-mono text-[8px] uppercase tracking-[0.2em] text-dim">
+            <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-dim">
               · {it.source}
             </span>
           )}
@@ -105,9 +105,9 @@ export default function MapAlertTicker({ onClose = null }) {
 
   if (loading) {
     return (
-      <div className="pointer-events-auto flex h-8 items-center gap-2 border border-slate2/60 bg-void/90 px-4 backdrop-blur-md">
+      <div className="pointer-events-auto flex min-h-8 items-center py-1 gap-2 border border-slate2/60 bg-void/90 px-4 backdrop-blur-md">
         <Loader2 className="h-3 w-3 animate-spin text-ozone" />
-        <span className="font-mono text-[9px] uppercase tracking-[0.25em] text-dim">
+        <span className="font-mono text-[10px] uppercase tracking-[0.25em] text-dim">
           // acquiring alert feed…
         </span>
       </div>
@@ -119,7 +119,7 @@ export default function MapAlertTicker({ onClose = null }) {
   const hasFlash = items.some((it) => it.severity === 'flash');
 
   return (
-    <div className="pointer-events-auto relative flex h-8 w-full items-center gap-2 border border-slate2/60 bg-void/90 backdrop-blur-md">
+    <div className="pointer-events-auto relative flex min-h-8 w-full items-center gap-2 border border-slate2/60 bg-void/90 backdrop-blur-md">
       <span
         className={`flex shrink-0 items-center gap-1.5 border-r border-slate2/60 px-3 ${
           hasFlash ? 'text-flare' : 'text-ozone'
@@ -130,7 +130,7 @@ export default function MapAlertTicker({ onClose = null }) {
         ) : (
           <Radio className="h-3 w-3 animate-pulse" />
         )}
-        <span className="font-mono text-[8px] font-bold uppercase tracking-[0.25em]">
+        <span className="font-mono text-[10px] font-bold uppercase tracking-[0.25em]">
           {hasFlash ? 'Alert' : 'Intel'}
         </span>
       </span>
@@ -140,7 +140,7 @@ export default function MapAlertTicker({ onClose = null }) {
       <button
         onClick={handleClose}
         aria-label="Dismiss ticker"
-        className="flex shrink-0 items-center justify-center border-l border-slate2/60 px-3 text-dim transition-colors hover:text-ozone"
+        className="flex min-h-10 min-w-10 shrink-0 items-center justify-center border-l border-slate2/60 px-3 text-dim transition-colors hover:text-ozone"
       >
         <X className="h-3.5 w-3.5" />
       </button>

@@ -712,7 +712,7 @@ export default function Globe3D({
       </div>
 
       {interactive && (
-        <div className="pointer-events-none absolute bottom-12 left-3 flex flex-col gap-1.5">
+        <div className="pointer-events-none absolute bottom-[calc(var(--map-sheet-overlap,0px)+3rem)] left-3 flex flex-col gap-1.5">
           <div className="flex items-center gap-2 border border-slate2/70 bg-void/85 px-2.5 py-1.5 font-mono text-[9px] uppercase tracking-[0.2em] text-darkgray backdrop-blur-sm">
             <span className="text-ozone/80">⊙</span>
             <span>
@@ -735,7 +735,7 @@ export default function Globe3D({
         </div>
       )}
       {interactive && (
-        <div className="absolute bottom-12 right-3 z-[1000] flex flex-col gap-1.5">
+        <div className="absolute bottom-[calc(var(--map-sheet-overlap,0px)+3rem)] right-3 z-[1000] flex flex-col gap-1.5 [[data-map-free=tight]_&]:grid [[data-map-free=tight]_&]:grid-cols-2 [[data-map-free=minimal]_&]:grid [[data-map-free=minimal]_&]:grid-cols-4 [[data-map-free=minimal]_&]:bottom-[calc(var(--map-sheet-overlap,0px)+0.25rem)] min-[641px]:[[data-map-free=minimal]_&]:bottom-[calc(var(--map-sheet-overlap,0px)+2.25rem)] [[data-map-free=minimal]_&]:right-14">
           <button
             onClick={zoomIn}
             aria-label="Zoom in"

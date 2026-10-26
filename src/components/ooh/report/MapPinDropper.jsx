@@ -180,10 +180,10 @@ export default function MapPinDropper({
         <span className="h-2 w-2 rounded-full bg-flare/70" />
         <span className="h-2 w-2 rounded-full bg-ozone/70" />
         <span className="h-2 w-2 rounded-full bg-dim/50" />
-        <span className="ml-2 font-mono text-[9px] uppercase tracking-[0.2em] text-dim">
+        <span className="ml-2 font-mono text-[10px] uppercase tracking-[0.2em] text-dim">
           ROOT@OOH:~ — PIN_DROP.SH
         </span>
-        <span className="ml-auto flex items-center gap-1.5 font-mono text-[8px] uppercase tracking-[0.2em] text-ozone/60">
+        <span className="ml-auto flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-[0.2em] text-ozone/60">
           // live
           <TerminalTooltip
             label="pin dropper"
@@ -211,7 +211,8 @@ export default function MapPinDropper({
             }}
             onFocus={() => setSearching(true)}
             placeholder={placeholder}
-            className="w-full bg-transparent font-mono text-[11px] text-silver outline-none placeholder:text-dim"
+            aria-label="Search for an address or place"
+            className="min-h-6 w-full bg-transparent font-mono text-[11px] text-silver outline-none placeholder:text-dim"
           />
           {loading && <Loader2 className="h-3.5 w-3.5 shrink-0 animate-spin text-ozone" />}
           <span className="flex items-center gap-1">
@@ -225,7 +226,8 @@ export default function MapPinDropper({
             type="button"
             onClick={recenter}
             title="Recenter on me"
-            className="flex h-5 w-5 shrink-0 items-center justify-center text-dim transition-colors hover:text-ozone"
+            aria-label="Recenter on me"
+            className="flex h-8 w-8 shrink-0 items-center justify-center text-dim transition-colors hover:text-ozone"
           >
             <Crosshair className="h-3.5 w-3.5" />
           </button>
@@ -260,17 +262,17 @@ export default function MapPinDropper({
 
         {/* Hint overlay — shown when no pin */}
         {!hasPin ? (
-          <div className="pointer-events-none absolute left-1/2 top-3 z-[1100] flex -translate-x-1/2 items-center gap-1.5 whitespace-nowrap border border-ozone/40 bg-void/90 px-3 py-1.5 font-mono text-[9px] uppercase tracking-[0.2em] text-ozone backdrop-blur-sm">
+          <div className="pointer-events-none absolute left-1/2 top-3 z-[1100] flex -translate-x-1/2 items-center gap-1.5 whitespace-nowrap border border-ozone/40 bg-void/90 px-3 py-1.5 font-mono text-[10px] uppercase tracking-[0.2em] text-ozone backdrop-blur-sm">
             // tap map to drop pin
           </div>
         ) : (
-          <div className="pointer-events-none absolute left-1/2 top-3 z-[1100] -translate-x-1/2 whitespace-nowrap border border-ozone/40 bg-void/90 px-3 py-1.5 font-mono text-[9px] uppercase tracking-[0.2em] text-ozone backdrop-blur-sm">
+          <div className="pointer-events-none absolute left-1/2 top-3 z-[1100] -translate-x-1/2 whitespace-nowrap border border-ozone/40 bg-void/90 px-3 py-1.5 font-mono text-[10px] uppercase tracking-[0.2em] text-ozone backdrop-blur-sm">
             // pin locked — tap again to adjust
           </div>
         )}
 
         {/* Tooltip guide — bottom-right of map */}
-        <div className="pointer-events-none absolute bottom-2 right-8 z-[1100] flex items-center gap-1 border border-slate2/50 bg-void/80 px-2 py-1 font-mono text-[8px] uppercase tracking-[0.15em] text-dim backdrop-blur-sm">
+        <div className="pointer-events-none absolute bottom-2 right-8 z-[1100] flex items-center gap-1 border border-slate2/50 bg-void/80 px-2 py-1 font-mono text-[10px] uppercase tracking-[0.15em] text-dim backdrop-blur-sm">
           <TerminalTooltip
             label="how to pin"
             text="1. Search the address above, or 2. Tap any spot on the map, or 3. Use the crosshair to jump to your GPS."
@@ -289,13 +291,13 @@ export default function MapPinDropper({
               {parseFloat(lat).toFixed(5)}, {parseFloat(lng).toFixed(5)}
             </span>
             {reverseLabel && (
-              <span className="ml-auto truncate font-mono text-[9px] text-dim">
+              <span className="ml-auto truncate font-mono text-[10px] text-dim">
                 {reverseLabel.split(',')[0]}
               </span>
             )}
           </>
         ) : (
-          <span className="font-mono text-[9px] uppercase tracking-[0.2em] text-flare/70">
+          <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-flare">
             // awaiting coordinates…
           </span>
         )}
