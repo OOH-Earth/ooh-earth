@@ -1116,9 +1116,6 @@ export default function Map() {
     <>
       {attentionBlock}
       <FieldTallyWidget markers={layerFiltered} clusters={view === 'globe' ? globeClusters : 0} />
-      <div className="pointer-events-none">
-        <MapAlertTicker />
-      </div>
     </>
   );
   const statusStack = (
@@ -1413,9 +1410,6 @@ export default function Map() {
                 <>
                   <div className="flex max-w-[calc(100%-3.5rem)] shrink-0 flex-col items-start gap-1 [[data-map-free=tight]_&]:max-w-[calc(100%-6.5rem)]">
                     {statusStack}
-                  </div>
-                  <div className="pointer-events-none w-[calc(100%-3.5rem)] shrink-0 md:w-[min(calc(100%-3.5rem),28rem)] [[data-map-free=tight]_&]:w-[calc(100%-6.5rem)] [[data-map-free=tight]_&]:md:w-[min(calc(100%-6.5rem),28rem)]">
-                    <MapAlertTicker />
                   </div>
                 </>
               )}
