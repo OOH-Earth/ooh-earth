@@ -10,6 +10,7 @@ import {
   Flame,
   Fingerprint,
 } from 'lucide-react';
+import { isUnsupportedLayer, UNSUPPORTED_LAYER_NOTE } from './layers/unsupportedLayers';
 
 // Layer groups — ordered by campaign priority.
 // STREET     → Adbusting, Graffiti, Ad Spots & Art (base marker layer)
@@ -77,6 +78,8 @@ export const ALL_LAYERS = LAYER_GROUPS.flatMap((g) => g.layers);
 // Default active layer IDs
 export const DEFAULT_LAYERS = ALL_LAYERS.filter((l) => l.defaultOn).map((l) => l.id);
 
+const UNAVAILABLE_NOTE_ID = 'unsupported-layer-note';
+
 export default function MapLayerToggle({ activeLayers, onToggle, hiddenLayerIds = [] }) {
   const hidden = new Set(hiddenLayerIds);
   const visibleGroups = LAYER_GROUPS.map((group) => ({
@@ -89,6 +92,10 @@ export default function MapLayerToggle({ activeLayers, onToggle, hiddenLayerIds 
       <span className="shrink-0 font-mono text-[8px] uppercase tracking-[0.25em] text-dim">
         Layers
       </span>
+      {/* Reason for unavailable layers, announced via aria-describedby (a title tooltip is not). */}
+      <span id={UNAVAILABLE_NOTE_ID} className="sr-only">
+        {UNSUPPORTED_LAYER_NOTE}
+      </span>
       {visibleGroups.map((group, gi) => (
         <div key={group.id} className="flex shrink-0 items-center gap-1.5">
           {gi > 0 && <span className="h-4 w-px bg-slate2/40" />}
@@ -100,15 +107,22 @@ export default function MapLayerToggle({ activeLayers, onToggle, hiddenLayerIds 
           </span>
           {group.layers.map((l) => {
             const Icon = l.icon;
-            const active = activeLayers.includes(l.id);
+            const unavailable = isUnsupportedLayer(l.id);
+            const active = !unavailable && activeLayers.includes(l.id);
             return (
               <button
                 key={l.id}
-                onClick={() => onToggle(l.id)}
+                onClick={() => !unavailable && onToggle(l.id)}
+                aria-disabled={unavailable || undefined}
+                aria-label={unavailable ? `${l.label} (unavailable)` : undefined}
+                aria-describedby={unavailable ? UNAVAILABLE_NOTE_ID : undefined}
+                title={unavailable ? UNSUPPORTED_LAYER_NOTE : undefined}
                 className={`flex shrink-0 items-center gap-1.5 border px-2.5 py-1 font-mono text-[9px] font-bold uppercase tracking-[0.12em] transition-colors ${
-                  active
-                    ? 'border-ozone bg-ozone text-void'
-                    : 'border-slate2/60 text-darkgray hover:border-ozone hover:text-ozone'
+                  unavailable
+                    ? 'cursor-not-allowed border-slate2/40 text-dim line-through opacity-60'
+                    : active
+                      ? 'border-ozone bg-ozone text-void'
+                      : 'border-slate2/60 text-darkgray hover:border-ozone hover:text-ozone'
                 }`}
               >
                 <Icon className="h-3 w-3" style={{ color: active ? undefined : l.color }} />

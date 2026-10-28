@@ -1,60 +1,32 @@
 import { useEffect, useState } from 'react';
 import { base44 } from '@/api/base44Client';
+import { countBrands } from '@/components/ooh/brandCounts';
 import { Trophy, Loader2 } from 'lucide-react';
-
-const WATCHLIST = [
-  { brand: 'Coca-Cola', note: "World's largest plastic polluter · top global OOH spender" },
-  { brand: 'Nestlé', note: 'Bottled-water saturation · deforestation-linked supply chains' },
-  { brand: 'Shell', note: 'Greenwashing billboards while expanding fossil production' },
-  { brand: "McDonald's", note: 'Highest-volume fast-food OOH · childhood-targeted ad saturation' },
-  { brand: 'BP', note: 'Beyond Petroleum greenwash · continued oil expansion' },
-  { brand: 'Unilever', note: 'Dove + Axe paradox · prolific billboard presence' },
-];
 
 export default function OffenderRegistry() {
   const [offenders, setOffenders] = useState(null);
-  const [sourced, setSourced] = useState(true);
+  const [failed, setFailed] = useState(false);
+  const [recordCount, setRecordCount] = useState(0);
 
   useEffect(() => {
+    let active = true;
     (async () => {
       try {
-        const recs = await base44.listAllLocations();
-        const corpus = (recs || [])
-          .filter((r) => r.status !== 'rejected')
-          .map((r) => `${r.title || ''} · ${r.notes || ''} · ${r.address || ''}`)
-          .join('\n');
-        const res = await base44.integrations.Core.InvokeLLM({
-          prompt: `Below is a corpus of documented outdoor-advertising locations from a resistance field atlas. Extract any corporate brand, company, or product names mentioned and rank by frequency. Return the top 6. If no brand names appear, return an empty array.\n\nCORPUS:\n${corpus}`,
-          response_json_schema: {
-            type: 'object',
-            properties: {
-              offenders: {
-                type: 'array',
-                items: {
-                  type: 'object',
-                  properties: { brand: { type: 'string' }, count: { type: 'number' } },
-                  required: ['brand', 'count'],
-                },
-              },
-            },
-            required: ['offenders'],
-          },
-        });
-        // InvokeLLM's SDK type is `string | object`; response_json_schema
-        // above guarantees an object at runtime.
-        const data = /** @type {{ offenders?: any[] }} */ (res);
-        const list = data?.offenders || [];
-        if (!list.length) {
-          setSourced(false);
-          setOffenders(WATCHLIST.map((w, i) => ({ brand: w.brand, count: 0, note: w.note })));
-        } else {
-          setOffenders(list.slice(0, 6));
-        }
+        const recs = (await base44.listAllLocations()) || [];
+        if (!active) return;
+        const list = countBrands(recs);
+        setRecordCount(recs.length);
+        setOffenders(list);
       } catch {
-        setSourced(false);
-        setOffenders(WATCHLIST.map((w) => ({ brand: w.brand, count: 0, note: w.note })));
+        if (active) {
+          setFailed(true);
+          setOffenders([]);
+        }
       }
     })();
+    return () => {
+      active = false;
+    };
   }, []);
 
   return (
@@ -72,8 +44,9 @@ export default function OffenderRegistry() {
             </h2>
           </div>
           <p className="max-w-sm font-display text-sm font-normal leading-[1.4] text-darkgray">
-            An atlas is only accountability if it names names. This registry scans every documented
-            location for corporate brands and ranks them by frequency. No brand escapes the ledger.
+            Corporate brand names tagged on the field records loaded here, ranked by how many
+            records carry each tag. Only tagged records count: this is not a complete or verified
+            total.
           </p>
         </div>
 
@@ -83,6 +56,20 @@ export default function OffenderRegistry() {
             <span className="font-mono text-[10px] uppercase tracking-[0.3em] text-dim">
               // scanning field records…
             </span>
+          </div>
+        ) : failed ? (
+          <div
+            role="status"
+            className="mt-10 border border-slate2/60 p-6 font-mono text-[10px] uppercase tracking-[0.2em] text-dim"
+          >
+            // Unavailable: field records could not be loaded
+          </div>
+        ) : offenders.length === 0 ? (
+          <div
+            role="status"
+            className="mt-10 border border-slate2/60 p-6 font-mono text-[10px] uppercase tracking-[0.2em] text-dim"
+          >
+            // No brand-tagged field records yet
           </div>
         ) : (
           <ol className="mt-10 divide-y divide-slate2/40 border border-slate2/60">
@@ -98,14 +85,9 @@ export default function OffenderRegistry() {
                       {o.brand}
                     </span>
                   </div>
-                  {o.note && (
-                    <p className="mt-1 truncate font-mono text-[10px] uppercase tracking-[0.15em] text-dim">
-                      {o.note}
-                    </p>
-                  )}
                 </div>
                 <span className="shrink-0 font-mono text-[10px] uppercase tracking-[0.2em] text-darkgray">
-                  {o.count > 0 ? `${o.count}× logged` : 'watchlist'}
+                  {`${o.count}× logged`}
                 </span>
               </li>
             ))}
@@ -114,9 +96,9 @@ export default function OffenderRegistry() {
 
         <p className="mt-6 font-mono text-[10px] uppercase tracking-[0.25em] text-dim">
           //{' '}
-          {sourced
-            ? 'Brand extraction via field-atlas scan · ranked by documented frequency'
-            : 'Field records lacked brand tags · showing global watchlist of top OOH brands'}
+          {failed
+            ? 'Counts unavailable'
+            : `Counted from the ${recordCount.toLocaleString('en-US')} field records loaded · only records with a brand tag count · not a global total`}
         </p>
       </div>
     </section>
