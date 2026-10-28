@@ -103,7 +103,7 @@ export default function LiveActivityFeed() {
     >
       <div data-testid="live-activity-feed-header" className="flex items-center gap-2 px-1">
         <Radio className="h-3 w-3 shrink-0 animate-flicker text-ozone" />
-        <span className="shrink-0 whitespace-nowrap font-mono text-[9px] uppercase tracking-[0.3em] text-silver/70">
+        <span className="shrink-0 whitespace-nowrap font-mono text-ooh-caption uppercase tracking-[0.12em] text-silver/70">
           Live feed
         </span>
         <span className="h-px min-w-0 flex-1 bg-slate2/50" />
@@ -111,7 +111,7 @@ export default function LiveActivityFeed() {
             (auth-gated) is unchanged — anonymous sessions never receive events. */}
         <span
           data-testid="live-activity-feed-state"
-          className={`shrink-0 whitespace-nowrap font-mono text-[9px] uppercase tracking-[0.25em] ${events.length > 0 ? 'text-ozone' : 'text-silver/60'}`}
+          className={`shrink-0 whitespace-nowrap font-mono text-ooh-caption uppercase tracking-[0.12em] ${events.length > 0 ? 'text-ozone' : 'text-silver/60'}`}
         >
           {events.length > 0 ? 'ON AIR' : 'Standby'}
         </span>
@@ -131,15 +131,17 @@ export default function LiveActivityFeed() {
               <Icon className={`mt-0.5 h-3.5 w-3.5 shrink-0 ${t.color}`} />
               <div className="min-w-0 flex-1">
                 <div className="flex items-center justify-between gap-2">
-                  <span className={`font-mono text-[9px] uppercase tracking-[0.2em] ${t.color}`}>
+                  <span
+                    className={`font-mono text-ooh-caption uppercase tracking-[0.1em] ${t.color}`}
+                  >
                     {t.label}
                   </span>
-                  <span className="font-mono text-[8px] tabular text-dim/70">{ev.ts}</span>
+                  <span className="font-mono text-ooh-caption tabular text-quiet">{ev.ts}</span>
                 </div>
-                <div className="mt-0.5 truncate font-display text-[12px] font-semibold leading-tight text-silver">
+                <div className="mt-0.5 truncate font-display text-ooh-control font-semibold leading-tight text-silver">
                   {ev.title}
                 </div>
-                <div className="truncate font-mono text-[9px] text-darkgray">{ev.meta}</div>
+                <div className="truncate font-mono text-ooh-caption text-darkgray">{ev.meta}</div>
               </div>
             </>
           );

@@ -41,16 +41,18 @@ export default function ClimateClock({ className = '' }) {
       aria-label="Climate clock"
     >
       <div className="flex items-baseline gap-2">
-        <span className="font-mono text-[13px] font-bold tabular tracking-[0.1em] text-silver">
+        <span className="font-mono text-ooh-control font-bold tabular tracking-[0.1em] text-silver">
           {time}
         </span>
-        <span className="font-mono text-[7px] uppercase tracking-[0.3em] text-dim">BKK</span>
+        <span className="font-mono text-ooh-caption uppercase tracking-[0.12em] text-quiet">
+          BKK
+        </span>
       </div>
       <div className="mt-0.5 flex items-center gap-1.5">
-        <span className="font-mono text-[8px] font-bold uppercase tracking-[0.25em] text-flare">
+        <span className="font-mono text-ooh-caption font-bold uppercase tracking-[0.12em] text-flare">
           1.5°C
         </span>
-        <span className="font-mono text-[8px] tabular tracking-[0.08em] text-darkgray">
+        <span className="font-mono text-ooh-caption tabular tracking-[0.08em] text-darkgray">
           {years}y {days}d {pad(hours)}:{pad(mins)}:{pad(secs)}
         </span>
       </div>

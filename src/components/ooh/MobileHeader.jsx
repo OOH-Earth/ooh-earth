@@ -16,7 +16,9 @@ export default function MobileHeader({ to = '/map', label = 'Back' }) {
         >
           <ArrowLeft className="h-4 w-4" />
         </Link>
-        <span className="font-mono text-[10px] uppercase tracking-[0.25em] text-dim">{label}</span>
+        <span className="font-mono text-ooh-caption uppercase tracking-[0.12em] text-quiet">
+          {label}
+        </span>
       </div>
     </div>
   );
