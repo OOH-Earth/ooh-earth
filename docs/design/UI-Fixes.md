@@ -2,7 +2,8 @@
 
 One canonical record of UI simplification work: what was reported, what was reproduced, what is fixed
 locally, and what is **not** yet verified in production. Standards and project preferences live in
-[`UI-STANDARDS.md`](./UI-STANDARDS.md); this file is the ledger. Do not create a second one.
+[`UI-STANDARDS.md`](./UI-STANDARDS.md); the consistency-pass specification is
+[`OOH-UI-UX-REFERENCE.md`](./OOH-UI-UX-REFERENCE.md); this file is the ledger. Do not create a second one.
 
 Status vocabulary (kept separate on purpose):
 
