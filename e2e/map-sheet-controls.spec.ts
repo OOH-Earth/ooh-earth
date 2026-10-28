@@ -22,9 +22,9 @@ for (const [w, h] of VIEWPORTS) {
       await openMapWithMock(page, { view: 'flat' });
       const peek = await height(page);
       for (let i = 0; i < 3; i++) {
-        await tap(page, 'Expand sheet');
+        await tap(page, 'Expand list');
         await expect.poll(() => height(page)).toBeGreaterThan(peek + 50);
-        await tap(page, 'Collapse sheet');
+        await tap(page, 'Collapse list');
         await expect.poll(() => height(page)).toBe(peek);
       }
       await tap(page, 'Fullscreen map');
@@ -37,7 +37,7 @@ for (const [w, h] of VIEWPORTS) {
       test.setTimeout(90_000);
       await openMapWithMock(page, { view: 'flat' });
       const peek = await height(page);
-      await tap(page, 'Expand sheet');
+      await tap(page, 'Expand list');
       await expect.poll(() => height(page)).toBeGreaterThan(peek + 50);
       // Begin a drag on the sheet's grab area and never release it (as when the browser takes
       // the touch over): the old build kept the live drag height and ignored every button after.
@@ -58,9 +58,9 @@ for (const [w, h] of VIEWPORTS) {
         window.dispatchEvent(ev('pointermove', r.y + 120));
         target.dispatchEvent(ev('pointermove', r.y + 120));
       });
-      await tap(page, 'Collapse sheet');
+      await tap(page, 'Collapse list');
       await expect.poll(() => height(page), 'collapse button wins over a stale drag').toBe(peek);
-      await tap(page, 'Expand sheet');
+      await tap(page, 'Expand list');
       await expect.poll(() => height(page)).toBeGreaterThan(peek + 50);
     });
 
@@ -69,7 +69,7 @@ for (const [w, h] of VIEWPORTS) {
       await openMapWithMock(page, { view: 'flat' });
       const peek = await height(page);
       const hb = await sheet(page)
-        .getByRole('button', { name: 'Resize results sheet' })
+        .getByRole('button', { name: 'Resize list' })
         .boundingBox();
       expect(hb).toBeTruthy();
       const from = { x: hb!.x + hb!.width / 2, y: hb!.y + hb!.height / 2 };
@@ -77,7 +77,7 @@ for (const [w, h] of VIEWPORTS) {
       await expect.poll(() => height(page)).toBeGreaterThan(peek + 80);
       await settle(page);
       const open = await sheet(page)
-        .getByRole('button', { name: 'Resize results sheet' })
+        .getByRole('button', { name: 'Resize list' })
         .boundingBox();
       await touchDrag(page, { x: open!.x + open!.width / 2, y: open!.y + open!.height / 2 }, 600);
       await expect.poll(() => height(page)).toBe(peek);
@@ -87,7 +87,7 @@ for (const [w, h] of VIEWPORTS) {
       test.setTimeout(90_000);
       await openMapWithMock(page, { view: 'flat' });
       const peek = await height(page);
-      const handle = sheet(page).getByRole('button', { name: 'Resize results sheet' });
+      const handle = sheet(page).getByRole('button', { name: 'Resize list' });
       await handle.focus();
       await page.keyboard.press('ArrowUp');
       const half = await expect.poll(() => height(page)).toBeGreaterThan(peek + 50);
@@ -96,9 +96,9 @@ for (const [w, h] of VIEWPORTS) {
       await expect.poll(() => height(page)).toBe(peek);
       await page.keyboard.press('Enter');
       await expect.poll(() => height(page)).toBeGreaterThan(peek + 50);
-      await btn(page, 'Collapse sheet').focus();
+      await btn(page, 'Collapse list').focus();
       await page.keyboard.press('Enter');
-      await expect(btn(page, 'Expand sheet')).toBeFocused();
+      await expect(btn(page, 'Expand list')).toBeFocused();
     });
   });
 }

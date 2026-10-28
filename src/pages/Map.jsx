@@ -1516,6 +1516,9 @@ export default function Map() {
       {raw && (
         <MapBottomSheet
           count={layerResults.length}
+          countScope={
+            ['ads', 'adbusting', 'graffiti'].includes(primaryLayer) ? 'in view' : undefined
+          }
           layerLabel={primaryLayer}
           detailMode={!!detailItem}
           onCloseDetail={() => setDetailItem(null)}

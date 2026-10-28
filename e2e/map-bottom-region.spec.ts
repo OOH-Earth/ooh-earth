@@ -78,13 +78,13 @@ for (const [w, h, dpr] of PHONES) {
       await openMapWithMock(page, { view: 'flat' });
       const sheet = page.locator('.ooh-bottom-sheet');
       const peek = await sheetHeight(page);
-      const expand = sheet.getByRole('button', { name: 'Expand sheet' });
+      const expand = sheet.getByRole('button', { name: 'Expand list' });
       const box = (await expand.boundingBox())!;
       expect(box.width).toBeGreaterThanOrEqual(40);
       expect(box.height).toBeGreaterThanOrEqual(40);
       await expand.click(); // used to be dead: the drag handle captured the pointer
       await expect.poll(() => sheetHeight(page)).toBeGreaterThan(peek + 50);
-      await sheet.getByRole('button', { name: 'Collapse sheet' }).click();
+      await sheet.getByRole('button', { name: 'Collapse list' }).click();
       await expect.poll(() => sheetHeight(page)).toBeLessThanOrEqual(peek + 1);
     });
 
@@ -125,11 +125,11 @@ for (const [w, h, dpr] of PHONES) {
       test.setTimeout(90_000);
       await openMapWithMock(page, { view: 'flat' });
       const sheet = page.locator('.ooh-bottom-sheet');
-      await sheet.getByRole('button', { name: 'Expand sheet' }).click();
+      await sheet.getByRole('button', { name: 'Expand list' }).click();
       await expect.poll(() => sheetHeight(page)).toBeGreaterThan(200);
       const box = (await sheet.boundingBox())!;
       expect(box.y, 'sheet top must be inside the viewport').toBeGreaterThanOrEqual(0);
-      const collapse = sheet.getByRole('button', { name: 'Collapse sheet' });
+      const collapse = sheet.getByRole('button', { name: 'Collapse list' });
       const cb = (await collapse.boundingBox())!;
       expect(cb.y).toBeGreaterThanOrEqual(0);
       await collapse.click(); // real click: it used to sit above the viewport on short screens
@@ -143,7 +143,7 @@ for (const [w, h, dpr] of PHONES) {
       await openMapWithMock(page, { view: 'flat' });
       const map = page.locator('[data-tour="map"]');
       await expect(map).not.toHaveAttribute('inert', /.*/);
-      await page.locator('.ooh-bottom-sheet').getByRole('button', { name: 'Expand sheet' }).click();
+      await page.locator('.ooh-bottom-sheet').getByRole('button', { name: 'Expand list' }).click();
       await expect(map).toHaveAttribute('data-map-covered', 'true');
       await expect(map).toHaveAttribute('inert', /.*/);
       // keyboard focus must never land on a control the sheet is covering
@@ -158,7 +158,7 @@ for (const [w, h, dpr] of PHONES) {
       expect(landedInMap, 'focus entered the covered map').toBe(false);
       await page
         .locator('.ooh-bottom-sheet')
-        .getByRole('button', { name: 'Collapse sheet' })
+        .getByRole('button', { name: 'Collapse list' })
         .click();
       await expect(map).toHaveAttribute('data-map-covered', 'false');
       await expect(map).not.toHaveAttribute('inert', /.*/);
@@ -246,10 +246,10 @@ for (const [w, h] of [
       test.setTimeout(90_000);
       await openMapWithMock(page, { view: 'flat' });
       const sheet = page.locator('.ooh-bottom-sheet');
-      await sheet.getByRole('button', { name: 'Expand sheet' }).click();
+      await sheet.getByRole('button', { name: 'Expand list' }).click();
       await expect.poll(() => sheetHeight(page)).toBeGreaterThan(150);
       expect((await sheet.boundingBox())!.y).toBeGreaterThanOrEqual(0);
-      await sheet.getByRole('button', { name: 'Collapse sheet' }).click();
+      await sheet.getByRole('button', { name: 'Collapse list' }).click();
       await expect.poll(() => sheetHeight(page)).toBeLessThanOrEqual(64);
     });
 
@@ -283,10 +283,10 @@ test.describe('sheet focus handoff @ 390x844', () => {
     test.setTimeout(90_000);
     await openMapWithMock(page, { view: 'flat' });
     const sheet = page.locator('.ooh-bottom-sheet');
-    await sheet.getByRole('button', { name: 'Expand sheet' }).click();
-    await expect(sheet.getByRole('button', { name: 'Collapse sheet' })).toBeFocused();
-    await sheet.getByRole('button', { name: 'Collapse sheet' }).click();
-    await expect(sheet.getByRole('button', { name: 'Expand sheet' })).toBeFocused();
+    await sheet.getByRole('button', { name: 'Expand list' }).click();
+    await expect(sheet.getByRole('button', { name: 'Collapse list' })).toBeFocused();
+    await sheet.getByRole('button', { name: 'Collapse list' }).click();
+    await expect(sheet.getByRole('button', { name: 'Expand list' })).toBeFocused();
     const map = page.locator('[data-tour="map"]');
     await expect(map).toHaveAttribute('data-map-covered', 'false');
     await expect(map).not.toHaveJSProperty('inert', true);

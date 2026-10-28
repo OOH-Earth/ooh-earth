@@ -22,7 +22,7 @@ test.describe('map-first arrival', () => {
     const b = await open.boundingBox();
     await page.touchscreen.tap(b!.x + b!.width / 2, b!.y + b!.height / 2);
     await expect.poll(() => height(page)).toBeGreaterThan(peek + 100);
-    await expect(btn(page, 'Collapse sheet')).toBeVisible();
+    await expect(btn(page, 'Collapse list')).toBeVisible();
     // the list scrolls inside the sheet without resizing it
     await expect
       .poll(() => height(page), 'half snap is 42% of the viewport')
@@ -33,7 +33,7 @@ test.describe('map-first arrival', () => {
       .first()
       .evaluate((el) => (el.scrollTop = 40));
     expect(await height(page)).toBe(h);
-    await tap(page, 'Collapse sheet');
+    await tap(page, 'Collapse list');
     await expect.poll(() => height(page)).toBe(peek);
     expect(page.url(), 'sheet changes do not navigate or reset state').toBe(url);
   });
@@ -57,8 +57,8 @@ test.describe('map-first arrival', () => {
     const before = await page
       .locator('.leaflet-map-pane')
       .evaluate((el) => (el as HTMLElement).style.transform);
-    await tap(page, 'Expand sheet');
-    await tap(page, 'Collapse sheet');
+    await tap(page, 'Expand list');
+    await tap(page, 'Collapse list');
     await expect(page.locator('.leaflet-container')).toBeVisible();
     void center;
     const after = await page
