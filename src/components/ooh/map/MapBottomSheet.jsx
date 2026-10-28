@@ -1,4 +1,4 @@
-import { useRef, useState, useEffect } from 'react';
+import { useRef, useState, useEffect, useLayoutEffect } from 'react';
 import { Maximize2, Minimize2, X, ChevronUp, ChevronDown } from 'lucide-react';
 
 const SNAP_STATES = ['peek', 'half', 'full'];
@@ -60,6 +60,10 @@ export default function MapBottomSheet({
   // while it is visible. Stack the sheet above it instead of under it, so the header controls stay
   // reachable; the sheet drops back when the nudge goes away.
   const rootRef = useRef(null);
+  const headerRef = useRef(null);
+  const handleRef = useRef(null);
+  const contentRef = useRef(null);
+  const [headerH, setHeaderH] = useState(0);
   const pendingFocus = useRef(null);
   // Expand/Collapse swap which button is rendered, so the focused one unmounts. Hand focus to its
   // counterpart so keyboard and screen-reader users are not dropped on <body>.
@@ -81,6 +85,17 @@ export default function MapBottomSheet({
     const mo = new MutationObserver(read);
     mo.observe(root, { attributes: true, attributeFilter: ['style'] });
     return () => mo.disconnect();
+  }, []);
+
+  // The collapsed height follows the header's natural height (long or localized labels, large counts,
+  // text spacing or zoom can wrap it) instead of clipping at a fixed number.
+  useEffect(() => {
+    const el = headerRef.current;
+    if (!el || typeof ResizeObserver === 'undefined') return undefined;
+    const ro = new ResizeObserver(() => setHeaderH(Math.ceil(el.getBoundingClientRect().height)));
+    ro.observe(el);
+    setHeaderH(Math.ceil(el.getBoundingClientRect().height));
+    return () => ro.disconnect();
   }, []);
 
   useEffect(() => {
@@ -106,12 +121,15 @@ export default function MapBottomSheet({
   const statusH = statusRow ? 48 : 0;
   // Map-first: the collapsed sheet is a header-only results handle (grab bar + count + actions);
   // the list itself opens with the summary button, Expand, or a drag/tap on the handle.
-  const peekH = (short ? 60 : 72) + statusH;
   const halfH = Math.round(vh * 0.42);
   // Never taller than the space between the nav (or the screen bottom in fullscreen) and an 8px
   // top margin: at 390px tall, 88% of the screen plus the 76px nav offset put the header, and
   // with it the Collapse button, above the viewport.
   const fullH = Math.min(Math.round(vh * 0.88), vh - (fullscreen ? 0 : 76 + lift) - 8);
+  // 72px (60px short landscape) is the tested floor; it grows when the header needs more room
+  // (long or localized label, large count, text spacing, zoom), never beyond the full snap.
+  const peekFloor = short ? 60 : 72;
+  const peekH = Math.min(Math.max(peekFloor, headerH) + statusH, fullH);
   const stateH = { peek: peekH, half: halfH, full: fullH };
   const currentH = liveH !== null ? liveH : stateH[effSnap] || peekH;
   const clampH = (h) => Math.max(peekH, Math.min(h, fullH));
@@ -123,6 +141,14 @@ export default function MapBottomSheet({
     setLiveH(null);
   }, [snap, toolsMode]);
   useEffect(() => () => stopDragRef.current?.(false), []);
+
+  // Collapsed: the list is clipped, so it must not stay focusable. If focus was inside it, bring
+  // it to the handle (the content region itself is made inert below).
+  useLayoutEffect(() => {
+    if (effSnap !== 'peek') return;
+    const content = contentRef.current;
+    if (content && content.contains(document.activeElement)) handleRef.current?.focus();
+  }, [effSnap]);
 
   const nearestSnap = (h) => {
     let nearest = 'peek';
@@ -216,8 +242,9 @@ export default function MapBottomSheet({
     >
       {/* Explicit drag handle (also tap / Arrow keys), then the header row. Only the handle is a drag
           surface, so the header buttons never share a pointer target with the gesture. */}
-      <div className="relative flex flex-col">
+      <div ref={headerRef} className="relative flex flex-col">
         <button
+          ref={handleRef}
           type="button"
           onPointerDown={onHandlePointerDown}
           onKeyDown={onHandleKeyDown}
@@ -248,20 +275,20 @@ export default function MapBottomSheet({
                 pendingFocus.current = 'Collapse sheet';
                 onSnapChange('half');
               }}
-              className="flex min-h-10 min-w-0 items-center gap-2 truncate font-mono text-[10px] uppercase tracking-[0.25em] text-ozone"
+              className="flex min-h-10 min-w-0 flex-1 items-center gap-2 text-left font-mono text-[10px] uppercase leading-snug tracking-[0.25em] text-ozone"
             >
-              <span className="truncate">{`// ${count} ${layerLabel || 'results'}`}</span>
+              <span className="min-w-0 break-words">{`// ${Number(count).toLocaleString()} ${layerLabel || 'results'}`}</span>
               <span className="shrink-0 border border-ozone/60 px-1.5 py-0.5 tracking-[0.2em]">
                 Open list
               </span>
             </button>
           ) : (
-            <span className="font-mono text-[10px] uppercase tracking-[0.25em] text-ozone">
+            <span className="min-w-0 break-words font-mono text-[10px] uppercase tracking-[0.25em] text-ozone">
               {toolsMode
                 ? '// map tools'
                 : detailMode
                   ? '// pin detail'
-                  : `// ${count} ${layerLabel || 'results'}`}
+                  : `// ${Number(count).toLocaleString()} ${layerLabel || 'results'}`}
             </span>
           )}
           <div className="flex items-center gap-1">
@@ -350,7 +377,11 @@ export default function MapBottomSheet({
         </div>
       )}
       {/* Content */}
-      <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain flex flex-col">
+      <div
+        ref={contentRef}
+        inert={effSnap === 'peek' ? true : undefined}
+        className="min-h-0 flex-1 overflow-y-auto overscroll-contain flex flex-col"
+      >
         {children}
       </div>
     </div>

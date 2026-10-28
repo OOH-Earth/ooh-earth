@@ -1,30 +1,8 @@
-import { test, expect, type Page } from '@playwright/test';
+import { test, expect } from '@playwright/test';
 import { openMapWithMock } from './helpers/mapGeometry';
+import { sheet, height, btn, settle, tap } from './helpers/sheet';
 
 // Map-first mobile arrival: the collapsed sheet is a compact, labelled results handle.
-
-const sheet = (page: Page) => page.locator('.ooh-bottom-sheet');
-const height = async (page: Page) => Math.round((await sheet(page).boundingBox())?.height ?? 0);
-const btn = (page: Page, name: string) => sheet(page).getByRole('button', { name, exact: true });
-
-// The sheet animates its height (0.32s): wait until it stops moving before aiming at a control.
-async function settle(page: Page) {
-  let last = '';
-  let same = 0;
-  for (let i = 0; i < 60 && same < 3; i++) {
-    const b = JSON.stringify(await sheet(page).boundingBox());
-    same = b === last ? same + 1 : 0;
-    last = b;
-    await page.waitForTimeout(100);
-  }
-}
-
-async function tap(page: Page, name: string) {
-  await settle(page);
-  const b = await btn(page, name).boundingBox();
-  expect(b, `${name} is on screen`).toBeTruthy();
-  await page.touchscreen.tap(b!.x + b!.width / 2, b!.y + b!.height / 2);
-}
 
 test.describe('map-first arrival', () => {
   test.use({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 3, hasTouch: true });
@@ -51,7 +29,7 @@ test.describe('map-first arrival', () => {
       .toBe(Math.round(844 * 0.42));
     const h = await height(page);
     await sheet(page)
-      .locator('.overflow-y-auto')
+      .locator('.relative.overflow-y-auto')
       .first()
       .evaluate((el) => (el.scrollTop = 40));
     expect(await height(page)).toBe(h);
