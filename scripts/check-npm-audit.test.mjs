@@ -8,14 +8,25 @@ import test from 'node:test';
 import { evaluateAudit } from './check-npm-audit.mjs';
 
 const clean = () => ({
-  metadata: { vulnerabilities: { info: 0, low: 0, moderate: 0, high: 0, critical: 0, total: 0 } },
+  metadata: {
+    vulnerabilities: {
+      info: 0,
+      low: 0,
+      moderate: 0,
+      high: 0,
+      critical: 0,
+      total: 0,
+    },
+  },
 });
-test('accepts a completed clean audit', () =>
-  assert.match(evaluateAudit(clean(), 0), /passed/),
-);
+test('accepts a completed clean audit', () => assert.match(evaluateAudit(clean(), 0), /passed/));
 test('permits low/moderate findings under the existing high threshold', () => {
   const report = clean();
-  Object.assign(report.metadata.vulnerabilities, { low: 2, moderate: 1, total: 3 });
+  Object.assign(report.metadata.vulnerabilities, {
+    low: 2,
+    moderate: 1,
+    total: 3,
+  });
   assert.match(evaluateAudit(report, 0), /passed/);
 });
 for (const severity of ['high', 'critical']) {
