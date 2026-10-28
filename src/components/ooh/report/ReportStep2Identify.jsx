@@ -4,6 +4,7 @@ import { Sparkles, Loader2, ExternalLink, MapPin } from 'lucide-react';
 import { PARENT_CORPS, AGENCIES } from '@/components/ooh/report/advertiserRegistry';
 import { TOP_OOH_OPERATORS, ALL_OOH_OPERATORS } from '@/components/ooh/report/oohMediaCorps';
 import { Link } from 'react-router-dom';
+import { useAuth } from '@/lib/AuthContext';
 
 const inp =
   'w-full bg-void border border-slate2 px-4 py-3 font-display text-sm text-silver outline-none transition-colors placeholder:text-dim focus:border-ozone';
@@ -24,40 +25,30 @@ const SECTORS = [
 ];
 
 export default function ReportStep2Identify({ data, onChange }) {
+  const { isAuthenticated } = useAuth();
   const [detecting, setDetecting] = useState(false);
   const [detected, setDetected] = useState(null);
 
+  // PROTOTYPE (sign-in-only policy pending owner decision): the analysis runs in the existing
+  // scanAd backend function, which verifies identity before any billable call and owns the prompt.
+  // The browser no longer calls the AI integration with a client-built prompt. Signed-out
+  // visitors keep the full manual form; nothing is sent.
   const aiDetect = async () => {
-    if (!data.image_url) return;
+    if (!data.image_url || detecting) return;
+    if (!isAuthenticated) {
+      setDetected({ signInRequired: true });
+      return;
+    }
     setDetecting(true);
     setDetected(null);
     try {
-      const result = await base44.integrations.Core.InvokeLLM({
-        prompt: `You are a brand and advertising analyst. Examine this OOH (out-of-home) advertising image and identify:
-1. brand_name: The main brand or company being advertised (e.g. "Shell", "McDonald's"). If unclear, say "Unknown".
-2. campaign_name: The campaign or tagline if visible (e.g. "Drive The Future").
-3. industry_sector: One of: fossil_fuel, tobacco, alcohol, gambling, ultra_processed_food, surveillance, finance, real_estate, fashion, automotive, pharma, other.
-4. parent_corp: Parent/holding company if known (e.g. "Shell plc", "Yum! Brands").
-5. notes: Any other notable observations about the ad content.
-Respond in JSON only.`,
-        file_urls: [data.image_url],
-        response_json_schema: {
-          type: 'object',
-          properties: {
-            brand_name: { type: 'string' },
-            campaign_name: { type: 'string' },
-            industry_sector: { type: 'string' },
-            parent_corp: { type: 'string' },
-            notes: { type: 'string' },
-          },
-        },
-      });
-      // InvokeLLM's SDK type is `string | object`; response_json_schema
-      // above guarantees an object at runtime.
-      const detected =
-        /** @type {{brand_name?: string, campaign_name?: string, industry_sector?: string, parent_corp?: string}} */ (
-          result
-        );
+      const resp = await base44.functions.invoke('scanAd', { file_url: data.image_url });
+      const detected = resp?.data?.detection?.response || resp?.data?.detection || null;
+      if (!detected || typeof detected !== 'object') throw new Error('no detection');
+      if (detected.is_advertising === false) {
+        setDetected({ none: true });
+        return;
+      }
       setDetected(detected);
       onChange({
         ai_scanned: true,
@@ -69,7 +60,7 @@ Respond in JSON only.`,
         industry_sector: detected.industry_sector || data.industry_sector,
         parent_corp: detected.parent_corp || data.parent_corp,
       });
-    } catch (e) {
+    } catch {
       setDetected({ error: true });
     } finally {
       setDetecting(false);
@@ -101,12 +92,26 @@ Respond in JSON only.`,
                   Analyse your photo to auto-identify the brand, campaign, and sector.
                 </p>
               )}
+              {detected?.signInRequired && (
+                <p className="mt-1 font-mono text-[11px] text-flare" role="status">
+                  AI scan is for signed-in members.{' '}
+                  <Link to="/login" className="underline">
+                    Sign in
+                  </Link>{' '}
+                  or fill the fields below — your report is kept.
+                </p>
+              )}
+              {detected?.none && (
+                <p className="mt-1 font-mono text-[11px] text-dim" role="status">
+                  No advertising detected — fill the fields below.
+                </p>
+              )}
               {detected?.error && (
                 <p className="mt-1 font-mono text-[11px] text-flare">
                   Detection failed — fill manually below.
                 </p>
               )}
-              {detected && !detected.error && (
+              {detected && !detected.error && !detected.signInRequired && !detected.none && (
                 <p className="mt-1 font-mono text-[11px] text-ozone">
                   ✓ Detection applied — review and correct below.
                 </p>
