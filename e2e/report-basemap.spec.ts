@@ -67,7 +67,7 @@ for (const vp of [
     }) => {
       test.skip(MODE !== 'unconfigured');
       const t = await open(page);
-      await expect(notice(page, /basemap unavailable/i)).toBeVisible();
+      await expect(notice(page, /map background unavailable/i)).toBeVisible();
       await expect(page.locator('.leaflet-container')).toHaveCount(0);
       await page.waitForTimeout(800);
       expect(t.urls, 'no provider is contacted without configuration').toEqual([]);
@@ -111,7 +111,9 @@ for (const vp of [
     }) => {
       test.skip(MODE !== 'carto');
       await open(page, 'reject403');
-      await expect(notice(page, /basemap tiles are not loading/i)).toBeVisible();
+      await expect(
+        notice(page, /map background unavailable: tiles are not loading/i),
+      ).toBeVisible();
       await expect(page.getByRole('button', { name: /retry basemap/i })).toBeVisible();
     });
 
@@ -127,7 +129,9 @@ for (const vp of [
         .getByRole('button', { name: /zoom out/i })
         .first()
         .click();
-      await expect(notice(page, /basemap tiles are not loading/i)).toBeVisible();
+      await expect(
+        notice(page, /map background unavailable: tiles are not loading/i),
+      ).toBeVisible();
       await page.getByRole('button', { name: /open coordinate fields/i }).click();
       await expect(
         page.locator('details[open]').filter({ hasText: /enter coordinates manually/i }),
@@ -137,7 +141,9 @@ for (const vp of [
       );
       t.mode = 'ok';
       await page.getByRole('button', { name: /retry basemap/i }).click();
-      await expect(notice(page, /basemap tiles are not loading/i)).toHaveCount(0);
+      await expect(notice(page, /map background unavailable: tiles are not loading/i)).toHaveCount(
+        0,
+      );
       expect(
         (await readout(page).first().innerText()).trim(),
         'coordinates kept after recovery',
@@ -149,19 +155,25 @@ for (const vp of [
       const t = await open(page, 'first2fail');
       await expect.poll(() => t.urls.length).toBeGreaterThan(3);
       await page.waitForTimeout(800);
-      await expect(notice(page, /basemap tiles are not loading/i)).toHaveCount(0);
+      await expect(notice(page, /map background unavailable: tiles are not loading/i)).toHaveCount(
+        0,
+      );
     });
 
     test('a tile that loads again clears the notice without a retry press', async ({ page }) => {
       test.skip(MODE === 'unconfigured');
       const t = await open(page, 'fail');
-      await expect(notice(page, /basemap tiles are not loading/i)).toBeVisible();
+      await expect(
+        notice(page, /map background unavailable: tiles are not loading/i),
+      ).toBeVisible();
       t.mode = 'ok';
       await page
         .getByRole('button', { name: /zoom in/i })
         .first()
         .click(); // new tiles requested
-      await expect(notice(page, /basemap tiles are not loading/i)).toHaveCount(0);
+      await expect(notice(page, /map background unavailable: tiles are not loading/i)).toHaveCount(
+        0,
+      );
     });
   });
 }

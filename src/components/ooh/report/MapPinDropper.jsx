@@ -195,7 +195,7 @@ export default function MapPinDropper({
         <span className="ml-2 font-mono text-[10px] uppercase tracking-[0.2em] text-dim">
           ROOT@OOH:~ — PIN_DROP.SH
         </span>
-        <span className="ml-auto flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-[0.2em] text-ozone/60">
+        <span className="ml-auto flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-[0.1em] text-ozone/60">
           // live
           <TerminalTooltip
             label="pin dropper"
@@ -224,7 +224,7 @@ export default function MapPinDropper({
             onFocus={() => setSearching(true)}
             placeholder={placeholder}
             aria-label="Search for an address or place"
-            className="min-h-6 w-full bg-transparent font-mono text-[11px] text-silver outline-none placeholder:text-dim"
+            className="min-h-6 w-full bg-transparent font-mono text-ooh-control text-silver outline-none placeholder:text-dim"
           />
           {loading && <Loader2 className="h-3.5 w-3.5 shrink-0 animate-spin text-ozone" />}
           <span className="flex items-center gap-1">
@@ -265,9 +265,9 @@ export default function MapPinDropper({
         {unconfigured ? (
           <div
             role="status"
-            className="flex h-64 w-full flex-col items-center justify-center gap-2 border-y border-flare/40 bg-void px-4 text-center font-mono text-[11px] leading-snug text-flare"
+            className="flex h-64 w-full flex-col items-center justify-center gap-2 border-y border-flare/40 bg-void px-4 text-center font-mono text-ooh-control leading-snug text-flare"
           >
-            <span className="uppercase tracking-[0.2em]">// basemap unavailable</span>
+            <span className="font-bold">Map background unavailable.</span>
             <span className="text-silver">
               No map provider is configured, so the map is hidden instead of shown blank. Search an
               address, use Locate me, or type the coordinates in the manual fields below.
@@ -275,7 +275,7 @@ export default function MapPinDropper({
             <button
               type="button"
               onClick={() => onOpenManualEntry?.()}
-              className="min-h-8 border border-ozone px-3 font-bold uppercase tracking-[0.2em] text-ozone"
+              className="min-h-ooh-target border border-ozone px-3 font-bold uppercase tracking-[0.1em] text-ozone"
             >
               Open coordinate fields
             </button>
@@ -302,11 +302,11 @@ export default function MapPinDropper({
         {tilesDown && (
           <div
             role="status"
-            className="absolute inset-x-2 top-12 z-[1100] flex flex-wrap items-center gap-2 border border-flare/60 bg-void/95 px-3 py-2 font-mono text-[11px] leading-snug text-flare"
+            className="absolute inset-x-2 top-12 z-[1100] flex flex-wrap items-center gap-2 border border-flare/60 bg-void/95 px-3 py-2 font-mono text-ooh-control leading-snug text-flare"
           >
             <span className="min-w-0 flex-1">
-              // basemap tiles are not loading. Pin, search and coordinates still work; the manual
-              coordinate fields below are open.
+              Map background unavailable: tiles are not loading. Your pin, search and coordinates
+              still work.
             </span>
             <button
               type="button"
@@ -314,14 +314,14 @@ export default function MapPinDropper({
                 setTileFails(0);
                 setRetryKey((k) => k + 1);
               }}
-              className="min-h-8 border border-ozone px-3 font-bold uppercase tracking-[0.2em] text-ozone"
+              className="min-h-ooh-target border border-ozone px-3 font-bold uppercase tracking-[0.1em] text-ozone"
             >
               Retry basemap
             </button>
             <button
               type="button"
               onClick={() => onOpenManualEntry?.()}
-              className="min-h-8 border border-ozone px-3 font-bold uppercase tracking-[0.2em] text-ozone"
+              className="min-h-ooh-target border border-ozone px-3 font-bold uppercase tracking-[0.1em] text-ozone"
             >
               Open coordinate fields
             </button>
@@ -332,11 +332,11 @@ export default function MapPinDropper({
           <>
             {/* Hint overlay — shown when no pin */}
             {!hasPin ? (
-              <div className="pointer-events-none absolute left-1/2 top-3 z-[1100] flex -translate-x-1/2 items-center gap-1.5 whitespace-nowrap border border-ozone/40 bg-void/90 px-3 py-1.5 font-mono text-[10px] uppercase tracking-[0.2em] text-ozone backdrop-blur-sm">
+              <div className="pointer-events-none absolute left-1/2 top-3 z-[1100] flex -translate-x-1/2 items-center gap-1.5 whitespace-nowrap border border-ozone/40 bg-void/90 px-3 py-1.5 font-mono text-[10px] uppercase tracking-[0.1em] text-ozone backdrop-blur-sm">
                 // tap map to drop pin
               </div>
             ) : (
-              <div className="pointer-events-none absolute left-1/2 top-3 z-[1100] -translate-x-1/2 whitespace-nowrap border border-ozone/40 bg-void/90 px-3 py-1.5 font-mono text-[10px] uppercase tracking-[0.2em] text-ozone backdrop-blur-sm">
+              <div className="pointer-events-none absolute left-1/2 top-3 z-[1100] -translate-x-1/2 whitespace-nowrap border border-ozone/40 bg-void/90 px-3 py-1.5 font-mono text-[10px] uppercase tracking-[0.1em] text-ozone backdrop-blur-sm">
                 // pin locked — tap again to adjust
               </div>
             )}
