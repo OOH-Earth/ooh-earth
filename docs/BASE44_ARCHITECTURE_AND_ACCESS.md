@@ -47,3 +47,28 @@ This means the live site is served from **Render.com** (`rndr-id` header) runnin
 ## Staging / preview capability
 
 No `netlify.toml`, `vercel.json`, or other deploy-preview config exists in this repository. There is no evidence of a staging environment distinct from the `oohearth.app` production domain. Whether Base44/Render offers a preview-per-PR or per-branch deployment is a platform capability question for Dave to confirm — **not invented here**.
+
+## Continuity and AI containment (2026-10-28 update)
+
+The sections above predate this update (`644110f`); where they disagree with a line below, check the evidence cited here first. Nothing below is new infrastructure.
+
+**Direction (owner, 2026-10-28):** stay on Base44; no migration. Supabase is a *proposal only* — not deployed, not approved. Cost work is limited to measured runtime consumption.
+
+| Item | Deployed (evidenced) | Proposed / not deployed |
+|---|---|---|
+| Frontend | Vite + React SPA from this repo; releases cut from `maintenance/production-2026-10-02` (#383 merged 2026-10-26, `f63fdb1`) | — |
+| Backend, auth, data, storage | Base44 (entities, functions, RLS) via `@base44/sdk` | Supabase or any other backend: none |
+| Public AI displays | Flora/mushroom/conflict layers, ad-spend table, map alert ticker: **withdrawn in #384, open, not merged, not deployed** | Sourced replacements: research backlog only |
+| CI | Build, lint/typecheck, Prettier, CodeQL, dependency audit/review, Playwright (smoke + mobile) | — |
+
+**Known risks (open):**
+- Anonymous AI endpoint exposure: browser-callable `InvokeLLM` still accepts anonymous calls; #384 removes call sites, which is not protection. Provider limits unknown.
+- R2 (concurrency) is held; not part of this release.
+- Metadata: per-route prerendered metadata vs. production host behaviour remains unverified (section above).
+- Network issue #373: intermittent "Something went wrong" after a lazy-chunk fetch failure; open.
+
+**Rollback and evidence:** rollback artifacts and per-release evidence live in `docs/ops/ooh-earth/03-RELEASE-RUNBOOK.md`, `06-EVIDENCE-LOG.md` and `docs/design/UI-Fixes.md` §12; baseline-control evidence for #384 is in `07-DECISION-LOG.md` (2026-10-28).
+
+**Owners and access:** Dave owns production deploy authority and Base44 account/billing access; engineering and CI/CD ownership is recorded in the GitHub admin notes. Recovery contacts and credential custody are **not recorded here and must not be** — to be confirmed by Dave. David's guide reference is pending; its contents are not assumed.
+
+**Measurement plan (post-release, not yet run):** timestamped comparable journeys; `InvokeLLM` request counts before/after; production AI credits and function credits reported separately; test traffic separated from ordinary activity where identifiable; same billing period; limitations stated. No dollar, percentage or ROI claim without those readings.
