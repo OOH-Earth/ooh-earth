@@ -4,8 +4,14 @@ import { Search, Crosshair, Loader2, MapPin, Check } from 'lucide-react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import TerminalTooltip from '@/components/ooh/TerminalTooltip';
+import { resolveReportBasemap } from '@/lib/basemapProvider';
 
-// Free OSM tiles — no API key needed, same quality as the main atlas map.
+// Geocoding is OSM Nominatim; the basemap provider (and why) lives in basemapProvider.js.
+const BASEMAP = resolveReportBasemap();
+// This many tile errors in a row (no tile loading in between) means the basemap is unusable. Only
+// HTTP/network failures raise tileerror: a provider's HTTP-200 error image (CARTO without a valid
+// key) is NOT detectable here, which is why the provider choice is an explicit configuration.
+const TILE_FAIL_LIMIT = 3;
 const NOMINATIM_URL = 'https://nominatim.openstreetmap.org/search';
 const REVERSE_URL = 'https://nominatim.openstreetmap.org/reverse';
 
@@ -56,6 +62,7 @@ export default function MapPinDropper({
   lng,
   onPick,
   placeholder = 'Search street, city, or place',
+  onOpenManualEntry,
 }) {
   const [center, setCenter] = useState(/** @type {[number, number]} */ ([13.7563, 100.5018])); // Bangkok default
   const [zoom, setZoom] = useState(12);
@@ -65,6 +72,11 @@ export default function MapPinDropper({
   const [searching, setSearching] = useState(false);
   const [flyTarget, setFlyTarget] = useState(null);
   const [reverseLabel, setReverseLabel] = useState('');
+  const [tileFails, setTileFails] = useState(0); // consecutive tile errors
+  const [retryKey, setRetryKey] = useState(0);
+  const unconfigured = BASEMAP.status === 'unconfigured';
+  const tilesDown = !unconfigured && tileFails >= TILE_FAIL_LIMIT;
+  const basemapUsable = !unconfigured && !tilesDown;
   const boxRef = useRef(null);
   const timer = useRef(null);
 
@@ -250,36 +262,96 @@ export default function MapPinDropper({
 
       {/* ── Live map ── */}
       <div className="relative">
-        <MapContainer center={center} zoom={zoom} className="h-64 w-full" scrollWheelZoom>
-          <TileLayer
-            url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
-            attribution="&copy; OpenStreetMap &copy; CARTO"
-          />
-          <ClickHandler onPick={handlePick} />
-          <FlyTo target={flyTarget} />
-          {pinPos && <Marker position={pinPos} icon={pinIcon} />}
-        </MapContainer>
-
-        {/* Hint overlay — shown when no pin */}
-        {!hasPin ? (
-          <div className="pointer-events-none absolute left-1/2 top-3 z-[1100] flex -translate-x-1/2 items-center gap-1.5 whitespace-nowrap border border-ozone/40 bg-void/90 px-3 py-1.5 font-mono text-[10px] uppercase tracking-[0.2em] text-ozone backdrop-blur-sm">
-            // tap map to drop pin
+        {unconfigured ? (
+          <div
+            role="status"
+            className="flex h-64 w-full flex-col items-center justify-center gap-2 border-y border-flare/40 bg-void px-4 text-center font-mono text-[11px] leading-snug text-flare"
+          >
+            <span className="uppercase tracking-[0.2em]">// basemap unavailable</span>
+            <span className="text-silver">
+              No map provider is configured, so the map is hidden instead of shown blank. Search an
+              address, use Locate me, or type the coordinates in the manual fields below.
+            </span>
+            <button
+              type="button"
+              onClick={() => onOpenManualEntry?.()}
+              className="min-h-8 border border-ozone px-3 font-bold uppercase tracking-[0.2em] text-ozone"
+            >
+              Open coordinate fields
+            </button>
           </div>
         ) : (
-          <div className="pointer-events-none absolute left-1/2 top-3 z-[1100] -translate-x-1/2 whitespace-nowrap border border-ozone/40 bg-void/90 px-3 py-1.5 font-mono text-[10px] uppercase tracking-[0.2em] text-ozone backdrop-blur-sm">
-            // pin locked — tap again to adjust
+          <MapContainer center={center} zoom={zoom} className="h-64 w-full" scrollWheelZoom>
+            <TileLayer
+              key={retryKey}
+              url={BASEMAP.url}
+              subdomains={BASEMAP.subdomains}
+              maxZoom={BASEMAP.maxZoom}
+              attribution={BASEMAP.attribution}
+              eventHandlers={{
+                tileload: () => setTileFails(0),
+                tileerror: () => setTileFails((n) => n + 1),
+              }}
+            />
+            <ClickHandler onPick={handlePick} />
+            <FlyTo target={flyTarget} />
+            {pinPos && <Marker position={pinPos} icon={pinIcon} />}
+          </MapContainer>
+        )}
+
+        {tilesDown && (
+          <div
+            role="status"
+            className="absolute inset-x-2 top-12 z-[1100] flex flex-wrap items-center gap-2 border border-flare/60 bg-void/95 px-3 py-2 font-mono text-[11px] leading-snug text-flare"
+          >
+            <span className="min-w-0 flex-1">
+              // basemap tiles are not loading. Pin, search and coordinates still work; the manual
+              coordinate fields below are open.
+            </span>
+            <button
+              type="button"
+              onClick={() => {
+                setTileFails(0);
+                setRetryKey((k) => k + 1);
+              }}
+              className="min-h-8 border border-ozone px-3 font-bold uppercase tracking-[0.2em] text-ozone"
+            >
+              Retry basemap
+            </button>
+            <button
+              type="button"
+              onClick={() => onOpenManualEntry?.()}
+              className="min-h-8 border border-ozone px-3 font-bold uppercase tracking-[0.2em] text-ozone"
+            >
+              Open coordinate fields
+            </button>
           </div>
         )}
 
-        {/* Tooltip guide — bottom-right of map */}
-        <div className="pointer-events-none absolute bottom-2 right-8 z-[1100] flex items-center gap-1 border border-slate2/50 bg-void/80 px-2 py-1 font-mono text-[10px] uppercase tracking-[0.15em] text-dim backdrop-blur-sm">
-          <TerminalTooltip
-            label="how to pin"
-            text="1. Search the address above, or 2. Tap any spot on the map, or 3. Use the crosshair to jump to your GPS."
-            side="top"
-          />
-          guide
-        </div>
+        {basemapUsable && (
+          <>
+            {/* Hint overlay — shown when no pin */}
+            {!hasPin ? (
+              <div className="pointer-events-none absolute left-1/2 top-3 z-[1100] flex -translate-x-1/2 items-center gap-1.5 whitespace-nowrap border border-ozone/40 bg-void/90 px-3 py-1.5 font-mono text-[10px] uppercase tracking-[0.2em] text-ozone backdrop-blur-sm">
+                // tap map to drop pin
+              </div>
+            ) : (
+              <div className="pointer-events-none absolute left-1/2 top-3 z-[1100] -translate-x-1/2 whitespace-nowrap border border-ozone/40 bg-void/90 px-3 py-1.5 font-mono text-[10px] uppercase tracking-[0.2em] text-ozone backdrop-blur-sm">
+                // pin locked — tap again to adjust
+              </div>
+            )}
+
+            {/* Tooltip guide — bottom-right of map */}
+            <div className="pointer-events-none absolute bottom-2 right-8 z-[1100] flex items-center gap-1 border border-slate2/50 bg-void/80 px-2 py-1 font-mono text-[10px] uppercase tracking-[0.15em] text-dim backdrop-blur-sm">
+              <TerminalTooltip
+                label="how to pin"
+                text="1. Search the address above, or 2. Tap any spot on the map, or 3. Use the crosshair to jump to your GPS."
+                side="top"
+              />
+              guide
+            </div>
+          </>
+        )}
       </div>
 
       {/* ── Coordinates readout — terminal status line ── */}
