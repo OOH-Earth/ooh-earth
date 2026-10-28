@@ -2,7 +2,7 @@
 Owner: unassigned · Status: draft · Date: 2026-10-28 · Evidence baseline: `origin/main` 065ecf8; #384 head 5c81a80 (open, not merged); production identity **not re-verified in this task** (see U1)
 
 ## Problem and intended outcome
-An external "OOH Earth DevOps Operating Guide" was supplied as a research reference. **The file was not available to this session** (not attached to the repo or found on the machine), so nothing below is reconciled against its text. This spec records the repo-evidenced practice map and the priority gaps so the guide can be reconciled to it, not the reverse. The guide is PROPOSED reference only; none of its recommendations are treated as implemented.
+An external "OOH Earth DevOps Operating Guide" was supplied as a research reference. The guide (v1.1 PDF) was supplied later the same day; its reconciliation is in `docs/engineering/DEVOPS-REFERENCE.md`. This spec keeps the repo-evidenced practice map and priority gaps. The guide is PROPOSED reference only; none of its recommendations are treated as implemented.
 
 ## In scope / explicit non-goals
 In: a practice mapping, prioritised gaps, bounded follow-up specs. Out: new infrastructure, vendors, dependencies, migrations, tracking, scheduled jobs; billing or security-setting changes; any change to the active #384 frontend release; the Agent OS freeze (preserved, untouched). No uptime, compliance, savings or ROI claims.
@@ -19,7 +19,7 @@ VERIFIED = observed this session or recorded with a re-checkable artifact · REP
 | 4 | Anonymous high-cost AI endpoint control | #384 PR body: `InvokeLLM` still accepts anonymous calls; removing call sites is not protection; provider limits unknown | REPORTED | No platform-side control known | **P0** | David + engineering | Separate spec: confirm available Base44 controls/limits; anonymous call from a fresh context is rejected or bounded, recorded |
 | 5 | Recoverability beyond frontend mirrors | Frontend rollback artifacts per release in `~/ooh-release-records` (local); entity/function source in git | REPORTED | Data (entity records), secrets inventory, and Base44 account recovery have no recorded restore test; release records are on one machine | P1 | David | A dated restore/export procedure exists for data and is tested read-only on BACKUP |
 | 6 | Core contribution permission/persistence evidence | Prior security tests on BACKUP (user RLS, moderation bypass) recorded in decision log; no test identity exists on production | REPORTED | Anonymous/authenticated submit→persist→review-status not evidenced end-to-end on current production | P1 | engineering | Controlled BACKUP journey with synthetic data recorded; production check only with owner approval |
-| 7 | Comparable Base44 credit samples | #384 has request counts only; no provider credit readings | UNKNOWN | No timestamped dashboard samples, no separation of AI vs function credits | P1 | David (dashboard access) | Samples per the #384 measurement plan, with lag and test-traffic caveats stated |
+| 7 | Comparable Base44 credit samples | Earlier dated samples exist in the usage ledger (guide cites production 319.31 at 2026-10-25 18:56 UTC: AI 240, functions 79.31); #384 itself has request counts only | REPORTED | **Correction (2026-10-28):** earlier samples exist; missing is a comparable post-release sample | P1 | David (dashboard access) | Samples per the #384 measurement plan, with lag and test-traffic caveats stated |
 | 8 | Isolated founder experimentation | None; BACKUP is the shared qualification preview | PROPOSED | See `specs/founder-experiment-process/` | P2 | David | That spec approved; app not created until then |
 | 9 | Spec-driven change records | `SPEC.md`, `specs/`, `docs/engineering/*` (merged via #382) | VERIFIED (on `main`) | Adopted by use, not formally approved | P3 | David | Owner approval recorded |
 
@@ -30,8 +30,8 @@ Not applicable (documentation). Denials from merge/deploy classifiers are stops,
 No secrets, tokens or credentials in any record. Ownership rows name roles until confirmed.
 
 ## Dependencies · assumptions · open questions
-- U1: Does production currently serve the #383 build? (needed before row 2 moves to VERIFIED.)
-- Q1: Where is the DevOps guide file? Blocks reconciliation, not this mapping.
+- U1: closed 2026-10-28 — production served `1dbddda` (#384) after release; see DEVOPS-REFERENCE.md.
+- Q1: closed — guide supplied; see `docs/engineering/DEVOPS-REFERENCE.md`.
 - Q2: Who are the deploy/recovery owners? Blocks row 3.
 
 ## Success measures · what cannot currently be measured
