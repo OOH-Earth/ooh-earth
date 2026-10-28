@@ -2,18 +2,19 @@ import { MapContainer, TileLayer, Marker, Popup, Circle, useMap } from 'react-le
 import L from 'leaflet';
 import { useEffect } from 'react';
 import { useMapStyle } from '@/lib/mapStyleContext';
+import { withCartoKey } from '@/lib/basemapProvider';
 
 const TILE_LAYERS = {
   dark: {
-    url: 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
+    url: withCartoKey('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png'),
     attr: '&copy; OpenStreetMap &copy; CARTO',
   },
   light: {
-    url: 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
+    url: withCartoKey('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png'),
     attr: '&copy; OpenStreetMap &copy; CARTO',
   },
   voyager: {
-    url: 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',
+    url: withCartoKey('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png'),
     attr: '&copy; OpenStreetMap &copy; CARTO',
   },
   satellite: {
@@ -21,7 +22,7 @@ const TILE_LAYERS = {
     attr: '&copy; Esri',
   },
   matrix: {
-    url: 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
+    url: withCartoKey('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png'),
     attr: '&copy; OpenStreetMap &copy; CARTO',
   },
 };
