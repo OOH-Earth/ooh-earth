@@ -104,7 +104,9 @@ export default function MapBottomSheet({
   const statusInline = !!status && short && !toolsMode;
   const effSnap = toolsMode ? 'full' : snap;
   const statusH = statusRow ? 48 : 0;
-  const peekH = (short ? 60 : Math.min(132, Math.max(64, vh - 294))) + statusH;
+  // Map-first: the collapsed sheet is a header-only results handle (grab bar + count + actions);
+  // the list itself opens with the summary button, Expand, or a drag/tap on the handle.
+  const peekH = (short ? 60 : 72) + statusH;
   const halfH = Math.round(vh * 0.42);
   // Never taller than the space between the nav (or the screen bottom in fullscreen) and an 8px
   // top margin: at 390px tall, 88% of the screen plus the 76px nav offset put the header, and
@@ -239,6 +241,20 @@ export default function MapBottomSheet({
             >
               // {status.text}
             </span>
+          ) : !toolsMode && !detailMode && snap === 'peek' ? (
+            <button
+              type="button"
+              onClick={() => {
+                pendingFocus.current = 'Collapse sheet';
+                onSnapChange('half');
+              }}
+              className="flex min-h-10 min-w-0 items-center gap-2 truncate font-mono text-[10px] uppercase tracking-[0.25em] text-ozone"
+            >
+              <span className="truncate">{`// ${count} ${layerLabel || 'results'}`}</span>
+              <span className="shrink-0 border border-ozone/60 px-1.5 py-0.5 tracking-[0.2em]">
+                Open list
+              </span>
+            </button>
           ) : (
             <span className="font-mono text-[10px] uppercase tracking-[0.25em] text-ozone">
               {toolsMode
