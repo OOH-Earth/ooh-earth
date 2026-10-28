@@ -1,49 +1,11 @@
-import { test, expect, type Page } from '@playwright/test';
+import { test, expect } from '@playwright/test';
 import { openMapWithMock } from './helpers/mapGeometry';
+import { sheet, height, btn, settle, tap, touchDrag } from './helpers/sheet';
 
 // David's report: the sheet's collapse chevron and diagonal arrow "do not work" on a phone.
 // These specs drive the controls with real pointer/touch input (never el.click()), and cover the
 // reproduced stuck-height defect: a drag whose pointer-up never arrives used to leave the sheet at
 // an arbitrary height while the buttons only flipped their labels.
-
-const sheet = (page: Page) => page.locator('.ooh-bottom-sheet');
-const height = async (page: Page) => Math.round((await sheet(page).boundingBox())?.height ?? 0);
-const btn = (page: Page, name: string) => sheet(page).getByRole('button', { name, exact: true });
-
-// The sheet animates its height (0.32s): wait until it stops moving before aiming at a control.
-async function settle(page: Page) {
-  let last = '';
-  let same = 0;
-  for (let i = 0; i < 60 && same < 3; i++) {
-    const b = JSON.stringify(await sheet(page).boundingBox());
-    same = b === last ? same + 1 : 0;
-    last = b;
-    await page.waitForTimeout(100);
-  }
-}
-
-async function tap(page: Page, name: string) {
-  await settle(page);
-  const b = await btn(page, name).boundingBox();
-  expect(b, `${name} is on screen`).toBeTruthy();
-  await page.touchscreen.tap(b!.x + b!.width / 2, b!.y + b!.height / 2);
-}
-
-// Real touch gesture through CDP (Input.dispatchTouchEvent), not synthetic DOM events.
-async function touchDrag(page: Page, from: { x: number; y: number }, dy: number) {
-  await settle(page);
-  const cdp = await page.context().newCDPSession(page);
-  const pt = (y: number) => [{ x: from.x, y, id: 1 }];
-  await cdp.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: pt(from.y) });
-  for (let i = 1; i <= 8; i++) {
-    await cdp.send('Input.dispatchTouchEvent', {
-      type: 'touchMove',
-      touchPoints: pt(from.y + (dy * i) / 8),
-    });
-  }
-  await cdp.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
-  await cdp.detach();
-}
 
 const VIEWPORTS: [number, number][] = [
   [320, 640],
