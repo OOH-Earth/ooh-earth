@@ -305,8 +305,8 @@ export default function MapPinDropper({
             className="absolute inset-x-2 top-12 z-[1100] flex flex-wrap items-center gap-2 border border-flare/60 bg-void/95 px-3 py-2 font-mono text-[11px] leading-snug text-flare"
           >
             <span className="min-w-0 flex-1">
-              // basemap tiles are not loading. Pin, search and coordinates still work; the manual
-              coordinate fields below are open.
+              // basemap tiles are not loading. Pin, search and coordinates still work; use Open
+              coordinate fields to type them.
             </span>
             <button
               type="button"
