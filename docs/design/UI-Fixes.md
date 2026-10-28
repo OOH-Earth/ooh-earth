@@ -440,3 +440,255 @@ re-runs its checks. `MapAlertTicker.jsx` is deleted in a follow-up.
 **Accepted limitations (follow-up ledger).** Real 200% and 400% browser zoom; physical phone and virtual keyboard; a real backend-error Retry run; the stray BACKUP Location `6ade5b174365beea2ccd1286` pending decision; UI-027 sheet-shift decision; UI-028 (0,0 coordinates accepted); the Chrome 153 WebGL2 hang on WSL2.
 
 **Rollback.** The saved current-live copy is `~/ooh-release-records/2026-10-25/live-f062e0d-dist` (373 files; hashes in `live-f062e0d-sha256.txt`). Restore means deploying that directory with the same CLI command and `--no-build`. It was not executed. The older R1M3 directory must not be used.
+
+## 13. Follow-up to David's feedback: sheet controls, map-first list, Report basemap (2026-10-28)
+
+Status: **local branches and draft PRs only.** Nothing is merged, staged or live; the #383 approval does not cover this.
+Baseline re-verified 2026-10-28: `oohearth.app/release-manifest.json` reports `git_sha 1dbddda` (#384, built 2026-10-28T10:45Z) on
+`maintenance/production-2026-10-02`, which already contains #383 (`f63fdb1`). Review units, each rebased on `1dbddda`:
+
+| Unit | Branch | Commits |
+| --- | --- | --- |
+| A. Sheet interaction and map-first layout | `sheet/interaction-and-map-first` | `bbf2030` handle/drag hardening, `411f720` compact map-first state, `fc5dfb9` content-sized collapsed state + robustness specs |
+| B. Basemap configuration and Report states | `basemap/config-and-report` | `75e0bb5` configuration-driven Report basemap, `07c66f4` shared CARTO key on the other raster consumers, `11e52e6` notice text |
+| C. Consistency pass (combined local candidate, section 14) | `ui/consistency-pass` | merge of A and B, then its own commits |
+
+### 13.1 What David reported
+
+1. Listings sheet (screenshots 1 and 2): the downward chevron and diagonal arrow "don't work" (the second shows the collapsed
+   sheet's upward chevron). "It might be my phone... or the cache."
+2. A map-first landing with navigation over the map, listings that open and collapse, "swipe it down", referenced to Airbnb.
+3. `/report`: repeated "API KEY REQUIRED" behind the pin (screenshot 3).
+
+### 13.2 Sheet controls: what is reproduced and what is not
+
+| Claim | Evidence | Status |
+| --- | --- | --- |
+| Pre-#383 build (`f062e0d`, `index-CN5akOBi.js`): Expand is dead under a **real mouse click** | Saved artifact served locally; the committed spec "mouse: expand, collapse, fullscreen and back" fails on it, and the earlier ad-hoc probe measured height 132 -> 132. Cause is UI-003 (`setPointerCapture` on the header retargets the click). Chromium's *touch tap* path passes on the same build | **Reproduced** |
+| Current production (#383, `index-GursbtQf.js`, later `1dbddda`) has dead controls | Real Chrome 156, 390x844 mobile emulation, real clicks: Expand -> 743px with focus on Collapse; Fullscreen toggles `body.map-fullscreen`. Both buttons 40x40 and topmost | **Not reproduced** |
+| David's screenshots predate the 2026-10-26 deploy | Consistent with the symptom; screenshot date unknown | **Unconfirmed** |
+| Stale cache or service worker | No service worker in `src` or `index.html`; assets are content-hashed | **Unsupported** (not ruled out for his device) |
+| iPhone / WebKit behaviour | No iPhone; Playwright WebKit would not install (host dependencies missing, needs `sudo`; not run) | **Unverified** |
+
+`bbf2030` is **interaction hardening**, not a fix for a reproduced current-production defect. It moves the drag onto an explicit
+handle button so header buttons, links and results never share a pointer target with the gesture, tracks move/up/cancel on
+`window`, clears any stale live height on a committed snap change, and adds tap/Enter/arrow alternatives. It does not prove
+or fix David's specific cause.
+
+Test classification (the 18 new sheet specs, run against the untouched production build `1dbddda` with short action timeouts):
+
+| Kind | Meaning | Specs |
+| --- | --- | --- |
+| Regression that fails on the reproduced old defect | fails on pre-#383 `f062e0d` | `mouse: expand, collapse, fullscreen and back with real clicks` |
+| Safety net, passes on old and new | guards behaviour that already works | touch taps (3 viewports), lost pointer-up, press-and-move from a header button, map pan, reduced motion, map position/route, filter-mode toggle, results touch/wheel |
+| Candidate-only behaviour | fails on production because the feature does not exist there | handle drag and keyboard, compact labelled state and Open list, inert collapsed list, cancelled touch drag, enlarged/long content, attribution/nav per snap |
+| Not exercised | harness or environment limit | list **touch scrolling** (CDP touch input cannot scroll even a plain page here; wheel scrolling is tested), WebKit, a physical iPhone |
+
+### 13.3 Map-first list
+
+Reference actually observed: `https://www.airbnb.com/s/Bangkok--Thailand/homes` (redirected to `airbnb.co.in`), Chrome with an
+iPhone user agent at 390x844, 2026-10-28 (`reference-airbnb-mobile-web-390.jpg`). Verified: map under a search pill and filter chips;
+a bottom sheet with a grab-handle pill, a headline and cards; a persistent bottom tab bar; no chevron or maximise icons on the
+sheet. **Not verified:** drag/snap behaviour, collapse behaviour, the native app. A web search found no first-party documentation.
+No map-engine change was made to imitate it. The OSIRIS research in section 2 is reused for grouping.
+
+Implemented on the existing peek/half/full states and the UI-027 nudge lift (no new state model):
+
+- Fresh arrival is the existing `peek`: header-only. Floor 72px (60px short landscape), and it grows with the header's measured
+  height (long or localized label, large count, text spacing), capped by the full snap, so 72px is a tested floor and not a clip.
+- The handle carries the count and an explicit labelled **Open list** button (goes to `half`). Swipe is not the only way: Open list,
+  Expand, handle tap/Enter and arrow keys all work. Collapsed results are `inert`; focus inside them moves to the handle.
+- Real Chrome 156 on the candidate with live read-only data: 72 -> 743 -> 72 by handle drag, route unchanged.
+- The result count follows the visible map area, so it can change by one when the sheet resizes the map box (existing design,
+  asserted not to be stable in `map-sheet-robustness`). Map position and route are asserted to survive state changes.
+
+### 13.4 Report "API KEY REQUIRED"
+
+Reproduced on production in Chrome 156: the picker requests `https://{a-c}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}@2x.png`. Each
+answer is **HTTP 200, `image/png`**, and the pixels are the "API KEY REQUIRED" watermark (256x256 even for `@2x`;
+`before-carto-tile-as-returned-200.png`). The same bytes come back from plain `curl` with or without an oohearth.app Referer: not a
+phone, browser, origin or cache effect, and not a DOM overlay. **An invalid key returns the identical bytes** (same SHA-256 prefix
+`cc3f31364a73` for no key and for `?key=invalid-probe-not-a-real-key`; a probe, no account involved), so a rejected or expired key
+cannot be told apart from a good map by status, headers or events.
+
+CARTO documentation read 2026-10-28 (`https://www.carto.com/basemaps/apikey/index.html`, `https://carto.com/legal/basemap-terms/`,
+terms last updated 2026-09-29): a `key` query parameter is required on every tile, style, glyph and sprite URL under
+`basemaps.cartocdn.com`, raster **and vector**; free tier 5M requests/month non-commercial and 1M commercial (calendar month,
+UTC); keys registered before 2026-09-23 keep working until 2026-11-30; attribution "(c) OpenStreetMap contributors, (c) CARTO"
+must be prominent; keys must be the customer's own and restricted "appropriately"; proxying or server-side caching is
+prohibited; CARTO may rate-limit or revoke any key without notice. The docs do not state which restriction types exist, do not
+describe invalid-key behaviour, and the terms "do not explicitly address embedding keys in client-side code". Requesting a key
+accepts the terms, which is an owner action; none was requested.
+
+**CARTO consumers audited** (production, fresh isolated context, resource timing with a raised buffer, 7 s per route):
+
+| Consumer | Routes | Requests unauthenticated CARTO tiles? |
+| --- | --- | --- |
+| `MapPinDropper` (hard-coded dark raster) | `/report` | **Yes, always** (6 watermarked tiles) |
+| `mapStyleContext` rasters (Dark, Light, Voyager, Matrix), Leaflet flat map | `/map` Flat, portals using Leaflet | Only when a CARTO style is selected. Production's `map_style_default` is `satellite` (Esri), so default visitors do not |
+| `MediaCorpsMap` rasters | `/media-corps` | Only with a CARTO style selected: 12 tiles with Dark selected, 0 with the default |
+| `mapStyleContext` GL styles (MapLibre globe: `Globe3D`, `MediaCorpGlobe`) | `/`, `/map`, `/rivers`, ... | With a CARTO style selected they request the vector style, sprite and glyphs keyless; those answered 200 with real content today. Enforcement was not observed and is not assumed |
+
+**Esri World Imagery** (`https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}`, keyless,
+returns JPEG today). Item `10df2279f9684e4a9f6a7f08febac2a9`: "licensed under the Esri Master License Agreement", credit text
+"Esri, Vantor, Earthstar Geographics, and the GIS User Community" (the atlas still says "Maxar"). Esri's current developer
+documentation points at an `ibasemaps-api.arcgis.com` endpoint with a token; a community answer says the keyless endpoint is not for
+commercial use. **No organisational approval or entitlement for Esri exists in the repository**: the provider first appeared in a
+`base44-builder[bot]` commit on 2026-08-03 and the only mention is a CSP allowlist entry. So the Esri switch is **not** the
+default: it is an explicit build-time opt-in.
+
+Change (unit B): `src/lib/basemapProvider.js`.
+
+| Build configuration | `/report` picker |
+| --- | --- |
+| No key, no opt-in (default) | No provider is contacted. The map is replaced by a `role=status` panel ("Map background unavailable...") with an **Open coordinate fields** button; search, Locate me and manual coordinates keep working |
+| `VITE_CARTO_BASEMAPS_KEY` set | Keyed CARTO tiles, CARTO + OpenStreetMap attribution |
+| No key + `VITE_REPORT_BASEMAP_FALLBACK=esri` (owner opt-in) | Esri imagery with the service credit text |
+| Any provider, 3 tile errors in a row | Notice with **Retry basemap** and the same button; any tile loading again clears it; pin and coordinates are untouched |
+
+Other raster consumers get the same key via `withCartoKey()` (unchanged without a key). Vector styles are not touched.
+**Limit, by design:** only HTTP/network failures raise `tileerror`. An HTTP-200 error image (no key, invalid or expired key) is not
+detectable, no watermark detector, OCR or retry loop was added, and provider choice is therefore a configuration decision plus visual
+verification of real imagery. Any `VITE_*` value is readable by every visitor: use only a key issued for browser use and restricted to
+our domains in CARTO's dashboard, never a privileged key. Specs run against three builds (no key, Esri opt-in, placeholder key
+`test-key-not-real`): 2 + 8 + 10 pass; the "unconfigured" spec fails on the production source.
+
+**Owner decisions (David / project owner):** (1) request a CARTO key, accept the terms and choose commercial vs non-commercial
+(commercial above 1M/month is paid), and confirm that a browser-embedded key is acceptable to CARTO; (2) confirm Esri's terms for
+the Report picker before setting the opt-in, and decide the attribution text; (3) until then the default build shows no map in
+Report, by design.
+
+### 13.5 Verification and limits
+
+Chromium 148 (Playwright build 1223; WebGL hangs on 153 in this WSL2 host), local `vite preview`, mocked API unless stated.
+Unit A: 58 + 45 specs green (sheet, first-sheet, robustness, bottom region, overlay layout), `npm run typecheck`, eslint; classified against production in 13.2.
+Unit B: provider modes as above, 5 `node --test` unit tests, existing Report/MediaCorps specs (one pre-existing failure,
+`report-release-r1m2` "short landscape", reproduces identically on the production source). Real Chrome 156 on the earlier
+candidate: Open list, collapse, handle drag both ways, Report tiles. **Not verified:** a physical iPhone or any WebKit; list touch
+scrolling; real browser zoom; BACKUP or MEMBER state; short landscape with changing browser chrome. The Chromium results are
+supplemental engine coverage, never an iPhone test.
+
+**David's device checklist (iPhone):** (1) open `/map`; (2) tap the chevron and the diagonal arrow and confirm the sheet and bottom bar
+respond; (3) tap **Open list**, scroll the list with a finger, collapse it; (4) drag the grab bar up and down; (5) rotate to
+landscape and repeat; (6) open `/report` and inspect the map area; (7) tell us the iOS and browser version and any action that failed.
+
+### 13.6 Rollback
+
+Nothing is deployed. Discard with `git worktree remove` for the three worktrees and deleting their branches. A later deploy would use the
+section 12 rollback (`~/ooh-release-records/2026-10-25/live-f062e0d-dist`) only if that artifact is still the previous live one; recheck
+production first, because #384 has shipped since.
+
+## 14. Coordinated consistency pass (reference v1.0, 2026-10-28)
+
+Specification: [`OOH-UI-UX-REFERENCE.md`](./OOH-UI-UX-REFERENCE.md) (labels: **OBSERVED** OSIRIS source, **STANDARD** WCAG 2.2,
+**PROJECT** proposed OOH rule). Status: **local candidate and draft PRs only. Not merged, not staged, not live.** The #383
+authorization is historical; no BACKUP window or production reservation exists for this pass. Candidate: branch
+`ui/consistency-pass` @ the SHA recorded in the PR (build `release-manifest.json` `git_sha`), based on production `1dbddda`, built
+locally with Vite and served from `vite preview`; nothing was deployed.
+
+### 14.1 Source verification
+
+All five pinned OSIRIS blobs were re-fetched at commit `59634bc2cbe418c64b258548eeda8f056b4823d0` and match the reference
+(`globals.css cc33c750...`, `page.tsx e557eb6f...`, `LayerPanel.tsx 037ce4fc...`, `SearchBar.tsx c7fb0213...`, `GlobalStatusBar.tsx 837fd3c8...`).
+Sampled symbols match: `useIsMobile` `page.tsx:59`, Escape `LayerPanel.tsx:231`, `aria-pressed` 304/494, `aria-expanded` 404. License MIT.
+Upstream `master` has moved to `f0919b8`, as the reference cautions; nothing was copied, only patterns adapted. OSIRIS is a source
+study, not a conformance standard.
+
+### 14.2 Inventory (this branch, counted from source)
+
+- 90 `<Route>` entries in `App.jsx`; 396 `.jsx` files. Legacy fixed-pixel text below 12px: 2,457 uses of `text-[6..11px]` in 260 files
+  (`text-[10px]` 897, `[9px]` 776, `[11px]` 425, `[8px]` 301, `[7px]` 66, `[6px]` 26). `text-dim` is used 1,009 times (20 as placeholder).
+- Shared consumers: `Nav` is imported by 74 files, `MobileBottomTabs` 1, `MobileHeader` 3, `ClimateClock` 2, `LiveActivityFeed` 1, `LocationCard` 3,
+  `MapBottomSheet` 2. A blanket replacement was **not** attempted (the reference forbids it): roles are opt-in and adopted slice by slice.
+- Measured routes (6 of 90): `/`, `/map`, `/report`, `/media-corps`, `/plans`, `/support`, at 11 viewports (320x640, 360x800, 390x844,
+  430x932, 768x1024, 820x1180, 1280x720, 1366x768, 1440x900, 667x375, 844x390), mocked API, anonymous. **The other 84 routes were not
+  measured**, including dashboards, detail pages and scanners; no route paths were invented.
+
+### 14.3 Token map
+
+| Role (reference section 3) | Existing token / class | Contrast or note | Proposed role (added) | Consumers adopted |
+| --- | --- | --- | --- | --- |
+| Control text, form labels 14-16px | `text-[11px]` mono uppercase, tracking .2-.3em | fixed px, ignores browser text size | `text-ooh-control` (0.875rem, lh 1.45), tracking .1-.12em | Report step 1, sheet buttons, map notices |
+| Secondary metadata 12-14px | `text-[7..10px]` | | `text-ooh-caption` (0.75rem, lh 1.4) | sheet header and summary, result-card link |
+| Body 16px / section 18-20px / page 24-32px | `text-sm`, `text-lg`, hero sizes | | `text-ooh-body`, `text-ooh-section`, `text-ooh-page` (clamp) | none yet (defined, tested) |
+| Readable secondary text | `text-dim` `--c-dim` 102 gray | **3.66:1 on void, 3.45:1 on card (dark): below 4.5:1**; `/50-/70` variants 1.7-2.3:1; light theme 88 gray passes (6.5:1) | `text-quiet` `--c-quiet` 138 gray: 6.08:1 void, 5.73:1 card; light 88 | sheet icons, Report step 1 |
+| Space scale 4..48 | ad hoc | | `--ooh-space-1..7`, Tailwind `p-ooh-1..7` | unused beyond tokens (no existing spacing rewritten) |
+| Page inset 16/24/32, panel pad 16/24 | ad hoc `px-4`/`px-6` | | `--ooh-page-inset`, `--ooh-panel-pad` (media queries at 768 and 1280) | none yet |
+| Tap target >= 44px | `h-10 w-10` (40px), `min-h-8` (32px) | | `min-h-ooh-target` / `min-w-ooh-target` (2.75rem) | sheet buttons, Report chips and Locate me, result-card link |
+| Panel primitives | per-component flex stacks | | `.ooh-panel`, `__header/__body/__footer`, `.ooh-actions`, `.ooh-icon-button` (scoped, opt-in) | none yet |
+
+Tested in `src/lib/uiTokens.test.js` (rem roles, contrast of `--c-quiet` in both themes, 44px target role).
+
+### 14.4 Slices (separately reversible commits on `ui/consistency-pass`)
+
+| Slice | Commit subject | Content disposition |
+| --- | --- | --- |
+| Foundation | `feat(ui): semantic type/space/target roles...` | nothing removed; opt-in |
+| Map sheet and result cards | `feat(ui): map sheet and result cards adopt the type/target roles; list-based wording` | **Keep visible:** count, Open list, Expand/Collapse, Fullscreen. **Relocate:** none. Names: Expand list / Collapse list / Resize list; `PAGE` -> `View listing` (accessible name includes the place); count states its scope ("in view") for the ads layers where it is viewport-filtered. **Kept as is:** Fullscreen map / Exit fullscreen (it hides app chrome and does not resize the list, so the reference's "Expand list / Restore list size" would misdescribe it); Retry view (the action retries street-view evidence, not "this area"). Renaming the sheet buttons changes accessible names relied on by 6 e2e files here and by specs on other branches (1 file on `main`) |
+| Report step 1 | `feat(ui): Report step 1 adopts the type roles; specific location-failure messages` | **Keep visible:** every label, help and privacy sentence (privacy guidance 12px -> 14px). **Added:** denied / unavailable / timeout / unsupported location messages (previously a silent failure), `role=status` |
+| Measurement | `test(ui): route x viewport measurement matrix` | none |
+| Shared header strip | **deferred**, branch `ui/header-strip-roles-DEFERRED` | see 14.6 |
+
+### 14.5 Measured before / after (Chromium 148, local preview, anonymous, mocked API)
+
+"Before" is the production source `1dbddda`; "after" is the candidate without the deferred header slice. Sums over the 11 viewports.
+Counts are DOM measurements, not a score: *controls* are visible buttons, links and fields; *text* is visible text elements; contrast is
+computed against the nearest opaque ancestor and skips text over images/gradients (a lower bound).
+
+| Route (sum over 11 viewports) | h-scroll states | controls <24px | controls <44px | text elements <12px | low-contrast text (of measured) |
+| --- | --- | --- | --- | --- | --- |
+| `/support` | 0 -> 0 | 93 -> 93 | 520 -> 520 | 971 -> 971 | 143/1014 -> 143/1014 |
+| `/plans` | 0 -> 0 | 27 -> 27 | 391 -> 391 | 685 -> 685 | 61/1279 -> 61/1279 |
+| `/media-corps` | 0 -> 0 | 66 -> 66 | 323 -> 323 | 272 -> 272 | 13/338 -> 13/338 |
+| `/report` | 0 -> 0 | 38 -> 27 | 595 -> 432 | 890 -> 626 | 94/1000 -> 61/978 |
+| `/map` | 0 -> 0 | 23 -> 23 | 653 -> 381 | 1990 -> 1454 | 223/2421 -> 223/2429 |
+| **five routes (Home excluded: noisy)** | 0 -> 0 | 247 -> 236 | 2482 -> 2047 | 4808 -> 4008 | 534/6052 -> 501/6038 |
+
+Reading it honestly:
+- No horizontal page scroll in any of the 66 states before or after (asserted by the spec).
+- `/report` improves in every column and `/map` improves in controls under 44px (653 -> 381) and small text (1,990 -> 1,454). The `/map`
+  low-contrast count does not move (223): the sheet is a small part of that route.
+- `/plans`, `/support` and `/media-corps` are unchanged: no slice touches them.
+- **Home is not reported.** On the unchanged production build Home varied between 967 and 1,294 small-text elements across three identical
+  runs (and one state captured a half-rendered page), so its before/after deltas are noise. The other five routes reproduced exactly on repeat
+  (`/map` and `/report` baselines were identical across two runs; `/report` "after" counts varied by up to about 35 between runs, so treat its deltas as approximate).
+- Measured counts are not a coverage percentage: the denominator is 6 routes of 90.
+
+Evidence in `docs/design/evidence/consistency-pass/`: `before-after-*.jpg` (left = production, right = candidate) for `/map` and `/report` at
+320x640, 390x844 and 1280x720, the Report form at 320 and 390, and `matrix-before.json` / `matrix-slices123.json` (all 66 states each).
+Whole-screen inspection found two things geometry did not: the deferred header slice's height growth (14.6), and, in both before and
+after, the map's "DRAG - SCROLL TO ZOOM" hint sitting under the zoom buttons at 320px (pre-existing, not changed).
+
+### 14.6 What was tried and backed out
+
+The shared header strip (`ClimateClock` 7-8px, `LiveActivityFeed` 8-9px and `text-dim/70` at 2.3:1, `MobileHeader`) was moved to the new roles.
+Whole-screen comparison showed the strip **grew about 15-20px** and the ticker wrapped to three lines at 320px, contrary to the commit
+message, and the map layout specs had not been run against that build. Fixed top padding (7rem) is reserved for the header on many
+routes and short landscape already has a 188px chrome budget problem (UI-012), so this needs a coordinated header/nav budget decision,
+not a text-size change. It is reverted in the candidate and kept on `ui/header-strip-roles-DEFERRED`.
+
+### 14.7 Verification run on the exact candidate
+
+Candidate `cf35157` (`ui/consistency-pass`; `release-manifest.json` `git_sha` of the local build), Chromium 148 (Playwright build 1223), 2 workers,
+local `vite preview`, mocked API. First run of 14 spec files (sheet controls, map-first, robustness, bottom region, overlay layout, Report
+basemap, location messages, Report clarity, live-activity, live-feed/nudge overlap, nav menu, footer targets, operative typography, media corps):
+
+- **138 passed, 1 failed, 12 skipped.** The 12 skips are the Esri-opt-in and CARTO-key modes of `report-basemap`, which need differently
+  built bundles and were run separately on the basemap unit (2 + 8 + 10 passed).
+- The 1 failure was `map-sheet-robustness` "touching or scrolling the results never resizes the sheet": the wheel-scroll assertion timed out at 5 s
+  under load. It passed 2 of 2 when rerun serially. The first-run failure is kept here; it is not claimed to be fixed.
+- Earlier first-run failures on the previous build, kept for the record: `map-bottom-region` 844x390 flat (30 s page-load timeout) and
+  `map-sheet-robustness` attribution/nav (timing); both passed serially.
+- `npm run typecheck` clean; eslint clean on `src`; `node --test` for tokens and provider: 8 pass.
+- Pre-existing, unrelated: `report-release-r1m2` "short landscape" fails identically on the untouched production source (smooth-scroll timing).
+- Not run on this candidate: `a11y.spec.ts`, `smoke.spec.ts` and the wider suite; CI on the draft PRs is the authoritative check.
+
+### 14.8 Unavailable coverage and owner decisions
+
+Not verified: a physical iPhone or any WebKit (Playwright WebKit needs `sudo apt` host dependencies; not run); real browser zoom at
+200% and 400% (emulation only); virtual keyboard and changing browser chrome; MEMBER state; BACKUP; list touch scrolling; contrast over
+images and gradients; Home, dashboards, detail pages, scanners, `/plans` and `/support` slices (measured, not changed).
+Decisions: (1) adopt the 12px floor in `UI-STANDARDS.md` as the new minimum for migrated surfaces (it currently says 10px is
+the floor); (2) a header/nav chrome budget that allows a 12-14px clock/ticker (UI-012); (3) whether `--c-dim` itself should be lightened
+globally instead of migrating 1,009 uses to `text-quiet`; (4) the CARTO and Esri decisions in section 13.4; (5) accept the renamed
+sheet accessible names, which other branches' specs may reference.
