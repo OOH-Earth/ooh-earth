@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useState, useCallback } from 'react';
 import { base44 } from '@/api/base44Client';
+import { withCartoKey } from '@/lib/basemapProvider';
 
 // Site-wide map tile styles. Each carries a Leaflet raster `url` plus a
 // MapLibre `glStyle` (URL or inline object) so both the flat map and the globe
@@ -28,7 +29,7 @@ export const MAP_STYLES = [
     id: 'dark',
     label: 'Dark',
     attribution: '&copy; OpenStreetMap contributors &copy; CARTO',
-    url: 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
+    url: withCartoKey('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png'),
     subdomains: 'abcd',
     maxZoom: 20,
     glStyle: 'https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json',
@@ -38,7 +39,7 @@ export const MAP_STYLES = [
     id: 'light',
     label: 'Light',
     attribution: '&copy; OpenStreetMap contributors &copy; CARTO',
-    url: 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
+    url: withCartoKey('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png'),
     subdomains: 'abcd',
     maxZoom: 20,
     glStyle: 'https://basemaps.cartocdn.com/gl/positron-gl-style/style.json',
@@ -48,7 +49,7 @@ export const MAP_STYLES = [
     id: 'voyager',
     label: 'Voyager',
     attribution: '&copy; OpenStreetMap contributors &copy; CARTO',
-    url: 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',
+    url: withCartoKey('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png'),
     subdomains: 'abcd',
     maxZoom: 20,
     glStyle: 'https://basemaps.cartocdn.com/gl/voyager-gl-style/style.json',
@@ -68,7 +69,7 @@ export const MAP_STYLES = [
     id: 'matrix',
     label: 'Matrix',
     attribution: '&copy; OpenStreetMap contributors &copy; CARTO',
-    url: 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
+    url: withCartoKey('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png'),
     subdomains: 'abcd',
     maxZoom: 20,
     glStyle: 'https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json',
