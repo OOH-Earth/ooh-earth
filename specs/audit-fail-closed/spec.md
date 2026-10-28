@@ -2,7 +2,7 @@
 Owner: engineering (unassigned) · Status: draft · Date: 2026-10-28 · Evidence baseline: `ci.yml` on `origin/main` and `origin/maintenance/production-2026-10-02` (audit step identical on both)
 
 ## Problem and intended outcome
-The "Dependency audit (fails on high/critical only)" step runs `npm audit --omit=dev --json > audit-report.json || true`, then reads `r.metadata?.vulnerabilities || {}` and fails only if `high + critical > 0`. The guide (v1.1 §B) inferred this can pass on an error-shaped report. **Reproduced offline** with `specs/audit-fail-closed/reproduce.sh` (fixtures in `fixtures/`, run as GitHub runs it: `bash -e -o pipefail`; no network, no `npm audit`):
+The "Dependency audit (fails on high/critical only)" step runs `npm audit --omit=dev --json > audit-report.json || true`, then reads `r.metadata?.vulnerabilities || {}` and fails only if `high + critical > 0`. The guide (v1.1 §B) inferred this can pass on an error-shaped report. **Reproduced offline** with `specs/audit-fail-closed/reproduce.sh` (fixtures in `fixtures/` (`.fixture` so Prettier skips the deliberately malformed file), run as GitHub runs it: `bash -e -o pipefail`; no network, no `npm audit`):
 
 | Fixture | Current step | Correct |
 |---|---|---|
