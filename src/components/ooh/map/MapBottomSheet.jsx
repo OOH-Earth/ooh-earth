@@ -27,6 +27,7 @@ const TAP_SLOP = 6; // px of travel before a press on the handle counts as a dra
 export default function MapBottomSheet({
   children,
   count,
+  countScope,
   layerLabel,
   detailMode,
   onCloseDetail,
@@ -227,6 +228,9 @@ export default function MapBottomSheet({
     if (next !== snap) onSnapChange?.(next);
   };
 
+  // The count's scope is stated by the caller (e.g. 'in view'), never implied here.
+  const countText = `${Number(count).toLocaleString()} ${layerLabel || 'results'}${countScope ? ` ${countScope}` : ''}`;
+
   return (
     <div
       ref={rootRef}
@@ -251,7 +255,7 @@ export default function MapBottomSheet({
           onClick={(e) => {
             if (e.detail === 0) toggleSnap(); // keyboard Enter/Space; pointer taps handled on pointer-up
           }}
-          aria-label="Resize results sheet"
+          aria-label="Resize list"
           aria-keyshortcuts="ArrowUp ArrowDown"
           disabled={toolsMode}
           className="absolute inset-x-0 top-0 z-0 flex h-6 cursor-grab touch-none items-start justify-center pt-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-ozone active:cursor-grabbing disabled:cursor-default"
@@ -264,7 +268,7 @@ export default function MapBottomSheet({
           {statusInline && !detailMode ? (
             <span
               role="alert"
-              className="min-w-0 truncate font-mono text-[10px] font-bold uppercase tracking-[0.2em] text-flare"
+              className="min-w-0 truncate font-mono text-ooh-caption font-bold uppercase tracking-[0.1em] text-flare"
             >
               // {status.text}
             </span>
@@ -272,23 +276,19 @@ export default function MapBottomSheet({
             <button
               type="button"
               onClick={() => {
-                pendingFocus.current = 'Collapse sheet';
+                pendingFocus.current = 'Collapse list';
                 onSnapChange('half');
               }}
-              className="flex min-h-10 min-w-0 flex-1 items-center gap-2 text-left font-mono text-[10px] uppercase leading-snug tracking-[0.25em] text-ozone"
+              className="flex min-h-ooh-target min-w-0 flex-1 items-center gap-2 text-left font-mono text-ooh-caption uppercase leading-snug tracking-[0.12em] text-ozone"
             >
-              <span className="min-w-0 break-words">{`// ${Number(count).toLocaleString()} ${layerLabel || 'results'}`}</span>
-              <span className="shrink-0 border border-ozone/60 px-1.5 py-0.5 tracking-[0.2em]">
+              <span className="min-w-0 break-words">{`// ${countText}`}</span>
+              <span className="shrink-0 border border-ozone/60 px-1.5 py-0.5 tracking-[0.1em]">
                 Open list
               </span>
             </button>
           ) : (
-            <span className="min-w-0 break-words font-mono text-[10px] uppercase tracking-[0.25em] text-ozone">
-              {toolsMode
-                ? '// map tools'
-                : detailMode
-                  ? '// pin detail'
-                  : `// ${Number(count).toLocaleString()} ${layerLabel || 'results'}`}
+            <span className="min-w-0 break-words font-mono text-ooh-caption uppercase tracking-[0.12em] text-ozone">
+              {toolsMode ? '// map tools' : detailMode ? '// pin detail' : `// ${countText}`}
             </span>
           )}
           <div className="flex items-center gap-1">
@@ -296,7 +296,7 @@ export default function MapBottomSheet({
               <button
                 type="button"
                 onClick={status.onAction}
-                className="flex min-h-10 items-center border border-ozone px-3 font-mono text-[10px] font-bold uppercase tracking-[0.2em] text-ozone transition-colors hover:bg-ozone hover:text-void"
+                className="flex min-h-ooh-target items-center border border-ozone px-3 font-mono text-ooh-caption font-bold uppercase tracking-[0.1em] text-ozone transition-colors hover:bg-ozone hover:text-void"
               >
                 {status.actionLabel}
               </button>
@@ -304,56 +304,52 @@ export default function MapBottomSheet({
             {!toolsMode && !detailMode && snap !== 'full' && (
               <button
                 onClick={() => {
-                  pendingFocus.current = 'Collapse sheet';
+                  pendingFocus.current = 'Collapse list';
                   onSnapChange('full');
                 }}
-                aria-label="Expand sheet"
-                className="flex h-10 w-10 items-center justify-center text-dim transition-colors hover:text-ozone"
+                aria-label="Expand list"
+                className="flex min-h-ooh-target min-w-ooh-target items-center justify-center text-quiet transition-colors hover:text-ozone"
               >
-                <ChevronUp className="h-3.5 w-3.5" />
+                <ChevronUp className="h-5 w-5" />
               </button>
             )}
             {!toolsMode && !detailMode && snap !== 'peek' && (
               <button
                 onClick={() => {
-                  pendingFocus.current = 'Expand sheet';
+                  pendingFocus.current = 'Expand list';
                   onSnapChange('peek');
                 }}
-                aria-label="Collapse sheet"
-                className="flex h-10 w-10 items-center justify-center text-dim transition-colors hover:text-ozone"
+                aria-label="Collapse list"
+                className="flex min-h-ooh-target min-w-ooh-target items-center justify-center text-quiet transition-colors hover:text-ozone"
               >
-                <ChevronDown className="h-3.5 w-3.5" />
+                <ChevronDown className="h-5 w-5" />
               </button>
             )}
             {toolsMode && (
               <button
                 onClick={onCloseTools}
                 aria-label="Close map tools"
-                className="flex h-10 w-10 items-center justify-center text-dim transition-colors hover:text-ozone"
+                className="flex min-h-ooh-target min-w-ooh-target items-center justify-center text-quiet transition-colors hover:text-ozone"
               >
-                <X className="h-3.5 w-3.5" />
+                <X className="h-5 w-5" />
               </button>
             )}
             {!toolsMode && detailMode && (
               <button
                 onClick={onCloseDetail}
                 aria-label="Close detail"
-                className="flex h-10 w-10 items-center justify-center text-dim transition-colors hover:text-ozone"
+                className="flex min-h-ooh-target min-w-ooh-target items-center justify-center text-quiet transition-colors hover:text-ozone"
               >
-                <X className="h-3.5 w-3.5" />
+                <X className="h-5 w-5" />
               </button>
             )}
             {!toolsMode && (
               <button
                 onClick={onToggleFullscreen}
                 aria-label={fullscreen ? 'Exit fullscreen' : 'Fullscreen map'}
-                className="flex h-10 w-10 items-center justify-center text-dim transition-colors hover:text-ozone"
+                className="flex min-h-ooh-target min-w-ooh-target items-center justify-center text-quiet transition-colors hover:text-ozone"
               >
-                {fullscreen ? (
-                  <Minimize2 className="h-3.5 w-3.5" />
-                ) : (
-                  <Maximize2 className="h-3.5 w-3.5" />
-                )}
+                {fullscreen ? <Minimize2 className="h-5 w-5" /> : <Maximize2 className="h-5 w-5" />}
               </button>
             )}
           </div>
@@ -364,13 +360,13 @@ export default function MapBottomSheet({
           role="alert"
           className="flex h-12 shrink-0 items-center justify-between gap-2 border-t border-flare/40 px-3"
         >
-          <span className="font-mono text-[10px] font-bold uppercase tracking-[0.2em] text-flare">
+          <span className="font-mono text-ooh-caption font-bold uppercase tracking-[0.1em] text-flare">
             // {status.text}
           </span>
           <button
             type="button"
             onClick={status.onAction}
-            className="flex min-h-10 items-center border border-ozone px-3 font-mono text-[10px] font-bold uppercase tracking-[0.2em] text-ozone transition-colors hover:bg-ozone hover:text-void"
+            className="flex min-h-ooh-target items-center border border-ozone px-3 font-mono text-ooh-caption font-bold uppercase tracking-[0.1em] text-ozone transition-colors hover:bg-ozone hover:text-void"
           >
             {status.actionLabel}
           </button>

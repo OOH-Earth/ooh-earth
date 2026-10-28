@@ -13,10 +13,10 @@ test.describe('sheet robustness @ 390x844', () => {
     test.setTimeout(90_000);
     await openMapWithMock(page, { view: 'flat' });
     const peek = await height(page);
-    await btn(page, 'Expand sheet').click();
+    await btn(page, 'Expand list').click();
     await expect.poll(() => height(page)).toBeGreaterThan(peek + 50);
     await settle(page);
-    await btn(page, 'Collapse sheet').click();
+    await btn(page, 'Collapse list').click();
     await expect.poll(() => height(page)).toBe(peek);
     await btn(page, 'Fullscreen map').click();
     await expect(page.locator('body')).toHaveClass(/map-fullscreen/);
@@ -36,10 +36,10 @@ test.describe('sheet robustness @ 390x844', () => {
       .focus();
     await page.keyboard.press('Enter');
     await expect.poll(() => height(page)).toBeGreaterThan(peek + 100);
-    await expect(btn(page, 'Collapse sheet')).toBeFocused();
+    await expect(btn(page, 'Collapse list')).toBeFocused();
     await page.keyboard.press('Space');
     await expect.poll(() => height(page)).toBe(peek);
-    await expect(btn(page, 'Expand sheet')).toBeFocused();
+    await expect(btn(page, 'Expand list')).toBeFocused();
     await page.keyboard.press('Space');
     await expect.poll(() => height(page)).toBeGreaterThan(peek + 100);
   });
@@ -50,7 +50,7 @@ test.describe('sheet robustness @ 390x844', () => {
     test.setTimeout(90_000);
     await openMapWithMock(page, { view: 'flat' });
     const peek = await height(page);
-    const b = (await btn(page, 'Expand sheet').boundingBox())!;
+    const b = (await btn(page, 'Expand list').boundingBox())!;
     await page.mouse.move(b.x + b.width / 2, b.y + b.height / 2);
     await page.mouse.down();
     await page.mouse.move(b.x + b.width / 2, b.y - 260, { steps: 10 });
@@ -62,7 +62,7 @@ test.describe('sheet robustness @ 390x844', () => {
   test('touching or scrolling the results never resizes the sheet', async ({ page }) => {
     test.setTimeout(90_000);
     await openMapWithMock(page, { view: 'flat', locations: 30 });
-    await tap(page, 'Expand sheet');
+    await tap(page, 'Expand list');
     await settle(page);
     await page.waitForTimeout(500);
     const h = await height(page);
@@ -97,7 +97,7 @@ test.describe('sheet robustness @ 390x844', () => {
     await openMapWithMock(page, { view: 'flat' });
     const peek = await height(page);
     const hb = (await sheet(page)
-      .getByRole('button', { name: 'Resize results sheet' })
+      .getByRole('button', { name: 'Resize list' })
       .boundingBox())!;
     const x = hb.x + hb.width / 2;
     const y = hb.y + hb.height / 2;
@@ -115,7 +115,7 @@ test.describe('sheet robustness @ 390x844', () => {
     await cdp.send('Input.dispatchTouchEvent', { type: 'touchCancel', touchPoints: [] });
     await cdp.detach();
     await expect.poll(() => height(page)).toBe(peek);
-    await tap(page, 'Expand sheet');
+    await tap(page, 'Expand list');
     await expect.poll(() => height(page)).toBeGreaterThan(peek + 100);
   });
 
@@ -137,15 +137,15 @@ test.describe('sheet robustness @ 390x844', () => {
           );
         });
     expect(await probe(), 'collapsed: result links cannot take focus').toBe(false);
-    await tap(page, 'Expand sheet');
+    await tap(page, 'Expand list');
     await settle(page);
     expect(await probe(), 'expanded: result links can take focus').toBe(true);
-    await tap(page, 'Collapse sheet');
+    await tap(page, 'Collapse list');
     await settle(page);
     const active = await page.evaluate(
       () => document.activeElement?.getAttribute('aria-label') ?? document.activeElement?.tagName,
     );
-    expect(active).toBe('Expand sheet');
+    expect(active).toBe('Expand list');
   });
 
   test('map position and route survive collapsing and opening', async ({ page }) => {
@@ -155,9 +155,9 @@ test.describe('sheet robustness @ 390x844', () => {
     const pos = await pane.evaluate((el) => (el as HTMLElement).style.transform);
     const url = page.url();
     for (let i = 0; i < 2; i++) {
-      await tap(page, 'Expand sheet');
+      await tap(page, 'Expand list');
       await settle(page);
-      await tap(page, 'Collapse sheet');
+      await tap(page, 'Collapse list');
       await settle(page);
     }
     // The result count follows the visible map area, which legitimately changes when the sheet
@@ -176,9 +176,9 @@ test.describe('sheet robustness @ 390x844', () => {
     await attention().click();
     const pressed = await attention().getAttribute('aria-pressed');
     await page.keyboard.press('Escape');
-    await tap(page, 'Expand sheet');
+    await tap(page, 'Expand list');
     await settle(page);
-    await tap(page, 'Collapse sheet');
+    await tap(page, 'Collapse list');
     await settle(page);
     await page.getByRole('button', { name: /tools/i }).first().click();
     expect(await attention().getAttribute('aria-pressed'), 'filter mode kept').toBe(pressed);
@@ -197,7 +197,7 @@ test.describe('sheet robustness @ 390x844', () => {
       }
       if (state === 'full') {
         await settle(page);
-        await tap(page, 'Expand sheet');
+        await tap(page, 'Expand list');
       }
       await settle(page);
       const r = await page.evaluate(() => {
@@ -261,7 +261,7 @@ for (const [w, h] of [
         const r = sh.getBoundingClientRect();
         const row = [...sh.querySelectorAll('button')]
           .filter(
-            (b) => !b.closest('[inert]') && b.getAttribute('aria-label') !== 'Resize results sheet',
+            (b) => !b.closest('[inert]') && b.getAttribute('aria-label') !== 'Resize list',
           )
           .map((b) => {
             const q = b.getBoundingClientRect();
@@ -283,7 +283,7 @@ for (const [w, h] of [
         expect(b.left, `${b.n} inside viewport`).toBeGreaterThanOrEqual(-0.5);
       }
       expect(m.hScroll, 'no horizontal page scroll').toBe(false);
-      await tap(page, 'Expand sheet');
+      await tap(page, 'Expand list');
       await expect.poll(() => height(page)).toBeGreaterThan(m.h + 50);
     });
   });
