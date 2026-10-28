@@ -29,16 +29,19 @@ async function open(page: Page, mode: Tiles['mode'] = 'ok') {
   const t: Tiles = { mode, urls: [], carto: [], esri: [] };
   await page.addInitScript(() => localStorage.setItem('ooh_nudge_map_report', '1'));
   await mockBase44(page, { user: null });
-  await page.route(/(basemaps\.cartocdn\.com|server\.arcgisonline\.com)/, (route) => {
-    const u = route.request().url();
-    (u.includes('cartocdn') ? t.carto : t.esri).push(u);
-    t.urls.push(u);
-    const n = t.urls.length;
-    if (t.mode === 'fail') return route.fulfill({ status: 503, body: 'down' });
-    if (t.mode === 'reject403') return route.fulfill({ status: 403, body: 'rejected' });
-    if (t.mode === 'first2fail' && n <= 2) return route.fulfill({ status: 503, body: 'down' });
-    return route.fulfill({ status: 200, contentType: 'image/png', body: PNG });
-  });
+  await page.route(
+    /^https:\/\/(([a-d]\.)?basemaps\.cartocdn\.com|server\.arcgisonline\.com)\//,
+    (route) => {
+      const u = route.request().url();
+      (u.includes('cartocdn') ? t.carto : t.esri).push(u);
+      t.urls.push(u);
+      const n = t.urls.length;
+      if (t.mode === 'fail') return route.fulfill({ status: 503, body: 'down' });
+      if (t.mode === 'reject403') return route.fulfill({ status: 403, body: 'rejected' });
+      if (t.mode === 'first2fail' && n <= 2) return route.fulfill({ status: 503, body: 'down' });
+      return route.fulfill({ status: 200, contentType: 'image/png', body: PNG });
+    },
+  );
   await page.goto('/report');
   await expect(page.locator('[data-tour="report-form"]')).toBeVisible();
   return t;
