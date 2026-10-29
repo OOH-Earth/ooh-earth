@@ -20,7 +20,8 @@ async function open(page: Page, w: number, h: number) {
   await page.addInitScript(() => localStorage.setItem('ooh_nudge_map_report', '1'));
   await mockBase44(page, { user: null });
   await page.goto('/report');
-  await expect(page.locator('header')).toBeVisible();
+  // the Report route is a lazy chunk: give it the same generous wait as the other Report specs
+  await expect(page.locator('header')).toBeVisible({ timeout: 30_000 });
   await page.waitForTimeout(1500);
 }
 
