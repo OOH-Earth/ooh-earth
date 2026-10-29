@@ -255,7 +255,10 @@ for (const [w, h] of [
         content:
           '.ooh-bottom-sheet *{font-size:16px !important;line-height:1.5 !important;letter-spacing:.12em !important;word-spacing:.16em !important}',
       });
-      await page.waitForTimeout(600);
+      // the header grows, then the sheet animates to it: wait for the height to stop changing
+      await settle(page);
+      await page.waitForTimeout(400);
+      await settle(page);
       const m = await page.evaluate(() => {
         const sh = document.querySelector('.ooh-bottom-sheet') as HTMLElement;
         const r = sh.getBoundingClientRect();
