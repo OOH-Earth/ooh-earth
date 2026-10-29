@@ -692,3 +692,92 @@ Decisions: (1) adopt the 12px floor in `UI-STANDARDS.md` as the new minimum for 
 the floor); (2) a header/nav chrome budget that allows a 12-14px clock/ticker (UI-012); (3) whether `--c-dim` itself should be lightened
 globally instead of migrating 1,009 uses to `text-quiet`; (4) the CARTO and Esri decisions in section 13.4; (5) accept the renamed
 sheet accessible names, which other branches' specs may reference.
+
+## 15. Release preparation after the design decisions (2026-10-29)
+
+Status: **draft PRs, local and BACKUP-staged candidate only. Not merged, not live.** Sections 13 and 14 are history; where they
+differ from this section, this section wins (see 15.10).
+
+### 15.1 Approved decisions and how they were applied
+
+David delegated the design decisions on 2026-10-29. Applied as project defaults, not WCAG minimums:
+
+| Decision | Applied | Documented exceptions |
+| --- | --- | --- |
+| Typography: 16px instruction/body, 14-16px labels and controls, 12px only for genuinely secondary metadata, sparingly; existing fonts and brand; rem roles | Report step 1: labels and chips 14px, privacy/photo instructions 16px (`text-ooh-body`). Sheet summary, Open list, status/Retry and the result link 14px. Ticker headlines 14px. 12px kept for the LIVE label, BKK, source tag and the md+ countdown | Unmigrated surfaces keep their legacy sizes (2,457 `text-[6..11px]` uses in 260 files were not blanket-replaced); e.g. a few Report form sub-components (photo picker) still render 11px labels. The Report map hint, attribution credit ("Maxar") and OSIRIS-style dense labels elsewhere are unchanged |
+| Contrast: keep `--c-dim` for decoration, `text-quiet` for readable secondary text, migrate by role | `text-quiet` (6.08:1 on void) used in Report step 1, sheet icons, ticker source/loading text. `--c-dim` not touched; ~1,000 uses not auto-replaced | Text over the map and imagery was not contrast-measured (the matrix skips images/gradients) |
+| Header/navigation: keep the deployed footprint as the budget; no growth; secondary clock/ticker detail into a labelled disclosure on constrained screens; do not clip | Header 96px below md, 98px from md up and a 31px telemetry strip (measured on production `1dbddda`); candidate stays inside it at 320, 390, 767, 768, 844 and 1280 (spec asserts it); on staging at 844x390 the header measured 97px. Below md the clock is a labelled disclosure holding the countdown, PM2.5 and coordinates; the earlier 15-20px growth slice is not used | The disclosure target is 31px tall (strip budget) by 130px+ wide: above the 24px AA floor, below the 44px target; deliberate |
+| Sheet wording: "Expand list" / "Collapse list"; exact label for the diagonal arrow; no "Resize list"; no browser-fullscreen claim; preserve handle, buttons, focus return, content-sized compact state | Expand list / Collapse list; handle "Open or close the list (drag, or use arrow keys)"; diagonal control **"Full-screen map (hides navigation)" / "Exit full-screen map (shows navigation)"** | **Deviation, deliberate:** the decision's examples ("Expand list to full height", "Restore list size") describe a list resize, but this control hides the app header and navigation and does not change the list's snap; those labels would be wrong. The chevrons carry the list expand/collapse actions. The map toolbar button that triggers the same action got the same label (it previously shared the name "Fullscreen map" with the sheet button) |
+| Fresh mobile map entry map-first with an obvious labelled way to open results; preserve return state, filters, selection, map position | 72px (60px short landscape, content-sized) handle with "// N ads in view" and an **Open list** button; state lives in `Map.jsx` and is asserted across collapse/expand (map position, route; the in-view count legitimately follows the visible map area) | Selection highlight is not asserted automatically (harness could not resolve the card style); filter-mode toggle persistence is |
+
+### 15.2 PR graph after the restack (heads at the time of writing)
+
+| PR | Branch @ head | Base | Content | Depends on provider? | CI |
+| --- | --- | --- | --- | --- | --- |
+| #394 | `ui/consistency-pass` @ `be64187` | production line | tokens + `text-quiet` + panel primitives, Report step 1 slice, location messages, measurement matrix | no | see PR |
+| #392 | `sheet/interaction-and-map-first` @ `540dc06` | production line (first 4 commits are #394's) | handle, map-first compact state, content-sized height, inert collapsed list, role adoption, exact labels, robustness specs, `map-my-discoveries` fix | no | see PR |
+| #396 | `ui/header-status-disclosure` @ `968cf75` | production line (first 4 commits are #394's) | telemetry strip footprint-preserving type roles + status disclosure | no | see PR |
+| #398 | `candidate/ui-release-staging` | production line | **do not merge**: #394 + #392 + #396 combined, exists for CI and staging | no | see PR |
+| #393 | `basemap/config-and-report` @ `8cba6d5` | production line | provider repair | **blocked** (15.3) | passed on its head |
+| #395 | `docs/ui-reference-and-followup-ledger` | `docs/ui-fixes-release-record` (#387) | this ledger and evidence | no | none (docs base) |
+
+Why the bases: the repository's CI runs only for PRs into `maintenance/**` and `main`; PRs stacked on another feature branch got no checks at all (#392 and #396 had none until retargeted). #394's earlier head also failed CI (reproducible `map-my-discoveries` failure: that spec looked the result-card link up by its old "PAGE" name, plus Prettier on two specs); both were fixed. Peers: #389, #390, #391 (other session) touch CI scripts, `fieldNews` and `scanAd`/`ReportStep2Identify`; no file overlap with these units. No peer branch was modified.
+
+### 15.3 Provider: verified state and the exact dependency
+
+Checked by name only, no values read: GitHub Actions secrets and variables (none), repo env files and `.github` (no CARTO key), Base44 secrets list (nothing returned), docs (only a CSP allowlist line). **No CARTO key, secret, variable or approved entitlement exists to use.** An invalid key returns the same watermark bytes as no key, so a non-empty `VITE_CARTO_BASEMAPS_KEY` would not be evidence of a working map. Nothing was registered, accepted, purchased, proxied or substituted; Esri and public OSM tiles were not enabled.
+
+So #393 stays separate and is marked BLOCKED. Its default behaviour (no key: honest "Map background unavailable" panel instead of a map) removes useful behaviour and must not ship incidentally; none of #394, #392, #396, #398 contain provider code (checked by diff). **In the staged candidate `/report` still shows the CARTO watermark.** Exact account dependency: the account owner requests a browser key (accepting CARTO's 2026-09-29 terms; 1M/month free for commercial use, paid above), restricts it to our domains, sets `VITE_CARTO_BASEMAPS_KEY` at build time, and a person then verifies real imagery in a browser; or approves Esri World Imagery (opt-in flag) after confirming its terms.
+
+### 15.4 The 12 skipped tests, individually
+
+All 12 are in `report-basemap.spec.ts` (7 tests x 2 viewports), which belongs to #393 only, so they are not part of #394, #392, #396 or #398 (those runs had 0 skips). Provider choice is a build-time setting, so each build mode runs only its own tests:
+
+| Test (x2 viewports each) | Skipped in default mode because | Where it ran |
+| --- | --- | --- |
+| Esri opt-in: Esri tiles only, credit text, pin works | needs `VITE_REPORT_BASEMAP_FALLBACK=esri` | Esri build: 8 passed |
+| CARTO key: every request keyed, CARTO + OSM attribution | needs a key build (placeholder `test-key-not-real`) | key build: 10 passed |
+| CARTO key: an HTTP 403 answer is reported | needs the key build | key build |
+| Network failure: notice, pin and coordinates survive recovery | needs a provider that issues tile requests | Esri and key builds |
+| Partial failure (2 tiles) is not an outage | same | Esri and key builds |
+| A tile that loads again clears the notice | same | Esri and key builds |
+
+Remaining coverage gap: no real key exists, so keyed imagery was never visually verified; the 200-OK watermark is undetectable by design (no detector, OCR or retry loop).
+
+### 15.5 Test results and first-run failures (Chromium 148, Playwright build 1223; not an iPhone, not WebKit)
+
+| Run | Result | First-run failures kept |
+| --- | --- | --- |
+| Sheet unit `513b5b3` (8 spec files) | 119 passed, 0 failed, 0 flaky, 0 skipped | none |
+| Header unit (15 spec files, before the typography commit) | 131 passed, 1 failed | `report-release-r1m2` short landscape: **pre-existing**, fails identically on the production source |
+| Integration candidate `0c78cec` (19 files, before the typography commit) | 166 passed, 3 failed | `map-bottom-region` real-click spec: 30 s page-load timeout (passed 2/2 serially); `telemetry-status` keyboard spec: header not found within 5 s of navigation (my spec's wait was too short for the lazy Report chunk; fixed); `report-release-r1m2` as above |
+| **Integration candidate `6f21272` (21 files)** | **173 passed, 2 failed** | `report-release-r1m2` as above; `location-detail` "revisiting via client-side nav" under 2-worker load: **4/4 pass serially on the candidate and 4/4 on the untouched production source**, so it is load-sensitive and not a candidate regression |
+| Staged bytes `df5f287` (10 files, mocked API) | 139 passed, 4 failed | `ERR_NETWORK_CHANGED` on `/map`; a 30 s load timeout; sheet "keyboard: handle arrows" and "enlarged text" timing. The last two passed **3/3 serial reruns** (5 tests each) on the staged corrected build `6f21272`; the enlarged-text spec measured before the 0.32 s height transition settled and now waits (`540dc06`) |
+
+CI on the real heads is the authority and is pending at the time of writing; the PR check lists show it. `npm run typecheck` was clean on the earlier candidate; eslint and Prettier are CI gates.
+
+### 15.6 Whole-screen review in Chrome DevTools (real input where the machine allowed it)
+
+Candidate on a read-only local proxy (live data) and on BACKUP, 320x640, 390x844, 844x390 landscape. Real pointer clicks, a real mouse drag and real key presses were used on BACKUP: Open/Expand list -> 743px with focus on Collapse list, Collapse list -> 72px with focus on Expand list and the list inert, handle drag up -> full, header disclosure open/Escape with focus return, full-screen control in and out (header hidden, label flips), map peek, Report at 320 (labels 14/16px, 44px type chips, no horizontal scroll), short landscape (97px header, 157px map band, 60px sheet, attribution clear). Findings: (1) **pre-existing, identical on production:** with full-screen mode and the sheet at full height only ~240px of map remains and its hint chip and zoom row crowd the toolbar and attribution; not changed here; (2) while the spec runs loaded the machine, pointer clicks through the DevTools tool timed out ("element did not become interactive") and sheet height transitions measured stale values in an occluded window; they worked on retry and the heights settled, so this is a harness/load effect, but it is recorded; (3) the Report picker still shows the CARTO watermark by design (15.3).
+
+### 15.7 Staging (BACKUP) and rollback
+
+- App `6a6748e009b947cb29591871`, `https://ooh-earth-backup.base44.app`, frontend only. Reservation: appended to `~/ooh-release-records/2026-10-29/BACKUP-RESERVATION.md` (window 2), after `oohearth-11` posted "scanAd window closed, BACKUP free"; it keeps the third slot (Step 2/UnitFinder preview) after mine. BACKUP's `scanAd` already runs its hardened function-only candidate.
+- Preserved before any deploy: the 372 files served at the time (manifest `5c81a80`, entry `index-DoInAKbd.js`) in `backup-before-ui/`, hashes identical to the recorded 5c81a80 BACKUP hashes except the host-rewritten `sitemap.xml`.
+- Deployed `df5f287`, then the corrected `6f2127298f18568c9b4a12f3208b71ce77ee306f` (manifest `git_sha 6f21272`; later commits are test-only). Served bytes vs the candidate's hashes: 371/372 identical, `sitemap.xml` differs (host-rewritten, as in earlier windows).
+- **Rollback drill on the real BACKUP:** deployed `backup-before-ui/` at 14:12Z -> served manifest `5c81a80`, entry `index-DoInAKbd.js`, **372/372 files identical** to the preserved pre-state (0 differing entries). The candidate was then redeployed and verified again. Command: `BASE44_DISABLE_TELEMETRY=1 npx base44@0.1.14 site deploy --no-build --yes --app-id 6a6748e009b947cb29591871` from a project dir whose `dist/` is the directory to serve.
+- No data, entities, functions or automations were touched. No production deploy, no production writes.
+- **Anonymous: done** (isolated context, real input, plus specs against the served bytes with a mocked API). **MEMBER: not done.** It needs the owner to sign in on the BACKUP origin in the browser context used for testing (the earlier sanctioned test identity); no credentials were created or used, and no Transmit/submit is to be clicked (a prior window created a stray pending Location that way).
+- BACKUP currently serves the candidate. Final restore (verified) will be posted in the reservation file after the MEMBER pass or when `oohearth-11` asks for the slot.
+
+### 15.8 Coverage that remains unavailable
+
+WebKit (Playwright needs `sudo apt` host dependencies; not installed), a physical iPhone, real browser zoom at 200% and 400%, virtual keyboard and changing browser chrome, MEMBER state, contrast over map imagery, list touch scrolling (CDP touch cannot scroll even a plain page here), and every route except the six measured (84 of 90). Counts in section 14.5 are pooled across routes and viewports: measurements, not unique defects or proof of usability.
+
+### 15.9 Proposed landing order
+
+1. #394 (foundation + Report step 1). 2. #392 and #396 in either order, rebased (their first commits disappear). 3. #393 only after the provider decision. Before any production step: recheck production (it moved to `1dbddda` during this work), preserve current live bytes, obtain a fresh joint reservation, and re-run required checks on the final heads. This section does not authorise a merge or a production deploy.
+
+### 15.10 Corrections to earlier sections
+
+Section 14.4 listed `Resize list`; it is now "Open or close the list (drag, or use arrow keys)". The shared header slice in 14.6 stays unused; the replacement is #396. Section 14's "slices" lived on one branch that also contained the provider commits; the units are now separated (15.2). Section 13.2's statement that two `map-sheet-*` specs failed Prettier in CI on #394 is resolved. In section 13.5 "Unit A" results were for the earlier build; 15.5 has the final-build runs.
