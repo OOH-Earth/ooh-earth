@@ -65,11 +65,11 @@ test.describe('disclosure below md', () => {
 
   test('mouse/touch, keyboard, Escape with focus return, outside press', async ({ page }) => {
     await open(page, 390, 844);
-    const btn = page.getByRole('button', { name: 'Climate clock and status details' });
+    const btn = page.getByRole('button', { name: 'Climate clock and air quality details' });
     await expect(btn).toHaveAttribute('aria-expanded', 'false');
     await btn.click();
     await expect(btn).toHaveAttribute('aria-expanded', 'true');
-    const panel = page.getByRole('region', { name: 'Status details' });
+    const panel = page.getByRole('region', { name: 'Climate and air quality details' });
     await expect(panel).toContainText('1.5°C deadline');
     await expect(panel).toContainText('Air quality (PM2.5)');
     await page.keyboard.press('Escape');
@@ -90,16 +90,18 @@ test.describe('disclosure below md', () => {
     const page = await ctx.newPage();
     await open(page, 390, 844);
     const b = (await page
-      .getByRole('button', { name: 'Climate clock and status details' })
+      .getByRole('button', { name: 'Climate clock and air quality details' })
       .boundingBox())!;
     await page.touchscreen.tap(b.x + b.width / 2, b.y + b.height / 2);
-    await expect(page.getByRole('region', { name: 'Status details' })).toBeVisible();
+    await expect(
+      page.getByRole('region', { name: 'Climate and air quality details' }),
+    ).toBeVisible();
     await ctx.close();
   });
 
   test('the panel does not cover the primary navigation actions', async ({ page }) => {
     await open(page, 390, 844);
-    await page.getByRole('button', { name: 'Climate clock and status details' }).click();
+    await page.getByRole('button', { name: 'Climate clock and air quality details' }).click();
     const r = await page.evaluate(() => {
       const p = document.getElementById('telemetry-details')!.getBoundingClientRect();
       const nav = document.querySelector('header')!.getBoundingClientRect();
@@ -115,7 +117,7 @@ test.describe('from md up', () => {
   test('no disclosure button; countdown is inline and readable', async ({ page }) => {
     await open(page, 1280, 720);
     await expect(
-      page.getByRole('button', { name: 'Climate clock and status details' }),
+      page.getByRole('button', { name: 'Climate clock and air quality details' }),
     ).toBeHidden();
     await expect(
       page.locator('header').getByText('1.5°C').locator('visible=true').first(),

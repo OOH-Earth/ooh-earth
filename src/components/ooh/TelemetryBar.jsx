@@ -143,7 +143,7 @@ export default function TelemetryBar() {
         type="button"
         aria-expanded={open}
         aria-controls="telemetry-details"
-        aria-label="Climate clock and status details"
+        aria-label="Climate clock and air quality details"
         onClick={() => setOpen((o) => !o)}
         className="flex shrink-0 items-center border-r border-slate2/60 px-3 focus-visible:outline focus-visible:outline-2 focus-visible:outline-ozone md:hidden"
       >
@@ -156,7 +156,7 @@ export default function TelemetryBar() {
         <div
           id="telemetry-details"
           role="region"
-          aria-label="Status details"
+          aria-label="Climate and air quality details"
           className="absolute left-0 top-full z-10 w-full max-w-sm space-y-ooh-2 border border-slate2 bg-card p-ooh-4 font-display text-ooh-control text-silver md:hidden"
         >
           <p>
