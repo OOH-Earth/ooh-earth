@@ -716,7 +716,8 @@ David delegated the design decisions on 2026-10-29. Applied as project defaults,
 | --- | --- | --- | --- | --- | --- |
 | #394 | `ui/consistency-pass` @ `be64187` | production line | tokens + `text-quiet` + panel primitives, Report step 1 slice, location messages, measurement matrix | no | see PR |
 | #392 | `sheet/interaction-and-map-first` @ `540dc06` | production line (first 4 commits are #394's) | handle, map-first compact state, content-sized height, inert collapsed list, role adoption, exact labels, robustness specs, `map-my-discoveries` fix | no | see PR |
-| #396 | `ui/header-status-disclosure` @ `968cf75` | production line (first 4 commits are #394's) | telemetry strip footprint-preserving type roles + status disclosure | no | see PR |
+| #396 | `ui/header-status-disclosure` @ `a17832c` | production line (first 4 commits are #394's) | telemetry strip footprint-preserving type roles + status disclosure | no | see PR |
+| #399 | `test/stabilize-live-feed-nudge-spec` | production line | test-only fix for a pre-existing racy spec (15.11); land first | no | see PR |
 | #398 | `candidate/ui-release-staging` | production line | **do not merge**: #394 + #392 + #396 combined, exists for CI and staging | no | see PR |
 | #393 | `basemap/config-and-report` @ `8cba6d5` | production line | provider repair | **blocked** (15.3) | passed on its head |
 | #395 | `docs/ui-reference-and-followup-ledger` | `docs/ui-fixes-release-record` (#387) | this ledger and evidence | no | none (docs base) |
@@ -776,8 +777,20 @@ WebKit (Playwright needs `sudo apt` host dependencies; not installed), a physica
 
 ### 15.9 Proposed landing order
 
-1. #394 (foundation + Report step 1). 2. #392 and #396 in either order, rebased (their first commits disappear). 3. #393 only after the provider decision. Before any production step: recheck production (it moved to `1dbddda` during this work), preserve current live bytes, obtain a fresh joint reservation, and re-run required checks on the final heads. This section does not authorise a merge or a production deploy.
+0. #399 (test-only race fix). 1. #394 (foundation + Report step 1). 2. #392 and #396 in either order, rebased (their first commits disappear). 3. #393 only after the provider decision. Before any production step: recheck production (it moved to `1dbddda` during this work), preserve current live bytes, obtain a fresh joint reservation, and re-run required checks on the final heads. This section does not authorise a merge or a production deploy.
 
 ### 15.10 Corrections to earlier sections
 
 Section 14.4 listed `Resize list`; it is now "Open or close the list (drag, or use arrow keys)". The shared header slice in 14.6 stays unused; the replacement is #396. Section 14's "slices" lived on one branch that also contained the provider commits; the units are now separated (15.2). In section 13.5 "Unit A" results were for the earlier build; 15.5 has the final-build runs.
+
+### 15.11 CI findings on the final heads (2026-10-29)
+
+Required CI ran on the real heads after the stacked PRs were retargeted (CI only triggers for PRs into `maintenance/**` or `main`).
+
+| Finding | Evidence | Cause and disposition |
+| --- | --- | --- |
+| #398 `mobile-chromium` failed on `portal-ops-geo-intelligence.spec.ts:107` (`getByLabel('Status')` resolved to 2 elements) | CI log; reproduced by name: the phone-width header disclosure button was labelled "Climate clock and **status** details" | **Real candidate regression** (header slice #396). Names are now "Climate clock and air quality details" / "Climate and air quality details" (`a17832c`); the full `mobile-chromium` project then passed locally (134 passed; the only failure is the pre-existing short-landscape smooth-scroll test) and passed in CI. No other generic `getByLabel` lookups in `e2e/` collide (grep) |
+| #392 smoke job failed on `live-feed-nudge-overlap.spec.ts:100` "dismiss control is a 44px target..." (3 of 3 attempts: persisting header/nudge overlap and a 43.99997px height) | CI log; local repeat on Chromium 148, serial x6 | **Pre-existing race, not these changes:** it fails **6/6 on the untouched production source** and 5/6 on the candidate, because it reads bounds once while the nudge animates in. It passed in CI on #393 and #394 by timing. Fixed test-only in its own PR #399 (polls until settled): 6/6 pass on both builds. #399 should land first. The CI rerun of the failed job and the retained first-run failure are both on record |
+| #394 (foundation + Report step 1) CI | all checks passed on `be64187`, including smoke + accessibility and mobile | none |
+
+The staged candidate on BACKUP was redeployed from `bf9bf6b` (includes the name fix): served manifest `git_sha bf9bf6b`, 371/372 files identical to the build's hashes (`sitemap.xml` host-rewritten).
