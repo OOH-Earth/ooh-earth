@@ -224,7 +224,7 @@ export default function ReportStep1Document({ data, onChange }) {
           </p>
         )}
         <p
-          className="mt-2 font-display text-ooh-control text-silver"
+          className="mt-2 font-display text-ooh-body text-silver"
           data-testid="photo-privacy-guidance"
         >
           Use a JPG, PNG, WebP or HEIC photo (HEIC does not work in every browser; GIF is not
