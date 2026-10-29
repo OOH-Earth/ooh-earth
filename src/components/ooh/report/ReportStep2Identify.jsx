@@ -32,17 +32,20 @@ export default function ReportStep2Identify({ data, onChange }) {
   // Latest form values, so a scan that finishes later can tell what was edited meanwhile.
   const dataRef = useRef(data);
   dataRef.current = data;
+  // Synchronous in-flight guard: React state alone cannot stop several activations in one tick.
+  const inFlight = useRef(false);
 
   // PROTOTYPE (sign-in-only policy pending owner decision): the analysis runs in the existing
   // scanAd backend function, which verifies identity before any billable call and owns the prompt.
   // The browser no longer calls the AI integration with a client-built prompt. Signed-out
   // visitors keep the full manual form; nothing is sent.
   const aiDetect = async () => {
-    if (!data.image_url || detecting) return;
+    if (!data.image_url || inFlight.current) return;
     if (!isAuthenticated) {
       setDetected({ signInRequired: true });
       return;
     }
+    inFlight.current = true;
     setDetecting(true);
     setDetected(null);
     const snapshot = { ...dataRef.current };
@@ -59,6 +62,7 @@ export default function ReportStep2Identify({ data, onChange }) {
     } catch {
       setDetected({ error: true });
     } finally {
+      inFlight.current = false;
       setDetecting(false);
     }
   };
