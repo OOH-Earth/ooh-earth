@@ -755,7 +755,7 @@ Remaining coverage gap: no real key exists, so keyed imagery was never visually 
 | **Integration candidate `6f21272` (21 files)** | **173 passed, 2 failed** | `report-release-r1m2` as above; `location-detail` "revisiting via client-side nav" under 2-worker load: **4/4 pass serially on the candidate and 4/4 on the untouched production source**, so it is load-sensitive and not a candidate regression |
 | Staged bytes `df5f287` (10 files, mocked API) | 139 passed, 4 failed | `ERR_NETWORK_CHANGED` on `/map`; a 30 s load timeout; sheet "keyboard: handle arrows" and "enlarged text" timing. The last two passed **3/3 serial reruns** (5 tests each) on the staged corrected build `6f21272`; the enlarged-text spec measured before the 0.32 s height transition settled and now waits (`540dc06`) |
 
-CI on the real heads is the authority and is pending at the time of writing; the PR check lists show it. `npm run typecheck` was clean on the earlier candidate; eslint and Prettier are CI gates.
+CI on the real heads (all 10 checks each, including Playwright smoke + accessibility and mobile Chromium) finished green on #394 `be64187`, #396 `a17832c`, #398 `bf9bf6b`, #399 `8e23975` and #392 `540dc06`; #392's smoke job failed 3 of 3 attempts on the pre-existing nudge race (15.11) and passed on rerun, so that first-run failure stays on record. #393 passed on its own head earlier. `npm run typecheck` was clean on the earlier candidate; eslint and Prettier are CI gates.
 
 ### 15.6 Whole-screen review in Chrome DevTools (real input where the machine allowed it)
 
