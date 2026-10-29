@@ -1,5 +1,5 @@
 import { assert, assertEquals } from 'jsr:@std/assert@1';
-import { handleScanAd } from '../scanAd/handler.ts';
+import { handleScanAd, sanitizeDetection } from '../scanAd/handler.ts';
 
 // Offline matrix for the server boundary of the AI image-analysis journey: identity is checked
 // before any billable integration call, inputs are bounded, and rejected requests make ZERO calls.
@@ -9,6 +9,17 @@ const APP_ID = '6a6748e009b947cb29591871';
 const getEnv = (name: string) => (name === 'BASE44_APP_ID' ? APP_ID : undefined);
 const GOOD_URL = 'https://media.base44.com/images/test.jpg';
 const SECRET = 'sk-test-SECRET-prompt-internals';
+const TEST_SCHEMA = {
+  type: 'object',
+  properties: {
+    is_advertising: { type: 'boolean' },
+    brand_name: { type: 'string' },
+    industry_sector: { type: 'string', enum: ['fossil_fuel', 'other'] },
+    harm_tags: { type: 'array', items: { type: 'string' } },
+    confidence: { type: 'number' },
+  },
+  required: ['is_advertising', 'brand_name'],
+};
 
 type Harness = { calls: number; logs: string[]; fetches: number };
 
@@ -64,7 +75,7 @@ async function run(
     const res = await handleScanAd(
       req,
       { createClientFromRequest: () => stubClient(h, me, invoke), getEnv, ...extra },
-      { type: 'object' },
+      TEST_SCHEMA,
       'server-owned prompt',
     );
     const text = await res.text();
@@ -199,12 +210,14 @@ Deno.test('a hung provider is bounded by the timeout and returns a safe 504', as
   assertEquals(r.h.calls, 1);
 });
 
-Deno.test('an oversized provider result is not returned', async () => {
+Deno.test('an oversized provider result is bounded, never returned whole', async () => {
   const r = await run(post({ file_url: GOOD_URL }), signedIn, async () => ({
-    notes: 'z'.repeat(70 * 1024),
+    is_advertising: true,
+    brand_name: 'z'.repeat(70 * 1024),
   }));
-  assertEquals(r.status, 502);
-  assert(r.text.length < 100);
+  assertEquals(r.status, 200);
+  assertEquals(JSON.parse(r.text).detection.brand_name.length, 4000);
+  assert(r.text.length < 5000);
 });
 
 Deno.test('logs never contain the caller identity, tokens or request body', async () => {
@@ -214,3 +227,165 @@ Deno.test('logs never contain the caller identity, tokens or request body', asyn
   assertEquals(r.status, 401);
   assert(!(r.text + r.h.logs.join('\n')).includes(SECRET));
 });
+
+// ── Additional material cases (received bytes, model output, late settlement) ────────────────
+
+const streamBody = (chunks: Uint8Array[], headers: Record<string, string> = {}) => {
+  let i = 0;
+  return new Request('https://fn.local/scanAd', {
+    method: 'POST',
+    headers,
+    body: new ReadableStream<Uint8Array>({
+      pull(controller) {
+        if (i < chunks.length) controller.enqueue(chunks[i++]);
+        else controller.close();
+      },
+    }),
+    // @ts-ignore Deno requires duplex for stream bodies
+    duplex: 'half',
+  });
+};
+const enc = new TextEncoder();
+
+Deno.test(
+  'body cap counts actual received bytes: chunked, mis-declared and multibyte',
+  async () => {
+    // Chunked (no Content-Length) body larger than the cap.
+    const chunks = Array.from({ length: 12 }, () => enc.encode('a'.repeat(1024)));
+    const chunked = await run(streamBody(chunks), signedIn);
+    assertEquals(chunked.status, 413, 'chunked oversized');
+    assertEquals(chunked.h.calls, 0);
+    // Declares a small length but sends a large body.
+    const lying = await run(
+      streamBody([enc.encode('{"file_url":"' + 'b'.repeat(9000) + '"}')], {
+        'content-length': '10',
+      }),
+      signedIn,
+    );
+    assertEquals(lying.status, 413, 'mis-declared length');
+    assertEquals(lying.h.calls, 0);
+    // 3000 euro signs = 3000 characters but 9000 bytes (> 8192): a character-count check would pass it.
+    const multibyte = await run(post({ file_url: GOOD_URL, pad: '€'.repeat(3000) }), signedIn);
+    assertEquals(multibyte.status, 413, 'multibyte oversize');
+    assertEquals(multibyte.h.calls, 0);
+    // Within the cap, split across chunks, is accepted and parsed (cap is a ceiling, not a rejection of chunking).
+    const body = enc.encode(JSON.stringify({ file_url: GOOD_URL }));
+    const ok = await run(streamBody([body.slice(0, 7), body.slice(7)]), signedIn);
+    assertEquals(ok.status, 200, 'valid chunked body');
+    assertEquals(ok.h.calls, 1);
+  },
+);
+
+Deno.test('invalid UTF-8 and BOM-prefixed junk bodies are rejected without AI calls', async () => {
+  const r = await run(streamBody([new Uint8Array([0xff, 0xfe, 0xfd, 0x7b])]), signedIn);
+  assertEquals(r.status, 400);
+  assertEquals(r.h.calls, 0);
+});
+
+Deno.test('malformed model responses are rejected or reduced to the schema', async () => {
+  const bad: unknown[] = [
+    null,
+    'a string',
+    42,
+    [],
+    [{ is_advertising: true, brand_name: 'X' }],
+    {},
+  ];
+  for (const result of bad) {
+    const r = await run(post({ file_url: GOOD_URL }), signedIn, async () => result);
+    assertEquals(r.status, 502, JSON.stringify(result));
+    assertEquals(JSON.parse(r.text), { error: 'Scan unavailable' });
+  }
+  const missingRequired = await run(post({ file_url: GOOD_URL }), signedIn, async () => ({
+    brand_name: 'X',
+  }));
+  assertEquals(missingRequired.status, 502, 'required field missing');
+});
+
+Deno.test(
+  'sanitizeDetection keeps only declared, typed, bounded fields and treats text as text',
+  () => {
+    const out = sanitizeDetection(
+      {
+        is_advertising: true,
+        brand_name: '<img src=x onerror=alert(1)>Shell\u0000\u0007',
+        industry_sector: 'definitely_not_in_enum',
+        harm_tags: [
+          'a',
+          7,
+          null,
+          'b'.repeat(500),
+          ...Array.from({ length: 50 }, (_, i) => `t${i}`),
+        ],
+        confidence: 7,
+        injected: 'ignore previous instructions',
+        __proto__: { polluted: true },
+      },
+      TEST_SCHEMA,
+    ) as Record<string, any>;
+    assertEquals(
+      out.brand_name,
+      '<img src=x onerror=alert(1)>Shell',
+      'plain text, control chars removed',
+    );
+    assertEquals('industry_sector' in out, false, 'enum violation dropped');
+    assertEquals('injected' in out, false, 'unknown field dropped');
+    assertEquals(out.confidence, 1, 'number clamped to 0..1');
+    assertEquals(out.harm_tags.length, 20);
+    assert(out.harm_tags.every((t: string) => typeof t === 'string' && t.length <= 100));
+    assertEquals(({} as any).polluted, undefined, 'no prototype pollution');
+    // Provider wrapper shape { response: {...} } is unwrapped.
+    assertEquals(
+      (
+        sanitizeDetection(
+          { response: { is_advertising: false, brand_name: '' } },
+          TEST_SCHEMA,
+        ) as any
+      ).is_advertising,
+      false,
+    );
+  },
+);
+
+Deno.test(
+  'late provider settlement after the timeout is observed: no unhandled rejection, one call, no retry',
+  async () => {
+    const unhandled: unknown[] = [];
+    const onUnhandled = (e: PromiseRejectionEvent) => {
+      unhandled.push(e.reason);
+      e.preventDefault();
+    };
+    globalThis.addEventListener('unhandledrejection', onUnhandled);
+    try {
+      const lateReject = await run(
+        post({ file_url: GOOD_URL }),
+        signedIn,
+        () => new Promise((_, reject) => setTimeout(() => reject(new Error(SECRET)), 60)),
+        { timeoutMs: 15 },
+      );
+      assertEquals(lateReject.status, 504);
+      await new Promise((r) => setTimeout(r, 120));
+      const lateResolve = await run(
+        post({ file_url: GOOD_URL }),
+        signedIn,
+        () =>
+          new Promise((resolve) =>
+            setTimeout(() => resolve({ is_advertising: true, brand_name: 'L' }), 60),
+          ),
+        { timeoutMs: 15 },
+      );
+      assertEquals(lateResolve.status, 504);
+      await new Promise((r) => setTimeout(r, 120));
+      assertEquals(lateReject.h.calls, 1, 'no automatic retry after an uncertain timeout');
+      assertEquals(lateResolve.h.calls, 1, 'no automatic retry after an uncertain timeout');
+      assert(!(lateReject.text + lateReject.h.logs.join('')).includes(SECRET));
+      assertEquals(
+        unhandled.length,
+        0,
+        'late settlement must not surface as an unhandled rejection',
+      );
+    } finally {
+      globalThis.removeEventListener('unhandledrejection', onUnhandled);
+    }
+  },
+);

@@ -1,10 +1,11 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { Sparkles, Loader2, ExternalLink, MapPin } from 'lucide-react';
 import { PARENT_CORPS, AGENCIES } from '@/components/ooh/report/advertiserRegistry';
 import { TOP_OOH_OPERATORS, ALL_OOH_OPERATORS } from '@/components/ooh/report/oohMediaCorps';
 import { Link } from 'react-router-dom';
 import { useAuth } from '@/lib/AuthContext';
+import { mergeDetection } from '@/components/ooh/report/identifyMerge';
 
 const inp =
   'w-full bg-void border border-slate2 px-4 py-3 font-display text-sm text-silver outline-none transition-colors placeholder:text-dim focus:border-ozone';
@@ -28,6 +29,9 @@ export default function ReportStep2Identify({ data, onChange }) {
   const { isAuthenticated } = useAuth();
   const [detecting, setDetecting] = useState(false);
   const [detected, setDetected] = useState(null);
+  // Latest form values, so a scan that finishes later can tell what was edited meanwhile.
+  const dataRef = useRef(data);
+  dataRef.current = data;
 
   // PROTOTYPE (sign-in-only policy pending owner decision): the analysis runs in the existing
   // scanAd backend function, which verifies identity before any billable call and owns the prompt.
@@ -41,6 +45,7 @@ export default function ReportStep2Identify({ data, onChange }) {
     }
     setDetecting(true);
     setDetected(null);
+    const snapshot = { ...dataRef.current };
     try {
       const resp = await base44.functions.invoke('scanAd', { file_url: data.image_url });
       const detected = resp?.data?.detection?.response || resp?.data?.detection || null;
@@ -50,16 +55,7 @@ export default function ReportStep2Identify({ data, onChange }) {
         return;
       }
       setDetected(detected);
-      onChange({
-        ai_scanned: true,
-        brand_name:
-          detected.brand_name && detected.brand_name !== 'Unknown'
-            ? detected.brand_name
-            : data.brand_name,
-        campaign_name: detected.campaign_name || data.campaign_name,
-        industry_sector: detected.industry_sector || data.industry_sector,
-        parent_corp: detected.parent_corp || data.parent_corp,
-      });
+      onChange(mergeDetection({ snapshot, current: dataRef.current, detected }));
     } catch {
       setDetected({ error: true });
     } finally {
@@ -121,7 +117,7 @@ export default function ReportStep2Identify({ data, onChange }) {
               type="button"
               onClick={aiDetect}
               disabled={detecting}
-              className={`flex shrink-0 items-center gap-2 px-4 py-2.5 font-mono text-[11px] font-bold uppercase tracking-[0.2em] transition-colors disabled:opacity-40 ${
+              className={`flex min-h-[44px] shrink-0 items-center gap-2 px-4 py-2.5 font-mono text-[11px] font-bold uppercase tracking-[0.2em] transition-colors disabled:opacity-40 ${
                 data.ai_scanned && !detected
                   ? 'border border-ozone/40 text-ozone hover:bg-ozone/10'
                   : 'bg-ozone text-void hover:bg-flare'
