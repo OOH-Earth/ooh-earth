@@ -780,4 +780,4 @@ WebKit (Playwright needs `sudo apt` host dependencies; not installed), a physica
 
 ### 15.10 Corrections to earlier sections
 
-Section 14.4 listed `Resize list`; it is now "Open or close the list (drag, or use arrow keys)". The shared header slice in 14.6 stays unused; the replacement is #396. Section 14's "slices" lived on one branch that also contained the provider commits; the units are now separated (15.2). Section 13.2's statement that two `map-sheet-*` specs failed Prettier in CI on #394 is resolved. In section 13.5 "Unit A" results were for the earlier build; 15.5 has the final-build runs.
+Section 14.4 listed `Resize list`; it is now "Open or close the list (drag, or use arrow keys)". The shared header slice in 14.6 stays unused; the replacement is #396. Section 14's "slices" lived on one branch that also contained the provider commits; the units are now separated (15.2). In section 13.5 "Unit A" results were for the earlier build; 15.5 has the final-build runs.
