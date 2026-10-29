@@ -268,7 +268,7 @@ export default function MapBottomSheet({
           {statusInline && !detailMode ? (
             <span
               role="alert"
-              className="min-w-0 truncate font-mono text-ooh-caption font-bold uppercase tracking-[0.1em] text-flare"
+              className="min-w-0 truncate font-mono text-ooh-control font-bold uppercase tracking-[0.1em] text-flare"
             >
               // {status.text}
             </span>
@@ -279,7 +279,7 @@ export default function MapBottomSheet({
                 pendingFocus.current = 'Collapse list';
                 onSnapChange('half');
               }}
-              className="flex min-h-ooh-target min-w-0 flex-1 items-center gap-2 text-left font-mono text-ooh-caption uppercase leading-snug tracking-[0.12em] text-ozone"
+              className="flex min-h-ooh-target min-w-0 flex-1 items-center gap-2 text-left font-mono text-ooh-control uppercase leading-snug tracking-[0.12em] text-ozone"
             >
               <span className="min-w-0 break-words">{`// ${countText}`}</span>
               <span className="shrink-0 border border-ozone/60 px-1.5 py-0.5 tracking-[0.1em]">
@@ -287,7 +287,7 @@ export default function MapBottomSheet({
               </span>
             </button>
           ) : (
-            <span className="min-w-0 break-words font-mono text-ooh-caption uppercase tracking-[0.12em] text-ozone">
+            <span className="min-w-0 break-words font-mono text-ooh-control uppercase tracking-[0.12em] text-ozone">
               {toolsMode ? '// map tools' : detailMode ? '// pin detail' : `// ${countText}`}
             </span>
           )}
@@ -296,7 +296,7 @@ export default function MapBottomSheet({
               <button
                 type="button"
                 onClick={status.onAction}
-                className="flex min-h-ooh-target items-center border border-ozone px-3 font-mono text-ooh-caption font-bold uppercase tracking-[0.1em] text-ozone transition-colors hover:bg-ozone hover:text-void"
+                className="flex min-h-ooh-target items-center border border-ozone px-3 font-mono text-ooh-control font-bold uppercase tracking-[0.1em] text-ozone transition-colors hover:bg-ozone hover:text-void"
               >
                 {status.actionLabel}
               </button>
@@ -364,13 +364,13 @@ export default function MapBottomSheet({
           role="alert"
           className="flex h-12 shrink-0 items-center justify-between gap-2 border-t border-flare/40 px-3"
         >
-          <span className="font-mono text-ooh-caption font-bold uppercase tracking-[0.1em] text-flare">
+          <span className="font-mono text-ooh-control font-bold uppercase tracking-[0.1em] text-flare">
             // {status.text}
           </span>
           <button
             type="button"
             onClick={status.onAction}
-            className="flex min-h-ooh-target items-center border border-ozone px-3 font-mono text-ooh-caption font-bold uppercase tracking-[0.1em] text-ozone transition-colors hover:bg-ozone hover:text-void"
+            className="flex min-h-ooh-target items-center border border-ozone px-3 font-mono text-ooh-control font-bold uppercase tracking-[0.1em] text-ozone transition-colors hover:bg-ozone hover:text-void"
           >
             {status.actionLabel}
           </button>
