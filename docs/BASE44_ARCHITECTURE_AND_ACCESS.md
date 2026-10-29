@@ -2,6 +2,15 @@
 
 What's actually verifiable from this repository and from the live site, as of `main` @ `644110f`. Nothing below is guessed — each claim states its evidence. Where the honest answer is "unknown without Dave/Base44 access," it says so instead of assuming.
 
+## Correction (2026-10-28) — hosting ownership and staging
+
+Dated corrections to statements below; the original text is preserved as history.
+
+- **Hosting ownership was inferred, not established.** The "served from Render.com running a Python/uvicorn origin" conclusion above was drawn from response headers. Re-observed 2026-10-28: `https://oohearth.app/` and `https://ooh-earth-backup.base44.app/` return the same header family (`server: cloudflare`, `via: 1.1 Caddy`, `x-render-origin-server: uvicorn`, a per-request `rndr-id`). BACKUP is a Base44 app, so these headers describe Base44's delivery path. They do **not** show that the team operates a separate Render service or can edit an origin. Treat items 2 and 3 under "Exact Dave access required" as **withdrawn**: do not ask for access to an assumed custom origin. The real control boundary is the Base44 app (frontend deploy, entities, functions) plus GitHub.
+- **A staging environment does exist.** The "no evidence of a staging environment" line is obsolete: BACKUP (`https://ooh-earth-backup.base44.app`) is the shared release-qualification app. App ids and procedure: `brain/ENVIRONMENTS.md` and `docs/ops/ooh-earth/03-RELEASE-RUNBOOK.md`.
+- **Meta-description mismatch**: not re-investigated here; still an open observation.
+- Current release state and the proposed-vs-deployed table are in the "Continuity and AI containment" section (maintenance line) and `docs/engineering/DEVOPS-REFERENCE.md`.
+
 ## What this repo actually is
 
 A Vite + React 18 SPA (`vite.config.js`), built with `@base44/vite-plugin` (`^1.0.30`) and talking to the backend through `@base44/sdk` (`^0.8.41`) via `src/api/base44Client.js`. There is no server-side rendering, no prerender plugin, and no framework like Next/Remix — `npm run build` is a plain `vite build` (now followed by a small static-metadata step, see below). This is **verified by reading `vite.config.js` and `package.json` directly**, not inferred.
