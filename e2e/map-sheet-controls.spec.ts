@@ -27,9 +27,9 @@ for (const [w, h] of VIEWPORTS) {
         await tap(page, 'Collapse list');
         await expect.poll(() => height(page)).toBe(peek);
       }
-      await tap(page, 'Fullscreen map');
+      await tap(page, 'Full-screen map (hides navigation)');
       await expect(page.locator('body')).toHaveClass(/map-fullscreen/);
-      await tap(page, 'Exit fullscreen');
+      await tap(page, 'Exit full-screen map (shows navigation)');
       await expect(page.locator('body')).not.toHaveClass(/map-fullscreen/);
     });
 
@@ -69,7 +69,7 @@ for (const [w, h] of VIEWPORTS) {
       await openMapWithMock(page, { view: 'flat' });
       const peek = await height(page);
       const hb = await sheet(page)
-        .getByRole('button', { name: 'Resize list' })
+        .getByRole('button', { name: 'Open or close the list' })
         .boundingBox();
       expect(hb).toBeTruthy();
       const from = { x: hb!.x + hb!.width / 2, y: hb!.y + hb!.height / 2 };
@@ -77,7 +77,7 @@ for (const [w, h] of VIEWPORTS) {
       await expect.poll(() => height(page)).toBeGreaterThan(peek + 80);
       await settle(page);
       const open = await sheet(page)
-        .getByRole('button', { name: 'Resize list' })
+        .getByRole('button', { name: 'Open or close the list' })
         .boundingBox();
       await touchDrag(page, { x: open!.x + open!.width / 2, y: open!.y + open!.height / 2 }, 600);
       await expect.poll(() => height(page)).toBe(peek);
@@ -87,7 +87,7 @@ for (const [w, h] of VIEWPORTS) {
       test.setTimeout(90_000);
       await openMapWithMock(page, { view: 'flat' });
       const peek = await height(page);
-      const handle = sheet(page).getByRole('button', { name: 'Resize list' });
+      const handle = sheet(page).getByRole('button', { name: 'Open or close the list' });
       await handle.focus();
       await page.keyboard.press('ArrowUp');
       const half = await expect.poll(() => height(page)).toBeGreaterThan(peek + 50);

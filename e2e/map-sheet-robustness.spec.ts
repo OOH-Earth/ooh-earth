@@ -18,10 +18,10 @@ test.describe('sheet robustness @ 390x844', () => {
     await settle(page);
     await btn(page, 'Collapse list').click();
     await expect.poll(() => height(page)).toBe(peek);
-    await btn(page, 'Fullscreen map').click();
+    await btn(page, 'Full-screen map (hides navigation)').click();
     await expect(page.locator('body')).toHaveClass(/map-fullscreen/);
     await settle(page);
-    await btn(page, 'Exit fullscreen').click();
+    await btn(page, 'Exit full-screen map (shows navigation)').click();
     await expect(page.locator('body')).not.toHaveClass(/map-fullscreen/);
   });
 
@@ -97,7 +97,7 @@ test.describe('sheet robustness @ 390x844', () => {
     await openMapWithMock(page, { view: 'flat' });
     const peek = await height(page);
     const hb = (await sheet(page)
-      .getByRole('button', { name: 'Resize list' })
+      .getByRole('button', { name: 'Open or close the list' })
       .boundingBox())!;
     const x = hb.x + hb.width / 2;
     const y = hb.y + hb.height / 2;
@@ -261,7 +261,9 @@ for (const [w, h] of [
         const r = sh.getBoundingClientRect();
         const row = [...sh.querySelectorAll('button')]
           .filter(
-            (b) => !b.closest('[inert]') && b.getAttribute('aria-label') !== 'Resize list',
+            (b) =>
+              !b.closest('[inert]') &&
+              b.getAttribute('aria-label') !== 'Open or close the list (drag, or use arrow keys)',
           )
           .map((b) => {
             const q = b.getBoundingClientRect();

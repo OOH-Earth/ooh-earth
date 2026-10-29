@@ -142,7 +142,7 @@ test.describe('Map — My Discoveries layer (desktop)', () => {
     const card = visibleText(page, 'Billboard · Mine')
       .first()
       .locator('xpath=ancestor::div[@role="button"][1]');
-    await expect(card.getByRole('link', { name: /page/i })).toHaveAttribute(
+    await expect(card.getByRole('link', { name: /view listing/i })).toHaveAttribute(
       'href',
       '/location/loc-mine',
     );

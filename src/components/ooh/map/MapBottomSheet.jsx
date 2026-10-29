@@ -255,7 +255,7 @@ export default function MapBottomSheet({
           onClick={(e) => {
             if (e.detail === 0) toggleSnap(); // keyboard Enter/Space; pointer taps handled on pointer-up
           }}
-          aria-label="Resize list"
+          aria-label="Open or close the list (drag, or use arrow keys)"
           aria-keyshortcuts="ArrowUp ArrowDown"
           disabled={toolsMode}
           className="absolute inset-x-0 top-0 z-0 flex h-6 cursor-grab touch-none items-start justify-center pt-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-ozone active:cursor-grabbing disabled:cursor-default"
@@ -346,7 +346,11 @@ export default function MapBottomSheet({
             {!toolsMode && (
               <button
                 onClick={onToggleFullscreen}
-                aria-label={fullscreen ? 'Exit fullscreen' : 'Fullscreen map'}
+                aria-label={
+                  fullscreen
+                    ? 'Exit full-screen map (shows navigation)'
+                    : 'Full-screen map (hides navigation)'
+                }
                 className="flex min-h-ooh-target min-w-ooh-target items-center justify-center text-quiet transition-colors hover:text-ozone"
               >
                 {fullscreen ? <Minimize2 className="h-5 w-5" /> : <Maximize2 className="h-5 w-5" />}
