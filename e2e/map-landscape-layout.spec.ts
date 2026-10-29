@@ -53,7 +53,9 @@ for (const viewport of LANDSCAPE_VIEWPORTS) {
       ).toBeLessThanOrEqual(navBox!.y + 1);
       await expect(page.getByRole('button', { name: 'Flat map' })).toBeVisible();
       await expect(page.getByRole('button', { name: 'Globe view' })).toBeVisible();
-      await expect(page.getByRole('button', { name: 'Fullscreen map' }).first()).toBeVisible();
+      await expect(
+        page.getByRole('button', { name: 'Full-screen map (hides navigation)' }).first(),
+      ).toBeVisible();
       expect(
         await page.evaluate(
           () =>

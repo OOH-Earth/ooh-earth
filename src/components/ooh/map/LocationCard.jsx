@@ -182,15 +182,18 @@ export default function LocationCard({
         )}
       </div>
 
-      {/* PAGE → terminal-style bordered button */}
+      {/* Opens this location's page; the accessible name says which one (WCAG 2.4.4). */}
       <Link
         to={`/location/${m.id}`}
         state={m}
         onClick={(e) => e.stopPropagation()}
-        className="group/btn flex shrink-0 items-center gap-1.5 self-center border border-ozone/60 bg-void px-3 py-2 font-mono text-[10px] font-bold uppercase tracking-[0.2em] text-ozone transition-colors hover:border-ozone hover:bg-ozone hover:text-void sm:flex"
+        aria-label={`View listing: ${m.title || m.brand_name || 'location'}`}
+        className="group/btn flex min-h-ooh-target shrink-0 items-center gap-1.5 self-center border border-ozone/60 bg-void px-3 py-2 font-mono text-ooh-control font-bold uppercase tracking-[0.1em] text-ozone transition-colors hover:border-ozone hover:bg-ozone hover:text-void sm:flex"
       >
-        <span>&gt; page</span>
-        <span className="transition-transform group-hover/btn:translate-x-0.5">→</span>
+        <span>view listing</span>
+        <span aria-hidden="true" className="transition-transform group-hover/btn:translate-x-0.5">
+          →
+        </span>
       </Link>
     </div>
   );
