@@ -105,13 +105,25 @@ test.describe('nudge controls, state label and clearance lifecycle', () => {
     await expect(page.getByText('ON AIR')).toHaveCount(0);
     const abort = page.getByRole('button', { name: 'Abort' });
     await expect(abort).toBeVisible({ timeout: 15_000 });
-    const box = (await abort.boundingBox())!;
-    expect(box.width).toBeGreaterThanOrEqual(44);
-    expect(box.height).toBeGreaterThanOrEqual(44);
+    // The nudge scales/slides in (and the feed slides above it), so a single read right after it
+    // becomes visible measures mid-animation (e.g. 43.99997px high, or still overlapping). Poll the
+    // real bounds until they settle, like the other tests in this file.
+    await expect
+      .poll(async () => (await abort.boundingBox())?.width ?? 0, { timeout: 10_000 })
+      .toBeGreaterThanOrEqual(44);
+    await expect
+      .poll(async () => (await abort.boundingBox())?.height ?? 0, { timeout: 10_000 })
+      .toBeGreaterThanOrEqual(44);
     // Larger controls must not push the nudge into the feed header or nav.
-    const b = await bounds(page);
-    expect(hit(b.header, b.nudge)).toBe(false);
-    expect(hit(b.nudge, b.navPill)).toBe(false);
+    await expect
+      .poll(
+        async () => {
+          const b = await bounds(page);
+          return { header: hit(b.header, b.nudge), nav: hit(b.nudge, b.navPill) };
+        },
+        { timeout: 10_000 },
+      )
+      .toEqual({ header: false, nav: false });
   });
 
   test('clearance is released on dismiss, route change and resize to desktop', async ({ page }) => {
