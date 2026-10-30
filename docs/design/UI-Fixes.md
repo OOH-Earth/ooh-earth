@@ -876,4 +876,11 @@ Home, Map, Report, Tools, sheet states, focus return and Report validation as ME
 
 ### 16.8 Docs chain and #395 checks
 
-CI runs only for PRs into `main` or `maintenance/**`; #395 targets `docs/ui-fixes-release-record` (#387), so it ran no checks. #387's latest run (older) shows `Playwright (smoke + accessibility)` failed with the other nine checks green; that is a docs-only head. The CI log (run 40341511379) shows the failure is `live-feed-nudge-overlap.spec.ts:100`, the same pre-existing race recorded in 15.11 and addressed by #399, so it is not caused by the docs or by this work; #387 has not been rerun. #395 is retargeted to the production line so its checks run (it then also shows #387's one docs commit), after which the result is recorded in the PR.
+CI runs only for PRs into `main` or `maintenance/**`; #395 targets `docs/ui-fixes-release-record` (#387), so it ran no checks. #387's latest run (older) shows `Playwright (smoke + accessibility)` failed with the other nine checks green; that is a docs-only head. The CI log (run 40341511379) shows the failure is `live-feed-nudge-overlap.spec.ts:100`, the same pre-existing race recorded in 15.11 and addressed by #399, so it is not caused by the docs or by this work; #387 has not been rerun. #395 is retargeted to the production line so its checks run (it then also shows #387's one docs commit). A retarget alone did not start them; a push did.
+
+| Head | Result | Kept |
+| --- | --- | --- |
+| `b4ad4c7` | 9 of 10 passed; **Prettier failed** | `matrix-before.json` and `matrix-slices123.json` (evidence files already on the branch) were not Prettier-formatted. Not caused by section 16 |
+| `a96eb9c` | **all 10 passed** (Lint & Typecheck, Build, both Playwright jobs, Prettier, audit, Dependency Review, CodeQL, Analyze, summary) | the two files were reformatted, whitespace only; parsed JSON verified identical before and after |
+
+Pushed in this pass: `8336ca3` (section 16), `b4ad4c7` (16.8 attribution), `a96eb9c` (formatting). Application source on #392, #394, #396 and #398 is unchanged, so their CI results from section 15 stand.
