@@ -95,7 +95,10 @@ export default function ReportStep2Identify({ data, onChange }) {
               {detected?.signInRequired && (
                 <p className="mt-1 font-mono text-[11px] text-flare" role="status">
                   AI scan is for signed-in members.{' '}
-                  <Link to="/login" className="underline">
+                  <Link
+                    to="/login"
+                    className="-my-3.5 inline-flex min-h-[44px] min-w-[44px] items-center underline"
+                  >
                     Sign in
                   </Link>{' '}
                   or fill the fields below — your report is kept.
