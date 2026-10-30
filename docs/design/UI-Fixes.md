@@ -794,3 +794,86 @@ Required CI ran on the real heads after the stacked PRs were retargeted (CI only
 | #394 (foundation + Report step 1) CI | all checks passed on `be64187`, including smoke + accessibility and mobile | none |
 
 The staged candidate on BACKUP was redeployed from `bf9bf6b` (includes the name fix): served manifest `git_sha bf9bf6b`, 371/372 files identical to the build's hashes (`sitemap.xml` host-rewritten).
+
+## 16. Status refresh and BACKUP release (2026-10-30)
+
+Sections 1-15 are history and keep the SHA they tested. Where this section differs from 15.7 ("BACKUP currently serves the candidate"), this section wins: **BACKUP no longer serves the candidate.** Times are UTC.
+
+### 16.1 Verified state (2026-10-30 13:09Z)
+
+| PR | Branch @ head | Base | State | Own application files |
+| --- | --- | --- | --- | --- |
+| #394 | `ui/consistency-pass` @ `be64187` | production line | draft | `index.css`, `tailwind.config.js`, `ReportStep1Document.jsx` (+ `uiTokens.test.js`, 2 specs) |
+| #392 | `sheet/interaction-and-map-first` @ `540dc06` | production line, 4 commits are #394's | draft | `MapBottomSheet.jsx`, `LocationCard.jsx`, `Map.jsx` (5 lines) (+ 7 specs/helpers) |
+| #396 | `ui/header-status-disclosure` @ `a17832c` | production line, 4 commits are #394's | draft | `ClimateClock.jsx`, `TelemetryBar.jsx` (+ `telemetry-status.spec.ts`) |
+| #393 | `basemap/config-and-report` @ `8cba6d5` | production line | draft, **BLOCKED** | provider code only; contained in none of the others (ancestry checked) |
+| #398 | `candidate/ui-release-staging` @ `bf9bf6b` | production line | draft, **DO NOT MERGE** | integration/qualification build of #394 + #392 + #396, not a fourth feature PR; all 10 CI checks passed on this head |
+| #387 | `docs/ui-fixes-release-record` @ `6898b7e` | production line | open | docs; its latest CI run has a failed smoke job (see 16.8) |
+| #395 | `docs/ui-reference-and-followup-ledger` | see 16.8 | draft | this ledger |
+
+The production line head is `1dbddda`; `oohearth.app` serves entry `index-CJWCp393.js` (not mapped to a SHA by this check). Heads are unchanged since section 15, so no source check had to be rerun for this refresh.
+
+### 16.2 #396 against the header decision
+
+Approved: keep the deployed header footprint; no 15-20px growth. #396 changes only the telemetry strip's contents (`ClimateClock.jsx`, `TelemetryBar.jsx`); it does not touch `Nav`. Measured this session on `/report`, anonymous, headless Chrome 153 (Playwright build 1243), `header` element height in px, production `oohearth.app` vs the candidate bytes `bf9bf6b` as served from BACKUP before the restore:
+
+| Viewport | Production | Candidate | Candidate strip |
+| --- | --- | --- | --- |
+| 320x640 | 96 | 96 | 31 |
+| 390x844 | 96 | 96 | 31 |
+| 767x1024 | 96 | 96 | 31 |
+| 768x1024 | 98 | 98 | 31 |
+| 844x390 | 98 | 98 | 31 |
+| 1280x720 | 98 | 98 | 31 |
+
+No horizontal overflow in any of the 12 loads. Difference 0 px at all six sizes; #396 respects the decision, and `telemetry-status.spec.ts` asserts the same numbers in CI. Correction: 15.1 quotes 97px "on staging at 844x390" from the earlier session; this session measured 98. The strip's 31px selector is absent in production markup, so the production strip height was not re-read, only the header total. Not covered: secondary clock detail is hidden behind the disclosure on narrow screens, which was verified by spec and by hand in the earlier session, not re-checked now.
+
+### 16.3 Contrast of text over the map (computed, not photographed)
+
+Tokens in the candidate: dark `--c-void` 0 0 0, `--c-quiet` 138, `--c-dim` 102; light `--c-void` 244, `--c-quiet` 88. `text-quiet` is used in the map only on the sheet (`bg-void/95`), in the header strip and in Report step 1 (opaque `bg-void`); it is not used on the `bg-void/80`-`/90` map controls. Worst case (WCAG 2.x ratio, backdrop assumed pure white in dark theme, pure black in light theme; blur ignored, which only softens the worst case):
+
+| Surface alpha | Dark theme, white backdrop, `quiet` | Light theme, black backdrop, `quiet` |
+| --- | --- | --- |
+| 0.95 (sheet) | 5.64 | 5.80 |
+| 0.90 | 5.07 | 5.17 |
+| 0.85 | 4.37 | not computed |
+| 0.80 | 3.66 | 4.04 |
+
+`text-quiet` therefore stays at or above 4.5:1 wherever it is used over the map. The `/80`-`/85` controls (style switcher, toolbar tiles, Map.jsx mode buttons) keep their existing text colours and were **not** migrated or measured; over a bright backdrop `--c-dim` on `/80` computes to 2.20:1, so those labels would need an opaque surface before being called readable. Not done in this pass (no redesign); recorded as open. MapLibre's attribution was checked in the earlier session on real tiles (UI-029), not re-measured here.
+
+### 16.4 DevTools and other coverage
+
+- Chrome DevTools MCP: the server failed at session start (`CONNECT_TIMEOUT`) and its tools were not loaded in this session. Its configuration expects a browser on `127.0.0.1:9223`, which was down. Documented recovery (05-TEST-MATRIX): launched Playwright's bundled Chromium 153 headless with `--remote-debugging-port=9223` and a scratch profile (started by this session; main pid 4770, to be stopped by that exact pid). The MCP tools still do not appear in this session, so measurements used Playwright `connectOverCDP` against that browser instead. No sudo, no installs, no profile deletion.
+- WebKit: not available. Playwright 1.62.1 wants build 2336; only 2359 is cached, and its binaries lack `libWPEWebKit-2.0`, `libxslt`, `libevent-2.1` and others. Installing them needs `sudo apt`. No engine coverage was added; this is also not an iPhone.
+- Real browser zoom (200%, 400%): headless Chrome has no menu. Not done. Reviewer steps: open the candidate, Chrome menu > Zoom, set 200% then 400% (the badge must read it), check `/map` (sheet, Expand list, attribution), `/report` (labels, error text, coordinates) for clipped or overlapping text and horizontal scroll.
+- Virtual keyboard, changing mobile browser chrome, physical iPhone, list touch scrolling: still not covered.
+
+### 16.5 BACKUP: expiry, restore, current state
+
+- Window 2 (`oohearth-b6`/`oohearth-c4` UI lane) was reserved 2026-10-29T13:37:58Z for up to 2h, so it expired 2026-10-29T15:37:58Z. BACKUP kept serving the candidate `bf9bf6b` (entry `index-DC8JaVH8.js`, confirmed 2026-10-30T13:09Z) for about 21 hours beyond it. That was an overrun of the window.
+- Peer `oohearth-e2` (the only listed peer) confirmed on 2026-10-30 it had deployed nothing and did not need the candidate. The served entry matched our own deploy, so no other session's work was overwritten.
+- Restore at 2026-10-30T13:14:43Z, frontend only, from the saved pre-deploy bytes (`~/ooh-release-records/2026-10-29/backup-before-ui/`, which first verified 0 mismatches against its manifest). Result: served entry `index-DoInAKbd.js` (5c81a80); each of the 372 files in `backup-before-ui-sha256.txt` was fetched from `https://ooh-earth-backup.base44.app` and compared: **372 identical, 0 differing** (the earlier "sitemap.xml differs" note applied to the candidate, not to this restore). Logged in `BACKUP-RESERVATION.md`; reservation released 13:15Z.
+- **BACKUP currently serves 5c81a80, not the candidate.** Candidate bytes are kept in `candidate-bf9bf6b-BACKUP-dist/` (371/372 identical to the build when it was served; sitemap host-rewritten).
+- **Consequence:** the staging URL no longer shows the candidate. A new window is needed for the MEMBER pass and the owner's inspection.
+
+### 16.6 Anonymous vs MEMBER
+
+| Check | Anonymous | MEMBER |
+| --- | --- | --- |
+| Earlier session, candidate `bf9bf6b` or `df5f287`/`6f21272` on BACKUP (15.6, 15.7) | done, real mouse/keyboard, specs against served bytes | **not done** |
+| This session | header budget only (16.2) | **not done** |
+
+Home, Map, Report, Tools, sheet states, focus return and Report validation as MEMBER have never been exercised on this candidate. The 2026-10-25 member session (`justicejonas`, `oohtestmember1`) belonged to the earlier `f2e2b06`/`57ae555` candidates and does not transfer. No sign-in was attempted: it requires the owner on the BACKUP origin, and no credential was requested.
+
+### 16.7 What is still open
+
+1. MEMBER pass on the final candidate (needs a new BACKUP window and the owner's sign-in on `https://ooh-earth-backup.base44.app`; no records, uploads or Transmit).
+2. Provider (#393): CARTO browser key and entitlement from the account owner.
+3. WebKit (host libraries), physical iPhone, real zoom 200/400%, virtual keyboard.
+4. Contrast of the `/80` map controls over bright backdrops (16.3).
+5. DevTools MCP tools not loaded in the session (browser side recovered).
+6. #395 CI (16.8).
+
+### 16.8 Docs chain and #395 checks
+
+CI runs only for PRs into `main` or `maintenance/**`; #395 targets `docs/ui-fixes-release-record` (#387), so it ran no checks. #387's latest run (older) shows `Playwright (smoke + accessibility)` failed with the other nine checks green; that is a docs-only head, so it is not attributed to this work until rerun. #395 is retargeted to the production line so its checks run (it then also shows #387's one docs commit), after which the result is recorded in the PR.
