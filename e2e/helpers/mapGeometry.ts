@@ -28,10 +28,10 @@ export type Probe = {
 };
 
 export const ITEM_SELECTORS: Record<string, string> = {
-  'sheet-expand': '.ooh-bottom-sheet [aria-label="Expand sheet"]',
-  'sheet-collapse': '.ooh-bottom-sheet [aria-label="Collapse sheet"]',
+  'sheet-expand': '.ooh-bottom-sheet [aria-label="Expand list"]',
+  'sheet-collapse': '.ooh-bottom-sheet [aria-label="Collapse list"]',
   'sheet-fullscreen':
-    '.ooh-bottom-sheet [aria-label="Fullscreen map"], .ooh-bottom-sheet [aria-label="Exit fullscreen"]',
+    '.ooh-bottom-sheet [aria-label="Full-screen map (hides navigation)"], .ooh-bottom-sheet [aria-label="Exit full-screen map (shows navigation)"]',
   'sheet-close-detail': '.ooh-bottom-sheet [aria-label="Close detail"]',
   'retry-view': '', // matched by text in probeMap
   'leaflet-zoom-in': '.leaflet-control-zoom-in',

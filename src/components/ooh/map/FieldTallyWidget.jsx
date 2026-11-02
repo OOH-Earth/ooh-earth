@@ -54,7 +54,7 @@ export default function FieldTallyWidget({ markers = [], clusters = 0 }) {
         ref={toggleRef}
         onClick={() => toggle(true)}
         aria-label="Show field tally"
-        className={`pointer-events-auto relative flex min-h-10 items-center gap-1.5 border border-slate2/70 bg-void/85 px-2.5 py-1.5 font-mono text-[10px] font-bold uppercase tracking-[0.25em] text-ozone backdrop-blur-md transition-colors hover:border-ozone`}
+        className={`pointer-events-auto relative flex min-h-10 items-center gap-1.5 border border-slate2/70 bg-void/95 px-2.5 py-1.5 font-mono text-[10px] font-bold uppercase tracking-[0.25em] text-ozone map-ctl-focus backdrop-blur-md transition-colors hover:border-ozone`}
       >
         <BarChart3 className="h-3 w-3" />
         <span>Tally</span>
@@ -65,12 +65,12 @@ export default function FieldTallyWidget({ markers = [], clusters = 0 }) {
 
   return (
     <div
-      className={`pointer-events-auto relative flex flex-col border border-slate2/70 bg-void/85 backdrop-blur-md`}
+      className={`pointer-events-auto relative flex flex-col border border-slate2/70 bg-void/95 backdrop-blur-md`}
     >
       <div className="flex items-center justify-between gap-2 border-b border-slate2/60 px-2.5 py-1.5">
         <div className="flex items-center gap-1.5">
           <span className="h-1.5 w-1.5 rounded-full bg-ozone animate-pulse" />
-          <span className="font-mono text-[10px] uppercase tracking-[0.25em] text-dim">
+          <span className="font-mono text-[10px] uppercase tracking-[0.25em] text-darkgray">
             Field tally
           </span>
         </div>
@@ -78,7 +78,7 @@ export default function FieldTallyWidget({ markers = [], clusters = 0 }) {
           ref={toggleRef}
           onClick={() => toggle(false)}
           aria-label="Hide field tally"
-          className="flex h-10 w-10 items-center justify-center text-dim transition-colors hover:text-flare"
+          className="flex h-10 w-10 items-center justify-center text-darkgray map-ctl-focus transition-colors hover:text-flare"
         >
           <X className="h-3 w-3" />
         </button>
@@ -86,7 +86,9 @@ export default function FieldTallyWidget({ markers = [], clusters = 0 }) {
       <div className="grid grid-cols-2 gap-px bg-slate2/40 [@media(max-height:600px)]:grid-cols-4">
         {stats.map((x) => (
           <div key={x.k} className="bg-void px-2.5 py-1.5">
-            <div className="font-mono text-[10px] uppercase tracking-[0.2em] text-dim">{x.k}</div>
+            <div className="font-mono text-[10px] uppercase tracking-[0.2em] text-darkgray">
+              {x.k}
+            </div>
             <div className="font-mono text-sm font-bold tabular" style={{ color: x.c }}>
               {x.v}
             </div>

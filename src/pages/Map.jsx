@@ -924,7 +924,7 @@ export default function Map() {
       )}
       <button
         onClick={() => setFullscreen(true)}
-        aria-label="Fullscreen map"
+        aria-label="Full-screen map (hides navigation)"
         className="flex h-8 w-8 shrink-0 items-center justify-center border border-ozone/60 text-ozone transition-colors hover:bg-ozone hover:text-void"
       >
         <Maximize2 className="h-3.5 w-3.5" />
@@ -1053,7 +1053,7 @@ export default function Map() {
         aria-label="Field attention"
         aria-pressed={attentionMode}
         onClick={() => setAttentionMode(!attentionMode)}
-        className={`flex min-h-10 items-center gap-1.5 border px-2.5 font-mono text-[10px] font-bold uppercase tracking-[0.18em] backdrop-blur-md transition-colors ${attentionMode ? 'border-flare bg-flare text-void' : 'border-slate2 bg-void/80 text-darkgray hover:border-flare hover:text-flare'}`}
+        className={`flex min-h-10 items-center gap-1.5 border px-2.5 font-mono text-[10px] font-bold uppercase tracking-[0.18em] backdrop-blur-md transition-colors ${attentionMode ? 'border-flare bg-flare text-void' : 'border-slate2 bg-void/95 map-ctl-focus text-darkgray hover:border-flare hover:text-flare'}`}
       >
         <AlertTriangle className="h-3.5 w-3.5" /> Field attention
       </button>
@@ -1084,14 +1084,14 @@ export default function Map() {
         <button
           onClick={() => setFinderOpen(true)}
           aria-label="Find units"
-          className="hidden md:flex items-center gap-1.5 border border-ozone/60 bg-void/80 min-h-10 px-2.5 font-mono text-[10px] font-bold uppercase tracking-[0.25em] text-ozone backdrop-blur-md transition-colors hover:bg-ozone hover:text-void"
+          className="hidden md:flex items-center gap-1.5 border border-ozone/60 bg-void/95 map-ctl-focus min-h-10 px-2.5 font-mono text-[10px] font-bold uppercase tracking-[0.25em] text-ozone backdrop-blur-md transition-colors hover:bg-ozone hover:text-void"
         >
           <ScanSearch className="h-3.5 w-3.5" /> <span className="hidden sm:inline">Find</span>
         </button>
         <button
           onClick={exportGeoJSON}
           aria-label="Export GeoJSON"
-          className="hidden md:flex items-center gap-1.5 border border-slate2 bg-void/80 min-h-10 px-2.5 font-mono text-[10px] font-bold uppercase tracking-[0.25em] text-darkgray backdrop-blur-md transition-colors hover:border-ozone hover:text-ozone"
+          className="hidden md:flex items-center gap-1.5 border border-slate2 bg-void/95 map-ctl-focus min-h-10 px-2.5 font-mono text-[10px] font-bold uppercase tracking-[0.25em] text-darkgray backdrop-blur-md transition-colors hover:border-ozone hover:text-ozone"
         >
           <FileDown className="h-3.5 w-3.5" /> <span className="hidden sm:inline">GeoJSON</span>
         </button>
@@ -1100,7 +1100,7 @@ export default function Map() {
           target="_blank"
           rel="noopener noreferrer"
           aria-label="Access keys reference"
-          className="hidden md:flex items-center gap-1.5 border border-slate2 bg-void/80 min-h-10 px-2.5 font-mono text-[10px] font-bold uppercase tracking-[0.25em] text-darkgray backdrop-blur-md transition-colors hover:border-ozone hover:text-ozone"
+          className="hidden md:flex items-center gap-1.5 border border-slate2 bg-void/95 map-ctl-focus min-h-10 px-2.5 font-mono text-[10px] font-bold uppercase tracking-[0.25em] text-darkgray backdrop-blur-md transition-colors hover:border-ozone hover:text-ozone"
         >
           <Key className="h-3.5 w-3.5" /> <span className="hidden sm:inline">Keys</span>
         </a>
@@ -1288,7 +1288,7 @@ export default function Map() {
                     onClick={() => setSearchCollapsed(false)}
                     aria-label="Expand search panel"
                     title="Expand search"
-                    className="flex h-16 w-5 items-center justify-center border-y border-r border-slate2 bg-void/90 text-dim backdrop-blur-md transition-colors hover:border-ozone hover:text-ozone"
+                    className="flex h-16 w-5 items-center justify-center border-y border-r border-slate2 bg-void/90 text-darkgray backdrop-blur-md map-ctl-focus transition-colors hover:border-ozone hover:text-ozone"
                   >
                     <ChevronRight className="h-3.5 w-3.5" />
                   </button>
@@ -1298,7 +1298,7 @@ export default function Map() {
                     onClick={() => setResultsCollapsed(false)}
                     aria-label="Expand results panel"
                     title="Expand results"
-                    className="flex h-16 w-5 items-center justify-center border-y border-r border-slate2 bg-void/90 text-dim backdrop-blur-md transition-colors hover:border-ozone hover:text-ozone"
+                    className="flex h-16 w-5 items-center justify-center border-y border-r border-slate2 bg-void/90 text-darkgray backdrop-blur-md map-ctl-focus transition-colors hover:border-ozone hover:text-ozone"
                   >
                     <ChevronRight className="h-3.5 w-3.5" />
                   </button>
@@ -1326,11 +1326,11 @@ export default function Map() {
                     compactMapBar(
                       'pointer-events-auto flex min-w-[10rem] flex-1 items-center gap-1.5 border border-slate2 bg-void/90 px-1.5 backdrop-blur-md',
                     )}
-                  <div className="pointer-events-auto flex border border-slate2 bg-void/80 backdrop-blur-md">
+                  <div className="pointer-events-auto flex border border-slate2 bg-void/95 backdrop-blur-md">
                     <button
                       onClick={() => setView('flat')}
                       aria-label="Flat map"
-                      className={`flex items-center gap-1.5 min-h-10 min-w-10 justify-center px-2.5 font-mono text-[10px] font-bold uppercase tracking-[0.25em] transition-colors ${view === 'flat' ? 'bg-ozone text-void' : 'text-darkgray hover:text-ozone'}`}
+                      className={`flex items-center gap-1.5 min-h-10 min-w-10 justify-center px-2.5 map-ctl-focus font-mono text-[10px] font-bold uppercase tracking-[0.25em] transition-colors ${view === 'flat' ? 'bg-ozone text-void' : 'text-darkgray hover:text-ozone'}`}
                     >
                       <MapIcon className="h-3.5 w-3.5" />{' '}
                       <span className={compact ? 'sr-only' : 'hidden sm:inline'}>Flat</span>
@@ -1338,7 +1338,7 @@ export default function Map() {
                     <button
                       onClick={() => setView('globe')}
                       aria-label="Globe view"
-                      className={`flex items-center gap-1.5 min-h-10 min-w-10 justify-center px-2.5 font-mono text-[10px] font-bold uppercase tracking-[0.25em] transition-colors ${view === 'globe' ? 'bg-ozone text-void' : 'text-darkgray hover:text-ozone'}`}
+                      className={`flex items-center gap-1.5 min-h-10 min-w-10 justify-center px-2.5 map-ctl-focus font-mono text-[10px] font-bold uppercase tracking-[0.25em] transition-colors ${view === 'globe' ? 'bg-ozone text-void' : 'text-darkgray hover:text-ozone'}`}
                     >
                       <Globe className="h-3.5 w-3.5" />{' '}
                       <span className={compact ? 'sr-only' : 'hidden sm:inline'}>Globe</span>
@@ -1352,7 +1352,7 @@ export default function Map() {
                       aria-expanded={toolsOpen}
                       aria-controls="map-tools-panel"
                       onClick={() => setToolsOpen((o) => !o)}
-                      className={`pointer-events-auto flex min-h-10 items-center gap-1.5 border px-2.5 font-mono text-[10px] font-bold uppercase tracking-[0.18em] backdrop-blur-md transition-colors ${toolsOpen ? 'border-ozone bg-ozone text-void' : 'border-slate2 bg-void/80 text-darkgray hover:border-ozone hover:text-ozone'}`}
+                      className={`pointer-events-auto flex min-h-10 items-center gap-1.5 border px-2.5 font-mono text-[10px] font-bold uppercase tracking-[0.18em] backdrop-blur-md transition-colors ${toolsOpen ? 'border-ozone bg-ozone text-void' : 'border-slate2 bg-void/95 map-ctl-focus text-darkgray hover:border-ozone hover:text-ozone'}`}
                     >
                       <SlidersHorizontal className="h-3.5 w-3.5" /> Tools
                       {attentionMode && (
@@ -1516,6 +1516,9 @@ export default function Map() {
       {raw && (
         <MapBottomSheet
           count={layerResults.length}
+          countScope={
+            ['ads', 'adbusting', 'graffiti'].includes(primaryLayer) ? 'in view' : undefined
+          }
           layerLabel={primaryLayer}
           detailMode={!!detailItem}
           onCloseDetail={() => setDetailItem(null)}

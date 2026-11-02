@@ -272,7 +272,7 @@ export default function MapPinDropper({
         )}
 
         {/* Tooltip guide — bottom-right of map */}
-        <div className="pointer-events-none absolute bottom-2 right-8 z-[1100] flex items-center gap-1 border border-slate2/50 bg-void/80 px-2 py-1 font-mono text-[10px] uppercase tracking-[0.15em] text-dim backdrop-blur-sm">
+        <div className="pointer-events-none map-overlay-chip absolute bottom-2 right-8 z-[1100] flex items-center gap-1 border border-slate2/50 bg-void/95 px-2 py-1 font-mono text-[10px] uppercase tracking-[0.15em] text-darkgray [&_button]:text-darkgray backdrop-blur-sm">
           <TerminalTooltip
             label="how to pin"
             text="1. Search the address above, or 2. Tap any spot on the map, or 3. Use the crosshair to jump to your GPS."
