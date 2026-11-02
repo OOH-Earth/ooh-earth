@@ -13,7 +13,7 @@ export default function MapStyleSwitcher() {
       <button
         onClick={() => setOpen((o) => !o)}
         aria-label={`Map style: ${cur.label}`}
-        className="flex items-center gap-1.5 border border-slate2 bg-void/80 px-2.5 py-2 font-mono text-[10px] font-bold uppercase tracking-[0.25em] text-darkgray backdrop-blur-md transition-colors hover:border-ozone hover:text-ozone"
+        className="flex items-center gap-1.5 border border-slate2 bg-void/95 map-ctl-focus px-2.5 py-2 font-mono text-[10px] font-bold uppercase tracking-[0.25em] text-darkgray backdrop-blur-md transition-colors hover:border-ozone hover:text-ozone"
       >
         <Layers className="h-3.5 w-3.5" />
         <span className="hidden sm:inline">{cur.label}</span>

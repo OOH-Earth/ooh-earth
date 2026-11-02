@@ -614,6 +614,13 @@
   }
 
   /* Yellow CTA button — yellow fill, navy text */
+  /* A dark overlay chip drawn on the map inside a white-smoke card: rule (1) would force navy text onto the
+     navy chip (measured 1.0:1). Keep the chip's own light text. */
+  .guild .bg-card .map-overlay-chip,
+  .guild .bg-card .map-overlay-chip * {
+    color: rgb(var(--c-darkgray)) !important;
+  }
+
   .guild .guild-btn {
     display: inline-flex;
     align-items: center;
@@ -882,6 +889,12 @@
 }
 
 @layer utilities {
+  /* Map overlay controls sit on imagery of unknown brightness: the global 2px-offset focus ring would be
+     painted over the map (1.03-1.2:1 on bright tiles, and over the adjacent ozone segment of a joined toggle).
+     Drawing it inside the control keeps it on the control's own dark surface. */
+  .map-ctl-focus:focus-visible {
+    outline-offset: -3px;
+  }
   .font-display {
     font-family: 'Inter Tight', ui-sans-serif, system-ui, sans-serif;
   }
