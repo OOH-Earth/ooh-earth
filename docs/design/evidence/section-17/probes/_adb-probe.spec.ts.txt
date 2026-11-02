@@ -1,0 +1,86 @@
+import { test } from '@playwright/test';
+import { mockBase44 } from './fixtures/mockBase44';
+const VPS = [{ n: 'desktop 1280x800', w: 1280, h: 800, touch: false }, { n: 'phone 390x844', w: 390, h: 844, touch: true }, { n: 'small 320x640', w: 320, h: 640, touch: true }];
+for (const vp of VPS) test.describe(`adb ${vp.n}`, () => {
+  test.use({ viewport: { width: vp.w, height: vp.h }, hasTouch: vp.touch, isMobile: vp.touch, deviceScaleFactor: vp.touch ? 2 : 1 });
+  test('portal', async ({ page }) => {
+    test.setTimeout(150000);
+    const unmocked: string[] = [], reqs: Record<string, number> = {}, errs: string[] = [];
+    await page.route('**/api/**', (r) => { unmocked.push(r.request().method() + ' ' + new URL(r.request().url()).pathname.replace(/^.*\/apps\/[^/]+/, '')); return r.fulfill({ status: 404, contentType: 'application/json', body: '{}' }); });
+    const locs: Record<string, unknown> = {};
+    for (let i = 0; i < 40; i++) locs['l' + i] = { id: 'l' + i, title: i === 0 ? 'A deliberately very long adbusting location title that must wrap and not push the Claim control out of its card' : `Spot ${i}`, type: ['billboard', 'digital', 'transit', 'mural'][i % 4], address: `${i} Field Way`, lat: 13.75 + i * 0.001, lng: 100.5 + i * 0.001, status: 'pending', created_date: '2020-01-01T00:00:00.000Z' };
+    await mockBase44(page, { user: null, locations: locs, fieldChecks: {} });
+    await page.route('**/functions/claimLead', async (r) => { await new Promise((s) => setTimeout(s, 1200)); reqs['claimLead'] = (reqs['claimLead'] || 0) + 1; return r.fulfill({ status: 200, contentType: 'application/json', body: '{"ok":true}' }); });
+    page.on('request', (r) => { if (/\/api\//.test(r.url())) { const k = r.method() + ' ' + new URL(r.url()).pathname.replace(/^.*\/apps\/[^/]+/, '').replace(/\/[0-9a-f]{20,}/, '/:id'); reqs[k] = (reqs[k] || 0) + 1; } });
+    page.on('pageerror', (e) => errs.push('pageerror ' + String(e).slice(0, 100)));
+    page.on('console', (m) => { if (m.type() === 'error') errs.push('console ' + m.text().slice(0, 100)); });
+    await page.addInitScript(() => {
+      localStorage.setItem('ooh_nudge_map_report', '1');
+      (window as any).__lt = []; (window as any).__ev = [];
+      try { new PerformanceObserver((l) => l.getEntries().forEach((e) => (window as any).__lt.push(Math.round(e.duration)))).observe({ type: 'longtask', buffered: true }); } catch {}
+      try { new PerformanceObserver((l) => l.getEntries().forEach((e: any) => (window as any).__ev.push(`${e.name}:${Math.round(e.duration)}`))).observe({ type: 'event', durationThreshold: 16, buffered: true } as any); } catch {}
+    });
+    const t0 = Date.now();
+    await page.goto('/adbusting', { waitUntil: 'commit' });
+    await page.getByText(/\d+ results/).first().waitFor({ timeout: 30000 });
+    const tHeader = Date.now() - t0;
+    await page.getByRole('button', { name: /^View listing/ }).first().waitFor({ timeout: 30000 }).catch(() => {});
+    const tList = Date.now() - t0;
+    console.log(`## ${vp.n} first-usable: header=${tHeader}ms list=${tList}ms`);
+    // control inventory
+    const inv = await page.evaluate(() => {
+      const rows: string[] = [];
+      document.querySelectorAll('button, a[href], input, select, textarea, [role="button"]').forEach((e) => {
+        const r = e.getBoundingClientRect(); const cs = getComputedStyle(e);
+        if (r.width === 0 || r.height === 0 || cs.visibility === 'hidden') return;
+        const name = (e.getAttribute('aria-label') || (e as HTMLElement).innerText || e.getAttribute('placeholder') || '').trim().replace(/\s+/g, ' ').slice(0, 28);
+        const named = !!(e.getAttribute('aria-label') || (e as HTMLElement).innerText?.trim() || e.getAttribute('aria-labelledby') || e.getAttribute('title'));
+        const cx = r.x + r.width / 2, cy = r.y + r.height / 2; const top = document.elementFromPoint(Math.min(Math.max(cx, 0), innerWidth - 1), Math.min(Math.max(cy, 0), innerHeight - 1));
+        const covered = cy < innerHeight && cy > 0 ? !(top && (top === e || e.contains(top) || top.contains(e))) : false;
+        const off = r.bottom < 0 || r.top > innerHeight || r.right < 0 || r.left > innerWidth;
+        if (off) return;
+        rows.push(`${e.tagName.toLowerCase()} "${name}" ${Math.round(r.width)}x${Math.round(r.height)} named=${named}${covered ? ' COVERED' : ''}${(e as HTMLInputElement).disabled ? ' disabled' : ''}`);
+      });
+      return rows;
+    });
+    console.log(`   inventory (${inv.length}):\n     ` + inv.filter((l) => /named=false|COVERED|disabled/.test(l) || / (\d|1\d)x\d+ /.test(l) || /x(\d|1\d|2[0-3]) /.test(l)).join('\n     '));
+    const hasSearch = await page.getByPlaceholder('Search…').isVisible().catch(() => false);
+    console.log(`   search input visible: ${hasSearch}`);
+    // filter chip click -> visible feedback
+    const chip = page.getByRole('button', { name: /^Billboard/ }).first();
+    if (await chip.count()) {
+      const before = await page.getByText(/\d+ results/).first().innerText();
+      const t = await page.evaluate(() => performance.now());
+      await chip.click();
+      await page.getByText(/\d+ results/).first().evaluate((el, b) => new Promise<void>((res) => { const i = setInterval(() => { if ((el as HTMLElement).innerText !== b) { clearInterval(i); res(); } }, 4); setTimeout(() => { clearInterval(i); res(); }, 2000); }), before);
+      const t2 = await page.evaluate(() => performance.now());
+      console.log(`   filter chip click->results text changed: ${Math.round(t2 - t)}ms (${before} -> ${await page.getByText(/\d+ results/).first().innerText()}) aria-pressed=${await chip.getAttribute('aria-pressed')}`);
+    }
+    // claim dialog: open, Escape, focus return; then submit twice rapidly
+    const claim = page.getByRole('button', { name: /claim/i }).first();
+    if (await claim.count()) {
+      await claim.click(); await page.getByRole('dialog').waitFor({ timeout: 5000 });
+      await page.keyboard.press('Escape'); await page.waitForTimeout(400);
+      const ret = await page.evaluate(() => { const a = document.activeElement as HTMLElement; return `${a?.tagName.toLowerCase()} "${(a?.getAttribute('aria-label') || a?.innerText || '').trim().slice(0, 20)}"`; });
+      console.log(`   claim dialog Escape -> focus on: ${ret}`);
+      await claim.click(); await page.getByRole('dialog').waitFor();
+      await page.getByPlaceholder('@ghostsignal').fill('@probe');
+      const sub = page.getByRole('button', { name: 'Claim lead' });
+      await sub.dblclick(); await page.waitForTimeout(2500);
+      console.log(`   claim double-activation -> claimLead requests: ${reqs['claimLead'] || 0}`);
+    }
+    // capture dialog: rapid open/close x10
+    const cap = page.getByRole('button', { name: /capture/i }).first();
+    if (await cap.count()) {
+      for (let i = 0; i < 10; i++) { await cap.click(); await page.keyboard.press('Escape'); }
+      await page.waitForTimeout(500);
+      console.log(`   capture rapid open/close x10 ok; dialogs left open: ${await page.getByRole('dialog').count()}; focus: ${await page.evaluate(() => (document.activeElement as HTMLElement)?.innerText?.trim().slice(0, 15))}`);
+    }
+    const lt = await page.evaluate(() => (window as any).__lt), ev = await page.evaluate(() => (window as any).__ev);
+    console.log(`   longtasks(ms): n=${lt.length} max=${Math.max(0, ...lt)} sum=${lt.reduce((a: number, b: number) => a + b, 0)} | slow events(>=16ms): ${ev.slice(0, 8).join(' ')}`);
+    console.log(`   requests: ${JSON.stringify(reqs)}`);
+    console.log(`   UNMOCKED (blocked 404): ${[...new Set(unmocked)].slice(0, 8).join(' | ')}`);
+    console.log(`   console/page errors: ${errs.length} ${[...new Set(errs)].slice(0, 4).join(' | ')}`);
+    await page.screenshot({ path: `/tmp/claude-1000/-home-hiker123-oohearth/4ae9710b-6b4e-4b26-828a-4f3dc6ee6265/scratchpad/adb-${vp.w}.png` });
+  });
+});

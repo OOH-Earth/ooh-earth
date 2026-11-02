@@ -1,0 +1,1243 @@
+{
+  "_@1280x720": {
+    "controls": 51,
+    "hScroll": false,
+    "lowContrast": 13,
+    "small24": 3,
+    "small24Names": ["BUTTON:Hide Air Commons", "A:Map", "BUTTON:Open Command Center"],
+    "small44": 42,
+    "smallText": 106,
+    "smallTextSizes": {
+      "10": 37,
+      "11": 17,
+      "7": 2,
+      "8": 19,
+      "8.5": 3,
+      "9": 28
+    },
+    "textMeasured": 128
+  },
+  "_@1366x768": {
+    "controls": 51,
+    "hScroll": false,
+    "lowContrast": 33,
+    "small24": 3,
+    "small24Names": ["BUTTON:Hide Air Commons", "A:Map", "BUTTON:Open Command Center"],
+    "small44": 42,
+    "smallText": 141,
+    "smallTextSizes": {
+      "10": 47,
+      "11": 17,
+      "7": 2,
+      "8": 29,
+      "8.5": 3,
+      "9": 43
+    },
+    "textMeasured": 174
+  },
+  "_@1440x900": {
+    "controls": 51,
+    "hScroll": false,
+    "lowContrast": 13,
+    "small24": 3,
+    "small24Names": ["BUTTON:Hide Air Commons", "A:Map", "BUTTON:Open Command Center"],
+    "small44": 42,
+    "smallText": 106,
+    "smallTextSizes": {
+      "10": 37,
+      "11": 17,
+      "7": 2,
+      "8": 19,
+      "8.5": 3,
+      "9": 28
+    },
+    "textMeasured": 129
+  },
+  "_@320x640": {
+    "controls": 49,
+    "hScroll": false,
+    "lowContrast": 30,
+    "small24": 3,
+    "small24Names": ["BUTTON:Play", "A:Map", "BUTTON:Open Command Center"],
+    "small44": 40,
+    "smallText": 111,
+    "smallTextSizes": {
+      "10": 28,
+      "11": 16,
+      "7": 2,
+      "8": 26,
+      "8.5": 2,
+      "9": 37
+    },
+    "textMeasured": 144
+  },
+  "_@360x800": {
+    "controls": 49,
+    "hScroll": false,
+    "lowContrast": 30,
+    "small24": 3,
+    "small24Names": ["BUTTON:Play", "A:Map", "BUTTON:Open Command Center"],
+    "small44": 39,
+    "smallText": 111,
+    "smallTextSizes": {
+      "10": 28,
+      "11": 16,
+      "7": 2,
+      "8": 26,
+      "8.5": 2,
+      "9": 37
+    },
+    "textMeasured": 144
+  },
+  "_@390x844": {
+    "controls": 49,
+    "hScroll": false,
+    "lowContrast": 30,
+    "small24": 2,
+    "small24Names": ["A:Map", "BUTTON:Open Command Center"],
+    "small44": 33,
+    "smallText": 111,
+    "smallTextSizes": {
+      "10": 28,
+      "11": 16,
+      "7": 2,
+      "8": 26,
+      "8.5": 2,
+      "9": 37
+    },
+    "textMeasured": 144
+  },
+  "_@430x932": {
+    "controls": 49,
+    "hScroll": false,
+    "lowContrast": 30,
+    "small24": 2,
+    "small24Names": ["A:Map", "BUTTON:Open Command Center"],
+    "small44": 33,
+    "smallText": 111,
+    "smallTextSizes": {
+      "10": 28,
+      "11": 16,
+      "7": 2,
+      "8": 26,
+      "8.5": 2,
+      "9": 37
+    },
+    "textMeasured": 144
+  },
+  "_@667x375": {
+    "controls": 49,
+    "hScroll": false,
+    "lowContrast": 32,
+    "small24": 2,
+    "small24Names": ["A:Map", "BUTTON:Open Command Center"],
+    "small44": 33,
+    "smallText": 119,
+    "smallTextSizes": {
+      "10": 33,
+      "11": 16,
+      "7": 2,
+      "8": 27,
+      "8.5": 3,
+      "9": 38
+    },
+    "textMeasured": 152
+  },
+  "_@768x1024": {
+    "controls": 58,
+    "hScroll": false,
+    "lowContrast": 33,
+    "small24": 4,
+    "small24Names": [
+      "BUTTON:Play",
+      "BUTTON:Hide Air Commons",
+      "A:Map",
+      "BUTTON:Open Command Center"
+    ],
+    "small44": 41,
+    "smallText": 128,
+    "smallTextSizes": {
+      "10": 37,
+      "11": 16,
+      "7": 2,
+      "8": 27,
+      "8.5": 3,
+      "9": 43
+    },
+    "textMeasured": 161
+  },
+  "_@820x1180": {
+    "controls": 58,
+    "hScroll": false,
+    "lowContrast": 33,
+    "small24": 4,
+    "small24Names": [
+      "BUTTON:Play",
+      "BUTTON:Hide Air Commons",
+      "A:Map",
+      "BUTTON:Open Command Center"
+    ],
+    "small44": 41,
+    "smallText": 128,
+    "smallTextSizes": {
+      "10": 37,
+      "11": 16,
+      "7": 2,
+      "8": 27,
+      "8.5": 3,
+      "9": 43
+    },
+    "textMeasured": 162
+  },
+  "_@844x390": {
+    "controls": 58,
+    "hScroll": false,
+    "lowContrast": 33,
+    "small24": 4,
+    "small24Names": [
+      "BUTTON:Play",
+      "BUTTON:Hide Air Commons",
+      "A:Map",
+      "BUTTON:Open Command Center"
+    ],
+    "small44": 41,
+    "smallText": 128,
+    "smallTextSizes": {
+      "10": 37,
+      "11": 16,
+      "7": 2,
+      "8": 27,
+      "8.5": 3,
+      "9": 43
+    },
+    "textMeasured": 161
+  },
+  "_map@1280x720": {
+    "controls": 102,
+    "hScroll": false,
+    "lowContrast": 21,
+    "small24": 2,
+    "small24Names": ["INPUT:Search map", "BUTTON:Begin tour"],
+    "small44": 54,
+    "smallText": 157,
+    "smallTextSizes": {
+      "10": 69,
+      "11": 1,
+      "7": 7,
+      "8": 15,
+      "8.5": 1,
+      "9": 64
+    },
+    "textMeasured": 250
+  },
+  "_map@1366x768": {
+    "controls": 103,
+    "hScroll": false,
+    "lowContrast": 21,
+    "small24": 3,
+    "small24Names": ["INPUT:Search map", "BUTTON:Begin tour", "BUTTON:Hide Air Commons"],
+    "small44": 55,
+    "smallText": 194,
+    "smallTextSizes": {
+      "10": 84,
+      "11": 1,
+      "7": 7,
+      "8": 25,
+      "8.5": 1,
+      "9": 76
+    },
+    "textMeasured": 287
+  },
+  "_map@1440x900": {
+    "controls": 103,
+    "hScroll": false,
+    "lowContrast": 21,
+    "small24": 3,
+    "small24Names": ["INPUT:Search map", "BUTTON:Begin tour", "BUTTON:Hide Air Commons"],
+    "small44": 55,
+    "smallText": 194,
+    "smallTextSizes": {
+      "10": 84,
+      "11": 1,
+      "7": 7,
+      "8": 25,
+      "8.5": 1,
+      "9": 76
+    },
+    "textMeasured": 287
+  },
+  "_map@320x640": {
+    "controls": 79,
+    "hScroll": false,
+    "lowContrast": 20,
+    "small24": 2,
+    "small24Names": ["BUTTON:Play", "INPUT:Search map"],
+    "small44": 28,
+    "smallText": 98,
+    "smallTextSizes": {
+      "10": 40,
+      "7": 1,
+      "8": 12,
+      "9": 45
+    },
+    "textMeasured": 184
+  },
+  "_map@360x800": {
+    "controls": 79,
+    "hScroll": false,
+    "lowContrast": 20,
+    "small24": 2,
+    "small24Names": ["BUTTON:Play", "INPUT:Search map"],
+    "small44": 27,
+    "smallText": 98,
+    "smallTextSizes": {
+      "10": 40,
+      "7": 1,
+      "8": 12,
+      "9": 45
+    },
+    "textMeasured": 184
+  },
+  "_map@390x844": {
+    "controls": 79,
+    "hScroll": false,
+    "lowContrast": 20,
+    "small24": 1,
+    "small24Names": ["INPUT:Search map"],
+    "small44": 21,
+    "smallText": 98,
+    "smallTextSizes": {
+      "10": 40,
+      "7": 1,
+      "8": 12,
+      "9": 45
+    },
+    "textMeasured": 184
+  },
+  "_map@430x932": {
+    "controls": 79,
+    "hScroll": false,
+    "lowContrast": 20,
+    "small24": 1,
+    "small24Names": ["INPUT:Search map"],
+    "small44": 21,
+    "smallText": 98,
+    "smallTextSizes": {
+      "10": 40,
+      "7": 1,
+      "8": 12,
+      "9": 45
+    },
+    "textMeasured": 184
+  },
+  "_map@667x375": {
+    "controls": 79,
+    "hScroll": false,
+    "lowContrast": 20,
+    "small24": 1,
+    "small24Names": ["INPUT:Search map"],
+    "small44": 21,
+    "smallText": 104,
+    "smallTextSizes": {
+      "10": 45,
+      "7": 1,
+      "8": 12,
+      "8.5": 1,
+      "9": 45
+    },
+    "textMeasured": 190
+  },
+  "_map@768x1024": {
+    "controls": 93,
+    "hScroll": false,
+    "lowContrast": 20,
+    "small24": 3,
+    "small24Names": ["BUTTON:Play", "INPUT:Search map", "BUTTON:Hide Air Commons"],
+    "small44": 35,
+    "smallText": 154,
+    "smallTextSizes": {
+      "10": 72,
+      "7": 1,
+      "8": 22,
+      "8.5": 1,
+      "9": 58
+    },
+    "textMeasured": 244
+  },
+  "_map@820x1180": {
+    "controls": 93,
+    "hScroll": false,
+    "lowContrast": 20,
+    "small24": 3,
+    "small24Names": ["BUTTON:Play", "INPUT:Search map", "BUTTON:Hide Air Commons"],
+    "small44": 35,
+    "smallText": 154,
+    "smallTextSizes": {
+      "10": 72,
+      "7": 1,
+      "8": 22,
+      "8.5": 1,
+      "9": 58
+    },
+    "textMeasured": 244
+  },
+  "_map@844x390": {
+    "controls": 87,
+    "hScroll": false,
+    "lowContrast": 20,
+    "small24": 2,
+    "small24Names": ["BUTTON:Play", "INPUT:Search map"],
+    "small44": 29,
+    "smallText": 105,
+    "smallTextSizes": {
+      "10": 45,
+      "7": 1,
+      "8": 12,
+      "8.5": 1,
+      "9": 46
+    },
+    "textMeasured": 191
+  },
+  "_media_corps@1280x720": {
+    "controls": 33,
+    "hScroll": false,
+    "lowContrast": 2,
+    "small24": 6,
+    "small24Names": ["BUTTON:Map", "BUTTON:3D Globe", "BUTTON:List", "INPUT:", "A:Zoom in"],
+    "small44": 33,
+    "smallText": 37,
+    "smallTextSizes": {
+      "10": 7,
+      "11": 1,
+      "7": 2,
+      "8": 11,
+      "8.5": 1,
+      "9": 15
+    },
+    "textMeasured": 43
+  },
+  "_media_corps@1366x768": {
+    "controls": 33,
+    "hScroll": false,
+    "lowContrast": 2,
+    "small24": 6,
+    "small24Names": ["BUTTON:Map", "BUTTON:3D Globe", "BUTTON:List", "INPUT:", "A:Zoom in"],
+    "small44": 33,
+    "smallText": 37,
+    "smallTextSizes": {
+      "10": 7,
+      "11": 1,
+      "7": 2,
+      "8": 11,
+      "8.5": 1,
+      "9": 15
+    },
+    "textMeasured": 43
+  },
+  "_media_corps@1440x900": {
+    "controls": 33,
+    "hScroll": false,
+    "lowContrast": 2,
+    "small24": 6,
+    "small24Names": ["BUTTON:Map", "BUTTON:3D Globe", "BUTTON:List", "INPUT:", "A:Zoom in"],
+    "small44": 33,
+    "smallText": 37,
+    "smallTextSizes": {
+      "10": 7,
+      "11": 1,
+      "7": 2,
+      "8": 11,
+      "8.5": 1,
+      "9": 15
+    },
+    "textMeasured": 43
+  },
+  "_media_corps@320x640": {
+    "controls": 30,
+    "hScroll": false,
+    "lowContrast": 0,
+    "small24": 6,
+    "small24Names": ["BUTTON:Play", "BUTTON:Map", "BUTTON:3D Globe", "BUTTON:List", "A:Zoom in"],
+    "small44": 30,
+    "smallText": 11,
+    "smallTextSizes": {
+      "7": 1,
+      "8": 2,
+      "9": 8
+    },
+    "textMeasured": 17
+  },
+  "_media_corps@360x800": {
+    "controls": 30,
+    "hScroll": false,
+    "lowContrast": 0,
+    "small24": 6,
+    "small24Names": ["BUTTON:Play", "BUTTON:Map", "BUTTON:3D Globe", "BUTTON:List", "A:Zoom in"],
+    "small44": 29,
+    "smallText": 11,
+    "smallTextSizes": {
+      "7": 1,
+      "8": 2,
+      "9": 8
+    },
+    "textMeasured": 17
+  },
+  "_media_corps@390x844": {
+    "controls": 30,
+    "hScroll": false,
+    "lowContrast": 0,
+    "small24": 5,
+    "small24Names": ["BUTTON:Map", "BUTTON:3D Globe", "BUTTON:List", "A:Zoom in", "A:Zoom out"],
+    "small44": 23,
+    "smallText": 11,
+    "smallTextSizes": {
+      "7": 1,
+      "8": 2,
+      "9": 8
+    },
+    "textMeasured": 17
+  },
+  "_media_corps@430x932": {
+    "controls": 30,
+    "hScroll": false,
+    "lowContrast": 0,
+    "small24": 5,
+    "small24Names": ["BUTTON:Map", "BUTTON:3D Globe", "BUTTON:List", "A:Zoom in", "A:Zoom out"],
+    "small44": 23,
+    "smallText": 11,
+    "smallTextSizes": {
+      "7": 1,
+      "8": 2,
+      "9": 8
+    },
+    "textMeasured": 17
+  },
+  "_media_corps@667x375": {
+    "controls": 30,
+    "hScroll": false,
+    "lowContrast": 1,
+    "small24": 5,
+    "small24Names": ["BUTTON:Map", "BUTTON:3D Globe", "BUTTON:List", "A:Zoom in", "A:Zoom out"],
+    "small44": 23,
+    "smallText": 27,
+    "smallTextSizes": {
+      "10": 6,
+      "7": 2,
+      "8": 7,
+      "8.5": 1,
+      "9": 11
+    },
+    "textMeasured": 33
+  },
+  "_media_corps@768x1024": {
+    "controls": 39,
+    "hScroll": false,
+    "lowContrast": 2,
+    "small24": 7,
+    "small24Names": ["BUTTON:Play", "BUTTON:Map", "BUTTON:3D Globe", "BUTTON:List", "INPUT:"],
+    "small44": 32,
+    "smallText": 30,
+    "smallTextSizes": {
+      "10": 6,
+      "7": 2,
+      "8": 9,
+      "8.5": 1,
+      "9": 12
+    },
+    "textMeasured": 36
+  },
+  "_media_corps@820x1180": {
+    "controls": 39,
+    "hScroll": false,
+    "lowContrast": 2,
+    "small24": 7,
+    "small24Names": ["BUTTON:Play", "BUTTON:Map", "BUTTON:3D Globe", "BUTTON:List", "INPUT:"],
+    "small44": 32,
+    "smallText": 30,
+    "smallTextSizes": {
+      "10": 6,
+      "7": 2,
+      "8": 9,
+      "8.5": 1,
+      "9": 12
+    },
+    "textMeasured": 36
+  },
+  "_media_corps@844x390": {
+    "controls": 39,
+    "hScroll": false,
+    "lowContrast": 2,
+    "small24": 7,
+    "small24Names": ["BUTTON:Play", "BUTTON:Map", "BUTTON:3D Globe", "BUTTON:List", "INPUT:"],
+    "small44": 32,
+    "smallText": 30,
+    "smallTextSizes": {
+      "10": 6,
+      "7": 2,
+      "8": 9,
+      "8.5": 1,
+      "9": 12
+    },
+    "textMeasured": 36
+  },
+  "_plans@1280x720": {
+    "controls": 47,
+    "hScroll": false,
+    "lowContrast": 6,
+    "small24": 2,
+    "small24Names": ["A:Map", "BUTTON:Open Command Center"],
+    "small44": 38,
+    "smallText": 68,
+    "smallTextSizes": {
+      "10": 34,
+      "11": 18,
+      "7": 1,
+      "8": 6,
+      "8.5": 2,
+      "9": 7
+    },
+    "textMeasured": 122
+  },
+  "_plans@1366x768": {
+    "controls": 47,
+    "hScroll": false,
+    "lowContrast": 6,
+    "small24": 2,
+    "small24Names": ["A:Map", "BUTTON:Open Command Center"],
+    "small44": 38,
+    "smallText": 68,
+    "smallTextSizes": {
+      "10": 34,
+      "11": 18,
+      "7": 1,
+      "8": 6,
+      "8.5": 2,
+      "9": 7
+    },
+    "textMeasured": 122
+  },
+  "_plans@1440x900": {
+    "controls": 47,
+    "hScroll": false,
+    "lowContrast": 6,
+    "small24": 2,
+    "small24Names": ["A:Map", "BUTTON:Open Command Center"],
+    "small44": 38,
+    "smallText": 68,
+    "smallTextSizes": {
+      "10": 34,
+      "11": 18,
+      "7": 1,
+      "8": 6,
+      "8.5": 2,
+      "9": 7
+    },
+    "textMeasured": 122
+  },
+  "_plans@320x640": {
+    "controls": 46,
+    "hScroll": false,
+    "lowContrast": 5,
+    "small24": 3,
+    "small24Names": ["BUTTON:Play", "A:Map", "BUTTON:Open Command Center"],
+    "small44": 37,
+    "smallText": 56,
+    "smallTextSizes": {
+      "10": 29,
+      "11": 17,
+      "7": 1,
+      "8": 4,
+      "8.5": 1,
+      "9": 4
+    },
+    "textMeasured": 110
+  },
+  "_plans@360x800": {
+    "controls": 46,
+    "hScroll": false,
+    "lowContrast": 5,
+    "small24": 3,
+    "small24Names": ["BUTTON:Play", "A:Map", "BUTTON:Open Command Center"],
+    "small44": 36,
+    "smallText": 56,
+    "smallTextSizes": {
+      "10": 29,
+      "11": 17,
+      "7": 1,
+      "8": 4,
+      "8.5": 1,
+      "9": 4
+    },
+    "textMeasured": 110
+  },
+  "_plans@390x844": {
+    "controls": 46,
+    "hScroll": false,
+    "lowContrast": 5,
+    "small24": 2,
+    "small24Names": ["A:Map", "BUTTON:Open Command Center"],
+    "small44": 32,
+    "smallText": 56,
+    "smallTextSizes": {
+      "10": 29,
+      "11": 17,
+      "7": 1,
+      "8": 4,
+      "8.5": 1,
+      "9": 4
+    },
+    "textMeasured": 110
+  },
+  "_plans@430x932": {
+    "controls": 46,
+    "hScroll": false,
+    "lowContrast": 5,
+    "small24": 2,
+    "small24Names": ["A:Map", "BUTTON:Open Command Center"],
+    "small44": 32,
+    "smallText": 56,
+    "smallTextSizes": {
+      "10": 29,
+      "11": 17,
+      "7": 1,
+      "8": 4,
+      "8.5": 1,
+      "9": 4
+    },
+    "textMeasured": 110
+  },
+  "_plans@667x375": {
+    "controls": 46,
+    "hScroll": false,
+    "lowContrast": 5,
+    "small24": 2,
+    "small24Names": ["A:Map", "BUTTON:Open Command Center"],
+    "small44": 32,
+    "smallText": 62,
+    "smallTextSizes": {
+      "10": 34,
+      "11": 17,
+      "7": 1,
+      "8": 4,
+      "8.5": 2,
+      "9": 4
+    },
+    "textMeasured": 116
+  },
+  "_plans@768x1024": {
+    "controls": 54,
+    "hScroll": false,
+    "lowContrast": 6,
+    "small24": 3,
+    "small24Names": ["BUTTON:Play", "A:Map", "BUTTON:Open Command Center"],
+    "small44": 34,
+    "smallText": 65,
+    "smallTextSizes": {
+      "10": 34,
+      "11": 17,
+      "7": 1,
+      "8": 4,
+      "8.5": 2,
+      "9": 7
+    },
+    "textMeasured": 119
+  },
+  "_plans@820x1180": {
+    "controls": 54,
+    "hScroll": false,
+    "lowContrast": 6,
+    "small24": 3,
+    "small24Names": ["BUTTON:Play", "A:Map", "BUTTON:Open Command Center"],
+    "small44": 37,
+    "smallText": 65,
+    "smallTextSizes": {
+      "10": 34,
+      "11": 17,
+      "7": 1,
+      "8": 4,
+      "8.5": 2,
+      "9": 7
+    },
+    "textMeasured": 119
+  },
+  "_plans@844x390": {
+    "controls": 54,
+    "hScroll": false,
+    "lowContrast": 6,
+    "small24": 3,
+    "small24Names": ["BUTTON:Play", "A:Map", "BUTTON:Open Command Center"],
+    "small44": 37,
+    "smallText": 65,
+    "smallTextSizes": {
+      "10": 34,
+      "11": 17,
+      "7": 1,
+      "8": 4,
+      "8.5": 2,
+      "9": 7
+    },
+    "textMeasured": 119
+  },
+  "_report@1280x720": {
+    "controls": 70,
+    "hScroll": false,
+    "lowContrast": 6,
+    "small24": 2,
+    "small24Names": ["A:Map", "BUTTON:Open Command Center"],
+    "small44": 42,
+    "smallText": 63,
+    "smallTextSizes": {
+      "10": 26,
+      "11": 26,
+      "7": 1,
+      "8": 4,
+      "8.5": 2,
+      "9": 4
+    },
+    "textMeasured": 95
+  },
+  "_report@1366x768": {
+    "controls": 70,
+    "hScroll": false,
+    "lowContrast": 6,
+    "small24": 2,
+    "small24Names": ["A:Map", "BUTTON:Open Command Center"],
+    "small44": 42,
+    "smallText": 63,
+    "smallTextSizes": {
+      "10": 26,
+      "11": 26,
+      "7": 1,
+      "8": 4,
+      "8.5": 2,
+      "9": 4
+    },
+    "textMeasured": 95
+  },
+  "_report@1440x900": {
+    "controls": 70,
+    "hScroll": false,
+    "lowContrast": 6,
+    "small24": 2,
+    "small24Names": ["A:Map", "BUTTON:Open Command Center"],
+    "small44": 42,
+    "smallText": 63,
+    "smallTextSizes": {
+      "10": 26,
+      "11": 26,
+      "7": 1,
+      "8": 4,
+      "8.5": 2,
+      "9": 4
+    },
+    "textMeasured": 95
+  },
+  "_report@320x640": {
+    "controls": 69,
+    "hScroll": false,
+    "lowContrast": 5,
+    "small24": 3,
+    "small24Names": ["BUTTON:Play", "A:Map", "BUTTON:Open Command Center"],
+    "small44": 41,
+    "smallText": 50,
+    "smallTextSizes": {
+      "10": 20,
+      "11": 25,
+      "7": 1,
+      "8": 2,
+      "8.5": 1,
+      "9": 1
+    },
+    "textMeasured": 82
+  },
+  "_report@360x800": {
+    "controls": 69,
+    "hScroll": false,
+    "lowContrast": 5,
+    "small24": 3,
+    "small24Names": ["BUTTON:Play", "A:Map", "BUTTON:Open Command Center"],
+    "small44": 40,
+    "smallText": 50,
+    "smallTextSizes": {
+      "10": 20,
+      "11": 25,
+      "7": 1,
+      "8": 2,
+      "8.5": 1,
+      "9": 1
+    },
+    "textMeasured": 82
+  },
+  "_report@390x844": {
+    "controls": 69,
+    "hScroll": false,
+    "lowContrast": 5,
+    "small24": 2,
+    "small24Names": ["A:Map", "BUTTON:Open Command Center"],
+    "small44": 34,
+    "smallText": 50,
+    "smallTextSizes": {
+      "10": 20,
+      "11": 25,
+      "7": 1,
+      "8": 2,
+      "8.5": 1,
+      "9": 1
+    },
+    "textMeasured": 82
+  },
+  "_report@430x932": {
+    "controls": 69,
+    "hScroll": false,
+    "lowContrast": 5,
+    "small24": 2,
+    "small24Names": ["A:Map", "BUTTON:Open Command Center"],
+    "small44": 34,
+    "smallText": 50,
+    "smallTextSizes": {
+      "10": 20,
+      "11": 25,
+      "7": 1,
+      "8": 2,
+      "8.5": 1,
+      "9": 1
+    },
+    "textMeasured": 82
+  },
+  "_report@667x375": {
+    "controls": 69,
+    "hScroll": false,
+    "lowContrast": 5,
+    "small24": 2,
+    "small24Names": ["A:Map", "BUTTON:Open Command Center"],
+    "small44": 34,
+    "smallText": 57,
+    "smallTextSizes": {
+      "10": 26,
+      "11": 25,
+      "7": 1,
+      "8": 2,
+      "8.5": 2,
+      "9": 1
+    },
+    "textMeasured": 89
+  },
+  "_report@768x1024": {
+    "controls": 77,
+    "hScroll": false,
+    "lowContrast": 6,
+    "small24": 3,
+    "small24Names": ["BUTTON:Play", "A:Map", "BUTTON:Open Command Center"],
+    "small44": 41,
+    "smallText": 60,
+    "smallTextSizes": {
+      "10": 26,
+      "11": 25,
+      "7": 1,
+      "8": 2,
+      "8.5": 2,
+      "9": 4
+    },
+    "textMeasured": 92
+  },
+  "_report@820x1180": {
+    "controls": 77,
+    "hScroll": false,
+    "lowContrast": 6,
+    "small24": 3,
+    "small24Names": ["BUTTON:Play", "A:Map", "BUTTON:Open Command Center"],
+    "small44": 41,
+    "smallText": 60,
+    "smallTextSizes": {
+      "10": 26,
+      "11": 25,
+      "7": 1,
+      "8": 2,
+      "8.5": 2,
+      "9": 4
+    },
+    "textMeasured": 92
+  },
+  "_report@844x390": {
+    "controls": 77,
+    "hScroll": false,
+    "lowContrast": 6,
+    "small24": 3,
+    "small24Names": ["BUTTON:Play", "A:Map", "BUTTON:Open Command Center"],
+    "small44": 41,
+    "smallText": 60,
+    "smallTextSizes": {
+      "10": 26,
+      "11": 25,
+      "7": 1,
+      "8": 2,
+      "8.5": 2,
+      "9": 4
+    },
+    "textMeasured": 92
+  },
+  "_support@1280x720": {
+    "controls": 66,
+    "hScroll": false,
+    "lowContrast": 13,
+    "small24": 8,
+    "small24Names": [
+      "A:Home",
+      "BUTTON:Copy BTC address",
+      "BUTTON:Copy ETH address",
+      "BUTTON:Copy SOL address",
+      "BUTTON:Copy USDC address"
+    ],
+    "small44": 50,
+    "smallText": 94,
+    "smallTextSizes": {
+      "10": 40,
+      "11": 30,
+      "7": 1,
+      "8": 12,
+      "8.5": 2,
+      "9": 9
+    },
+    "textMeasured": 97
+  },
+  "_support@1366x768": {
+    "controls": 66,
+    "hScroll": false,
+    "lowContrast": 13,
+    "small24": 8,
+    "small24Names": [
+      "A:Home",
+      "BUTTON:Copy BTC address",
+      "BUTTON:Copy ETH address",
+      "BUTTON:Copy SOL address",
+      "BUTTON:Copy USDC address"
+    ],
+    "small44": 50,
+    "smallText": 94,
+    "smallTextSizes": {
+      "10": 40,
+      "11": 30,
+      "7": 1,
+      "8": 12,
+      "8.5": 2,
+      "9": 9
+    },
+    "textMeasured": 97
+  },
+  "_support@1440x900": {
+    "controls": 66,
+    "hScroll": false,
+    "lowContrast": 13,
+    "small24": 8,
+    "small24Names": [
+      "A:Home",
+      "BUTTON:Copy BTC address",
+      "BUTTON:Copy ETH address",
+      "BUTTON:Copy SOL address",
+      "BUTTON:Copy USDC address"
+    ],
+    "small44": 50,
+    "smallText": 94,
+    "smallTextSizes": {
+      "10": 40,
+      "11": 30,
+      "7": 1,
+      "8": 12,
+      "8.5": 2,
+      "9": 9
+    },
+    "textMeasured": 97
+  },
+  "_support@320x640": {
+    "controls": 65,
+    "hScroll": false,
+    "lowContrast": 13,
+    "small24": 9,
+    "small24Names": [
+      "BUTTON:Play",
+      "A:Home",
+      "BUTTON:Copy BTC address",
+      "BUTTON:Copy ETH address",
+      "BUTTON:Copy SOL address"
+    ],
+    "small44": 49,
+    "smallText": 82,
+    "smallTextSizes": {
+      "10": 35,
+      "11": 29,
+      "7": 1,
+      "8": 10,
+      "8.5": 1,
+      "9": 6
+    },
+    "textMeasured": 87
+  },
+  "_support@360x800": {
+    "controls": 65,
+    "hScroll": false,
+    "lowContrast": 13,
+    "small24": 9,
+    "small24Names": [
+      "BUTTON:Play",
+      "A:Home",
+      "BUTTON:Copy BTC address",
+      "BUTTON:Copy ETH address",
+      "BUTTON:Copy SOL address"
+    ],
+    "small44": 48,
+    "smallText": 82,
+    "smallTextSizes": {
+      "10": 35,
+      "11": 29,
+      "7": 1,
+      "8": 10,
+      "8.5": 1,
+      "9": 6
+    },
+    "textMeasured": 87
+  },
+  "_support@390x844": {
+    "controls": 65,
+    "hScroll": false,
+    "lowContrast": 13,
+    "small24": 8,
+    "small24Names": [
+      "A:Home",
+      "BUTTON:Copy BTC address",
+      "BUTTON:Copy ETH address",
+      "BUTTON:Copy SOL address",
+      "BUTTON:Copy USDC address"
+    ],
+    "small44": 42,
+    "smallText": 82,
+    "smallTextSizes": {
+      "10": 35,
+      "11": 29,
+      "7": 1,
+      "8": 10,
+      "8.5": 1,
+      "9": 6
+    },
+    "textMeasured": 87
+  },
+  "_support@430x932": {
+    "controls": 65,
+    "hScroll": false,
+    "lowContrast": 13,
+    "small24": 8,
+    "small24Names": [
+      "A:Home",
+      "BUTTON:Copy BTC address",
+      "BUTTON:Copy ETH address",
+      "BUTTON:Copy SOL address",
+      "BUTTON:Copy USDC address"
+    ],
+    "small44": 42,
+    "smallText": 82,
+    "smallTextSizes": {
+      "10": 35,
+      "11": 29,
+      "7": 1,
+      "8": 10,
+      "8.5": 1,
+      "9": 6
+    },
+    "textMeasured": 87
+  },
+  "_support@667x375": {
+    "controls": 65,
+    "hScroll": false,
+    "lowContrast": 13,
+    "small24": 8,
+    "small24Names": [
+      "A:Home",
+      "BUTTON:Copy BTC address",
+      "BUTTON:Copy ETH address",
+      "BUTTON:Copy SOL address",
+      "BUTTON:Copy USDC address"
+    ],
+    "small44": 42,
+    "smallText": 88,
+    "smallTextSizes": {
+      "10": 40,
+      "11": 29,
+      "7": 1,
+      "8": 10,
+      "8.5": 2,
+      "9": 6
+    },
+    "textMeasured": 93
+  },
+  "_support@768x1024": {
+    "controls": 73,
+    "hScroll": false,
+    "lowContrast": 13,
+    "small24": 9,
+    "small24Names": [
+      "BUTTON:Play",
+      "A:Home",
+      "BUTTON:Copy BTC address",
+      "BUTTON:Copy ETH address",
+      "BUTTON:Copy SOL address"
+    ],
+    "small44": 49,
+    "smallText": 91,
+    "smallTextSizes": {
+      "10": 40,
+      "11": 29,
+      "7": 1,
+      "8": 10,
+      "8.5": 2,
+      "9": 9
+    },
+    "textMeasured": 94
+  },
+  "_support@820x1180": {
+    "controls": 73,
+    "hScroll": false,
+    "lowContrast": 13,
+    "small24": 9,
+    "small24Names": [
+      "BUTTON:Play",
+      "A:Home",
+      "BUTTON:Copy BTC address",
+      "BUTTON:Copy ETH address",
+      "BUTTON:Copy SOL address"
+    ],
+    "small44": 49,
+    "smallText": 91,
+    "smallTextSizes": {
+      "10": 40,
+      "11": 29,
+      "7": 1,
+      "8": 10,
+      "8.5": 2,
+      "9": 9
+    },
+    "textMeasured": 94
+  },
+  "_support@844x390": {
+    "controls": 73,
+    "hScroll": false,
+    "lowContrast": 13,
+    "small24": 9,
+    "small24Names": [
+      "BUTTON:Play",
+      "A:Home",
+      "BUTTON:Copy BTC address",
+      "BUTTON:Copy ETH address",
+      "BUTTON:Copy SOL address"
+    ],
+    "small44": 49,
+    "smallText": 91,
+    "smallTextSizes": {
+      "10": 40,
+      "11": 29,
+      "7": 1,
+      "8": 10,
+      "8.5": 2,
+      "9": 9
+    },
+    "textMeasured": 94
+  }
+}

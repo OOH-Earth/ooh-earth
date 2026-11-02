@@ -1,0 +1,27 @@
+import { test } from '@playwright/test';
+import { mockBase44 } from './fixtures/mockBase44';
+test.use({ viewport: { width: 320, height: 640 }, hasTouch: true, isMobile: true, deviceScaleFactor: 2 });
+test('home growth', async ({ page }) => {
+  test.setTimeout(120000);
+  await mockBase44(page, { user: null, locations: {} });
+  await page.addInitScript(() => localStorage.setItem('ooh_nudge_map_report', '1'));
+  await page.goto('/'); await page.waitForTimeout(3000);
+  const big = () => page.evaluate(() => {
+    const se = document.scrollingElement!;
+    const rows: any[] = [];
+    document.querySelectorAll('body *').forEach((e) => { const r = e.getBoundingClientRect(); if (r.height > 3000) rows.push(`${e.tagName.toLowerCase()}#${(e as HTMLElement).id}.${String(e.className).slice(0,70)} h=${Math.round(r.height)} top=${Math.round(r.top+scrollY)}`); });
+    const main = document.querySelector('main');
+    const kids = main ? [...main.children].map((c) => { const r = c.getBoundingClientRect(); return `${c.tagName.toLowerCase()}#${c.id}.${String(c.className).slice(0,40)} h=${Math.round(r.height)} top=${Math.round(r.top+scrollY)} st=${c.getAttribute('style')?.slice(0,80) ?? ''}`; }) : [];
+    return { docH: se.scrollHeight, kids };
+  });
+  console.log('BEFORE', JSON.stringify(await big()));
+  const cdp = await page.context().newCDPSession(page);
+  for (let i = 0; i < 2; i++) {
+    await cdp.send('Input.synthesizeScrollGesture', { x: 160, y: 300, yDistance: i % 2 ? -400 : 600, speed: 1200, gestureSourceType: 'touch' });
+    await page.waitForTimeout(900);
+    console.log('AFTER', i, JSON.stringify(await big()), 'scrollY', await page.evaluate(()=>scrollY));
+  }
+  // same without touch: plain wheel
+  await page.mouse.wheel(0, -600); await page.waitForTimeout(500);
+  console.log('WHEEL', JSON.stringify(await big()));
+});

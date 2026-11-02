@@ -2,6 +2,12 @@
 
 Ledger of defects, evidence, commits and open items: [`UI-Fixes.md`](./UI-Fixes.md).
 
+Specification for the coordinated consistency pass (type roles, spacing, alignment, panels, wording,
+verification matrix): [`OOH-UI-UX-REFERENCE.md`](./OOH-UI-UX-REFERENCE.md). Its values are **PROJECT** proposals,
+labelled as such; where it is stricter than this file (secondary text 12-14px, control text 14-16px, 44px targets,
+rem-based sizes), new and migrated components follow the reference and the older floors below remain only for
+surfaces not yet migrated. This file is not replaced and the two are not competing sources.
+
 Scope: how we lay out and simplify screens **without changing the identity** (black void,
 ozone yellow `#EDFF00`, flare orange `#FF5C00`, IBM Plex Mono labels, Inter Tight body,
 Orbitron brand marks, square corners). This file does not define new colours, fonts or shapes.
