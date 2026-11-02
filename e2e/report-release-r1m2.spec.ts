@@ -76,9 +76,12 @@ test.describe('short landscape and keyboard behaviour on /report', () => {
   test('keyboard users can reach the photo controls', async ({ page }) => {
     await mockBase44(page, { user: null, locations: {} });
     await page.goto('/report');
-    // Tab order is only meaningful once the lazy-loaded form has settled.
+    // Tab order is only meaningful once the lazy-loaded form has rendered the controls under test.
+    // Wait for those controls themselves, not for network quiet: the app keeps background
+    // requests (live feed, radio, clock) going, so 'networkidle' may never arrive.
     await expect(page.getByTestId('photo-privacy-guidance')).toBeVisible();
-    await page.waitForLoadState('networkidle');
+    await expect(page.locator('label[aria-label="Capture live"]')).toBeVisible();
+    await expect(page.locator('label[aria-label="Upload"]')).toBeVisible();
     let reached = false;
     for (let i = 0; i < 80 && !reached; i++) {
       await page.keyboard.press('Tab');
