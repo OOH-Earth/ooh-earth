@@ -30,6 +30,8 @@ module.exports = {
         },
         slate2: 'rgb(var(--c-slate2) / <alpha-value>)',
         dim: 'rgb(var(--c-dim) / <alpha-value>)',
+        // Readable secondary text: --c-dim is 3.66:1 on void in the dark theme (below the 4.5:1 text minimum).
+        quiet: 'rgb(var(--c-quiet) / <alpha-value>)',
         darkgray: 'rgb(var(--c-darkgray) / <alpha-value>)',
         card: {
           DEFAULT: 'hsl(var(--card))',
@@ -70,6 +72,27 @@ module.exports = {
         display: ['var(--font-display)'],
         mono: ['var(--font-mono)'],
         brand: ['var(--font-brand)'],
+      },
+      // OOH semantic type/space roles (docs/design/OOH-UI-UX-REFERENCE.md section 3). rem-based so they
+      // follow browser text size, unlike the legacy text-[Npx] classes. Opt in per component.
+      fontSize: {
+        'ooh-caption': ['0.75rem', { lineHeight: '1.4' }],
+        'ooh-control': ['0.875rem', { lineHeight: '1.45' }],
+        'ooh-body': ['1rem', { lineHeight: '1.5' }],
+        'ooh-section': ['1.125rem', { lineHeight: '1.4' }],
+        'ooh-page': ['clamp(1.5rem, 1.2rem + 1.2vw, 2rem)', { lineHeight: '1.2' }],
+      },
+      spacing: {
+        'ooh-1': 'var(--ooh-space-1)',
+        'ooh-2': 'var(--ooh-space-2)',
+        'ooh-3': 'var(--ooh-space-3)',
+        'ooh-4': 'var(--ooh-space-4)',
+        'ooh-5': 'var(--ooh-space-5)',
+        'ooh-6': 'var(--ooh-space-6)',
+        'ooh-7': 'var(--ooh-space-7)',
+        'ooh-inset': 'var(--ooh-page-inset)',
+        'ooh-panel': 'var(--ooh-panel-pad)',
+        'ooh-target': 'var(--ooh-target)',
       },
       letterSpacing: {
         label: '0.3em',

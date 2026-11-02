@@ -924,7 +924,7 @@ export default function Map() {
       )}
       <button
         onClick={() => setFullscreen(true)}
-        aria-label="Fullscreen map"
+        aria-label="Full-screen map (hides navigation)"
         className="flex h-8 w-8 shrink-0 items-center justify-center border border-ozone/60 text-ozone transition-colors hover:bg-ozone hover:text-void"
       >
         <Maximize2 className="h-3.5 w-3.5" />
@@ -1516,6 +1516,9 @@ export default function Map() {
       {raw && (
         <MapBottomSheet
           count={layerResults.length}
+          countScope={
+            ['ads', 'adbusting', 'graffiti'].includes(primaryLayer) ? 'in view' : undefined
+          }
           layerLabel={primaryLayer}
           detailMode={!!detailItem}
           onCloseDetail={() => setDetailItem(null)}

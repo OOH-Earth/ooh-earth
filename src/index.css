@@ -27,6 +27,17 @@
     --ring: 63 100% 50%;
     --flare: 22 100% 50%;
     --radius: 0px;
+    /* OOH space/target roles (docs/design/OOH-UI-UX-REFERENCE.md section 3) */
+    --ooh-space-1: 0.25rem;
+    --ooh-space-2: 0.5rem;
+    --ooh-space-3: 0.75rem;
+    --ooh-space-4: 1rem;
+    --ooh-space-5: 1.5rem;
+    --ooh-space-6: 2rem;
+    --ooh-space-7: 3rem;
+    --ooh-page-inset: 1rem;
+    --ooh-panel-pad: 1rem;
+    --ooh-target: 2.75rem;
     --font-heading: 'Inter Tight', ui-sans-serif, system-ui, sans-serif;
     --font-body: 'Inter Tight', ui-sans-serif, system-ui, sans-serif;
     --font-display: 'Inter Tight', ui-sans-serif, system-ui, sans-serif;
@@ -38,6 +49,8 @@
     --c-silver: 241 241 241;
     --c-slate2: 51 51 51;
     --c-dim: 102 102 102;
+    /* readable secondary text: 6.08:1 on void, 5.73:1 on card (dim is 3.66 / 3.45) */
+    --c-quiet: 138 138 138;
     --c-darkgray: 172 172 172;
     --c-ozone: 237 255 0;
     --c-flare: 255 92 0;
@@ -63,6 +76,7 @@
     --c-silver: 10 10 10;
     --c-slate2: 212 212 212;
     --c-dim: 88 88 88;
+    --c-quiet: 88 88 88;
     --c-darkgray: 58 58 58;
     --c-ozone: 232 74 0;
     --c-flare: 255 92 0;
@@ -1689,5 +1703,54 @@ body.map-fullscreen .ooh-mobile-nav {
   }
   body.printing-field-id .no-print {
     display: none !important;
+  }
+}
+
+/* Shared panel primitives (reference section 4). Scoped classes, opt-in; nothing here restyles
+   existing components. The parent must give .ooh-panel a size bound for the body to scroll. */
+@layer components {
+  @media (min-width: 768px) {
+    :root {
+      --ooh-page-inset: 1.5rem;
+      --ooh-panel-pad: 1.5rem;
+    }
+  }
+  @media (min-width: 1280px) {
+    :root {
+      --ooh-page-inset: 2rem;
+    }
+  }
+  .ooh-panel {
+    display: flex;
+    flex-direction: column;
+    min-inline-size: 0;
+    min-block-size: 0;
+  }
+  .ooh-panel__header,
+  .ooh-panel__footer {
+    display: flex;
+    flex: none;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--ooh-space-2);
+    padding: var(--ooh-panel-pad);
+  }
+  .ooh-panel__body {
+    min-block-size: 0;
+    overflow: auto;
+    padding: var(--ooh-panel-pad);
+    overscroll-behavior: contain;
+  }
+  .ooh-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--ooh-space-2);
+  }
+  .ooh-icon-button {
+    display: inline-grid;
+    place-items: center;
+    min-inline-size: var(--ooh-target);
+    min-block-size: var(--ooh-target);
   }
 }
