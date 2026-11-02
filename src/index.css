@@ -63,6 +63,8 @@
     --c-silver: 10 10 10;
     --c-slate2: 212 212 212;
     --c-dim: 88 88 88;
+    /* ozone as TEXT on a near-white surface: 232,74,0 is 3.2-3.5:1; this shade is >= 4.5:1 (map controls only) */
+    --c-ozone-ink: 176 55 0;
     --c-darkgray: 58 58 58;
     --c-ozone: 232 74 0;
     --c-flare: 255 92 0;
@@ -744,6 +746,8 @@
     --c-dim: 150 140 126;
     --c-darkgray: 175 165 150;
     --c-ozone: 229 57 53;
+    /* ozone as TEXT on the dark crafty surface: a lighter tint of the same red, >= 4.5:1 (map controls only) */
+    --c-ozone-ink: 255 110 105;
     --c-flare: 245 158 60;
   }
   .crafty body {
@@ -880,6 +884,21 @@
      Drawing it inside the control keeps it on the control's own dark surface. */
   .map-ctl-focus:focus-visible {
     outline-offset: -3px;
+  }
+
+  /* Light, crafty and beta (user-selectable; beta only for fills: `.beta a{color:#61afef}` painted blue text on the teal Report fill, 1.1:1): the brand ozone/flare is too low-contrast as TEXT on the map
+     overlay surfaces (2.1-4.4:1) and black-on-ozone is needed on ozone/flare FILLS (void text is 2.8-4.4:1).
+     Scoped to controls inside the map frame; sizes, borders and hover/selected cues (border + fill) unchanged. */
+  :is(.light, .crafty) [data-tour='map'] :is(button, a).text-ozone,
+  :is(.light, .crafty) [data-tour='map'] :is(button, a)[class*='hover:text-ozone']:hover,
+  :is(.light, .crafty) [data-tour='map'] :is(button, a)[class*='hover:text-flare']:hover {
+    color: rgb(var(--c-ozone-ink));
+  }
+  :is(.light, .crafty, .beta) [data-tour='map'] :is(button, a).bg-ozone,
+  :is(.light, .crafty, .beta) [data-tour='map'] :is(button, a).bg-flare,
+  :is(.light, .crafty, .beta) [data-tour='map'] :is(button, a)[class*='hover:bg-ozone']:hover,
+  :is(.light, .crafty, .beta) [data-tour='map'] :is(button, a)[class*='hover:bg-flare']:hover {
+    color: #000;
   }
   .font-display {
     font-family: 'Inter Tight', ui-sans-serif, system-ui, sans-serif;
