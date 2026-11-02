@@ -1,0 +1,26 @@
+import { test } from '@playwright/test';
+import { openMapWithMock } from './helpers/mapGeometry';
+import { mockBase44 } from './fixtures/mockBase44';
+const VPS = [{ n: '390x844', w: 390, h: 844 }, { n: '320x640', w: 320, h: 640 }, { n: '844x390', w: 844, h: 390 }];
+const tail = (page) => page.evaluate(() => { const s = document.scrollingElement!; let max = 0; document.querySelectorAll('body *').forEach((e) => { const cs = getComputedStyle(e); if (cs.position === 'fixed' || cs.visibility === 'hidden' || cs.display === 'none') return; const r = e.getBoundingClientRect(); if (r.height === 0 || r.width === 0) return; max = Math.max(max, r.bottom + scrollY); }); return `scrollHeight=${s.scrollHeight} lastContentBottom=${Math.round(max)} blankTail=${Math.round(s.scrollHeight - max)}`; });
+for (const vp of VPS) test.describe(`p3 ${vp.n}`, () => {
+  test.use({ viewport: { width: vp.w, height: vp.h }, hasTouch: true, isMobile: true, deviceScaleFactor: 2 });
+  for (const route of ['/', '/report']) test(`tail ${route}`, async ({ page }) => {
+    await mockBase44(page, { user: null, locations: {} });
+    await page.addInitScript(() => localStorage.setItem('ooh_nudge_map_report', '1'));
+    await page.goto(route); await page.waitForTimeout(2500); await page.mouse.wheel(0, 1); await page.waitForTimeout(1500);
+    await page.evaluate(() => window.scrollTo({ top: 1e7, behavior: 'instant' as ScrollBehavior })); await page.waitForTimeout(1200);
+    console.log(`## ${vp.n} ${route} bottom: ${await tail(page)} y=${await page.evaluate(() => Math.round(scrollY))}`);
+  });
+  test('map fullscreen', async ({ page }) => {
+    test.setTimeout(90000);
+    await openMapWithMock(page, { view: 'flat' });
+    const fs = page.locator('.ooh-bottom-sheet').getByRole('button', { name: 'Full-screen map (hides navigation)' });
+    await fs.click(); await page.waitForTimeout(800);
+    console.log(`## ${vp.n} /map full-screen: ${await page.evaluate(() => { const s = document.scrollingElement!; const e = document.querySelector('.ooh-bottom-sheet') as HTMLElement; return `doc=${s.scrollHeight}/${s.clientHeight} sheet=${Math.round(e.getBoundingClientRect().height)} sheetBottom=${Math.round(e.getBoundingClientRect().bottom)} vh=${innerHeight}`; })}`);
+    await page.mouse.move(vp.w / 2, vp.h * 0.5); await page.mouse.wheel(0, -3000); await page.mouse.wheel(0, 3000); await page.waitForTimeout(400);
+    console.log(`   after wheel up/down: ${await page.evaluate(() => `y=${scrollY} doc=${document.scrollingElement!.scrollHeight}`)}`);
+    await page.getByRole('button', { name: 'Exit full-screen map (shows navigation)' }).first().click(); await page.waitForTimeout(700);
+    console.log(`   exit: ${await page.evaluate(() => `doc=${document.scrollingElement!.scrollHeight}/${innerHeight}`)}`);
+  });
+});

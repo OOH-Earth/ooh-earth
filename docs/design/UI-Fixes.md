@@ -884,3 +884,81 @@ CI runs only for PRs into `main` or `maintenance/**`; #395 targets `docs/ui-fixe
 | `a96eb9c` | **all 10 passed** (Lint & Typecheck, Build, both Playwright jobs, Prettier, audit, Dependency Review, CodeQL, Analyze, summary) | the two files were reformatted, whitespace only; parsed JSON verified identical before and after |
 
 Pushed in this pass: `8336ca3` (section 16), `b4ad4c7` (16.8 attribution), `a96eb9c` (formatting). Application source on #392, #394, #396 and #398 is unchanged, so their CI results from section 15 stand.
+
+## 17. Contrast completion, adbusting journey, scroll investigation, BACKUP window B (2026-11-02)
+
+Sections 1-16 are history and keep the SHAs they tested. Times are UTC. Browser for every measurement below: Playwright's bundled Chromium 148 (build 1223) headless on a shared WSL2 host with mocked API; **not** an iPhone, not WebKit, no real zoom, no virtual keyboard. DevTools MCP tools were not loaded in this session; Playwright (CDP touch events, `PerformanceObserver`) was the approved fallback.
+
+### 17.1 Exact heads and the combined candidate
+
+| PR | Branch @ head | What it is | Staged on BACKUP at 14:37Z? |
+| --- | --- | --- | --- |
+| #399 | `test/stabilize-live-feed-nudge-spec` @ `8e23975` | test-only nudge race fix | yes (in `aec7e7c`) |
+| #402 | `deps/follow-redirects-audit` @ `6e94d88` | lockfile-only audit gate fix (17.2) | no (added later) |
+| #394 | `ui/consistency-pass` @ `be64187` | tokens, `text-quiet`, Report step 1 | yes |
+| #392 | `sheet/interaction-and-map-first` @ `f3aae43` | sheet + (new) Claim fix + shell-bounds guard | the earlier head `540dc06` only |
+| #396 | `ui/header-status-disclosure` @ `a17832c` | header disclosure | yes |
+| #400 | `ui/map-control-contrast` @ `1ed2084` | map-overlay contrast (17.3) | first commit `d2378ff` only |
+| #405 | `ui/adbusting-portal-a11y` @ `85fe8c4` | adbusting portal names/state/search (17.5) | no |
+| #398 | `candidate/ui-release-staging` @ **`daa4456`** | **DO NOT MERGE** integration of all of the above; no #393 code | **no: BACKUP serves 5c81a80 again** |
+| #403 | `chore/coderabbit-config` @ `cfff803` | CodeRabbit advisory config, targets `main` (17.8) | n/a |
+
+What BACKUP actually received on 2026-11-02 was `aec7e7ca` (= #399 + #394 + #392@540dc06 + #396 + #400@d2378ff), built with `VITE_BASE44_APP_ID=6a6748e009b947cb29591871` (node v26.8.2, npm 11.19.1, `npm run build`), source tree `95487af6`, manifest `git_sha aec7e7ca`, served bytes 372/373 identical to the build (`sitemap.xml` host-rewritten). Everything added after that (#402, #400 light/crafty/beta commit, the #392 Claim fix and guard, #405) is **local + pushed to draft PRs only; never staged**. The candidate was restored off BACKUP at 17:44:08Z.
+
+### 17.2 Audit gate (`Dependency audit`, run 41456988382)
+
+The gate runs `npm audit --omit=dev` and fails on high/critical. It reported 1. Reproduced locally: **`follow-redirects` 1.16.0-1.16.1, GHSA-mrwp-f3q8-3g9p** (transitive, installed 1.16.1, fix 1.16.2 within range). An earlier note of mine blamed vite; that was wrong (the vite advisories appear only in plain `npm audit`, dev-only, not counted by the gate). Fix isolated in #402: `npm update follow-redirects --package-lock-only`, 3 lockfile lines, `npm audit --omit=dev` 1 -> 0, no `--force`, gate untouched. The same lockfile line exists on `main` (merged via #378); the dependency owner decides whether to mirror it. #399 passed the gate in October only because the advisory did not exist yet.
+
+### 17.3 Map-control contrast (user-selectable themes, all asserted)
+
+Evidence: `docs/design/evidence/map-control-contrast/SUMMARY.md` (+ raw JSON; `before-*` production source, `after2-*` final). Light, crafty and beta are selectable (`ThemeToggle`), so they were fixed, not excused: scoped rules inside `[data-tour='map']` (`--c-ozone-ink` for ozone/flare text, black text on ozone/flare fills; beta's `.beta a` blue link colour on the teal Report fill). Final clean full run (6 themes x 4 backdrops): **552 measurements, 0 below threshold except 5 recorded KNOWN rows (matrix scanline overlay)**; focus ring 32/32 >= 3:1 (was 18/32 below); Report chip 48/48. A first full run overlapped other browser work and showed 8 spurious values (e.g. 1.00); they did not reproduce on a clean rerun and the earlier JSON is kept. Assumptions stay explicit: CSS stand-in backdrops (not real tiles), 1st-percentile sampling (a method choice, not proof for every map background), flat map only, no globe canvas, no disabled controls exist over the map, the Report help button's focus ring is hidden by its own tooltip (0 ring pixels; unchanged). **Not fixed:** the matrix theme's CRT scanline overlay darkens rows across the green fills (black text on a dark row measures 2.6-3.7:1); it is theme decoration and is listed as KNOWN in the spec. Real imagery was seen on BACKUP (Esri satellite) in the screenshots below; no quantitative real-tile measurement was made.
+
+### 17.4 Scroll / blank-area defect: **not reproduced**
+
+Probes (kept as `evidence/section-17/probes/*.txt`): at 390x844, 320x640 and 844x390, `/map` document `scrollHeight == clientHeight` in the initial, expanded, dragged and full-screen sheet states; the sheet clamps (390: 72..743px, 320: 72..556, landscape 60..306) however far a real touch drag goes and is operable after `touchcancel`; Home and Report have **no blank tail** (`scrollHeight - lastContentBottom <= 1px`) and no `opacity:0` section left in view after jumps to 25/50/75/100%. `html` already has `overscroll-behavior: none`. Observations that are **not** the symptom: Home grows from 2.7k to 33k px after its lazy sections mount (real content at 320px); in this harness CDP touch **scroll** gestures do not scroll the page (`scrollY` stays 0, known limit), so fling behaviour is unverified. The cause cannot be attributed to iOS: candidates still open and untested on a device are iOS < 16 rubber-band exposing the html background (the `overscroll-behavior` on `html` is ignored there), browser-chrome `100svh`/`dvh` changes, and the virtual keyboard. First-run failure kept: at 390x844 the sheet read 81px 400ms after a cancelled drag, then settled on the peek snap within the poll window; the guard now polls to a snap. No code was changed for this symptom (no global `overflow:hidden`, no touch blocking). Guard: `e2e/map-shell-bounds.spec.ts` on #392 (9 tests, pass) pins the invariants and says plainly that it does not prove anything about iOS.
+
+### 17.5 Adbusting journey: real flow, baseline, defects fixed
+
+Real flow (read from source, nothing invented): nav menu / sitemap -> `/adbusting` (`AdbustingPortal` on `PortalShell`): list + map with search, type filter chips, Split/Map/List and Flat/Globe toggles, refresh/reset, **Capture** (`QuickCapture`), **Report** link, per-card **Claim** (`ClaimLeadDialog` -> `claimLead` function) and **View listing**. There is no editor, preview or publish step in this flow; none was tested. Baseline (candidate `3428450` + mocks, anonymous, a catch-all route blocked any unmocked request, **no uploads / AI / writes**):
+
+| Measurement (Chromium 148, shared host, one run, not a guarantee) | Result |
+| --- | --- |
+| first usable header (results count) | 1.0-1.9 s from navigation commit |
+| filter chip click -> results text changed | 453-668 ms (40 -> 10 results) |
+| long tasks during load | 19-20, max 450 ms, sum 2.1-3.2 s (not attributed; load-time, includes shared Nav/ticker); no speculative change made |
+| duplicate requests | none: the 3 `SiteSetting` reads are 3 different keys (themes, loader, map style) |
+| console errors | 1 (a blocked, unmocked log POST) |
+| (invalid) "list visible 35 s" | **probe bug**: waited out its own 30 s timeout on a selector that does not exist; not a latency |
+
+Control checklist outcomes:
+
+| Control | Expected | Observed (before) | Disposition |
+| --- | --- | --- | --- |
+| Card **Claim** (desktop) | opens the claim dialog | **covered** by the "view listing" link; click times out. Production source: works | **Candidate regression, fixed** in #392 (`b96ce14`): meta row wraps, Claim `shrink-0` + 24px min height. `adbusting-claim-reachable.spec.ts` fails 2/2 without, passes 2/2 with |
+| Search | usable at every width | unnamed; `display:none` below 640px | **Fixed** in #405 |
+| Reset (icon) | named | unnamed | **Fixed** (#405) |
+| Phone Capture / Report | named, >= 40px | icon-only unnamed, 34x30 / 36x32 | **Fixed** (#405) |
+| Filter chips | pressed state | none exposed | **Fixed** (`aria-pressed`) |
+| Header at 320px | no overflow | n/a (search was hidden) | wrapped; the new test caught a 333px overflow first, then passed |
+| Claim submit double-activation, Capture rapid open/close x10, dialog Escape/focus return | one request; no stuck dialogs; focus returns | **not completed**: the first probe stopped at the covered Claim; not re-run after the fix | **gap, honest**: covered only by the existing `ClaimLeadDialog` disabled-while-submitting code reading |
+| Nav icon buttons (shared), map-HUD "Hide ..." 7x16 | named / sized | unnamed / tiny | observed, **not changed** (shared / out of scope) |
+
+`adbusting-portal-a11y.spec.ts` (#405): fails 3/3 widths on the unfixed candidate, passes 3/3 with the change. After-screenshot: `evidence/section-17/adb-after-390.png`. Not covered: slow-network / offline / timeout mocks for the portal, large-image decode, back/cancel during loading, orientation change, MEMBER state, reduced-motion verification, any real device.
+
+### 17.6 Anonymous / MEMBER and BACKUP
+
+- **Anonymous** (isolated Chromium 148 contexts, real mouse/keyboard, read-only; 14:40Z, BACKUP serving `aec7e7ca`): 42/46 raw; the 4 "failures" are checker artefacts (desktop has no Tools toggle by design; my write check flagged platform analytics/app-log POSTs and read-style function calls, with no `/entities/` POST/PUT/DELETE). Passed at 1280/390/320: header 96-98px, no horizontal scroll, map reached by click, attribution visible and topmost, sheet open/collapse with focus return, Tools open/Escape with focus return, inset focus ring, nudge clear of the header, Report renders with its picker. Files: `evidence/section-17/anon-results.json`, `README.md`, `phone-tools.png`, `desktop-map.png`.
+- **MEMBER: NOT DONE.** No owner sign-in happened inside window B (ended 16:03Z). It remains required on the final candidate.
+- **BACKUP:** window B reserved 14:33:55Z for <= 90 min; I did **not** extend it but restored late: **restored 17:44:08Z (overran by ~1h40m)** from `~/ooh-release-records/2026-10-29/backup-before-ui/`, served manifest `5c81a80`, entry `index-DoInAKbd.js`, **372/372 files identical, 0 differing**, frontend only. Pre-deploy fresh download matched the saved set 369/372; the 3 differing route pages (`adbusting/`, `agency/`, `agency/blog/`) were later shown byte-identical by `oohearth-6d`'s restore compare, so that caveat is withdrawn. Released 17:44Z; `oohearth-6d` then ran windows C and D and restored again (372/372). **The candidate is not available on BACKUP now.**
+
+### 17.7 Required checks on the candidate
+
+Local (candidate `3428450`/earlier heads, Chromium 148): typecheck clean, eslint `--quiet` clean, Prettier clean for tracked files; 198 map/live-feed/telemetry/report/portal/location-detail tests: **191 passed, 7 failed on first run** (3 of the 7 passed on a serial rerun (`map-overlay-layout` globe, two `location-detail` mobile tests; load-sensitive); `report-release-r1m2` short-landscape is the known pre-existing failure on production source; `location-detail` "copy fallback" failed locally in both projects while CI's mobile job passed the same spec; not confirmed on production source). CI on `aec7e7ca` (run 41456988382): 9/10, **audit failed (17.2)**; both Playwright jobs and CodeQL passed. CI on the current head `daa4456` is recorded in the PR #398 description when it finishes (do not read an earlier head's result as this head's).
+
+### 17.8 CodeRabbit (separate draft PR #403, targets `main`, not merged)
+
+Not observed as installed (no comments/reviews/check-runs on #389-#391, #397, #398, #400; org installations need `admin:org`, which our token lacks), free-OSS entitlement **unconfirmed**; no pilot review could run. Config validated against the current schema (0 errors; bad enum/type/root key rejected). Owner action: install the GitHub App scoped to `OOH-Earth/ooh-earth` only, no trial/card; create the `review-ready` label. Steps in `docs/engineering/CODERABBIT.md`. Release rule proposal: CI green + review of the final head with the reviewed SHA recorded + critical/high resolved + staging evidence + explicit authority; a missing/rate-limited review is visible, never approval; no required check name is invented.
+
+### 17.9 Remaining limitations, proposed landing order
+
+Unavailable: MEMBER pass, WebKit, physical iPhone, real zoom 200/400%, virtual keyboard, real-tile contrast, touch **scroll** gestures, Claim double-submit/Capture rapid-open retest after the fix, adbusting slow-network/offline mocks, DevTools MCP traces. Proposed order (no merge authorised in this step): #402, #399, #394, then #392/#396/#400/#405 in any order (rebased), then #393 only after the provider decision; `oohearth-6d` rebuilds #401 on top of whatever lands first and I message them before any landing. A fresh BACKUP window and the owner's sign-in are needed to finish the MEMBER pass on the final candidate.
