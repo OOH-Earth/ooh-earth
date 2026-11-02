@@ -1,232 +1,232 @@
 [
- {
-  "n": "desktop home renders header",
-  "pass": true,
-  "d": ""
- },
- {
-  "n": "desktop home header height 98",
-  "pass": true,
-  "d": ""
- },
- {
-  "n": "desktop home no horizontal scroll",
-  "pass": true,
-  "d": ""
- },
- {
-  "n": "desktop map reached by click",
-  "pass": true,
-  "d": ""
- },
- {
-  "n": "desktop map no horizontal scroll",
-  "pass": true,
-  "d": ""
- },
- {
-  "n": "desktop map attribution visible and topmost",
-  "pass": true,
-  "d": "766px"
- },
- {
-  "n": "desktop tools control present",
-  "pass": false,
-  "d": ""
- },
- {
-  "n": "desktop style switcher focus ring is inset",
-  "pass": true,
-  "d": "solid -3px rgb(237, 255, 0)"
- },
- {
-  "n": "desktop nudge clears header",
-  "pass": true,
-  "d": "nudge y=692 h=84"
- },
- {
-  "n": "desktop report renders step 1",
-  "pass": true,
-  "d": ""
- },
- {
-  "n": "desktop report no horizontal scroll",
-  "pass": true,
-  "d": ""
- },
- {
-  "n": "desktop report picker visible",
-  "pass": true,
-  "d": ""
- },
- {
-  "n": "desktop no backend writes issued",
-  "pass": false,
-  "d": "POST https://ooh-earth-backup.base44.app/api/apps/6a6748e009b947cb29591871/analytics/track/batc;POST https://ooh-earth-backup.base44.app/api/app-logs/6a6748e009b947cb29591871/log-user-in-app/;POST https://ooh-earth-backup.base44.app/api/apps/6a6748e009b947cb29591871/functions/fieldNews;POST https://ooh-earth-backup.base44.app/api/apps/6a6748e009b947cb29591871/functions/fieldStats;POST https://ooh-earth-backup.base44.app/api/apps/6a6748e009b947cb29591871/functions/fieldStats;POST https://ooh-earth-backup.base44.app/api/app-logs/6a6748e009b947cb29591871/log-user-in-app/;POST https://ooh-earth-backup.base44.app/api/apps/6a6748e009b947cb29591871/functions/fieldStats;POST https://ooh-earth-backup.base44.app/api/apps/6a6748e009b947cb29591871/analytics/track/batc;POST https://ooh-earth-backup.base44.app/api/app-logs/6a6748e009b947cb29591871/log-user-in-app/;POST https://ooh-earth-backup.base44.app/api/apps/6a6748e009b947cb29591871/functions/fieldNews"
- },
- {
-  "n": "desktop no uncaught page errors",
-  "pass": true,
-  "d": ""
- },
- {
-  "n": "phone home renders header",
-  "pass": true,
-  "d": ""
- },
- {
-  "n": "phone home header height 96",
-  "pass": true,
-  "d": ""
- },
- {
-  "n": "phone home no horizontal scroll",
-  "pass": true,
-  "d": ""
- },
- {
-  "n": "phone map reached by click",
-  "pass": true,
-  "d": ""
- },
- {
-  "n": "phone map no horizontal scroll",
-  "pass": true,
-  "d": ""
- },
- {
-  "n": "phone map attribution visible and topmost",
-  "pass": true,
-  "d": "662px"
- },
- {
-  "n": "phone sheet opens; focus on Collapse list",
-  "pass": true,
-  "d": ""
- },
- {
-  "n": "phone sheet collapses; focus returns to opener",
-  "pass": true,
-  "d": ""
- },
- {
-  "n": "phone tools open (aria-expanded)",
-  "pass": true,
-  "d": ""
- },
- {
-  "n": "phone tools Escape closes + focus returns",
-  "pass": true,
-  "d": "focusReturn=true"
- },
- {
-  "n": "phone nudge clears header",
-  "pass": true,
-  "d": "nudge y=667 h=105"
- },
- {
-  "n": "phone report renders step 1",
-  "pass": true,
-  "d": ""
- },
- {
-  "n": "phone report no horizontal scroll",
-  "pass": true,
-  "d": ""
- },
- {
-  "n": "phone report picker visible",
-  "pass": true,
-  "d": ""
- },
- {
-  "n": "phone no backend writes issued",
-  "pass": false,
-  "d": "POST https://ooh-earth-backup.base44.app/api/apps/6a6748e009b947cb29591871/analytics/track/batc;POST https://ooh-earth-backup.base44.app/api/app-logs/6a6748e009b947cb29591871/log-user-in-app/;POST https://ooh-earth-backup.base44.app/api/apps/6a6748e009b947cb29591871/functions/fieldNews;POST https://ooh-earth-backup.base44.app/api/apps/6a6748e009b947cb29591871/functions/fieldStats;POST https://ooh-earth-backup.base44.app/api/apps/6a6748e009b947cb29591871/functions/fieldStats;POST https://ooh-earth-backup.base44.app/api/apps/6a6748e009b947cb29591871/functions/fieldStats;POST https://ooh-earth-backup.base44.app/api/app-logs/6a6748e009b947cb29591871/log-user-in-app/;POST https://ooh-earth-backup.base44.app/api/apps/6a6748e009b947cb29591871/functions/fieldStats;POST https://ooh-earth-backup.base44.app/api/apps/6a6748e009b947cb29591871/analytics/track/batc;POST https://ooh-earth-backup.base44.app/api/apps/6a6748e009b947cb29591871/analytics/track/batc;POST https://ooh-earth-backup.base44.app/api/app-logs/6a6748e009b947cb29591871/log-user-in-app/;POST https://ooh-earth-backup.base44.app/api/apps/6a6748e009b947cb29591871/functions/fieldNews"
- },
- {
-  "n": "phone no uncaught page errors",
-  "pass": true,
-  "d": ""
- },
- {
-  "n": "small home renders header",
-  "pass": true,
-  "d": ""
- },
- {
-  "n": "small home header height 96",
-  "pass": true,
-  "d": ""
- },
- {
-  "n": "small home no horizontal scroll",
-  "pass": true,
-  "d": ""
- },
- {
-  "n": "small map reached by click",
-  "pass": true,
-  "d": ""
- },
- {
-  "n": "small map no horizontal scroll",
-  "pass": true,
-  "d": ""
- },
- {
-  "n": "small map attribution visible and topmost",
-  "pass": true,
-  "d": "333px"
- },
- {
-  "n": "small sheet opens; focus on Collapse list",
-  "pass": true,
-  "d": ""
- },
- {
-  "n": "small sheet collapses; focus returns to opener",
-  "pass": true,
-  "d": ""
- },
- {
-  "n": "small tools open (aria-expanded)",
-  "pass": true,
-  "d": ""
- },
- {
-  "n": "small tools Escape closes + focus returns",
-  "pass": true,
-  "d": "focusReturn=true"
- },
- {
-  "n": "small nudge clears header",
-  "pass": true,
-  "d": "nudge y=463 h=105"
- },
- {
-  "n": "small report renders step 1",
-  "pass": true,
-  "d": ""
- },
- {
-  "n": "small report no horizontal scroll",
-  "pass": true,
-  "d": ""
- },
- {
-  "n": "small report picker visible",
-  "pass": true,
-  "d": ""
- },
- {
-  "n": "small no backend writes issued",
-  "pass": false,
-  "d": "POST https://ooh-earth-backup.base44.app/api/apps/6a6748e009b947cb29591871/analytics/track/batc;POST https://ooh-earth-backup.base44.app/api/app-logs/6a6748e009b947cb29591871/log-user-in-app/;POST https://ooh-earth-backup.base44.app/api/apps/6a6748e009b947cb29591871/functions/fieldNews;POST https://ooh-earth-backup.base44.app/api/apps/6a6748e009b947cb29591871/functions/fieldStats;POST https://ooh-earth-backup.base44.app/api/apps/6a6748e009b947cb29591871/functions/fieldStats;POST https://ooh-earth-backup.base44.app/api/app-logs/6a6748e009b947cb29591871/log-user-in-app/;POST https://ooh-earth-backup.base44.app/api/apps/6a6748e009b947cb29591871/functions/fieldStats;POST https://ooh-earth-backup.base44.app/api/apps/6a6748e009b947cb29591871/analytics/track/batc;POST https://ooh-earth-backup.base44.app/api/app-logs/6a6748e009b947cb29591871/log-user-in-app/;POST https://ooh-earth-backup.base44.app/api/apps/6a6748e009b947cb29591871/functions/fieldNews"
- },
- {
-  "n": "small no uncaught page errors",
-  "pass": true,
-  "d": ""
- }
+  {
+    "n": "desktop home renders header",
+    "pass": true,
+    "d": ""
+  },
+  {
+    "n": "desktop home header height 98",
+    "pass": true,
+    "d": ""
+  },
+  {
+    "n": "desktop home no horizontal scroll",
+    "pass": true,
+    "d": ""
+  },
+  {
+    "n": "desktop map reached by click",
+    "pass": true,
+    "d": ""
+  },
+  {
+    "n": "desktop map no horizontal scroll",
+    "pass": true,
+    "d": ""
+  },
+  {
+    "n": "desktop map attribution visible and topmost",
+    "pass": true,
+    "d": "766px"
+  },
+  {
+    "n": "desktop tools control present",
+    "pass": false,
+    "d": ""
+  },
+  {
+    "n": "desktop style switcher focus ring is inset",
+    "pass": true,
+    "d": "solid -3px rgb(237, 255, 0)"
+  },
+  {
+    "n": "desktop nudge clears header",
+    "pass": true,
+    "d": "nudge y=692 h=84"
+  },
+  {
+    "n": "desktop report renders step 1",
+    "pass": true,
+    "d": ""
+  },
+  {
+    "n": "desktop report no horizontal scroll",
+    "pass": true,
+    "d": ""
+  },
+  {
+    "n": "desktop report picker visible",
+    "pass": true,
+    "d": ""
+  },
+  {
+    "n": "desktop no backend writes issued",
+    "pass": false,
+    "d": "POST https://ooh-earth-backup.base44.app/api/apps/6a6748e009b947cb29591871/analytics/track/batc;POST https://ooh-earth-backup.base44.app/api/app-logs/6a6748e009b947cb29591871/log-user-in-app/;POST https://ooh-earth-backup.base44.app/api/apps/6a6748e009b947cb29591871/functions/fieldNews;POST https://ooh-earth-backup.base44.app/api/apps/6a6748e009b947cb29591871/functions/fieldStats;POST https://ooh-earth-backup.base44.app/api/apps/6a6748e009b947cb29591871/functions/fieldStats;POST https://ooh-earth-backup.base44.app/api/app-logs/6a6748e009b947cb29591871/log-user-in-app/;POST https://ooh-earth-backup.base44.app/api/apps/6a6748e009b947cb29591871/functions/fieldStats;POST https://ooh-earth-backup.base44.app/api/apps/6a6748e009b947cb29591871/analytics/track/batc;POST https://ooh-earth-backup.base44.app/api/app-logs/6a6748e009b947cb29591871/log-user-in-app/;POST https://ooh-earth-backup.base44.app/api/apps/6a6748e009b947cb29591871/functions/fieldNews"
+  },
+  {
+    "n": "desktop no uncaught page errors",
+    "pass": true,
+    "d": ""
+  },
+  {
+    "n": "phone home renders header",
+    "pass": true,
+    "d": ""
+  },
+  {
+    "n": "phone home header height 96",
+    "pass": true,
+    "d": ""
+  },
+  {
+    "n": "phone home no horizontal scroll",
+    "pass": true,
+    "d": ""
+  },
+  {
+    "n": "phone map reached by click",
+    "pass": true,
+    "d": ""
+  },
+  {
+    "n": "phone map no horizontal scroll",
+    "pass": true,
+    "d": ""
+  },
+  {
+    "n": "phone map attribution visible and topmost",
+    "pass": true,
+    "d": "662px"
+  },
+  {
+    "n": "phone sheet opens; focus on Collapse list",
+    "pass": true,
+    "d": ""
+  },
+  {
+    "n": "phone sheet collapses; focus returns to opener",
+    "pass": true,
+    "d": ""
+  },
+  {
+    "n": "phone tools open (aria-expanded)",
+    "pass": true,
+    "d": ""
+  },
+  {
+    "n": "phone tools Escape closes + focus returns",
+    "pass": true,
+    "d": "focusReturn=true"
+  },
+  {
+    "n": "phone nudge clears header",
+    "pass": true,
+    "d": "nudge y=667 h=105"
+  },
+  {
+    "n": "phone report renders step 1",
+    "pass": true,
+    "d": ""
+  },
+  {
+    "n": "phone report no horizontal scroll",
+    "pass": true,
+    "d": ""
+  },
+  {
+    "n": "phone report picker visible",
+    "pass": true,
+    "d": ""
+  },
+  {
+    "n": "phone no backend writes issued",
+    "pass": false,
+    "d": "POST https://ooh-earth-backup.base44.app/api/apps/6a6748e009b947cb29591871/analytics/track/batc;POST https://ooh-earth-backup.base44.app/api/app-logs/6a6748e009b947cb29591871/log-user-in-app/;POST https://ooh-earth-backup.base44.app/api/apps/6a6748e009b947cb29591871/functions/fieldNews;POST https://ooh-earth-backup.base44.app/api/apps/6a6748e009b947cb29591871/functions/fieldStats;POST https://ooh-earth-backup.base44.app/api/apps/6a6748e009b947cb29591871/functions/fieldStats;POST https://ooh-earth-backup.base44.app/api/apps/6a6748e009b947cb29591871/functions/fieldStats;POST https://ooh-earth-backup.base44.app/api/app-logs/6a6748e009b947cb29591871/log-user-in-app/;POST https://ooh-earth-backup.base44.app/api/apps/6a6748e009b947cb29591871/functions/fieldStats;POST https://ooh-earth-backup.base44.app/api/apps/6a6748e009b947cb29591871/analytics/track/batc;POST https://ooh-earth-backup.base44.app/api/apps/6a6748e009b947cb29591871/analytics/track/batc;POST https://ooh-earth-backup.base44.app/api/app-logs/6a6748e009b947cb29591871/log-user-in-app/;POST https://ooh-earth-backup.base44.app/api/apps/6a6748e009b947cb29591871/functions/fieldNews"
+  },
+  {
+    "n": "phone no uncaught page errors",
+    "pass": true,
+    "d": ""
+  },
+  {
+    "n": "small home renders header",
+    "pass": true,
+    "d": ""
+  },
+  {
+    "n": "small home header height 96",
+    "pass": true,
+    "d": ""
+  },
+  {
+    "n": "small home no horizontal scroll",
+    "pass": true,
+    "d": ""
+  },
+  {
+    "n": "small map reached by click",
+    "pass": true,
+    "d": ""
+  },
+  {
+    "n": "small map no horizontal scroll",
+    "pass": true,
+    "d": ""
+  },
+  {
+    "n": "small map attribution visible and topmost",
+    "pass": true,
+    "d": "333px"
+  },
+  {
+    "n": "small sheet opens; focus on Collapse list",
+    "pass": true,
+    "d": ""
+  },
+  {
+    "n": "small sheet collapses; focus returns to opener",
+    "pass": true,
+    "d": ""
+  },
+  {
+    "n": "small tools open (aria-expanded)",
+    "pass": true,
+    "d": ""
+  },
+  {
+    "n": "small tools Escape closes + focus returns",
+    "pass": true,
+    "d": "focusReturn=true"
+  },
+  {
+    "n": "small nudge clears header",
+    "pass": true,
+    "d": "nudge y=463 h=105"
+  },
+  {
+    "n": "small report renders step 1",
+    "pass": true,
+    "d": ""
+  },
+  {
+    "n": "small report no horizontal scroll",
+    "pass": true,
+    "d": ""
+  },
+  {
+    "n": "small report picker visible",
+    "pass": true,
+    "d": ""
+  },
+  {
+    "n": "small no backend writes issued",
+    "pass": false,
+    "d": "POST https://ooh-earth-backup.base44.app/api/apps/6a6748e009b947cb29591871/analytics/track/batc;POST https://ooh-earth-backup.base44.app/api/app-logs/6a6748e009b947cb29591871/log-user-in-app/;POST https://ooh-earth-backup.base44.app/api/apps/6a6748e009b947cb29591871/functions/fieldNews;POST https://ooh-earth-backup.base44.app/api/apps/6a6748e009b947cb29591871/functions/fieldStats;POST https://ooh-earth-backup.base44.app/api/apps/6a6748e009b947cb29591871/functions/fieldStats;POST https://ooh-earth-backup.base44.app/api/app-logs/6a6748e009b947cb29591871/log-user-in-app/;POST https://ooh-earth-backup.base44.app/api/apps/6a6748e009b947cb29591871/functions/fieldStats;POST https://ooh-earth-backup.base44.app/api/apps/6a6748e009b947cb29591871/analytics/track/batc;POST https://ooh-earth-backup.base44.app/api/app-logs/6a6748e009b947cb29591871/log-user-in-app/;POST https://ooh-earth-backup.base44.app/api/apps/6a6748e009b947cb29591871/functions/fieldNews"
+  },
+  {
+    "n": "small no uncaught page errors",
+    "pass": true,
+    "d": ""
+  }
 ]
