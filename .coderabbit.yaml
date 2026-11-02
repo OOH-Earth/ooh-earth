@@ -1,0 +1,115 @@
+# yaml-language-server: $schema=https://coderabbit.ai/integrations/schema.v2.json
+#
+# CodeRabbit: an independent, ADVISORY review layer (pilot). Claude implements, CodeRabbit reviews,
+# CI and staging validate, the owners decide. Nothing here approves, merges, deploys or edits code.
+# Policy: AGENTS.md ("keep AI review advisory and record the reviewed SHA"), docs/engineering/REVIEW-CHECKLIST.md.
+#
+# Free public-repository reviews only. Every paid / usage-based / agent feature is explicitly OFF below;
+# do not turn one on without the account owner's decision (see docs/engineering/CODERABBIT.md).
+language: en-US
+early_access: false
+
+reviews:
+  profile: chill
+  high_level_summary: true
+
+  # Review PRs into main and maintenance/**. Our PRs stay draft during qualification, so drafts ARE eligible
+  # but only when they carry the explicit `review-ready` label (avoids reviewing every intermediate push).
+  # An on-demand review of any PR is still available with a `@coderabbitai review` comment.
+  auto_review:
+    enabled: true
+    drafts: true
+    labels:
+      - review-ready
+    base_branches:
+      - '^main$'
+      - '^maintenance/.*$'
+    ignore_title_keywords:
+      - '[WIP]'
+
+  # Exclude only generated or binary artefacts. Application code, workflows and lockfiles stay in scope.
+  path_filters:
+    - '!dist/**'
+    - '!e2e/screenshots/**'
+    - '!docs/design/evidence/**'
+    - '!**/*.png'
+    - '!**/*.jpg'
+    - '!**/*.webm'
+
+  path_instructions:
+    - path: 'src/**/*.{js,jsx,ts,tsx,css}'
+      instructions: |
+        Frontend. Follow docs/design/UI-STANDARDS.md (on branches that have it) and AGENTS.md.
+        Check: every interactive control has an accessible name that matches its action and is unique on the page
+        (getByRole/getByLabel collisions); keyboard AND pointer behaviour (Enter/Space/Escape/arrows, real click targets
+        of at least 24px and 44px where the standard says so); focus is visible, not trapped, and returns to the opener
+        after a dialog, sheet, menu or disclosure closes; layout holds at 320px, 390px, short landscape and 200% zoom
+        with no horizontal scroll or overlap; state (filters, selection, map position, form edits, in-flight requests) is
+        preserved across collapse/expand, route changes and retries; text and meaningful icons keep WCAG contrast over
+        translucent surfaces and imagery in every selectable theme (dark, light, matrix, beta, crafty, guild).
+        Shared components (Nav, Map, MapBottomSheet, TelemetryBar, report steps) are used on many routes: flag changes that
+        alter shared behaviour or sizes. Do not suggest changing global design tokens for a local problem.
+    - path: 'base44/functions/**'
+      instructions: |
+        Backend (Base44/Deno functions). Check: caller identity is verified server-side before any billable or write
+        action (never trust a client-supplied user, role or id); prompts, model names and system instructions are
+        server-owned and not caller-controlled; request bodies, uploaded-file URLs, array sizes and model output are
+        bounded and schema-validated; no unintended retries or loops around billable or non-idempotent calls; errors
+        returned to clients are safe and generic (no stack traces, secrets, internal URLs); no credential or env value is
+        logged, returned or committed (Deno.env.get only, see AGENTS.md rule 2); entity writes respect the RLS and
+        ownership model. Flag any new browser-callable path to a paid or LLM integration.
+    - path: '{scripts/**,.github/workflows/**,docs/ops/**,docs/TESTING_AND_RELEASE.md,RELEASE_PROCESS.md,CI_PIPELINE.md,BRANCHING_STRATEGY.md}'
+      instructions: |
+        Release tooling and process. Follow RELEASE_PROCESS.md and docs/ops/ooh-earth/03-RELEASE-RUNBOOK.md. Check:
+        the Base44 app id / VITE_BASE44_APP_ID targeting is explicit and cannot silently point BACKUP builds at production
+        or the reverse; artifacts are built once and promoted immutably (no rebuild during promotion); every deploy step
+        has a verified rollback that cannot restore a known critical vulnerability; shared BACKUP is reserved and
+        coordinated with peers before use; CI never requires repository secrets or live backend credentials (AGENTS.md
+        rule 4); workflow permissions are least-privilege and third-party actions are pinned.
+    - path: '{e2e/**,**/*.test.{js,jsx,ts,tsx},**/*.spec.{js,jsx,ts,tsx},base44/functions/tests/**}'
+      instructions: |
+        Tests. Assertions must be meaningful (they would fail if the behaviour broke) and mocks must match the real
+        contract (request shape, status codes, timing). Flag: tests weakened, skipped, loosened or given larger timeouts
+        to obtain green CI; single reads of values that animate or load asynchronously (should poll to a settled state);
+        selectors that can collide with other elements; tests that depend on order, real network or real credentials;
+        unexplained test.skip/fixme.
+
+  # Automated fixes, generated code, merge/CI/conflict agents: OFF for the pilot (some are paid or agent-based).
+  finishing_touches:
+    docstrings:
+      enabled: false
+    unit_tests:
+      enabled: false
+    simplify:
+      enabled: false
+    autofix:
+      enabled: false
+    fix_ci:
+      enabled: false
+    resolve_merge_conflict:
+      enabled: false
+
+knowledge_base:
+  code_guidelines:
+    enabled: true
+    filePatterns:
+      - 'AGENTS.md'
+      - 'brain/INVARIANTS.md'
+      - 'docs/engineering/REVIEW-CHECKLIST.md'
+      - 'docs/design/UI-STANDARDS.md'
+      - 'SECURITY.md'
+  learnings:
+    scope: local
+  pull_requests:
+    scope: local
+
+chat:
+  auto_reply: true
+
+issue_enrichment:
+  auto_enrich:
+    enabled: false
+  planning:
+    enabled: false
+  labeling:
+    auto_apply_labels: false
