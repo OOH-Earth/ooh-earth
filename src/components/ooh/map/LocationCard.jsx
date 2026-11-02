@@ -96,8 +96,9 @@ export default function LocationCard({
       </Reticle>
 
       <div className="min-w-0 flex-1">
-        {/* Category label + status dot */}
-        <div className="flex items-center gap-1.5">
+        {/* Category label + status dot. Wraps, so the Claim control stays inside this column instead of
+            overflowing underneath the (non-shrinking) "view listing" link. */}
+        <div className="flex flex-wrap items-center gap-x-1.5 gap-y-1">
           <span className="font-mono text-[9px] uppercase tracking-[0.2em] text-ozone">
             {metaFor(m.type).label}
           </span>
@@ -125,7 +126,7 @@ export default function LocationCard({
                 e.stopPropagation();
                 onClaim?.(m);
               }}
-              className="ml-auto flex items-center gap-1 border border-flare/60 px-1.5 py-0.5 font-mono text-[8px] font-bold uppercase tracking-[0.15em] text-flare transition-colors hover:bg-flare hover:text-void"
+              className="ml-auto flex min-h-6 shrink-0 items-center gap-1 border border-flare/60 px-1.5 py-0.5 font-mono text-[8px] font-bold uppercase tracking-[0.15em] text-flare transition-colors hover:bg-flare hover:text-void"
             >
               <Hand className="h-3 w-3" /> Claim
             </button>
