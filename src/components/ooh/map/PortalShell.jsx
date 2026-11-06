@@ -30,6 +30,9 @@ export default function PortalShell({
   mapActions = null,
   live = undefined,
   unavailableNote = null,
+  // Opt-in: publishes data-map-room so GlobeHud's compact rules apply (telemetry hidden on phones,
+  // moon row hidden on short screens). Only the adbusting portal passes it; other portals unchanged.
+  compactHud = false,
 }) {
   const [selectedId, setSelectedId] = useState(null);
   const [hoverId, setHoverId] = useState(null);
@@ -184,7 +187,10 @@ export default function PortalShell({
         </div>
 
         {/* Map */}
-        <div className={`relative min-h-0 isolate ${mapClass}`}>
+        <div
+          data-map-room={compactHud ? 'full' : undefined}
+          className={`relative min-h-0 isolate ${mapClass}`}
+        >
           <div className="absolute left-3 top-3 z-[1000] flex items-center gap-1.5">
             <div className="flex border border-slate2 bg-void/80 backdrop-blur-md">
               <button
