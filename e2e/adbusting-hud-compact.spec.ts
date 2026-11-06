@@ -18,8 +18,13 @@ for (const c of CASES) {
     const locs: Record<string, unknown> = {};
     for (let i = 0; i < 6; i++)
       locs['l' + i] = {
-        id: 'l' + i, title: `Spot ${i}`, type: 'billboard', address: `${i} Field Way`,
-        lat: 13.75 + i * 0.001, lng: 100.5 + i * 0.001, status: 'pending',
+        id: 'l' + i,
+        title: `Spot ${i}`,
+        type: 'billboard',
+        address: `${i} Field Way`,
+        lat: 13.75 + i * 0.001,
+        lng: 100.5 + i * 0.001,
+        status: 'pending',
         created_date: '2020-01-01T00:00:00.000Z',
       };
     await mockBase44(page, { user: null, locations: locs, fieldChecks: {} });
