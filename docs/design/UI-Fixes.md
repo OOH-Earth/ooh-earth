@@ -430,3 +430,36 @@ Evidence (Playwright Chromium, mocked backend, fresh `vite build` preview, `--wo
   That commit also contained an unscoped version of the change and reused the ID UI-022; superseded by this entry.
 - The mocked 1.7s time-to-results on `/adbusting` is a local, unthrottled, mocked observation; it is not a production
   benchmark and shows no improvement from this change.
+
+### 13a. Staging and browser evidence (BACKUP window E, 2026-11-06)
+
+PR #409 head `32257f3b09db0d703156c2e8e6776c700a5bf423`; full CI green on this exact head (10/10 checks; the
+smoke+accessibility job ran about 30 minutes). CodeRabbit is not installed on this repository (no `.coderabbit.yaml` on
+this line, no CodeRabbit comments on #405): no CodeRabbit review exists and no independent review has taken place yet.
+
+- Deployed frontend-only to BACKUP (app `6a6748e0...`, `--app-id` pinned, built with `npm ci` and `VITE_BASE44_APP_ID`
+  set): 372/373 served files identical, `sitemap.xml` differs only by the platform host rewrite and a trailing newline.
+  The production app id occurs once in the entry, inside public media image URLs (also true of the earlier qualified
+  BACKUP build); the SDK `appId` is BACKUP's alone.
+- Restored to `5c81a80` from a fresh snapshot (identical to the 2026-10-29 reference): manifest 5c81a80, 373/373 identical.
+  Window log: `~/ooh-release-records/2026-11-02/BACKUP-RESERVATION.md` (window E).
+- Real Chrome 156 (dedicated profile, loopback debugging, **device emulation, not a physical device**, **guest session
+  only**: the requested MEMBER pass was not possible because the sign-in did not exist in this profile):
+  390x844 HUD hidden, `data-map-room="full"`, document 844/844; real pointer clicks on LIST and MAP, and four scripted
+  mode switches (`.click()`), kept the document at viewport height with no blank tail and scrollY 0 after a forced scroll;
+  320x640 document 640/640, HUD hidden. Console: no errors or warnings.
+- Mocked spec against the live BACKUP origin: first run 3 passed / 1 failed (`net::ERR_NETWORK_CHANGED` during
+  `page.goto`, a network event, not an assertion), rerun 6 passed (the four HUD cases and `portal-live-indicator`).
+- Not done: MEMBER pass, Claim activation (writes data), physical iOS/Android, real zoom, virtual keyboard,
+  Chrome performance traces (no trace was taken; no latency claim is made), repeated rapid open/close and offline/slow-network
+  injection beyond the mocked specs.
+
+Findings recorded here, **not fixed in this PR**:
+
+| ID | Route/state | Observation | Disposition |
+| --- | --- | --- | --- |
+| UI-031 | `/adbusting`, 844x390 landscape | At widths of 768px or more `GlobeHud` still shows the telemetry block, which overlaps the "DRAG / SCROLL TO ZOOM" hint; the globe is a narrow strip. Screenshot `finding-BACKUP-32257f3-adbusting-844x390-hud-and-zoom.jpg` | Open. Short-landscape chrome budget is UI-012 (owner-held); not duplicated |
+| UI-032 | `/adbusting`, 844x390 landscape | The zoom column sits over the right end of the SPLIT / MAP / LIST control ("LIS" visible) | Open, same screenshot; needs the PortalShell/UI-012 owner |
+| UI-033 | `/adbusting`, 320px, production-line tree | The **List** button is at x 310-352 inside an `overflow-hidden` shell (about 10px visible). On the staging candidate that includes #405 it is at x 261-303, fully visible, with the named search box | Fixed by #405 (verified with its local build, guest, 320x640); not part of #409 |
+| UI-034 | `/adbusting` list, 390 | Thumbnail tiles draw the category label over the "NO PHOTO YET" text | Open, cosmetic, not touched |
+| ref | news ticker | Raw `&#8220;` entities in headlines | Known (#390 fieldNews), unrelated |
