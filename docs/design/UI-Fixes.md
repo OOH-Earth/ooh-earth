@@ -408,3 +408,25 @@ re-runs its checks. `MapAlertTicker.jsx` is deleted in a follow-up.
   above it, no nudge, all controls topmost); earlier on 6f25eab: Expand/Collapse focus handoff by mouse and keyboard
   (Enter), 320px Home (nav pill 8-312, 7 buttons inside the viewport, nudge 447-552 vs nav 564, live feed above the
   nudge: #371 intact).
+
+## 13. Adbusting globe HUD on phones (2026-11-06)
+
+Branch `ui/adbusting-hud-compact`, based on `maintenance/production-2026-10-02` @ `0ed08e7` (the production line:
+`main` has no `GlobeHud` `data-map-room` rules, so this fix cannot be proven there). Status stays "Fixed locally" until
+BACKUP and a human merge; nothing here is production-verified.
+
+| ID | Route/state | Severity | Reproduced root cause | Status |
+| --- | --- | --- | --- | --- |
+| UI-030 | `/adbusting`, phones (390, 320) | Low-medium (readability) | `GlobeHud` hides its telemetry block (title, UTC, signal, moon) on phones only inside `[data-map-room]`; `PortalShell` never publishes it, so the text is painted over the globe imagery. Seen live on production at 390px (guest, real Chrome 156 emulating 390x844). | Fixed locally: `PortalShell` takes an opt-in `compactHud` prop that sets `data-map-room="full"` on its map box; only `AdbustingPortal` passes it |
+
+Scope: `PortalShell` has five consumers (Adbusting, Graffiti, Ecology, Rivers, WarZones). Only Adbusting opts in; the
+spec asserts `/graffiti` still shows the HUD at 390px. Home does not use `PortalShell` and is untouched. `GlobeHud` unchanged.
+Files: `src/components/ooh/map/PortalShell.jsx`, `src/pages/portals/AdbustingPortal.jsx`, `e2e/adbusting-hud-compact.spec.ts`.
+
+Evidence (Playwright Chromium, mocked backend, fresh `vite build` preview, `--workers=1`):
+- Production base `0ed08e7` + the new spec only: 2 failed (phone 390, reflow 320: HUD still visible), 2 passed (desktop, graffiti).
+- With the fix: 4 passed.
+- Earlier staging-candidate run (daa4456 + fix, local commit `c55096d`, branch `ui/premium-quickwins`): 3/3 and 67 related specs passed.
+  That commit also contained an unscoped version of the change and reused the ID UI-022; superseded by this entry.
+- The mocked 1.7s time-to-results on `/adbusting` is a local, unthrottled, mocked observation; it is not a production
+  benchmark and shows no improvement from this change.
