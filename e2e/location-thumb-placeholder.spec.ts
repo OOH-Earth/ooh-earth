@@ -38,15 +38,16 @@ for (const [w, h, zoom] of [
     await page.setViewportSize({ width: w, height: h });
     await page.goto('/adbusting');
     await page
+      .locator('div.flex.border', { has: page.getByRole('button', { name: 'Split', exact: true }) })
       .getByRole('button', { name: 'List', exact: true })
-      .last()
-      .click()
-      .catch(() => {});
-    const tiles = page.getByTestId('location-thumb-placeholder');
+      .click();
+    // Selectors use only elements present on BOTH the old and the fixed build (text + the .grid-bg tile),
+    // so on the old build this fails on geometry (overlap), not on a missing test id.
+    const tiles = page.locator('.grid-bg').filter({ hasText: 'No photo yet' });
     await expect(tiles.first()).toBeVisible({ timeout: 30_000 });
     if (zoom !== 1)
       await page.addStyleTag({
-        content: `[data-testid="location-thumb-placeholder"]{zoom:${zoom}}`,
+        content: `.grid-bg{zoom:${zoom}}`,
       });
     const n = await tiles.count();
     expect(n).toBeGreaterThan(0);
@@ -54,9 +55,14 @@ for (const [w, h, zoom] of [
       const t = tiles.nth(i);
       const [tb, g, np, lb] = await Promise.all([
         box(t),
-        box(t.getByTestId('thumb-glyph')),
-        box(t.getByTestId('thumb-nophoto')),
-        box(t.getByTestId('thumb-label')),
+        box(
+          t
+            .locator('> span')
+            .filter({ has: page.locator('svg') })
+            .first(),
+        ),
+        box(t.getByText('No photo yet', { exact: true })),
+        box(t.locator('> span').last()),
       ]);
       expect(overlap(g, np), 'glyph/no-photo').toBeFalsy();
       expect(overlap(np, lb), 'no-photo/label').toBeFalsy();
@@ -65,8 +71,8 @@ for (const [w, h, zoom] of [
         expect(b!.y).toBeGreaterThanOrEqual(tb!.y - 0.5);
         expect(b!.y + b!.height).toBeLessThanOrEqual(tb!.y + tb!.height + 0.5);
       }
-      await expect(t.getByTestId('thumb-nophoto')).toHaveText('No photo yet');
-      await expect(t.getByTestId('thumb-label')).not.toHaveText('');
+      await expect(t.getByText('No photo yet', { exact: true })).toHaveText('No photo yet');
+      await expect(t.locator('> span').last()).not.toHaveText('');
     }
   });
 }
