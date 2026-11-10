@@ -37,8 +37,8 @@ async function open(page, claimBody: unknown, calls: { n: number }) {
     .click();
   const claim = page.getByRole('button', { name: 'Claim', exact: true }).first();
   await expect(claim).toBeVisible({ timeout: 30_000 });
-  await claim.focus();
-  await page.keyboard.press('Enter');
+  // Pointer open: keeps this spec independent of the nested-keyboard fix (UI-035, separate PR).
+  await claim.click();
   const dlg = page.getByRole('dialog');
   await expect(dlg).toBeVisible();
   return { claim, dlg };
