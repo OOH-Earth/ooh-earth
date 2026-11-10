@@ -305,7 +305,7 @@ Deno.test(
     const deps = {
       ...slow.deps,
       fetchImpl: ((u: any, init?: any) => {
-        if (!held && String(u).includes('polygon-rpc.com')) {
+        if (!held && new URL(String(u)).hostname === 'polygon-rpc.com') {
           held = true;
           return gate.then(() => realFetch(u, init));
         }
