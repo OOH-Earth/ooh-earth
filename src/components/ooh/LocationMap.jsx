@@ -118,7 +118,9 @@ function DisposedMapGuard() {
   const map = useMap();
   useEffect(() => {
     const onUnload = () => {
-      map._animatingZoom = false;
+      // _animatingZoom is Leaflet-internal (absent from its typings), hence the narrow cast.
+      /** @type {import('leaflet').Map & { _animatingZoom?: boolean }} */ (map)._animatingZoom =
+        false;
     };
     map.on('unload', onUnload);
     return () => {
