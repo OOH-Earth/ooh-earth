@@ -417,10 +417,10 @@ BACKUP and a human merge; nothing here is production-verified.
 
 | ID | Route/state | Severity | Reproduced root cause | Status |
 | --- | --- | --- | --- | --- |
-| UI-030 | `/adbusting`, phones (390, 320) | Low-medium (readability) | `GlobeHud` hides its telemetry block (title, UTC, signal, moon) on phones only inside `[data-map-room]`; `PortalShell` never publishes it, so the text is painted over the globe imagery. Seen live on production at 390px (guest, real Chrome 156 emulating 390x844). | Fixed locally: `PortalShell` takes an opt-in `compactHud` prop that sets `data-map-room="full"` on its map box; only `AdbustingPortal` passes it |
+| UI-030 | `/adbusting`, phones (390, 320) | Low-medium (readability) | `GlobeHud` hides its telemetry block (title, UTC, signal, moon) on phones only inside `[data-map-room]`; `PortalShell` never publishes it, so the text is painted over the globe imagery. Seen live on production at 390px (guest, real Chrome 156 emulating 390x844). | Fixed locally: `PortalShell` takes an opt-in `compactHud` prop that sets a dedicated `data-hud-compact` on its map box, and `GlobeHud` hides only its telemetry block below 768px under that attribute (first revision used `data-map-room`; replaced in ebbb3c9, see 13b). Only `AdbustingPortal` passes it |
 
 Scope: `PortalShell` has five consumers (Adbusting, Graffiti, Ecology, Rivers, WarZones). Only Adbusting opts in; the
-spec asserts `/graffiti` still shows the HUD at 390px. Home does not use `PortalShell` and is untouched. `GlobeHud` unchanged.
+spec asserts `/graffiti` still shows the HUD at 390px. Home does not use `PortalShell` and is untouched. `GlobeHud` gains one additive class (`[[data-hud-compact]_&]:max-md:hidden`) on the telemetry block; it matches nothing without `data-hud-compact`.
 Files: `src/components/ooh/map/PortalShell.jsx`, `src/pages/portals/AdbustingPortal.jsx`, `e2e/adbusting-hud-compact.spec.ts`.
 
 Evidence (Playwright Chromium, mocked backend, fresh `vite build` preview, `--workers=1`):
@@ -480,8 +480,8 @@ Findings recorded here, **not fixed in this PR**:
   and 844x390, guarded by a new spec. The earlier "desktop keeps it" text in 13 / 13a referred to the title block only.
 - **Finding 2 (Leaflet control sizing and bottom offsets via `[data-map-room]` in `index.css`):** removed by the same change;
   not separately measured (zoom buttons were 36px in both states in the A/B probe).
-- **Finding 3 (spec weakness):** phone cases assert absence after a fixed wait, so they cannot distinguish "hidden" from
-  "never mounted". Acknowledged, **not changed**; the added 1024x768 case does assert a positive (title and AIR panel visible).
+- **Finding 3 (spec weakness):** phone cases asserted absence after a fixed wait. **Fixed in db3720f:** the cases now wait for
+  the globe to finish initialising and the HUD to be present in the DOM, then assert hidden (CSS, not never-rendered); the added 1024x768 case does assert a positive (title and AIR panel visible).
 - **Not verified by the reviewer or by me:** the reviewer ran no browser; its top-centre telemetry-strip claim (hidden below
   960px map width) was **not reproduced** (my text probe never matched that strip, so it is unconfirmed either way).
 - Evidence for 13a (`BACKUP` at `32257f3`, `data-map-room="full"`) predates this scope change and must not be cited as
