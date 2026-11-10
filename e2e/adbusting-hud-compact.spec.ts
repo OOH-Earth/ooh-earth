@@ -33,10 +33,20 @@ for (const c of CASES) {
     await page.goto('/adbusting');
     await expect(page.getByText(/\d+ results/).first()).toBeVisible({ timeout: 30_000 });
     const hud = page.getByText('OOH · ORBITAL TELEMETRY');
-    if (c.hud) await expect(hud).toBeVisible({ timeout: 30_000 });
-    else {
-      await page.waitForTimeout(1500); // let the globe mount before asserting absence
+    // Ready signal first: the globe finished initialising and the HUD is mounted in the DOM. Then
+    // "hidden" can only mean CSS hid it, not that it never rendered.
+    await expect(page.getByText('INITIALIZING GLOBE')).toHaveCount(0, { timeout: 60_000 });
+    await expect(hud).toHaveCount(1, { timeout: 30_000 });
+    if (c.hud) {
+      await expect(hud).toBeVisible();
+      await expect(page.getByText(/^UTC /).first()).toBeVisible();
+    } else {
       await expect(hud).toBeHidden();
+      await expect(page.getByText(/^UTC /).first()).toBeHidden();
+      await expect(page.getByText(/DATALINK OPEN/)).toBeHidden();
+      // required controls and information stay available on phones
+      await expect(page.locator('button:has(svg.lucide-globe)').first()).toBeVisible();
+      await expect(page.getByText(/\d+ results/).first()).toBeVisible();
     }
   });
 }
