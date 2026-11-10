@@ -408,3 +408,101 @@ re-runs its checks. `MapAlertTicker.jsx` is deleted in a follow-up.
   above it, no nudge, all controls topmost); earlier on 6f25eab: Expand/Collapse focus handoff by mouse and keyboard
   (Enter), 320px Home (nav pill 8-312, 7 buttons inside the viewport, nudge 447-552 vs nav 564, live feed above the
   nudge: #371 intact).
+
+## 13. Adbusting globe HUD on phones (2026-11-06)
+
+Branch `ui/adbusting-hud-compact`, based on `maintenance/production-2026-10-02` @ `0ed08e7` (the production line:
+`main` has no `GlobeHud` `data-map-room` rules, so this fix cannot be proven there). Status stays "Fixed locally" until
+BACKUP and a human merge; nothing here is production-verified.
+
+| ID | Route/state | Severity | Reproduced root cause | Status |
+| --- | --- | --- | --- | --- |
+| UI-030 | `/adbusting`, phones (390, 320) | Low-medium (readability) | `GlobeHud` hides its telemetry block (title, UTC, signal, moon) on phones only inside `[data-map-room]`; `PortalShell` never publishes it, so the text is painted over the globe imagery. Seen live on production at 390px (guest, real Chrome 156 emulating 390x844). | Fixed locally: `PortalShell` takes an opt-in `compactHud` prop that sets a dedicated `data-hud-compact` on its map box, and `GlobeHud` hides only its telemetry block below 768px under that attribute (first revision used `data-map-room`; replaced in ebbb3c9, see 13b). Only `AdbustingPortal` passes it |
+
+Scope: `PortalShell` has five consumers (Adbusting, Graffiti, Ecology, Rivers, WarZones). Only Adbusting opts in; the
+spec asserts `/graffiti` still shows the HUD at 390px. Home does not use `PortalShell` and is untouched. `GlobeHud` gains one additive class (`[[data-hud-compact]_&]:max-md:hidden`) on the telemetry block; it matches nothing without `data-hud-compact`.
+Files: `src/components/ooh/map/PortalShell.jsx`, `src/pages/portals/AdbustingPortal.jsx`, `e2e/adbusting-hud-compact.spec.ts`.
+
+Evidence (Playwright Chromium, mocked backend, fresh `vite build` preview, `--workers=1`):
+- Production base `0ed08e7` + the new spec only: 2 failed (phone 390, reflow 320: HUD still visible), 2 passed (desktop, graffiti).
+- With the fix: 4 passed.
+- Earlier staging-candidate run (daa4456 + fix, local commit `c55096d`, branch `ui/premium-quickwins`): 3/3 and 67 related specs passed.
+  That commit also contained an unscoped version of the change and reused the ID UI-022; superseded by this entry.
+- The mocked 1.7s time-to-results on `/adbusting` is a local, unthrottled, mocked observation; it is not a production
+  benchmark and shows no improvement from this change.
+
+### 13a. Staging and browser evidence (BACKUP window E, 2026-11-06)
+
+PR #409 head `32257f3b09db0d703156c2e8e6776c700a5bf423`; full CI green on this exact head (10/10 checks; the
+smoke+accessibility job ran about 30 minutes). CodeRabbit is not installed on this repository (no `.coderabbit.yaml` on
+this line, no CodeRabbit comments on #405): no CodeRabbit review exists and no independent review has taken place yet.
+
+- Deployed frontend-only to BACKUP (app `6a6748e0...`, `--app-id` pinned, built with `npm ci` and `VITE_BASE44_APP_ID`
+  set): 372/373 served files identical, `sitemap.xml` differs only by the platform host rewrite and a trailing newline.
+  The production app id occurs once in the entry, inside public media image URLs (also true of the earlier qualified
+  BACKUP build); the SDK `appId` is BACKUP's alone.
+- Restored to `5c81a80` from a fresh snapshot (identical to the 2026-10-29 reference): manifest 5c81a80, 373/373 identical.
+  Window log: `~/ooh-release-records/2026-11-02/BACKUP-RESERVATION.md` (window E).
+- Real Chrome 156 (dedicated profile, loopback debugging, **device emulation, not a physical device**, **guest session
+  only**: the requested MEMBER pass was not possible because the sign-in did not exist in this profile):
+  390x844 HUD hidden, `data-map-room="full"`, document 844/844; real pointer clicks on LIST and MAP, and four scripted
+  mode switches (`.click()`), kept the document at viewport height with no blank tail and scrollY 0 after a forced scroll;
+  320x640 document 640/640, HUD hidden. Console: no errors or warnings.
+- Mocked spec against the live BACKUP origin: first run 3 passed / 1 failed (`net::ERR_NETWORK_CHANGED` during
+  `page.goto`, a network event, not an assertion), rerun 6 passed (the four HUD cases and `portal-live-indicator`).
+- Not done: MEMBER pass, Claim activation (writes data), physical iOS/Android, real zoom, virtual keyboard,
+  Chrome performance traces (no trace was taken; no latency claim is made), repeated rapid open/close and offline/slow-network
+  injection beyond the mocked specs.
+
+Findings recorded here, **not fixed in this PR**:
+
+| ID | Route/state | Observation | Disposition |
+| --- | --- | --- | --- |
+| UI-031 | `/adbusting`, 844x390 landscape | At widths of 768px or more `GlobeHud` still shows the telemetry block, which overlaps the "DRAG / SCROLL TO ZOOM" hint; the globe is a narrow strip. Screenshot `finding-BACKUP-32257f3-adbusting-844x390-hud-and-zoom.jpg` | Open. Short-landscape chrome budget is UI-012 (owner-held); not duplicated |
+| UI-032 | `/adbusting`, 844x390 landscape | The zoom column sits over the right end of the SPLIT / MAP / LIST control ("LIS" visible) | Open, same screenshot; needs the PortalShell/UI-012 owner |
+| UI-033 | `/adbusting`, 320px, production-line tree | The **List** button is at x 310-352 inside an `overflow-hidden` shell (about 10px visible). On the staging candidate that includes #405 it is at x 261-303, fully visible, with the named search box | Fixed by #405 (verified with its local build, guest, 320x640); not part of #409 |
+| UI-034 | `/adbusting` list, 390 | Thumbnail tiles draw the category label over the "NO PHOTO YET" text | Fixed separately in draft PR #410 (in-flow stack; bounding-box test at 390/320/320@1.5x). Not part of #409 |
+| UI-035 | `/adbusting` list, keyboard | Space/Enter on the nested **Claim** button never opened the dialog: the card's `role=button` keydown handler `preventDefault`ed the bubbled key and selected the card. Pre-existing, found by the mocked interaction pass | Fixed separately in draft PR #411 (test fails on base, passes fixed). Not part of #409 |
+| UI-036 | `/adbusting`, below 640px | The Flat / Globe view buttons expose no accessible name (label span is `hidden sm:inline`, icon has no label); measured 0 matches for name Flat/Globe at 390 | Open, pre-existing, unclaimed; not touched |
+| UI-037 | `/adbusting`, rapid Flat/Globe toggling | `TypeError: Cannot read properties of undefined (reading '_leaflet_pos')` page error. Reproduced on a build without #409's change, so pre-existing; ordinary LIST/MAP/SPLIT switching is unaffected | Open, pre-existing, not touched |
+| UI-038 | Claim dialog | Member handle and note inputs have no associated label (`labels.length` 0; placeholder is the only name) | Open, pre-existing, not touched |
+| ref | news ticker | Raw `&#8220;` entities in headlines | Known (#390 fieldNews), unrelated |
+
+### 13b. Final-head review and scope correction (2026-11-10)
+
+- **Reviewed SHA:** `5d3879d` by a separate read-only reviewer agent with no authorship role (an AI session, not a human; no
+  GitHub approval was requested or implied). `5d3879d` vs tested `32257f3` differs by docs and evidence images only (verified
+  by diff). CI was 10/10 green on `5d3879d` itself. The reviewer's blocker-class finding changed code, so that CI no longer
+  applies; the final head is `ebbb3c9` and its CI was running at the time of writing.
+- **Finding 1 (major, confirmed by A/B in Chromium by removing the attribute at runtime):** `data-map-room` hid the AIR PM2.5
+  panel at 1024x768 and 844x390 (visible without the attribute). **Disposition: fixed in `ebbb3c9`.** `compactHud` now sets
+  a dedicated `data-hud-compact` that only the max-md telemetry block honours; the AIR panel stays visible at 1024x768
+  and 844x390, guarded by a new spec. The earlier "desktop keeps it" text in 13 / 13a referred to the title block only.
+- **Finding 2 (Leaflet control sizing and bottom offsets via `[data-map-room]` in `index.css`):** removed by the same change;
+  not separately measured (zoom buttons were 36px in both states in the A/B probe).
+- **Finding 3 (spec weakness):** phone cases asserted absence after a fixed wait. **Fixed in db3720f:** the cases now wait for
+  the globe to finish initialising and the HUD to be present in the DOM, then assert hidden (CSS, not never-rendered); the added 1024x768 case does assert a positive (title and AIR panel visible).
+- **Not verified by the reviewer or by me:** the reviewer ran no browser; its top-centre telemetry-strip claim (hidden below
+  960px map width) was **not reproduced** (my text probe never matched that strip, so it is unconfirmed either way).
+- Evidence for 13a (`BACKUP` at `32257f3`, `data-map-room="full"`) predates this scope change and must not be cited as
+  qualification of `ebbb3c9`.
+
+Mocked local interaction pass (Playwright Chromium against a local build; all backend traffic mocked; `claimLead` intercepted,
+never reached a live service; no uploads, AI calls or record creation). DevTools MCP was **not** used: the dedicated Chrome
+(port 9223) was not running, so these are Playwright results, not DevTools results.
+
+- LIST/MAP/SPLIT 36 rapid switches at 390, anonymous and MEMBER-shaped mock user: HUD stayed hidden; the only page error was
+  UI-037 (Flat/Globe toggling), which is pre-existing.
+- Claim: visible in LIST at 390 (box 60x19 CSS px, name "Claim"); mouse flow opens the dialog and sends one mocked
+  `claimLead` body; Escape closes; keyboard Space did not open it on the #409 base (UI-035).
+- Slow responses (4s injected Location delay): results appeared after ~9.5s in the first run, ~2.8s in the repeat (injection
+  timing varied; treat as a functional pass, not a measurement). Offline then online: page stayed rendered and recovered.
+- Anonymous vs MEMBER-conditioned rendering was only exercised through a mock user object, **not a real signed-in session**.
+- **Performance trace: unavailable** (no DevTools session). No latency or performance claim is made.
+- **MEMBER pass on the candidate: not done.** The dedicated test Chrome was not running/reachable and no BACKUP window was
+  acquired. BACKUP was not touched in this continuation (still the pre-window `5c81a80`; nothing to restore or release).
+- UI-031/032 (844x390 chrome collision, UI-012 owner): **no edit made.** No ownership coordination has happened yet; header
+  height and text size were not changed. UI-033 stays with #405 (still open, draft, mergeable on this base, not duplicated).
+
+Remaining for the whole adbusting refinement (not completed by #409): UI-031/032, UI-033 (#405), UI-036/037/038, MEMBER pass
+and a fresh BACKUP qualification of the final head.
