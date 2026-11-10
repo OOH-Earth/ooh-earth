@@ -53,3 +53,17 @@ test('graffiti portal HUD is unchanged on phones (opt-in scope)', async ({ page 
   await page.goto('/graffiti');
   await expect(page.getByText('OOH · ORBITAL TELEMETRY')).toBeVisible({ timeout: 30_000 });
 });
+
+// Regression guard from independent review: compactHud must not hide the AIR panel on tablet widths.
+test('adbusting keeps the AIR panel at 1024x768 (compactHud is phone-only)', async ({ page }) => {
+  test.setTimeout(120_000);
+  await page.route('**/api/**', (r) =>
+    r.fulfill({ status: 404, contentType: 'application/json', body: '{}' }),
+  );
+  await mockBase44(page, { user: null, locations: {}, fieldChecks: {} });
+  await page.addInitScript(() => localStorage.setItem('ooh_nudge_map_report', '1'));
+  await page.setViewportSize({ width: 1024, height: 768 });
+  await page.goto('/adbusting');
+  await expect(page.getByText('OOH · ORBITAL TELEMETRY')).toBeVisible({ timeout: 60_000 });
+  await expect(page.getByText(/AIR COMMONS/).first()).toBeVisible({ timeout: 30_000 });
+});
