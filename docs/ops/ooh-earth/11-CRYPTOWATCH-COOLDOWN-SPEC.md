@@ -22,3 +22,12 @@ Reduces upstream provider requests during an outage (expected: 1 burst per windo
 
 ## Tests (fake clock, stub fetch)
 success; one/several chain failures; no extra upstream during cooldown; recovery after expiry; concurrent sharing; errors not cached past the window; freshness timestamps; no secrets in logs/responses. Plus a discriminating run of the same scenarios against the old source.
+
+## Revision after independent agent review (2026-11-10)
+Review inputs: an independent Claude agent reviewed head 4a0c8a5 against the maintenance source and the pulled production source (agent review; a human review is still required).
+Changes made: per-upstream and per-cache-call timeout (default 8 s) so a hung provider or cache call becomes a recorded failure instead of blocking every coalesced caller; the in-isolate memo only moves forward; cached rows are validated (typed `ok`/`at`, array values for sol/eth, numeric `totalUsd` for polygon) and otherwise treated as a miss; the shared read takes the newest row so duplicate rows resolve deterministically; the shared row uses cache key `cryptoWatch.v2` so older whole-response rows (key `cryptoWatch`) and this per-chain record can never be mistaken for each other across a deploy or a rollback.
+Accepted trade-offs (stated, not hidden):
+1. A failed chain is unavailable for every caller until the window ends (1 to 60 s, window-aligned, not 60 s from the failure). Production today retries on every call and self-heals per request. Serving a last-good value as "stale" was NOT implemented: treasury figures could be shown as current when they are not, which is a product decision for the owner.
+2. Production has no active IntelCache cleanup (the repo declares the automation `is_active: false`; the pulled production function has none). This change writes at most one row per window per cold isolate (about 1,440 per day at continuous traffic, 525k per year, more with several isolates). Rows are read by narrow filters, so this is storage hygiene, but it grows without bound until `cleanupIntelCache` is run or scheduled. Releasing this function REQUIRES an owner decision on cleanup.
+3. No cross-isolate lock: duplicate rows and duplicate upstream bursts per window are possible.
+4. Whether `createClientFromRequest` + `asServiceRole` works for an unauthenticated public call on production is unverified here (other public functions use the pattern); to be confirmed on BACKUP.

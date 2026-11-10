@@ -1,4 +1,9 @@
-import { handleCryptoWatch, resetCryptoWatchState, WINDOW_MS } from '../cryptoWatch/handler.ts';
+import {
+  CACHE_KEY,
+  handleCryptoWatch,
+  resetCryptoWatchState,
+  WINDOW_MS,
+} from '../cryptoWatch/handler.ts';
 
 const assert = (condition: unknown, message: string) => {
   if (!condition) throw new Error(message);
@@ -15,18 +20,24 @@ const assertEquals = (actual: unknown, expected: unknown, message: string) => {
 const T0 = 1_700_000_040_000;
 const req = () => new Request('https://example.test/cryptoWatch', { method: 'POST' });
 
-type Mode = 'ok' | number | 'throw-secret';
-function makeEnv(modes: Partial<Record<'sol' | 'eth' | 'polygon' | 'price', Mode>> = {}) {
+type Mode = 'ok' | number | 'throw-secret' | 'hang';
+function makeEnv(
+  modes: Partial<Record<'sol' | 'eth' | 'polygon' | 'price', Mode>> = {},
+  timeoutMs = 8_000,
+) {
   const state = {
     modes: { sol: 'ok', eth: 'ok', polygon: 'ok', price: 'ok', ...modes } as Record<string, Mode>,
     calls: { sol: 0, eth: 0, polygon: 0, price: 0 } as Record<string, number>,
     rows: [] as any[],
     cacheBroken: false,
+    cacheHang: false,
+    cacheWriteBroken: false,
     now: T0,
   };
   const respond = (key: string, okBody: unknown) => {
     state.calls[key]++;
     const m = state.modes[key];
+    if (m === 'hang') return new Promise<Response>(() => {});
     if (m === 'throw-secret') throw new Error('boom sk_live_SECRET key=abc123');
     if (m !== 'ok') return Promise.resolve(new Response('{}', { status: m as number }));
     return Promise.resolve(Response.json(okBody));
@@ -49,17 +60,26 @@ function makeEnv(modes: Partial<Record<'sol' | 'eth' | 'polygon' | 'price', Mode
     throw new Error('unexpected host ' + host);
   }) as typeof fetch;
   const entity = {
-    filter: async (q: any) => {
+    filter: async (q: any, _sort?: string, limit?: number) => {
+      if (state.cacheHang) return new Promise<any[]>(() => {});
       if (state.cacheBroken) throw new Error('cache down');
-      return state.rows.filter((r) => r.cache_key === q.cache_key && r.period_key === q.period_key);
+      const hits = state.rows
+        .filter((r) => r.cache_key === q.cache_key && r.period_key === q.period_key)
+        .sort((a, b) => (b.created_date ?? 0) - (a.created_date ?? 0));
+      return limit ? hits.slice(0, limit) : hits;
     },
     create: async (row: any) => {
-      if (state.cacheBroken) throw new Error('cache down');
-      state.rows.push(row);
+      if (state.cacheBroken || state.cacheWriteBroken) throw new Error('cache down');
+      state.rows.push({ created_date: state.rows.length + 1, ...row });
     },
   };
   const client = { asServiceRole: { entities: { IntelCache: entity } } };
-  const deps = { createClientFromRequest: () => client, now: () => state.now, fetchImpl };
+  const deps = {
+    createClientFromRequest: () => client,
+    now: () => state.now,
+    fetchImpl,
+    timeoutMs,
+  };
   const call = async () => (await handleCryptoWatch(req(), deps)).json();
   const upstream = () => ({ ...state.calls });
   return { state, call, upstream, deps };
@@ -219,4 +239,156 @@ Deno.test('cryptoWatch: no secrets in logs or responses', async () => {
   } finally {
     console.error = original;
   }
+});
+
+Deno.test('cryptoWatch: policy constants are pinned', () => {
+  assertEquals(WINDOW_MS, 60_000, 'initial 60 s policy');
+  assertEquals(CACHE_KEY, 'cryptoWatch.v2', 'distinct key from the older whole-response rows');
+});
+
+Deno.test(
+  'cryptoWatch: a hung provider becomes a recorded failure and never blocks callers',
+  async () => {
+    resetCryptoWatchState();
+    const env = makeEnv({ polygon: 'hang' }, 25);
+    const results = await Promise.all([env.call(), env.call(), env.call()]);
+    for (const r of results) {
+      assertEquals(
+        r.status,
+        { sol: 'ok', eth: 'ok', polygon: 'error' },
+        'healthy chains still served',
+      );
+    }
+    assertEquals(env.upstream().polygon, 1, 'one hung request shared');
+    await env.call();
+    assertEquals(env.upstream().polygon, 1, 'cooldown applies to the timed-out chain');
+  },
+);
+
+Deno.test('cryptoWatch: a hung cache read or write cannot block the response', async () => {
+  resetCryptoWatchState();
+  const hungRead = makeEnv({}, 25);
+  hungRead.state.cacheHang = true;
+  const r = await hungRead.call();
+  assertEquals(r.status, { sol: 'ok', eth: 'ok', polygon: 'ok' }, 'answers from upstream');
+  resetCryptoWatchState();
+  const writeFails = makeEnv({ polygon: 401 }, 25);
+  writeFails.state.cacheWriteBroken = true;
+  await writeFails.call();
+  await writeFails.call();
+  assertEquals(writeFails.upstream().polygon, 1, 'memo bounds calls when only the write fails');
+});
+
+Deno.test('cryptoWatch: a failure late in a window gets only the remaining cooldown', async () => {
+  resetCryptoWatchState();
+  const env = makeEnv({ polygon: 401 });
+  env.state.now = T0 + WINDOW_MS - 1_000; // second 59
+  await env.call();
+  env.state.now = T0 + WINDOW_MS; // next window: retried
+  await env.call();
+  assertEquals(
+    env.upstream().polygon,
+    2,
+    'cooldown is window-aligned (1 to 60 s), documented in the spec',
+  );
+});
+
+Deno.test(
+  'cryptoWatch: a slow refresh for an older window cannot overwrite a newer memo',
+  async () => {
+    resetCryptoWatchState();
+    const slow = makeEnv({ polygon: 'ok' });
+    let release: () => void = () => {};
+    const gate = new Promise<void>((r) => (release = r));
+    const realFetch = slow.deps.fetchImpl;
+    let held = false;
+    const deps = {
+      ...slow.deps,
+      fetchImpl: ((u: any, init?: any) => {
+        if (!held && String(u).includes('polygon-rpc.com')) {
+          held = true;
+          return gate.then(() => realFetch(u, init));
+        }
+        return realFetch(u, init);
+      }) as typeof fetch,
+    };
+    const call = async () => (await handleCryptoWatch(req(), deps)).json();
+    const first = call(); // window N, blocked on polygon
+    await new Promise((r) => setTimeout(r, 5));
+    slow.state.now = T0 + WINDOW_MS; // window N+1
+    await call();
+    release();
+    await first; // the old refresh finishes last
+    const settledCalls = slow.upstream();
+    slow.state.cacheBroken = true; // only the in-isolate memo can serve now
+    await call();
+    assertEquals(
+      slow.upstream(),
+      settledCalls,
+      'memo still holds window N+1 after the late finish',
+    );
+  },
+);
+
+Deno.test('cryptoWatch: malformed shared records are treated as a miss', async () => {
+  resetCryptoWatchState();
+  const env = makeEnv();
+  const window = String(Math.floor(T0 / WINDOW_MS));
+  env.state.rows.push({
+    cache_key: CACHE_KEY,
+    period_key: window,
+    created_date: 1,
+    payload: JSON.stringify({
+      chains: { sol: { ok: true, at: 1 }, eth: { ok: true, at: 1 }, polygon: { ok: true, at: 1 } },
+    }),
+  });
+  const r = await env.call();
+  assertEquals(
+    Array.isArray(r.sol) && r.polygon !== undefined,
+    true,
+    'never serves a record with missing values',
+  );
+  assertEquals(env.upstream().polygon, 1, 'fell through to upstream');
+});
+
+Deno.test(
+  'cryptoWatch: the newest shared record wins when two isolates both wrote one',
+  async () => {
+    resetCryptoWatchState();
+    const env = makeEnv();
+    const window = String(Math.floor(T0 / WINDOW_MS));
+    const mk = (ok: boolean, created: number) => ({
+      cache_key: CACHE_KEY,
+      period_key: window,
+      created_date: created,
+      payload: JSON.stringify({
+        chains: {
+          sol: { ok: true, value: [], at: created },
+          eth: { ok: true, value: [], at: created },
+          polygon: ok
+            ? { ok: true, value: { totalUsd: created }, at: created }
+            : { ok: false, at: created },
+        },
+      }),
+    });
+    env.state.rows.push(mk(false, 1), mk(true, 2));
+    const r = await env.call();
+    assertEquals(r.status.polygon, 'ok', 'newest record chosen');
+    assertEquals(r.polygon.totalUsd, 2, 'newest value');
+    assertEquals(env.upstream().polygon, 0, 'no upstream call');
+  },
+);
+
+Deno.test('cryptoWatch: older whole-response rows under the previous key are ignored', async () => {
+  resetCryptoWatchState();
+  const env = makeEnv();
+  const window = String(Math.floor(T0 / WINDOW_MS));
+  env.state.rows.push({
+    cache_key: 'cryptoWatch',
+    period_key: window,
+    created_date: 1,
+    payload: JSON.stringify({ sol: [], eth: [], polygon: { totalUsd: 999 }, status: {}, ts: 1 }),
+  });
+  const r = await env.call();
+  assertEquals(r.polygon.totalUsd, 2.5, 'live value, not the legacy warm row');
 });

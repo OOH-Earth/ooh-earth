@@ -11,7 +11,11 @@
 // coalesced within one isolate only; there is no cross-isolate lock, so this is
 // NOT a global upstream quota.
 
-export const CACHE_KEY = 'cryptoWatch';
+// Distinct from the pre-existing 'cryptoWatch' key so rows written by older
+// versions (whole-response payload) and this version (per-chain record) can
+// never be mistaken for each other across a deploy or rollback.
+export const CACHE_KEY = 'cryptoWatch.v2';
+export const UPSTREAM_TIMEOUT_MS = 8_000;
 export const WINDOW_MS = 60_000;
 
 const SOL_TREASURY = 'EusJyb6R7vZEnmCLoJXBXui6inozZguAFjkKJNGEaafx';
@@ -27,6 +31,7 @@ export type Dependencies = {
   createClientFromRequest: (req: Request) => any;
   now?: () => number;
   fetchImpl?: typeof fetch;
+  timeoutMs?: number;
 };
 
 // In-isolate fallback state: used when the shared cache is unavailable, and to
@@ -39,31 +44,63 @@ export function resetCryptoWatchState() {
   inFlight = null;
 }
 
-async function readShared(base44: any, windowKey: string): Promise<WindowRecord | null> {
+function withTimeout<T>(work: Promise<T>, ms: number): Promise<T> {
+  let timer: ReturnType<typeof setTimeout>;
+  const timeout = new Promise<never>((_, reject) => {
+    timer = setTimeout(() => reject(new Error('timeout')), ms);
+  });
+  return Promise.race([work, timeout]).finally(() => clearTimeout(timer));
+}
+
+function validChain(chain: Chain, c: any): boolean {
+  if (!c || typeof c.ok !== 'boolean' || typeof c.at !== 'number') return false;
+  if (!c.ok) return true;
+  if (chain === 'polygon') return !!c.value && typeof c.value.totalUsd === 'number';
+  return Array.isArray(c.value);
+}
+
+async function readShared(
+  base44: any,
+  windowKey: string,
+  timeoutMs: number,
+): Promise<WindowRecord | null> {
   try {
-    const hits = await base44.asServiceRole.entities.IntelCache.filter({
-      cache_key: CACHE_KEY,
-      period_key: windowKey,
-    });
+    // Newest row first so duplicate rows (two cold isolates) resolve deterministically.
+    const hits: any[] = await withTimeout<any[]>(
+      base44.asServiceRole.entities.IntelCache.filter(
+        { cache_key: CACHE_KEY, period_key: windowKey },
+        '-created_date',
+        1,
+      ),
+      timeoutMs,
+    );
     if (hits && hits.length && hits[0].payload) {
       const parsed = JSON.parse(hits[0].payload);
-      if (parsed && parsed.chains && CHAINS.every((c) => parsed.chains[c])) {
+      if (parsed && parsed.chains && CHAINS.every((c) => validChain(c, parsed.chains[c]))) {
         return parsed.chains as WindowRecord;
       }
     }
   } catch {
-    /* cache read failure must never block a response */
+    /* cache read failure or timeout must never block a response */
   }
   return null;
 }
 
-async function writeShared(base44: any, windowKey: string, record: WindowRecord) {
+async function writeShared(
+  base44: any,
+  windowKey: string,
+  record: WindowRecord,
+  timeoutMs: number,
+) {
   try {
-    await base44.asServiceRole.entities.IntelCache.create({
-      cache_key: CACHE_KEY,
-      period_key: windowKey,
-      payload: JSON.stringify({ chains: record }),
-    });
+    await withTimeout(
+      base44.asServiceRole.entities.IntelCache.create({
+        cache_key: CACHE_KEY,
+        period_key: windowKey,
+        payload: JSON.stringify({ chains: record }),
+      }),
+      timeoutMs,
+    );
   } catch {
     /* cache write failure must never block a response */
   }
@@ -167,13 +204,31 @@ async function fetchPolygon(f: typeof fetch) {
   };
 }
 
-async function refresh(base44: any, windowKey: string, now: () => number, f: typeof fetch) {
-  const shared = await readShared(base44, windowKey);
+// Only ever move the memo forward: a slow refresh for an older window must not
+// overwrite a newer window's record.
+function remember(windowKey: string, record: WindowRecord) {
+  if (!memo || Number(memo.windowKey) <= Number(windowKey)) memo = { windowKey, record };
+}
+
+async function refresh(
+  base44: any,
+  windowKey: string,
+  now: () => number,
+  f: typeof fetch,
+  timeoutMs: number,
+) {
+  const shared = await readShared(base44, windowKey, timeoutMs);
   if (shared) {
-    memo = { windowKey, record: shared };
+    remember(windowKey, shared);
     return shared;
   }
-  const settled = await Promise.allSettled([fetchSol(f), fetchEth(f), fetchPolygon(f)]);
+  // Each upstream is bounded: a hung provider becomes a recorded failure instead
+  // of blocking every coalesced caller.
+  const settled = await Promise.allSettled([
+    withTimeout(fetchSol(f), timeoutMs),
+    withTimeout(fetchEth(f), timeoutMs),
+    withTimeout(fetchPolygon(f), timeoutMs),
+  ]);
   const at = now();
   const record = {} as WindowRecord;
   settled.forEach((s, i) => {
@@ -185,19 +240,26 @@ async function refresh(base44: any, windowKey: string, now: () => number, f: typ
       // (e.g. "Polygon RPC 401"); anything else is logged generically so an
       // unexpected exception message can never carry a secret into the logs.
       const msg = s.reason instanceof Error ? s.reason.message : '';
-      const safe = /^(Solana RPC|Blockchair|Polygon RPC) \d{3}$/.test(msg) ? msg : 'request failed';
+      const safe = /^((Solana RPC|Blockchair|Polygon RPC) \d{3}|timeout)$/.test(msg)
+        ? msg
+        : 'request failed';
       console.error(`cryptoWatch ${chain}:`, safe);
       record[chain] = { ok: false, at };
     }
   });
-  memo = { windowKey, record };
-  await writeShared(base44, windowKey, record);
+  remember(windowKey, record);
+  await writeShared(base44, windowKey, record, timeoutMs);
   return record;
 }
 
 export async function handleCryptoWatch(
   req: Request,
-  { createClientFromRequest, now = () => Date.now(), fetchImpl = fetch }: Dependencies,
+  {
+    createClientFromRequest,
+    now = () => Date.now(),
+    fetchImpl = fetch,
+    timeoutMs = UPSTREAM_TIMEOUT_MS,
+  }: Dependencies,
 ) {
   try {
     const current = now();
@@ -206,7 +268,7 @@ export async function handleCryptoWatch(
     if (!record) {
       if (!inFlight || inFlight.windowKey !== windowKey) {
         const base44 = createClientFromRequest(req);
-        const promise = refresh(base44, windowKey, now, fetchImpl).finally(() => {
+        const promise = refresh(base44, windowKey, now, fetchImpl, timeoutMs).finally(() => {
           if (inFlight && inFlight.windowKey === windowKey) inFlight = null;
         });
         inFlight = { windowKey, promise };
