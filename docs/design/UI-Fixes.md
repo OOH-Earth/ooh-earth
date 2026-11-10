@@ -463,9 +463,9 @@ Findings recorded here, **not fixed in this PR**:
 | UI-033 | `/adbusting`, 320px, production-line tree | The **List** button is at x 310-352 inside an `overflow-hidden` shell (about 10px visible). On the staging candidate that includes #405 it is at x 261-303, fully visible, with the named search box | Fixed by #405 (verified with its local build, guest, 320x640); not part of #409 |
 | UI-034 | `/adbusting` list, 390 | Thumbnail tiles draw the category label over the "NO PHOTO YET" text | Fixed separately in draft PR #410 (in-flow stack; bounding-box test at 390/320/320@1.5x). Not part of #409 |
 | UI-035 | `/adbusting` list, keyboard | Space/Enter on the nested **Claim** button never opened the dialog: the card's `role=button` keydown handler `preventDefault`ed the bubbled key and selected the card. Pre-existing, found by the mocked interaction pass | Fixed separately in draft PR #411 (test fails on base, passes fixed). Not part of #409 |
-| UI-036 | `/adbusting`, below 640px | The Flat / Globe view buttons expose no accessible name (label span is `hidden sm:inline`, icon has no label); measured 0 matches for name Flat/Globe at 390 | Open, pre-existing, unclaimed; not touched |
-| UI-037 | `/adbusting`, rapid Flat/Globe toggling | `TypeError: Cannot read properties of undefined (reading '_leaflet_pos')` page error. Reproduced on a build without #409's change, so pre-existing; ordinary LIST/MAP/SPLIT switching is unaffected | Open, pre-existing, not touched |
-| UI-038 | Claim dialog | Member handle and note inputs have no associated label (`labels.length` 0; placeholder is the only name) | Open, pre-existing, not touched |
+| UI-036 | `/adbusting`, below 640px | The Flat / Globe view buttons expose no accessible name (label span is `hidden sm:inline`, icon has no label); measured 0 matches for name Flat/Globe at 390 | Fixed separately in draft PR #413 (aria-label + aria-pressed + named groups; pointer and keyboard tested at 1280/390/320) |
+| UI-037 | `/adbusting`, rapid Flat/Globe toggling | `TypeError: Cannot read properties of undefined (reading '_leaflet_pos')` page error. Reproduced on a build without #409's change, so pre-existing; ordinary LIST/MAP/SPLIT switching is unaffected | Fixed separately in draft PR #415. Root cause: Leaflet 1.9.4 `_animateZoom` schedules `setTimeout(_onZoomTransitionEnd, 250)`; `map.remove()` neither cancels it nor clears `_animatingZoom`, so unmounting the flat map mid-zoom throws from `_getMapPanePos`. Pre-existing, but a real crash |
+| UI-038 | Claim dialog | Member handle and note inputs have no associated label (`labels.length` 0; placeholder is the only name) | Fixed separately in draft PR #414 (label association, aria-required/invalid/describedby, focus return to opener) |
 | ref | news ticker | Raw `&#8220;` entities in headlines | Known (#390 fieldNews), unrelated |
 
 ### 13b. Final-head review and scope correction (2026-11-10)
@@ -506,3 +506,38 @@ never reached a live service; no uploads, AI calls or record creation). DevTools
 
 Remaining for the whole adbusting refinement (not completed by #409): UI-031/032, UI-033 (#405), UI-036/037/038, MEMBER pass
 and a fresh BACKUP qualification of the final head.
+
+### 13c. Combined candidate and remaining work (2026-11-10, second pass)
+
+**Constituent PRs (all draft, base `0ed08e7` = `maintenance/production-2026-10-02` at build):** #405 `d9c073c` (UI-033; base merged in, see
+below), #409 UI-030, #410 UI-034 `063178c`, #411 UI-035 `669c9de`, #413 UI-036 `9f56f91`, #414 UI-038 `2427d10`, #415 UI-037 (head in the PR).
+**Combined candidate:** draft `[DO NOT MERGE]` PR #416, branch `candidate/ui-lane-combined`, merged tree `32b2110` before docs/typecheck
+follow-ups; built from the maintenance tip, all constituent heads merged without conflicts. Individual green PRs do not certify the
+combination; #416's checks do. Suggested landing order: #405, #411, #413, #414, #415, #410, #409 (any order merges cleanly; PortalShell hunks do not overlap).
+
+**First-run failures, recorded honestly**
+- #415 and #416 failed `Lint & Typecheck` on the first run: TS2339 (`_animatingZoom` is not in Leaflet's typings). My local pre-push check ran eslint
+  and prettier but not `tsc`. Fixed with a narrow JSDoc cast; `tsc -p jsconfig.json` is clean on the combined tree.
+- Local 3-worker regression (159 passed, 1 skipped) had 6 failures: 4 were defects in my own new specs (a leftover variable, over-narrow
+  selectors; fixed and re-run green); `globe-markers` "selected Home Globe popup" and `location-detail` staleTime failed under load and passed
+  in isolation, so they are load-sensitive, not caused by these changes (not proven on base).
+- #405: its failing CI (run 41510994387, 2026-11-02) was two gates, both stale-base: `Dependency audit` (the GHSA fixed on the base by #402) and one
+  `report-release-r1m2` keyboard spec that waits on `networkidle` (fixed on the base by #404). It was based on `1dbddda`. Merging the current base
+  into it (`d9c073c`) is the whole correction; no #405 code changed.
+
+**UI-031/032 measurements (844x390, guest, combined build, mocked data)** — layout control (SPLIT/MAP/LIST) x689-812, y138-166; zoom buttons
+36x36 at x796-832, y104-140 and y146-182, so the second zoom button covers the right ~16px of the layout control (UI-032 reproduced); shared
+header 98px of 390px; "DRAG / SCROLL TO ZOOM" hint at y245-259 and the HUD title at y278-294 (separated by 19px here, so UI-031's overlap is
+state-dependent and was **not** reproduced in this mocked run). Screenshot: `docs/design/evidence/` copy pending; local file kept. No shared-chrome edit
+was made. Proposed scoped fix for the owner (not applied): in `@media (max-height: 500px)` anchor the zoom column below the layout control (or
+move it to the bottom-right with the attribution) using the existing `--map-overlay-right-bottom` variable, without changing header height or text size.
+Ownership: the ledger names no UI-012 owner ("needs owner sign-off"); the handoff message is drafted and waiting for a recipient.
+
+**Review of final #409 source (`db3720f`)** by a second independent read-only reviewer agent (AI session; no authorship; no browser): opt-in
+scoping, `data-hud-compact` CSS compiled and scoped to the telemetry block, no other reader of `data-map-room` on `/adbusting`: confirmed.
+Findings: stale ledger section 13 and PR body (both corrected, `966519b`), weak/vacuous-pass risks in two phone assertions (DATALINK OPEN is in the
+telemetry block, so that one is meaningful; WebGL-dependent ready signal is a possible CI flake, watch CI), nothing tested at 844x390 for the HUD.
+
+**Not done in this pass:** MEMBER pass and BACKUP qualification (the dedicated Chrome on port 9223 was not running; no sign-in available, no BACKUP window
+acquired, BACKUP unchanged at `5c81a80`); performance trace (needs DevTools); real-device checks; UI-031/032 edit (ownership); the nested-interactive
+card structure (role=button containing a button and a link) is left as is because existing e2e specs locate cards via `[role=button]`; it is a follow-up.
