@@ -32,21 +32,21 @@ function makeEnv(modes: Partial<Record<'sol' | 'eth' | 'polygon' | 'price', Mode
     return Promise.resolve(Response.json(okBody));
   };
   const fetchImpl = ((url: string | URL | Request) => {
-    const u = String(url);
-    if (u.includes('solana.com'))
+    const host = new URL(String(url)).hostname;
+    if (host === 'api.mainnet-beta.solana.com')
       return respond('sol', { result: [{ signature: 'sig1', blockTime: 1_700_000_000 }] });
-    if (u.includes('blockchair'))
+    if (host === 'api.blockchair.com')
       return respond('eth', {
         data: { ['0xe286eb19b5a64dc41ca76f58d8fd6d7f114c1c12']: { transactions: ['0xabc'] } },
       });
-    if (u.includes('polygon-rpc'))
+    if (host === 'polygon-rpc.com')
       return respond('polygon', [
         { id: 1, result: '0xde0b6b3a7640000' }, // 1 POL
         { id: 2, result: '0x1e8480' }, // 2 USDC
         { id: 3, result: '0x0' },
       ]);
-    if (u.includes('coingecko')) return respond('price', { 'matic-network': { usd: 0.5 } });
-    throw new Error('unexpected url ' + u);
+    if (host === 'api.coingecko.com') return respond('price', { 'matic-network': { usd: 0.5 } });
+    throw new Error('unexpected host ' + host);
   }) as typeof fetch;
   const entity = {
     filter: async (q: any) => {
