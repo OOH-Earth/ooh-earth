@@ -100,7 +100,9 @@ export default function LocationCard({
 
       <div className="min-w-0 flex-1">
         {/* Category label + status dot */}
-        <div className="flex items-center gap-1.5">
+        {/* flex-wrap: with a long label plus the status/busted tags and Claim, the row used to overflow the
+            text column on 320px screens and push Claim into the PAGE link; it now wraps instead. */}
+        <div className="flex flex-wrap items-center gap-x-1.5 gap-y-1">
           <span className="font-mono text-[9px] uppercase tracking-[0.2em] text-ozone">
             {metaFor(m.type).label}
           </span>
