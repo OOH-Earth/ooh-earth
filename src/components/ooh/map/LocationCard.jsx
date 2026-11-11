@@ -119,13 +119,15 @@ export default function LocationCard({
               // busted
             </span>
           )}
+          {/* Visible box is >= 24px tall (WCAG 2.5.8); the ::before pseudo-element extends the hit area to
+              ~44px without changing layout (no neighbour is within 8px horizontally / 10px vertically). */}
           {isLead && !claim && (
             <button
               onClick={(e) => {
                 e.stopPropagation();
                 onClaim?.(m);
               }}
-              className="ml-auto flex items-center gap-1 border border-flare/60 px-1.5 py-0.5 font-mono text-[8px] font-bold uppercase tracking-[0.15em] text-flare transition-colors hover:bg-flare hover:text-void"
+              className="relative ml-auto flex min-h-6 items-center gap-1 border border-flare/60 px-1.5 py-0.5 font-mono text-[8px] font-bold uppercase tracking-[0.15em] text-flare transition-colors before:absolute before:-inset-x-2 before:-inset-y-2.5 hover:bg-flare hover:text-void"
             >
               <Hand className="h-3 w-3" /> Claim
             </button>
