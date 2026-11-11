@@ -1,13 +1,16 @@
 import { test, expect } from '@playwright/test';
 import { mockBase44 } from './fixtures/mockBase44';
 
-// The list-card Claim button was 58x18 CSS px. WCAG 2.5.8 (AA) needs >= 24px or a spacing exception; the
-// product target is a comfortable ~44px hit area. Mock backend only; the claim dialog is never submitted.
+// The list-card Claim button was 58x18 CSS px. WCAG 2.5.8 (AA) needs >= 24px or a spacing exception.
+// Fix: 24px visible box + a ::before hit area that reaches up into the card padding, 2px down, 4px left, 8px
+// right. It must never cover the title row below, the PAGE link, or the freshness tags to the left.
+// Mock backend only; the claim dialog is opened and dismissed, never submitted.
+const LONG = 'Spot with a very long descriptive title that runs underneath the claim button row';
 const locs: Record<string, unknown> = {};
 for (let i = 0; i < 3; i++)
   locs['l' + i] = {
     id: 'l' + i,
-    title: `Spot ${i}`,
+    title: i === 0 ? LONG : `Spot ${i}`,
     type: 'billboard',
     address: 'x',
     lat: 13.75 + i * 0.001,
@@ -20,7 +23,7 @@ for (const [w, h] of [
   [390, 844],
   [320, 640],
 ] as const) {
-  test(`Claim has a >=24px visible box and a ~44px hit area that does not steal neighbours @${w}`, async ({
+  test(`Claim: >=24px box, bigger hit area, no stolen taps from title/link/neighbours @${w}`, async ({
     page,
   }) => {
     test.setTimeout(90_000);
@@ -41,46 +44,44 @@ for (const [w, h] of [
       .click();
     const claim = page.getByRole('button', { name: 'Claim', exact: true }).first();
     await expect(claim).toBeVisible({ timeout: 30_000 });
-    const r = await claim.evaluate((el) => {
+    const r = await claim.evaluate((el, longTitle) => {
       const b = el.getBoundingClientRect();
-      const cx = b.x + b.width / 2,
-        cy = b.y + b.height / 2;
-      const owner = (x: number, y: number) => {
+      const own = (x: number, y: number) => {
         const t = document.elementFromPoint(x, y);
         return t === el || el.contains(t);
       };
-      // 44x44 area centred on the button, inset 2px so we probe inside it
-      const pts = [
-        [-20, -20],
-        [20, -20],
-        [-20, 20],
-        [20, 20],
-        [0, -20],
-        [0, 20],
-      ].map(([dx, dy]) => owner(cx + dx, cy + dy));
-      // the card's PAGE link and the card body must keep their own pointer input
       const card = el.closest('[role="button"]')!;
       const link = card.querySelector('a')!;
       const lb = link.getBoundingClientRect();
       const lt = document.elementFromPoint(lb.x + lb.width / 2, lb.y + lb.height / 2);
       const title = [...card.querySelectorAll('*')].find(
-        (e) => e.children.length === 0 && /^Spot \d$/.test(e.textContent || ''),
+        (e) => e.children.length === 0 && (e.textContent || '').startsWith(longTitle.slice(0, 20)),
       )!;
       const tb = title.getBoundingClientRect();
-      const tt = document.elementFromPoint(tb.x + 4, tb.y + tb.height / 2);
+      const cx = b.x + b.width / 2;
       return {
         h: b.height,
-        w: b.width,
-        pts,
+        // inside the extended hit area: 10px above, 0.5px below, 3px left, 2px right
+        grown: [
+          own(cx, b.y - 10),
+          own(cx, b.y + b.height + 0.5),
+          own(b.x - 3, b.y + b.height / 2),
+          own(b.x + b.width + 2, b.y + b.height / 2),
+        ],
         linkOwned: link === lt || link.contains(lt),
-        titleStolen: owner(tb.x + 4, tb.y + tb.height / 2),
+        // title text under the middle of the button must still belong to the card, not to Claim
+        titleUnderClaim: tb.x < b.x + b.width / 2 && tb.x + tb.width > b.x + b.width / 2,
+        titleStolen: own(b.x + b.width / 2, tb.y + 3),
+        // the control must not grow into the PAGE column
+        pageGap: lb.x - (b.x + b.width),
       };
-    });
-    expect(r.h).toBeGreaterThanOrEqual(23.5);
-    expect(r.pts, 'hit-area probes').toEqual([true, true, true, true, true, true]);
-    expect(r.linkOwned).toBe(true);
-    expect(r.titleStolen).toBe(false);
-    // still opens the dialog (pointer) and backs out
+    }, LONG);
+    expect.soft(r.h).toBeGreaterThanOrEqual(23.5);
+    expect.soft(r.grown, 'extended hit area').toEqual([true, true, true, true]);
+    expect.soft(r.linkOwned).toBe(true);
+    expect.soft(r.titleUnderClaim, 'test precondition: the long title runs under Claim').toBe(true);
+    expect.soft(r.titleStolen).toBe(false);
+    expect.soft(r.pageGap).toBeGreaterThan(3);
     await claim.click();
     await expect(page.getByRole('dialog')).toBeVisible();
     await page.keyboard.press('Escape');
