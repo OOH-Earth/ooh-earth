@@ -33,7 +33,12 @@ test('rapid Flat/Globe switching: no page error and the flat map stays usable', 
   // Icon-based locators so this spec stands alone on branches without the UI-036 names.
   const globeBtn = page.locator('button:has(svg.lucide-globe)').first();
   const flatBtn = page.locator('button:has(svg.lucide-map)').first();
+  await flatBtn.click(); // the portal opens on the globe
+  await expect(page.locator('.leaflet-control-zoom-in')).toBeVisible();
+  // Deterministic trigger: start a zoom animation and unmount the flat map inside Leaflet's 250ms
+  // transition window, every round trip. Bounded: 12 round trips.
   for (let i = 0; i < 12; i++) {
+    await page.locator('.leaflet-control-zoom-in').click();
     await globeBtn.click();
     await flatBtn.click();
   }
@@ -42,11 +47,25 @@ test('rapid Flat/Globe switching: no page error and the flat map stays usable', 
   const box = (await map.boundingBox())!;
   expect(box.width).toBeGreaterThan(200);
   expect(box.height).toBeGreaterThan(200);
-  // usable: zoom in via the control and the zoom level class/tiles update without an error
-  const before = await page.locator('.leaflet-tile-loaded, .leaflet-tile').count();
+  await expect(page.locator('.leaflet-map-pane.leaflet-zoom-anim')).toHaveCount(0);
+  // Usable: zoom still animates and actually changes the zoom level (two markers move apart).
+  const spread = async () => {
+    const m = page.locator('.leaflet-marker-icon');
+    await expect(m.first()).toBeVisible();
+    const pts = await m.evaluateAll((els) =>
+      els.map((e) => {
+        const r = e.getBoundingClientRect();
+        return [r.x + r.width / 2, r.y + r.height / 2];
+      }),
+    );
+    let max = 0;
+    for (const p of pts)
+      for (const q of pts) max = Math.max(max, Math.hypot(p[0] - q[0], p[1] - q[1]));
+    return max;
+  };
+  const before = await spread();
   await page.locator('.leaflet-control-zoom-in').click();
   await expect(page.locator('.leaflet-map-pane.leaflet-zoom-anim')).toHaveCount(0);
-  await expect(page.locator('.leaflet-marker-icon').first()).toBeVisible();
-  expect(before).toBeGreaterThan(0);
+  await expect.poll(spread).toBeGreaterThan(before * 1.5);
   expect(errors, errors.join(' | ')).toEqual([]);
 });
