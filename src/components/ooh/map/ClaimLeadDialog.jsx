@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useId, useLayoutEffect, useRef, useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import {
   Dialog,
@@ -19,6 +19,16 @@ export default function ClaimLeadDialog({ open, onClose, location, onClaimed = n
   const [note, setNote] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
+  const uid = useId();
+  // The dialog has no Radix Trigger (the Claim button lives in a card), so remember what had focus when
+  // it opened and give focus back there on close. Layout effect: runs before Radix moves focus inside.
+  const openerRef = useRef(null);
+  useLayoutEffect(() => {
+    if (open) openerRef.current = document.activeElement;
+  }, [open]);
+  const handleId = `${uid}-handle`;
+  const noteId = `${uid}-note`;
+  const errorId = `${uid}-error`;
 
   const reset = () => {
     setHandle('');
@@ -60,7 +70,16 @@ export default function ClaimLeadDialog({ open, onClose, location, onClaimed = n
 
   return (
     <Dialog open={open} onOpenChange={(o) => !o && close()}>
-      <DialogContent className="border-slate2 bg-void">
+      <DialogContent
+        className="border-slate2 bg-void"
+        onCloseAutoFocus={(e) => {
+          const el = openerRef.current;
+          if (el && el.isConnected && typeof el.focus === 'function') {
+            e.preventDefault();
+            el.focus();
+          }
+        }}
+      >
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 font-display text-lg text-silver">
             <Hand className="h-4 w-4 text-flare" /> Claim a lead
@@ -71,10 +90,18 @@ export default function ClaimLeadDialog({ open, onClose, location, onClaimed = n
         </DialogHeader>
         <div className="space-y-4 py-2">
           <div className="space-y-1.5">
-            <Label className="font-mono text-[10px] uppercase tracking-[0.2em] text-darkgray">
+            <Label
+              htmlFor={handleId}
+              className="font-mono text-[10px] uppercase tracking-[0.2em] text-darkgray"
+            >
               Member handle
             </Label>
             <Input
+              id={handleId}
+              required
+              aria-required="true"
+              aria-invalid={error ? 'true' : undefined}
+              aria-describedby={error ? errorId : undefined}
               value={handle}
               onChange={(e) => setHandle(e.target.value)}
               placeholder="@ghostsignal"
@@ -82,10 +109,14 @@ export default function ClaimLeadDialog({ open, onClose, location, onClaimed = n
             />
           </div>
           <div className="space-y-1.5">
-            <Label className="font-mono text-[10px] uppercase tracking-[0.2em] text-darkgray">
+            <Label
+              htmlFor={noteId}
+              className="font-mono text-[10px] uppercase tracking-[0.2em] text-darkgray"
+            >
               Recon note (optional)
             </Label>
             <Textarea
+              id={noteId}
               value={note}
               onChange={(e) => setNote(e.target.value)}
               placeholder="When you plan to document this site…"
@@ -98,6 +129,7 @@ export default function ClaimLeadDialog({ open, onClose, location, onClaimed = n
           </p>
           {error && (
             <p
+              id={errorId}
               className="font-mono text-[10px] uppercase tracking-[0.15em] text-flare"
               role="alert"
             >
