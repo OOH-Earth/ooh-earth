@@ -124,6 +124,7 @@ export default function AdbustingPortal() {
     <>
       <PortalShell
         title="Adbusting"
+        compactHud
         accent="#EDFF00"
         activeLayers={['ads']}
         markers={filtered}

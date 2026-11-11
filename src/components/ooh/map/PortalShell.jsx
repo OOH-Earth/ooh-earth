@@ -30,6 +30,10 @@ export default function PortalShell({
   mapActions = null,
   live = undefined,
   unavailableNote = null,
+  // Opt-in: publishes data-hud-compact so GlobeHud hides only the decorative telemetry block below
+  // 768px. Deliberately NOT data-map-room: that attribute also hides the AIR panel and rewrites map
+  // controls, which changed tablet/landscape layouts (measured at 1024x768 and 844x390).
+  compactHud = false,
 }) {
   const [selectedId, setSelectedId] = useState(null);
   const [hoverId, setHoverId] = useState(null);
@@ -189,7 +193,10 @@ export default function PortalShell({
         </div>
 
         {/* Map */}
-        <div className={`relative min-h-0 isolate ${mapClass}`}>
+        <div
+          data-hud-compact={compactHud ? '' : undefined}
+          className={`relative min-h-0 isolate ${mapClass}`}
+        >
           <div className="absolute left-3 top-3 z-[1000] flex items-center gap-1.5">
             <div className="flex border border-slate2 bg-void/80 backdrop-blur-md">
               <button
