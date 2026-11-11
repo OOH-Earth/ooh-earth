@@ -16,6 +16,8 @@ for (let i = 0; i < 3; i++)
     lat: 13.75 + i * 0.001,
     lng: 100.5 + i * 0.001,
     status: 'pending',
+    // the busted tag makes the meta row (label + dot + tag + Claim) wider than the 320px text column
+    adbust_type: 'sticker',
     created_date: '2020-01-01T00:00:00.000Z',
   };
 
@@ -74,6 +76,8 @@ for (const [w, h] of [
         titleStolen: own(b.x + b.width / 2, tb.y + 3),
         // the control must not grow into the PAGE column
         pageGap: lb.x - (b.x + b.width),
+        // visible boxes must not intersect the PAGE link at all (not just horizontally)
+        intersectsLink: b.x < lb.right && lb.x < b.right && b.y < lb.bottom && lb.y < b.bottom,
       };
     }, LONG);
     expect.soft(r.h).toBeGreaterThanOrEqual(23.5);
@@ -82,6 +86,7 @@ for (const [w, h] of [
     expect.soft(r.titleUnderClaim, 'test precondition: the long title runs under Claim').toBe(true);
     expect.soft(r.titleStolen).toBe(false);
     expect.soft(r.pageGap).toBeGreaterThan(3);
+    expect.soft(r.intersectsLink, 'Claim box must not touch the PAGE link').toBe(false);
     await claim.click();
     await expect(page.getByRole('dialog')).toBeVisible();
     await page.keyboard.press('Escape');
