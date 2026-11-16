@@ -200,6 +200,20 @@ for (const [label, user] of users) {
     await page.keyboard.press('Escape');
     await expect(panel).toBeHidden();
     await expect(air).toBeFocused();
+    // Touch has no Escape: the close control must be a real target (it was a 9.4x16 glyph), and tapping it
+    // closes the panel and hands focus back to the disclosure button.
+    await air.press('Enter');
+    await expect(panel).toBeVisible();
+    const close = panel.getByRole('button', { name: 'Hide Air Commons' });
+    const cr = rect(await close.boundingBox());
+    expect(cr.r - cr.l, 'close target width').toBeGreaterThanOrEqual(31.5);
+    expect(cr.b - cr.t, 'close target height').toBeGreaterThanOrEqual(31.5);
+    expect(inside(cr, rect(await panel.boundingBox())), 'close target stays inside the panel').toBe(
+      true,
+    );
+    await close.click();
+    await expect(panel).toBeHidden();
+    await expect(air).toBeFocused();
   });
 }
 

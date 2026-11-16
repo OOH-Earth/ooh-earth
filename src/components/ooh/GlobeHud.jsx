@@ -266,7 +266,7 @@ export default function GlobeHud({ map }) {
                 <button
                   onClick={hideAir}
                   aria-label="Hide Air Commons"
-                  className="text-dim transition-colors hover:text-flare"
+                  className="text-dim transition-colors hover:text-flare [[data-hud-compact]_&]:[@container(max-height:20rem)]:-my-1.5 [[data-hud-compact]_&]:[@container(max-height:20rem)]:-mr-2 [[data-hud-compact]_&]:[@container(max-height:20rem)]:flex [[data-hud-compact]_&]:[@container(max-height:20rem)]:min-h-8 [[data-hud-compact]_&]:[@container(max-height:20rem)]:min-w-8 [[data-hud-compact]_&]:[@container(max-height:20rem)]:items-center [[data-hud-compact]_&]:[@container(max-height:20rem)]:justify-center"
                 >
                   ✕
                 </button>
