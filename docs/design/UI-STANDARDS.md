@@ -17,6 +17,26 @@ Every rule below is tagged:
 - **[Standard]** comes from a published specification. Not negotiable without a recorded exception.
 - **[Preference]** is a project decision. Can be changed by the design owner; say why in the PR.
 
+## 0. Phone first (standing priority)
+
+**[Preference]** Applies to every UI change. Design and test for phones first:
+
+1. Order of work and of review: **320px portrait, then 390px portrait, then 844x390 landscape, then desktop.** Desktop is a
+   regression check, not the design starting point; keep its specs in place and run them.
+2. Primary actions are readable (text at least the 10px "Label · Mono" step; larger for primary actions) and easy to tap
+   (aim 44px, 40px primary and 32px secondary minimums; WCAG 2.5.8's 24px is only the floor). The **visible box is the
+   target**: never enlarge an invisible hit area into neighbouring actions.
+3. Controls stay clear of overlays and the bottom navigation, including shared chrome that paints over them. A control
+   must be both hit-testable **and visibly painted**; natural document/list scrolling and focus order are preserved.
+4. When space is tight, **reflow** controls (wrap, stack, own row) or put secondary information behind a **labelled
+   disclosure** (`aria-expanded`, focus moves in, Escape closes and returns focus). Do not shrink text or touch targets to fit.
+5. Verify real interactions (pointer, keyboard, focus return, scroll), not only screenshots.
+6. Emulation (DevTools device mode, Playwright viewports) is recorded as **emulation**. A **physical-phone check is a separate
+   record** (device, OS, browser, who, when). Emulation never counts as the physical check and an absent physical check is
+   reported as a gap, not waived.
+
+First applications: the Adbusting list-card Claim button (UI-040) and the AIR/telemetry overlap in 844x390 SPLIT (UI-031/041).
+
 ## 1. Authoritative sources
 
 | Source | Status checked | Used for |
@@ -140,3 +160,8 @@ A layout PR is not done until it shows, for the changed surface:
 6. Zoom: CSS-px viewport with `deviceScaleFactor` emulates Ctrl-+ layout (200% of 1280x720 is 640x360 at 2x). This is **supplementary**: real browser zoom could not be driven headlessly (profile zoom prefs are ignored; DevTools key events do not trigger browser accelerators), so it must be recorded as unavailable coverage and spot-checked manually in a real browser.
 7. A route transition away and back.
 8. Review of every consumer of a shared component you changed (`grep` the import).
+9. Phone-first order (section 0): 320 and 390 portrait, then 844x390, then desktop; desktop regression specs still pass.
+10. Paint check for any new or moved control: shared chrome with `pointer-events:none` can paint over a control that plain
+    hit-testing reports as reachable. Force `pointer-events:auto` and assert no opaque or textual element (ignoring
+    full-viewport decorative layers) sits above it; also look at the whole-screen screenshot (see the skill's probe F).
+11. Physical-phone result recorded separately from emulation, or the gap stated.
