@@ -67,7 +67,9 @@ for (const [label, user] of users) {
     await open(page, user);
     const box = rect(await page.locator('[data-hud-compact]').boundingBox());
     const zooms = await zoomRects(page);
-    const hint = rect(await page.getByText(/drag · scroll to zoom/i).boundingBox());
+    // the secondary drag/zoom hint was covered by the Flat/Globe/Satellite group in this state; it is dropped
+    const hintLoc = page.getByText(/drag · scroll to zoom/i);
+    const hint = (await hintLoc.isVisible()) ? rect(await hintLoc.boundingBox()) : null;
     // every HUD element that renders text: AIR panel/button, telemetry block, ...
     const hud = await page.evaluate(() => {
       const root = document.querySelector('[data-hud-compact] [class*="z-[900]"]');
@@ -95,12 +97,14 @@ for (const [label, user] of users) {
           };
         });
     });
+    expect(hint, 'drag/zoom hint is not left half-covered in short landscape').toBeNull();
     for (const h of hud) {
       const r = { l: h.l, t: h.tp, r: h.r, b: h.b };
       expect(inside(r, box), `HUD text "${h.t}" stays inside the map box`).toBe(true);
       for (const z of zooms)
         expect(hit(r, z), `HUD text "${h.t}" must not sit under a zoom button`).toBe(false);
-      expect(hit(r, hint), `HUD text "${h.t}" must not overlap the drag/zoom hint`).toBe(false);
+      if (hint)
+        expect(hit(r, hint), `HUD text "${h.t}" must not overlap the drag/zoom hint`).toBe(false);
     }
   });
 
@@ -118,6 +122,42 @@ for (const [label, user] of users) {
     expect(inside(ar, box)).toBe(true);
     expect(ar.b - ar.t).toBeGreaterThanOrEqual(31.5);
     for (const z of zooms) expect(hit(ar, z)).toBe(false);
+    // Painted, not just hit-testable: shared chrome with pointer-events:none (the z-950 FIELD PULSE ticker) painted
+    // OVER this button at 844x390 while elementFromPoint still reported it topmost. Forcing pointer-events:auto makes
+    // covering layers visible to elementsFromPoint; anything above the button that is not a full-viewport decorative
+    // layer and has an (almost) opaque background or its own text counts as covering it.
+    const covering = await air.evaluate((el) => {
+      const st = document.createElement('style');
+      st.textContent = '* { pointer-events: auto !important; }';
+      document.head.appendChild(st);
+      const b = el.getBoundingClientRect();
+      const out: string[] = [];
+      for (const [fx, fy] of [
+        [0.5, 0.5],
+        [0.15, 0.2],
+        [0.85, 0.2],
+        [0.15, 0.8],
+        [0.85, 0.8],
+      ]) {
+        const stack = document.elementsFromPoint(b.left + b.width * fx, b.top + b.height * fy);
+        const idx = stack.findIndex((n) => n === el || el.contains(n));
+        for (const n of stack.slice(0, idx)) {
+          if (n.contains(el)) continue;
+          const r = n.getBoundingClientRect();
+          if (r.width >= innerWidth - 1 && r.height >= innerHeight - 1) continue;
+          const s = getComputedStyle(n);
+          const m = (s.backgroundColor.match(/[\d.]+/g) || []).map(Number);
+          const alpha = m.length === 4 ? m[3] : m.length === 3 ? 1 : 0;
+          const text = [...n.childNodes].some(
+            (c) => c.nodeType === 3 && (c.textContent || '').trim(),
+          );
+          if (alpha >= 0.5 || text) out.push(`${n.tagName}.${String(n.className).slice(0, 40)}`);
+        }
+      }
+      st.remove();
+      return out;
+    });
+    expect(covering, 'nothing opaque or textual paints above the AIR button').toEqual([]);
     await expect(page.getByText('ORBITAL TELEMETRY')).toBeHidden();
     // keyboard open
     await air.focus();

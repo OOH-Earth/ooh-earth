@@ -712,7 +712,7 @@ export default function Globe3D({
       </div>
 
       {interactive && (
-        <div className="pointer-events-none absolute bottom-[calc(var(--map-sheet-overlap,0px)+3rem)] left-3 flex flex-col gap-1.5">
+        <div className="pointer-events-none absolute bottom-[calc(var(--map-sheet-overlap,0px)+3rem)] left-3 flex flex-col gap-1.5 [[data-hud-compact]_&]:[@media(max-height:500px)]:hidden">
           <div className="flex items-center gap-2 border border-slate2/70 bg-void/85 px-2.5 py-1.5 font-mono text-[9px] uppercase tracking-[0.2em] text-darkgray backdrop-blur-sm">
             <span className="text-ozone/80">⊙</span>
             <span>

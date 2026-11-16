@@ -193,7 +193,7 @@ export default function GlobeHud({ map }) {
   return (
     <div
       ref={rootRef}
-      className="pointer-events-none absolute inset-0 z-[900] select-none font-mono [container-type:size] text-[10px] uppercase tracking-[0.18em] text-silver/70"
+      className="pointer-events-none absolute inset-0 z-[900] [[data-hud-compact]_&]:[@media(max-height:500px)]:z-[1000] select-none font-mono [container-type:size] text-[10px] uppercase tracking-[0.18em] text-silver/70"
     >
       {/* viewfinder corner brackets */}
       <span className="absolute left-2 top-2 h-3 w-3 border-l border-t border-ozone/60" />
