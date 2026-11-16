@@ -171,7 +171,7 @@ export default function GlobeHud({ map }) {
       <span className="absolute bottom-2 right-2 h-3 w-3 border-r border-b border-ozone/60" />
 
       {/* TL: mission header + clock */}
-      <div className="absolute left-3 top-[calc(var(--map-overlay-bottom,3.5rem)+0.5rem)] max-w-[230px] [[data-map-room]_&]:max-md:hidden [[data-map-room=none]_&]:hidden">
+      <div className="absolute left-3 top-[calc(var(--map-overlay-bottom,3.5rem)+0.5rem)] max-w-[230px] [[data-map-room]_&]:max-md:hidden [[data-hud-compact]_&]:max-md:hidden [[data-map-room=none]_&]:hidden">
         <div className="flex items-center gap-1.5 text-ozone">
           <span className="h-1.5 w-1.5 animate-blink rounded-full bg-flare" />
           <span className="text-glow-ozone">OOH · ORBITAL TELEMETRY</span>
