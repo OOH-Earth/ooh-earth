@@ -3,7 +3,7 @@ import { mockBase44 } from './fixtures/mockBase44';
 
 // UI-038: Claim dialog inputs had visible labels that were not associated with them. claimLead is mocked and
 // intercepted; no real claim is ever sent.
-async function open(page, claimBody: unknown, calls: { n: number }) {
+async function open(page, claimBody: unknown, calls: { n: number }, status = 200) {
   const locs: Record<string, unknown> = {};
   for (let i = 0; i < 3; i++)
     locs['l' + i] = {
@@ -26,7 +26,7 @@ async function open(page, claimBody: unknown, calls: { n: number }) {
   });
   await page.route('**/functions/claimLead**', (r) => {
     calls.n++;
-    r.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(claimBody) });
+    r.fulfill({ status, contentType: 'application/json', body: JSON.stringify(claimBody) });
   });
   await page.addInitScript(() => localStorage.setItem('ooh_nudge_map_report', '1'));
   await page.setViewportSize({ width: 390, height: 844 });
@@ -76,6 +76,30 @@ test('claim dialog: a server error is announced and tied to the handle input (mo
   expect(id).toBeTruthy();
   await expect(handle).toHaveAttribute('aria-describedby', id!);
   expect(calls.n).toBe(1);
+  // Focus lands on the invalid field (not left on the submit button), so the linked message is what is read next.
+  await expect(handle).toBeFocused();
+  // Still dismissible, and focus returns to the Claim button that opened it.
   await page.keyboard.press('Escape');
   await expect(dlg).toBeHidden();
+  await expect(page.getByRole('button', { name: 'Claim', exact: true }).first()).toBeFocused();
+});
+
+test('claim dialog: a failed request (HTTP 500, mocked) shows the fallback error tied to the field', async ({
+  page,
+}) => {
+  test.setTimeout(90_000);
+  const calls = { n: 0 };
+  const { dlg } = await open(page, { message: 'boom' }, calls, 500);
+  const handle = dlg.getByLabel('Member handle');
+  await handle.fill('@tester');
+  await dlg.getByRole('button', { name: 'Claim lead' }).click();
+  const alert = dlg.getByRole('alert');
+  await expect(alert).toContainText('Could not submit claim');
+  await expect(handle).toHaveAttribute('aria-invalid', 'true');
+  await expect(handle).toHaveAttribute('aria-describedby', (await alert.getAttribute('id'))!);
+  await expect(handle).toBeFocused();
+  // The dialog stays dismissible with the Cancel button as well as Escape, and nothing was claimed.
+  await dlg.getByRole('button', { name: 'Cancel' }).click();
+  await expect(dlg).toBeHidden();
+  expect(calls.n).toBe(1);
 });

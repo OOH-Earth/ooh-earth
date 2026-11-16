@@ -1,4 +1,4 @@
-import { useId, useLayoutEffect, useRef, useState } from 'react';
+import { useEffect, useId, useLayoutEffect, useRef, useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import {
   Dialog,
@@ -26,6 +26,12 @@ export default function ClaimLeadDialog({ open, onClose, location, onClaimed = n
   useLayoutEffect(() => {
     if (open) openerRef.current = document.activeElement;
   }, [open]);
+  const handleRef = useRef(null);
+  // After a failed submit, send focus to the field the error is tied to (aria-describedby) so keyboard and
+  // screen-reader users land where the message applies instead of staying on the submit button.
+  useEffect(() => {
+    if (error) handleRef.current?.focus();
+  }, [error]);
   const handleId = `${uid}-handle`;
   const noteId = `${uid}-note`;
   const errorId = `${uid}-error`;
@@ -97,6 +103,7 @@ export default function ClaimLeadDialog({ open, onClose, location, onClaimed = n
               Member handle
             </Label>
             <Input
+              ref={handleRef}
               id={handleId}
               required
               aria-required="true"

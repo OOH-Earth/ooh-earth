@@ -93,6 +93,34 @@ export default function GlobeHud({ map }) {
   });
   const startRef = useRef(Date.now());
   const [showAir, setShowAir] = useState(true);
+  const rootRef = useRef(null);
+  const airBtnRef = useRef(null);
+  const airListRef = useRef(null);
+  // UI-031/UI-041 (opt-in compact portals only, short landscape): the map box is ~100px tall, so a 230x265 open AIR
+  // panel ran past the box and under the zoom row. Start AIR collapsed as a labelled disclosure there; when opened it
+  // is a bounded, scrollable panel beside the zoom row (classes below). Air-quality data stays one tap away.
+  useEffect(() => {
+    const el = rootRef.current;
+    if (!el || !el.closest('[data-hud-compact]') || typeof window.matchMedia !== 'function')
+      return undefined;
+    const mq = window.matchMedia('(max-height: 500px)');
+    const apply = () => {
+      if (mq.matches) setShowAir(false);
+    };
+    apply();
+    mq.addEventListener?.('change', apply);
+    return () => mq.removeEventListener?.('change', apply);
+  }, []);
+  const openAir = () => {
+    setShowAir(true);
+    // the disclosure button unmounts; focus the panel's list so keyboard users stay inside it (Escape closes)
+    requestAnimationFrame(() => airListRef.current?.focus());
+  };
+  const hideAir = () => {
+    setShowAir(false);
+    // the panel unmounts; hand focus to the disclosure button that replaces it
+    requestAnimationFrame(() => airBtnRef.current?.focus());
+  };
   const [moon, setMoon] = useState({ phase: 0, name: '—', illum: 0 });
 
   // PM2.5 — Open-Meteo Air Quality (free, no key). Fetch each station
@@ -163,7 +191,10 @@ export default function GlobeHud({ map }) {
   const overWHO = pm ? pm.filter((p) => p.v != null && p.v > WHO_PM25).length : 0;
 
   return (
-    <div className="pointer-events-none absolute inset-0 z-[900] select-none font-mono [container-type:size] text-[10px] uppercase tracking-[0.18em] text-silver/70">
+    <div
+      ref={rootRef}
+      className="pointer-events-none absolute inset-0 z-[900] select-none font-mono [container-type:size] text-[10px] uppercase tracking-[0.18em] text-silver/70"
+    >
       {/* viewfinder corner brackets */}
       <span className="absolute left-2 top-2 h-3 w-3 border-l border-t border-ozone/60" />
       <span className="absolute right-2 top-2 h-3 w-3 border-r border-t border-ozone/60" />
@@ -171,7 +202,7 @@ export default function GlobeHud({ map }) {
       <span className="absolute bottom-2 right-2 h-3 w-3 border-r border-b border-ozone/60" />
 
       {/* TL: mission header + clock */}
-      <div className="absolute left-3 top-[calc(var(--map-overlay-bottom,3.5rem)+0.5rem)] max-w-[230px] [[data-map-room]_&]:max-md:hidden [[data-hud-compact]_&]:max-md:hidden [[data-map-room=none]_&]:hidden">
+      <div className="absolute left-3 top-[calc(var(--map-overlay-bottom,3.5rem)+0.5rem)] max-w-[230px] [[data-map-room]_&]:max-md:hidden [[data-hud-compact]_&]:max-md:hidden [[data-hud-compact]_&]:[@container(max-height:20rem)]:hidden [[data-map-room=none]_&]:hidden">
         <div className="flex items-center gap-1.5 text-ozone">
           <span className="h-1.5 w-1.5 animate-blink rounded-full bg-flare" />
           <span className="text-glow-ozone">OOH · ORBITAL TELEMETRY</span>
@@ -222,15 +253,18 @@ export default function GlobeHud({ map }) {
       {showAir ? (
         <div
           data-tour="hud-pm25"
-          className="pointer-events-auto absolute right-3 top-[calc(var(--map-overlay-right-bottom,3.5rem)+0.5rem)] hidden w-[230px] md:block [[data-map-room]_&]:[@container(max-width:43.99rem)]:hidden [[data-map-room]_&]:[@container(max-height:19.99rem)]:hidden"
+          onKeyDown={(e) => {
+            if (e.key === 'Escape') hideAir();
+          }}
+          className="pointer-events-auto absolute right-3 top-[calc(var(--map-overlay-right-bottom,3.5rem)+0.5rem)] hidden w-[230px] md:block [[data-hud-compact]_&]:[@container(max-height:20rem)]:top-auto [[data-hud-compact]_&]:[@container(max-height:20rem)]:bottom-1 [[data-hud-compact]_&]:[@container(max-height:20rem)]:right-[11.5rem] [[data-hud-compact]_&]:[@container(max-height:20rem)]:max-h-[calc(100cqh-0.5rem)]  [[data-hud-compact]_&]:[@container(max-height:20rem)]:overflow-hidden  [[data-map-room]_&]:[@container(max-width:43.99rem)]:hidden [[data-map-room]_&]:[@container(max-height:19.99rem)]:hidden"
         >
-          <div className="border border-slate2/70 bg-void/70 backdrop-blur-md">
+          <div className="border border-slate2/70 bg-void/70 backdrop-blur-md [[data-hud-compact]_&]:[@container(max-height:20rem)]:flex [[data-hud-compact]_&]:[@container(max-height:20rem)]:max-h-[calc(100cqh-0.5rem)] [[data-hud-compact]_&]:[@container(max-height:20rem)]:flex-col">
             <div className="flex items-center justify-between border-b border-slate2/60 px-3 py-1.5">
               <span className="text-ozone">AIR COMMONS · PM2.5</span>
               <div className="flex items-center gap-2">
                 <span className="text-dim">{pm ? pm.length : 0} STN</span>
                 <button
-                  onClick={() => setShowAir(false)}
+                  onClick={hideAir}
                   aria-label="Hide Air Commons"
                   className="text-dim transition-colors hover:text-flare"
                 >
@@ -247,10 +281,11 @@ export default function GlobeHud({ map }) {
             <div
               // --map-overlay-right-bottom is only set by the /map frame; the -100rem fallback keeps the
               // old 210px cap everywhere else (Home globe, PortalShell).
+              ref={airListRef}
               tabIndex={0}
               role="region"
               aria-label="Air commons stations"
-              className="max-h-[clamp(3rem,calc(100cqh-var(--map-overlay-right-bottom,-100rem)-16rem),210px)] overflow-y-auto px-3 pb-2"
+              className="max-h-[clamp(3rem,calc(100cqh-var(--map-overlay-right-bottom,-100rem)-16rem),210px)] overflow-y-auto px-3 pb-2 [[data-hud-compact]_&]:[@container(max-height:20rem)]:max-h-none [[data-hud-compact]_&]:[@container(max-height:20rem)]:min-h-0 [[data-hud-compact]_&]:[@container(max-height:20rem)]:flex-1"
             >
               {pm === null ? (
                 <div className="py-2 text-dim">// acquiring air data…</div>
@@ -279,8 +314,11 @@ export default function GlobeHud({ map }) {
         </div>
       ) : (
         <button
-          onClick={() => setShowAir(true)}
-          className="pointer-events-auto absolute right-3 top-[calc(var(--map-overlay-right-bottom,3.5rem)+0.5rem)] hidden border border-slate2/70 bg-void/70 px-2.5 py-1.5 text-ozone backdrop-blur-md transition-colors hover:border-ozone md:block [[data-map-room]_&]:[@container(max-width:43.99rem)]:hidden [[data-map-room]_&]:[@container(max-height:19.99rem)]:hidden"
+          ref={airBtnRef}
+          onClick={openAir}
+          aria-expanded="false"
+          aria-label="Show Air Commons PM2.5"
+          className="pointer-events-auto absolute right-3 top-[calc(var(--map-overlay-right-bottom,3.5rem)+0.5rem)] [[data-hud-compact]_&]:[@container(max-height:20rem)]:top-auto [[data-hud-compact]_&]:[@container(max-height:20rem)]:bottom-1 [[data-hud-compact]_&]:[@container(max-height:20rem)]:right-[11.5rem] [[data-hud-compact]_&]:[@container(max-height:20rem)]:min-h-8 hidden border border-slate2/70 bg-void/70 px-2.5 py-1.5 text-ozone backdrop-blur-md transition-colors hover:border-ozone md:block [[data-map-room]_&]:[@container(max-width:43.99rem)]:hidden [[data-map-room]_&]:[@container(max-height:19.99rem)]:hidden"
         >
           AIR
         </button>

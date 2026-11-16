@@ -1,9 +1,10 @@
 import { test, expect } from '@playwright/test';
 import { mockBase44 } from './fixtures/mockBase44';
 
-// The list-card Claim button was 58x18 CSS px. WCAG 2.5.8 (AA) needs >= 24px or a spacing exception.
-// Fix: 24px visible box + a ::before hit area that reaches up into the card padding, 2px down, 4px left, 8px
-// right. It must never cover the title row below, the PAGE link, or the freshness tags to the left.
+// UI-040. The list-card Claim button was 58x18 CSS px, then 58x24 with an invisible ::before that grew the
+// tappable area to about 64x34 (measured by pointer hit-testing on BACKUP, Window I). The visible box is now the
+// target: >= 44px tall, 10px label (the documented "Label · Mono" step), and NO invisible extension, so no
+// unseen region can take a tap meant for the title, the PAGE link or the next row.
 // Mock backend only; the claim dialog is opened and dismissed, never submitted.
 const LONG = 'Spot with a very long descriptive title that runs underneath the claim button row';
 const locs: Record<string, unknown> = {};
@@ -25,7 +26,7 @@ for (const [w, h] of [
   [390, 844],
   [320, 640],
 ] as const) {
-  test(`Claim: >=24px box, bigger hit area, no stolen taps from title/link/neighbours @${w}`, async ({
+  test(`Claim: 44px visible target, no invisible hit area, clear of title/link/neighbours @${w}`, async ({
     page,
   }) => {
     test.setTimeout(90_000);
@@ -53,40 +54,56 @@ for (const [w, h] of [
         return t === el || el.contains(t);
       };
       const card = el.closest('[role="button"]')!;
+      const cb = card.getBoundingClientRect();
       const link = card.querySelector('a')!;
       const lb = link.getBoundingClientRect();
-      const lt = document.elementFromPoint(lb.x + lb.width / 2, lb.y + lb.height / 2);
       const title = [...card.querySelectorAll('*')].find(
         (e) => e.children.length === 0 && (e.textContent || '').startsWith(longTitle.slice(0, 20)),
       )!;
       const tb = title.getBoundingClientRect();
       const cx = b.x + b.width / 2;
+      const cy = b.y + b.height / 2;
+      // Sample the whole card plus 40px around the box: every point owned by Claim must lie inside its visible rect.
+      let outside = 0;
+      for (let x = b.x - 40; x <= b.right + 40; x += 2)
+        for (let y = b.y - 40; y <= b.bottom + 40; y += 2)
+          if (
+            own(x, y) &&
+            (x < b.x - 0.5 || x > b.right + 0.5 || y < b.y - 0.5 || y > b.bottom + 0.5)
+          )
+            outside++;
       return {
         h: b.height,
-        // inside the extended hit area: 10px above, 0.5px below, 3px left, 2px right
-        grown: [
-          own(cx, b.y - 10),
-          own(cx, b.y + b.height + 0.5),
-          own(b.x - 3, b.y + b.height / 2),
-          own(b.x + b.width + 2, b.y + b.height / 2),
+        w: b.width,
+        font: getComputedStyle(el).fontSize,
+        // the centre and all four edges (1px inside) are hit-testable on the button itself
+        edges: [
+          own(cx, cy),
+          own(b.x + 1, cy),
+          own(b.right - 1, cy),
+          own(cx, b.y + 1),
+          own(cx, b.bottom - 1),
         ],
-        linkOwned: link === lt || link.contains(lt),
-        // title text under the middle of the button must still belong to the card, not to Claim
-        titleUnderClaim: tb.x < b.x + b.width / 2 && tb.x + tb.width > b.x + b.width / 2,
-        titleStolen: own(b.x + b.width / 2, tb.y + 3),
-        // the control must not grow into the PAGE column
-        pageGap: lb.x - (b.x + b.width),
-        // visible boxes must not intersect the PAGE link at all (not just horizontally)
+        outside,
+        // 3px beyond each edge is NOT the button (no invisible growth)
+        beyond: [own(cx, b.y - 3), own(cx, b.bottom + 3), own(b.x - 3, cy), own(b.right + 3, cy)],
+        // visible box must not intersect the title text, the PAGE link, or leave the card
+        intersectsTitle: b.x < tb.right && tb.x < b.right && b.y < tb.bottom && tb.y < b.bottom,
         intersectsLink: b.x < lb.right && lb.x < b.right && b.y < lb.bottom && lb.y < b.bottom,
+        pageGap: lb.x - b.right,
+        insideCard: b.y >= cb.y && b.bottom <= cb.bottom,
       };
     }, LONG);
-    expect.soft(r.h).toBeGreaterThanOrEqual(23.5);
-    expect.soft(r.grown, 'extended hit area').toEqual([true, true, true, true]);
-    expect.soft(r.linkOwned).toBe(true);
-    expect.soft(r.titleUnderClaim, 'test precondition: the long title runs under Claim').toBe(true);
-    expect.soft(r.titleStolen).toBe(false);
-    expect.soft(r.pageGap).toBeGreaterThan(3);
+    expect.soft(r.h, 'rendered target height').toBeGreaterThanOrEqual(43.5);
+    expect.soft(r.w).toBeGreaterThanOrEqual(24);
+    expect.soft(r.font, 'label uses the 10px mono step').toBe('10px');
+    expect.soft(r.edges, 'centre and edges hit the button').toEqual([true, true, true, true, true]);
+    expect.soft(r.outside, 'no tappable area outside the visible box').toBe(0);
+    expect.soft(r.beyond).toEqual([false, false, false, false]);
+    expect.soft(r.intersectsTitle, 'Claim box must not cover the title').toBe(false);
     expect.soft(r.intersectsLink, 'Claim box must not touch the PAGE link').toBe(false);
+    expect.soft(r.pageGap).toBeGreaterThanOrEqual(4);
+    expect.soft(r.insideCard).toBe(true);
     await claim.click();
     await expect(page.getByRole('dialog')).toBeVisible();
     await page.keyboard.press('Escape');
