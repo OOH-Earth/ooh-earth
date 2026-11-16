@@ -68,6 +68,9 @@ export default function LocationCard({
       role="button"
       tabIndex={0}
       onKeyDown={(e) => {
+        // Ignore keys that bubble up from nested controls (the Claim button): preventDefault here
+        // used to swallow Space/Enter so keyboard users could never activate Claim.
+        if (e.target !== e.currentTarget) return;
         if (e.key === 'Enter' || e.key === ' ') {
           e.preventDefault();
           onSelect(m);
