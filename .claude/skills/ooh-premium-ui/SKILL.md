@@ -18,16 +18,36 @@ move secondary information behind a **labelled disclosure**; do not shrink text 
 invisible hit area into neighbours. Verify actual interactions, not just screenshots. Record **physical-phone checks
 separately from emulation**; emulation never substitutes for them. (`docs/design/UI-STANDARDS.md` section 0.)
 
+## Pipeline (follow in order; details in `references/audit-checklist.md`)
+1. **Phone-first whole-screen screenshots**: 320x640, 390x844, 844x390, then desktop; anonymous and MEMBER (or mocks).
+   Look at the picture before measuring.
+2. **Real interaction**: pointer, keyboard and touch (touch has no Escape and no hover); label emulation as emulation.
+3. **Bounds and edge hit tests**: sweep every interactive control (not just its centre) for the share of its area it
+   owns, check clipping, paint order and scroll ownership (`references/measurement-probes.md`, probes A-I).
+4. **Reproduce and rank defects**: blocked action > lost focus > clipped information > runtime error > regression vs
+   live > nit. Write down the failing measurement.
+5. **Scoped fix**: reflow, or a labelled disclosure, before smaller text or smaller controls. Opt-in/route-scoped for
+   shared components.
+6. **Regression that detects the old failure**: it must fail on the old build for the real reason (same measurement as
+   step 4). Keep the first failure on record.
+   **Re-look at the whole-screen screenshot after every fix**, not only the first: a fix can create the next defect (a 32px close
+   wrapped a panel header). The interactive sweep and the paint check are mandatory steps, not optional probes.
+7. **Verify changed and shared surfaces**: every consumer of a shared component, plus the desktop regression specs.
+Record browser, input mode, viewport, source SHA, artifact, screenshots, limitations, unresolved ownership
+(`references/evidence-record.md`). Validation of this procedure on the Adbusting release:
+`references/validation-adbusting-2026-11.md`.
+
 ## 0. Read before editing (do not skip)
 1. The route and the component that owns the surface: `grep` the visible text/aria-label, open the owner, list every
    consumer of any shared component (`PortalShell` has 5). Say who owns the thing you are about to change.
 2. `docs/design/UI-STANDARDS.md` (rules tagged **[Standard]** vs **[Preference]**; WCAG 2.2 AA is the floor) and the
    single ledger `docs/design/UI-Fixes.md` (never start a second one; IDs are allocated there).
-3. `docs/design/OOH-UI-UX-REFERENCE.md` for the OSIRIS study. OSIRIS is a **pattern** source only, pinned at
+3. `docs/design/OOH-UI-UX-REFERENCE.md` for the OSIRIS study (live reference: https://osirisai.live/ ; pinned source in that doc). OSIRIS is a **pattern** source only, pinned at
    commit `59634bc2cbe418c64b258548eeda8f056b4823d0` (links in that doc): grouping, hierarchy, height-aware compact
    mode, bounded panels (`min-h-0 overflow-y-auto`), `aria-pressed`/`aria-expanded`, Escape to dismiss. Never copy its
-   5-9px labels, fixed offsets, root `overflow:hidden`, hover-only affordances, or branding. **Acceptance is OOH
-   standards, never "looks like OSIRIS".**
+   5-9px labels, fixed offsets, root `overflow:hidden`, hover-only affordances, or branding. Use it for hierarchy, spacing, disclosure and keeping the map usable. It is a design reference,
+   not a conformance standard. **Acceptance is OOH standards (`docs/design/UI-STANDARDS.md`) and the applicable WCAG 2.2
+   criteria, never "looks like OSIRIS".**
 4. The source SHA you are auditing and which artifact it maps to (`release-manifest.json` `git_sha`, tree hash). Old
    evidence from another SHA is history, not proof for this one.
 
@@ -38,34 +58,18 @@ only for decorative labels. Targets: >= 24px is the WCAG 2.5.8 floor; 32px secon
 targets; 44px is the aim when a control is redesigned. Evaluate the WCAG criterion and the project target separately and
 say which one a result meets.
 
-## 2. Audit order (stop adding checks once the top items are clean)
-Priority: **blocked actions > lost focus > clipped/unreachable information > runtime errors > regressions vs the live
-baseline > visual nits.** Do not spend effort on nits while a higher class is open.
-1. **Whole screen first.** Screenshot the full viewport before any measuring (DevTools MCP `take_screenshot`, or
-   Playwright). Look at it. Overlaps that numbers miss (text over text, panels under controls, chrome eating the
-   box) are usually visible at a glance.
-2. **Then measure** (probes in `references/measurement-probes.md`): bounding boxes of the owning container and every
-   overlay; clipping (`rect` inside the container, `scrollHeight` vs `clientHeight`); **scroll ownership** (which
-   element scrolls, whether the document does, whether the last item clears bottom chrome); **hit areas by
-   `elementFromPoint` sampling**, never by reading CSS or the element's own rect: pseudo-element extensions
-   (`::before`) are invisible to `getBoundingClientRect`. Record the *rendered* target (w x h, edges) and its clearance
-   from neighbouring actions, the title and adjacent rows. A claim like "44px target" is only valid if the sampled
-   area says so. **Hit-testing is not painting:** shared chrome with `pointer-events:none` (tickers, scrims) can paint
-   *over* a control that `elementFromPoint` still reports as topmost, so the control is clickable but invisible. For every
-   new control, also run the paint check (probe F) and look at the whole-screen screenshot.
-3. **Exercise real input**: pointer, keyboard (Tab order, Enter/Space, Escape, focus return), touch where the device
-   has it. DevTools MCP `emulate` with `mobile,touch` is **emulation**: label it so, and never count it as a physical
-   iPhone/Android pass. If the release gate requires a physical device, report the gap; do not infer a waiver.
-4. **Semantics**: accessible names on icon-only controls; `aria-pressed`/`aria-expanded` state; labels associated with
-   fields (`for`/`id`), errors tied with `aria-describedby` + `aria-invalid`, announced (`role="alert"`), focus lands
-   on the invalid field; dialogs closable by Escape and Cancel; focus returns to the opener.
-5. **Readability**: computed font-size (flag < 10px), contrast of text on its real background, and whether the final
-   reachable content (last list row, last panel row) is actually reachable.
-6. **Viewports, in this order**: 320x640, 390x844, 844x390 (short landscape; this one finds collisions), then desktop (1280x800).
-   Anonymous and MEMBER, or a mocked user via `e2e/fixtures/mockBase44.ts`. Both Flat and Globe where a map is shown,
-   switched at mid-zoom, plus LIST/MAP/SPLIT.
-7. **Baseline**: capture the live artifact at the same viewport and comparable state before calling anything a
-   regression or a pre-existing defect. Say which one you established and how.
+## 2. Explicit checks (full lists and pass/fail wording in `references/audit-checklist.md`)
+- **Touch targets**: the *rendered* target (sampled), >= 44px aim / 32px secondary / 24px WCAG floor; no invisible
+  extension into neighbours; close/dismiss controls are real targets on touch (there is no Escape).
+- **Readable type**: computed font-size, 10px minimum for informational text; no text shrunk to fit.
+- **Keyboard focus**: Tab order, Enter/Space, Escape, focus enters a disclosure/dialog and returns to its opener.
+- **Contrast over imagery**: text over maps/globe/photos measured against the real backdrop, not the CSS colour.
+- **Scroll ownership**: which element scrolls, document does not, last item clears bottom chrome, no blank band
+  beyond the app boundary.
+- **Viewport changes**: resize/orientation change without reload keeps state and re-lays out (no stuck overlays).
+- **Paint vs hit-test**: a control must be hit-testable *and* visible; shared `pointer-events:none` chrome can cover it.
+Anything a probe cannot judge (overlap of text with text, a control that looks covered) needs a human look at the
+whole-screen screenshot: say so in the record.
 
 ## 3. Fix and prove
 1. Reproduce each defect first (numbers + screenshot) and write down the exact failing measurement.

@@ -73,6 +73,39 @@ Found with this: the AIR disclosure button (a child of a `z-900` HUD layer) sat 
 844x390 while every geometric and plain hit-test probe passed; the cause was a stacking context, fixed at the HUD layer.
 Always also look at the whole-screen screenshot.
 
+
+## G. Contrast over imagery (text on map / globe / photo)
+CSS colour alone is not the contrast. Sample the real backdrop: screenshot the element's rect with its text hidden
+(`color: transparent`), average the backdrop luminance, then compute the ratio with the text colour
+(`(L1+0.05)/(L2+0.05)`, relative luminance per WCAG). Needs the whole screenshot pipeline, so run it with Playwright
+(`page.screenshot({clip})` then decode with `sharp`/canvas) or DevTools MCP `take_screenshot` with `uid`. Thresholds:
+4.5:1 text, 3:1 large text and UI components. Report the worst percentile over the rect, not only the mean.
+Status: documented method; **not yet run as an automated check** in this repo.
+
+## H. Viewport change without reload
+DevTools MCP: `emulate` 390x844 -> 844x390 -> 390x844 on the same page; after each call re-run probes A/B/C/I. Playwright:
+`page.setViewportSize` in sequence (see `adbusting-landscape-controls.spec.ts` "orientation change"). Check that
+`@container`/media-gated classes re-evaluate (disclosure vs panel), nothing stays hidden, and open state is sane.
+
+## I. Interactive sweep (find defects without knowing where to look)
+Every visible interactive control, the share of its area it owns. Anything below 100% is a candidate defect (covered by a
+neighbour or an overlay) to confirm in the screenshot.
+```js
+() => [...document.querySelectorAll('button,a,[role="button"],input,select,textarea,summary')].filter(e => {
+  const r = e.getBoundingClientRect(); return r.width > 0 && r.height > 0 && r.bottom > 0 && r.top < innerHeight && !e.matches('.leaflet-marker-icon,.maplibregl-marker'); })
+  .map(e => { const b = e.getBoundingClientRect(); let o = 0, c = 0;
+    for (let x = Math.max(b.left, 0) + 1; x < Math.min(b.right, innerWidth); x += 2)
+      for (let y = Math.max(b.top, 0) + 1; y < Math.min(b.bottom, innerHeight); y += 2) {
+        c++; const t = document.elementFromPoint(x, y); if (t === e || e.contains(t)) o++; }
+    return { name: (e.getAttribute('aria-label') || e.textContent || e.tagName).trim().slice(0, 28),
+             size: [Math.round(b.width), Math.round(b.height)], owned: c ? Math.round(100 * o / c) : null }; })
+  .filter(x => x.owned !== null && (x.owned < 100 || x.size[0] < 24 || x.size[1] < 24));
+```
+Lists controls with partial ownership or a rendered size under 24px (the 9x16 AIR close glyph shows up here).
+Note: controls inside the scrolled-away part of a list are excluded by the viewport filter; scroll and re-run. Map markers are
+excluded (they stack on each other and on overlays and flood the output with `owned: 0`). Expect shared-chrome noise (header
+radio/play, news-ticker links, the search input's inner height): classify by owner, do not fix it inside an unrelated release.
+
 ## E. Baseline capture
 Open the live production URL in an isolated context at the same viewport/state; run A-C; record the live `git_sha`
 and entry file. Differences in listing data (e.g. 790 live results vs 3 on BACKUP) change panel heights: say so before

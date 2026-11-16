@@ -35,6 +35,8 @@ Every rule below is tagged:
    record** (device, OS, browser, who, when). Emulation never counts as the physical check and an absent physical check is
    reported as a gap, not waived.
 
+The procedure that applies these rules is the repo skill [`.claude/skills/ooh-premium-ui/SKILL.md`](../../.claude/skills/ooh-premium-ui/SKILL.md) (checklist and measurement probes in its `references/`). It is a checked-in procedure for a Claude session, **not** automation: no check from it runs in CI unless a workflow says so.
+
 First applications: the Adbusting list-card Claim button (UI-040) and the AIR/telemetry overlap in 844x390 SPLIT (UI-031/041).
 
 ## 1. Authoritative sources
