@@ -174,8 +174,16 @@ for (const [label, user] of users) {
       if (await c.isVisible())
         expect(hit(pr, rect(await c.boundingBox())), `open AIR panel overlaps ${name}`).toBe(false);
     }
+    // The header must stay on one line (a 32px close once pushed the title onto two lines: header 72px, list 21px)
+    const headRect = rect(await panel.locator('div.border-b').first().boundingBox());
+    expect(headRect.b - headRect.t, 'AIR header stays on one line').toBeLessThanOrEqual(40);
     const list = page.getByRole('region', { name: 'Air commons stations' });
     await expect(list).toBeVisible();
+    const listRect = rect(await list.boundingBox());
+    expect(
+      listRect.b - listRect.t,
+      'list keeps room for at least one and a half rows',
+    ).toBeGreaterThanOrEqual(32);
     const scroll = await list.evaluate((el) => ({ sh: el.scrollHeight, ch: el.clientHeight }));
     // all stations stay reachable: a bounded list scrolls instead of being clipped
     expect(scroll.sh).toBeGreaterThan(scroll.ch);
