@@ -168,6 +168,12 @@ for (const [label, user] of users) {
     expect(inside(pr, box), 'open AIR panel stays inside the map box').toBe(true);
     for (const z of zooms)
       expect(hit(pr, z), 'open AIR panel does not cover the zoom row').toBe(false);
+    // ...nor Capture / Report / the Flat-Globe-Satellite controls (it used to overlap Capture by 11px)
+    for (const name of [/capture/i, /report/i, /flat map/i, /^globe$/i, /map style/i]) {
+      const c = page.getByRole('button', { name }).first();
+      if (await c.isVisible())
+        expect(hit(pr, rect(await c.boundingBox())), `open AIR panel overlaps ${name}`).toBe(false);
+    }
     const list = page.getByRole('region', { name: 'Air commons stations' });
     await expect(list).toBeVisible();
     const scroll = await list.evaluate((el) => ({ sh: el.scrollHeight, ch: el.clientHeight }));

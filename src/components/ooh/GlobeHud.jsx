@@ -256,7 +256,7 @@ export default function GlobeHud({ map }) {
           onKeyDown={(e) => {
             if (e.key === 'Escape') hideAir();
           }}
-          className="pointer-events-auto absolute right-3 top-[calc(var(--map-overlay-right-bottom,3.5rem)+0.5rem)] hidden w-[230px] md:block [[data-hud-compact]_&]:[@container(max-height:20rem)]:top-auto [[data-hud-compact]_&]:[@container(max-height:20rem)]:bottom-1 [[data-hud-compact]_&]:[@container(max-height:20rem)]:right-[11.5rem] [[data-hud-compact]_&]:[@container(max-height:20rem)]:max-h-[calc(100cqh-0.5rem)]  [[data-hud-compact]_&]:[@container(max-height:20rem)]:overflow-hidden  [[data-map-room]_&]:[@container(max-width:43.99rem)]:hidden [[data-map-room]_&]:[@container(max-height:19.99rem)]:hidden"
+          className="pointer-events-auto absolute right-3 top-[calc(var(--map-overlay-right-bottom,3.5rem)+0.5rem)] hidden w-[230px] md:block [[data-hud-compact]_&]:[@container(max-height:20rem)]:top-auto [[data-hud-compact]_&]:[@container(max-height:20rem)]:bottom-1 [[data-hud-compact]_&]:[@container(max-height:20rem)]:right-[13rem] [[data-hud-compact]_&]:[@container(max-height:20rem)]:max-h-[calc(100cqh-0.5rem)]  [[data-hud-compact]_&]:[@container(max-height:20rem)]:overflow-hidden  [[data-map-room]_&]:[@container(max-width:43.99rem)]:hidden [[data-map-room]_&]:[@container(max-height:19.99rem)]:hidden"
         >
           <div className="border border-slate2/70 bg-void/70 backdrop-blur-md [[data-hud-compact]_&]:[@container(max-height:20rem)]:flex [[data-hud-compact]_&]:[@container(max-height:20rem)]:max-h-[calc(100cqh-0.5rem)] [[data-hud-compact]_&]:[@container(max-height:20rem)]:flex-col">
             <div className="flex items-center justify-between border-b border-slate2/60 px-3 py-1.5">
