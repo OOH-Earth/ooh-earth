@@ -1698,5 +1698,19 @@ body.map-fullscreen .ooh-mobile-nav {
 @media (max-height: 500px) {
   [data-hud-compact] .leaflet-control-zoom {
     display: flex;
+    margin: 6px !important;
+  }
+  /* UI-039b: stacked above the attribution the 34px zoom row needs 34px but only 31px exist between the
+     Report/Capture buttons and the attribution line in the ~100px box, so 12px of it sat under Report (37% of each
+     button's area took Report's tap; measured on BACKUP at 844x390). Same fix as data-map-free='minimal': zoom sits
+     beside the attribution in one bottom row (attribution stays readable and visible). */
+  [data-hud-compact] .leaflet-bottom.leaflet-right {
+    display: flex;
+    flex-direction: row-reverse;
+    align-items: flex-end;
+  }
+  [data-hud-compact] .leaflet-bottom.leaflet-right .leaflet-control {
+    float: none;
+    clear: none;
   }
 }

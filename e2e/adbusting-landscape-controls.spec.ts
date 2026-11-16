@@ -144,6 +144,55 @@ test('844x390 flat view: Leaflet zoom controls are not covered and respond to a 
     }, sel);
     expect(owner, sel).toBe(true);
   }
+  // Edge-to-edge, not just the centre: every sampled point of each zoom button must hit that button (a 12px strip
+  // under Report/Capture used to take their taps), and the row must not touch the attribution or the action buttons.
+  const owned = await page.evaluate(() => {
+    const out: Record<string, string> = {};
+    for (const s of ['.leaflet-control-zoom-in', '.leaflet-control-zoom-out']) {
+      const e = document.querySelector(s)!;
+      const b = e.getBoundingClientRect();
+      let own = 0;
+      let n = 0;
+      for (let x = b.left + 1; x < b.right; x += 2)
+        for (let y = b.top + 1; y < b.bottom; y += 2) {
+          n++;
+          const t = document.elementFromPoint(x, y);
+          if (t === e || e.contains(t)) own++;
+        }
+      out[s] = `${own}/${n}`;
+    }
+    return out;
+  });
+  for (const [s, v] of Object.entries(owned)) {
+    const [a, b] = v.split('/');
+    expect(a, `${s} fully owns its area (${v})`).toBe(b);
+  }
+  const rects = await page.evaluate(() => {
+    const r = (e: Element | null) => (e ? e.getBoundingClientRect() : null);
+    const links = [...document.querySelectorAll('a,button')];
+    const named = (re: RegExp) =>
+      links.find(
+        (x) =>
+          re.test((x.getAttribute('aria-label') || '') + x.textContent) &&
+          x.getBoundingClientRect().top < 300,
+      ) || null;
+    return {
+      zin: r(document.querySelector('.leaflet-control-zoom-in')),
+      attr: r(document.querySelector('.leaflet-control-attribution')),
+      report: r(named(/report/i)),
+      capture: r(named(/capture/i)),
+    };
+  });
+  const clear = (a: DOMRect | null, b: DOMRect | null) =>
+    !a ||
+    !b ||
+    a.right <= b.left ||
+    b.right <= a.left ||
+    a.bottom <= b.top + 0.5 ||
+    b.bottom <= a.top + 0.5;
+  expect(clear(rects.zin, rects.report), 'zoom clear of Report').toBe(true);
+  expect(clear(rects.zin, rects.capture), 'zoom clear of Capture').toBe(true);
+  expect(clear(rects.zin, rects.attr), 'zoom clear of attribution').toBe(true);
   const errors: string[] = [];
   page.on('pageerror', (e) => errors.push(e.message));
   await page.locator('.leaflet-control-zoom-in').click();
