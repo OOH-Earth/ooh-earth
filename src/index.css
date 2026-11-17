@@ -1713,4 +1713,14 @@ body.map-fullscreen .ooh-mobile-nav {
     float: none;
     clear: none;
   }
+  /* UI-042: the Globe (MapLibre) credit "(c) Esri, ..." sits in the bottom-right corner of a ~100px box (844x390) or
+     under the zoom column (320x480): 0% / 30% of it was visible and tappable, because the HUD zoom/AIR buttons and the
+     fixed ticker cover that corner. Esri's terms want the source names always visible. Lift the credit to the bottom
+     centre, above the ticker, where nothing else is. Position only: text, size and provider are unchanged. */
+  [data-hud-compact] .maplibregl-ctrl-bottom-right {
+    right: auto;
+    left: 50%;
+    transform: translateX(-50%);
+    bottom: calc(var(--map-sheet-overlap, 0px) + 2.5rem);
+  }
 }
