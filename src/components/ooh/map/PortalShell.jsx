@@ -30,6 +30,10 @@ export default function PortalShell({
   mapActions = null,
   live = undefined,
   unavailableNote = null,
+  // Opt-in: publishes data-hud-compact so GlobeHud hides only the decorative telemetry block below
+  // 768px. Deliberately NOT data-map-room: that attribute also hides the AIR panel and rewrites map
+  // controls, which changed tablet/landscape layouts (measured at 1024x768 and 844x390).
+  compactHud = false,
 }) {
   const [selectedId, setSelectedId] = useState(null);
   const [hoverId, setHoverId] = useState(null);
@@ -72,7 +76,7 @@ export default function PortalShell({
       <Nav />
 
       {/* Portal header */}
-      <div className="flex items-center gap-3 border-b border-slate2/40 px-4 py-2 md:px-8">
+      <div className="flex flex-wrap items-center gap-x-3 gap-y-2 border-b border-slate2/40 px-4 py-2 md:px-8">
         <span
           className="font-mono text-[10px] font-bold uppercase tracking-[0.25em]"
           style={{ color: accent }}
@@ -95,17 +99,21 @@ export default function PortalShell({
           </span>
         )}
 
-        <div className="ml-auto flex items-center gap-2">
-          <div className="hidden items-center gap-2 border border-slate2 bg-card px-3 py-1.5 sm:flex">
+        <div className="flex w-full flex-wrap items-center gap-2 sm:ml-auto sm:w-auto sm:justify-end">
+          <div className="flex min-w-0 flex-1 items-center gap-2 border border-slate2 bg-card px-3 py-1.5 sm:flex-none">
             <Search className="h-3 w-3 text-dim" />
             <input
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Search…"
-              className="w-28 bg-transparent font-mono text-[11px] text-silver outline-none placeholder:text-dim lg:w-48"
+              aria-label="Search locations"
+              className="w-full min-w-0 bg-transparent font-mono text-[11px] text-silver outline-none placeholder:text-dim sm:w-28 lg:w-48"
             />
           </div>
           <button
+            type="button"
+            aria-label="Reset search and filters"
+            title="Reset search and filters"
             onClick={() => {
               setQuery('');
               onFilterChange?.('all');
@@ -114,7 +122,7 @@ export default function PortalShell({
           >
             <RotateCcw className="h-3 w-3" />
           </button>
-          <div className="flex border border-slate2">
+          <div role="group" aria-label="Results layout" className="flex border border-slate2">
             {[
               { v: 'split', label: 'Split' },
               { v: 'map', label: 'Map' },
@@ -122,6 +130,8 @@ export default function PortalShell({
             ].map((m) => (
               <button
                 key={m.v}
+                type="button"
+                aria-pressed={mode === m.v}
                 onClick={() => setMode(m.v)}
                 className={`px-2 py-1.5 font-mono text-[9px] font-bold uppercase ${mode === m.v ? 'bg-ozone text-void' : 'text-darkgray hover:text-ozone'}`}
               >
@@ -153,6 +163,7 @@ export default function PortalShell({
               <button
                 key={t.value}
                 onClick={() => onFilterChange?.(t.value)}
+                aria-pressed={active}
                 className={`flex shrink-0 items-center gap-1.5 px-3 py-1 font-mono text-[10px] font-bold uppercase tracking-[0.15em] transition-colors ${active ? 'text-void' : 'text-darkgray hover:text-silver'}`}
                 style={active ? { backgroundColor: accent } : {}}
               >
@@ -184,20 +195,35 @@ export default function PortalShell({
         </div>
 
         {/* Map */}
-        <div className={`relative min-h-0 isolate ${mapClass}`}>
+        <div
+          data-hud-compact={compactHud ? '' : undefined}
+          className={`relative min-h-0 isolate ${mapClass}`}
+        >
           <div className="absolute left-3 top-3 z-[1000] flex items-center gap-1.5">
-            <div className="flex border border-slate2 bg-void/80 backdrop-blur-md">
+            <div
+              role="group"
+              aria-label="Map view"
+              className="flex border border-slate2 bg-void/80 backdrop-blur-md"
+            >
               <button
+                type="button"
+                aria-label="Flat map"
+                aria-pressed={view === 'flat'}
                 onClick={() => setView('flat')}
                 className={`flex items-center gap-1.5 px-2.5 py-2 font-mono text-[10px] font-bold uppercase tracking-[0.25em] ${view === 'flat' ? 'bg-ozone text-void' : 'text-darkgray hover:text-ozone'}`}
               >
-                <MapIcon className="h-3.5 w-3.5" /> <span className="hidden sm:inline">Flat</span>
+                <MapIcon className="h-3.5 w-3.5" aria-hidden="true" />{' '}
+                <span className="hidden sm:inline">Flat</span>
               </button>
               <button
+                type="button"
+                aria-label="Globe"
+                aria-pressed={view === 'globe'}
                 onClick={() => setView('globe')}
                 className={`flex items-center gap-1.5 px-2.5 py-2 font-mono text-[10px] font-bold uppercase tracking-[0.25em] ${view === 'globe' ? 'bg-ozone text-void' : 'text-darkgray hover:text-ozone'}`}
               >
-                <Globe className="h-3.5 w-3.5" /> <span className="hidden sm:inline">Globe</span>
+                <Globe className="h-3.5 w-3.5" aria-hidden="true" />{' '}
+                <span className="hidden sm:inline">Globe</span>
               </button>
             </div>
             <MapStyleSwitcher />

@@ -68,6 +68,9 @@ export default function LocationCard({
       role="button"
       tabIndex={0}
       onKeyDown={(e) => {
+        // Ignore keys that bubble up from nested controls (the Claim button): preventDefault here
+        // used to swallow Space/Enter so keyboard users could never activate Claim.
+        if (e.target !== e.currentTarget) return;
         if (e.key === 'Enter' || e.key === ' ') {
           e.preventDefault();
           onSelect(m);
@@ -97,7 +100,9 @@ export default function LocationCard({
 
       <div className="min-w-0 flex-1">
         {/* Category label + status dot */}
-        <div className="flex items-center gap-1.5">
+        {/* flex-wrap: with a long label plus the status/busted tags and Claim, the row used to overflow the
+            text column on 320px screens and push Claim into the PAGE link; it now wraps instead. */}
+        <div className="flex flex-wrap items-center gap-x-1.5 gap-y-1">
           <span className="font-mono text-[9px] uppercase tracking-[0.2em] text-ozone">
             {metaFor(m.type).label}
           </span>
@@ -119,13 +124,17 @@ export default function LocationCard({
               // busted
             </span>
           )}
+          {/* UI-040: the visible box IS the target (44px tall, 10px "Label · Mono" step). No invisible hit-area
+              extension: the earlier ::before grew an unseen 64x34 region that was measured against the title row and
+              PAGE column. flex-wrap above puts it on its own line when the text column is narrow, and its right edge
+              stays >= 4px clear of the PAGE column at 320px (asserted in e2e/claim-touch-target.spec.ts). */}
           {isLead && !claim && (
             <button
               onClick={(e) => {
                 e.stopPropagation();
                 onClaim?.(m);
               }}
-              className="ml-auto flex items-center gap-1 border border-flare/60 px-1.5 py-0.5 font-mono text-[8px] font-bold uppercase tracking-[0.15em] text-flare transition-colors hover:bg-flare hover:text-void"
+              className="ml-auto flex min-h-11 items-center gap-1.5 border border-flare/60 px-2.5 py-1 font-mono text-[10px] font-bold uppercase tracking-[0.15em] text-flare transition-colors hover:bg-flare hover:text-void"
             >
               <Hand className="h-3 w-3" /> Claim
             </button>

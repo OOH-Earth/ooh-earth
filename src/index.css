@@ -1691,3 +1691,36 @@ body.map-fullscreen .ooh-mobile-nav {
     display: none !important;
   }
 }
+
+/* UI-039 (adbusting, opt-in compact portals, short landscape only): the flat map's Leaflet zoom control is a
+   64px stack in a ~100px map box and its "+" sat under the Capture/Report buttons (pointer input lost).
+   A row of the same two 32px targets fits beside them. Scoped by [data-hud-compact]; nothing else changes. */
+@media (max-height: 500px) {
+  [data-hud-compact] .leaflet-control-zoom {
+    display: flex;
+    margin: 6px !important;
+  }
+  /* UI-039b: stacked above the attribution the 34px zoom row needs 34px but only 31px exist between the
+     Report/Capture buttons and the attribution line in the ~100px box, so 12px of it sat under Report (37% of each
+     button's area took Report's tap; measured on BACKUP at 844x390). Same fix as data-map-free='minimal': zoom sits
+     beside the attribution in one bottom row (attribution stays readable and visible). */
+  [data-hud-compact] .leaflet-bottom.leaflet-right {
+    display: flex;
+    flex-direction: row-reverse;
+    align-items: flex-end;
+  }
+  [data-hud-compact] .leaflet-bottom.leaflet-right .leaflet-control {
+    float: none;
+    clear: none;
+  }
+  /* UI-042: the Globe (MapLibre) credit "(c) Esri, ..." sits in the bottom-right corner of a ~100px box (844x390) or
+     under the zoom column (320x480): 0% / 30% of it was visible and tappable, because the HUD zoom/AIR buttons and the
+     fixed ticker cover that corner. Esri's terms want the source names always visible. Lift the credit to the bottom
+     centre, above the ticker, where nothing else is. Position only: text, size and provider are unchanged. */
+  [data-hud-compact] .maplibregl-ctrl-bottom-right {
+    right: auto;
+    left: 50%;
+    transform: translateX(-50%);
+    bottom: calc(var(--map-sheet-overlap, 0px) + 2.5rem);
+  }
+}
