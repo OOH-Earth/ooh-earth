@@ -88,32 +88,55 @@ test.describe('Contact page', () => {
   });
 });
 
+// Routes that render the shared SiteFooter. /map, /adbusting and /location/:id
+// are app-shell routes with no SiteFooter (verified by probe), so there is
+// nothing to assert there. The Home page's separate on-chain product section
+// (pump.fun / Zora) is NOT the footer and is deliberately out of this release.
 test.describe('Shared footer', () => {
-  for (const route of ['/', '/contact', '/map', '/adbusting', '/location/loc-x']) {
-    test(`no inactive channels on ${route}; Contact entry present`, async ({ page }) => {
-      await mockBase44(page, {
-        user: null,
-        locations: {
-          'loc-x': { id: 'loc-x', title: 'X', type: 'mural', status: 'verified', lat: 1, lng: 1 },
-        },
-      });
+  for (const route of ['/', '/contact', '/support', '/about']) {
+    test(`footer on ${route}: email contact, no inactive channels`, async ({ page }) => {
+      await mockBase44(page, { user: null });
       await page.goto(route);
-      await page.waitForLoadState('domcontentloaded');
-      await noInactiveLinks(page);
       const footer = page.locator('footer').first();
-      if (await footer.count()) {
-        await footer.scrollIntoViewIfNeeded();
-        await expect(footer.getByRole('link', { name: 'hello@ooh.earth' })).toHaveAttribute(
-          'href',
-          'mailto:hello@ooh.earth',
-        );
-        await expect(footer.getByText('Channels', { exact: true })).toHaveCount(0);
-        await expect(footer.getByText('Union', { exact: true })).toBeVisible();
-        await expect(footer.getByText('Site', { exact: true })).toBeVisible();
-      }
+      await expect(footer).toBeAttached({ timeout: 10_000 });
+      await footer.scrollIntoViewIfNeeded();
+      await expect(footer.getByRole('link', { name: 'hello@ooh.earth' })).toHaveAttribute(
+        'href',
+        'mailto:hello@ooh.earth',
+      );
+      await expect(footer.getByText('Channels', { exact: true })).toHaveCount(0);
+      await expect(footer.getByText('Union', { exact: true })).toBeVisible();
+      await expect(footer.getByText('Site', { exact: true })).toBeVisible();
+      const hrefs = await footer
+        .locator('a[href]')
+        .evaluateAll((els) => els.map((e) => e.getAttribute('href') || ''));
+      expect(hrefs.filter((h) => INACTIVE.test(h))).toEqual([]);
       await shot(page, `footer-${route.replace(/\W+/g, '_') || 'home'}`);
     });
   }
+
+  test('/support lists no Instagram/Twitch channel links once settled', async ({ page }) => {
+    await mockBase44(page, { user: null });
+    await page.goto('/support');
+    await expect(page.getByRole('link', { name: 'Foundation' }).first()).toBeVisible({
+      timeout: 10_000,
+    });
+    await noInactiveLinks(page);
+  });
+
+  test('Command Center offers the email and no inactive channels', async ({ page }) => {
+    await mockBase44(page, { user: null });
+    await page.goto('/contact');
+    await page
+      .getByRole('button', { name: /open command center/i })
+      .first()
+      .click();
+    const email = page.getByRole('link', { name: /hello@ooh\.earth/ }).last();
+    await expect(email).toBeVisible({ timeout: 10_000 });
+    await expect(email).toHaveAttribute('href', 'mailto:hello@ooh.earth');
+    await expect(email).not.toHaveAttribute('target', '_blank');
+    await noInactiveLinks(page);
+  });
 });
 
 function loc(status: string) {
