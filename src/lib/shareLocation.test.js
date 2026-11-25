@@ -1,6 +1,11 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { canonicalLocationUrl, shareLocation, shareLocationUrl } from './shareLocation.js';
+import {
+  canonicalLocationUrl,
+  shareAvailability,
+  shareLocation,
+  shareLocationUrl,
+} from './shareLocation.js';
 
 test('canonical location URLs use the public domain and encode the id', () => {
   assert.equal(
@@ -55,5 +60,52 @@ test('share delivery keeps the canonical Location identity separate', () => {
   assert.equal(
     canonicalLocationUrl('location/one'),
     'https://oohearth.app/location/location%2Fone',
+  );
+});
+
+test('only verified records are shareable; pending/rejected explain why', () => {
+  assert.deepEqual(shareAvailability({ status: 'verified' }), { shareable: true, reason: '' });
+  assert.equal(shareAvailability({ status: 'pending' }).shareable, false);
+  assert.match(shareAvailability({ status: 'pending' }).reason, /after approval/i);
+  assert.equal(shareAvailability({}).shareable, false);
+  assert.equal(shareAvailability({ status: 'rejected' }).shareable, false);
+  assert.match(shareAvailability({ status: 'rejected' }).reason, /not approved/i);
+});
+
+test('native share cancellation is not an error; real failures propagate', async () => {
+  const abort = Object.assign(new Error('x'), { name: 'AbortError' });
+  const cancelled = await shareLocation(
+    { id: 'a' },
+    {
+      share: async () => {
+        throw abort;
+      },
+    },
+  );
+  assert.equal(cancelled.method, 'cancelled');
+  await assert.rejects(
+    shareLocation(
+      { id: 'a' },
+      {
+        share: async () => {
+          throw new Error('boom');
+        },
+      },
+    ),
+  );
+});
+
+test('copy failure rejects so the UI never claims "copied"', async () => {
+  await assert.rejects(
+    shareLocation(
+      { id: 'a' },
+      {
+        clipboard: {
+          writeText: async () => {
+            throw new Error('denied');
+          },
+        },
+      },
+    ),
   );
 });

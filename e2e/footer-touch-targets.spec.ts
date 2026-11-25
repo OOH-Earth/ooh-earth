@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
 import { mockBase44 } from './fixtures/mockBase44';
 
-// The footer's secondary link list (Channels/Union/Site columns) rendered
+// The footer's secondary link list (Contact/Union/Site columns) rendered
 // at ~14px tap height on mobile -- well under the 24x24px touch-target
 // guideline. Fixed by giving each link `py-1.5 -my-1.5`: the padding grows
 // the tappable box, the matching negative margin cancels its effect on
@@ -26,13 +26,32 @@ test('footer links meet the 24px minimum touch-target height on mobile', async (
   const count = await footerLinks.count();
   expect(count).toBeGreaterThan(0);
 
-  const heights = await page.evaluate(() => {
-    const links = Array.from(document.querySelectorAll('footer ul a'));
-    return links.map((el) => el.getBoundingClientRect().height);
-  });
+  const links = await page.evaluate(() =>
+    Array.from(document.querySelectorAll('footer ul a')).map((el) => ({
+      text: (el.textContent || '').trim(),
+      href: el.getAttribute('href') || '',
+      height: el.getBoundingClientRect().height,
+    })),
+  );
 
-  expect(heights.length).toBeGreaterThanOrEqual(12);
-  for (const h of heights) {
-    expect(h).toBeGreaterThanOrEqual(24);
+  // Meaningful navigation, not just a count: the shared footer must keep every
+  // working Union and Site destination, expose the single email contact, and
+  // must not advertise the removed inactive social channels.
+  const byText = (t: string) => links.filter((l) => l.text === t);
+  expect(byText('hello@ooh.earth').map((l) => l.href)).toEqual(['mailto:hello@ooh.earth']);
+  for (const t of ['Advertisers Anonymous', 'Sponsor / Fund', 'Foundation']) {
+    expect(byText(t), `Union link "${t}" missing`).toHaveLength(1);
+  }
+  for (const t of ['Map', 'Report', 'Plans', 'Contact', 'Support']) {
+    expect(byText(t), `Site link "${t}" missing`).toHaveLength(1);
+  }
+  expect(byText('About')).toHaveLength(2); // one under Union, one under Site
+  expect(links.filter((l) => /instagram\.com|twitch\.tv|zora\.co|pump\.fun/i.test(l.href))).toEqual(
+    [],
+  );
+  expect(links).toHaveLength(11);
+
+  for (const l of links) {
+    expect(l.height, `${l.text} is shorter than the 24px floor`).toBeGreaterThanOrEqual(24);
   }
 });
