@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
 import { mockBase44 } from './fixtures/mockBase44';
 
-// The footer's secondary link list (Channels/Union/Site columns) rendered
+// The footer's secondary link list (Contact/Union/Site columns) rendered
 // at ~14px tap height on mobile -- well under the 24x24px touch-target
 // guideline. Fixed by giving each link `py-1.5 -my-1.5`: the padding grows
 // the tappable box, the matching negative margin cancels its effect on
@@ -31,7 +31,8 @@ test('footer links meet the 24px minimum touch-target height on mobile', async (
     return links.map((el) => el.getBoundingClientRect().height);
   });
 
-  expect(heights.length).toBeGreaterThanOrEqual(12);
+  // Contact (1) + Union (4) + Site (6) after the inactive social channels were removed.
+  expect(heights.length).toBeGreaterThanOrEqual(11);
   for (const h of heights) {
     expect(h).toBeGreaterThanOrEqual(24);
   }

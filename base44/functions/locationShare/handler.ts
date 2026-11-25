@@ -1,6 +1,8 @@
 const CANONICAL_ORIGIN = 'https://oohearth.app';
-const FALLBACK_IMAGE =
-  'https://media.base44.com/images/public/6a62213cff3ccbca88c04ff5/1625fc4b1_Screenshot2026-08-19at155752.png/v1/fill/w_1200,h_630/1625fc4b1_Screenshot2026-08-19at155752.png';
+// Generic brand card served from the app's own origin (public/brand). Used for
+// every non-public / error response so nothing about a record can leak, and for
+// public records that have no approved image. No third-party image service.
+const FALLBACK_IMAGE = `${CANONICAL_ORIGIN}/brand/og-share-card.png`;
 const APP_IDS = new Set(['6a62213cff3ccbca88c04ff5', '6a6748e009b947cb29591871']);
 const PHOTO_FIELDS = ['url', 'status', 'display_order'];
 // Base44 record ids are alphanumeric; reject punctuation before it reaches the
@@ -43,27 +45,44 @@ function isNotFoundError(error: unknown) {
   );
 }
 
+const UNAVAILABLE_STYLE =
+  'html{background:#000;color:#e8fff0}body{margin:0;min-height:100vh;display:grid;place-items:center;padding:24px;font:16px/1.5 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}' +
+  'main{max-width:34rem;width:100%;border:1px solid rgba(43,255,115,.35);padding:28px;background:radial-gradient(ellipse at 50% 120%,rgba(43,255,115,.12),transparent 60%),#050a07}' +
+  '.eyebrow{font-size:11px;letter-spacing:.3em;text-transform:uppercase;color:#2bff73}h1{margin:.5rem 0;font-size:1.6rem;line-height:1.15}p{margin:.6rem 0;color:rgba(232,255,240,.8)}' +
+  'nav{display:flex;flex-wrap:wrap;gap:12px;margin-top:20px}a{display:inline-flex;align-items:center;min-height:44px;padding:0 16px;border:1px solid #2bff73;color:#2bff73;text-decoration:none;font-size:13px;letter-spacing:.12em;text-transform:uppercase}' +
+  'a:hover{background:#2bff73;color:#000}a:focus-visible{outline:2px solid #e8fff0;outline-offset:3px}';
+
 function htmlDocument({ title, description, image, canonical, status = 200 }: any) {
+  const ok = status === 200;
   const safeTitle = escapeHtml(title);
   const safeDescription = escapeHtml(description);
   const safeImage = escapeHtml(image);
   const safeCanonical = escapeHtml(canonical);
-  const body =
-    status === 200
-      ? `<main><h1>${safeTitle}</h1><p>${safeDescription}</p><p><a href="${safeCanonical}">Open this Location in OOH Earth</a></p></main>`
-      : `<main><h1>${safeTitle}</h1><p>${safeDescription}</p><p><a href="${CANONICAL_ORIGIN}/">Open OOH Earth</a></p></main>`;
-  const redirect =
-    status === 200 ? `<meta http-equiv="refresh" content="0;url=${escapeHtml(canonical)}">` : '';
+  const generic = image === FALLBACK_IMAGE;
+  const imageMeta =
+    `<meta property="og:image" content="${safeImage}">` +
+    (generic
+      ? '<meta property="og:image:type" content="image/png"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="630"><meta property="og:image:alt" content="OOH Earth — street art and adbusting maps">'
+      : '') +
+    `<meta name="twitter:image" content="${safeImage}">`;
+  const body = ok
+    ? `<main><h1>${safeTitle}</h1><p>${safeDescription}</p><p><a href="${safeCanonical}">Open this Location in OOH Earth</a></p></main>`
+    : `<main><div class="eyebrow">// OOH Earth</div><h1>${safeTitle}</h1><p>${safeDescription}</p><nav aria-label="Continue"><a href="${CANONICAL_ORIGIN}/map">Open the Atlas</a><a href="${CANONICAL_ORIGIN}/">Home</a></nav></main>`;
+  const redirect = ok ? `<meta http-equiv="refresh" content="0;url=${safeCanonical}">` : '';
+  const robots = ok ? '' : '<meta name="robots" content="noindex, nofollow">';
+  const style = ok ? '' : `<style>${UNAVAILABLE_STYLE}</style>`;
   return new Response(
-    `<!doctype html><html lang="en"><head><meta charset="utf-8"><title>${safeTitle}</title><meta name="description" content="${safeDescription}"><meta property="og:title" content="${safeTitle}"><meta property="og:description" content="${safeDescription}"><meta property="og:image" content="${safeImage}"><meta property="og:url" content="${safeCanonical}"><meta property="og:type" content="article"><meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="${safeTitle}"><meta name="twitter:description" content="${safeDescription}"><meta name="twitter:image" content="${safeImage}"><link rel="canonical" href="${safeCanonical}"></head><body>${body}${redirect}</body></html>`,
+    `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${safeTitle}</title>${robots}<meta name="description" content="${safeDescription}"><meta property="og:title" content="${safeTitle}"><meta property="og:description" content="${safeDescription}">${imageMeta}<meta property="og:url" content="${safeCanonical}"><meta property="og:type" content="${ok ? 'article' : 'website'}"><meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="${safeTitle}"><meta name="twitter:description" content="${safeDescription}"><link rel="canonical" href="${safeCanonical}">${style}</head><body>${body}${redirect}</body></html>`,
     {
       status,
       headers: {
         'content-type': 'text/html; charset=utf-8',
-        'cache-control': 'public, max-age=60, s-maxage=300',
+        // Non-public / error responses must never be cached: a pending record
+        // can be approved at any time and link unfurlers must re-check.
+        'cache-control': ok ? 'public, max-age=60, s-maxage=300' : 'no-store',
+        ...(ok ? {} : { 'x-robots-tag': 'noindex, nofollow' }),
         'x-content-type-options': 'nosniff',
-        'content-security-policy':
-          "default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline';",
+        'content-security-policy': "default-src 'none'; style-src 'unsafe-inline'; img-src 'none';",
       },
     },
   );
@@ -85,8 +104,8 @@ export async function handleLocationShare(
   const id = new URL(req.url).searchParams.get('id') || '';
   if (!ID_PATTERN.test(id))
     return htmlDocument({
-      title: 'Location not found | OOH Earth',
-      description: 'This OOH Earth Location is not available.',
+      title: 'Location not available | OOH Earth',
+      description: 'This location is not available.',
       image: FALLBACK_IMAGE,
       canonical: `${CANONICAL_ORIGIN}/`,
       status: 404,
@@ -105,8 +124,9 @@ export async function handleLocationShare(
     }
     if (!location || location.status !== 'verified')
       return htmlDocument({
-        title: 'Location not found | OOH Earth',
-        description: 'This OOH Earth Location is not publicly available.',
+        title: 'Location not available | OOH Earth',
+        description:
+          'This location is not publicly available. It may be awaiting approval or may have been removed.',
         image: FALLBACK_IMAGE,
         canonical: `${CANONICAL_ORIGIN}/`,
         status: 404,

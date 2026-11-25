@@ -33,7 +33,7 @@ import LocationContextEvidence from '@/components/ooh/LocationContextEvidence';
 import EvidenceTimeline from '@/components/ooh/EvidenceTimeline';
 import { useSeo } from '@/lib/seoContext';
 import { getStatusBadgeClasses } from '@/lib/statusBadge';
-import { shareLocation } from '@/lib/shareLocation';
+import { shareLocation, shareAvailability } from '@/lib/shareLocation';
 import { addToFieldMission, loadFieldMission } from '@/lib/fieldMission';
 
 function normalizeSeed(rec) {
@@ -233,7 +233,9 @@ export default function LocationDetail() {
       ? `https://www.google.com/maps/dir/?api=1&destination=${loc.lat},${loc.lng}`
       : null;
 
+  const shareInfo = shareAvailability(loc);
   const onShare = async () => {
+    if (!shareInfo.shareable) return;
     setShareState('sharing');
     try {
       const result = await shareLocation({ id: loc.id, title: loc.title, address: loc.address });
@@ -322,15 +324,24 @@ export default function LocationDetail() {
                   Return to mission
                 </Link>
               )}
-              <button
-                type="button"
-                onClick={onShare}
-                disabled={shareState === 'sharing'}
-                aria-label="Share location"
-                className="inline-flex h-9 items-center gap-1.5 border border-ozone/60 px-3 font-mono text-[9px] font-bold uppercase tracking-[0.18em] text-ozone transition-colors hover:bg-ozone hover:text-void disabled:opacity-50"
-              >
-                <Share2 className="h-3.5 w-3.5" /> Share
-              </button>
+              {shareInfo.shareable ? (
+                <button
+                  type="button"
+                  onClick={onShare}
+                  disabled={shareState === 'sharing'}
+                  aria-label="Share location"
+                  className="inline-flex h-9 items-center gap-1.5 border border-ozone/60 px-3 font-mono text-[9px] font-bold uppercase tracking-[0.18em] text-ozone transition-colors hover:bg-ozone hover:text-void disabled:opacity-50"
+                >
+                  <Share2 className="h-3.5 w-3.5" /> Share
+                </button>
+              ) : (
+                <span
+                  data-testid="share-unavailable"
+                  className="inline-flex min-h-9 items-center gap-1.5 border border-dashed border-silver/30 px-3 font-mono text-[9px] uppercase tracking-[0.14em] text-silver/70"
+                >
+                  <Share2 className="h-3.5 w-3.5" aria-hidden="true" /> {shareInfo.reason}
+                </span>
+              )}
               {shareState && shareState !== 'sharing' && (
                 <span
                   role="status"

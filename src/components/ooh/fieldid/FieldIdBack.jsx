@@ -27,10 +27,8 @@ export default function FieldIdBack({ op }) {
 
       <div className="mx-3 mt-2 grid grid-cols-2 gap-2 border-t border-slate2/40 pt-2">
         <div>
-          <div className="font-mono text-[7px] uppercase tracking-[0.25em] text-dim">Channels</div>
-          <div className="font-mono text-[8px] leading-tight text-silver/70">
-            instagram · twitch · zora · $OOHEX
-          </div>
+          <div className="font-mono text-[7px] uppercase tracking-[0.25em] text-dim">Contact</div>
+          <div className="font-mono text-[8px] leading-tight text-silver/70">hello@ooh.earth</div>
         </div>
         <div>
           <div className="font-mono text-[7px] uppercase tracking-[0.25em] text-dim">Aligned</div>
