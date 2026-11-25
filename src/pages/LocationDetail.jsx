@@ -337,7 +337,7 @@ export default function LocationDetail() {
               ) : (
                 <span
                   data-testid="share-unavailable"
-                  className="inline-flex min-h-9 items-center gap-1.5 border border-dashed border-silver/30 px-3 font-mono text-[9px] uppercase tracking-[0.14em] text-silver/70"
+                  className="inline-flex min-h-9 items-center gap-1.5 border border-dashed border-silver/30 px-3 font-mono text-[10px] uppercase tracking-[0.12em] text-silver/70"
                 >
                   <Share2 className="h-3.5 w-3.5" aria-hidden="true" /> {shareInfo.reason}
                 </span>
@@ -345,7 +345,7 @@ export default function LocationDetail() {
               {shareState && shareState !== 'sharing' && (
                 <span
                   role="status"
-                  className="font-mono text-[8px] uppercase tracking-[0.16em] text-dim"
+                  className="font-mono text-[10px] uppercase tracking-[0.12em] text-silver/80"
                 >
                   {shareState === 'shared'
                     ? 'Shared'
