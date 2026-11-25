@@ -1,14 +1,5 @@
 import { Link } from 'react-router-dom';
-import {
-  HandHeart,
-  ArrowUpRight,
-  LifeBuoy,
-  MessageSquare,
-  Instagram,
-  Twitch,
-  Globe,
-  Send,
-} from 'lucide-react';
+import { HandHeart, ArrowUpRight, LifeBuoy, MessageSquare, Globe, Send } from 'lucide-react';
 import Nav from '@/components/ooh/Nav';
 import SiteFooter from '@/components/ooh/SiteFooter';
 import HorizonProgress from '@/components/ooh/HorizonProgress';
@@ -21,8 +12,6 @@ import ContactForm from '@/components/ooh/support/ContactForm';
 import SupportFaq from '@/components/ooh/support/SupportFaq';
 
 const CHANNELS = [
-  { label: 'Instagram', href: 'https://www.instagram.com/oohstreetmaps/', icon: Instagram },
-  { label: 'Twitch', href: 'https://twitch.tv/oohearth', icon: Twitch },
   { label: 'Foundation', href: 'https://oohearthfoundation.framer.wiki/', icon: Globe },
   { label: 'Advertisers Anonymous', href: 'https://advertisersanonymous.org/', icon: Send },
 ];
