@@ -62,7 +62,7 @@ Deno.test('locationShare hides non-public locations and invalid ids', async () =
   assertEquals(rejected.status, 404);
   const invalid = await handleLocationShare(request('/locationShare?id=<script>'), deps(null));
   assertEquals(invalid.status, 404);
-  assertStringIncludes(await invalid.text(), 'Location not found');
+  assertStringIncludes(await invalid.text(), 'Location not available');
   const punctuation = await handleLocationShare(
     request('/locationShare?id=not-a-real-location'),
     deps(null),
@@ -76,7 +76,7 @@ Deno.test('locationShare classifies known-format nonexistent IDs as not found', 
     notFoundDeps(),
   );
   assertEquals(response.status, 404);
-  assertStringIncludes(await response.text(), 'Location not found');
+  assertStringIncludes(await response.text(), 'Location not available');
 });
 
 Deno.test('locationShare preserves 503 for genuine backend failures', async () => {
@@ -111,5 +111,64 @@ Deno.test('locationShare uses the fallback for unsafe image URLs', async () => {
   const body = await response.text();
   assertEquals(response.status, 200);
   assert(!body.includes('javascript:'));
-  assertStringIncludes(body, 'media.base44.com/images/public/6a62213cff3ccbca88c04ff5');
+  assertStringIncludes(body, 'https://oohearth.app/brand/og-share-card.png');
 });
+
+Deno.test(
+  'locationShare gives pending records the same generic, uncacheable, noindex page for every user agent',
+  async () => {
+    const pending = {
+      id: 'pending1',
+      title: 'SECRET Pending Title',
+      type: 'billboard',
+      status: 'pending',
+      image_url: 'https://media.base44.com/images/public/secret.jpg',
+      address: '1 Private Street',
+    };
+    const asBrowser = await handleLocationShare(
+      new Request('https://oohearth.app/locationShare?id=pending1', {
+        headers: { 'user-agent': 'Mozilla/5.0 (iPhone)' },
+      }),
+      deps(pending, [
+        { url: 'https://media.base44.com/images/public/secret2.jpg', status: 'verified' },
+      ]),
+    );
+    const asDiscord = await handleLocationShare(
+      new Request('https://oohearth.app/locationShare?id=pending1', {
+        headers: { 'user-agent': 'Mozilla/5.0 (compatible; Discordbot/2.0)' },
+      }),
+      deps(pending, [
+        { url: 'https://media.base44.com/images/public/secret2.jpg', status: 'verified' },
+      ]),
+    );
+    const [a, b] = [await asBrowser.text(), await asDiscord.text()];
+    assertEquals(asBrowser.status, 404);
+    assertEquals(asDiscord.status, 404);
+    assertEquals(a, b);
+    for (const leaked of ['SECRET', 'Private Street', 'secret.jpg', 'secret2.jpg', 'billboard']) {
+      assert(!a.includes(leaked), `leaked ${leaked}`);
+    }
+    assertStringIncludes(a, 'https://oohearth.app/brand/og-share-card.png');
+    assertStringIncludes(a, 'og:image:type');
+    assertStringIncludes(a, 'noindex');
+    assertStringIncludes(a, 'Open the Atlas');
+    assertStringIncludes(a, '<main>');
+    assertEquals(asBrowser.headers.get('cache-control'), 'no-store');
+    assertEquals(asBrowser.headers.get('x-robots-tag'), 'noindex, nofollow');
+  },
+);
+
+Deno.test(
+  'locationShare falls back to the own-origin brand card when a public record has no image',
+  async () => {
+    const response = await handleLocationShare(
+      request('/locationShare?id=pub1'),
+      deps({ id: 'pub1', title: 'Public thing', type: 'mural', status: 'verified' }),
+    );
+    const body = await response.text();
+    assertEquals(response.status, 200);
+    assertStringIncludes(body, 'https://oohearth.app/brand/og-share-card.png');
+    assertStringIncludes(body, 'rel="canonical" href="https://oohearth.app/location/pub1"');
+    assertEquals(response.headers.get('cache-control'), 'public, max-age=60, s-maxage=300');
+  },
+);

@@ -33,47 +33,15 @@ export default function SiteFooter() {
 
           <div>
             <div className="font-mono text-[10px] uppercase tracking-[0.3em] text-silver/40">
-              Channels
+              Contact
             </div>
             <ul className="mt-3 space-y-2 font-mono text-[11px] text-silver/60">
               <li>
                 <a
-                  href="https://www.instagram.com/oohstreetmaps/"
-                  target="_blank"
-                  rel="noreferrer"
+                  href="mailto:hello@ooh.earth"
                   className="inline-block py-1.5 -my-1.5 transition-colors hover:text-ozone"
                 >
-                  Instagram
-                </a>
-              </li>
-              <li>
-                <a
-                  href="https://twitch.tv/oohearth"
-                  target="_blank"
-                  rel="noreferrer"
-                  className="inline-block py-1.5 -my-1.5 transition-colors hover:text-ozone"
-                >
-                  Twitch
-                </a>
-              </li>
-              <li>
-                <a
-                  href="https://zora.co/@oohearth"
-                  target="_blank"
-                  rel="noreferrer"
-                  className="inline-block py-1.5 -my-1.5 transition-colors hover:text-ozone"
-                >
-                  Zora
-                </a>
-              </li>
-              <li>
-                <a
-                  href="https://pump.fun/BwVYGpW3wqe6UZWoLDj4UbxXc94n813MSJcDNePApump"
-                  target="_blank"
-                  rel="noreferrer"
-                  className="inline-block py-1.5 -my-1.5 transition-colors hover:text-ozone"
-                >
-                  $OOHEX · pump.fun
+                  hello@ooh.earth
                 </a>
               </li>
             </ul>

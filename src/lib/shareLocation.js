@@ -1,6 +1,17 @@
 const CANONICAL_ORIGIN = 'https://oohearth.app';
 const PRODUCTION_APP_ID = '6a62213cff3ccbca88c04ff5';
 
+// Mirrors locationShare's publication policy (handler.ts): only `verified`
+// records resolve for anonymous visitors. Anything else would give recipients a
+// "not publicly available" page, so the Share affordance is withheld.
+export function shareAvailability(location) {
+  const status = location?.status || 'pending';
+  if (status === 'verified') return { shareable: true, reason: '' };
+  if (status === 'rejected')
+    return { shareable: false, reason: 'Not shareable: this record was not approved' };
+  return { shareable: false, reason: 'Share available after approval' };
+}
+
 export function canonicalLocationUrl(id) {
   return new URL(`/location/${encodeURIComponent(String(id))}`, CANONICAL_ORIGIN).toString();
 }

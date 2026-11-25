@@ -84,11 +84,11 @@ export default function AdvertiserInfo({ loc }) {
         </div>
       )}
 
-      {/* Harm tags */}
+      {/* Content tags (stored in the legacy `harm_tags` field) */}
       {loc.harm_tags && loc.harm_tags.length > 0 && (
         <div>
           <span className="font-mono text-[9px] uppercase tracking-[0.3em] text-flare/60">
-            // Harm tags
+            // Content tags
           </span>
           <div className="mt-1.5 flex flex-wrap gap-1.5">
             {loc.harm_tags.map((tag) => (
