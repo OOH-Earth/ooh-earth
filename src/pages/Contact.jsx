@@ -1,9 +1,20 @@
-import { Mail, ArrowUpRight } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { Mail, Send, ArrowUpRight, Instagram, Twitch, Radio, Crosshair } from 'lucide-react';
 import Nav from '@/components/ooh/Nav';
 import SiteFooter from '@/components/ooh/SiteFooter';
 import HorizonProgress from '@/components/ooh/HorizonProgress';
 import ViewfinderCursor from '@/components/ooh/ViewfinderCursor';
-import OrbitalField from '@/components/ooh/contact/OrbitalField';
+
+const SOCIALS = [
+  {
+    label: 'Instagram',
+    handle: '@oohstreetmaps',
+    href: 'https://www.instagram.com/oohstreetmaps/',
+    Icon: Instagram,
+  },
+  { label: 'Twitch', handle: 'oohearth', href: 'https://twitch.tv/oohearth', Icon: Twitch },
+  { label: 'Zora', handle: '@oohearth', href: 'https://zora.co/@oohearth', Icon: Radio },
+];
 
 export default function Contact() {
   return (
@@ -23,29 +34,75 @@ export default function Contact() {
                 Get in touch
               </h1>
               <p className="mt-5 max-w-xl font-display text-sm font-normal leading-[1.5] text-darkgray md:text-base">
-                Email is our only contact channel.
+                Reach out to join, collaborate, report a billboard, or support the work.
               </p>
             </div>
           </div>
         </section>
 
         <section className="border-b border-slate2/40 bg-card">
-          <div className="px-5 py-10 md:px-8 md:py-14">
-            <div className="mx-auto max-w-3xl space-y-8">
-              <a
-                href="mailto:hello@ooh.earth"
-                className="group flex min-h-14 items-center gap-3 border border-ozone/50 px-5 py-4 transition-colors hover:border-ozone focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ozone"
-              >
-                <Mail className="h-5 w-5 shrink-0 text-ozone" aria-hidden="true" />
-                <span className="break-all font-display text-base font-bold text-silver md:text-lg">
-                  hello@ooh.earth
-                </span>
-                <ArrowUpRight
-                  className="ml-auto h-4 w-4 shrink-0 text-silver/40 transition-colors group-hover:text-ozone"
-                  aria-hidden="true"
-                />
-              </a>
-              <OrbitalField />
+          <div className="px-5 py-12 md:px-8 md:py-16">
+            <div className="mx-auto max-w-3xl">
+              <h2 className="font-display text-2xl font-bold tracking-[-0.01em] text-silver md:text-3xl">
+                Direct channels
+              </h2>
+              <div className="mt-6 grid gap-px border border-slate2/40 bg-slate2/40 sm:grid-cols-3">
+                {SOCIALS.map(({ label, handle, href, Icon }) => (
+                  <a
+                    key={label}
+                    href={href}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="group flex flex-col gap-2 bg-void p-5 transition-colors hover:bg-void/60 focus-visible:outline focus-visible:outline-2 focus-visible:outline-ozone focus-visible:-outline-offset-2"
+                  >
+                    <Icon className="h-5 w-5 text-ozone" aria-hidden="true" />
+                    <span className="font-display text-sm font-bold uppercase tracking-wide text-silver">
+                      {label}
+                    </span>
+                    <span className="font-mono text-[10px] tracking-[0.1em] text-darkgray">
+                      {handle}
+                    </span>
+                  </a>
+                ))}
+              </div>
+
+              <div className="mt-8 space-y-4">
+                <a
+                  href="mailto:hello@ooh.earth"
+                  className="flex items-center gap-3 border border-slate2/50 px-5 py-4 transition-colors hover:border-ozone focus-visible:outline focus-visible:outline-2 focus-visible:outline-ozone focus-visible:outline-offset-2"
+                >
+                  <Mail className="h-5 w-5 text-ozone" aria-hidden="true" />
+                  <span className="font-display text-sm font-bold text-silver">
+                    hello@ooh.earth
+                  </span>
+                  <ArrowUpRight
+                    className="ml-auto h-4 w-4 text-silver/40 transition-colors group-hover:text-ozone"
+                    aria-hidden="true"
+                  />
+                </a>
+
+                <Link
+                  to="/support"
+                  className="flex items-center gap-3 border border-slate2/50 px-5 py-4 transition-colors hover:border-ozone focus-visible:outline focus-visible:outline-2 focus-visible:outline-ozone focus-visible:outline-offset-2"
+                >
+                  <Send className="h-5 w-5 text-ozone" aria-hidden="true" />
+                  <span className="font-display text-sm font-bold text-silver">
+                    Send a support message
+                  </span>
+                  <ArrowUpRight className="ml-auto h-4 w-4 text-silver/40" aria-hidden="true" />
+                </Link>
+
+                <Link
+                  to="/report"
+                  className="flex items-center gap-3 border border-slate2/50 px-5 py-4 transition-colors hover:border-ozone focus-visible:outline focus-visible:outline-2 focus-visible:outline-ozone focus-visible:outline-offset-2"
+                >
+                  <Crosshair className="h-5 w-5 text-ozone" aria-hidden="true" />
+                  <span className="font-display text-sm font-bold text-silver">
+                    Report a billboard or adbust
+                  </span>
+                  <ArrowUpRight className="ml-auto h-4 w-4 text-silver/40" aria-hidden="true" />
+                </Link>
+              </div>
             </div>
           </div>
         </section>
