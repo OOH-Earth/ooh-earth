@@ -209,7 +209,8 @@ test.describe('Shared social surfaces', () => {
       [/oohearth on Zora/, ZORA],
       [/\$OOHEX · pump\.fun/, PUMP],
     ] as [RegExp, string][]) {
-      const link = page.getByRole('link', { name });
+      // Scoped to the dialog: the footer behind it carries the same destinations.
+      const link = page.getByRole('dialog', { name: 'Command Center' }).getByRole('link', { name });
       await expect(link).toHaveAttribute('href', href, { timeout: 10_000 });
       await expect(link).toHaveAttribute('target', '_blank');
     }
