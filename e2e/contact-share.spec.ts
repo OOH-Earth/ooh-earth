@@ -1,11 +1,15 @@
 import { test, expect, type Page } from '@playwright/test';
 import { mockBase44, filterCrashes, type MockDb } from './fixtures/mockBase44';
 
-// Contact page + shared footer (no inactive social channels, email only,
-// decorative orbital field) and the Location detail Share affordance.
+// Contact page + shared social/contact surfaces (restored experience: social
+// cards, email, support-form route, Report route; no orbital visual) and the
+// Location detail Share affordance.
 
 const SHOTS = process.env.SHOTS_DIR;
-const INACTIVE = /instagram\.com|twitch\.tv|zora\.co|pump\.fun/i;
+const INSTAGRAM = 'https://www.instagram.com/oohstreetmaps/';
+const TWITCH = 'https://twitch.tv/oohearth';
+const ZORA = 'https://zora.co/@oohearth';
+const PUMP = 'https://pump.fun/BwVYGpW3wqe6UZWoLDj4UbxXc94n813MSJcDNePApump';
 const VIEWPORTS = [
   { name: 'desktop', width: 1280, height: 800 },
   { name: '320', width: 320, height: 640 },
@@ -16,126 +20,200 @@ const VIEWPORTS = [
 async function shot(page: Page, name: string) {
   if (SHOTS) await page.screenshot({ path: `${SHOTS}/${name}.png`, fullPage: true });
 }
-async function noInactiveLinks(page: Page) {
-  const hrefs = await page
-    .locator('a[href]')
-    .evaluateAll((els) => els.map((e) => e.getAttribute('href') || ''));
-  expect(hrefs.filter((h) => INACTIVE.test(h))).toEqual([]);
-}
 
 test.describe('Contact page', () => {
   for (const vp of VIEWPORTS) {
-    test(`email-only, orbital field is inert and fits at ${vp.name}`, async ({ page }) => {
+    test(`social cards, email and actions fit and are reachable at ${vp.name}`, async ({
+      page,
+    }) => {
       const errors: string[] = [];
       page.on('console', (m) => m.type() === 'error' && errors.push(m.text()));
       await mockBase44(page, { user: null });
       await page.setViewportSize({ width: vp.width, height: vp.height });
       await page.goto('/contact');
-      const email = page.getByRole('link', { name: 'hello@ooh.earth' }).first();
-      await expect(email).toBeVisible();
-      await expect(email).toHaveAttribute('href', 'mailto:hello@ooh.earth');
-      await email.focus();
-      await expect(email).toBeFocused();
-      await noInactiveLinks(page);
-      await expect(
-        page.getByText(/direct channels|send a support message|report a billboard/i),
-      ).toHaveCount(0);
+      const main = page.locator('main');
+      await expect(main.getByRole('heading', { name: 'Direct channels' })).toBeVisible();
 
-      const field = page.getByTestId('orbital-field');
-      await expect(field).toHaveAttribute('aria-hidden', 'true');
-      await expect(field).toHaveCSS('pointer-events', 'none');
+      const expected: [RegExp, string][] = [
+        [/Instagram\s*@oohstreetmaps/, INSTAGRAM],
+        [/Twitch\s*oohearth/, TWITCH],
+        [/Zora\s*@oohearth/, ZORA],
+        [/^hello@ooh\.earth$/, 'mailto:hello@ooh.earth'],
+        [/^Send a support message$/, '/support'],
+        [/^Report a billboard or adbust$/, '/report'],
+      ];
+      await expect(main.getByRole('link')).toHaveCount(expected.length);
+      for (const [name, href] of expected) {
+        const link = main.getByRole('link', { name });
+        await expect(link).toHaveAttribute('href', href);
+        if (href.startsWith('https:')) {
+          await expect(link).toHaveAttribute('target', '_blank');
+          await expect(link).toHaveAttribute('rel', 'noreferrer');
+        }
+        await link.focus();
+        await expect(link).toBeFocused();
+        // Centred in the viewport, the link must be what is hit at its centre.
+        const hit = await link.evaluate((el) => {
+          el.scrollIntoView({ block: 'center', behavior: 'instant' });
+          const r = el.getBoundingClientRect();
+          const top = document.elementFromPoint(r.x + r.width / 2, r.y + r.height / 2);
+          return { own: el.contains(top), height: r.height, left: r.left, right: r.right };
+        });
+        expect(hit.own, `${href} is covered`).toBe(true);
+        expect(hit.height).toBeGreaterThanOrEqual(44);
+        expect(hit.left).toBeGreaterThanOrEqual(0);
+        expect(hit.right).toBeLessThanOrEqual(vp.width);
+      }
+
+      await expect(page.locator('[class*="orbital"]')).toHaveCount(0);
+      const orbital = await page.evaluate(() =>
+        document
+          .getAnimations()
+          .map((a) => (a as CSSAnimation).animationName || '')
+          .filter((n) => n.startsWith('orbital')),
+      );
+      expect(orbital).toEqual([]);
       const overflow = await page.evaluate(
         () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
       );
       expect(overflow).toBeLessThanOrEqual(0);
-      // The email link must be the element hit at its own centre (not covered).
-      await email.scrollIntoViewIfNeeded();
-      await page.evaluate(() => window.scrollBy(0, 120)); // clear any fixed header band
-      await page.waitForTimeout(600); // let smooth scrolling settle before hit-testing
-      const box = (await email.boundingBox())!;
-      const topIsEmail = await page.evaluate(
-        ([x, y]) => !!document.elementFromPoint(x, y)?.closest('a[href^="mailto:"]'),
-        [box.x + box.width / 2, box.y + box.height / 2],
-      );
-      expect(topIsEmail).toBe(true);
       await shot(page, `contact-${vp.name}`);
       expect(filterCrashes(errors)).toEqual([]);
     });
   }
 
-  test('reduced motion stops all orbital animation', async ({ page }) => {
+  test('keyboard order runs socials, email, support, report', async ({ page }) => {
     await mockBase44(page, { user: null });
-    await page.emulateMedia({ reducedMotion: 'reduce' });
     await page.goto('/contact');
-    await expect(page.getByTestId('orbital-field')).toBeAttached();
-    const states = await page
-      .locator('.orbital-field__spin, .orbital-field__star')
-      .evaluateAll((els) => els.map((e) => getComputedStyle(e).animationName));
-    expect(states.length).toBeGreaterThan(0);
-    expect(new Set(states)).toEqual(new Set(['none']));
-    await expect(page.getByTestId('orbital-field')).toHaveAttribute('data-paused', 'true');
+    const links = page.locator('main a');
+    await expect(links).toHaveCount(6);
+    await links.first().focus();
+    for (let i = 1; i < 6; i++) {
+      await page.keyboard.press('Tab');
+      await expect(links.nth(i)).toBeFocused();
+      await expect(links.nth(i)).toHaveCSS('outline-style', 'solid');
+    }
   });
 
-  test('animation pauses when the document is hidden', async ({ page }) => {
+  test('Report action opens the report route', async ({ page }) => {
     await mockBase44(page, { user: null });
     await page.goto('/contact');
-    await expect(page.getByTestId('orbital-field')).toHaveAttribute('data-paused', 'false');
-    await page.evaluate(() => {
-      Object.defineProperty(document, 'hidden', { configurable: true, get: () => true });
-      document.dispatchEvent(new Event('visibilitychange'));
-    });
-    await expect(page.getByTestId('orbital-field')).toHaveAttribute('data-paused', 'true');
+    await page.getByRole('link', { name: 'Report a billboard or adbust' }).click();
+    await expect(page).toHaveURL(/\/report$/);
   });
 });
 
-// Routes that render the shared SiteFooter. /map, /adbusting and /location/:id
-// are app-shell routes with no SiteFooter (verified by probe), so there is
-// nothing to assert there. The Home page's separate on-chain product section
-// (pump.fun / Zora) is NOT the footer and is deliberately out of this release.
-test.describe('Shared footer', () => {
+// The contact form lives on /support (never embedded on /contact). captureLead
+// is always mocked here: the real function writes a record and sends email.
+test.describe('Support message form', () => {
+  async function open(page: Page, reply: { status: number; body: object }) {
+    const sent: unknown[] = [];
+    await mockBase44(page, { user: null });
+    await page.route('**/functions/captureLead', async (route) => {
+      sent.push(route.request().postDataJSON());
+      await route.fulfill({ status: reply.status, json: reply.body });
+    });
+    await page.goto('/contact');
+    await expect(page.locator('main form')).toHaveCount(0);
+    await page.getByRole('link', { name: 'Send a support message' }).click();
+    await expect(page).toHaveURL(/\/support$/);
+    const form = page.locator('main form').filter({ hasText: 'Message *' });
+    await expect(form).toBeVisible({ timeout: 10_000 });
+    for (const label of ['Name', 'Email *', 'Message *']) {
+      await expect(form.getByText(label, { exact: true })).toBeVisible();
+    }
+    return { form, sent };
+  }
+
+  test('blocks empty and malformed input without calling the backend', async ({ page }) => {
+    const { form, sent } = await open(page, { status: 200, body: { ok: true } });
+    const email = form.getByPlaceholder('you@email.com');
+    const send = form.getByRole('button', { name: 'Send message' });
+    await send.click();
+    expect(await email.evaluate((el: HTMLInputElement) => el.validity.valueMissing)).toBe(true);
+    await email.fill('not-an-email');
+    await form.getByPlaceholder('How can we help?').fill('Hello');
+    await send.click();
+    expect(await email.evaluate((el: HTMLInputElement) => el.validity.typeMismatch)).toBe(true);
+    expect(sent).toEqual([]);
+  });
+
+  test('submits once to captureLead and confirms', async ({ page }) => {
+    const { form, sent } = await open(page, { status: 200, body: { ok: true } });
+    await form.getByPlaceholder('Your name').fill('Test Person');
+    await form.getByPlaceholder('you@email.com').fill('test@example.com');
+    await form.getByPlaceholder('How can we help?').fill('Mocked message');
+    await form.getByRole('button', { name: 'Send message' }).click();
+    await expect(page.getByText('Transmission received')).toBeVisible();
+    expect(sent).toEqual([
+      { name: 'Test Person', email: 'test@example.com', message: 'Mocked message', amount: 0 },
+    ]);
+  });
+
+  test('a backend failure keeps the form and never claims success', async ({ page }) => {
+    const { form } = await open(page, { status: 500, body: { error: 'mock failure' } });
+    await form.getByPlaceholder('you@email.com').fill('test@example.com');
+    await form.getByPlaceholder('How can we help?').fill('Mocked message');
+    await form.getByRole('button', { name: 'Send message' }).click();
+    await expect(form.getByText(/mock failure|status code 500|went wrong/i)).toBeVisible();
+    await expect(form.getByPlaceholder('How can we help?')).toHaveValue('Mocked message');
+    await expect(page.getByText('Transmission received')).toHaveCount(0);
+  });
+});
+
+test.describe('Shared social surfaces', () => {
   for (const route of ['/', '/contact', '/support', '/about']) {
-    test(`footer on ${route}: email contact, no inactive channels`, async ({ page }) => {
+    test(`footer on ${route} carries the restored channels`, async ({ page }) => {
       await mockBase44(page, { user: null });
       await page.goto(route);
       const footer = page.locator('footer').first();
       await expect(footer).toBeAttached({ timeout: 10_000 });
       await footer.scrollIntoViewIfNeeded();
-      await expect(footer.getByRole('link', { name: 'hello@ooh.earth' })).toHaveAttribute(
-        'href',
-        'mailto:hello@ooh.earth',
-      );
-      await expect(footer.getByText('Channels', { exact: true })).toHaveCount(0);
-      await expect(footer.getByText('Union', { exact: true })).toBeVisible();
-      await expect(footer.getByText('Site', { exact: true })).toBeVisible();
-      const hrefs = await footer
-        .locator('a[href]')
-        .evaluateAll((els) => els.map((e) => e.getAttribute('href') || ''));
-      expect(hrefs.filter((h) => INACTIVE.test(h))).toEqual([]);
+      await expect(footer.getByText('Channels', { exact: true })).toBeVisible();
+      for (const [name, href] of [
+        ['Instagram', INSTAGRAM],
+        ['Twitch', TWITCH],
+        ['Zora', ZORA],
+        ['$OOHEX · pump.fun', PUMP],
+      ]) {
+        await expect(footer.getByRole('link', { name, exact: true })).toHaveAttribute('href', href);
+      }
       await shot(page, `footer-${route.replace(/\W+/g, '_') || 'home'}`);
     });
   }
 
-  test('/support lists no Instagram/Twitch channel links once settled', async ({ page }) => {
+  test('/support lists the restored Instagram and Twitch channels', async ({ page }) => {
     await mockBase44(page, { user: null });
     await page.goto('/support');
-    await expect(page.getByRole('link', { name: 'Foundation' }).first()).toBeVisible({
-      timeout: 10_000,
-    });
-    await noInactiveLinks(page);
+    const main = page.locator('main');
+    await expect(main.getByRole('link', { name: 'Instagram', exact: true })).toHaveAttribute(
+      'href',
+      INSTAGRAM,
+      { timeout: 10_000 },
+    );
+    await expect(main.getByRole('link', { name: 'Twitch', exact: true })).toHaveAttribute(
+      'href',
+      TWITCH,
+    );
   });
 
-  test('Command Center offers the email and no inactive channels', async ({ page }) => {
+  test('Command Center offers the restored social and token links', async ({ page }) => {
     await mockBase44(page, { user: null });
     await page.goto('/contact');
     await page
       .getByRole('button', { name: /open command center/i })
       .first()
       .click();
-    const email = page.getByRole('link', { name: /hello@ooh\.earth/ }).last();
-    await expect(email).toBeVisible({ timeout: 10_000 });
-    await expect(email).toHaveAttribute('href', 'mailto:hello@ooh.earth');
-    await expect(email).not.toHaveAttribute('target', '_blank');
-    await noInactiveLinks(page);
+    for (const [name, href] of [
+      [/Instagram @oohearth\.app/, INSTAGRAM],
+      [/oohearth on Zora/, ZORA],
+      [/\$OOHEX · pump\.fun/, PUMP],
+    ] as [RegExp, string][]) {
+      // Scoped to the dialog: the footer behind it carries the same destinations.
+      const link = page.getByRole('dialog', { name: 'Command Center' }).getByRole('link', { name });
+      await expect(link).toHaveAttribute('href', href, { timeout: 10_000 });
+      await expect(link).toHaveAttribute('target', '_blank');
+    }
   });
 });
 

@@ -72,12 +72,17 @@ const GROUPS = [
     ],
   },
   {
-    label: 'Contact',
+    label: 'Follow',
     links: [
       {
-        name: 'hello@ooh.earth',
-        desc: 'Our only contact address.',
-        href: 'mailto:hello@ooh.earth',
+        name: 'Instagram @oohearth.app',
+        desc: 'Field photography & live updates.',
+        href: 'https://www.instagram.com/oohstreetmaps/',
+      },
+      {
+        name: 'oohearth on Zora',
+        desc: 'On-chain creative resistance.',
+        href: 'https://zora.co/@oohearth',
       },
     ],
   },
@@ -119,6 +124,12 @@ const GROUPS = [
         name: '"Anti-Social" Adbusting Network',
         desc: 'The social resistance layer.',
         href: 'https://streetsocial.framer.ai/',
+      },
+      {
+        name: '$OOHEX · pump.fun',
+        desc: 'Solana token funding the network.',
+        href: 'https://pump.fun/BwVYGpW3wqe6UZWoLDj4UbxXc94n813MSJcDNePApump',
+        priority: true,
       },
       {
         name: 'UPC Scanner · #TrueCost',
@@ -258,9 +269,7 @@ export default function CommandCenter({ open, onClose }) {
                     const Wrap = l.to ? Link : 'a';
                     const wrapProps = l.to
                       ? { to: l.to, onClick: onClose }
-                      : l.href.startsWith('mailto:')
-                        ? { href: l.href }
-                        : { href: l.href, target: '_blank', rel: 'noreferrer' };
+                      : { href: l.href, target: '_blank', rel: 'noreferrer' };
                     return (
                       <Wrap
                         key={l.to || l.href}
