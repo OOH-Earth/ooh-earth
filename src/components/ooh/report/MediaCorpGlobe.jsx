@@ -306,7 +306,7 @@ export default function MediaCorpGlobe({
             'circle-stroke-opacity': 0.2,
           },
         },
-        'mc-clusters',
+        // No beforeId: 'mc-clusters' does not exist yet. Adding it later keeps these circles below it.
       );
 
       // Clusters
