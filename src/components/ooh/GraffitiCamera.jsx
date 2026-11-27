@@ -1,11 +1,15 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { base44 } from '@/api/base44Client';
 import { compressImage } from '@/lib/imageCompress';
 import { validateImageFile } from '@/lib/validateUpload';
 import { SprayCan, Crosshair, Loader2, Check, X, MapPin, CloudOff, Camera } from 'lucide-react';
 import { submitCapture } from '@/lib/offlineQueue';
+import { QUEUED_HEADING, queuedMessage } from '@/lib/captureFeedback';
+import { useSlowAction } from '@/hooks/useSlowAction';
 import CameraViewfinder from '@/components/ooh/CameraViewfinder';
 import { useKeyboardFilePicker } from '@/hooks/useKeyboardFilePicker';
+import { useFocusTrap } from '@/hooks/useFocusTrap';
 
 const GRAFFITI_TYPES = [
   { value: 'painted', label: 'Painted' },
@@ -47,6 +51,7 @@ export default function GraffitiCamera({ open, onClose }) {
   const [address, setAddress] = useState('');
   const [lat, setLat] = useState('');
   const [lng, setLng] = useState('');
+  const [manualCoordinates, setManualCoordinates] = useState(false);
   const [image_url, setImageUrl] = useState('');
   const [locating, setLocating] = useState(false);
   const [uploading, setUploading] = useState(false);
@@ -54,6 +59,10 @@ export default function GraffitiCamera({ open, onClose }) {
   const [done, setDone] = useState(null);
   const [error, setError] = useState('');
   const uploadTrigger = useKeyboardFilePicker(uploading);
+  const slow = useSlowAction(submitting);
+  const panelRef = useRef(null);
+  const errorRef = useRef(null);
+  useFocusTrap(panelRef, open, { label: 'Graffiti field camera' });
 
   const locate = () => {
     if (!navigator.geolocation) return;
@@ -62,6 +71,7 @@ export default function GraffitiCamera({ open, onClose }) {
       (pos) => {
         setLat(pos.coords.latitude.toFixed(5));
         setLng(pos.coords.longitude.toFixed(5));
+        setManualCoordinates(false);
         setLocating(false);
       },
       () => {
@@ -93,6 +103,11 @@ export default function GraffitiCamera({ open, onClose }) {
     };
   }, [open, onClose]);
 
+  // A message can appear while its place is scrolled out of the panel (e.g. a photo error).
+  useEffect(() => {
+    errorRef.current?.scrollIntoView({ block: 'nearest' });
+  }, [error]);
+
   if (!open) return null;
 
   const reset = () => {
@@ -101,6 +116,7 @@ export default function GraffitiCamera({ open, onClose }) {
     setAddress('');
     setLat('');
     setLng('');
+    setManualCoordinates(false);
     setType('painted');
     setMedium('spray_paint');
     setStyle('');
@@ -164,7 +180,7 @@ export default function GraffitiCamera({ open, onClose }) {
     try {
       const res = await submitCapture(payload);
       if (res.status === 'synced') setDone(res.rec);
-      else setDone({ queued: true, lat: latN, lng: lngN });
+      else setDone({ queued: true, offline: !navigator.onLine, lat: latN, lng: lngN });
     } catch (err) {
       setError(err?.message || 'Transmission failed.');
     } finally {
@@ -172,21 +188,25 @@ export default function GraffitiCamera({ open, onClose }) {
     }
   };
 
-  const showManual = !locating && (!lat || !lng);
+  // Fields being typed into stay put after both have a value.
+  const showManual = !locating && (manualCoordinates || !lat || !lng);
 
-  return (
+  // Portalled to <body>: the map page renders this inside a fixed, full-screen root whose
+  // stacking context would otherwise trap the dialog under the navigation and floating hints.
+  return createPortal(
     <div
       className="fixed inset-0 z-[2000] flex items-end justify-center bg-black/70 backdrop-blur-sm sm:items-center"
       onClick={onClose}
     >
       <div
-        className="relative max-h-[92dvh] w-full max-w-md overflow-y-auto border border-flare/40 bg-void p-5 sm:p-6"
+        ref={panelRef}
+        className="relative max-h-[92dvh] w-full max-w-md overflow-y-auto overscroll-contain border border-flare/40 bg-void p-5 pb-[calc(1.25rem_+_env(safe-area-inset-bottom))] sm:p-6"
         onClick={(e) => e.stopPropagation()}
       >
         <button
           onClick={onClose}
           aria-label="Close"
-          className="absolute right-3 top-3 text-dim transition-colors hover:text-flare"
+          className="absolute right-1 top-1 flex h-11 w-11 items-center justify-center text-dim transition-colors hover:text-flare"
         >
           <X className="h-4 w-4" />
         </button>
@@ -199,11 +219,11 @@ export default function GraffitiCamera({ open, onClose }) {
               <Check className="h-7 w-7 text-ozone" />
             )}
             <h3 className="mt-3 font-display text-2xl font-bold tracking-[-0.02em] text-silver">
-              {done.queued ? 'Queued offline' : 'Captured'}
+              {done.queued ? QUEUED_HEADING : 'Captured'}
             </h3>
             <p className="mt-2 font-display text-sm leading-[1.4] text-darkgray">
               {done.queued
-                ? `Offline — saved on this device. It transmits automatically when you reconnect. Position ${done.lat?.toFixed(4)}, ${done.lng?.toFixed(4)}.`
+                ? `${queuedMessage(done.offline)} Position ${done.lat?.toFixed(4)}, ${done.lng?.toFixed(4)}.`
                 : `Graffiti documented at ${done.lat?.toFixed(4)}, ${done.lng?.toFixed(4)}. It renders on the map and graffiti portal pending verification.`}
             </p>
             <div className="mt-5 flex gap-3">
@@ -360,6 +380,7 @@ export default function GraffitiCamera({ open, onClose }) {
             </div>
 
             <input
+              aria-label="Street or district (optional)"
               value={address}
               onChange={(e) => setAddress(e.target.value)}
               placeholder="Street, district (optional)"
@@ -380,14 +401,22 @@ export default function GraffitiCamera({ open, onClose }) {
               <div className="mt-2 grid grid-cols-2 gap-px border border-slate2/60 bg-slate2/40">
                 <input
                   value={lat}
-                  onChange={(e) => setLat(e.target.value)}
+                  onChange={(e) => {
+                    setManualCoordinates(true);
+                    setLat(e.target.value);
+                  }}
+                  aria-label="Latitude"
                   placeholder="Latitude"
                   inputMode="decimal"
                   className="border-0 bg-card px-3 py-2.5 font-mono text-[11px] text-silver outline-none"
                 />
                 <input
                   value={lng}
-                  onChange={(e) => setLng(e.target.value)}
+                  onChange={(e) => {
+                    setManualCoordinates(true);
+                    setLng(e.target.value);
+                  }}
+                  aria-label="Longitude"
                   placeholder="Longitude"
                   inputMode="decimal"
                   className="border-0 bg-card px-3 py-2.5 font-mono text-[11px] text-silver outline-none"
@@ -396,7 +425,11 @@ export default function GraffitiCamera({ open, onClose }) {
             )}
 
             {error && (
-              <p className="mt-3 font-mono text-[10px] uppercase tracking-[0.2em] text-flare">
+              <p
+                ref={errorRef}
+                role="alert"
+                className="mt-3 font-mono text-[10px] uppercase tracking-[0.2em] text-flare"
+              >
                 {error}
               </p>
             )}
@@ -413,9 +446,19 @@ export default function GraffitiCamera({ open, onClose }) {
               )}
               {submitting ? 'Transmitting…' : 'Transmit capture'}
             </button>
+
+            {slow && (
+              <p
+                role="status"
+                className="mt-2 font-mono text-[10px] uppercase tracking-[0.14em] text-darkgray"
+              >
+                Still sending. Keep this page open.
+              </p>
+            )}
           </>
         )}
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }

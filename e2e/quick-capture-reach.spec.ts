@@ -89,6 +89,11 @@ for (const viewport of VIEWPORTS) {
     // Let the delayed contextual hint appear (it shows after ~1.4s) before measuring.
     await page.waitForTimeout(2200);
 
+    const close = dialog.getByRole('button', { name: 'Close', exact: true });
+    await expectUnobstructed(close, 'close');
+    const closeBox = (await close.boundingBox())!;
+    expect(Math.min(closeBox.width, closeBox.height)).toBeGreaterThanOrEqual(44);
+
     for (const [label, control] of [
       ['gallery picker', dialog.getByText('Or choose from gallery')],
       ['address', dialog.getByRole('textbox', { name: 'Street or district (optional)' })],
@@ -160,7 +165,7 @@ test.describe('quick capture submission states (mocked backend)', () => {
     );
     const dialog = await fillValidCapture(page);
     await dialog.getByRole('button', { name: 'Transmit capture' }).click();
-    await expect(dialog.getByRole('heading', { name: 'Queued offline' })).toBeVisible();
+    await expect(dialog.getByRole('heading', { name: 'Saved, not sent yet' })).toBeVisible();
     expect(submits.length).toBeGreaterThanOrEqual(1);
   });
 
@@ -179,7 +184,7 @@ test.describe('quick capture submission states (mocked backend)', () => {
     await busy.click({ force: true });
     expect(submits).toEqual(['POST']);
     release();
-    await expect(dialog.getByRole('heading', { name: 'Queued offline' })).toBeVisible();
+    await expect(dialog.getByRole('heading', { name: 'Saved, not sent yet' })).toBeVisible();
   });
 
   test('Escape closes the dialog and leaves the hint and navigation usable', async ({ page }) => {

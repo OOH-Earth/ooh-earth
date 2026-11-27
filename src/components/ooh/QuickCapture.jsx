@@ -6,6 +6,8 @@ import { compressImage } from '@/lib/imageCompress';
 import { validateImageFile } from '@/lib/validateUpload';
 import { Camera, Crosshair, Loader2, Check, X, MapPin, CloudOff } from 'lucide-react';
 import { submitCapture } from '@/lib/offlineQueue';
+import { QUEUED_HEADING, queuedMessage } from '@/lib/captureFeedback';
+import { useSlowAction } from '@/hooks/useSlowAction';
 import CameraViewfinder from '@/components/ooh/CameraViewfinder';
 import MultiPhotoUpload, {
   PhotoSyncStatus,
@@ -43,6 +45,7 @@ export default function QuickCapture({ open, onClose }) {
   const errorRef = useRef(null);
   useFocusTrap(panelRef, open, { label: 'Anonymous field capture' });
   const uploadTrigger = useKeyboardFilePicker(uploading);
+  const slow = useSlowAction(submitting);
 
   const locate = () => {
     if (!navigator.geolocation) return;
@@ -161,7 +164,7 @@ export default function QuickCapture({ open, onClose }) {
         setDone(res.rec);
         if (extraPhotos.length) syncExtraPhotos(extraPhotos, res.rec.id);
       } else {
-        setDone({ queued: true, lat: latN, lng: lngN });
+        setDone({ queued: true, offline: !navigator.onLine, lat: latN, lng: lngN });
       }
     } catch (err) {
       setError(err?.message || 'Transmission failed.');
@@ -212,7 +215,7 @@ export default function QuickCapture({ open, onClose }) {
         <button
           onClick={onClose}
           aria-label="Close"
-          className="absolute right-3 top-3 text-dim transition-colors hover:text-flare"
+          className="absolute right-1 top-1 flex h-11 w-11 items-center justify-center text-dim transition-colors hover:text-flare"
         >
           <X className="h-4 w-4" />
         </button>
@@ -225,11 +228,11 @@ export default function QuickCapture({ open, onClose }) {
               <Check className="h-7 w-7 text-ozone" />
             )}
             <h3 className="mt-3 font-display text-2xl font-bold tracking-[-0.02em] text-silver">
-              {done.queued ? 'Queued offline' : 'Captured'}
+              {done.queued ? QUEUED_HEADING : 'Captured'}
             </h3>
             <p className="mt-2 font-display text-sm leading-[1.4] text-darkgray">
               {done.queued
-                ? `Offline — saved on this device. It transmits automatically when you reconnect. Position ${done.lat?.toFixed(4)}, ${done.lng?.toFixed(4)}.`
+                ? `${queuedMessage(done.offline)} Position ${done.lat?.toFixed(4)}, ${done.lng?.toFixed(4)}.`
                 : `Anonymous field report logged at ${done.lat?.toFixed(4)}, ${done.lng?.toFixed(4)}. It renders on the map pending verification.`}
             </p>
             <PhotoSyncStatus state={photoSync} onRetry={retryFailedPhotos} />
@@ -393,6 +396,15 @@ export default function QuickCapture({ open, onClose }) {
               )}
               {submitting ? 'Transmitting…' : 'Transmit capture'}
             </button>
+
+            {slow && (
+              <p
+                role="status"
+                className="mt-2 font-mono text-[10px] uppercase tracking-[0.14em] text-darkgray"
+              >
+                Still sending. Keep this page open.
+              </p>
+            )}
           </>
         )}
       </div>

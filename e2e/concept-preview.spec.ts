@@ -217,6 +217,15 @@ for (const viewport of [
         .toBe(true);
     }
 
+    // Polled: the dialog opens with a zoom animation, so an early measurement is scaled down.
+    const x = dialog.getByRole('button', { name: 'Close', exact: true });
+    await expect
+      .poll(async () => {
+        const box = (await x.boundingBox())!;
+        return Math.round(Math.min(box.width, box.height));
+      })
+      .toBeGreaterThanOrEqual(44);
+
     // The pointer alone must be able to close it.
     await dialog.getByRole('button', { name: /discards this/i }).click();
     await expect(dialog).toBeHidden();
