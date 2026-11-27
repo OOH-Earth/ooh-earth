@@ -1691,3 +1691,12 @@ body.map-fullscreen .ooh-mobile-nav {
     display: none !important;
   }
 }
+
+/* UI-039 (adbusting, opt-in compact portals, short landscape only): the flat map's Leaflet zoom control is a
+   64px stack in a ~100px map box and its "+" sat under the Capture/Report buttons (pointer input lost).
+   A row of the same two 32px targets fits beside them. Scoped by [data-hud-compact]; nothing else changes. */
+@media (max-height: 500px) {
+  [data-hud-compact] .leaflet-control-zoom {
+    display: flex;
+  }
+}
