@@ -105,9 +105,14 @@ export default function LocationThumb({ m, className = '', imgClassName = '' }) 
       </div>
     );
   }
+  // Glyph, "No photo yet" and the category label are stacked IN FLOW (the label used to be absolutely
+  // positioned at the bottom and landed on top of "No photo yet" in short tiles). overflow-hidden +
+  // truncate keep long labels inside the tile instead of spilling over their neighbours.
+  const { label } = metaFor(m.type);
   return (
     <div
-      className={`relative flex shrink-0 flex-col items-center justify-center gap-1 grid-bg ${className}`}
+      data-testid="location-thumb-placeholder"
+      className={`relative flex shrink-0 flex-col items-center justify-center gap-0.5 overflow-hidden px-1 text-center grid-bg ${className}`}
       style={{ backgroundColor: '#0a0a0a' }}
     >
       {m.status !== 'verified' && (
@@ -116,19 +121,25 @@ export default function LocationThumb({ m, className = '', imgClassName = '' }) 
         </span>
       )}
       <span
-        className="flex h-9 w-9 items-center justify-center rounded-full border"
+        data-testid="thumb-glyph"
+        className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full border"
         style={{ borderColor: `${accent}55` }}
       >
-        <Icon className="h-5 w-5" style={{ color: accent }} strokeWidth={1.5} />
+        <Icon className="h-3.5 w-3.5" style={{ color: accent }} strokeWidth={1.5} />
       </span>
-      <span className="font-mono text-[6px] font-bold uppercase tracking-[0.2em] text-dim/75">
+      <span
+        data-testid="thumb-nophoto"
+        className="max-w-full truncate font-mono text-[6px] font-bold uppercase tracking-[0.2em] text-dim/75"
+      >
         No photo yet
       </span>
       <span
-        className="absolute bottom-1 font-mono text-[7px] font-bold uppercase tracking-[0.2em]"
-        style={{ color: accent, opacity: 0.8 }}
+        data-testid="thumb-label"
+        title={label}
+        className="max-w-full truncate font-mono text-[7px] font-bold uppercase tracking-[0.2em]"
+        style={{ color: accent, opacity: 0.85 }}
       >
-        {metaFor(m.type).label}
+        {label}
       </span>
     </div>
   );

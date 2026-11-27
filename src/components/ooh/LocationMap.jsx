@@ -108,6 +108,28 @@ function pinFor(m, selected) {
   });
 }
 
+// Leaflet 1.9.4 race: _animateZoom() schedules setTimeout(_onZoomTransitionEnd, 250) and map.remove()
+// neither cancels it nor clears _animatingZoom, so unmounting the flat map mid-zoom (e.g. Flat -> Globe
+// during a fly-to) lets the timer fire on a disposed map and throw "reading '_leaflet_pos'" from
+// _getMapPanePos. _onZoomTransitionEnd already returns early when _animatingZoom is false, so clearing
+// the flag on Leaflet's own 'unload' event (fired by remove()) makes the stale callback a no-op
+// through Leaflet's own guard. Nothing is caught or silenced.
+function DisposedMapGuard() {
+  const map = useMap();
+  useEffect(() => {
+    const onUnload = () => {
+      // _animatingZoom is Leaflet-internal (absent from its typings), hence the narrow cast.
+      /** @type {import('leaflet').Map & { _animatingZoom?: boolean }} */ (map)._animatingZoom =
+        false;
+    };
+    map.on('unload', onUnload);
+    return () => {
+      map.off('unload', onUnload);
+    };
+  }, [map]);
+  return null;
+}
+
 function FitBounds({ markers }) {
   const map = useMap();
   const didFit = useRef(false);
@@ -519,6 +541,7 @@ export default function LocationMap({
         maxZoom={style.maxZoom}
       />
       <ZoomControl position="bottomright" />
+      <DisposedMapGuard />
       {fitBounds && <FitBounds markers={pins} />}
       <BoundsWatcher onBoundsChange={onBoundsChange} />
       <FlyTo selectedId={selectedId} markers={pins} />
