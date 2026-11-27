@@ -29,6 +29,7 @@ const inp =
 
 export default function ReportStep1Document({ data, onChange }) {
   const [locating, setLocating] = useState(false);
+  const [manualOpen, setManualOpen] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState('');
   const captureTrigger = useKeyboardFilePicker(uploading);
@@ -265,8 +266,13 @@ export default function ReportStep1Document({ data, onChange }) {
           lat={data.lat}
           lng={data.lng}
           onPick={({ lat, lng }) => onChange({ lat: String(lat), lng: String(lng) })}
+          onOpenManualEntry={() => setManualOpen(true)}
         />
-        <details className="group mt-2">
+        <details
+          className="group mt-2"
+          open={manualOpen}
+          onToggle={(e) => setManualOpen(e.currentTarget.open)}
+        >
           <summary className="cursor-pointer font-mono text-[11px] uppercase tracking-[0.2em] text-dim transition-colors hover:text-ozone">
             Enter coordinates manually
           </summary>
