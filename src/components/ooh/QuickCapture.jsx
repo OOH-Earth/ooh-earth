@@ -1,5 +1,6 @@
 // @ts-nocheck -- upload progress state is runtime-shaped per photo.
 import { useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { base44 } from '@/api/base44Client';
 import { compressImage } from '@/lib/imageCompress';
 import { validateImageFile } from '@/lib/validateUpload';
@@ -39,6 +40,7 @@ export default function QuickCapture({ open, onClose }) {
   const [error, setError] = useState('');
   const [photoSync, setPhotoSync] = useState(null);
   const panelRef = useRef(null);
+  const errorRef = useRef(null);
   useFocusTrap(panelRef, open, { label: 'Anonymous field capture' });
   const uploadTrigger = useKeyboardFilePicker(uploading);
 
@@ -81,6 +83,11 @@ export default function QuickCapture({ open, onClose }) {
       document.body.style.overflow = '';
     };
   }, [open, onClose]);
+
+  // A message can appear while its place is scrolled out of the panel (e.g. a photo error).
+  useEffect(() => {
+    errorRef.current?.scrollIntoView({ block: 'nearest' });
+  }, [error]);
 
   if (!open) return null;
 
@@ -190,14 +197,16 @@ export default function QuickCapture({ open, onClose }) {
 
   const showManual = !locating && (manualCoordinates || !lat || !lng);
 
-  return (
+  // Portalled to <body>: the map pages render this inside a fixed, full-screen root whose
+  // stacking context would otherwise trap the dialog under the navigation and floating hints.
+  return createPortal(
     <div
       className="fixed inset-0 z-[2000] flex items-end justify-center bg-black/70 backdrop-blur-sm sm:items-center"
       onClick={onClose}
     >
       <div
         ref={panelRef}
-        className="relative max-h-[92dvh] w-full max-w-md overflow-y-auto border border-slate2 bg-void p-5 sm:p-6"
+        className="relative max-h-[92dvh] w-full max-w-md overflow-y-auto overscroll-contain border border-slate2 bg-void p-5 pb-[calc(1.25rem_+_env(safe-area-inset-bottom))] sm:p-6"
         onClick={(e) => e.stopPropagation()}
       >
         <button
@@ -363,7 +372,11 @@ export default function QuickCapture({ open, onClose }) {
             )}
 
             {error && (
-              <p className="mt-3 font-mono text-[10px] uppercase tracking-[0.2em] text-flare">
+              <p
+                ref={errorRef}
+                role="alert"
+                className="mt-3 font-mono text-[10px] uppercase tracking-[0.2em] text-flare"
+              >
                 {error}
               </p>
             )}
@@ -383,6 +396,7 @@ export default function QuickCapture({ open, onClose }) {
           </>
         )}
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }
