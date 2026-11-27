@@ -96,8 +96,9 @@ export default function LocationCard({
       </Reticle>
 
       <div className="min-w-0 flex-1">
-        {/* Category label + status dot */}
-        <div className="flex items-center gap-1.5">
+        {/* Category label + status dot. Wraps, so the Claim control stays inside this column instead of
+            overflowing underneath the (non-shrinking) "view listing" link. */}
+        <div className="flex flex-wrap items-center gap-x-1.5 gap-y-1">
           <span className="font-mono text-[9px] uppercase tracking-[0.2em] text-ozone">
             {metaFor(m.type).label}
           </span>
@@ -125,7 +126,7 @@ export default function LocationCard({
                 e.stopPropagation();
                 onClaim?.(m);
               }}
-              className="ml-auto flex items-center gap-1 border border-flare/60 px-1.5 py-0.5 font-mono text-[8px] font-bold uppercase tracking-[0.15em] text-flare transition-colors hover:bg-flare hover:text-void"
+              className="ml-auto flex min-h-6 shrink-0 items-center gap-1 border border-flare/60 px-1.5 py-0.5 font-mono text-[8px] font-bold uppercase tracking-[0.15em] text-flare transition-colors hover:bg-flare hover:text-void"
             >
               <Hand className="h-3 w-3" /> Claim
             </button>
@@ -182,15 +183,18 @@ export default function LocationCard({
         )}
       </div>
 
-      {/* PAGE → terminal-style bordered button */}
+      {/* Opens this location's page; the accessible name says which one (WCAG 2.4.4). */}
       <Link
         to={`/location/${m.id}`}
         state={m}
         onClick={(e) => e.stopPropagation()}
-        className="group/btn flex shrink-0 items-center gap-1.5 self-center border border-ozone/60 bg-void px-3 py-2 font-mono text-[10px] font-bold uppercase tracking-[0.2em] text-ozone transition-colors hover:border-ozone hover:bg-ozone hover:text-void sm:flex"
+        aria-label={`View listing: ${m.title || m.brand_name || 'location'}`}
+        className="group/btn flex min-h-ooh-target shrink-0 items-center gap-1.5 self-center border border-ozone/60 bg-void px-3 py-2 font-mono text-ooh-control font-bold uppercase tracking-[0.1em] text-ozone transition-colors hover:border-ozone hover:bg-ozone hover:text-void sm:flex"
       >
-        <span>&gt; page</span>
-        <span className="transition-transform group-hover/btn:translate-x-0.5">→</span>
+        <span>view listing</span>
+        <span aria-hidden="true" className="transition-transform group-hover/btn:translate-x-0.5">
+          →
+        </span>
       </Link>
     </div>
   );

@@ -19,7 +19,7 @@ function parts(ms) {
 
 const pad = (n) => String(n).padStart(2, '0');
 
-export default function ClimateClock({ className = '' }) {
+export function useClimateClock() {
   const [now, setNow] = useState(() => Date.now());
   useEffect(() => {
     const t = setInterval(() => setNow(Date.now()), 1000);
@@ -34,6 +34,45 @@ export default function ClimateClock({ className = '' }) {
   });
   const { years, days, hours, mins, secs } = parts(DEADLINE - now);
   const lifeline = Math.max(0, Math.min(100, ((DEADLINE - now) / (DEADLINE - BUDGET_START)) * 100));
+  return { time, years, days, hours, mins, secs, lifeline };
+}
+
+// Compact status line for the telemetry strip. Time (and, from md up, the countdown) at readable sizes
+// inside the strip's existing height; on narrow screens the countdown lives in the strip's disclosure.
+function ClockStatus({ clock, className }) {
+  const { time, years, days, hours, mins, secs, lifeline } = clock;
+  return (
+    <div className={`flex flex-col items-start leading-none ${className}`}>
+      <div className="flex items-baseline gap-2">
+        <span className="font-mono text-ooh-control font-bold tabular tracking-[0.06em] text-silver">
+          {time}
+        </span>
+        <span className="font-mono text-ooh-caption uppercase tracking-[0.1em] text-quiet">
+          BKK
+        </span>
+        <span className="hidden items-baseline gap-1.5 md:flex">
+          <span className="font-mono text-ooh-caption font-bold uppercase tracking-[0.1em] text-flare">
+            1.5°C
+          </span>
+          <span className="font-mono text-ooh-caption tabular tracking-[0.04em] text-darkgray">
+            {years}y {days}d {pad(hours)}:{pad(mins)}:{pad(secs)}
+          </span>
+        </span>
+      </div>
+      <div className="mt-1 h-[3px] w-32 overflow-hidden bg-slate2">
+        <div
+          className="h-full bg-flare transition-[width] duration-1000 ease-linear"
+          style={{ width: `${lifeline}%` }}
+        />
+      </div>
+    </div>
+  );
+}
+
+export default function ClimateClock({ className = '', variant = 'stacked' }) {
+  const clock = useClimateClock();
+  if (variant === 'status') return <ClockStatus clock={clock} className={className} />;
+  const { time, years, days, hours, mins, secs, lifeline } = clock;
 
   return (
     <div
