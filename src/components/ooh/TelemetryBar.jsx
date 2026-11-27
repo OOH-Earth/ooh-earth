@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { MapPin, Wind, Radio, Loader2 } from 'lucide-react';
-import ClimateClock from '@/components/ooh/ClimateClock';
+import ClimateClock, { useClimateClock } from '@/components/ooh/ClimateClock';
 import DraggableTicker from '@/components/ooh/DraggableTicker';
 import { useNewsHeadlines } from '@/hooks/useNewsHeadlines';
 
@@ -21,9 +21,10 @@ function LiveFeed() {
     return (
       <div className="flex h-full items-center gap-2 px-3">
         <Loader2 className="h-3 w-3 animate-spin text-ozone" />
-        <span className="font-mono text-[9px] uppercase tracking-[0.2em] text-dim">
+        <span className="hidden font-mono text-ooh-caption uppercase tracking-[0.1em] text-quiet whitespace-nowrap sm:inline">
           // acquiring intel…
         </span>
+        <span className="sr-only">Acquiring intel</span>
       </div>
     );
   }
@@ -32,7 +33,7 @@ function LiveFeed() {
     <div className="flex h-full items-center gap-2 overflow-hidden">
       <span className="flex shrink-0 items-center gap-1.5 px-3 border-r border-slate2/60">
         <Radio className="h-3 w-3 animate-pulse text-ozone" />
-        <span className="font-mono text-[8px] font-bold uppercase tracking-[0.25em] text-ozone">
+        <span className="font-mono text-ooh-caption font-bold uppercase tracking-[0.1em] text-ozone">
           LIVE
         </span>
       </span>
@@ -46,11 +47,11 @@ function LiveFeed() {
             className="flex shrink-0 items-center gap-2 px-4"
           >
             <span className="h-1 w-1 rounded-full bg-ozone" />
-            <span className="font-mono text-[10px] uppercase tracking-[0.12em] text-silver/90 whitespace-nowrap">
+            <span className="font-mono text-ooh-control uppercase tracking-[0.04em] text-silver/90 whitespace-nowrap">
               {it.title}
             </span>
             {it.source && (
-              <span className="font-mono text-[9px] uppercase tracking-[0.2em] text-dim whitespace-nowrap">
+              <span className="font-mono text-ooh-caption uppercase tracking-[0.1em] text-quiet whitespace-nowrap">
                 · {it.source}
               </span>
             )}
@@ -66,6 +67,12 @@ export default function TelemetryBar() {
   const [pm, setPm] = useState(null);
   const [pmLoading, setPmLoading] = useState(true);
   const [loc, setLoc] = useState(null);
+  // Narrow screens: the countdown, air quality and coordinates sit behind one labelled disclosure so the
+  // strip keeps its deployed 31px height at readable sizes.
+  const [open, setOpen] = useState(false);
+  const rootRef = useRef(null);
+  const buttonRef = useRef(null);
+  const clock = useClimateClock();
 
   useEffect(() => {
     let cancelled = false;
@@ -97,23 +104,79 @@ export default function TelemetryBar() {
     );
   }, []);
 
+  useEffect(() => {
+    if (!open) return undefined;
+    const onKey = (e) => {
+      if (e.key === 'Escape') {
+        setOpen(false);
+        buttonRef.current?.focus();
+      }
+    };
+    const onDown = (e) => {
+      if (rootRef.current && !rootRef.current.contains(e.target)) setOpen(false);
+    };
+    document.addEventListener('keydown', onKey);
+    document.addEventListener('pointerdown', onDown);
+    return () => {
+      document.removeEventListener('keydown', onKey);
+      document.removeEventListener('pointerdown', onDown);
+    };
+  }, [open]);
+
   const pmColor = pm != null ? band(pm) : '#666';
   const latVal = loc ? loc.lat : BKK.lat;
   const lngVal = loc ? loc.lng : BKK.lng;
   const latDir = latVal >= 0 ? 'N' : 'S';
   const lngDir = lngVal >= 0 ? 'E' : 'W';
 
+  const pmText = pmLoading ? 'loading' : pm != null ? `${Math.round(pm)} µg/m³` : 'unavailable';
+  const coordText = `${Math.abs(latVal).toFixed(4)}°${latDir} ${Math.abs(lngVal).toFixed(4)}°${lngDir}`;
+
   return (
-    <div className="flex items-stretch border-t border-slate2/60 bg-card/40 backdrop-blur-md">
-      {/* Clock + 1.5°C deadline */}
-      <div className="flex shrink-0 items-center px-3 border-r border-slate2/60">
-        <ClimateClock />
+    <div
+      ref={rootRef}
+      className="relative flex min-h-[31px] items-stretch border-t border-slate2/60 bg-card/40 backdrop-blur-md"
+    >
+      {/* Clock: a labelled disclosure below md, plain status from md up */}
+      <button
+        ref={buttonRef}
+        type="button"
+        aria-expanded={open}
+        aria-controls="telemetry-details"
+        aria-label="Climate clock and air quality details"
+        onClick={() => setOpen((o) => !o)}
+        className="flex shrink-0 items-center border-r border-slate2/60 px-3 focus-visible:outline focus-visible:outline-2 focus-visible:outline-ozone md:hidden"
+      >
+        <ClimateClock variant="status" />
+      </button>
+      <div className="hidden shrink-0 items-center border-r border-slate2/60 px-3 md:flex">
+        <ClimateClock variant="status" />
       </div>
+      {open && (
+        <div
+          id="telemetry-details"
+          role="region"
+          aria-label="Climate and air quality details"
+          className="absolute left-0 top-full z-10 w-full max-w-sm space-y-ooh-2 border border-slate2 bg-card p-ooh-4 font-display text-ooh-control text-silver md:hidden"
+        >
+          <p>
+            <span className="font-bold text-flare">1.5°C deadline</span> in {clock.years}y{' '}
+            {clock.days}d {String(clock.hours).padStart(2, '0')}:
+            {String(clock.mins).padStart(2, '0')}:{String(clock.secs).padStart(2, '0')}
+          </p>
+          <p>
+            <span className="text-quiet">Air quality (PM2.5):</span> {pmText}
+          </p>
+          <p>
+            <span className="text-quiet">Coordinates:</span> {coordText}
+          </p>
+        </div>
+      )}
 
       {/* Coordinates */}
       <div className="hidden md:flex shrink-0 items-center gap-1.5 px-3 border-r border-slate2/60">
         <MapPin className="h-3 w-3 text-ozone" />
-        <span className="font-mono text-[9px] tabular tracking-[0.05em] text-silver">
+        <span className="font-mono text-ooh-caption tabular tracking-[0.04em] text-silver">
           {Math.abs(latVal).toFixed(4)}°{latDir} {Math.abs(lngVal).toFixed(4)}°{lngDir}
         </span>
       </div>
@@ -121,11 +184,15 @@ export default function TelemetryBar() {
       {/* PM2.5 */}
       <div className="hidden lg:flex shrink-0 items-center gap-1.5 px-3 border-r border-slate2/60">
         <Wind className="h-3 w-3" style={{ color: pmColor }} />
-        <span className="font-mono text-[8px] uppercase tracking-[0.2em] text-dim">PM2.5</span>
-        <span className="font-mono text-[11px] font-bold tabular text-silver">
+        <span className="font-mono text-ooh-caption uppercase tracking-[0.1em] text-quiet">
+          PM2.5
+        </span>
+        <span className="font-mono text-ooh-caption font-bold tabular text-silver">
           {pmLoading ? '··' : pm != null ? Math.round(pm) : '—'}
         </span>
-        <span className="font-mono text-[8px] uppercase tracking-[0.1em] text-darkgray">µg/m³</span>
+        <span className="font-mono text-ooh-caption uppercase tracking-[0.06em] text-darkgray">
+          µg/m³
+        </span>
       </div>
 
       {/* Live intel feed */}
