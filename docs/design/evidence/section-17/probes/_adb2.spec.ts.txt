@@ -1,0 +1,35 @@
+import { test } from '@playwright/test';
+import { mockBase44 } from './fixtures/mockBase44';
+for (const vp of [{ w: 1280, h: 800, t: false }, { w: 390, h: 844, t: true }]) test.describe(`adb2 ${vp.w}`, () => {
+  test.use({ viewport: { width: vp.w, height: vp.h }, hasTouch: vp.t, isMobile: vp.t });
+  test('inv + hover profile', async ({ page }) => {
+    test.setTimeout(120000);
+    await page.route('**/api/**', (r) => r.fulfill({ status: 404, contentType: 'application/json', body: '{}' }));
+    const locs: Record<string, unknown> = {};
+    for (let i = 0; i < 40; i++) locs['l' + i] = { id: 'l' + i, title: `Spot ${i}`, type: ['billboard', 'digital', 'transit', 'mural'][i % 4], address: `${i} Field Way`, lat: 13.75 + i * 0.001, lng: 100.5 + i * 0.001, status: 'pending', created_date: '2020-01-01T00:00:00.000Z' };
+    await mockBase44(page, { user: null, locations: locs, fieldChecks: {} });
+    await page.addInitScript(() => localStorage.setItem('ooh_nudge_map_report', '1'));
+    await page.goto('/adbusting'); await page.getByText('Spot 1').first().waitFor({ timeout: 30000 }).catch(() => {}); await page.waitForTimeout(1500);
+    const rows = await page.evaluate(() => {
+      const out: string[] = [];
+      document.querySelectorAll('button, a[href], input, [role="button"]').forEach((e) => {
+        if (e.closest('header, nav')) return;
+        const r = e.getBoundingClientRect(); if (!r.width || !r.height || r.bottom < 0 || r.top > innerHeight) return;
+        const named = !!(e.getAttribute('aria-label') || (e as HTMLElement).innerText?.trim() || e.getAttribute('aria-labelledby') || e.getAttribute('title'));
+        out.push(`${e.tagName.toLowerCase()} ${(e.getAttribute('aria-label') || (e as HTMLElement).innerText || e.getAttribute('placeholder') || '').trim().replace(/\s+/g, ' ').slice(0, 24)} ${Math.round(r.width)}x${Math.round(r.height)} named=${named}`);
+      });
+      return out;
+    });
+    console.log(`## ${vp.w} portal controls outside header/nav (${rows.length}):\n   ` + rows.filter((l) => /named=false|x(\d|1\d|2[0-3]) /.test(l)).slice(0, 14).join('\n   '));
+    console.log(`   search visible: ${await page.getByPlaceholder('Search…').isVisible().catch(() => false)} | chips with aria-pressed: ${await page.locator('button[aria-pressed]').count()}`);
+    // hover cost: move over 12 cards, measure long tasks / event durations during it
+    await page.evaluate(() => { (window as any).__h = []; new PerformanceObserver((l) => l.getEntries().forEach((e: any) => (window as any).__h.push(`${e.name}:${Math.round(e.duration)}`))).observe({ type: 'event', durationThreshold: 16, buffered: false } as any); (window as any).__lt2 = []; new PerformanceObserver((l) => l.getEntries().forEach((e) => (window as any).__lt2.push(Math.round(e.duration)))).observe({ type: 'longtask' }); });
+    if (!vp.t) {
+      const cards = page.getByRole('button', { name: /^View listing/ });
+      const n = Math.min(await cards.count(), 12); const t0 = Date.now();
+      for (let i = 0; i < n; i++) { await page.getByText(`Spot ${i}`).first().hover().catch(() => {}); }
+      console.log(`   hover ${n} cards: ${Date.now() - t0}ms total (includes Playwright overhead)`);
+      console.log(`   slow events: ${(await page.evaluate(() => (window as any).__h)).slice(0, 10).join(' ')} | longtasks during hover: ${JSON.stringify(await page.evaluate(() => (window as any).__lt2))}`);
+    }
+  });
+});

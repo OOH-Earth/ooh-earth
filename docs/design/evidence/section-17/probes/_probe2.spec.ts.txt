@@ -1,0 +1,72 @@
+import { test } from '@playwright/test';
+import { openMapWithMock } from './helpers/mapGeometry';
+import { mockBase44 } from './fixtures/mockBase44';
+
+const VPS = [{ n: '390x844', w: 390, h: 844 }, { n: '320x640', w: 320, h: 640 }, { n: '844x390', w: 844, h: 390 }];
+const doc = (page) => page.evaluate(() => { const s = document.scrollingElement!; return `doc=${s.scrollHeight}/${s.clientHeight} y=${Math.round(scrollY)} bodyH=${Math.round(document.body.getBoundingClientRect().height)}`; });
+const sheetH = (page) => page.evaluate(() => { const e = document.querySelector('.ooh-bottom-sheet') as HTMLElement | null; return e ? Math.round(e.getBoundingClientRect().height) : -1; });
+async function touchDrag(page, cdp, x, y0, y1, steps = 8, cancel = false) {
+  await cdp.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [{ x, y: y0 }] });
+  for (let i = 1; i <= steps; i++) await cdp.send('Input.dispatchTouchEvent', { type: 'touchMove', touchPoints: [{ x, y: y0 + ((y1 - y0) * i) / steps }] });
+  await cdp.send('Input.dispatchTouchEvent', { type: cancel ? 'touchCancel' : 'touchEnd', touchPoints: [] });
+  await page.waitForTimeout(500);
+}
+for (const vp of VPS) {
+  test.describe(`map ${vp.n}`, () => {
+    test.use({ viewport: { width: vp.w, height: vp.h }, hasTouch: true, isMobile: true, deviceScaleFactor: 2 });
+    test('map states', async ({ page }) => {
+      test.setTimeout(120000);
+      await openMapWithMock(page, { view: 'flat' });
+      const cdp = await page.context().newCDPSession(page);
+      console.log(`## ${vp.n} /map initial: ${await doc(page)} sheet=${await sheetH(page)}`);
+      const handle = page.locator('.ooh-bottom-sheet [aria-label^="Open or close the list"]').first();
+      const hb = await handle.boundingBox();
+      if (hb) {
+        const cx = hb.x + hb.width / 2, cy = hb.y + hb.height / 2;
+        await touchDrag(page, cdp, cx, cy, cy - 2000);          // far above full height
+        console.log(`   drag up 2000px  : sheet=${await sheetH(page)} ${await doc(page)}`);
+        const hb2 = (await handle.boundingBox())!;
+        await touchDrag(page, cdp, hb2.x + hb2.width / 2, hb2.y + hb2.height / 2, hb2.y + 2000);   // far below peek
+        console.log(`   drag down 2000px: sheet=${await sheetH(page)} ${await doc(page)}`);
+        const hb3 = (await handle.boundingBox())!;
+        await touchDrag(page, cdp, hb3.x + hb3.width / 2, hb3.y + hb3.height / 2, hb3.y - 150, 4, true);  // cancelled mid-drag
+        const h1 = await sheetH(page);
+        await page.waitForTimeout(400);
+        console.log(`   cancelled drag  : sheet=${h1}->${await sheetH(page)} (stable?) ${await doc(page)}`);
+        // sheet still operable afterwards?
+        const open = page.getByRole('button', { name: /^(Open list|Expand list)$/ }).first();
+        if (await open.count()) { await open.click(); await page.waitForTimeout(700); console.log(`   after Open list : sheet=${await sheetH(page)} ${await doc(page)}`); }
+      }
+      // full-screen map
+      const fs = page.getByRole('button', { name: 'Full-screen map (hides navigation)' }).first();
+      if (await fs.count()) { await fs.click(); await page.waitForTimeout(700); console.log(`   full-screen     : sheet=${await sheetH(page)} ${await doc(page)}`); }
+      // scroll-chaining probe: wheel at the bottom of the list scroller must not move the document
+      await page.mouse.move(vp.w / 2, vp.h * 0.8); await page.mouse.wheel(0, 3000); await page.waitForTimeout(300);
+      console.log(`   wheel past list end: ${await doc(page)}`);
+    });
+    for (const route of ['/', '/report']) {
+      test(`${route} reveal+bounds`, async ({ page }) => {
+        test.setTimeout(120000);
+        await mockBase44(page, { user: null, locations: {} });
+        await page.addInitScript(() => localStorage.setItem('ooh_nudge_map_report', '1'));
+        await page.goto(route); await page.waitForTimeout(2500);
+        await page.mouse.wheel(0, 1); await page.waitForTimeout(1500);
+        const total = await page.evaluate(() => document.scrollingElement!.scrollHeight);
+        // jump through the page in big steps; then check what is visible in the viewport at each stop
+        const stops = [0.25, 0.5, 0.75, 1];
+        for (const f of stops) {
+          await page.evaluate((y) => window.scrollTo({ top: y, behavior: 'instant' as ScrollBehavior }), Math.floor((total - vp.h) * f));
+          await page.waitForTimeout(900);
+          const v = await page.evaluate(() => {
+            const vh = innerHeight; let hidden = 0, shown = 0, blankPx = 0;
+            document.querySelectorAll('main > *, main section, main > div > *').forEach((e) => { const r = e.getBoundingClientRect(); if (r.bottom < 0 || r.top > vh || r.height < 40) return; const o = parseFloat(getComputedStyle(e).opacity); if (o < 0.05) { hidden++; blankPx += Math.min(r.bottom, vh) - Math.max(r.top, 0); } else shown++; });
+            return `hiddenInView=${hidden} shown=${shown} blankPx=${Math.round(blankPx)} y=${Math.round(scrollY)}`;
+          });
+          console.log(`## ${vp.n} ${route} @${Math.round(f * 100)}% of ${total}: ${v}`);
+        }
+        await page.evaluate(() => window.scrollTo({ top: 0, behavior: 'instant' as ScrollBehavior })); await page.waitForTimeout(500);
+        console.log(`   back at top: ${await doc(page)}`);
+      });
+    }
+  });
+}
