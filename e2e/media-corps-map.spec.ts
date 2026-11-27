@@ -86,6 +86,31 @@ test.describe('Media Corps map', () => {
     expect(first.x + first.width).toBeLessThanOrEqual(map.x + map.width);
   });
 
+  for (const viewport of [
+    { width: 320, height: 640 },
+    { width: 1366, height: 768 },
+  ]) {
+    test(`zoom and fit-all controls do not cover each other at ${viewport.width}x${viewport.height}`, async ({
+      page,
+    }) => {
+      await page.setViewportSize(viewport);
+      await openMediaCorps(page);
+      for (const control of [
+        page.locator('.leaflet-control-zoom-in'),
+        page.locator('.leaflet-control-zoom-out'),
+        page.getByRole('button', { name: 'Fit all corps' }),
+      ]) {
+        await control.scrollIntoViewIfNeeded();
+        const owned = await control.evaluate((el) => {
+          const box = el.getBoundingClientRect();
+          const top = document.elementFromPoint(box.x + box.width / 2, box.y + box.height / 2);
+          return !!top && (el === top || el.contains(top));
+        });
+        expect(owned).toBe(true);
+      }
+    });
+  }
+
   test('pins have accessible names and open details by keyboard', async ({ page }) => {
     await openMediaCorps(page);
     const pin = page.getByRole('button', { name: 'JCDecaux', exact: true });

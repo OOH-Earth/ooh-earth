@@ -448,14 +448,18 @@ export default function MediaCorps() {
                   </div>
                 </div>
 
-                {/* Fit all button */}
-                <button
-                  onClick={() => setFitAllNonce((n) => n + 1)}
-                  title="Fit all corps"
-                  className="absolute left-3 top-3 z-[1000] flex h-9 w-9 items-center justify-center border border-slate2 bg-void/80 font-mono text-darkgray backdrop-blur-md transition-colors hover:border-ozone hover:text-ozone"
-                >
-                  <Maximize2 className="h-4 w-4" />
-                </button>
+                {/* Fit all button: below the Leaflet zoom control, and only when there are pins */}
+                {filtered.length > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => setFitAllNonce((n) => n + 1)}
+                    title="Fit all corps"
+                    aria-label="Fit all corps"
+                    className="absolute left-2.5 top-[5.75rem] z-[1000] flex h-9 w-9 items-center justify-center border border-slate2 bg-void/80 font-mono text-darkgray backdrop-blur-md transition-colors hover:border-ozone hover:text-ozone"
+                  >
+                    <Maximize2 className="h-4 w-4" />
+                  </button>
+                )}
 
                 {/* Legend */}
                 <div className="absolute right-3 top-3 z-[1000] hidden flex-col gap-1.5 border border-slate2 bg-void/90 p-2.5 backdrop-blur-md sm:flex">
