@@ -31,7 +31,6 @@ import { isPublicSpaceType } from '@/lib/publicSpace';
 import RelatedLocations from '@/components/ooh/RelatedLocations';
 import LocationContextEvidence from '@/components/ooh/LocationContextEvidence';
 import EvidenceTimeline from '@/components/ooh/EvidenceTimeline';
-import ConceptPreview from '@/components/ooh/ConceptPreview';
 import { useSeo } from '@/lib/seoContext';
 import { getStatusBadgeClasses } from '@/lib/statusBadge';
 import { shareLocation, shareAvailability } from '@/lib/shareLocation';
@@ -386,7 +385,6 @@ export default function LocationDetail() {
               >
                 <MapPin className="h-3 w-3" /> Add to field route
               </button>
-              <ConceptPreview loc={loc} />
               {routeState && (
                 <span
                   role="status"
