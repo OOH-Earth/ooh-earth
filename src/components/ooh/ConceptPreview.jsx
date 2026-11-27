@@ -61,9 +61,10 @@ export default function ConceptPreview({ loc }) {
             triggerRef.current?.focus();
           }}
           // Never taller than the screen, scrollable if it must be, and above the mobile navigation.
-          className="z-[1100] max-h-[calc(100dvh_-_1rem)] max-w-2xl overflow-y-auto overscroll-contain border-slate2 bg-void p-2 sm:p-4"
+          // The dialog's own close button (its only direct child button) gets a 44px target.
+          className="z-[1100] max-h-[calc(100dvh_-_1rem)] max-w-2xl overflow-y-auto overscroll-contain border-slate2 bg-void p-2 sm:p-4 [&>button]:right-1 [&>button]:top-1 [&>button]:flex [&>button]:h-11 [&>button]:w-11 [&>button]:items-center [&>button]:justify-center"
         >
-          <div className="flex items-center gap-2 border border-flare/50 bg-flare/[0.06] px-3 py-2">
+          <div className="flex items-center gap-2 border border-flare/50 bg-flare/[0.06] py-2 pl-3 pr-11">
             <span className="font-mono text-[10px] font-bold uppercase tracking-[0.2em] text-flare">
               Concept · Not live
             </span>
