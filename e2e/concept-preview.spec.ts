@@ -121,3 +121,31 @@ test.describe('ConceptPreview — #320 nonpersistent local preview', () => {
     expect(filterCrashes(errors), errors.join('\n')).toEqual([]);
   });
 });
+
+test('closing the concept preview returns keyboard focus to its trigger', async ({ page }) => {
+  await mockBase44(page, {
+    user: null,
+    locations: {
+      'loc-focus': {
+        id: 'loc-focus',
+        title: 'Billboard · Focus Test',
+        type: 'billboard',
+        address: '1 Focus Ave',
+        lat: 13.75,
+        lng: 100.5,
+        status: 'verified',
+        access_key: 'none',
+      },
+    },
+    locationPhotos: [],
+  });
+  await page.goto('/location/loc-focus');
+  await expect(page.getByRole('heading', { name: /Focus Test/i })).toBeVisible();
+  const trigger = page.getByTestId('concept-preview-open');
+  await trigger.focus();
+  await page.keyboard.press('Enter');
+  await expect(page.getByTestId('concept-preview-dialog')).toBeVisible();
+  await page.keyboard.press('Escape');
+  await expect(page.getByTestId('concept-preview-dialog')).toBeHidden();
+  await expect(trigger).toBeFocused();
+});

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Sparkles } from 'lucide-react';
 
@@ -33,6 +33,7 @@ import { Sparkles } from 'lucide-react';
 export default function ConceptPreview({ loc }) {
   const [open, setOpen] = useState(false);
   const [caption, setCaption] = useState('');
+  const triggerRef = useRef(null);
 
   const close = () => {
     setOpen(false);
@@ -42,6 +43,7 @@ export default function ConceptPreview({ loc }) {
   return (
     <>
       <button
+        ref={triggerRef}
         type="button"
         onClick={() => setOpen(true)}
         data-testid="concept-preview-open"
@@ -53,6 +55,11 @@ export default function ConceptPreview({ loc }) {
       <Dialog open={open} onOpenChange={(next) => !next && close()}>
         <DialogContent
           data-testid="concept-preview-dialog"
+          // The trigger is not a Radix DialogTrigger, so return keyboard focus to it here.
+          onCloseAutoFocus={(event) => {
+            event.preventDefault();
+            triggerRef.current?.focus();
+          }}
           className="max-w-2xl border-slate2 bg-void p-2 sm:p-4"
         >
           <div className="flex items-center gap-2 border border-flare/50 bg-flare/[0.06] px-3 py-2">
