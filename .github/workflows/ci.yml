@@ -227,12 +227,13 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
           cache: npm
       - run: npm ci
+      - name: Audit gate regression tests
+        run: node --test scripts/check-npm-audit.test.mjs
       - name: npm audit (fail on high/critical only)
         run: |
-          npm audit --omit=dev --json > audit-report.json || true
-          HIGH=$(node -e "const r=require('./audit-report.json'); const m=r.metadata?.vulnerabilities||{}; console.log((m.high||0)+(m.critical||0))")
-          echo "High/critical vulnerabilities: $HIGH"
-          if [ "$HIGH" -gt 0 ]; then exit 1; fi
+          audit_status=0
+          npm audit --omit=dev --audit-level=high --json > audit-report.json || audit_status=$?
+          node scripts/check-npm-audit.mjs audit-report.json "$audit_status"
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         if: always()
         with:
