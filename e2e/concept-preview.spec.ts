@@ -149,3 +149,76 @@ test('closing the concept preview returns keyboard focus to its trigger', async 
   await expect(page.getByTestId('concept-preview-dialog')).toBeHidden();
   await expect(trigger).toBeFocused();
 });
+
+// A tall photo used to push the dialog past a short screen: both close controls were off screen
+// and nothing scrolled.
+const TALL_PHOTO = `data:image/svg+xml;utf8,${encodeURIComponent(
+  "<svg xmlns='http://www.w3.org/2000/svg' width='1200' height='1600'><rect width='100%' height='100%' fill='#1f51ff'/></svg>",
+)}`;
+
+for (const viewport of [
+  { width: 320, height: 480 },
+  { width: 390, height: 844 },
+  { width: 844, height: 390 },
+  { width: 1366, height: 768 },
+]) {
+  test(`both close controls and the input stay reachable with a tall photo at ${viewport.width}x${viewport.height}`, async ({
+    page,
+  }) => {
+    await page.setViewportSize(viewport);
+    await mockBase44(page, {
+      user: null,
+      locations: {
+        'loc-tall': {
+          id: 'loc-tall',
+          title: 'Billboard · Tall Photo',
+          type: 'billboard',
+          address: '1 Tall Ave',
+          lat: 13.75,
+          lng: 100.5,
+          image_url: TALL_PHOTO,
+          status: 'verified',
+          access_key: 'none',
+        },
+      },
+      locationPhotos: [],
+    });
+    await page.goto('/location/loc-tall');
+    await expect(page.getByRole('heading', { name: /Tall Photo/i })).toBeVisible();
+    await page.getByTestId('concept-preview-open').click();
+    const dialog = page.getByTestId('concept-preview-dialog');
+    await expect(dialog).toBeVisible();
+    await expect
+      .poll(() => dialog.locator('img').evaluate((img: HTMLImageElement) => img.complete))
+      .toBe(true);
+
+    for (const control of [
+      dialog.getByRole('button', { name: 'Close', exact: true }),
+      dialog.getByRole('textbox'),
+      dialog.getByRole('button', { name: /discards this/i }),
+    ]) {
+      await expect
+        .poll(() =>
+          control.evaluate((el) => {
+            el.scrollIntoView({ block: 'nearest', behavior: 'instant' });
+            const box = el.getBoundingClientRect();
+            if (box.top < 0 || box.bottom > innerHeight || box.right > innerWidth) return false;
+            return [0.05, 0.5, 0.95].every((fx) =>
+              [0.15, 0.5, 0.85].every((fy) => {
+                const hit = document.elementFromPoint(
+                  box.left + box.width * fx,
+                  box.top + box.height * fy,
+                );
+                return !!hit && (hit === el || el.contains(hit));
+              }),
+            );
+          }),
+        )
+        .toBe(true);
+    }
+
+    // The pointer alone must be able to close it.
+    await dialog.getByRole('button', { name: /discards this/i }).click();
+    await expect(dialog).toBeHidden();
+  });
+}

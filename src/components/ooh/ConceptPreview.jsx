@@ -60,7 +60,8 @@ export default function ConceptPreview({ loc }) {
             event.preventDefault();
             triggerRef.current?.focus();
           }}
-          className="max-w-2xl border-slate2 bg-void p-2 sm:p-4"
+          // Never taller than the screen, scrollable if it must be, and above the mobile navigation.
+          className="z-[1100] max-h-[calc(100dvh_-_1rem)] max-w-2xl overflow-y-auto overscroll-contain border-slate2 bg-void p-2 sm:p-4"
         >
           <div className="flex items-center gap-2 border border-flare/50 bg-flare/[0.06] px-3 py-2">
             <span className="font-mono text-[10px] font-bold uppercase tracking-[0.2em] text-flare">
@@ -76,7 +77,7 @@ export default function ConceptPreview({ loc }) {
               <img
                 src={loc.image_url}
                 alt={`${loc.title || 'Location'} -- unmodified existing photo`}
-                className="max-h-[60vh] w-full object-contain"
+                className="max-h-[min(60dvh,_max(6rem,_calc(100dvh_-_17rem)))] w-full object-contain"
               />
               <span className="pointer-events-none absolute left-2 top-2 border border-flare bg-void/85 px-2 py-1 font-mono text-[9px] font-bold uppercase tracking-[0.2em] text-flare">
                 Concept · Not live
