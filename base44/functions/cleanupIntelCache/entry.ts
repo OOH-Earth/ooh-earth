@@ -1,4 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
+import { handleCleanupIntelCache } from './handler.ts';
 
 // Scheduled cleanup for the IntelCache entity. Every current IntelCache
 // writer (cachedIntel, fieldNews, and this session's fieldStats/cryptoWatch/
@@ -23,53 +24,7 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
 // route any client ever calls), so an O(n) full-table page-through here does
 // not carry the same cost concern fieldStats' old unbounded scan did.
 
-const RETENTION_DAYS = 14;
-const MAX_DELETES_PER_RUN = 5000; // defensive cap -- see function.jsonc note
-
-async function listAll(entity, sort, pageSize = 500, hardCap = 200000) {
-  const out = [];
-  let skip = 0;
-  while (out.length < hardCap) {
-    const page = await entity.list(sort, pageSize, skip);
-    if (!page || page.length === 0) break;
-    out.push(...page);
-    if (page.length < pageSize) break;
-    skip += pageSize;
-  }
-  return out;
-}
-
-Deno.serve(async (req) => {
-  try {
-    const base44 = createClientFromRequest(req);
-    const cutoff = Date.now() - RETENTION_DAYS * 24 * 60 * 60 * 1000;
-
-    const rows = await listAll(base44.asServiceRole.entities.IntelCache, '-created_date');
-    const stale = rows.filter((r) => {
-      const t = r.created_date ? new Date(r.created_date).getTime() : NaN;
-      return Number.isFinite(t) && t < cutoff;
-    });
-
-    const toDelete = stale.slice(0, MAX_DELETES_PER_RUN);
-    let deleted = 0;
-    for (const row of toDelete) {
-      try {
-        await base44.asServiceRole.entities.IntelCache.delete(row.id);
-        deleted += 1;
-      } catch (err) {
-        // One bad row must never abort the rest of the cleanup pass.
-        console.error('cleanupIntelCache: failed to delete', row.id, err?.message || err);
-      }
-    }
-
-    return Response.json({
-      ok: true,
-      scanned: rows.length,
-      stale: stale.length,
-      deleted,
-      truncated: stale.length > MAX_DELETES_PER_RUN,
-    });
-  } catch (error) {
-    return Response.json({ error: error.message }, { status: 500 });
-  }
-});
+// Admin-only (see handler.ts). The scheduled automation in function.jsonc stays
+// inactive: a scheduled run has no verified admin user context, so confirm how
+// the automation authenticates before enabling it.
+Deno.serve((req) => handleCleanupIntelCache(req, { createClientFromRequest }));
