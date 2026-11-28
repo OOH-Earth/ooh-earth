@@ -26,7 +26,12 @@ async function setup(page: Page) {
   });
   const submits: string[] = [];
   page.on('request', (request) => {
-    if (request.url().includes('/functions/submitOffline')) submits.push(request.method());
+    // Ticket reservations are not submissions.
+    if (
+      request.url().includes('/functions/submitOffline') &&
+      request.postDataJSON()?.action !== 'reserve'
+    )
+      submits.push(request.method());
   });
   return { submits };
 }
@@ -173,13 +178,17 @@ test.describe('graffiti camera behaviour (mocked backend)', () => {
 
   test('slow send: explains the wait without sending twice or giving up', async ({ page }) => {
     const { submits } = await setup(page);
-    await page.route('**/functions/submitOffline', () => {});
+    await page.route('**/functions/submitOffline', (route) => {
+      // Let the ticket reservation through; fail or hold the send itself.
+      if (route.request().postDataJSON()?.action) return route.fallback();
+      return undefined; // never answers
+    });
     const dialog = await fillValid(page);
     await dialog.getByRole('button', { name: 'Transmit capture' }).click();
     await expect(dialog.getByRole('button', { name: 'Transmitting…' })).toBeDisabled();
     await expect(dialog.getByRole('status')).toHaveCount(0);
     await expect(dialog.getByRole('status')).toHaveText(/still sending/i, { timeout: 15_000 });
     await expect(dialog.getByRole('button', { name: 'Transmitting…' })).toBeDisabled();
-    expect(submits).toEqual(['POST']);
+    await expect.poll(() => submits).toEqual(['POST']);
   });
 });

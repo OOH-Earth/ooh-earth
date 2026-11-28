@@ -240,6 +240,8 @@ export async function mockBase44(page: Page, db: MockDb) {
     if (url.pathname.includes('/functions/submitOffline')) {
       const body = req.postDataJSON() ?? {};
       const entityType = body.entity_type;
+      if (body.action === 'reserve')
+        return route.fulfill({ json: { ok: true, ticket_id: `ticket-${body.operation_id}` } });
       const payload = body.payload ?? {};
       if (entityType === 'Location') {
         const store = db.locations ?? (db.locations = {});

@@ -34,7 +34,12 @@ async function setup(page: Page) {
   });
   const submits: string[] = [];
   page.on('request', (request) => {
-    if (request.url().includes('/functions/submitOffline')) submits.push(request.method());
+    // Ticket reservations are not submissions.
+    if (
+      request.url().includes('/functions/submitOffline') &&
+      request.postDataJSON()?.action !== 'reserve'
+    )
+      submits.push(request.method());
   });
   return { submits };
 }
@@ -160,9 +165,11 @@ test.describe('quick capture submission states (mocked backend)', () => {
 
   test('server error: the capture is reported as queued on the device', async ({ page }) => {
     const { submits } = await setup(page);
-    await page.route('**/functions/submitOffline', (route) =>
-      route.fulfill({ status: 500, json: { error: 'mocked failure' } }),
-    );
+    await page.route('**/functions/submitOffline', (route) => {
+      // Let the ticket reservation through; fail or hold the send itself.
+      if (route.request().postDataJSON()?.action) return route.fallback();
+      return route.fulfill({ status: 500, json: { error: 'mocked failure' } });
+    });
     const dialog = await fillValidCapture(page);
     await dialog.getByRole('button', { name: 'Transmit capture' }).click();
     await expect(dialog.getByRole('heading', { name: 'Saved, not sent yet' })).toBeVisible();
@@ -174,6 +181,8 @@ test.describe('quick capture submission states (mocked backend)', () => {
     let release: () => void = () => {};
     const held = new Promise<void>((resolve) => (release = resolve));
     await page.route('**/functions/submitOffline', async (route) => {
+      // Let the ticket reservation through; fail or hold the send itself.
+      if (route.request().postDataJSON()?.action) return route.fallback();
       await held;
       await route.abort('timedout');
     });
@@ -181,6 +190,8 @@ test.describe('quick capture submission states (mocked backend)', () => {
     await dialog.getByRole('button', { name: 'Transmit capture' }).click();
     const busy = dialog.getByRole('button', { name: 'Transmitting…' });
     await expect(busy).toBeDisabled();
+    // The send follows the ticket reservation.
+    await expect.poll(() => submits).toEqual(['POST']);
     await busy.click({ force: true });
     expect(submits).toEqual(['POST']);
     release();
