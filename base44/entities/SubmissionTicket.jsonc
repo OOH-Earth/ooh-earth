@@ -1,0 +1,22 @@
+{
+  "name": "SubmissionTicket",
+  "type": "object",
+  "description": "One row per logical field submission. Written only by the submitOffline function with the service role; its state field is claimed with a single-record conditional updateMany so that at most one attempt creates the record.",
+  "properties": {
+    "operation_hash": { "type": "string", "maxLength": 64 },
+    "entity_type": { "type": "string", "enum": ["Location", "FieldCheck"] },
+    "owner_id": { "type": "string", "maxLength": 64 },
+    "state": { "type": "string", "enum": ["open", "claimed", "completed"], "default": "open" },
+    "claim_token": { "type": "string", "maxLength": 64 },
+    "claimed_at": { "type": "number" },
+    "payload_hash": { "type": "string", "maxLength": 64 },
+    "record_id": { "type": "string", "maxLength": 64 }
+  },
+  "required": ["operation_hash", "entity_type", "owner_id", "state"],
+  "rls": {
+    "create": { "user_condition": { "role": "admin" } },
+    "read": { "user_condition": { "role": "admin" } },
+    "update": { "user_condition": { "role": "admin" } },
+    "delete": { "user_condition": { "role": "admin" } }
+  }
+}
