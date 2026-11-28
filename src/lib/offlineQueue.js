@@ -294,7 +294,6 @@ async function submitDraft(payload, entityType) {
   const normalized = withOperationId(payload);
   const online = navigator.onLine;
   let item = null;
-  let storageError = null;
   if (online) activeSends.add(normalized.client_operation_id);
   try {
     await enqueueCapture(normalized, entityType, online ? { sending_since: Date.now() } : {});
@@ -302,7 +301,8 @@ async function submitDraft(payload, entityType) {
       (saved) => saved.operation_id === normalized.client_operation_id,
     );
   } catch (error) {
-    storageError = error;
+    // Reported to the person only if the send does not succeed either.
+    console.warn('Could not save a draft on this device:', error?.name);
   }
   const notSaved = () =>
     new Error(
