@@ -4,8 +4,14 @@ import {
   removeCapture,
   incrementRetries,
   retryCapture,
-  submitQueuedCapture,
+  deliverItem,
+  isSendable,
+  isPermanentRejection,
+  isSendingHere,
+  markFailed,
+  markWaiting,
 } from '@/lib/offlineQueue';
+import { classifyQueueItem } from '@/lib/queueIdentity';
 
 export function useOfflineSync() {
   const [pending, setPending] = useState([]);
@@ -19,7 +25,7 @@ export function useOfflineSync() {
 
   const refresh = useCallback(async () => {
     try {
-      setPending(await listCaptures());
+      setPending((await listCaptures()).filter((item) => !isSendingHere(item)));
     } catch {
       setPending([]);
     }
@@ -40,18 +46,28 @@ export function useOfflineSync() {
       // Automatic retries only ever touch pending items -- a 'failed' item
       // stopped being retried automatically the moment it hit MAX_RETRIES;
       // retryCapture() (via retryFailed below) is the only path back.
-      const retryable = items.filter((item) => item.status !== 'failed');
+      const retryable = items.filter((item) => isSendable(item));
       if (!retryable.length) return;
 
       let changed = false;
       for (const item of retryable) {
         try {
-          await submitQueuedCapture(item.payload, item.entityType);
+          await deliverItem(item);
           await removeCapture(item.id);
           changed = true;
         } catch (err) {
           console.warn('Offline sync failed for item', item.id, err?.message);
           try {
+            if (err?.pending) {
+              // Still being confirmed by the server: not a failed attempt.
+              await markWaiting(item.id);
+              continue;
+            }
+            if (isPermanentRejection(err)) {
+              await markFailed(item.id, 'rejected');
+              changed = true;
+              continue;
+            }
             // A genuine IndexedDB write failure here (rare -- quota, a
             // storage-layer error) must not abort the rest of this loop:
             // one item's write failure has nothing to do with whether the
@@ -77,7 +93,9 @@ export function useOfflineSync() {
     setSyncing(true);
     try {
       const items = await listCaptures();
-      const failed = items.filter((item) => item.status === 'failed');
+      const failed = items.filter(
+        (item) => item.status === 'failed' && (!item.version || classifyQueueItem(item) === 'own'),
+      );
       if (!failed.length) return;
       for (const item of failed) {
         try {
@@ -100,25 +118,31 @@ export function useOfflineSync() {
     refresh();
     const onChange = () => refresh();
     window.addEventListener('ooh-queue-changed', onChange);
-    return () => window.removeEventListener('ooh-queue-changed', onChange);
+    window.addEventListener('ooh-queue-identity-changed', onChange);
+    return () => {
+      window.removeEventListener('ooh-queue-changed', onChange);
+      window.removeEventListener('ooh-queue-identity-changed', onChange);
+    };
   }, [refresh]);
 
   useEffect(() => {
     const onOnline = () => flush();
     window.addEventListener('online', onOnline);
     const timer = setInterval(() => {
+      refresh();
       if (navigator.onLine) flush();
     }, 30000);
     return () => {
       window.removeEventListener('online', onOnline);
       clearInterval(timer);
     };
-  }, [flush]);
+  }, [flush, refresh]);
 
   const pendingOnly = pending.filter((item) => item.status !== 'failed');
   const failedOnly = pending.filter((item) => item.status === 'failed');
 
   return {
+    items: pending,
     pending: pendingOnly,
     pendingCount: pendingOnly.length,
     failed: failedOnly,

@@ -1,8 +1,12 @@
+import { useRef, useState } from 'react';
 import { useOfflineSync } from '@/hooks/useOfflineSync';
+import SavedDrafts from '@/components/ooh/SavedDrafts';
 import { CloudOff, Loader2, AlertTriangle } from 'lucide-react';
 
 export default function OfflineSyncBadge() {
-  const { pendingCount, failedCount, syncing, flush, retryFailed } = useOfflineSync();
+  const { items, pendingCount, failedCount, syncing, flush, retryFailed } = useOfflineSync();
+  const [draftsOpen, setDraftsOpen] = useState(false);
+  const draftsButton = useRef(null);
   if (!pendingCount && !failedCount) return null;
   return (
     <div className="flex items-center gap-1.5">
@@ -40,6 +44,22 @@ export default function OfflineSyncBadge() {
           <span>{failedCount} needs attention</span>
         </button>
       )}
+      <button
+        ref={draftsButton}
+        type="button"
+        onClick={() => setDraftsOpen(true)}
+        aria-haspopup="dialog"
+        className="flex min-h-11 items-center border border-slate2 px-2.5 font-mono text-[9px] font-bold uppercase tracking-[0.2em] text-darkgray transition-colors hover:border-ozone hover:text-ozone"
+      >
+        Drafts
+      </button>
+      <SavedDrafts
+        open={draftsOpen}
+        onOpenChange={setDraftsOpen}
+        items={items}
+        onSend={flush}
+        returnFocusRef={draftsButton}
+      />
     </div>
   );
 }
